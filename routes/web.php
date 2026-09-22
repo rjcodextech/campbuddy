@@ -5,8 +5,10 @@ use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\HomeRedirectController;
+use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RosterRemovalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +31,13 @@ Route::middleware('event.public')->group(function () {
     Route::get('/event/{event:slug}/explore', [EventPageController::class, 'explore'])->name('event.explore');
     Route::get('/event/{event:slug}/camp-card', [EventPageController::class, 'campCard'])->name('event.camp-card');
     Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
+
+    // §8.4's takedown path — public, no login, throttled against abuse.
+    Route::middleware('throttle:20,1')->group(function () {
+        Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->name('event.roster-removal.show');
+        Route::get('/event/{event:slug}/roster-removal/search', [RosterRemovalController::class, 'search'])->name('event.roster-removal.search');
+        Route::post('/event/{event:slug}/roster-removal/{entry}', [RosterRemovalController::class, 'remove'])->name('event.roster-removal.remove');
+    });
 });
 
 /*
@@ -68,6 +77,10 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/offers', [OfferController::class, 'store'])->name('admin.events.offers.store');
         Route::put('events/{event}/offers/{offer}', [OfferController::class, 'update'])->name('admin.events.offers.update');
         Route::delete('events/{event}/offers/{offer}', [OfferController::class, 'destroy'])->name('admin.events.offers.destroy');
+
+        Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
+        Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
+        Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
     });
 
     require __DIR__.'/auth.php';

@@ -29,12 +29,17 @@
         </div>
 
         <div role="tablist" aria-label="Explore section" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-            <button type="button" class="btn btn--compact" data-explore-tab="sponsors" role="tab" aria-selected="true">Sponsors</button>
+            <button type="button" class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true">People</button>
+            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
             <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
             <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
         </div>
 
-        <div data-explore-panel="sponsors">
+        <div data-explore-panel="people">
+            <div id="people-root"></div>
+        </div>
+
+        <div data-explore-panel="sponsors" hidden>
             @forelse ($sponsorsByTier as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>

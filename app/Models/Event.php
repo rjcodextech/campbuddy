@@ -19,6 +19,8 @@ class Event extends Model
         'display_name',
         'short_name',
         'source_site_url',
+        'starts_on',
+        'ends_on',
         'primary_color',
         'accent_color',
         'logo_path',
@@ -31,6 +33,8 @@ class Event extends Model
     protected $casts = [
         'is_visible' => 'boolean',
         'info' => 'array',
+        'starts_on' => 'date',
+        'ends_on' => 'date',
     ];
 
     public function attendeeRoster(): HasMany

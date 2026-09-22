@@ -40,6 +40,11 @@ async function init() {
     const { renderExplore } = await import('./explore.js');
     renderExplore();
   }
+
+  if (document.getElementById('people-root')) {
+    const { renderPeople } = await import('./people.js');
+    renderPeople(root);
+  }
 }
 
 if (document.readyState === 'loading') {

@@ -30,22 +30,36 @@
     </div>
 
     <div>
+        <x-input-label for="starts_on" value="Starts on" />
+        <x-text-input id="starts_on" name="starts_on" type="date" class="mt-1 block w-full"
+                      :value="old('starts_on', optional($event->starts_on)->toDateString())" />
+        <x-input-error :messages="$errors->get('starts_on')" class="mt-2" />
+    </div>
+
+    <div>
+        <x-input-label for="ends_on" value="Ends on (drives §3.4 M7's discovery-profile expiry)" />
+        <x-text-input id="ends_on" name="ends_on" type="date" class="mt-1 block w-full"
+                      :value="old('ends_on', optional($event->ends_on)->toDateString())" />
+        <x-input-error :messages="$errors->get('ends_on')" class="mt-2" />
+    </div>
+
+    <div>
         <x-input-label for="primary_color" value="Primary color (§3.2 BR7 — WCAG AA checked)" />
-        <input id="primary_color" name="primary_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-gray-300"
+        <input id="primary_color" name="primary_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-line"
                value="{{ old('primary_color', $event->primary_color ?? '#1a2b3c') }}" />
         <x-input-error :messages="$errors->get('primary_color')" class="mt-2" />
     </div>
 
     <div>
         <x-input-label for="accent_color" value="Accent color (§3.2 BR7 — WCAG AA checked)" />
-        <input id="accent_color" name="accent_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-gray-300"
+        <input id="accent_color" name="accent_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-line"
                value="{{ old('accent_color', $event->accent_color ?? '#1a2b3c') }}" />
         <x-input-error :messages="$errors->get('accent_color')" class="mt-2" />
     </div>
 
     <div>
         <x-input-label for="status" value="Lifecycle status" />
-        <select id="status" name="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        <select id="status" name="status" class="mt-1 block w-full border-line rounded-md shadow-sm">
             @foreach (['draft', 'approved', 'active', 'archived'] as $status)
                 <option value="{{ $status }}" @selected(old('status', $event->status) === $status)>{{ ucfirst($status) }}</option>
             @endforeach
@@ -56,9 +70,9 @@
     <div class="flex items-center mt-6">
         <label class="inline-flex items-center">
             <input type="hidden" name="is_visible" value="0">
-            <input type="checkbox" name="is_visible" value="1" class="rounded border-gray-300 text-indigo-600"
+            <input type="checkbox" name="is_visible" value="1" class="rounded border-line text-maroon"
                    @checked(old('is_visible', $event->is_visible ?? true))>
-            <span class="ms-2 text-sm text-gray-700">Visible in the public app (§3.2 BR6 — default on)</span>
+            <span class="ms-2 text-sm text-ink">Visible in the public app (§3.2 BR6 — default on)</span>
         </label>
     </div>
 </div>

@@ -24,6 +24,8 @@ class UpdateEventRequest extends FormRequest
             'display_name' => ['required', 'string', 'max:255'],
             'short_name' => ['nullable', 'string', 'max:60'],
             'source_site_url' => ['required', 'url', 'max:500', new NotPrivateNetworkUrl],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'primary_color' => ['nullable', 'string', new MeetsColorContrast],
             'accent_color' => ['nullable', 'string', new MeetsColorContrast],
             'status' => ['required', Rule::in(['draft', 'approved', 'active', 'archived'])],

@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Event;
+use App\Models\PushSubscription;
+use App\Models\SessionBookmark;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Minishlink\WebPush\Subscription;
+use Minishlink\WebPush\WebPush;
+
+/**
+ * §3.5 N1: a scheduled Web Push 5-10 minutes before a bookmarked
+ * session's start. Runs every minute (§12.6's single cron entry drives
+ * this like every other scheduled job) and is idempotent per bookmark
+ * via reminder_sent_at.
+ */
+class SendSessionRemindersJob implements ShouldQueue
+{
+    use Queueable;
+
+    public function handle(): void
+    {
+        Event::where('status', 'active')->each(function (Event $event) {
+            $this->remindForEvent($event);
+        });
+    }
+
+    private function remindForEvent(Event $event): void
+    {
+        $sessions = collect(Cache::get("event:{$event->id}:sessions", []))
+            ->filter(fn ($s) => $s['starts_at'])
+            ->keyBy('id');
+
+        $windowStart = now()->addMinutes(5);
+        $windowEnd = now()->addMinutes(10);
+
+        $upcomingIds = $sessions
+            ->filter(function ($s) use ($windowStart, $windowEnd) {
+                $startsAt = \Carbon\Carbon::parse($s['starts_at']);
+
+                return $startsAt->between($windowStart, $windowEnd);
+            })
+            ->keys();
+
+        if ($upcomingIds->isEmpty()) {
+            return;
+        }
+
+        $bookmarks = SessionBookmark::where('event_id', $event->id)
+            ->where('reminder_enabled', true)
+            ->whereNull('reminder_sent_at')
+            ->whereIn('session_id', $upcomingIds)
+            ->get();
+
+        foreach ($bookmarks as $bookmark) {
+            $this->sendFor($event, $bookmark, $sessions[$bookmark->session_id]);
+        }
+    }
+
+    private function sendFor(Event $event, SessionBookmark $bookmark, array $session): void
+    {
+        $subscriptions = PushSubscription::where('event_id', $event->id)
+            ->where('device_id', $bookmark->device_id)
+            ->get();
+
+        if ($subscriptions->isEmpty()) {
+            return;
+        }
+
+        $webPush = new WebPush([
+            'VAPID' => [
+                'subject' => config('services.vapid.subject'),
+                'publicKey' => config('services.vapid.public_key'),
+                'privateKey' => config('services.vapid.private_key'),
+            ],
+        ]);
+
+        $payload = json_encode([
+            'title' => $session['title'],
+            'body' => 'Starting soon'.($session['track_names'][0] ?? '' ? ' in '.$session['track_names'][0] : '').'.',
+            'url' => route('event.my-day', $event),
+        ]);
+
+        foreach ($subscriptions as $sub) {
+            try {
+                $webPush->queueNotification(
+                    Subscription::create([
+                        'endpoint' => $sub->endpoint,
+                        'keys' => ['p256dh' => $sub->p256dh_key, 'auth' => $sub->auth_key],
+                    ]),
+                    $payload
+                );
+            } catch (\Throwable $e) {
+                Log::warning('Web Push queue failed', ['error' => $e->getMessage()]);
+            }
+        }
+
+        foreach ($webPush->flush() as $report) {
+            if (! $report->isSuccess() && $report->isSubscriptionExpired()) {
+                PushSubscription::where('endpoint', $report->getEndpoint())->delete();
+            }
+        }
+
+        $bookmark->update(['reminder_sent_at' => now()]);
+    }
+}

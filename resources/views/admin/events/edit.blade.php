@@ -22,6 +22,7 @@
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6 flex gap-4">
             <a href="{{ route('admin.events.quests.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Quests →</a>
             <a href="{{ route('admin.events.offers.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Offers →</a>
+            <a href="{{ route('admin.events.roster.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Roster →</a>
         </div>
 
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">

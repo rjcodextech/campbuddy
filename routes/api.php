@@ -1,0 +1,32 @@
+<?php
+
+use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\RosterController;
+use App\Http\Controllers\HealthController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public, read-mostly, CDN-cacheable JSON API (§10)
+|--------------------------------------------------------------------------
+| GET routes are public and cacheable at the edge (§5.4). Mutating routes
+| (discovery POST/PATCH/DELETE) are the one place this API writes
+| anything, and are throttled here as defense-in-depth on top of the
+| CDN-edge limiting (§8.1, §21.3) — 60/min general, tighter on discovery
+| writes specifically per §21.3.
+*/
+Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
+    Route::get('/health', HealthController::class)->name('api.health');
+
+    Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
+        Route::get('/roster', RosterController::class)->name('api.events.roster');
+
+        Route::get('/discovery', [DiscoveryController::class, 'index'])->name('api.discovery.index');
+
+        Route::middleware('throttle:10,1')->group(function () {
+            Route::post('/discovery', [DiscoveryController::class, 'store'])->name('api.discovery.store');
+            Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
+            Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
+        });
+    });
+});
