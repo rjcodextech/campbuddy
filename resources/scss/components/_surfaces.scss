@@ -1,0 +1,146 @@
+// Block: card (generic content surface; --now modifier was .now-card)
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: 0 7px 20px rgba(53, 40, 32, .045);
+
+  & + & {
+    margin-top: 11px;
+  }
+
+  &--now {
+    border-left: 5px solid var(--gold);
+  }
+}
+
+// Block: section-head
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  &__title {
+    font-size: var(--text-2xl);
+    margin: 0;
+  }
+
+  &__desc {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+}
+
+// Block: badge
+.badge {
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: var(--peach);
+  color: var(--maroon);
+}
+
+// Block: pill (--hashtag modifier was .hashtag-pill). Lives in
+// .hero__meta, which moved out of the dark .hero gradient onto the plain
+// page background — styled for a light surface accordingly.
+.pill {
+  display: inline-block;
+  background: var(--peach);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: var(--ink);
+
+  &--hashtag {
+    font-weight: 800;
+    color: var(--maroon);
+    border-color: #e6b48a;
+  }
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+// Block: notice
+.notice {
+  font-size: 12px;
+  line-height: 1.5;
+  background: #fff5d9;
+  border: 1px solid #ecd89d;
+  border-radius: 15px;
+  padding: 11px;
+  color: #674f17;
+}
+
+// Native <dialog> element + its content wrapper block
+dialog {
+  background: var(--paper);
+  color: var(--ink);
+  border: 0;
+  border-radius: 26px;
+  padding: 0;
+  width: min(520px, calc(100% - 28px));
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .28);
+
+  &::backdrop {
+    background: rgba(31, 20, 14, .5);
+    backdrop-filter: blur(4px);
+  }
+}
+
+.dialog-card {
+  padding: 24px;
+}
+
+.ios-install-steps {
+  margin: var(--space-4) 0;
+  padding-left: var(--space-5);
+
+  li {
+    margin-bottom: var(--space-2);
+    line-height: 1.5;
+  }
+}
+
+// Block: toast
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 95px;
+  transform: translateX(-50%);
+  background: #27211e;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  z-index: 99;
+  box-shadow: var(--shadow);
+}
+
+// Block: footer-note
+.footer-note {
+  font-size: 11px;
+  text-align: center;
+  color: var(--muted);
+  margin: 30px 0 8px;
+  line-height: 1.5;
+}
+
+// Standalone "big statement" text component (mission prompts, opening lines)
+.mission-big {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 800;
+}

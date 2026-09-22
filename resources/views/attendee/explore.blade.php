@@ -1,0 +1,111 @@
+@php
+    $tierOrder = ['platinum', 'gold', 'silver', 'bronze'];
+    $tierClass = function (string $tier) {
+        $slug = strtolower($tier);
+        return match (true) {
+            str_contains($slug, 'plat') => 'sponsor-chip--platinum',
+            str_contains($slug, 'gold') => 'sponsor-chip--platinum',
+            str_contains($slug, 'silver') => 'sponsor-chip--silver',
+            str_contains($slug, 'bronze') => 'sponsor-chip--bronze',
+            default => '',
+        };
+    };
+    $sponsorsByTier = collect($sponsors)->groupBy(fn ($s) => $s['tier_names'][0] ?? 'Sponsor');
+    $info = $event->info ?? [];
+@endphp
+<x-attendee-layout :event="$event">
+    <header class="topbar">
+        <span class="brand">
+            @if ($event->logoUrl())
+                <img src="{{ $event->logoUrl() }}" alt="" class="brand__logo">
+            @endif
+            <span>{{ $event->display_name }}</span>
+        </span>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+        <div class="section-head">
+            <h1 class="section-head__title">Explore</h1>
+        </div>
+
+        <div role="tablist" aria-label="Explore section" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <button type="button" class="btn btn--compact" data-explore-tab="sponsors" role="tab" aria-selected="true">Sponsors</button>
+            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
+            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
+        </div>
+
+        <div data-explore-panel="sponsors">
+            @forelse ($sponsorsByTier as $tier => $tierSponsors)
+                <div class="sponsor-group">
+                    <p class="u-eyebrow">{{ $tier }}</p>
+                    <div class="sponsor-group__row">
+                        @foreach ($tierSponsors as $sponsor)
+                            <a href="{{ $sponsor['website'] ?? $sponsor['link'] }}" target="_blank" rel="noopener" class="sponsor-chip {{ $tierClass($tier) }}">
+                                @if ($sponsor['logo_url'])
+                                    <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo">
+                                @else
+                                    {{ $sponsor['name'] }}
+                                @endif
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @empty
+                <p class="footer-note" style="text-align:left">No sponsors listed yet.</p>
+            @endforelse
+        </div>
+
+        <div data-explore-panel="deals" hidden>
+            @if ($offers->isEmpty())
+                <p class="footer-note" style="text-align:left">No active deals right now — check back later.</p>
+            @else
+                <div class="offer-grid">
+                    @foreach ($offers as $offer)
+                        <a href="{{ $offer->url }}" target="_blank" rel="noopener" class="offer-card">
+                            <span class="offer-card__icon" aria-hidden="true">{{ $offer->icon }}</span>
+                            <span class="offer-card__title">{{ $offer->title }}</span>
+                            <span class="offer-card__desc">{{ $offer->description }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        <div data-explore-panel="info" hidden>
+            @if (empty($info))
+                <p class="footer-note" style="text-align:left">Event information hasn't been added yet.</p>
+            @else
+                @if (!empty($info['venue']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">📍</span><span><span class="useful-link__title">Venue</span><span class="useful-link__desc">{{ $info['venue'] }}</span></span></a>
+                @endif
+                @if (!empty($info['wifi']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">📶</span><span><span class="useful-link__title">Wifi</span><span class="useful-link__desc">{{ $info['wifi'] }}</span></span></a>
+                @endif
+                @if (!empty($info['registration_info']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">🎫</span><span><span class="useful-link__title">Registration</span><span class="useful-link__desc">{{ $info['registration_info'] }}</span></span></a>
+                @endif
+                @if (!empty($info['contributor_day_location']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">🤝</span><span><span class="useful-link__title">Contributor Day</span><span class="useful-link__desc">{{ $info['contributor_day_location'] }}</span></span></a>
+                @endif
+                @if (!empty($info['social_event_info']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">🎉</span><span><span class="useful-link__title">Social event</span><span class="useful-link__desc">{{ $info['social_event_info'] }}</span></span></a>
+                @endif
+                @if (!empty($info['emergency_contact']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">🚨</span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></a>
+                @endif
+                @if (!empty($info['code_of_conduct_url']))
+                    <a class="useful-link" href="{{ $info['code_of_conduct_url'] }}" target="_blank" rel="noopener"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
+                @endif
+                @if (!empty($info['nearby_venue_info']))
+                    <a class="useful-link" href="#"><span class="useful-link__icon" aria-hidden="true">🗺</span><span><span class="useful-link__title">Nearby</span><span class="useful-link__desc">{{ $info['nearby_venue_info'] }}</span></span></a>
+                @endif
+                @if (!empty($info['important_links']))
+                    @foreach (preg_split('/\r?\n/', trim($info['important_links'])) as $link)
+                        @continue(blank($link))
+                        <a class="useful-link" href="{{ $link }}" target="_blank" rel="noopener"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ $link }}</span></span></a>
+                    @endforeach
+                @endif
+            @endif
+        </div>
+    </main>
+</x-attendee-layout>

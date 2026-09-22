@@ -1,0 +1,45 @@
+// Design tokens as CSS custom properties (kept as runtime CSS vars, not
+// Sass variables, so `var(--x)` keeps working exactly as before and the
+// cascade/theming story doesn't change).
+:root {
+  --ink: #231f20;
+  --paper: #fffaf4;
+  --card: #ffffff;
+  --muted: #6b625e;
+  --line: #eadfd6;
+  --maroon: #c33a19;
+  --maroon2: #a12f14;
+  --navy: #0d2343;
+  --gold: #e39d1c;
+  --teal: #049395;
+  --pink: #ce185b;
+  --peach: #fff0df;
+  --green: #166534;
+  --shadow: 0 12px 35px rgba(61, 35, 23, .10);
+  --radius: 24px;
+
+  // 4px-based spacing scale. Applied to the components touched in this
+  // design pass (camp-card, fields, qr panel) rather than a full
+  // app-wide retrofit of every existing spacing value.
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  // Locked 1.25 modular type scale, fluid via clamp() so it also behaves
+  // at small/narrow app-window widths. Applied to the elements that
+  // establish visual hierarchy (hero title, section headings, card name)
+  // — not every font-size in the stylesheet.
+  --text-xs: .625rem;   // 10px — eyebrow/camp-card labels
+  --text-sm: .75rem;    // 12px — chips, badges, muted captions
+  --text-2xl: clamp(1.375rem, 1.3rem + .3vw, 1.5rem);   // ~22-24px — section headings
+  --text-3xl: clamp(1.8125rem, 1.65rem + .8vw, 2rem);   // ~29-32px — hero title, card name
+}
+
+// Sass-level breakpoints, used by the mixins in _mixins.scss.
+$breakpoint-mobile: 430px;
+$breakpoint-tablet: 680px;

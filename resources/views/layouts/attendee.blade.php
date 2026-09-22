@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="{{ $event->primary_color ?? '#c33a19' }}">
+
+    <title>{{ $event->display_name }} — {{ config('app.name') }}</title>
+    <meta name="description" content="Your guide to {{ $event->display_name }} — schedule, people, and what to do next.">
+
+    <link rel="icon" href="{{ $event->faviconUrl() ?? '/media/favicon.png' }}">
+    <link rel="apple-touch-icon" href="{{ $event->logoUrl() ?? '/media/logo.png' }}">
+    <link rel="manifest" href="{{ route('event.manifest', $event) }}">
+
+    {{--
+        Per-event branding as CSS custom properties, set server-side at
+        render time (§5.1, §3.2 BR2) — no client round trip, no flash of
+        unstyled content. Falls back to CampBuddy's own palette (§3.2 BR3)
+        when an event hasn't set colors, via the ?? default here.
+    --}}
+    <style>
+        :root {
+            --maroon: {{ $event->primary_color ?? '#c33a19' }};
+            --maroon2: {{ $event->accent_color ?? '#a12f14' }};
+        }
+    </style>
+
+    @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
+</head>
+<body class="app-shell">
+    <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}">
+        {{ $slot }}
+    </div>
+
+    @include('attendee.partials.nav')
+</body>
+</html>

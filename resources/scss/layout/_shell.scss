@@ -1,0 +1,134 @@
+@use "../abstracts/mixins" as *;
+
+.app-shell {
+  max-width: 760px;
+  margin: auto;
+  min-height: 100vh;
+  padding-bottom: 92px;
+}
+
+main {
+  padding: 18px;
+  outline: none;
+
+  @include mobile {
+    padding: 14px;
+  }
+
+  @include tablet-up {
+    padding: 24px;
+  }
+}
+
+// Block: action-grid (lays out .action-card blocks on the home screen)
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @include mobile {
+    gap: 9px;
+  }
+
+  @include tablet-up {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+// Block: topbar
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: rgba(255, 250, 244, .88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(234, 223, 214, .7);
+}
+
+// Block: brand (the CampBuddy wordmark button, lives inside .topbar)
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: left;
+  color: var(--ink);
+
+  &__logo {
+    height: 34px;
+    width: auto;
+    display: block;
+  }
+}
+
+// Block: bottom-nav
+.bottom-nav {
+  position: fixed;
+  z-index: 20;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, 100%);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  background: rgba(255, 255, 255, .94);
+  backdrop-filter: blur(18px);
+  border-top: 1px solid var(--line);
+  padding: 7px max(6px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+
+  // Same shape at rest and active — only color + a small dot indicator
+  // change, so the active tab reads as a *state*, not a different control
+  // sitting inside the bar (a filled pill made it look like a button).
+  &__item {
+    border: 0;
+    background: none;
+    color: #776c67;
+    padding: 6px 1px;
+    border-radius: 13px;
+    position: relative;
+
+    &--active {
+      color: var(--maroon);
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--maroon);
+      }
+
+      // Icons are fixed-palette illustrations (already in CampBuddy's
+      // brand colors), not currentColor — so "active" is opacity here
+      // plus the dot above, not a color swap.
+      .bottom-nav__icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__icon {
+    display: block;
+    height: 24px;
+    width: 24px;
+    margin: 0 auto;
+    opacity: .55;
+  }
+
+  &__label {
+    display: block;
+    font-size: 9px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+}

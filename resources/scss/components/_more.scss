@@ -1,0 +1,219 @@
+@use "../abstracts/mixins" as *;
+
+// Block: useful-link
+.useful-link {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &__icon {
+    font-size: 26px;
+  }
+
+  &__title {
+    display: block;
+  }
+
+  &__desc {
+    color: var(--muted);
+  }
+
+  &__arrow {
+    flex: none;
+  }
+}
+
+// Block: video-card — rendered as a scannable list (.video-grid is the
+// list wrapper; the name stuck around from the old grid layout but it's
+// just a vertical stack now).
+.video-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.video-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  padding: 8px;
+
+  &__thumb {
+    position: relative;
+    flex: none;
+    width: 128px;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    background: #eee2d8;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    @include mobile {
+      width: 104px;
+    }
+  }
+
+  &__badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: var(--pink);
+    color: #fff;
+    font-size: 8.5px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 3px 6px;
+    border-radius: 999px;
+  }
+
+  &__meta {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 4px 2px 0;
+  }
+
+  &__title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  &__date {
+    color: var(--muted);
+    font-size: 10.5px;
+    display: block;
+    margin-top: 5px;
+  }
+}
+
+// Block: sponsor-group (one tier's heading + row of .sponsor-chip)
+.sponsor-group {
+  margin-top: 16px;
+
+  &:first-child {
+    margin-top: 0;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .u-eyebrow {
+    margin-bottom: 8px;
+  }
+}
+
+// Block: sponsor-chip
+.sponsor-chip {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+
+  &__logo {
+    display: block;
+    height: 22px;
+    width: auto;
+    max-width: 120px;
+    object-fit: contain;
+  }
+
+  &--platinum {
+    border-color: #e6c778;
+    background: #fffaf0;
+  }
+
+  &--silver {
+    border-color: #a9d8d8;
+    background: #f2fbfb;
+  }
+
+  &--bronze {
+    border-color: #e3b79a;
+    background: #fff6f1;
+  }
+}
+
+// Block: social-list (wraps .social-chip)
+.social-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.social-chip {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--maroon);
+  text-decoration: none;
+}
+
+// Block: onboarding (the first-run dialog form)
+.onboarding {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  &__logo {
+    height: 32px;
+    width: auto;
+    flex: none;
+  }
+
+  &__mascot {
+    display: block;
+    width: 110px;
+    height: auto;
+    flex: none;
+  }
+}
+
+// Block: about (the About & Privacy card on the More page)
+.about {
+  &__logo {
+    display: block;
+    height: 38px;
+    width: auto;
+    margin-bottom: 14px;
+  }
+}
