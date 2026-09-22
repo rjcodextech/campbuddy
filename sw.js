@@ -1,6 +1,6 @@
 
-const CACHE="campbuddy-v7";
-const ASSETS=["./","./index.html","./styles.css?v=7","./app.js?v=7","./manifest.webmanifest",
+const CACHE="campbuddy-v9";
+const ASSETS=["./","./index.html","./styles.css?v=9","./app.js?v=9","./manifest.webmanifest",
   "./icon.svg","./favicon.png","./logo.png","./wcr/web/mascot-wappu.png","./wcr/web/qr-mark.png",
   "./wcr/web/icon-512.png","./wcr/web/logo-header.png"];
 self.addEventListener("install",e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));

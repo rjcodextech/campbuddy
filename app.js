@@ -88,6 +88,18 @@ const EXPLORE_VIDEOS_FALLBACK = [
 ];
 // AUTO-GENERATED:EXPLORE_VIDEOS_FALLBACK END
 
+// Fallback, used until (or unless) the backend's /offers endpoint responds.
+// Admin-managed from /backend/admin/offers — not auto-generated, unlike the
+// blocks above, since offers are CampBuddy's own curated list, not sourced
+// from the WordCamp event API.
+const OFFERS_FALLBACK = [
+  {id:1, title:"WordPress.com", description:"Host your site with the creators of WordPress", url:"https://automattic.pxf.io/gOzQ4B", icon:"🌐"},
+  {id:2, title:"Pressable", description:"High-performance WordPress hosting", url:"https://automattic.pxf.io/gOzQ4B", icon:"⚡"},
+  {id:3, title:"WooCommerce", description:"Build your online store with ease", url:"https://automattic.pxf.io/gOzQ4B", icon:"🛒"},
+  {id:4, title:"Jetpack", description:"Essential tools for WordPress sites", url:"https://automattic.pxf.io/gOzQ4B", icon:"🚀"},
+  {id:5, title:"Hostinger", description:"Affordable, reliable web hosting", url:"https://www.hostinger.com/in?REFERRALCODE=1RJCODEX35", icon:"🖥"}
+];
+
 // --- Live data (CampBuddy backend) --------------------------------------
 // Served same-origin by the Slim backend at /backend/api/v1/*, which
 // fetches from the upstream WPSimplified API server-side on a schedule and
@@ -101,6 +113,7 @@ const EXPLORE_VIDEOS_FALLBACK = [
 const API_BASE = "/backend/api/v1";
 const MEDIA_ENDPOINT = `${API_BASE}/media`;
 const EVENTS_ENDPOINT = `${API_BASE}/event`;
+const OFFERS_ENDPOINT = `${API_BASE}/offers`;
 const CACHE_TTL = 6*3600000;
 
 function cacheGet(key){
@@ -155,6 +168,29 @@ async function loadExploreVideos(){
     exploreVideos=normalized;
     cacheSet("campbuddy-media-v1",normalized);
     if(currentRoute()==="explore") render();
+  }
+}
+
+function normalizeOffers(json){
+  const items=json&&Array.isArray(json.offers)?json.offers:null;
+  if(!items) return null;
+  const out=items.map(o=>{
+    if(!o||!o.title||!o.url) return null;
+    return {id:o.id,title:String(o.title),description:String(o.description||""),url:o.url,icon:o.icon||"🏷"};
+  }).filter(Boolean);
+  return out.length?out:null;
+}
+let liveOffers=cacheGet("campbuddy-offers-v1");
+let offersLoading=false;
+async function loadOffers(){
+  if(liveOffers||offersLoading) return;
+  offersLoading=true;
+  const normalized=normalizeOffers(await fetchJSON(OFFERS_ENDPOINT));
+  offersLoading=false;
+  if(normalized){
+    liveOffers=normalized;
+    cacheSet("campbuddy-offers-v1",normalized);
+    if(currentRoute()==="offer") render();
   }
 }
 
@@ -313,6 +349,7 @@ document.addEventListener("click",e=>{
   else if(cls.includes("social-chip")) track("social_click",{...base,platform:a.textContent.trim()});
   else if(cls.includes("ticket-banner__cta")) track("ticket_click",base);
   else if(cls.includes("useful-link")) track("useful_link_click",{...base,link_label:a.querySelector(".useful-link__title")?.textContent||""});
+  else if(cls.includes("offer-card")) track("offer_click",{...base,offer_title:a.querySelector(".offer-card__title")?.textContent||""});
   else if(a.target==="_blank") track("outbound_click",base);
 });
 
@@ -321,7 +358,7 @@ function render(){
   const r=currentRoute();
   document.querySelectorAll(".bottom-nav__item").forEach(x=>x.classList.toggle("bottom-nav__item--active",x.dataset.route===r));
   const app=document.getElementById("app");
-  app.innerHTML = ({home:homeView,schedule:scheduleView,"official-schedule":officialScheduleView,quests:questsView,contribute:contributeView,explore:exploreView,card:cardView,more:moreView}[r]||homeView)();
+  app.innerHTML = ({home:homeView,schedule:scheduleView,"official-schedule":officialScheduleView,quests:questsView,contribute:contributeView,explore:exploreView,offer:offerView,card:cardView,more:moreView}[r]||homeView)();
   app.focus({preventScroll:true});
   bindDynamic();
 }
@@ -515,6 +552,24 @@ function exploreView(){
   ${footer()}`;
 }
 function videoUrl(v){return v.url||(v.type==="short"?`https://www.youtube.com/shorts/${v.id}`:`https://www.youtube.com/watch?v=${v.id}`)}
+
+function offerView(){
+  loadOffers();
+  const offers=liveOffers||OFFERS_FALLBACK;
+  return `
+  <section class="u-page-intro"><div class="u-eyebrow">OFFERS</div><h1 style="margin:6px 0">Deals worth a look.</h1><p class="u-muted">Hosting and tools from the WordPress ecosystem — CampBuddy may earn a commission at no extra cost to you.</p></section>
+  <section class="u-section">
+    <div class="offer-grid">
+      ${offers.map(o=>`
+        <a class="offer-card" href="${o.url}" target="_blank" rel="noopener sponsored">
+          <span class="offer-card__icon">${o.icon}</span>
+          <strong class="offer-card__title">${esc(o.title)}</strong>
+          <small class="offer-card__desc">${esc(o.description)}</small>
+        </a>`).join("")}
+    </div>
+  </section>
+  ${footer()}`;
+}
 function relTime(iso){
   const days=Math.floor((Date.now()-new Date(iso).getTime())/86400000);
   if(days<=0) return "Today";

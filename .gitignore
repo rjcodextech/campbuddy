@@ -12,6 +12,8 @@ backend/storage/sessions/*
 !backend/storage/logs/.gitkeep
 !backend/storage/cache/.gitkeep
 !backend/storage/sessions/.gitkeep
+backend/.phpunit.result.cache
+backend/.phpunit.cache/
 
 # Local-only mkcert certificates (see README's "Local HTTPS (optional)")
 *.pem

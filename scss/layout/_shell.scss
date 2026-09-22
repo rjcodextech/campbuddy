@@ -9,6 +9,7 @@
 
 main {
   padding: 18px;
+  outline: none;
 
   @include mobile {
     padding: 14px;
@@ -75,7 +76,7 @@ main {
   transform: translateX(-50%);
   width: min(760px, 100%);
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   background: rgba(255, 255, 255, .94);
   backdrop-filter: blur(18px);
   border-top: 1px solid var(--line);
@@ -104,5 +105,18 @@ main {
     display: block;
     font-size: 9px;
     font-weight: 700;
+    white-space: nowrap;
+  }
+
+  // 7 items is tight on narrow phones — shrink the label a touch rather
+  // than let "Contribute"/"Camp Card" wrap or overflow their column.
+  @include mobile {
+    &__label {
+      font-size: 8px;
+    }
+
+    &__icon {
+      font-size: 17px;
+    }
   }
 }

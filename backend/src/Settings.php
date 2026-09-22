@@ -74,4 +74,12 @@ final class Settings
     {
         return $this->backendMountPath . '/admin' . $suffix;
     }
+
+    /**
+     * The static PWA's docroot — one level up from backend/ (basePath).
+     */
+    public function projectRoot(): string
+    {
+        return dirname($this->basePath);
+    }
 }

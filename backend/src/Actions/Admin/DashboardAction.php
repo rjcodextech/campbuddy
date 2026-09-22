@@ -39,6 +39,8 @@ final class DashboardAction
             'refreshUrl' => $this->settings->adminUrl('/refresh'),
             'overrideUrl' => $this->settings->adminUrl('/override'),
             'settingsUrl' => $this->settings->adminUrl('/settings'),
+            'purgeCacheUrl' => $this->settings->adminUrl('/purge-cache'),
+            'offersUrl' => $this->settings->adminUrl('/offers'),
         ]);
         $response->getBody()->write($html);
 

@@ -5,13 +5,18 @@ declare(strict_types=1);
 use CampBuddy\Actions\Admin\DashboardAction;
 use CampBuddy\Actions\Admin\LoginAction;
 use CampBuddy\Actions\Admin\LogoutAction;
+use CampBuddy\Actions\Admin\OffersDeleteAction;
+use CampBuddy\Actions\Admin\OffersListAction;
+use CampBuddy\Actions\Admin\OffersSaveAction;
 use CampBuddy\Actions\Admin\OverrideAction;
+use CampBuddy\Actions\Admin\PurgeCacheAction;
 use CampBuddy\Actions\Admin\RefreshAction;
 use CampBuddy\Actions\Admin\SettingsAction;
 use CampBuddy\Actions\Api\AgendaAction;
 use CampBuddy\Actions\Api\EventAction;
 use CampBuddy\Actions\Api\HealthAction;
 use CampBuddy\Actions\Api\MediaAction;
+use CampBuddy\Actions\Api\OffersAction;
 use CampBuddy\Actions\Api\SponsorsAction;
 use CampBuddy\Middleware\CsrfMiddleware;
 use CampBuddy\Middleware\RateLimitMiddleware;
@@ -45,6 +50,7 @@ return function (App $app): void {
         $group->get('/media', MediaAction::class);
         $group->get('/sponsors', SponsorsAction::class);
         $group->get('/agenda', AgendaAction::class);
+        $group->get('/offers', OffersAction::class);
         $group->get('/health', HealthAction::class);
     })->add($apiRateLimit);
 
@@ -58,5 +64,9 @@ return function (App $app): void {
         $group->post('/refresh', RefreshAction::class)->add($csrf);
         $group->post('/override', OverrideAction::class)->add($csrf);
         $group->post('/settings', SettingsAction::class)->add($csrf);
+        $group->post('/purge-cache', PurgeCacheAction::class)->add($csrf);
+        $group->get('/offers', OffersListAction::class);
+        $group->post('/offers', OffersSaveAction::class)->add($csrf);
+        $group->post('/offers/delete', OffersDeleteAction::class)->add($csrf);
     })->add($sessionAuth);
 };

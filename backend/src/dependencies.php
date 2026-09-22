@@ -11,7 +11,9 @@ use CampBuddy\Repository\AppSettingsRepository;
 use CampBuddy\Repository\EventRepository;
 use CampBuddy\Repository\FetchLogRepository;
 use CampBuddy\Repository\MediaRepository;
+use CampBuddy\Repository\OfferRepository;
 use CampBuddy\Settings;
+use CampBuddy\Support\AssetVersionBumper;
 use CampBuddy\Support\Database;
 use CampBuddy\Support\UpstreamClient;
 use CampBuddy\Support\View;
@@ -42,6 +44,7 @@ return [
     FetchLogRepository::class => static fn (PDO $pdo) => new FetchLogRepository($pdo),
     AdminUserRepository::class => static fn (PDO $pdo) => new AdminUserRepository($pdo),
     AppSettingsRepository::class => static fn (PDO $pdo) => new AppSettingsRepository($pdo),
+    OfferRepository::class => static fn (PDO $pdo) => new OfferRepository($pdo),
 
     EventRepository::class => static fn (
         CacheInterface $cache,
@@ -60,4 +63,6 @@ return [
     ) => new MediaRepository($cache, $fetcher, $fetchLog, $settings),
 
     View::class => static fn (Settings $settings) => new View($settings->basePath . '/resources/views'),
+
+    AssetVersionBumper::class => static fn (Settings $settings) => new AssetVersionBumper($settings->projectRoot()),
 ];
