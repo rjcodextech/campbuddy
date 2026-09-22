@@ -1,0 +1,10 @@
+# The root .htaccess rewrite already routes every /backend/* request into
+# the Slim front controller (backend/public/index.php) before Apache ever
+# tries to resolve it as a real file — so direct requests like
+# /backend/.env or /backend/vendor/autoload.php hit Slim's 404 handler,
+# not the raw file. This is defense-in-depth on top of that: even if the
+# rewrite were ever bypassed or misconfigured, these extensions/files can
+# never be served directly.
+<FilesMatch "(\.env(\..*)?|\.sql|\.md|composer\.(json|lock)|\.git.*)$">
+    Require all denied
+</FilesMatch>

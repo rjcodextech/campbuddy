@@ -1,2 +1,18 @@
 node_modules/
 *.css.map
+
+# Backend (PHP / Slim)
+backend/vendor/
+backend/.env
+backend/.env.*
+!backend/.env.example
+backend/storage/logs/*.log
+backend/storage/cache/*
+backend/storage/sessions/*
+!backend/storage/logs/.gitkeep
+!backend/storage/cache/.gitkeep
+!backend/storage/sessions/.gitkeep
+
+# Local-only mkcert certificates (see README's "Local HTTPS (optional)")
+*.pem
+*-key.pem

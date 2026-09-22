@@ -1,6 +1,8 @@
 # CampBuddy — WordCamp Rajasthan 2026
 
-A tiny, local-first, mobile-first PWA prototype for first-time WordCamp attendees.
+A local-first, mobile-first PWA for first-time WordCamp attendees, backed by a small
+[Slim Framework](https://www.slimframework.com/) PHP API that auto-fetches and caches event data
+server-side so the app scales to a large audience without hammering a third-party API.
 
 ## Included in v1
 
@@ -15,67 +17,245 @@ A tiny, local-first, mobile-first PWA prototype for first-time WordCamp attendee
 - Sponsor list and official social links
 - My Day / saved schedule anchors
 - Useful venue and official event links
-- Local-only storage
-- Export/reset controls
+- Local-only device storage (checklist, quests, Camp Card) — no accounts
 - Offline service worker
 - Installable PWA manifest
-- No backend and no user account
+- Slim Framework backend: server-side auto-fetch, MySQL cache, admin panel, rate limiting, security headers
+
+## Architecture at a glance
+
+```
+/                    static PWA (index.html, app.js, styles.css, sw.js, manifest, wcr/) — unchanged, served as-is
+/backend/            Slim Framework app, mounted under /backend by the root .htaccess rewrite
+  /backend/api/v1/*  public, read-only JSON API the PWA calls (same-origin, no CORS needed)
+  /backend/admin     password-protected panel: fetch status, manual refresh, event slug, field overrides
+```
+
+The frontend still fetches "live" event/media data exactly like before, just from `/backend/api/v1/*`
+instead of a third-party host. The backend fetches from the upstream WPSimplified API on a schedule
+(cron) and caches it in MySQL, so **all visitor traffic is served from the local cache** — the upstream
+API gets hit once per refresh interval, not once per visitor. This is what makes the app viable at
+large scale (see "Scaling to ~1M users" below).
 
 ## Run locally
 
-Because service workers require HTTP(S), do not open `index.html` with `file://` if you want offline/PWA behavior.
+### Frontend only (no backend, original behavior)
 
-Python:
+Because service workers require HTTP(S), do not open `index.html` with `file://`.
 
     python3 -m http.server 8080
 
-Then visit:
+This serves the static files fine, but `/backend/api/v1/*` calls will fail (falls back to the bundled
+static data — see "Live data" below), and the admin panel won't exist. For full functionality, run
+the backend too (next section).
 
-    http://localhost:8080
+### Full app (frontend + backend)
 
-## Deploy free
+Requires PHP 8.1+, Composer, and MySQL/MariaDB, plus an Apache vhost with `mod_rewrite` and
+`AllowOverride All` pointed at the repo root (this project was built and tested against WAMP).
 
-This folder is suitable for a static host such as Cloudflare Pages, GitHub Pages, Netlify or Vercel.
+```
+cd backend
+composer install
+cp .env.example .env        # then edit DB_*, SESSION_SECRET, etc.
+php bin/migrate.php         # creates all tables
+php bin/create-admin.php youradminusername   # prompts for a password
+php bin/refresh-event-data.php               # first fetch, so the app isn't empty on first load
+```
 
-No build step is required **to deploy** — `styles.css` is committed and served as-is. A build step is only needed if you're *editing styles*; see "Styling (SCSS + BEM)" below.
+Point your webserver's docroot at the repo root (not `backend/public/`) so both the static files and
+the root `.htaccess` rewrite are in effect. Example WAMP vhost:
 
-## Event data
+```apache
+<VirtualHost *:80>
+    ServerName campbuddy.test
+    DocumentRoot "path/to/campbuddy"
+    <Directory "path/to/campbuddy/">
+        AllowOverride All
+        Require local
+    </Directory>
+</VirtualHost>
+```
 
-The current event metadata is at the top of `app.js` in `EVENT`.
+Then visit `http://campbuddy.test/` (frontend) and `http://campbuddy.test/backend/admin` (admin panel).
 
-The prototype intentionally does **not** invent unverified speaker/session times. The included My Day entries are either:
-- verified event anchors from the organizer site, or
-- clearly labeled CampBuddy suggestions.
+`BACKEND_MOUNT_PATH` in `.env` (default `/backend`) must match wherever the root `.htaccess` rewrite
+sends `/backend/*` — change both together if you want a different mount point.
 
-Replace `DEMO_SCHEDULE` with official session data when a stable source is available.
+### Local HTTPS (optional)
+
+This repo's `.htaccess` only forces HTTPS for non-local hostnames (see the comment in `.htaccess`), so
+plain `http://campbuddy.test/` works out of the box with no certificate. If you want a real
+`https://campbuddy.test/` locally too:
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert) and run `mkcert -install` once.
+2. `mkcert campbuddy.test` in this repo to generate `campbuddy.test.pem` / `campbuddy.test-key.pem`
+   (both are gitignored — never commit local certs).
+3. In WAMP: uncomment `LoadModule ssl_module modules/mod_ssl.so` and
+   `Include conf/extra/httpd-ssl.conf` in `httpd.conf`, add a `<VirtualHost *:443>` block for
+   `campbuddy.test` with `SSLEngine on` and the two file paths from step 2, then restart Apache.
+4. `.htaccess`'s HTTPS-redirect skip only applies to `localhost`/`127.0.0.1`/`*.test`/`*.local` — once
+   you're actually serving HTTPS, requests will simply arrive as HTTPS and nothing else needs to change.
+
+This isn't done automatically because it requires editing Apache's core config and restarting a shared
+system service, which isn't something to do unattended on a dev machine.
+
+## Deploy (shared/cPanel hosting)
+
+1. Upload the whole repo so the site's docroot (e.g. `public_html`) *is* the repo root.
+2. `composer install --no-dev --optimize-autoloader` in `backend/` (or upload `backend/vendor/` from a
+   build step if the host has no SSH/Composer).
+3. Create a MySQL database + user in cPanel, copy `backend/.env.example` to `backend/.env`, fill in
+   real `DB_*` credentials, a fresh `SESSION_SECRET` (`php -r "echo bin2hex(random_bytes(32));"`), and
+   set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://campbuddy.club`.
+4. Run `php backend/bin/migrate.php` and `php backend/bin/create-admin.php <username>` once via SSH or
+   cPanel's "Terminal"/cron-once trick.
+5. In cPanel → **Cron Jobs**, add (every 15 minutes, matching `CACHE_TTL_SECONDS`):
+   ```
+   */15 * * * * php /home/USER/public_html/backend/bin/refresh-event-data.php >> /home/USER/public_html/backend/storage/logs/cron.log 2>&1
+   ```
+   If cron is ever late or misconfigured, the app still self-heals on the next request (see
+   "Server-side auto-fetch" below) — nobody sees a broken page, just a slightly stale one until cron
+   catches up.
+6. Confirm `.env`, `composer.json`, `*.sql` and dotfiles return 403 when requested directly, and that
+   `/backend/api/v1/health` returns `{"status":"ok",...}`.
+
+No build step is required to deploy the frontend — `styles.css` is committed and served as-is. A build
+step is only needed if you're *editing styles*; see "Styling (SCSS + BEM)" below.
+
+## Live data (server-side auto-fetch)
+
+Event details, sponsors, agenda and Explore videos are fetched **server-side** by the backend from:
+- `https://wpsimplified.in/wp-json/wpsimplified/v1/media`
+- `https://wpsimplified.in/wp-json/wpsimplified/v1/events?slug=<event slug>`
+
+on a schedule (cron, see "Deploy" above), and cached verbatim (same JSON shapes) in the `cache_store`
+MySQL table. The frontend calls the backend's own `/backend/api/v1/event` and `/backend/api/v1/media`
+— same-origin, no third-party call from the browser at all anymore, and no secret key ever needs to
+exist client-side.
+
+**Server-side self-healing:** every read also checks whether the cache is stale. If it is, the stale
+data is still served immediately (a visitor is never blocked waiting on an outbound call), while at
+most one concurrent request refetches in the background (a short single-flight lock in `cache_store`
+prevents a stale-cache moment from causing a thundering herd of simultaneous outbound calls). This
+means the app stays correct even if the cron job hasn't run yet on a fresh install, or is briefly
+unavailable.
+
+Confirmed response shapes (`app.js` parses these exactly, unchanged from before — the backend mirrors
+them verbatim, no field-name guessing):
+- `/media` → `{items:[{id, title, thumbnail, youtube_link, type}], total, total_pages, current_page}`.
+- `/events?slug=...` → `{events:[{title, event_tagline, event_start_date, ..., event_social:[...],
+  event_ticket_types:[...], event_sponsors:[...], event_agenda:[...], …many more}]}`.
+
+`EXPLORE_VIDEOS_FALLBACK`/`SPONSORS_FALLBACK`/`DEMO_SCHEDULE` in `app.js` remain the client-side
+backups used only if `/backend/api/v1/*` is unreachable (offline, backend down). Responses are also
+still cached in `localStorage` for 6 hours as an extra layer on top of the server cache, same as
+before.
+
+### Managing the event from the admin panel
+
+`/backend/admin` (password-protected) lets you:
+- see the last auto-fetch time/status for event data and Explore videos,
+- trigger an immediate refresh,
+- change which WordCamp.org event slug is being pulled — **this now lives in the database, not
+  `.env`**, so switching events (e.g. reusing CampBuddy for a different WordCamp) needs no deploy,
+- override specific event fields (title, dates, venue, ticket URL, etc.) on top of whatever the live
+  API returns, for quick manual corrections — overrides persist across auto-refreshes until cleared.
+
+### Keeping frontend fallback data fresh
+
+`python scripts/build-wcr-assets.py` still does two things: rebuilds `wcr/web/` images, and — network
+permitting — refreshes `app.js`'s client-side fallback blocks (`EXPLORE_VIDEOS_FALLBACK`,
+`SPONSORS_FALLBACK`, and select `EVENT` fields) directly from the upstream API, same as before. These
+are purely the "before the backend responds for the first time, or backend is unreachable" fallbacks;
+they're independent of the backend's own server-side cache.
 
 ## Privacy
 
-Checklist, quests, interests and Camp Card data are saved to browser `localStorage`.
+Checklist, quests, interests and Camp Card data are saved to browser `localStorage` and never leave
+the device except via explicit Export.
 
-CampBuddy itself has no backend.
-
-The Camp Card QR code is generated fully client-side (via the `qrcode-generator` library, loaded from a CDN) with the WordCamp Rajasthan mark drawn into the center — nothing is uploaded to render it. Download saves a PNG; Share uses the Web Share API where supported (falling back to download).
+The Camp Card QR code is generated fully client-side (via the `qrcode-generator` library, loaded from
+a CDN) with the WordCamp Rajasthan mark drawn into the center — nothing is uploaded to render it.
+Download saves a PNG; Share uses the Web Share API where supported (falling back to download).
 
 ### Analytics
 
-CampBuddy sends anonymous, aggregate usage events to Google Analytics 4 (`G-1YHQ19XV0P`) — route views, feature usage (checklist/quest toggles, QR generated/downloaded/shared, mission views, onboarding funnel, outbound link clicks), install prompt outcomes. See `track()` calls throughout `app.js` for the full event list.
+CampBuddy sends anonymous, aggregate usage events to Google Analytics 4 (`G-1YHQ19XV0P`) — route
+views, feature usage (checklist/quest toggles, QR generated/downloaded/shared, mission views,
+onboarding funnel, outbound link clicks), install prompt outcomes. See `track()` calls throughout
+`app.js` for the full event list.
 
-**Hard rule: Camp Card field values (name, role, "ask me about," "meet," link) are never sent to analytics.** Those are user-typed personal info, stay in `localStorage` only, and only leave the device if the person explicitly taps Export. This isn't just a privacy courtesy — Google Analytics' own terms of service prohibit sending PII, so this is a requirement for using GA at all, not an optional nicety. If you add new `track()` calls, don't pass raw user-input field values as params.
+**Hard rule: Camp Card field values (name, role, "ask me about," "meet," link) are never sent to
+analytics.** Those are user-typed personal info, stay in `localStorage` only, and only leave the
+device if the person explicitly taps Export. This isn't just a privacy courtesy — Google Analytics'
+own terms of service prohibit sending PII, so this is a requirement for using GA at all, not an
+optional nicety. If you add new `track()` calls, don't pass raw user-input field values as params.
+
+## Security
+
+- All backend DB access uses PDO prepared statements — no string-built SQL anywhere.
+- `.env` (DB creds, session secret) is never committed; `.env.example` is the template.
+- `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+  `Permissions-Policy` and (in production, over HTTPS) `Strict-Transport-Security` are set on every
+  response, both by the Slim middleware (`/backend/*`) and the root `.htaccess` (static files).
+- Rate limiting: ~60 req/min/IP on the public API, 5 req/min/IP on admin login (both DB-backed), plus
+  account lockout after repeated failed logins. The real scale protection is the `Cache-Control`/`ETag`
+  headers on API responses (see below) — rate limiting is defense-in-depth, not the primary control.
+- Admin sessions: `HttpOnly` + `SameSite=Strict` cookies (`Secure` too once served over HTTPS), session
+  ID regenerated on login, idle + absolute timeouts, CSRF tokens on every state-changing admin request.
+- Passwords hashed with Argon2id (`password_hash(..., PASSWORD_ARGON2ID)`).
+- Errors never leak stack traces or file paths to clients in production (`APP_DEBUG=false`) — full
+  detail is logged server-side instead (`backend/storage/logs/app.log`).
+- Outbound calls to the upstream API have strict timeouts (5s connect / 8s total) and defensively
+  validate the response shape before trusting it.
+- `.env`, `composer.json/.lock`, `*.sql` and dotfiles are denied directly; every other path under
+  `backend/` is swallowed by the root rewrite into the Slim app (which 404s unknown routes) before it
+  can ever resolve to a raw file on disk.
+- `/backend/` is disallowed in `robots.txt` and never linked from public pages.
+
+## Scaling to ~1M users
+
+The core idea: **the upstream third-party API is called on a cron schedule, not per-visitor.** Today's
+static-only version had every browser call `wpsimplified.in` directly — at 1M visitors that's 1M
+outbound calls the app has no control over. With the backend, it's one fetch every `CACHE_TTL_SECONDS`
+(default 15 min) regardless of traffic; everyone else is served from MySQL.
+
+On top of that:
+- Every `/backend/api/v1/*` response sets `Cache-Control: public, max-age=300,
+  stale-while-revalidate=600` and an `ETag`, so a CDN (e.g. Cloudflare's free tier, commonly available
+  even on shared hosting) can absorb nearly all repeat traffic before it ever reaches PHP.
+- The public API is fully stateless (only the small admin area uses sessions), so it can be moved
+  behind a load balancer / multiple app servers later with no code changes.
+- Reads are single indexed lookups (`cache_store.cache_key` is a unique-indexed key), no joins on the
+  hot path.
+- gzip compression (`mod_deflate`) and browser caching hints (`mod_expires`) are configured in the root
+  `.htaccess` for static assets; enable `opcache.enable=1` in production PHP for a meaningful latency
+  win at effectively zero cost.
+- If you outgrow shared hosting, the cache layer sits behind a `CacheInterface` (see
+  `backend/src/Cache/`) specifically so it can be swapped for Redis/APCu on a VPS without touching any
+  call site.
 
 ## WordCamp Rajasthan branding
 
-Official brand assets live in `wcr/` (source originals) and `wcr/web/` (resized, web-ready derivatives used by the app). Regenerate the web versions with:
+Official brand assets live in `wcr/` (source originals) and `wcr/web/` (resized, web-ready derivatives
+used by the app). Regenerate the web versions with:
 
     python scripts/build-wcr-assets.py
 
-The same run also refreshes app.js's live-data fallbacks (network permitting) — see "Keeping fallback data fresh" below.
+The same run also refreshes app.js's live-data fallbacks (network permitting) — see "Keeping frontend
+fallback data fresh" above.
 
-The CSS palette (`--maroon`, `--navy`, `--gold`, `--teal`, `--pink`, in `scss/abstracts/_variables.scss`) is sampled from the official WordCamp Rajasthan mark. CampBuddy's own logo/favicon (`logo.png`, `favicon.png`) remain the app's primary identity — WCR branding is applied through color, the Camp Card, the QR mark and the onboarding mascot rather than replacing CampBuddy's own logo.
+The CSS palette (`--maroon`, `--navy`, `--gold`, `--teal`, `--pink`, in
+`scss/abstracts/_variables.scss`) is sampled from the official WordCamp Rajasthan mark. CampBuddy's own
+logo/favicon (`logo.png`, `favicon.png`) remain the app's primary identity — WCR branding is applied
+through color, the Camp Card, the QR mark and the onboarding mascot rather than replacing CampBuddy's
+own logo.
 
 ## Styling (SCSS + BEM)
 
-Styles are authored in `scss/` and compiled to `styles.css` (the file `index.html` actually loads). Don't hand-edit `styles.css` — it's a build artifact and will be overwritten.
+Styles are authored in `scss/` and compiled to `styles.css` (the file `index.html` actually loads).
+Don't hand-edit `styles.css` — it's a build artifact and will be overwritten.
 
     npm install        # once, installs the sass compiler (dev-only, not shipped)
     npm run watch       # recompiles styles.css on every save while you work
@@ -101,32 +281,14 @@ Example from `_camp-card.scss`:
 }
 ```
 
-## Live data (WPSimplified API)
+## Backend tests
 
-Explore videos and event details are fetched at runtime from:
-- `https://wpsimplified.in/wp-json/wpsimplified/v1/media`
-- `https://wpsimplified.in/wp-json/wpsimplified/v1/events?slug=wordcamp-rajasthan-2026`
+    cd backend
+    php vendor/bin/phpunit
 
-Both endpoints are public (Origin/Referer-checked on the WordPress side, no secret key sent from the client — a static app has nowhere safe to keep one; a key embedded in `app.js` would be readable by anyone via view-source). If a request ever fails (offline, endpoint down, shape changes), the app falls back to the bundled static data, so nothing breaks.
-
-Confirmed response shapes (`app.js` parses these exactly, no field-name guessing):
-- `/media` → `{items:[{id, title, thumbnail, youtube_link, type}], total, total_pages, current_page}`. `youtubeIdFromLink()` pulls the real YouTube id out of `youtube_link` (handles both `/shorts/` and `watch?v=` links).
-- `/events?slug=...` → `{events:[{title, event_tagline, event_start_date, event_end_date, event_venue_name, event_venue_address, event_hashtag, event_home_url, event_tickets_url, event_venue_directions_url, event_email, event_social:[{label,url}], event_ticket_types:[{name,price,status}], event_sponsors:[{tier,name,logo,url}], event_agenda:[{day,time,title,description}], …many more}]}`. `buildEventPatch()` maps the fields CampBuddy actually displays; `sponsorsFromLive()` and `agendaFromLive()` derive the Sponsors list (with real logos, grouped by the organizer's own Nahargarh Fort/Hawa Mahal/Jal Mahal tiers → platinum/silver/bronze) and the My Day schedule (all 38 real sessions, grouped by day) respectively.
-
-`EXPLORE_VIDEOS_FALLBACK` and `SPONSORS_FALLBACK` in `app.js` are the backups (same shapes as the live-derived data) used only if the API is unreachable; `DEMO_SCHEDULE` is the My Day fallback (deliberately generic CampBuddy suggestions, not real session data — see "Keeping fallback data fresh" for why it's excluded from auto-refresh).
-
-Responses are cached in `localStorage` for 6 hours (`campbuddy-media-v1`, `campbuddy-event-v1`, `campbuddy-sponsors-v1`, `campbuddy-agenda-v1`) to reduce API calls and survive brief connectivity drops. The service worker deliberately excludes `/wp-json/` requests from its own cache (so data never goes stale behind a cached response) while still caching the image assets served from the same host (thumbnails, sponsor logos) normally.
-
-### Keeping fallback data fresh
-
-`python scripts/build-wcr-assets.py` doesn't just rebuild images — network permitting, it also fetches both endpoints above and rewrites `app.js`'s fallback data in place, so the "before live data loads" / "API unreachable" state stays close to reality without hand-retyping it:
-
-- `EXPLORE_VIDEOS_FALLBACK` — fully replaced from `/media` (up to 10 items).
-- `SPONSORS_FALLBACK` — fully replaced from `/events`' `event_sponsors`, including real logo URLs.
-- `EVENT` — only the fields that have a live equivalent are patched in place (`name`, `tagline`, `starts`, `conference`, `venue`, `address`, `hashtag`, `officialUrl`, `ticketUrl`, `directionsUrl`, `contactUrl`, `ticketPrice`, `socials`). Everything else in `EVENT` (`id`, `shortName`, `timezone`, `scheduleUrl`, `contributorUrl`, `sponsorsUrl`, `codeOfConductUrl`, `facts`) has no API equivalent and is left alone — hand-edit those permanently.
-- `DEMO_SCHEDULE` is **never** touched by the script — it's intentionally generic ("arrive and get your bearings," "take a break") rather than real session data, matching the app's own promise not to invent unverified schedule details.
-
-The regenerated blocks are wrapped in `// AUTO-GENERATED:<NAME> START` / `END` comments in `app.js` — don't hand-edit between those markers, it'll be overwritten on the next run. If the API is unreachable when the script runs, it leaves `app.js` untouched (prints a warning) rather than blanking anything out.
+Covers the PHP port of `buildEventPatch()`/`sponsorsFromLive()`/`agendaFromLive()`/
+`youtubeIdFromLink()`/`normalizeVideos()` against known response shapes, so the API's output stays a
+faithful mirror of what `app.js` already expects.
 
 ## Sources used for the Rajasthan prototype
 
@@ -153,10 +315,6 @@ Verified details incorporated:
 - Sponsor list and tiers (Platinum/Silver/Bronze)
 - Official social links (X, Instagram, Facebook, LinkedIn — all `@wprajasthan`)
 - Hashtag `#WordCampRajasthan`
-
-## Next recommended engineering step
-
-Move the event configuration into `/events/rajasthan-2026.json`, then add an importer for WordCamp.org public data so another camp can be added without editing application code.
 
 ## License suggestion
 

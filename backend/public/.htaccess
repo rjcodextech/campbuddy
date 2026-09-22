@@ -1,0 +1,7 @@
+# Re-permit this one directory (backend/.htaccess denies everything under
+# backend/ by default) and hand every request to the Slim front controller.
+Require all granted
+
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]

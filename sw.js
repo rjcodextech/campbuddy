@@ -12,7 +12,7 @@ self.addEventListener("activate",e=>e.waitUntil(caches.keys().then(keys=>Promise
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET") return;
   const url=new URL(e.request.url);
-  if(url.hostname==="wpsimplified.in"&&url.pathname.startsWith("/wp-json/")) return;
+  if(url.origin===location.origin&&url.pathname.startsWith("/backend/api/")) return;
   if(url.origin===location.origin&&/\.(?:css|js)$/.test(url.pathname)){
     e.respondWith(fetch(e.request).then(r=>{
       const copy=r.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); return r;

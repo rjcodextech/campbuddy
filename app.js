@@ -88,15 +88,19 @@ const EXPLORE_VIDEOS_FALLBACK = [
 ];
 // AUTO-GENERATED:EXPLORE_VIDEOS_FALLBACK END
 
-// --- Live data (WPSimplified API) -------------------------------------
-// Both endpoints are public. Shapes confirmed against a live response:
+// --- Live data (CampBuddy backend) --------------------------------------
+// Served same-origin by the Slim backend at /backend/api/v1/*, which
+// fetches from the upstream WPSimplified API server-side on a schedule and
+// caches it — the client never talks to wpsimplified.in directly anymore.
+// Response shapes are unchanged (the backend mirrors the upstream shapes
+// verbatim), so nothing below this needs to know that moved:
 //   /media  -> {items:[{id,title,thumbnail,youtube_link,type}], total, ...}
 //   /events -> {events:[{title, event_start_date, event_sponsors:[...], event_agenda:[...], ...}]}
 // Everything below still falls back to the static data above if the
 // network is unavailable (offline, localhost during dev, etc).
-const API_BASE = "https://wpsimplified.in/wp-json/wpsimplified/v1";
+const API_BASE = "/backend/api/v1";
 const MEDIA_ENDPOINT = `${API_BASE}/media`;
-const EVENTS_ENDPOINT = `${API_BASE}/events?slug=wordcamp-rajasthan-2026`;
+const EVENTS_ENDPOINT = `${API_BASE}/event`;
 const CACHE_TTL = 6*3600000;
 
 function cacheGet(key){
