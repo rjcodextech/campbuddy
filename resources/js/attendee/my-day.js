@@ -3,6 +3,7 @@
 // allowed, this only ever warns, never blocks.
 
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
+import { offerReminder } from './push.js';
 
 export async function renderMyDay(root) {
   const dataEl = document.getElementById('my-day-data');
@@ -10,6 +11,7 @@ export async function renderMyDay(root) {
 
   const { sessions, speakers } = JSON.parse(dataEl.textContent);
   const eventId = Number(root.dataset.eventId);
+  const eventSlug = root.dataset.eventSlug;
   const speakersById = new Map(speakers.map((s) => [s.id, s]));
 
   let bookmarkedIds = new Set((await getBookmarks(eventId)).map((b) => b.sessionId));
@@ -58,6 +60,10 @@ export async function renderMyDay(root) {
       if (conflict) {
         showToast(`Heads up — this overlaps with ${escapeHtml(conflict.title ?? 'another saved session')}. Both are saved.`);
       }
+
+      // N1: ask right after the bookmark, at the moment the benefit is
+      // obvious — never on page load.
+      offerReminder(eventSlug, eventId, session.id);
     }
 
     renderFull();

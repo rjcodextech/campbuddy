@@ -4,6 +4,15 @@
 
 import { runOnboardingIfNeeded } from './onboarding.js';
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Offline-first degrades gracefully without it (§4.4) — a failed
+      // registration just means no offline caching or push this visit.
+    });
+  });
+}
+
 async function init() {
   const root = document.getElementById('app');
   if (!root) return;

@@ -1,5 +1,11 @@
 <x-app-layout title="Events">
     <x-slot name="actions">
+        <form method="POST" action="{{ route('admin.events.discover') }}" class="inline">
+            @csrf
+            <button type="submit" class="inline-flex items-center px-4 py-2 bg-paper-soft text-ink text-sm font-medium rounded-md hover:bg-line">
+                Discover WordCamps
+            </button>
+        </form>
         <a href="{{ route('admin.events.create') }}"
            class="inline-flex items-center px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
             Add event

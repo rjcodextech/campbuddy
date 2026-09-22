@@ -9,6 +9,8 @@
     </header>
 
     <main id="main-content" tabindex="-1">
+        <div id="starting-soon-banner" hidden></div>
+
         <section aria-labelledby="happening-now-heading">
             <div class="section-head">
                 <h2 id="happening-now-heading" class="section-head__title">Happening now</h2>

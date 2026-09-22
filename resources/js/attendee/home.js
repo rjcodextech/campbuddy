@@ -23,6 +23,7 @@ export async function renderHome(root) {
 
   renderHappeningNow(sessions, nowMs);
   renderUpNext(sessions, nowMs, bookmarkedIds, onboarding);
+  renderStartingSoonBanner(sessions, nowMs, bookmarkedIds);
   renderSuggestedAction(quests, completedQuestIds, bookmarks.length);
   renderProgress(quests, completedQuestIds, bookmarks.length);
 }
@@ -83,6 +84,29 @@ function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
   el.innerHTML = `
     <p style="margin:0 0 2px;font-weight:700">${escapeHtml(next.title)}</p>
     <p class="footer-note" style="margin:0;text-align:left">${escapeHtml(reason)} — starts ${whenText}.</p>
+  `;
+}
+
+// §3.5 N2: the guaranteed path, regardless of push support — a
+// bookmarked session starting in the next 15 minutes gets an in-app
+// banner right on Home, where an open device is most likely to see it.
+function renderStartingSoonBanner(sessions, nowMs, bookmarkedIds) {
+  const banner = document.getElementById('starting-soon-banner');
+  const soon = timedSessions(sessions).find(
+    (s) => bookmarkedIds.has(s.id) && s.startMs > nowMs && s.startMs - nowMs <= 15 * 60000
+  );
+
+  if (!soon) {
+    banner.hidden = true;
+    return;
+  }
+
+  const minutes = Math.round((soon.startMs - nowMs) / 60000);
+  banner.hidden = false;
+  banner.innerHTML = `
+    <div class="notice" style="margin-bottom:16px">
+      <strong>${escapeHtml(soon.title)}</strong> starts in ${minutes} min${soon.track_names?.[0] ? ` — ${escapeHtml(soon.track_names[0])}` : ''}. You saved this one.
+    </div>
   `;
 }
 

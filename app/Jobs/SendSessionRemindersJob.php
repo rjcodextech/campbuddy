@@ -85,23 +85,24 @@ class SendSessionRemindersJob implements ShouldQueue
             'url' => route('event.my-day', $event),
         ]);
 
+        // Sent one at a time (not queueNotification + flush) so that one
+        // subscription with malformed/stale keys can't throw mid-batch
+        // and take every other legitimate subscriber down with it.
         foreach ($subscriptions as $sub) {
             try {
-                $webPush->queueNotification(
+                $report = $webPush->sendOneNotification(
                     Subscription::create([
                         'endpoint' => $sub->endpoint,
                         'keys' => ['p256dh' => $sub->p256dh_key, 'auth' => $sub->auth_key],
                     ]),
                     $payload
                 );
-            } catch (\Throwable $e) {
-                Log::warning('Web Push queue failed', ['error' => $e->getMessage()]);
-            }
-        }
 
-        foreach ($webPush->flush() as $report) {
-            if (! $report->isSuccess() && $report->isSubscriptionExpired()) {
-                PushSubscription::where('endpoint', $report->getEndpoint())->delete();
+                if (! $report->isSuccess() && $report->isSubscriptionExpired()) {
+                    $sub->delete();
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Web Push send failed', ['subscription_id' => $sub->id, 'error' => $e->getMessage()]);
             }
         }
 

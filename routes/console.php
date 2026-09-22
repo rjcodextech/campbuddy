@@ -1,7 +1,9 @@
 <?php
 
+use App\Jobs\DiscoverWordCampsJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
+use App\Jobs\SendSessionRemindersJob;
 use App\Models\Event;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -36,3 +38,11 @@ Schedule::call(function () {
         ParseAttendeeRosterJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
 })->daily()->name('ingest-attendee-roster');
+
+// §3.5 N1's reminder window is 5-10 minutes before a session — every
+// minute is the tightest useful cadence without spamming the queue.
+Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders');
+
+// §5.3 central discovery — weekly is plenty; new WordCamps don't appear
+// hourly, and every result lands as a draft pending admin approval.
+Schedule::job(new DiscoverWordCampsJob)->weekly()->name('discover-wordcamps');

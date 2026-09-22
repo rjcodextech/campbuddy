@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\RosterController;
 use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
@@ -28,5 +30,9 @@ Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
         });
+
+        Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');
+        Route::post('/bookmarks', [BookmarkController::class, 'store'])->name('api.bookmarks.store');
+        Route::delete('/bookmarks', [BookmarkController::class, 'destroy'])->name('api.bookmarks.destroy');
     });
 });

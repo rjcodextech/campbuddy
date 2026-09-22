@@ -63,6 +63,7 @@ Route::prefix('admin')->group(function () {
         // Full CRUD on events (§9) — Create/Read/Update always available;
         // Delete is policy-gated to draft events only (EventPolicy::delete).
         Route::resource('events', EventController::class)->except('show')->names('admin.events');
+        Route::post('events/discover', [EventController::class, 'discover'])->name('admin.events.discover');
         Route::post('events/{event}/refresh', [EventController::class, 'refresh'])->name('admin.events.refresh');
         Route::post('events/{event}/refresh-branding', [EventController::class, 'refreshBranding'])->name('admin.events.refresh-branding');
         Route::post('events/{event}/branding', [EventController::class, 'uploadBranding'])->name('admin.events.upload-branding');

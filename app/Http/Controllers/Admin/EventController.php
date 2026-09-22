@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Requests\UploadEventBrandingRequest;
+use App\Jobs\DiscoverWordCampsJob;
 use App\Jobs\FetchBrandingAssetsJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
@@ -25,6 +26,21 @@ class EventController extends Controller
             ->paginate(20);
 
         return view('admin.events.index', compact('events'));
+    }
+
+    /**
+     * Manual "Discover WordCamps" (§5.3) — queued so a large seed-list
+     * scan doesn't block the request; new finds land as drafts.
+     */
+    public function discover(): RedirectResponse
+    {
+        Gate::authorize('create', Event::class);
+
+        DiscoverWordCampsJob::dispatch();
+
+        return redirect()
+            ->route('admin.events.index')
+            ->with('status', 'Discovery queued — new WordCamps will appear here as drafts shortly.');
     }
 
     public function create(): View

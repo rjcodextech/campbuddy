@@ -15,10 +15,12 @@ class SessionBookmark extends Model
         'device_id',
         'session_id',
         'reminder_enabled',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
         'reminder_enabled' => 'boolean',
+        'reminder_sent_at' => 'datetime',
     ];
 
     public function event(): BelongsTo
