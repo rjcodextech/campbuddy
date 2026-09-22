@@ -69,6 +69,8 @@ Official brand assets live in `wcr/` (source originals) and `wcr/web/` (resized,
 
     python scripts/build-wcr-assets.py
 
+The same run also refreshes app.js's live-data fallbacks (network permitting) — see "Keeping fallback data fresh" below.
+
 The CSS palette (`--maroon`, `--navy`, `--gold`, `--teal`, `--pink`, in `scss/abstracts/_variables.scss`) is sampled from the official WordCamp Rajasthan mark. CampBuddy's own logo/favicon (`logo.png`, `favicon.png`) remain the app's primary identity — WCR branding is applied through color, the Camp Card, the QR mark and the onboarding mascot rather than replacing CampBuddy's own logo.
 
 ## Styling (SCSS + BEM)
@@ -111,9 +113,20 @@ Confirmed response shapes (`app.js` parses these exactly, no field-name guessing
 - `/media` → `{items:[{id, title, thumbnail, youtube_link, type}], total, total_pages, current_page}`. `youtubeIdFromLink()` pulls the real YouTube id out of `youtube_link` (handles both `/shorts/` and `watch?v=` links).
 - `/events?slug=...` → `{events:[{title, event_tagline, event_start_date, event_end_date, event_venue_name, event_venue_address, event_hashtag, event_home_url, event_tickets_url, event_venue_directions_url, event_email, event_social:[{label,url}], event_ticket_types:[{name,price,status}], event_sponsors:[{tier,name,logo,url}], event_agenda:[{day,time,title,description}], …many more}]}`. `buildEventPatch()` maps the fields CampBuddy actually displays; `sponsorsFromLive()` and `agendaFromLive()` derive the Sponsors list (with real logos, grouped by the organizer's own Nahargarh Fort/Hawa Mahal/Jal Mahal tiers → platinum/silver/bronze) and the My Day schedule (all 38 real sessions, grouped by day) respectively.
 
-`EXPLORE_VIDEOS_FALLBACK` and `SPONSORS_FALLBACK` in `app.js` are the hand-curated backups (same shapes as the live-derived data) used only if the API is unreachable; `DEMO_SCHEDULE` is the My Day fallback. Update them occasionally so they stay reasonably fresh.
+`EXPLORE_VIDEOS_FALLBACK` and `SPONSORS_FALLBACK` in `app.js` are the backups (same shapes as the live-derived data) used only if the API is unreachable; `DEMO_SCHEDULE` is the My Day fallback (deliberately generic CampBuddy suggestions, not real session data — see "Keeping fallback data fresh" for why it's excluded from auto-refresh).
 
 Responses are cached in `localStorage` for 6 hours (`campbuddy-media-v1`, `campbuddy-event-v1`, `campbuddy-sponsors-v1`, `campbuddy-agenda-v1`) to reduce API calls and survive brief connectivity drops. The service worker deliberately excludes `/wp-json/` requests from its own cache (so data never goes stale behind a cached response) while still caching the image assets served from the same host (thumbnails, sponsor logos) normally.
+
+### Keeping fallback data fresh
+
+`python scripts/build-wcr-assets.py` doesn't just rebuild images — network permitting, it also fetches both endpoints above and rewrites `app.js`'s fallback data in place, so the "before live data loads" / "API unreachable" state stays close to reality without hand-retyping it:
+
+- `EXPLORE_VIDEOS_FALLBACK` — fully replaced from `/media` (up to 10 items).
+- `SPONSORS_FALLBACK` — fully replaced from `/events`' `event_sponsors`, including real logo URLs.
+- `EVENT` — only the fields that have a live equivalent are patched in place (`name`, `tagline`, `starts`, `conference`, `venue`, `address`, `hashtag`, `officialUrl`, `ticketUrl`, `directionsUrl`, `contactUrl`, `ticketPrice`, `socials`). Everything else in `EVENT` (`id`, `shortName`, `timezone`, `scheduleUrl`, `contributorUrl`, `sponsorsUrl`, `codeOfConductUrl`, `facts`) has no API equivalent and is left alone — hand-edit those permanently.
+- `DEMO_SCHEDULE` is **never** touched by the script — it's intentionally generic ("arrive and get your bearings," "take a break") rather than real session data, matching the app's own promise not to invent unverified schedule details.
+
+The regenerated blocks are wrapped in `// AUTO-GENERATED:<NAME> START` / `END` comments in `app.js` — don't hand-edit between those markers, it'll be overwritten on the next run. If the API is unreachable when the script runs, it leaves `app.js` untouched (prints a warning) rather than blanking anything out.
 
 ## Sources used for the Rajasthan prototype
 
