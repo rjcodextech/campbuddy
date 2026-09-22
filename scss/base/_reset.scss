@@ -1,0 +1,43 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 90% -10%, rgba(245, 185, 66, .24), transparent 32rem),
+    linear-gradient(180deg, #fffdf9 0%, #fff8ef 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+// Drop the default click/tap focus ring (the thing this app's custom
+// button/chip/nav styles were fighting with) but keep a visible ring for
+// keyboard navigation via :focus-visible, so tabbing through the app is
+// still accessible. Form fields aren't included here — .field already
+// gives inputs their own focus treatment (border + box-shadow).
+a,
+button {
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--maroon);
+    outline-offset: 2px;
+  }
+}

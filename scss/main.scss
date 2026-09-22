@@ -1,0 +1,24 @@
+// CampBuddy stylesheet — compiled to ../styles.css by `npm run build`.
+// Architecture: abstracts (tokens/mixins, no CSS output) -> base (reset) ->
+// layout (page chrome) -> components (one BEM block per file) -> utilities
+// (generic u- helpers, loaded last so they can override component rules).
+//
+// Naming: every component follows BEM (Block__Element--Modifier). Plain
+// `u-*` classes are the one deliberate exception — see utilities/_helpers.
+
+@use "abstracts/variables";
+@use "base/reset";
+
+@use "layout/shell";
+
+@use "components/button";
+@use "components/surfaces";
+@use "components/hero";
+@use "components/home";
+@use "components/forms";
+@use "components/schedule";
+@use "components/quest-contributor";
+@use "components/camp-card";
+@use "components/more";
+
+@use "utilities/helpers";

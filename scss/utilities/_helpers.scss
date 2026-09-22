@@ -1,0 +1,52 @@
+// Generic, semantics-free helper classes (u- prefix).
+// These are a deliberate exception to BEM: they carry no component
+// meaning of their own (spacing/flex/typography only), so forcing them
+// into a Block__Element--Modifier name would be misleading. Every other
+// class in this project follows BEM — see components/*.
+
+.u-section {
+  margin-top: 26px;
+}
+
+.u-page-intro {
+  margin-top: 5px;
+}
+
+.u-eyebrow {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: var(--maroon);
+}
+
+.u-muted {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.u-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.u-between {
+  justify-content: space-between;
+}
+
+.u-grow {
+  flex: 1;
+}
+
+.u-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex: none;
+}
+
+.u-card-title {
+  margin: 5px 0 8px;
+}

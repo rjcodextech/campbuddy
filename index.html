@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#c33a19">
+  <meta name="description" content="CampBuddy — a friendly first-timer companion for WordCamp Rajasthan 2026, Rajasthan's WordPress & AI community under one roof.">
+  <meta property="og:title" content="CampBuddy · WordCamp Rajasthan 2026">
+  <meta property="og:description" content="A friendly first-timer companion for WordCamp Rajasthan 2026 — Rajasthan's WordPress & AI community under one roof.">
+  <meta property="og:image" content="./logo.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>CampBuddy · WordCamp Rajasthan 2026</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.png" type="image/png">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./favicon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1YHQ19XV0P"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    // send_page_view:false — this is a single-page app (hash routing, no
+    // real navigations), so app.js sends its own virtual page_view on every
+    // route change instead of relying on gtag's one-shot page-load view.
+    gtag('config', 'G-1YHQ19XV0P', {send_page_view:false});
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <button class="brand" data-route="home" aria-label="CampBuddy home">
+        <img class="brand__logo" src="./logo.png" alt="CampBuddy">
+      </button>
+      <button id="installBtn" class="btn btn--ghost btn--compact" hidden>Install</button>
+    </header>
+
+    <main id="app" tabindex="-1"></main>
+
+    <nav class="bottom-nav" aria-label="Primary">
+      <button data-route="home" class="bottom-nav__item bottom-nav__item--active"><span class="bottom-nav__icon">⌂</span><small class="bottom-nav__label">Home</small></button>
+      <button data-route="schedule" class="bottom-nav__item"><span class="bottom-nav__icon">☆</span><small class="bottom-nav__label">My Day</small></button>
+      <button data-route="quests" class="bottom-nav__item"><span class="bottom-nav__icon">✓</span><small class="bottom-nav__label">Quest</small></button>
+      <button data-route="contribute" class="bottom-nav__item"><span class="bottom-nav__icon">⌘</span><small class="bottom-nav__label">Contribute</small></button>
+      <button data-route="explore" class="bottom-nav__item"><span class="bottom-nav__icon">▶</span><small class="bottom-nav__label">Explore</small></button>
+      <button data-route="card" class="bottom-nav__item"><span class="bottom-nav__icon">▣</span><small class="bottom-nav__label">Camp Card</small></button>
+    </nav>
+  </div>
+
+  <dialog id="onboarding">
+    <form method="dialog" id="onboardingForm" class="dialog-card onboarding">
+      <div class="onboarding__header">
+        <img class="onboarding__logo" src="./wcr/web/logo-header.png" alt="WordCamp Rajasthan 2026">
+        <img class="onboarding__mascot" src="./wcr/web/mascot-wappu.png" alt="" width="180" height="127">
+      </div>
+      <div class="u-eyebrow">YOUR FIRST WORDCAMP, MADE EASY</div>
+      <h1>What would make Rajasthan 2026 great for you?</h1>
+      <p class="u-muted">Pick anything that sounds useful. This stays on this device.</p>
+      <div id="interestPicker" class="chip-group"></div>
+      <label class="field">
+        <span>What should we call you? <small>(optional)</small></span>
+        <input id="onboardName" maxlength="40" placeholder="Your name">
+      </label>
+      <button class="btn btn--primary btn--full" value="default">Build my CampBuddy</button>
+      <button type="button" class="btn btn--link" id="skipOnboarding">Skip for now</button>
+    </form>
+  </dialog>
+
+  <dialog id="freeTimeDialog">
+    <div class="dialog-card">
+      <div class="u-eyebrow">MICRO-MISSION</div>
+      <h2 id="freeTimeTitle">You have 10 minutes</h2>
+      <p id="freeTimeMission" class="mission-big"></p>
+      <button class="btn btn--primary btn--full" id="anotherMission">Give me another</button>
+      <button class="btn btn--ghost btn--full" onclick="document.getElementById('freeTimeDialog').close()">Done</button>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+// Block: quest
+.quest {
+  position: relative;
+  overflow: hidden;
+
+  &--done {
+    background: #f5fff5;
+    border-color: #cde8cd;
+  }
+
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  &__icon {
+    font-size: 27px;
+  }
+
+  > button {
+    margin-top: 12px;
+  }
+}
+
+// Block: contributor-result
+.contributor-result {
+  background: linear-gradient(145deg, #fff7ea, #fff);
+  border: 1px solid #ecd8b4;
+  border-radius: 22px;
+  padding: 18px;
+  margin-top: 14px;
+
+  .u-row {
+    align-items: flex-start;
+  }
+}
