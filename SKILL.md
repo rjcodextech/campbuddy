@@ -567,7 +567,7 @@ Use explicit cache versions:
 const CACHE = "campbuddy-v2";
 ```
 
-When deployment changes application assets materially, update the cache version.
+When deployment changes application assets materially, update the cache version — and bump the matching `?v=` query string on `styles.css`/`app.js` in `index.html` (and in the SW's own `ASSETS` list) to the same number. `index.html` itself isn't cached at the CDN, but `styles.css`/`app.js` are; without a version bump, the CDN can keep serving a stale build's CSS/JS against a freshly deployed HTML/JS pair, breaking layout for real visitors even though the origin has the right files.
 
 Do not create complicated service-worker logic unless necessary. Avoid caching external pages aggressively.
 
