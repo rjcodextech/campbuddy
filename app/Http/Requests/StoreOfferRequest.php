@@ -22,6 +22,7 @@ class StoreOfferRequest extends FormRequest
             'description' => ['required', 'string', 'max:255'],
             'url' => ['required', 'url', 'max:500'],
             'icon' => ['nullable', 'string', 'max:10'],
+            'media_asset_id' => ['nullable', 'exists:media_assets,id'],
             'sort_order' => ['integer', 'min:0'],
             'is_active' => ['boolean'],
         ];

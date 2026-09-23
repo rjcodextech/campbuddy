@@ -67,7 +67,11 @@
                 <div class="offer-grid">
                     @foreach ($offers as $offer)
                         <a href="{{ $offer->url }}" target="_blank" rel="noopener" class="offer-card">
-                            <span class="offer-card__icon" aria-hidden="true">{{ $offer->icon }}</span>
+                            @if ($offer->mediaAsset)
+                                <img src="{{ $offer->mediaAsset->url() }}" alt="" style="height:32px;width:auto;max-width:80px;object-fit:contain">
+                            @else
+                                <span class="offer-card__icon" aria-hidden="true">{{ $offer->icon }}</span>
+                            @endif
                             <span class="offer-card__title">{{ $offer->title }}</span>
                             <span class="offer-card__desc">{{ $offer->description }}</span>
                         </a>
@@ -111,6 +115,8 @@
                     @endforeach
                 @endif
             @endif
+
+            <div id="data-controls" style="margin-top:20px"></div>
         </div>
     </main>
 </x-attendee-layout>

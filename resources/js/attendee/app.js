@@ -54,6 +54,11 @@ async function init() {
     const { renderPeople } = await import('./people.js');
     renderPeople(root);
   }
+
+  if (document.getElementById('data-controls')) {
+    const { mountDataControls } = await import('./data-controls.js');
+    mountDataControls(root, 'data-controls');
+  }
 }
 
 if (document.readyState === 'loading') {

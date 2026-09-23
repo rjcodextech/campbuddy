@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\EventPageController;
@@ -82,6 +83,9 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
         Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
+
+        Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
+        Route::post('media', [MediaController::class, 'store'])->name('admin.media.store');
     });
 
     require __DIR__.'/auth.php';

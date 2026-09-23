@@ -39,6 +39,9 @@
                         'Events' => [
                             $navItem('admin.events.index', 'Events'),
                         ],
+                        'Library' => [
+                            $navItem('admin.media.index', 'Media Library'),
+                        ],
                     ]);
                 @endphp
 

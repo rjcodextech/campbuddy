@@ -16,6 +16,7 @@ class Offer extends Model
         'description',
         'url',
         'icon',
+        'media_asset_id',
         'sort_order',
         'is_active',
     ];
@@ -27,5 +28,10 @@ class Offer extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    public function mediaAsset(): BelongsTo
+    {
+        return $this->belongsTo(MediaAsset::class);
     }
 }

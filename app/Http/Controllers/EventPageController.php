@@ -67,7 +67,7 @@ class EventPageController extends Controller
         return view('attendee.explore', [
             'event' => $event,
             'sponsors' => Cache::get("event:{$event->id}:sponsors", []),
-            'offers' => $event->offers()->where('is_active', true)->orderBy('sort_order')->get(),
+            'offers' => $event->offers()->with('mediaAsset')->where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 

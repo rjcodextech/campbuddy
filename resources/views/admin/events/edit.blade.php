@@ -26,7 +26,7 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-2">Ingestion status (§9)</h3>
+            <h3 class="text-lg font-medium text-ink mb-2">Ingestion status</h3>
 
             @if ($lastFetch)
                 <p class="text-sm text-ink">
@@ -50,7 +50,7 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-2">Branding (§3.2)</h3>
+            <h3 class="text-lg font-medium text-ink mb-2">Branding</h3>
 
             <div class="flex items-center gap-6 mb-4">
                 <div class="text-center">
@@ -92,7 +92,7 @@
             <form method="POST" action="{{ route('admin.events.upload-branding', $event) }}" enctype="multipart/form-data" class="space-y-3">
                 @csrf
                 <div>
-                    <x-input-label for="logo" value="Upload/replace logo (overrides auto-fetch, §3.2 BR5)" />
+                    <x-input-label for="logo" value="Upload/replace logo (overrides auto-fetch)" />
                     <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="mt-1 block w-full text-sm">
                     <x-input-error :messages="$errors->get('logo')" class="mt-1" />
                 </div>

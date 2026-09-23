@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOfferRequest;
 use App\Models\Event;
+use App\Models\MediaAsset;
 use App\Models\Offer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -21,8 +22,9 @@ class OfferController extends Controller
         Gate::authorize('viewAny', Offer::class);
 
         $offers = $event->offers()->orderBy('sort_order')->get();
+        $mediaAssets = MediaAsset::latest()->get();
 
-        return view('admin.offers.index', compact('event', 'offers'));
+        return view('admin.offers.index', compact('event', 'offers', 'mediaAssets'));
     }
 
     public function store(StoreOfferRequest $request, Event $event): RedirectResponse

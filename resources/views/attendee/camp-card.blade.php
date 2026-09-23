@@ -70,5 +70,7 @@
                 <button type="submit" class="btn btn--primary btn--full">Save Camp Card</button>
             </form>
         </details>
+
+        <div id="data-controls" style="margin-top:24px"></div>
     </main>
 </x-attendee-layout>
