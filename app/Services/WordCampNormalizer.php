@@ -24,7 +24,7 @@ class WordCampNormalizer
 
             return [
                 'id' => $session['id'],
-                'title' => $session['title']['rendered'] ?? '',
+                'title' => $this->decodeTitle($session['title']['rendered'] ?? ''),
                 'link' => $session['link'] ?? null,
                 'speaker_ids' => $session['meta']['_wcpt_speaker_id'] ?? [],
                 'track_ids' => $trackIds,
@@ -54,7 +54,7 @@ class WordCampNormalizer
 
             return [
                 'id' => $speaker['id'],
-                'name' => $speaker['title']['rendered'] ?? '',
+                'name' => $this->decodeTitle($speaker['title']['rendered'] ?? ''),
                 'bio_html' => $bioHtml,
                 'avatar_url' => $speaker['avatar_urls'][96] ?? $speaker['avatar_urls'][24] ?? null,
                 'link' => $speaker['link'] ?? null,
@@ -76,7 +76,7 @@ class WordCampNormalizer
 
             return [
                 'id' => $sponsor['id'],
-                'name' => $sponsor['title']['rendered'] ?? '',
+                'name' => $this->decodeTitle($sponsor['title']['rendered'] ?? ''),
                 'description_html' => $contentHtml,
                 'website' => $sponsor['meta']['_wcpt_sponsor_website'] ?: null,
                 'logo_url' => $this->client->extractFirstImage($contentHtml),
@@ -98,9 +98,25 @@ class WordCampNormalizer
     {
         return array_map(fn (array $organizer) => [
             'id' => $organizer['id'],
-            'name' => $organizer['title']['rendered'] ?? '',
+            'name' => $this->decodeTitle($organizer['title']['rendered'] ?? ''),
             'bio_html' => $organizer['content']['rendered'] ?? '',
             'avatar_url' => $organizer['avatar_urls'][96] ?? null,
         ], $organizers);
+    }
+
+    /**
+     * WordPress's REST API returns `title.rendered` (and any other
+     * "rendered" field meant for display) with HTML entities already
+     * encoded — e.g. a real apostrophe comes through as `&#8217;`. That's
+     * fine if you inject it as HTML, but everywhere this app treats a
+     * title as plain text (JS's textContent-based escaping, Blade's
+     * {{ }}) it would otherwise double-encode: the literal `&` gets
+     * re-escaped to `&amp;`, and the raw entity code shows up on screen
+     * instead of the character it represents. Decoding once here, at the
+     * source, means every consumer downstream just gets plain text.
+     */
+    private function decodeTitle(string $title): string
+    {
+        return html_entity_decode($title, ENT_QUOTES | ENT_HTML5);
     }
 }
