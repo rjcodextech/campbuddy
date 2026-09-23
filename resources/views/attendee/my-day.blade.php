@@ -27,6 +27,8 @@
         </div>
     </main>
 
+    @include('attendee.templates.my-day')
+
     <script type="application/json" id="my-day-data">{!! json_encode([
         'sessions' => $sessions,
         'speakers' => $speakers,

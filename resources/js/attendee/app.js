@@ -2,12 +2,17 @@
 // is server-rendered; this just wires up the interactive parts:
 // whichever screen's own module the page needs.
 
+import { initDesktopNotice } from './desktop-notice.js';
 import { initInstallPrompt } from './install.js';
 
 // Registered as early as possible — the browser can fire
 // beforeinstallprompt at any point after this listens for it, and
 // missing that event means no install button for the rest of the visit.
 initInstallPrompt();
+
+// On every page (event pages and the WordCamp picker alike): points
+// laptop/desktop visitors at their phone.
+initDesktopNotice();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -8,6 +8,7 @@
 // leaderboard, deliberately.
 
 import { getQuestProgress, setQuestComplete } from './db.js';
+import { render } from './template.js';
 
 const THINGS_TO_DO_META = {
   'First Hello': { icon: '👋' },
@@ -64,7 +65,7 @@ export async function renderQuest(root) {
     }
 
     thingsSection.hidden = false;
-    thingsList.innerHTML = thingsToDo.map((q) => thingCardHtml(q, completed.has(q.id), eventSlug)).join('');
+    thingsList.replaceChildren(...thingsToDo.map((q) => thingCard(q, completed.has(q.id), eventSlug)));
 
     thingsList.querySelectorAll('[data-toggle-id]').forEach((btn) => {
       btn.addEventListener('click', () => toggle(Number(btn.dataset.toggleId)));
@@ -78,20 +79,17 @@ export async function renderQuest(root) {
     }
 
     checklistSection.hidden = false;
-    checklistList.innerHTML = checklist
-      .map((q) => {
+    checklistList.replaceChildren(
+      ...checklist.map((q) => {
         const done = completed.has(q.id);
-        return `
-          <label class="checklist__item ${done ? 'checklist__item--done' : ''}">
-            <input type="checkbox" class="checklist__input" data-quest-id="${q.id}" ${done ? 'checked' : ''}>
-            <span>
-              <span class="checklist__label">${escapeHtml(q.title)}</span>
-              ${q.description ? `<span class="footer-note" style="display:block;text-align:left;margin-top:2px">${escapeHtml(q.description)}</span>` : ''}
-            </span>
-          </label>
-        `;
+        return render('tpl-quest-checklist-item', {
+          item: { class: { 'checklist__item--done': done } },
+          input: { attrs: { 'data-quest-id': q.id, checked: done } },
+          label: q.title,
+          desc: q.description || null,
+        });
       })
-      .join('');
+    );
 
     checklistList.querySelectorAll('input[type="checkbox"]').forEach((input) => {
       input.addEventListener('change', () => toggle(Number(input.dataset.questId)));
@@ -111,25 +109,22 @@ export async function renderQuest(root) {
   renderProgress();
 }
 
-function thingCardHtml(quest, done, eventSlug) {
+function thingCard(quest, done, eventSlug) {
   const meta = THINGS_TO_DO_META[quest.title] ?? {};
-  const navBtn = meta.nav
-    ? `<a href="${navUrl(eventSlug, meta.nav)}" class="btn btn--outline btn--compact">${escapeHtml(meta.navLabel ?? 'Open')} →</a>`
-    : '';
 
-  return `
-    <div class="quest-card ${done ? 'quest-card--done' : ''}">
-      <div class="quest-card__icon" aria-hidden="true">${meta.icon ?? '✨'}</div>
-      <div class="quest-card__body">
-        <p class="quest-card__title">${escapeHtml(quest.title)}</p>
-        ${quest.description ? `<p class="quest-card__desc">${escapeHtml(quest.description)}</p>` : ''}
-        <div class="quest-card__actions">
-          ${navBtn}
-          <button type="button" class="btn btn--compact ${done ? 'btn--outline' : 'btn--primary'}" data-toggle-id="${quest.id}">${done ? 'Done ✓' : 'Mark done'}</button>
-        </div>
-      </div>
-    </div>
-  `;
+  return render('tpl-quest-thing', {
+    card: { class: { 'quest-card--done': done } },
+    icon: meta.icon ?? '✨',
+    title: quest.title,
+    desc: quest.description || null,
+    nav: meta.nav ? { attrs: { href: navUrl(eventSlug, meta.nav) } } : null,
+    'nav-label': meta.navLabel ?? 'Open',
+    toggle: {
+      text: done ? 'Done ✓' : 'Mark done',
+      attrs: { 'data-toggle-id': quest.id },
+      class: { 'btn--outline': done, 'btn--primary': !done },
+    },
+  });
 }
 
 function navUrl(eventSlug, target) {
@@ -146,10 +141,4 @@ function navUrl(eventSlug, target) {
     default:
       return `${base}/explore`;
   }
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
 }

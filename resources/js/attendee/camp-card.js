@@ -9,6 +9,7 @@
 
 import QRCode from 'qrcode-generator';
 import { kvGet, kvSet } from './db.js';
+import { render } from './template.js';
 
 const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
 const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
@@ -180,16 +181,14 @@ function setupTagInput(initialTags) {
   let tags = [...initialTags];
 
   function renderTags() {
-    tagsContainer.innerHTML = tags
-      .map(
-        (tag, i) => `
-          <span class="tag-input__tag">
-            ${escapeHtml(tag)}
-            <button type="button" class="tag-input__remove" data-remove-tag="${i}" aria-label="Remove ${escapeAttr(tag)}">×</button>
-          </span>
-        `
+    tagsContainer.replaceChildren(
+      ...tags.map((tag, i) =>
+        render('tpl-tag-input-tag', {
+          text: tag,
+          remove: { attrs: { 'data-remove-tag': i, 'aria-label': `Remove ${tag}` } },
+        })
       )
-      .join('');
+    );
 
     tagsContainer.querySelectorAll('[data-remove-tag]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -294,9 +293,11 @@ function renderPreview(layout, card, isSample, qr) {
     }
   });
 
-  item.querySelector('.camp-card__tags').innerHTML = tagValues.length
-    ? tagValues.map((t) => `<span class="camp-card__tag">${escapeHtml(t)}</span>`).join('')
-    : `<span class="camp-card__tag camp-card__tag--placeholder">Nothing chosen to show yet</span>`;
+  item.querySelector('.camp-card__tags').replaceChildren(
+    ...(tagValues.length
+      ? tagValues.map((t) => render('tpl-camp-card-tag', { tag: t }))
+      : [render('tpl-camp-card-tag-empty')])
+  );
 
   qrSection.hidden = !qr;
   if (qr) {
@@ -359,14 +360,4 @@ function roundedRectPath(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, r);
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
-}
-
-function escapeAttr(str) {
-  return escapeHtml(str);
 }

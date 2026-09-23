@@ -14,7 +14,9 @@
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell">
-    <div class="landing-frame">
+    <div class="app-frame">
+        @include('attendee.partials.desktop-notice')
+
         <header class="topbar">
             <span class="brand">
                 <img src="/media/logo.svg" alt="CampBuddy" class="brand__logo brand__logo--wordmark">
@@ -42,7 +44,51 @@
                 </p>
             </section>
 
-            <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden></section>
+            {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
+            (the skip/continue buttons and the profile they save are wired there). --}}
+            <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
+                <div class="onboarding-card">
+                    <p class="section-head__title" id="onboarding-welcome-heading" style="margin-bottom:2px">Tell us a little about you</p>
+                    <p class="footer-note" style="text-align:left;margin-bottom:16px">Every question here is skippable.</p>
+
+                    <label class="field">
+                        <span>Is this your first WordCamp?</span>
+                        <select data-field="firstWordCamp">
+                            <option value="">Prefer not to say</option>
+                            <option value="yes">Yes, first one!</option>
+                            <option value="no">No, I've been before</option>
+                        </select>
+                    </label>
+
+                    <div class="field">
+                        <span>What are you into?</span>
+                        <div class="onboarding-card__tags">
+                            @foreach (['Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
+                                <button type="button" class="pill" data-tag="{{ $tag }}">{{ $tag }}</button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <label class="field">
+                        <span>Who would you like to meet?</span>
+                        <input type="text" data-field="whoToMeet" placeholder="e.g. other plugin developers">
+                    </label>
+
+                    <label class="field">
+                        <span>Interested in Contributor Day?</span>
+                        <select data-field="attendingContributorDay">
+                            <option value="">Not sure yet</option>
+                            <option value="yes">Yes</option>
+                            <option value="no">Not this time</option>
+                        </select>
+                    </label>
+
+                    <div class="onboarding-card__actions">
+                        <button type="button" class="btn btn--outline" data-action="skip">Skip</button>
+                        <button type="button" class="btn btn--primary" data-action="save">Continue</button>
+                    </div>
+                </div>
+            </section>
 
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
@@ -54,27 +100,32 @@
                         <p class="footer-note">No WordCamp is live yet — check back closer to the event.</p>
                     </div>
                 @else
-                    <ul class="landing-event-list">
+                    <div class="card-grid">
                         @foreach ($events as $event)
-                            <li>
-                                <a href="{{ route('event.home', $event) }}" class="card landing-event-card">
-                                    <img src="{{ $event->faviconUrl() ?? '/media/favicon.png' }}" alt="" class="landing-event-card__logo">
-                                    <span class="landing-event-card__text">
-                                        {{ $event->display_name }}
-                                        @if ($event->starts_on)
-                                            <span class="landing-event-card__meta">
-                                                {{ $event->starts_on->format('j M Y') }}
-                                                @if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on))
-                                                    – {{ $event->ends_on->format('j M Y') }}
-                                                @endif
-                                            </span>
-                                        @endif
-                                    </span>
-                                    <span class="landing-event-card__arrow" aria-hidden="true">→</span>
-                                </a>
-                            </li>
+                            @php
+                                $dateLabel = null;
+                                if ($event->starts_on) {
+                                    $dateLabel = $event->starts_on->format('j M Y');
+                                    if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) {
+                                        $dateLabel .= ' – ' . $event->ends_on->format('j M Y');
+                                    }
+                                }
+                            @endphp
+
+                            <x-attendee.event-card
+                                :href="route('event.home', $event)"
+                                :title="$event->display_name"
+                                :media-url="$event->faviconUrl() ?? '/media/favicon.png'"
+                                media-shape="avatar"
+                                :date="$dateLabel"
+                                :location="$event->info['venue'] ?? null"
+                            >
+                                <x-slot:footer>
+                                    <span class="event-card__cta">View event <span aria-hidden="true">→</span></span>
+                                </x-slot:footer>
+                            </x-attendee.event-card>
                         @endforeach
-                    </ul>
+                    </div>
                 @endif
             </section>
         </main>
@@ -91,5 +142,7 @@
             </div>
         @endif
     </div>
+
+    @include('attendee.templates.shared')
 </body>
 </html>

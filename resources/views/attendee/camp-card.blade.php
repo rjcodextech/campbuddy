@@ -91,6 +91,10 @@
             </form>
         </details>
 
-        <div id="data-controls" style="margin-top:24px"></div>
+        <div id="data-controls" style="margin-top:24px">
+            @include('attendee.partials.data-controls')
+        </div>
     </main>
+
+    @include('attendee.templates.camp-card')
 </x-attendee-layout>

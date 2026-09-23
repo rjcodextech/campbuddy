@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 
 /**
  * GET /api/v1/events/{slug}/roster — the ingested Attendees-page
- * mirror. Paginated and never includes suppressed
- * entries.
+ * mirror. Paginated (the attendee app fetches every page and renders
+ * the full roster in one flowing list — see people.js — pagination
+ * here just keeps any single response bounded) and never includes
+ * suppressed entries.
  */
 class RosterController extends Controller
 {
@@ -19,7 +21,7 @@ class RosterController extends Controller
         $roster = $event->attendeeRoster()
             ->where('is_suppressed', false)
             ->orderBy('name')
-            ->paginate(50)
+            ->paginate(200)
             ->through(fn ($entry) => [
                 'name' => $entry->name,
                 'gravatar_url' => $entry->gravatar_url,

@@ -4,6 +4,7 @@
 
 import { apiMutate } from './api.js';
 import { kvGet, kvSet } from './db.js';
+import { render } from './template.js';
 
 function getDeviceId() {
   let id = localStorage.getItem('campbuddy-device-id');
@@ -91,19 +92,7 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
 }
 
 function showIosInstallPrompt() {
-  const dialog = document.createElement('dialog');
-  dialog.innerHTML = `
-    <div class="dialog-card">
-      <p style="font-weight:700;margin:0 0 8px">Get reminders on iPhone/iPad</p>
-      <p class="footer-note" style="text-align:left">Add CampBuddy to your home screen first, then reminders can work:</p>
-      <ol class="ios-install-steps">
-        <li>Tap the Share button in Safari</li>
-        <li>Choose "Add to Home Screen"</li>
-        <li>Open CampBuddy from your home screen and bookmark again</li>
-      </ol>
-      <button type="button" class="btn btn--primary btn--full" data-action="close">Got it</button>
-    </div>
-  `;
+  const dialog = render('tpl-reminder-ios-dialog');
   dialog.querySelector('[data-action="close"]').addEventListener('click', () => {
     dialog.close();
     dialog.remove();

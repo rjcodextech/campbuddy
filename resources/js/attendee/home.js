@@ -4,6 +4,7 @@
 
 import { getBookmarks, getQuestProgress, kvGet } from './db.js';
 import { renderDiscoveryCard } from './people.js';
+import { render, renderFragment } from './template.js';
 
 export async function renderHome(root) {
   const dataEl = document.getElementById('home-data');
@@ -51,16 +52,18 @@ function renderHappeningNow(sessions, nowMs) {
   );
 
   if (!current) {
-    el.innerHTML = `<p style="margin:0">Nothing's underway right this minute — check Up Next below for what's coming up.</p>`;
+    el.replaceChildren(render('tpl-home-happening-none'));
     return;
   }
 
-  const track = current.track_names?.[0] ? ` · ${escapeHtml(current.track_names[0])}` : '';
-  el.innerHTML = `
-    <span class="badge">Now</span>
-    <p style="margin:8px 0 2px;font-weight:700">${escapeHtml(current.title)}</p>
-    <p class="footer-note" style="margin:0;text-align:left">Underway${escapeHtml(track)}.</p>
-  `;
+  const track = current.track_names?.[0];
+  el.replaceChildren(
+    renderFragment('tpl-home-happening-now', {
+      title: current.title,
+      'track-part': Boolean(track),
+      track,
+    })
+  );
 }
 
 function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
@@ -70,7 +73,7 @@ function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
     .sort((a, b) => a.startMs - b.startMs);
 
   if (upcoming.length === 0) {
-    el.innerHTML = `<p style="margin:0">That's everything on the schedule for now.</p>`;
+    el.replaceChildren(render('tpl-home-up-next-none'));
     return;
   }
 
@@ -91,10 +94,9 @@ function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
   const minutesAway = Math.round((next.startMs - nowMs) / 60000);
   const whenText = minutesAway < 60 ? `in ${minutesAway} min` : `at ${new Date(next.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
 
-  el.innerHTML = `
-    <p style="margin:0 0 2px;font-weight:700">${escapeHtml(next.title)}</p>
-    <p class="footer-note" style="margin:0;text-align:left">${escapeHtml(reason)} — starts ${whenText}.</p>
-  `;
+  el.replaceChildren(
+    renderFragment('tpl-home-up-next', { title: next.title, reason, when: whenText })
+  );
 }
 
 // The guaranteed path, regardless of push support — a
@@ -112,12 +114,16 @@ function renderStartingSoonBanner(sessions, nowMs, bookmarkedIds) {
   }
 
   const minutes = Math.round((soon.startMs - nowMs) / 60000);
+  const track = soon.track_names?.[0];
   banner.hidden = false;
-  banner.innerHTML = `
-    <div class="notice" style="margin-bottom:16px">
-      <strong>${escapeHtml(soon.title)}</strong> starts in ${minutes} min${soon.track_names?.[0] ? ` — ${escapeHtml(soon.track_names[0])}` : ''}. You saved this one.
-    </div>
-  `;
+  banner.replaceChildren(
+    render('tpl-home-starting-soon', {
+      title: soon.title,
+      minutes,
+      'track-part': Boolean(track),
+      track,
+    })
+  );
 }
 
 const DEFAULT_SUGGESTIONS = [
@@ -152,10 +158,4 @@ function renderProgress(quests, completedQuestIds, bookmarkCount) {
 
   bar.style.width = `${pct}%`;
   summary.textContent = `${done}/${total} quests · ${bookmarkCount} saved sessions`;
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
 }

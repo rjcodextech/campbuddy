@@ -1,37 +1,26 @@
 @use '../abstracts/variables' as v;
 
-// Phone-width column up through tablet — CampBuddy is designed
-// one-handed, for a phone, and stays a mobile-app layout at those sizes.
-// From $bp-desktop up it switches to a real "webapp" layout instead of
-// stretching or staying pinned to a narrow column: wider frame, nav
-// becomes a left sidebar (layout/_bottom-nav.scss), content stays a
-// comfortable reading width instead of spanning edge-to-edge.
+// Full width at every viewport size — no centered phone-column or card
+// frame, on phones, tablets or desktops alike. CampBuddy is designed
+// one-handed, for a phone, so laptop/desktop visitors are pointed at
+// their phone instead of getting a separate desktop layout (see
+// components/_desktop-notice.scss). Shared by the event pages
+// (layouts/attendee.blade.php) and the "/" WordCamp picker
+// (welcome.blade.php). The tab bar stays pinned to the bottom of the
+// frame (layout/_bottom-nav.scss).
 body.app-shell {
     min-height: 100vh;
     display: flex;
-    justify-content: center;
-    background: #e7ded2;
-
-    @media (min-width: v.$app-frame-width + 40px) {
-        padding: v.$space-6 0;
-    }
 }
 
 .app-frame {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: v.$app-frame-width;
     min-height: 100vh;
     background: var(--paper-soft);
     position: relative;
     overflow-x: hidden;
-
-    @media (min-width: v.$app-frame-width + 40px) {
-        min-height: calc(100vh - #{v.$space-6 * 2});
-        border-radius: v.$radius-lg;
-        box-shadow: 0 0 0 1px var(--line), 0 30px 70px -25px rgba(35, 31, 32, 0.45);
-    }
 }
 
 #app {
@@ -44,27 +33,4 @@ body.app-shell {
     display: block;
     flex: 1;
     padding: v.$space-4 v.$space-4 v.$space-8;
-}
-
-// Desktop "webapp" layout: wider frame, nav sits to the left instead of
-// pinned to the bottom (see layout/_bottom-nav.scss for its own half of
-// this breakpoint), and content is capped at a comfortable reading width
-// rather than stretching to fill the wider frame.
-@media (min-width: v.$bp-desktop) {
-    .app-frame {
-        max-width: v.$app-frame-desktop-width;
-        flex-direction: row;
-        align-items: stretch;
-    }
-
-    #app {
-        flex: 1;
-        min-width: 0;
-    }
-
-    #main-content {
-        max-width: 640px;
-        width: 100%;
-        margin-inline: auto;
-    }
 }

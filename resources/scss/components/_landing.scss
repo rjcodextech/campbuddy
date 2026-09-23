@@ -1,34 +1,12 @@
 @use '../abstracts/variables' as v;
-@use '../abstracts/mixins' as m;
 
 // The "/" WordCamp picker (resources/views/welcome.blade.php) — there's
 // no Event yet at this route, so it can't use layouts/attendee.blade.php
-// or .app-frame (whose desktop treatment assumes a per-event bottom-nav
-// sidebar). It still shares the same tokens/components as the rest of
-// the app (buttons, cards, topbar, type scale) so it reads as CampBuddy
-// itself, not a separate marketing site — just with its own, simpler
-// frame chrome sized for a single picker screen rather than a 6-tab app.
-.landing-frame {
-    max-width: v.$app-frame-width;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--paper-soft);
-
-    @media (min-width: v.$app-frame-width + 40px) {
-        min-height: calc(100vh - #{v.$space-6 * 2});
-        margin: v.$space-6 auto;
-        border-radius: v.$radius-lg;
-        overflow: hidden;
-        box-shadow: 0 0 0 1px var(--line), 0 30px 70px -25px rgba(35, 31, 32, 0.45);
-    }
-
-    @media (min-width: v.$bp-desktop) {
-        max-width: 560px;
-    }
-}
-
+// (and has no bottom-nav), but it sits in the very same .app-frame as
+// every event page (layout/_app-frame.scss), so it's full width before
+// and after choosing a WordCamp. It shares the same tokens/components as
+// the rest of the app (buttons, cards, topbar, type scale) so it reads as
+// CampBuddy itself, not a separate marketing site.
 .landing-main {
     flex: 1;
     padding: v.$space-5 v.$space-4 v.$space-8;
@@ -44,55 +22,8 @@
     margin: v.$space-1 0 v.$space-2;
 }
 
-.landing-event-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: v.$space-2;
-}
-
-.landing-event-card {
-    @include m.pressable-subtle;
-    display: flex;
-    align-items: center;
-    gap: v.$space-3;
-    text-decoration: none;
-    font-weight: v.$font-weight-bold;
-    color: var(--ink);
-    transition: transform 0.12s ease;
-}
-
-.landing-event-card__logo {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    border-radius: v.$radius-full;
-    background: #fff;
-    border: 1px solid var(--line);
-    padding: 4px;
-}
-
-.landing-event-card__text {
-    flex: 1;
-    min-width: 0;
-}
-
-.landing-event-card__meta {
-    display: block;
-    font-size: v.$font-size-sm;
-    font-weight: v.$font-weight-regular;
-    color: var(--muted);
-    margin-top: v.$space-1;
-}
-
-.landing-event-card__arrow {
-    flex-shrink: 0;
-    color: var(--brand-primary);
-    font-weight: v.$font-weight-black;
-}
+// The event list itself now renders via .card-grid + <x-attendee.event-card>
+// (components/_event-card.scss) rather than a bespoke list/card pair.
 
 .landing-footer {
     padding: v.$space-4;
@@ -101,11 +32,10 @@
 
 // Mobile keeps a persistent bottom action bar, same instinct and same
 // sticky-not-fixed technique as the in-event bottom-nav
-// (layout/_bottom-nav.scss) — a normal-flow sibling inside .landing-frame,
-// so it's confined to the frame's width/card for free and never
-// overlaps content or breaks out of the floating-card look at wider
-// viewports. Desktop already shows the picker without scrolling, so the
-// bar is unnecessary chrome there.
+// (layout/_bottom-nav.scss) — a normal-flow sibling inside .app-frame,
+// so it never overlaps content. Desktop's wide, multi-column picker
+// shows the events without scrolling, so the bar is unnecessary chrome
+// there.
 .landing-bottom-bar {
     position: sticky;
     bottom: 0;

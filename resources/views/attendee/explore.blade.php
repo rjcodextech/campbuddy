@@ -39,7 +39,16 @@
         </div>
 
         <div data-explore-panel="people">
-            <div id="people-root"></div>
+            {{-- people.js fills #people-discovery and #people-roster --}}
+            <div id="people-root">
+                <div id="people-discovery"></div>
+                <div class="section-head" style="margin-top:24px">
+                    <h2 class="section-head__title">Who's attending</h2>
+                    <span class="section-head__desc">From the event's own Attendees page</span>
+                </div>
+                <input type="search" id="roster-search" class="search-input" placeholder="Search attendees…">
+                <div id="people-roster" class="card">Loading…</div>
+            </div>
         </div>
 
         <div data-explore-panel="sponsors" hidden>
@@ -149,7 +158,13 @@
                 @endif
             @endif
 
-            <div id="data-controls" style="margin-top:20px"></div>
+            <div id="data-controls" style="margin-top:20px">
+                @include('attendee.partials.data-controls')
+            </div>
         </div>
     </main>
+
+    @include('attendee.templates.discovery')
+    @include('attendee.templates.people')
+    @include('attendee.templates.explore')
 </x-attendee-layout>

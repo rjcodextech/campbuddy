@@ -192,6 +192,9 @@
     color: var(--muted);
     line-height: v.$line-height-body;
     margin: v.$space-2 0 0;
+    // The bio is set as plain text (never markup), so its line breaks
+    // are real newlines — see bioText() in my-day.js.
+    white-space: pre-line;
 }
 
 .schedule-item-detail__links {

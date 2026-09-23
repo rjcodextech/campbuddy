@@ -68,6 +68,9 @@
         </section>
     </main>
 
+    @include('attendee.templates.home')
+    @include('attendee.templates.discovery')
+
     {{-- Raw JSON (HEX-escaped so it's safe inside a <script> tag), read
     back with JSON.parse(textContent) client-side — not Js::from(), which
     outputs a JSON.parse(...) JS *expression*, not parseable JSON itself. --}}

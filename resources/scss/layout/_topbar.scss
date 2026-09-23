@@ -48,7 +48,7 @@
 }
 
 // Icon + visible label, replacing the old icon-only circular buttons —
-// "Switch WordCamp" and "Install app" both need to read as clear
+// "WordCamp's" and "Install app" both need to read as clear
 // actions, not just be inferred from a glyph.
 .topbar__text-btn {
     @include m.pressable;
@@ -101,17 +101,5 @@
     &--active {
         color: var(--brand-primary);
         background: var(--peach);
-    }
-}
-
-// Matches #main-content's centered 640px reading column (see
-// layout/_app-frame.scss) so the brand/actions row lines up with the
-// page content below it instead of hugging the wider desktop frame's
-// own edges.
-@media (min-width: v.$bp-desktop) {
-    .topbar {
-        max-width: 640px;
-        margin-inline: auto;
-        width: 100%;
     }
 }

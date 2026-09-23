@@ -101,13 +101,9 @@ $shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 3
 $shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
 
 // --- Layout ---
-// The attendee app reads as a phone-width column up through tablet, then
-// switches to a real desktop "webapp" layout (sidebar nav, wider content
-// column) above $bp-desktop — see layout/_app-frame.scss and
-// layout/_bottom-nav.scss for the breakpoint implementation.
-$app-frame-width: 428px;
-$app-frame-desktop-width: 1040px;
-$sidebar-width: 220px;
+// The attendee app is full width at every viewport size (see
+// layout/_app-frame.scss) with the tab bar pinned to the bottom
+// (layout/_bottom-nav.scss).
 $topbar-height: 56px;
 $bottom-nav-height: 64px;
 

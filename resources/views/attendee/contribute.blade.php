@@ -32,7 +32,32 @@
         </div>
     </main>
 
-    <dialog id="contrib-team-detail"></dialog>
+    {{-- Filled in (slots only) each time a team is opened — contribute.js --}}
+    <dialog id="contrib-team-detail">
+        <div class="dialog-card">
+            <p class="badge">
+                <span data-slot="badge-technical">Technical background helps</span>
+                <span data-slot="badge-plain">No technical background needed</span>
+            </p>
+            <h2 style="margin:10px 0 4px"><span data-slot="emoji"></span> <span data-slot="name"></span></h2>
+            <p data-slot="description"></p>
+
+            <p style="font-weight:700;margin-top:14px">Who it suits</p>
+            <p class="footer-note" style="text-align:left" data-slot="who-it-suits"></p>
+
+            <p style="font-weight:700;margin-top:14px">A beginner-friendly task</p>
+            <p class="footer-note" style="text-align:left" data-slot="beginner-task"></p>
+
+            <p style="font-weight:700;margin-top:14px">At their table</p>
+            <p class="footer-note" style="text-align:left" data-slot="at-the-table"></p>
+
+            <div style="margin-top:18px;display:flex;justify-content:flex-end">
+                <button type="button" class="btn btn--primary" data-action="close">Got it</button>
+            </div>
+        </div>
+    </dialog>
+
+    @include('attendee.templates.contribute')
 
     <script type="application/json" id="contribute-data">{!! json_encode([
         'contributorDayQuestId' => $contributorDayQuestId,

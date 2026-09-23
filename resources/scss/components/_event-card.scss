@@ -1,0 +1,175 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Meetup-inspired event card (components/attendee/event-card.blade.php)
+// — richer than the plain .card (components/_card.scss): media/avatar
+// on the left (.event-card__main), structured metadata pacing on the
+// right, and a full-width footer below for a "View event" CTA / QR /
+// branding. Built entirely from this app's own tokens
+// (--ink/--paper/--brand-primary, v.$space-*, v.$radius-lg capped at
+// 5px like every other component) — no new palette introduced
+// alongside it.
+.event-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: v.$radius-lg;
+    box-shadow: v.$shadow-card;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+
+    @include m.pressable-subtle;
+
+    // Hover elevation only for real pointer devices — a plain :hover
+    // rule stays "stuck" on touchscreens after a tap, which this guards
+    // against.
+    @media (hover: hover) and (pointer: fine) {
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: v.$shadow-raised;
+            border-color: var(--brand-primary);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+// Media (left) + body (right), side by side — the footer below is a
+// separate full-width sibling, not part of this row.
+.event-card__main {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-4;
+}
+
+.event-card__media {
+    position: relative;
+    flex-shrink: 0;
+    background: var(--paper-soft);
+    overflow: hidden;
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &--banner {
+        width: 120px;
+        aspect-ratio: 16 / 9;
+        border-radius: v.$radius-sm;
+    }
+
+    // No banner photos exist for events today — this is the shape
+    // actually used for a small square logo/favicon so it doesn't get
+    // stretched into a 16:9 frame it was never meant to fill.
+    &--avatar {
+        aspect-ratio: auto;
+        background: none;
+
+        img {
+            width: 56px;
+            height: 56px;
+            border-radius: v.$radius-full;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid var(--line);
+            padding: 4px;
+        }
+    }
+}
+
+.event-card__category {
+    position: absolute;
+    top: v.$space-3;
+    left: v.$space-3;
+    padding: v.$space-1 v.$space-3;
+    border-radius: v.$radius-full;
+    background: var(--brand-primary);
+    color: #fff;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: v.$letter-spacing-caps;
+}
+
+.event-card__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: v.$space-1;
+    min-width: 0; // lets the title/location truncate instead of overflowing the row
+}
+
+.event-card__date {
+    font-size: clamp(0.7rem, 0.65rem + 0.2vw, #{v.$font-size-xs});
+    font-weight: v.$font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: v.$letter-spacing-caps;
+    color: var(--brand-primary);
+}
+
+.event-card__title {
+    margin: 0;
+    font-size: clamp(1rem, 0.92rem + 0.35vw, #{v.$font-size-md});
+    line-height: v.$line-height-heading;
+    font-weight: v.$font-weight-bold;
+}
+
+.event-card__subtitle,
+.event-card__location {
+    margin: 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.event-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-1;
+    margin-top: v.$space-2;
+}
+
+.event-card__tag {
+    padding: v.$space-1 v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+}
+
+.event-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    padding: v.$space-3 v.$space-4;
+    border-top: 1px solid var(--line);
+}
+
+.event-card__cta {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}
+
+// Responsive grid helper — uniform card alignment across viewport
+// widths. Inside the landing page's own narrow frame (layout/_landing.scss
+// caps it well under 2×minmax) this renders as a single column, same as
+// the list it replaced; it's written generally so any wider, un-framed
+// context (e.g. a future desktop events index) gets real multi-column
+// layout for free.
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: v.$space-4;
+}

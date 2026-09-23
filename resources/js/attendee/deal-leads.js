@@ -5,6 +5,7 @@
 
 import { apiMutate } from './api.js';
 import { openInAppBrowser } from './in-app-browser.js';
+import { render } from './template.js';
 
 export function initDealLeadCapture(eventSlug) {
   document.querySelectorAll('[data-lead-offer-id]').forEach((btn) => {
@@ -13,23 +14,7 @@ export function initDealLeadCapture(eventSlug) {
 }
 
 function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) {
-  const dialog = document.createElement('dialog');
-  dialog.innerHTML = `
-    <div class="dialog-card">
-      <p style="font-weight:700;margin:0 0 4px">${escapeHtml(leadOfferTitle)}</p>
-      <p class="footer-note" style="text-align:left;margin:0 0 14px">Share a few details and this deal will open right after — shared with the sponsor to process this deal.</p>
-      <form data-lead-form>
-        <label class="field"><span>Name</span><input type="text" name="name" placeholder="e.g. Priya Sharma" required maxlength="191"></label>
-        <label class="field"><span>Email</span><input type="email" name="email" placeholder="you@example.com" required maxlength="191"></label>
-        <label class="field"><span>Mobile (optional)</span><input type="tel" name="mobile" placeholder="e.g. 98765 43210" maxlength="32"></label>
-        <p class="footer-note" style="text-align:left;color:var(--danger)" data-lead-error hidden></p>
-        <div style="display:flex;gap:8px;margin-top:4px">
-          <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Cancel</button>
-          <button type="submit" class="btn btn--primary" style="flex:1">Continue</button>
-        </div>
-      </form>
-    </div>
-  `;
+  const dialog = render('tpl-deal-lead-dialog', { title: leadOfferTitle });
 
   const close = () => {
     dialog.close();
@@ -65,10 +50,4 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) 
 
   document.body.appendChild(dialog);
   dialog.showModal();
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
 }

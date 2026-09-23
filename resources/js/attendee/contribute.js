@@ -5,6 +5,7 @@
 
 import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
 import { setQuestComplete } from './db.js';
+import { fill, render } from './template.js';
 
 export async function renderContribute(root) {
   const tagsEl = document.getElementById('contrib-tags');
@@ -14,9 +15,11 @@ export async function renderContribute(root) {
   const { contributorDayQuestId } = JSON.parse(document.getElementById('contribute-data').textContent);
   const selected = new Set();
 
-  tagsEl.innerHTML = CONTRIB_QUESTION_TAGS.map(
-    (t) => `<button type="button" class="chip" data-tag="${t.key}">${escapeHtml(t.label)}</button>`
-  ).join('');
+  tagsEl.replaceChildren(
+    ...CONTRIB_QUESTION_TAGS.map((t) =>
+      render('tpl-contribute-chip', { chip: { text: t.label, attrs: { 'data-tag': t.key } } })
+    )
+  );
 
   tagsEl.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
@@ -35,6 +38,9 @@ export async function renderContribute(root) {
     document.getElementById('contrib-questions').hidden = false;
   });
 
+  const dialog = document.getElementById('contrib-team-detail');
+  dialog.querySelector('[data-action="close"]').addEventListener('click', () => dialog.close());
+
   renderAllTeams(eventId, contributorDayQuestId);
 }
 
@@ -51,26 +57,24 @@ function showMatches(answers, eventId, questId) {
   const ranked = [...CONTRIB_TEAMS].sort((a, b) => scoreTeam(b, answers) - scoreTeam(a, answers));
   const top = answers.length > 0 ? ranked.slice(0, 3) : CONTRIB_TEAMS.slice(0, 3);
 
-  document.getElementById('contrib-team-list').innerHTML = top.map((team) => teamCardHtml(team)).join('');
-  wireTeamCards(document.getElementById('contrib-team-list'), eventId, questId);
+  const listEl = document.getElementById('contrib-team-list');
+  listEl.replaceChildren(...top.map(teamCard));
+  wireTeamCards(listEl, eventId, questId);
 }
 
 function renderAllTeams(eventId, questId) {
   const el = document.getElementById('contrib-all-list');
-  el.innerHTML = CONTRIB_TEAMS.map((team) => teamCardHtml(team)).join('');
+  el.replaceChildren(...CONTRIB_TEAMS.map(teamCard));
   wireTeamCards(el, eventId, questId);
 }
 
-function teamCardHtml(team) {
-  return `
-    <button type="button" class="action-card action-card--wide" data-team-id="${team.id}" style="width:100%;margin-bottom:10px">
-      <span class="action-card__icon" aria-hidden="true">${team.emoji}</span>
-      <span>
-        <span class="action-card__title">${escapeHtml(team.name)}</span>
-        <span class="action-card__desc">${escapeHtml(team.description)}</span>
-      </span>
-    </button>
-  `;
+function teamCard(team) {
+  return render('tpl-contribute-team-card', {
+    card: { attrs: { 'data-team-id': team.id } },
+    emoji: team.emoji,
+    name: team.name,
+    desc: team.description,
+  });
 }
 
 function wireTeamCards(container, eventId, questId) {
@@ -84,28 +88,18 @@ function wireTeamCards(container, eventId, questId) {
 
 async function showTeamDetail(team, eventId, questId) {
   const dialog = document.getElementById('contrib-team-detail');
-  dialog.innerHTML = `
-    <div class="dialog-card">
-      <p class="badge">${team.technical ? 'Technical background helps' : 'No technical background needed'}</p>
-      <h2 style="margin:10px 0 4px">${team.emoji} ${escapeHtml(team.name)}</h2>
-      <p>${escapeHtml(team.description)}</p>
 
-      <p style="font-weight:700;margin-top:14px">Who it suits</p>
-      <p class="footer-note" style="text-align:left">${escapeHtml(team.whoItSuits)}</p>
+  fill(dialog, {
+    'badge-technical': { attrs: { hidden: !team.technical } },
+    'badge-plain': { attrs: { hidden: team.technical } },
+    emoji: team.emoji,
+    name: team.name,
+    description: team.description,
+    'who-it-suits': team.whoItSuits,
+    'beginner-task': team.beginnerTask,
+    'at-the-table': team.atTheTable,
+  });
 
-      <p style="font-weight:700;margin-top:14px">A beginner-friendly task</p>
-      <p class="footer-note" style="text-align:left">${escapeHtml(team.beginnerTask)}</p>
-
-      <p style="font-weight:700;margin-top:14px">At their table</p>
-      <p class="footer-note" style="text-align:left">${escapeHtml(team.atTheTable)}</p>
-
-      <div style="margin-top:18px;display:flex;justify-content:flex-end">
-        <button type="button" class="btn btn--primary" data-action="close">Got it</button>
-      </div>
-    </div>
-  `;
-
-  dialog.querySelector('[data-action="close"]').addEventListener('click', () => dialog.close());
   dialog.showModal();
 
   // CD4: opening a team's detail is "learning what one team does" —
@@ -114,10 +108,4 @@ async function showTeamDetail(team, eventId, questId) {
   if (questId) {
     await setQuestComplete(eventId, questId, true);
   }
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
 }

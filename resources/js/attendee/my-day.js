@@ -11,6 +11,8 @@
 
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
 import { offerReminder } from './push.js';
+import { render, renderFragment } from './template.js';
+import { showToast } from './toast.js';
 
 export async function renderMyDay(root) {
   const dataEl = document.getElementById('my-day-data');
@@ -42,8 +44,10 @@ export async function renderMyDay(root) {
   const mineListEl = document.getElementById('my-schedule-list');
   const searchEl = document.getElementById('session-search');
 
-  function overlapsWithBookmarked(session, excludeId = null) {
-    return timed.some(
+  // The first bookmarked session this one overlaps (or undefined) — callers
+  // use it both as a yes/no and to name the clash in the toast/notice.
+  function bookmarkedOverlap(session, excludeId = null) {
+    return timed.find(
       (other) =>
         other.id !== session.id &&
         other.id !== excludeId &&
@@ -64,13 +68,13 @@ export async function renderMyDay(root) {
       await removeBookmark(eventId, session.id);
       starButton.classList.remove('schedule-item__star--saved');
     } else {
-      const conflict = overlapsWithBookmarked(session);
+      const conflict = bookmarkedOverlap(session);
       await setBookmark(eventId, session.id, false);
       bookmarkedIds.add(session.id);
       starButton.classList.add('schedule-item__star--saved');
 
       if (conflict) {
-        showToast(`Heads up — this overlaps with ${escapeHtml(conflict.title ?? 'another saved session')}. Both are saved.`);
+        showToast(`Heads up — this overlaps with ${conflict.title ?? 'another saved session'}. Both are saved.`);
       }
 
       // N1: ask right after the bookmark, at the moment the benefit is
@@ -98,7 +102,7 @@ export async function renderMyDay(root) {
       return matchesDay && matchesTrack && matchesType && matchesQuery;
     });
 
-    renderGroupedByDay(fullListEl, filtered, 'No sessions match.');
+    renderGroupedByDay(fullListEl, filtered, 'tpl-my-day-empty-full');
     wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
   }
 
@@ -107,32 +111,30 @@ export async function renderMyDay(root) {
     renderGroupedByDay(
       mineListEl,
       mine,
-      'Nothing saved yet — star a session in Full Schedule to add it here.',
-      (s) => overlapsWithBookmarked(s, null)
+      'tpl-my-day-empty-mine',
+      (s) => bookmarkedOverlap(s, null)
     );
     wireItemInteractions(mineListEl, timed, toggleBookmark, toggleExpand);
   }
 
-  function renderGroupedByDay(container, list, emptyMessage, overlapFn) {
+  function renderGroupedByDay(container, list, emptyTemplateId, overlapFn) {
     if (list.length === 0) {
-      container.innerHTML = `<p style="margin:0;padding:15px 0">${emptyMessage}</p>`;
+      container.replaceChildren(render(emptyTemplateId));
       return;
     }
 
     const days = [...new Set(list.map((s) => s.dayKey))];
     const showHeadings = days.length > 1;
 
-    container.innerHTML = days
-      .map((day) => {
+    container.replaceChildren(
+      ...days.map((day) => {
         const dayItems = list.filter((s) => s.dayKey === day);
-        return `
-          <div class="schedule-day">
-            ${showHeadings ? `<p class="schedule-day-heading">${escapeHtml(dayLabelOf(dayItems[0].startMs))}</p>` : ''}
-            ${dayItems.map((s) => sessionItemHtml(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId)).join('')}
-          </div>
-        `;
+        return render('tpl-schedule-day', {
+          heading: showHeadings ? dayLabelOf(dayItems[0].startMs) : null,
+          items: dayItems.map((s) => sessionItem(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId)),
+        });
       })
-      .join('');
+    );
   }
 
   searchEl.addEventListener('input', () => {
@@ -208,15 +210,15 @@ function setupDayFilters(sessions) {
   }
 
   el.hidden = false;
-  const allChip = `<button type="button" class="btn btn--compact btn--primary" data-day="__all">All days</button>`;
-  const dayChips = days
-    .map((day) => {
-      const label = new Date(sessions.find((s) => s.dayKey === day).startMs).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
-      return `<button type="button" class="btn btn--compact btn--outline" data-day="${day}">${escapeHtml(label)}</button>`;
-    })
-    .join('');
+  const allChip = render('tpl-my-day-filter-chip', {
+    chip: { text: 'All days', attrs: { 'data-day': '__all' }, class: { 'btn--primary': true, 'btn--outline': false } },
+  });
+  const dayChips = days.map((day) => {
+    const label = new Date(sessions.find((s) => s.dayKey === day).startMs).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+    return render('tpl-my-day-filter-chip', { chip: { text: label, attrs: { 'data-day': day } } });
+  });
 
-  el.innerHTML = allChip + dayChips;
+  el.replaceChildren(allChip, ...dayChips);
 }
 
 // Shared by the Track and Session Type filter rows — same chip-row
@@ -232,85 +234,68 @@ function setupChipFilter(elId, sessions, valuesOf) {
   }
 
   el.hidden = false;
-  el.innerHTML = names.map((name) => `<button type="button" class="btn btn--compact btn--outline" data-chip="${escapeAttr(name)}">${escapeHtml(name)}</button>`).join('');
+  el.replaceChildren(...names.map((name) => render('tpl-my-day-filter-chip', { chip: { text: name, attrs: { 'data-chip': name } } })));
   return names;
 }
 
-function sessionItemHtml(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
+function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const metaLine = [session.track_names?.[0], session.session_type].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);
   const isOpen = expandedSessionId === session.id;
 
-  return `
-    <div class="schedule-item-row">
-      <div class="schedule-item" data-session-id="${session.id}">
-        <div class="schedule-item__time">${time}</div>
-        <div>
-          <button type="button" class="schedule-item__title" data-open-detail aria-expanded="${isOpen}">
-            <span>${escapeHtml(session.title)}</span>
-            <svg class="schedule-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
-          </button>
-          ${speakerNames ? `<p class="schedule-item__speakers">${escapeHtml(speakerNames)}</p>` : ''}
-          ${metaLine ? `<span class="schedule-item__meta">${escapeHtml(metaLine)}</span>` : ''}
-          ${overlapWarning ? `<div class="notice" style="margin-top:6px">Overlaps with ${escapeHtml(overlapWarning.title)}</div>` : ''}
-        </div>
-        <button type="button" class="schedule-item__star ${saved ? 'schedule-item__star--saved' : ''}" aria-label="${saved ? 'Remove from My Day' : 'Save to My Day'}" aria-pressed="${saved}">★</button>
-      </div>
-      <div class="schedule-item-detail" ${isOpen ? '' : 'hidden'}>
-        ${isOpen ? sessionDetailHtml(session, speakersById, saved) : ''}
-      </div>
-    </div>
-  `;
+  return render('tpl-schedule-session', {
+    item: { attrs: { 'data-session-id': session.id } },
+    time,
+    'title-btn': { attrs: { 'aria-expanded': String(isOpen) } },
+    title: session.title,
+    speakers: speakerNames || null,
+    meta: metaLine || null,
+    'overlap-row': Boolean(overlapWarning),
+    overlap: overlapWarning?.title ?? '',
+    star: {
+      attrs: { 'aria-label': saved ? 'Remove from My Day' : 'Save to My Day', 'aria-pressed': String(saved) },
+      class: { 'schedule-item__star--saved': saved },
+    },
+    detail: {
+      attrs: { hidden: !isOpen },
+      children: isOpen ? [sessionDetail(session, speakersById, saved)] : [],
+    },
+  });
 }
 
 // The inline replacement for the old session-detail dialog — same
 // content (time, speakers + bios, slides/video links, save toggle),
 // just rendered under the session instead of over the whole screen.
-function sessionDetailHtml(session, speakersById, isSaved) {
+function sessionDetail(session, speakersById, isSaved) {
   const speakerList = (session.speaker_ids ?? []).map((id) => speakersById.get(id)).filter(Boolean);
   const time = session.starts_at
     ? new Date(session.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
     : 'Time TBA';
 
-  return `
-    <p class="schedule-item-detail__meta">${escapeHtml(time)}</p>
+  return renderFragment('tpl-schedule-detail', {
+    time,
+    speakers: speakerList.map(speakerBlock),
+    links: Boolean(session.slides_url || session.video_url),
+    slides: session.slides_url ? { attrs: { href: session.slides_url } } : null,
+    video: session.video_url ? { attrs: { href: session.video_url } } : null,
+    save: {
+      text: isSaved ? 'Remove from My Day' : 'Save to My Day',
+      class: { 'btn--outline': isSaved, 'btn--primary': !isSaved },
+    },
+  });
+}
 
-    ${speakerList
-      .map((sp) => {
-        const initial = escapeHtml((sp.name ?? '?').trim().charAt(0).toUpperCase() || '?');
-        const avatar = sp.avatar_url
-          ? `<img src="${escapeAttr(sp.avatar_url)}" alt="" class="schedule-item-detail__speaker-avatar">`
-          : `<span class="schedule-item-detail__speaker-avatar schedule-item-detail__speaker-avatar--initial">${initial}</span>`;
+function speakerBlock(sp) {
+  const initial = (sp.name ?? '?').trim().charAt(0).toUpperCase() || '?';
 
-        return `
-          <div class="schedule-item-detail__speaker-block">
-            <div class="schedule-item-detail__speaker">
-              ${avatar}
-              <p class="schedule-item-detail__speaker-name">${escapeHtml(sp.name)}</p>
-            </div>
-            ${sp.bio_html ? `<div class="schedule-item-detail__bio">${sanitizeBio(sp.bio_html)}</div>` : ''}
-          </div>
-        `;
-      })
-      .join('')}
-
-    ${
-      session.slides_url || session.video_url
-        ? `
-          <div class="schedule-item-detail__links">
-            ${session.slides_url ? `<a class="btn--link" href="${escapeAttr(session.slides_url)}" target="_blank" rel="noopener">Slides</a>` : ''}
-            ${session.video_url ? `<a class="btn--link" href="${escapeAttr(session.video_url)}" target="_blank" rel="noopener">Video</a>` : ''}
-          </div>
-        `
-        : ''
-    }
-
-    <div class="schedule-item-detail__actions">
-      <button type="button" class="btn btn--compact ${isSaved ? 'btn--outline' : 'btn--primary'}" data-toggle-save>${isSaved ? 'Remove from My Day' : 'Save to My Day'}</button>
-    </div>
-  `;
+  return render('tpl-schedule-speaker', {
+    'avatar-img': sp.avatar_url ? { attrs: { src: sp.avatar_url } } : null,
+    'avatar-initial': sp.avatar_url ? null : initial,
+    name: sp.name ?? '',
+    bio: sp.bio_html ? bioText(sp.bio_html) : null,
+  });
 }
 
 function wireItemInteractions(container, allSessions, toggleBookmark, toggleExpand) {
@@ -326,34 +311,13 @@ function wireItemInteractions(container, allSessions, toggleBookmark, toggleExpa
   });
 }
 
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
-}
-
 // Speaker bios come from the event's own WordPress content — real
-// but still third-party HTML, so it's stripped to text-with-line-breaks
-// rather than injected raw ("never {!! !!} on untrusted content",
-// applied here in the JS layer since this never touches Blade).
-function sanitizeBio(html) {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return escapeHtmlText(div.textContent ?? '').replace(/\n+/g, '<br>');
-}
-
-function escapeHtmlText(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
-}
-
-function escapeHtml(str) {
-  return escapeHtmlText(str);
-}
-
-function escapeAttr(str) {
-  return escapeHtmlText(str);
+// but still third-party HTML, so it's reduced to plain text and shown as
+// text (never injected as markup). The parse is inert (DOMParser doesn't
+// load images or run handlers); newline runs collapse to one so
+// .schedule-item-detail__bio's `white-space: pre-line` renders each as a
+// single line break.
+function bioText(html) {
+  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
+  return text.replace(/\n+/g, '\n');
 }

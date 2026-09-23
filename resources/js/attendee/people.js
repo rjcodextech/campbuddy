@@ -3,9 +3,14 @@
 // matching ("see who matches your interests") — never blended into one
 // list, since the roster has no interest data and never opted into
 // CampBuddy matching at all.
+//
+// Markup: the page shell is in attendee/explore.blade.php; everything
+// rendered from here is a <template> in attendee/templates/{people,discovery}.blade.php.
 
 import { apiGet, apiMutate } from './api.js';
 import { getMetHistory, kvGet, kvSet, markMet } from './db.js';
+import { render, renderFragment } from './template.js';
+import { showToast } from './toast.js';
 
 const TAGS = [
   'developer', 'designer', 'content creator', 'site builder',
@@ -13,36 +18,20 @@ const TAGS = [
   'translator', 'speaker',
 ];
 
-// Simple, recognizable glyphs rather than literal brand logos — swapped
-// in for the old plain-text "twitter"/"linkedin" chips.
-const SOCIAL_ICON = {
-  twitter: '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M18.9 3H21l-6.6 7.5L22 21h-6.1l-4.8-6.3L5.6 21H3.5l7-8-7-10h6.2l4.3 5.8L18.9 3z"/></svg>',
-  linkedin: '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.05c.53-1 1.83-2.05 3.76-2.05 4.02 0 4.76 2.65 4.76 6.1V21h-4v-5.6c0-1.34-.02-3.05-1.86-3.05-1.87 0-2.16 1.46-2.16 2.96V21H9z"/></svg>',
-  website: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/></svg>',
-};
-
+// aria-labels for the roster's social icons; the glyphs themselves are
+// tpl-social-icon-{type} templates (types without one fall back to "website").
 const SOCIAL_LABEL = { twitter: 'X / Twitter', linkedin: 'LinkedIn', website: 'Website' };
 
 export async function renderPeople(root) {
-  const container = document.getElementById('people-root');
-  if (!container) return;
+  const discoveryEl = document.getElementById('people-discovery');
+  if (!discoveryEl) return;
 
   const eventSlug = root.dataset.eventSlug;
   const eventId = Number(root.dataset.eventId);
   const discoveryKey = `discovery:${eventId}`;
 
-  container.innerHTML = `
-    <div id="people-discovery"></div>
-    <div class="section-head" style="margin-top:24px">
-      <h2 class="section-head__title">Who's attending</h2>
-      <span class="section-head__desc">From the event's own Attendees page</span>
-    </div>
-    <input type="search" id="roster-search" class="search-input" placeholder="Search attendees…">
-    <div id="people-roster" class="card">Loading…</div>
-  `;
-
   await Promise.all([
-    renderDiscoveryCard(document.getElementById('people-discovery'), eventSlug, eventId, discoveryKey),
+    renderDiscoveryCard(discoveryEl, eventSlug, eventId, discoveryKey),
     renderRoster(eventSlug),
   ]);
 }
@@ -53,17 +42,21 @@ async function renderRoster(eventSlug) {
   let entries = [];
 
   try {
-    const page = await apiGet(eventSlug, '/roster');
-    entries = page.data ?? [];
+    entries = await fetchFullRoster(eventSlug);
   } catch {
-    el.innerHTML = `<p style="margin:0">You're offline. The attendee list will refresh when you're connected again.</p>`;
+    el.replaceChildren(render('tpl-roster-offline'));
     return;
   }
 
   const draw = (list) => {
-    el.innerHTML = list.length === 0
-      ? `<p style="margin:0">${entries.length === 0 ? 'No public attendee listing yet.' : 'No attendees match your search.'}</p>`
-      : list.map(rosterRowHtml).join('');
+    if (list.length === 0) {
+      el.replaceChildren(render(entries.length === 0 ? 'tpl-roster-empty' : 'tpl-roster-no-match'));
+      return;
+    }
+
+    const rows = document.createDocumentFragment();
+    list.forEach((a) => rows.appendChild(rosterRow(a)));
+    el.replaceChildren(rows);
   };
 
   draw(entries);
@@ -74,23 +67,45 @@ async function renderRoster(eventSlug) {
   });
 }
 
-function rosterRowHtml(a) {
-  const initial = escapeHtml((a.name ?? '?').trim().charAt(0).toUpperCase() || '?');
-  const avatar = a.gravatar_url
-    ? `<img class="roster-row__avatar" src="${escapeAttr(a.gravatar_url)}" alt="">`
-    : `<span class="roster-row__avatar roster-row__avatar--initial">${initial}</span>`;
+// The roster API paginates (200/request) to keep any single response
+// bounded, but the attendee should see everyone — fetch every page (in
+// parallel, once the first page reveals how many there are) and render
+// one flat list into #people-roster's normal flow. No inner scroll box:
+// this list is exactly as tall as its content, and the page itself
+// scrolls, same as every other list in the app.
+async function fetchFullRoster(eventSlug) {
+  const first = await apiGet(eventSlug, '/roster');
+  const entries = [...(first.data ?? [])];
+  const lastPage = first.last_page ?? 1;
 
-  const links = (a.links ?? [])
-    .map((l) => `<a href="${escapeAttr(l.url)}" target="_blank" rel="noopener" class="social-icon" aria-label="${escapeAttr(SOCIAL_LABEL[l.type] ?? l.type)}">${SOCIAL_ICON[l.type] ?? SOCIAL_ICON.website}</a>`)
-    .join('');
+  if (lastPage > 1) {
+    const rest = await Promise.all(
+      Array.from({ length: lastPage - 1 }, (_, i) => apiGet(eventSlug, `/roster?page=${i + 2}`))
+    );
+    rest.forEach((page) => entries.push(...(page.data ?? [])));
+  }
 
-  return `
-    <div class="roster-row">
-      ${avatar}
-      <span class="roster-row__name">${escapeHtml(a.name)}</span>
-      ${links ? `<div class="roster-row__links">${links}</div>` : ''}
-    </div>
-  `;
+  return entries;
+}
+
+function rosterRow(a) {
+  const initial = (a.name ?? '?').trim().charAt(0).toUpperCase() || '?';
+
+  const links = (a.links ?? []).map((l) =>
+    render('tpl-roster-link', {
+      link: {
+        attrs: { href: l.url, 'aria-label': SOCIAL_LABEL[l.type] ?? l.type },
+        children: [render(`tpl-social-icon-${SOCIAL_LABEL[l.type] ? l.type : 'website'}`)],
+      },
+    })
+  );
+
+  return render('tpl-roster-row', {
+    'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
+    'avatar-initial': a.gravatar_url ? null : initial,
+    name: a.name ?? '',
+    links: links.length > 0 ? links : null,
+  });
 }
 
 /**
@@ -104,7 +119,7 @@ export async function renderDiscoveryCard(el, eventSlug, eventId, discoveryKey, 
   const mine = await kvGet(discoveryKey);
 
   if (!mine) {
-    el.innerHTML = joinPromptHtml();
+    el.replaceChildren(render('tpl-discovery-join-prompt'));
     el.querySelector('#join-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, null, options));
     return;
   }
@@ -112,35 +127,23 @@ export async function renderDiscoveryCard(el, eventSlug, eventId, discoveryKey, 
   await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
 }
 
-function joinPromptHtml() {
-  return `
-    <div class="card">
-      <p style="font-weight:700;margin:0 0 4px">Find people who match your interests</p>
-      <p class="footer-note" style="text-align:left;margin:0 0 12px">
-        Opt in to share a few tags under a random ID — never your name — and see who else at this event opted in too.
-        You can leave any time.
-      </p>
-      <button type="button" class="btn btn--primary" id="join-discovery-btn">Join attendee discovery</button>
-    </div>
-  `;
-}
-
 function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, options = {}) {
-  const chips = TAGS.map(
-    (t) => `<button type="button" class="chip ${existing?.fields?.tags?.includes(t) ? 'chip--selected' : ''}" data-tag="${t}">${t}</button>`
-  ).join('');
-
-  el.innerHTML = `
-    <div class="card">
-      <p style="font-weight:700;margin:0 0 8px">${existing ? 'Update' : 'Join'} attendee discovery</p>
-      <div class="chip-group" id="join-tags">${chips}</div>
-      <label class="field"><span>Profession (optional)</span><input type="text" id="join-profession" placeholder="e.g. Plugin developer" value="${escapeAttr(existing?.fields?.profession ?? '')}"></label>
-      <label class="field"><span>Who would you like to meet? (optional)</span><input type="text" id="join-who" placeholder="e.g. other agency owners" value="${escapeAttr(existing?.fields?.who_to_meet ?? '')}"></label>
-      <button type="button" class="btn btn--primary btn--full" id="join-submit">${existing ? 'Save' : 'Join'}</button>
-    </div>
-  `;
-
   const selected = new Set(existing?.fields?.tags ?? []);
+
+  el.replaceChildren(
+    render('tpl-discovery-join-form', {
+      verb: existing ? 'Update' : 'Join',
+      tags: TAGS.map((t) =>
+        render('tpl-discovery-tag-chip', {
+          chip: { text: t, attrs: { 'data-tag': t }, class: { 'chip--selected': selected.has(t) } },
+        })
+      ),
+      profession: { attrs: { value: existing?.fields?.profession ?? '' } },
+      who: { attrs: { value: existing?.fields?.who_to_meet ?? '' } },
+      submit: existing ? 'Save' : 'Join',
+    })
+  );
+
   el.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
       chip.classList.toggle('chip--selected');
@@ -178,26 +181,13 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
 }
 
 async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options = {}) {
-  const statusCard = `
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:start">
-        <div>
-          <p style="font-weight:700;margin:0">You're discoverable</p>
-          <p class="footer-note" style="text-align:left;margin:2px 0 0">${mine.fields.tags.map(escapeHtml).join(', ')}</p>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button type="button" class="btn btn--compact btn--outline" id="edit-discovery-btn">Edit</button>
-          <button type="button" class="btn btn--compact btn--outline" id="leave-discovery-btn">Leave</button>
-        </div>
-      </div>
-    </div>
-  `;
+  const statusCard = () => render('tpl-discovery-status', { tags: mine.fields.tags.join(', ') });
 
   if (options.compact) {
-    el.innerHTML = `
-      ${statusCard}
-      <a href="${escapeAttr(options.exploreUrl ?? '#')}" class="btn btn--outline btn--full" style="margin-top:10px">See who matches your interests →</a>
-    `;
+    el.replaceChildren(
+      statusCard(),
+      render('tpl-discovery-explore-link', { link: { attrs: { href: options.exploreUrl ?? '#' } } })
+    );
     el.querySelector('#edit-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, mine, options));
     el.querySelector('#leave-discovery-btn').addEventListener('click', () => leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, options));
     return;
@@ -224,22 +214,16 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     .sort((a, b) => b.overlap - a.overlap);
   const met = others.filter((p) => metIds.has(p.discovery_id));
 
-  el.innerHTML = `
-    ${statusCard}
-
-    ${offline ? `<p class="notice" style="margin-top:10px">You're offline — matches will refresh when you're connected again.</p>` : ''}
-
-    <div style="margin-top:12px">
-      ${matches.length === 0
-        ? `<p class="footer-note" style="text-align:left">No matches yet — check back as more people join.</p>`
-        : matches.map((p) => matchCardHtml(p, false)).join('')}
-    </div>
-
-    ${met.length > 0 ? `
-      <p class="u-eyebrow" style="margin-top:20px">People you've met</p>
-      ${met.map((p) => matchCardHtml(p, true)).join('')}
-    ` : ''}
-  `;
+  el.replaceChildren(
+    statusCard(),
+    renderFragment('tpl-discovery-matches', {
+      offline,
+      empty: matches.length === 0,
+      matches: matches.map((p) => matchCard(p, false)),
+      'met-section': met.length > 0,
+      met: met.map((p) => matchCard(p, true)),
+    })
+  );
 
   el.querySelectorAll('[data-met-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -262,37 +246,19 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   }
 
   await kvSet(discoveryKey, null);
-  el.innerHTML = joinPromptHtml();
+  el.replaceChildren(render('tpl-discovery-join-prompt'));
   el.querySelector('#join-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, null, options));
 }
 
-function matchCardHtml(profile, isMet) {
-  const tags = (profile.fields.tags ?? []).map((t) => `<span class="camp-card__tag" style="color:var(--ink);background:var(--peach)">${escapeHtml(t)}</span>`).join('');
+function matchCard(profile, isMet) {
+  const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
 
-  return `
-    <div class="card" style="margin-bottom:10px">
-      <div class="camp-card__tags" style="margin-top:0">${tags}</div>
-      ${profile.fields.profession ? `<p style="margin:8px 0 0;font-weight:600">${escapeHtml(profile.fields.profession)}</p>` : ''}
-      ${profile.fields.who_to_meet ? `<p class="footer-note" style="text-align:left;margin:4px 0 0">Wants to meet: ${escapeHtml(profile.fields.who_to_meet)}</p>` : ''}
-      ${!isMet ? `<button type="button" class="btn btn--outline btn--compact" style="margin-top:10px" data-met-id="${escapeAttr(profile.discovery_id)}">I met them</button>` : `<p class="footer-note" style="text-align:left;margin-top:8px">✓ Met</p>`}
-    </div>
-  `;
-}
-
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.className = 'toast';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str ?? '';
-  return div.innerHTML;
-}
-
-function escapeAttr(str) {
-  return escapeHtml(str);
+  return render('tpl-discovery-match', {
+    tags: (tags ?? []).map((t) => render('tpl-discovery-match-tag', { tag: t })),
+    profession: profession || null,
+    'who-row': Boolean(whoToMeet),
+    who: whoToMeet,
+    'met-btn': isMet ? null : { attrs: { 'data-met-id': profile.discovery_id } },
+    'met-label': isMet,
+  });
 }

@@ -27,11 +27,15 @@
 </head>
 <body class="app-shell">
     <div class="app-frame">
+        @include('attendee.partials.desktop-notice')
+
         <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}">
             {{ $slot }}
         </div>
 
         @include('attendee.partials.nav')
     </div>
+
+    @include('attendee.templates.shared')
 </body>
 </html>

@@ -3,6 +3,8 @@
 // through the manual "Add to Home Screen" steps instead, since iOS
 // never fires beforeinstallprompt at all.
 
+import { render } from './template.js';
+
 function isIosSafari() {
   const ua = navigator.userAgent;
   return /iP(hone|ad|od)/.test(ua) && /WebKit/.test(ua) && !/CriOS|FxiOS/.test(ua);
@@ -45,19 +47,7 @@ export function initInstallPrompt() {
 }
 
 function showIosInstallSteps() {
-  const dialog = document.createElement('dialog');
-  dialog.innerHTML = `
-    <div class="dialog-card">
-      <p style="font-weight:700;margin:0 0 8px">Install CampBuddy</p>
-      <p class="footer-note" style="text-align:left">Add CampBuddy to your home screen for the full app experience:</p>
-      <ol class="ios-install-steps">
-        <li>Tap the Share button in Safari</li>
-        <li>Choose "Add to Home Screen"</li>
-        <li>Open CampBuddy from your home screen</li>
-      </ol>
-      <button type="button" class="btn btn--primary btn--full" data-action="close">Got it</button>
-    </div>
-  `;
+  const dialog = render('tpl-install-ios-dialog');
   dialog.querySelector('[data-action="close"]').addEventListener('click', () => {
     dialog.close();
     dialog.remove();
