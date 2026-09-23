@@ -7,8 +7,16 @@
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-ink">Sponsor offers / deals</h3>
-                <a href="{{ route('admin.media.index') }}" class="text-xs text-maroon hover:text-maroon-dark font-medium">Upload a logo in the Media Library →</a>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('admin.events.deal-leads.index', $event) }}" class="text-xs text-maroon hover:text-maroon-dark font-medium">View captured leads →</a>
+                    <a href="{{ route('admin.media.index') }}" class="text-xs text-maroon hover:text-maroon-dark font-medium">Upload a logo in the Media Library →</a>
+                </div>
             </div>
+            <p class="text-xs text-muted mb-4">
+                "Require contact info" asks an attendee for their name, email, and (optionally) mobile
+                number before that specific deal opens — useful when a sponsor wants to follow up with
+                interested attendees. Leave it off for deals that should just link straight out.
+            </p>
 
             <div class="space-y-3 mb-6">
                 @forelse ($offers as $offer)
@@ -23,7 +31,7 @@
                                     <span class="text-xl">{{ $offer->icon }}</span>
                                 @endif
                             </div>
-                            <div class="flex-1 grid grid-cols-6 gap-2">
+                            <div class="flex-1 grid grid-cols-8 gap-2">
                                 <input type="text" name="icon" value="{{ $offer->icon }}" maxlength="10" class="col-span-1 border-line rounded-md text-sm text-center" title="Emoji fallback (used when no logo is chosen)">
                                 <select name="media_asset_id" class="col-span-2 border-line rounded-md text-sm">
                                     <option value="">No logo (use emoji)</option>
@@ -35,8 +43,11 @@
                                 <label class="col-span-1 flex items-center gap-1 text-xs text-muted">
                                     <input type="checkbox" name="is_active" value="1" @checked($offer->is_active)> Active
                                 </label>
-                                <input type="url" name="url" value="{{ $offer->url }}" required class="col-span-3 border-line rounded-md text-sm">
-                                <input type="text" name="description" value="{{ $offer->description }}" required class="col-span-3 border-line rounded-md text-sm" placeholder="Description">
+                                <label class="col-span-2 flex items-center gap-1 text-xs text-muted">
+                                    <input type="checkbox" name="capture_leads" value="1" @checked($offer->capture_leads)> Require contact info
+                                </label>
+                                <input type="url" name="url" value="{{ $offer->url }}" required class="col-span-4 border-line rounded-md text-sm">
+                                <input type="text" name="description" value="{{ $offer->description }}" required class="col-span-4 border-line rounded-md text-sm" placeholder="Description">
                             </div>
                             <button type="submit" class="text-xs font-medium text-maroon hover:text-maroon-dark self-center">Save</button>
                         </div>
@@ -52,7 +63,7 @@
                 @endforelse
             </div>
 
-            <form method="POST" action="{{ route('admin.events.offers.store', $event) }}" class="grid grid-cols-6 gap-2 items-center border-t border-line pt-4">
+            <form method="POST" action="{{ route('admin.events.offers.store', $event) }}" class="grid grid-cols-8 gap-2 items-center border-t border-line pt-4">
                 @csrf
                 <input type="text" name="icon" value="🏷" maxlength="10" class="col-span-1 border-line rounded-md text-sm text-center">
                 <select name="media_asset_id" class="col-span-2 border-line rounded-md text-sm">
@@ -61,9 +72,12 @@
                         <option value="{{ $asset->id }}">{{ $asset->filename }}</option>
                     @endforeach
                 </select>
-                <input type="text" name="title" placeholder="Sponsor / title" required class="col-span-3 border-line rounded-md text-sm">
+                <input type="text" name="title" placeholder="Sponsor / title" required class="col-span-2 border-line rounded-md text-sm">
+                <label class="col-span-3 flex items-center gap-1 text-xs text-muted">
+                    <input type="checkbox" name="capture_leads" value="1"> Require contact info
+                </label>
                 <input type="url" name="url" placeholder="https://…" required class="col-span-4 border-line rounded-md text-sm">
-                <input type="text" name="description" placeholder="Description" required class="col-span-1 border-line rounded-md text-sm">
+                <input type="text" name="description" placeholder="Description" required class="col-span-3 border-line rounded-md text-sm">
                 <button type="submit" class="col-span-1 px-2 py-1.5 bg-maroon text-white text-xs font-medium rounded-md hover:bg-maroon-dark">Add</button>
             </form>
         </div>

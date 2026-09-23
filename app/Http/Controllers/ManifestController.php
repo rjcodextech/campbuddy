@@ -7,7 +7,9 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Per-event PWA manifest — install-to-home-screen picks up that event's
- * own name/colors/icon, not a generic CampBuddy manifest.
+ * own name/icon, not a generic CampBuddy manifest. Color theming is a
+ * single fixed CampBuddy palette across every event (see resources/scss
+ * /base/_root.scss) — only the logo and display name vary per event.
  */
 class ManifestController extends Controller
 {
@@ -22,7 +24,7 @@ class ManifestController extends Controller
             'scope' => route('event.home', $event),
             'display' => 'standalone',
             'background_color' => '#fffaf4',
-            'theme_color' => $event->primary_color ?? '#c33a19',
+            'theme_color' => '#c33a19',
             'icons' => [
                 ['src' => $icon, 'sizes' => 'any', 'type' => 'image/svg+xml'],
             ],

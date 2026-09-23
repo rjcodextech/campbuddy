@@ -1,0 +1,16 @@
+@use '../abstracts/variables' as v;
+
+// Utility classes for the type scale in abstracts/_variables.scss —
+// replaces ad hoc inline font-size/font-weight styles that used to be
+// scattered across Blade views and JS-rendered markup.
+.u-text-xs { font-size: v.$font-size-xs; }
+.u-text-sm { font-size: v.$font-size-sm; }
+.u-text-base { font-size: v.$font-size-base; }
+.u-text-md { font-size: v.$font-size-md; }
+.u-text-lg { font-size: v.$font-size-lg; }
+.u-text-xl { font-size: v.$font-size-xl; }
+
+.u-font-regular { font-weight: v.$font-weight-regular; }
+.u-font-medium { font-weight: v.$font-weight-medium; }
+.u-font-bold { font-weight: v.$font-weight-bold; }
+.u-font-black { font-weight: v.$font-weight-black; }

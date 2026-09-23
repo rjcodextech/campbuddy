@@ -4,6 +4,7 @@
 
 @use 'base/root';
 @use 'base/reset';
+@use 'base/typography';
 @use 'base/global';
 
 @use 'layout/app-frame';
@@ -14,12 +15,17 @@
 @use 'components/buttons';
 @use 'components/card';
 @use 'components/action-card';
+@use 'components/hero';
 @use 'components/progress';
 @use 'components/pill';
 @use 'components/field';
 @use 'components/checklist';
+@use 'components/quest-card';
 @use 'components/schedule-item';
 @use 'components/camp-card';
 @use 'components/sponsor';
 @use 'components/onboarding-card';
+@use 'components/landing';
+@use 'components/people';
+@use 'components/in-app-browser';
 @use 'components/misc';

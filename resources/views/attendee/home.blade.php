@@ -2,11 +2,35 @@
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
-        <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" hidden></section>
+        {{-- Event branding lives here now, not the global topbar (§Header) —
+        logo falls back to CampBuddy's own icon so this never looks broken
+        for an event that hasn't uploaded one. --}}
+        <section class="home-hero" aria-label="Event">
+            <img class="home-hero__logo" src="{{ $event->logoUrl() ?? '/media/icon.svg' }}" alt="">
+            <div class="home-hero__body">
+                <p class="home-hero__eyebrow">{{ $event->short_name ?? 'WordCamp' }}</p>
+                <h1 class="home-hero__title">{{ $event->display_name }}</h1>
+                @if ($event->starts_on)
+                    <p class="home-hero__meta">
+                        {{ $event->starts_on->format('j M Y') }}
+                        @if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on))
+                            – {{ $event->ends_on->format('j M Y') }}
+                        @endif
+                    </p>
+                @endif
+            </div>
+        </section>
 
         <div id="starting-soon-banner" hidden></div>
 
-        <section aria-labelledby="happening-now-heading">
+        <section aria-labelledby="people-cta-heading">
+            <div class="section-head">
+                <h2 id="people-cta-heading" class="section-head__title">Meet people</h2>
+            </div>
+            <div id="people-discovery-home" data-explore-url="{{ route('event.explore', $event) }}"></div>
+        </section>
+
+        <section aria-labelledby="happening-now-heading" style="margin-top:20px">
             <div class="section-head">
                 <h2 id="happening-now-heading" class="section-head__title">Happening now</h2>
             </div>

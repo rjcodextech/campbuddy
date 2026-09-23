@@ -44,20 +44,6 @@
     </div>
 
     <div>
-        <x-input-label for="primary_color" value="Primary color (WCAG AA checked)" />
-        <input id="primary_color" name="primary_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-line"
-               value="{{ old('primary_color', $event->primary_color ?? '#1a2b3c') }}" />
-        <x-input-error :messages="$errors->get('primary_color')" class="mt-2" />
-    </div>
-
-    <div>
-        <x-input-label for="accent_color" value="Accent color (WCAG AA checked)" />
-        <input id="accent_color" name="accent_color" type="color" class="mt-1 block h-10 w-20 rounded-md border-line"
-               value="{{ old('accent_color', $event->accent_color ?? '#1a2b3c') }}" />
-        <x-input-error :messages="$errors->get('accent_color')" class="mt-2" />
-    </div>
-
-    <div>
         <x-input-label for="status" value="Lifecycle status" />
         <select id="status" name="status" class="mt-1 block w-full border-line rounded-md shadow-sm">
             @foreach (['draft', 'approved', 'active', 'archived'] as $status)

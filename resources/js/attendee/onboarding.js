@@ -1,6 +1,7 @@
-// Inline "Welcome to CampBuddy / Tell us a little about you" section on
-// Home, replacing the old blocking <dialog> popup — it now sits inline
-// at the top of Home and never blocks the rest of the page from
+// Inline "Tell us a little about you" onboarding section — lives on the
+// WordCamp picker page ("/"), right after the intro, before any event is
+// even selected (OB1/OB3 in the product spec), replacing the old
+// blocking <dialog> popup. Never blocks the rest of the page from
 // rendering. Runs once per device; the profile it collects stays
 // local-only until the attendee separately opts into discovery.
 
@@ -16,7 +17,7 @@ const INTEREST_TAGS = [
   'Business owner',
 ];
 
-export async function renderOnboardingSection(eventName) {
+export async function renderOnboardingSection() {
   const section = document.getElementById('onboarding-welcome');
   if (!section) return;
 
@@ -34,9 +35,6 @@ export async function renderOnboardingSection(eventName) {
 
   section.innerHTML = `
     <div class="onboarding-card">
-      <p class="mission-big" style="text-align:left">Welcome to CampBuddy.</p>
-      <p class="footer-note" style="text-align:left;margin-bottom:16px">Your guide to ${escapeHtml(eventName)} — what's happening, who's here, and what to do next.</p>
-
       <p class="section-head__title" id="onboarding-welcome-heading" style="margin-bottom:2px">Tell us a little about you</p>
       <p class="footer-note" style="text-align:left;margin-bottom:16px">Every question here is skippable.</p>
 

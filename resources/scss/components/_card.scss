@@ -6,7 +6,7 @@
     padding: v.$space-4;
 
     &--now {
-        border-color: var(--maroon);
+        border-color: var(--brand-primary);
         background: var(--peach);
     }
 }
@@ -47,7 +47,7 @@
     align-items: center;
     padding: 3px v.$space-2;
     border-radius: v.$radius-full;
-    background: var(--maroon);
+    background: var(--brand-primary);
     color: #fff;
     font-size: 0.72rem;
     font-weight: 700;

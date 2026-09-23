@@ -1,4 +1,33 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// One .card per calendar day, so "today's" and "tomorrow's" sessions
+// never blur into one long list — MD1's schedule-separation requirement.
+.schedule-day {
+    @include m.card-surface;
+    padding: v.$space-4;
+    margin-bottom: v.$space-3;
+}
+
+.schedule-day-heading {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 v.$space-2;
+}
+
+.my-day-filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: v.$space-3;
+
+    &:empty {
+        display: none;
+    }
+}
 
 .schedule-item {
     display: grid;
@@ -14,22 +43,38 @@
 }
 
 .schedule-item__time {
-    font-size: 0.82rem;
-    font-weight: 700;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
     color: var(--muted);
     white-space: nowrap;
+}
+
+.schedule-item__title {
+    display: block;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
 }
 
 .schedule-item__track {
     display: inline-block;
     margin-top: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--maroon);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    color: var(--brand-primary);
+}
+
+.schedule-item__type {
+    display: inline-block;
+    margin-top: 4px;
+    margin-left: v.$space-2;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    color: var(--muted);
 }
 
 .schedule-item__star {
-    font-size: 1.2rem;
+    font-size: v.$font-size-lg;
     color: var(--line);
     line-height: 1;
 

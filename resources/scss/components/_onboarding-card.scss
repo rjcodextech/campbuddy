@@ -7,7 +7,7 @@
 // rest of Home underneath it.
 .onboarding-card {
     @include m.card-surface;
-    border-top: 3px solid var(--maroon);
+    border-top: 3px solid var(--brand-primary);
     padding: v.$space-5;
     margin-bottom: v.$space-5;
 }

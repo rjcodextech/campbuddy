@@ -2,10 +2,8 @@
 
 // Neutral/utility palette as CSS custom properties, so hand-written
 // markup in resources/js/attendee/*.js can read them via var(--x) at
-// runtime. --maroon/--maroon2 are deliberately NOT set here — the
-// attendee layout sets those inline, per event, before this stylesheet
-// loads, and redefining them here would win the cascade and stomp the
-// per-event branding.
+// runtime. One fixed brand palette for every event — CampBuddy no longer
+// varies its color branding per WordCamp (only the logo/display name do).
 :root {
     --ink: #{v.$color-ink};
     --paper: #{v.$color-paper};
@@ -18,4 +16,7 @@
     --teal: #{v.$color-teal};
     --danger: #{v.$color-danger};
     --success: #{v.$color-success};
+
+    --brand-primary: #{v.$color-maroon};
+    --brand-accent: #{v.$color-maroon-dark};
 }

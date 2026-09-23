@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\RosterController;
 use App\Http\Controllers\HealthController;
@@ -29,6 +30,8 @@ Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
             Route::post('/discovery', [DiscoveryController::class, 'store'])->name('api.discovery.store');
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
+
+            Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');
         });
 
         Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');

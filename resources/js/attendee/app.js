@@ -1,7 +1,13 @@
 // Attendee app entry point — vanilla JS, no framework. Each page
 // is server-rendered; this just wires up the interactive parts:
-// whichever screen's own module the page needs. The onboarding section
-// is Home-specific and wired up inside home.js, not blocking every page.
+// whichever screen's own module the page needs.
+
+import { initInstallPrompt } from './install.js';
+
+// Registered as early as possible — the browser can fire
+// beforeinstallprompt at any point after this listens for it, and
+// missing that event means no install button for the rest of the visit.
+initInstallPrompt();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -13,6 +19,13 @@ if ('serviceWorker' in navigator) {
 }
 
 async function init() {
+  // Lives on the WordCamp picker page ("/"), which has no #app shell —
+  // checked before the early-return below so it still runs there.
+  if (document.getElementById('onboarding-welcome')) {
+    const { renderOnboardingSection } = await import('./onboarding.js');
+    renderOnboardingSection();
+  }
+
   const root = document.getElementById('app');
   if (!root) return;
 
@@ -54,6 +67,11 @@ async function init() {
   if (document.getElementById('data-controls')) {
     const { mountDataControls } = await import('./data-controls.js');
     mountDataControls(root, 'data-controls');
+  }
+
+  if (document.querySelector('[data-lead-offer-id]')) {
+    const { initDealLeadCapture } = await import('./deal-leads.js');
+    initDealLeadCapture(root.dataset.eventSlug);
   }
 }
 

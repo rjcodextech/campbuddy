@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Event;
-use App\Rules\MeetsColorContrast;
 use App\Rules\NotPrivateNetworkUrl;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -27,8 +26,6 @@ class StoreEventRequest extends FormRequest
             'source_site_url' => ['required', 'url', 'max:500', new NotPrivateNetworkUrl],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-            'primary_color' => ['nullable', 'string', new MeetsColorContrast],
-            'accent_color' => ['nullable', 'string', new MeetsColorContrast],
             'status' => ['required', Rule::in(['draft', 'approved', 'active', 'archived'])],
             'is_visible' => ['boolean'],
         ];

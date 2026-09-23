@@ -6,12 +6,11 @@
             <h1 class="section-head__title">Camp Card</h1>
         </div>
 
-        <div id="camp-card-empty" class="card" style="text-align:center" hidden>
-            <p class="mission-big">Your Camp Card is almost ready</p>
-            <p class="footer-note">Add your name and a link you'd like people to scan.</p>
-        </div>
+        <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
+            This is a preview — fill in the form below to make it yours.
+        </p>
 
-        <div id="camp-card-preview" class="camp-card" hidden>
+        <div id="camp-card-preview" class="camp-card camp-card--classic">
             <span class="camp-card__label">Camp Card</span>
             <p class="camp-card__name" id="cc-name"></p>
             <p class="camp-card__role" id="cc-role"></p>
@@ -25,21 +24,30 @@
             </div>
         </div>
 
+        <div class="field" style="margin-top:18px">
+            <span>Card design</span>
+            <div class="chip-group" id="layout-chips">
+                @foreach (['classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge'] as $key => $label)
+                    <button type="button" class="chip" data-layout="{{ $key }}">{{ $label }}</button>
+                @endforeach
+            </div>
+        </div>
+
         <details style="margin-top:24px" open id="cc-edit-details">
             <summary class="section-head__title" style="cursor:pointer">Edit Camp Card</summary>
 
             <form id="camp-card-form" style="margin-top:12px">
-                <label class="field"><span>Name (required)</span><input type="text" name="name" required></label>
-                <label class="field"><span>Role / title</span><input type="text" name="role"></label>
-                <label class="field"><span>Company / community</span><input type="text" name="company"></label>
-                <label class="field"><span>City</span><input type="text" name="city"></label>
+                <label class="field"><span>Name (required)</span><input type="text" name="name" placeholder="e.g. Priya Sharma" required></label>
+                <label class="field"><span>Role / title</span><input type="text" name="role" placeholder="e.g. WordPress Developer"></label>
+                <label class="field"><span>Company / community</span><input type="text" name="company" placeholder="e.g. Acme Studio"></label>
+                <label class="field"><span>City</span><input type="text" name="city" placeholder="e.g. Jaipur"></label>
                 <label class="field"><span>WordPress interests</span><input type="text" name="interests" placeholder="e.g. Gutenberg, WooCommerce"></label>
-                <label class="field"><span>Ask me about</span><input type="text" name="askMeAbout"></label>
+                <label class="field"><span>Ask me about</span><input type="text" name="askMeAbout" placeholder="e.g. Block themes"></label>
 
                 <label class="field"><span>LinkedIn</span><input type="url" name="linkedin" placeholder="https://linkedin.com/in/…"></label>
-                <label class="field"><span>Personal website</span><input type="url" name="website"></label>
+                <label class="field"><span>Personal website</span><input type="url" name="website" placeholder="https://…"></label>
                 <label class="field"><span>WordPress.org profile</span><input type="url" name="wordpressOrg" placeholder="https://profiles.wordpress.org/…"></label>
-                <label class="field"><span>X / Twitter</span><input type="url" name="twitter"></label>
+                <label class="field"><span>X / Twitter handle</span><input type="text" name="twitter" placeholder="yourhandle" maxlength="15" pattern="^@?[A-Za-z0-9_]{1,15}$"></label>
 
                 <div class="field">
                     <span>QR code links to</span>

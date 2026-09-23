@@ -25,6 +25,7 @@ class StoreOfferRequest extends FormRequest
             'media_asset_id' => ['nullable', 'exists:media_assets,id'],
             'sort_order' => ['integer', 'min:0'],
             'is_active' => ['boolean'],
+            'capture_leads' => ['boolean'],
         ];
     }
 }

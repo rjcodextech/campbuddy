@@ -23,6 +23,7 @@ dialog {
     input[type='date'],
     input[type='search'],
     input[type='email'],
+    input[type='tel'],
     select,
     textarea {
         width: 100%;
@@ -36,4 +37,17 @@ dialog {
     textarea {
         resize: vertical;
     }
+}
+
+// The one-off search inputs on My Day and Explore → People share this
+// look — pulled out once both needed it rather than duplicating inline
+// styles a second time.
+.search-input {
+    width: 100%;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-md;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    margin-bottom: v.$space-3;
 }

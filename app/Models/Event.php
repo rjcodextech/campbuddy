@@ -21,8 +21,6 @@ class Event extends Model
         'source_site_url',
         'starts_on',
         'ends_on',
-        'primary_color',
-        'accent_color',
         'logo_path',
         'favicon_path',
         'info',

@@ -22,6 +22,7 @@
     background: var(--paper);
     font-weight: 700;
     font-size: 0.85rem;
+    cursor: pointer;
 
     &--platinum {
         border-color: var(--gold);
@@ -57,6 +58,14 @@
     border-radius: v.$radius-md;
     border: 1px solid var(--line);
     background: var(--paper);
+
+    // Deals with lead-capture enabled render as a <button> instead of an
+    // <a> (see attendee/explore.blade.php) — reset native button chrome
+    // so it looks identical to the anchor variant.
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
 }
 
 .offer-card__icon {

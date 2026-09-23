@@ -1,0 +1,103 @@
+@use '../abstracts/variables' as v;
+
+// The "/" WordCamp picker (resources/views/welcome.blade.php) — there's
+// no Event yet at this route, so it can't use layouts/attendee.blade.php
+// or .app-frame (whose desktop treatment assumes a per-event bottom-nav
+// sidebar). It still shares the same tokens/components as the rest of
+// the app (buttons, cards, topbar, type scale) so it reads as CampBuddy
+// itself, not a separate marketing site — just with its own, simpler
+// frame chrome sized for a single picker screen rather than a 6-tab app.
+.landing-frame {
+    max-width: v.$app-frame-width;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper-soft);
+
+    @media (min-width: v.$app-frame-width + 40px) {
+        min-height: calc(100vh - #{v.$space-6 * 2});
+        margin: v.$space-6 auto;
+        border-radius: v.$radius-lg;
+        overflow: hidden;
+        box-shadow: 0 0 0 1px var(--line), 0 30px 70px -25px rgba(35, 31, 32, 0.45);
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        max-width: 560px;
+    }
+}
+
+.landing-main {
+    flex: 1;
+    padding: v.$space-5 v.$space-4 v.$space-8;
+}
+
+.landing-intro {
+    margin-bottom: v.$space-6;
+}
+
+.landing-intro__title {
+    font-size: v.$font-size-xl;
+    margin: v.$space-1 0 v.$space-2;
+}
+
+.landing-event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+}
+
+.landing-event-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    text-decoration: none;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+}
+
+.landing-event-card__meta {
+    display: block;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-regular;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.landing-event-card__arrow {
+    flex-shrink: 0;
+    color: var(--brand-primary);
+    font-weight: v.$font-weight-black;
+}
+
+.landing-footer {
+    padding: v.$space-4;
+    border-top: 1px solid var(--line);
+}
+
+// Mobile keeps a persistent bottom action bar, same instinct and same
+// sticky-not-fixed technique as the in-event bottom-nav
+// (layout/_bottom-nav.scss) — a normal-flow sibling inside .landing-frame,
+// so it's confined to the frame's width/card for free and never
+// overlaps content or breaks out of the floating-card look at wider
+// viewports. Desktop already shows the picker without scrolling, so the
+// bar is unnecessary chrome there.
+.landing-bottom-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    flex-shrink: 0;
+    padding: v.$space-3 v.$space-4;
+    padding-bottom: calc(#{v.$space-3} + env(safe-area-inset-bottom, 0px));
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+
+    @media (min-width: v.$bp-desktop) {
+        display: none;
+    }
+}

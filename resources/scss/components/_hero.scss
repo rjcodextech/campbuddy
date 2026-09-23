@@ -1,0 +1,51 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Home's hero — the event's own branding (logo, falling back to
+// CampBuddy's icon when an organizer hasn't uploaded one) now lives
+// here instead of the global topbar, which stays CampBuddy-only.
+.home-hero {
+    @include m.card-surface;
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    margin-bottom: v.$space-5;
+}
+
+.home-hero__logo {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: v.$radius-md;
+    object-fit: contain;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+}
+
+.home-hero__body {
+    min-width: 0;
+}
+
+.home-hero__eyebrow {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--brand-primary);
+    margin: 0 0 2px;
+}
+
+.home-hero__title {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-black;
+    color: var(--ink);
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.home-hero__meta {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    margin: 4px 0 0;
+}

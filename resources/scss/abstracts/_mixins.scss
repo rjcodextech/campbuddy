@@ -19,7 +19,7 @@
 }
 
 @mixin focus-ring {
-    outline: 2px solid var(--maroon);
+    outline: 2px solid var(--brand-primary);
     outline-offset: 2px;
 }
 

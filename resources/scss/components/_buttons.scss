@@ -19,8 +19,8 @@
     }
 
     &--primary {
-        background: var(--maroon);
-        border-color: var(--maroon);
+        background: var(--brand-primary);
+        border-color: var(--brand-primary);
         color: #fff;
     }
 
@@ -49,7 +49,7 @@
         border: 0;
         background: none;
         font-weight: 700;
-        color: var(--maroon);
+        color: var(--brand-primary);
         text-decoration: underline;
         text-underline-offset: 2px;
     }

@@ -13,16 +13,17 @@
         </div>
 
         <div data-view-panel="full">
-            <input type="search" id="session-search" placeholder="Search sessions or speakers…"
-                   style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--line);margin-bottom:10px">
+            <input type="search" id="session-search" class="search-input" placeholder="Search sessions or speakers…">
 
-            <div id="track-filters" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px"></div>
+            <div id="day-filters" class="my-day-filter-row" hidden></div>
+            <div id="track-filters" class="my-day-filter-row"></div>
+            <div id="type-filters" class="my-day-filter-row"></div>
 
-            <div id="full-schedule-list" class="card"></div>
+            <div id="full-schedule-list"></div>
         </div>
 
         <div data-view-panel="mine" hidden>
-            <div id="my-schedule-list" class="card"></div>
+            <div id="my-schedule-list"></div>
         </div>
     </main>
 

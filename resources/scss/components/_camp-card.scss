@@ -1,12 +1,139 @@
 @use '../abstracts/variables' as v;
 
+// Structural base, shared by all 5 layouts — each --modifier below
+// supplies its own background/color/shadow. CC1/CC2: same underlying
+// fields (label/name/role/tags), the attendee just picks which of the 5
+// looks they want, not a different data model per layout.
 .camp-card {
     position: relative;
     padding: v.$space-6 v.$space-5;
     border-radius: v.$radius-lg;
-    background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon2, var(--maroon)) 100%);
-    color: #fff;
     box-shadow: v.$shadow-raised;
+}
+
+// --- Layout 1: Classic — the original gradient brand treatment ---
+.camp-card--classic {
+    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+    color: #fff;
+}
+
+// --- Layout 2: Minimal — quiet paper card, colored accent bar ---
+.camp-card--minimal {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-left: 5px solid var(--brand-primary);
+    box-shadow: v.$shadow-card;
+
+    .camp-card__label {
+        color: var(--brand-primary);
+        opacity: 1;
+    }
+
+    .camp-card__role {
+        color: var(--muted);
+        opacity: 1;
+    }
+
+    .camp-card__tag {
+        background: none;
+        padding: 0;
+        color: var(--muted);
+        font-weight: 600;
+
+        &::after {
+            content: '·';
+            margin-left: v.$space-2;
+            color: var(--line);
+        }
+
+        &:last-child::after {
+            content: '';
+            margin: 0;
+        }
+    }
+}
+
+// --- Layout 3: Bold — solid high-contrast block, gold accents ---
+.camp-card--bold {
+    background: var(--brand-primary);
+    color: #fff;
+
+    .camp-card__label {
+        color: var(--gold);
+        font-weight: 800;
+    }
+
+    .camp-card__name {
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .camp-card__tag {
+        background: var(--gold);
+        color: var(--ink);
+    }
+}
+
+// --- Layout 4: Split — two-tone band up top, paper below ---
+.camp-card--split {
+    padding: 0;
+    overflow: hidden;
+    background: var(--paper);
+    color: var(--ink);
+
+    &::before {
+        content: '';
+        display: block;
+        height: 48px;
+        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
+    }
+
+    .camp-card__label {
+        margin: -30px v.$space-5 0;
+        color: #fff;
+        opacity: 1;
+    }
+
+    .camp-card__name,
+    .camp-card__role {
+        margin-left: v.$space-5;
+        margin-right: v.$space-5;
+    }
+
+    .camp-card__tags {
+        margin: v.$space-4 v.$space-5 0;
+    }
+
+    .camp-card__tag {
+        background: var(--peach);
+        color: var(--ink);
+    }
+
+    // Structural padding the base .camp-card normally provides —
+    // reapplied here since this layout zeroes it out for the top band.
+    > *:last-child {
+        padding-bottom: v.$space-5;
+    }
+}
+
+// --- Layout 5: Badge — centered, badge-style label ---
+.camp-card--badge {
+    background: var(--navy);
+    color: #fff;
+    text-align: center;
+
+    .camp-card__label {
+        display: inline-flex;
+        padding: 3px v.$space-3;
+        border-radius: v.$radius-full;
+        background: rgba(255, 255, 255, 0.16);
+        opacity: 1;
+    }
+
+    .camp-card__tags {
+        justify-content: center;
+    }
 }
 
 .camp-card__label {

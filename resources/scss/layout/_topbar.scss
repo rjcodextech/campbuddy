@@ -7,9 +7,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: v.$space-3;
-    height: v.$topbar-height;
-    padding: 0 v.$space-4;
+    flex-wrap: wrap;
+    gap: 6px v.$space-3;
+    min-height: v.$topbar-height;
+    padding: 10px v.$space-4;
     background: var(--paper-soft);
     border-bottom: 1px solid var(--line);
 }
@@ -17,32 +18,55 @@
 .brand {
     display: flex;
     align-items: center;
-    gap: v.$space-2;
     min-width: 0;
-    font-weight: 800;
-    font-size: 1.05rem;
-    color: var(--maroon);
-
-    span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
 }
 
-.brand__logo {
-    height: 32px;
-    width: 32px;
-    flex-shrink: 0;
-    border-radius: v.$radius-sm;
-    object-fit: cover;
+// The wordmark (public/media/logo.svg) is a wide lockup, not a square
+// mark — sized by height with width left auto so it's never squished
+// into a square box (that was the original bug: a 3.37:1 wordmark
+// forced into a 1:1 frame). object-fit:contain is a safety net, not
+// the primary fix.
+.brand__logo--wordmark {
+    height: 26px;
+    width: auto;
+    border-radius: 0;
+    object-fit: contain;
 }
 
 .topbar__actions {
     display: flex;
     align-items: center;
-    gap: v.$space-2;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
     flex-shrink: 0;
+}
+
+// Icon + visible label, replacing the old icon-only circular buttons —
+// "Switch WordCamp" and "Install app" both need to read as clear
+// actions, not just be inferred from a glyph.
+.topbar__text-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px v.$space-3;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    white-space: nowrap;
+
+    svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+    }
+
+    &:hover {
+        background: var(--brand-primary);
+        color: #fff;
+    }
 }
 
 .topbar__icon-btn {
@@ -66,7 +90,19 @@
     }
 
     &--active {
-        color: var(--maroon);
+        color: var(--brand-primary);
         background: var(--peach);
+    }
+}
+
+// Matches #main-content's centered 640px reading column (see
+// layout/_app-frame.scss) so the brand/actions row lines up with the
+// page content below it instead of hugging the wider desktop frame's
+// own edges.
+@media (min-width: v.$bp-desktop) {
+    .topbar {
+        max-width: 640px;
+        margin-inline: auto;
+        width: 100%;
     }
 }

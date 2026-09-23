@@ -1,0 +1,66 @@
+@use '../abstracts/variables' as v;
+
+// Overrides base/_global.scss's default small-dialog sizing — this one
+// needs to behave like a near-fullscreen browser sheet, not a compact
+// popover. Native <dialog> handles show/hide via its own [open] state,
+// so no extra display toggling is needed here.
+.in-app-browser {
+    width: min(96vw, 720px);
+    height: min(92vh, 900px);
+    max-height: 92vh;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.in-app-browser__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-2;
+    padding: v.$space-2 v.$space-2 v.$space-2 v.$space-4;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper-soft);
+    flex-shrink: 0;
+}
+
+.in-app-browser__title {
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.in-app-browser__actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.in-app-browser__body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+    }
+}
+
+.in-app-browser__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: v.$space-3;
+    padding: v.$space-6;
+    text-align: center;
+    background: var(--paper);
+}

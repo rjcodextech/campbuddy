@@ -1,7 +1,24 @@
-// Quest: binary done/not-done, local-only progress (C2, C4) — no
-// points, currency, or leaderboard, deliberately.
+// Quest: two sections. "Things to do" is the curated default set (§C3),
+// matched by title against THINGS_TO_DO_META below for an icon + an
+// optional contextual action button — seeded server-side in
+// database/seeders/DefaultQuestSeeder.php, so the two must stay in sync.
+// "Checklist" is admin-authored per-event quests, plain binary
+// done/not-done rows, unchanged from before. Both share the same
+// local-only completion store (C2, C4) — no points, currency, or
+// leaderboard, deliberately.
 
 import { getQuestProgress, setQuestComplete } from './db.js';
+
+const THINGS_TO_DO_META = {
+  'First Hello': { icon: '👋' },
+  'Beyond My City': { icon: '🌍' },
+  'Speaker Hello': { icon: '🎤' },
+  'Contribution Curious': { icon: '🛠️', nav: 'contribute', navLabel: 'Go to Contribute' },
+  'Sponsor Explore': { icon: '🏷️', nav: 'explore-sponsors', navLabel: 'View sponsors' },
+  'Asked Something': { icon: '🙋' },
+  'Keep The Connection': { icon: '🤝', nav: 'explore-people', navLabel: 'Find people' },
+  'Share Camp Card': { icon: '📇', nav: 'camp-card', navLabel: 'Open Camp Card' },
+};
 
 export async function renderQuest(root) {
   const dataEl = document.getElementById('quest-data');
@@ -9,7 +26,7 @@ export async function renderQuest(root) {
 
   const quests = JSON.parse(dataEl.textContent);
   const eventId = Number(root.dataset.eventId);
-  const listEl = document.getElementById('quest-list');
+  const eventSlug = root.dataset.eventSlug;
   const emptyEl = document.getElementById('quest-empty');
 
   if (quests.length === 0) {
@@ -17,10 +34,51 @@ export async function renderQuest(root) {
     return;
   }
 
+  const thingsToDo = quests.filter((q) => THINGS_TO_DO_META[q.title]);
+  const checklist = quests.filter((q) => !THINGS_TO_DO_META[q.title]);
+
+  const thingsSection = document.getElementById('things-to-do-section');
+  const thingsList = document.getElementById('things-to-do-list');
+  const checklistSection = document.getElementById('checklist-section');
+  const checklistList = document.getElementById('quest-list');
+
   let completed = new Set((await getQuestProgress(eventId)).map((q) => q.questId));
 
-  function render() {
-    listEl.innerHTML = quests
+  async function toggle(id) {
+    const isDone = completed.has(id);
+    if (isDone) {
+      completed.delete(id);
+    } else {
+      completed.add(id);
+    }
+    await setQuestComplete(eventId, id, !isDone);
+    renderProgress();
+    renderThings();
+    renderChecklist();
+  }
+
+  function renderThings() {
+    if (thingsToDo.length === 0) {
+      thingsSection.hidden = true;
+      return;
+    }
+
+    thingsSection.hidden = false;
+    thingsList.innerHTML = thingsToDo.map((q) => thingCardHtml(q, completed.has(q.id), eventSlug)).join('');
+
+    thingsList.querySelectorAll('[data-toggle-id]').forEach((btn) => {
+      btn.addEventListener('click', () => toggle(Number(btn.dataset.toggleId)));
+    });
+  }
+
+  function renderChecklist() {
+    if (checklist.length === 0) {
+      checklistSection.hidden = true;
+      return;
+    }
+
+    checklistSection.hidden = false;
+    checklistList.innerHTML = checklist
       .map((q) => {
         const done = completed.has(q.id);
         return `
@@ -35,18 +93,8 @@ export async function renderQuest(root) {
       })
       .join('');
 
-    listEl.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-      input.addEventListener('change', async () => {
-        const id = Number(input.dataset.questId);
-        if (input.checked) {
-          completed.add(id);
-        } else {
-          completed.delete(id);
-        }
-        await setQuestComplete(eventId, id, input.checked);
-        renderProgress();
-        render();
-      });
+    checklistList.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+      input.addEventListener('change', () => toggle(Number(input.dataset.questId)));
     });
   }
 
@@ -58,8 +106,46 @@ export async function renderQuest(root) {
     summary.textContent = `${completed.size}/${quests.length} complete`;
   }
 
-  render();
+  renderThings();
+  renderChecklist();
   renderProgress();
+}
+
+function thingCardHtml(quest, done, eventSlug) {
+  const meta = THINGS_TO_DO_META[quest.title] ?? {};
+  const navBtn = meta.nav
+    ? `<a href="${navUrl(eventSlug, meta.nav)}" class="btn btn--ghost btn--compact">${escapeHtml(meta.navLabel ?? 'Open')} →</a>`
+    : '';
+
+  return `
+    <div class="quest-card ${done ? 'quest-card--done' : ''}">
+      <div class="quest-card__icon" aria-hidden="true">${meta.icon ?? '✨'}</div>
+      <div class="quest-card__body">
+        <p class="quest-card__title">${escapeHtml(quest.title)}</p>
+        ${quest.description ? `<p class="quest-card__desc">${escapeHtml(quest.description)}</p>` : ''}
+        <div class="quest-card__actions">
+          ${navBtn}
+          <button type="button" class="btn btn--compact ${done ? 'btn--ghost' : 'btn--primary'}" data-toggle-id="${quest.id}">${done ? 'Done ✓' : 'Mark done'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function navUrl(eventSlug, target) {
+  const base = `/event/${eventSlug}`;
+  switch (target) {
+    case 'camp-card':
+      return `${base}/camp-card`;
+    case 'contribute':
+      return `${base}/contribute`;
+    case 'explore-sponsors':
+      return `${base}/explore?tab=sponsors`;
+    case 'explore-people':
+      return `${base}/explore?tab=people`;
+    default:
+      return `${base}/explore`;
+  }
 }
 
 function escapeHtml(str) {

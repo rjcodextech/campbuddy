@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\EventPageController;
-use App\Http\Controllers\HomeRedirectController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\ProfileController;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 | global Route::bind(), since the /admin/events/{event} routes reuse the
 | same parameter name but must resolve ANY event regardless of status.
 */
-Route::get('/', HomeRedirectController::class)->name('home');
+Route::get('/', HomeController::class)->name('home');
 
 Route::middleware('event.public')->group(function () {
     Route::get('/event/{event:slug}', [EventPageController::class, 'home'])->name('event.home');
@@ -83,6 +84,9 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
         Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
+
+        Route::get('events/{event}/deal-leads', [DealLeadController::class, 'index'])->name('admin.events.deal-leads.index');
+        Route::get('events/{event}/deal-leads/export', [DealLeadController::class, 'export'])->name('admin.events.deal-leads.export');
 
         Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
         Route::post('media', [MediaController::class, 'store'])->name('admin.media.store');

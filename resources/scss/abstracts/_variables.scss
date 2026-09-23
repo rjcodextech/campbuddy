@@ -24,6 +24,21 @@ $color-success: #1f7a4d;
 // --- Type ---
 $font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
+// Type scale — one consistent set of sizes/weights for the whole app,
+// replacing what used to be ad hoc inline font-size/weight declarations
+// scattered across Blade views and JS-rendered markup.
+$font-size-xs: 0.72rem;
+$font-size-sm: 0.85rem;
+$font-size-base: 0.95rem;
+$font-size-md: 1.05rem;
+$font-size-lg: 1.2rem;
+$font-size-xl: 1.5rem;
+
+$font-weight-regular: 400;
+$font-weight-medium: 600;
+$font-weight-bold: 700;
+$font-weight-black: 800;
+
 // --- Spacing scale ---
 $space-1: 4px;
 $space-2: 8px;
@@ -43,12 +58,16 @@ $shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 3
 $shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
 
 // --- Layout ---
-// The attendee app is forced into a phone-width column at every viewport
-// size — on desktop it sits centered on a neutral backdrop rather than
-// stretching to fill the window, so it always reads as a mobile app.
+// The attendee app reads as a phone-width column up through tablet, then
+// switches to a real desktop "webapp" layout (sidebar nav, wider content
+// column) above $bp-desktop — see layout/_app-frame.scss and
+// layout/_bottom-nav.scss for the breakpoint implementation.
 $app-frame-width: 428px;
+$app-frame-desktop-width: 1040px;
+$sidebar-width: 220px;
 $topbar-height: 56px;
 $bottom-nav-height: 64px;
 
 // --- Breakpoints ---
 $bp-tablet: 640px;
+$bp-desktop: 1024px;

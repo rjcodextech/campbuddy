@@ -1,0 +1,54 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// "Things to do" — the curated default quests, given a richer treatment
+// (icon/heading/description/actions) than the plain Checklist rows
+// below them, which stay a simple checkbox list for admin-authored
+// per-event quests.
+.quest-card {
+    @include m.card-surface;
+    display: flex;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    margin-bottom: v.$space-3;
+
+    &--done {
+        border-color: var(--teal);
+    }
+}
+
+.quest-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: v.$radius-md;
+    background: var(--peach);
+    font-size: 1.4rem;
+}
+
+.quest-card__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.quest-card__title {
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-md;
+    margin: 0 0 2px;
+    color: var(--ink);
+}
+
+.quest-card__desc {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    margin: 0 0 v.$space-3;
+}
+
+.quest-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}

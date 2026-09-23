@@ -1,10 +1,11 @@
 @use '../abstracts/variables' as v;
 
-// Forces the attendee app into a fixed, phone-width column at every
-// viewport size — including desktop, where it sits centered on a
-// neutral backdrop instead of stretching edge-to-edge. This is
-// deliberate: CampBuddy is designed one-handed, for a phone, and should
-// always read as a mobile app, not a responsive website.
+// Phone-width column up through tablet — CampBuddy is designed
+// one-handed, for a phone, and stays a mobile-app layout at those sizes.
+// From $bp-desktop up it switches to a real "webapp" layout instead of
+// stretching or staying pinned to a narrow column: wider frame, nav
+// becomes a left sidebar (layout/_bottom-nav.scss), content stays a
+// comfortable reading width instead of spanning edge-to-edge.
 body.app-shell {
     min-height: 100vh;
     display: flex;
@@ -43,4 +44,27 @@ body.app-shell {
     display: block;
     flex: 1;
     padding: v.$space-4 v.$space-4 v.$space-8;
+}
+
+// Desktop "webapp" layout: wider frame, nav sits to the left instead of
+// pinned to the bottom (see layout/_bottom-nav.scss for its own half of
+// this breakpoint), and content is capped at a comfortable reading width
+// rather than stretching to fill the wider frame.
+@media (min-width: v.$bp-desktop) {
+    .app-frame {
+        max-width: v.$app-frame-desktop-width;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    #app {
+        flex: 1;
+        min-width: 0;
+    }
+
+    #main-content {
+        max-width: 640px;
+        width: 100%;
+        margin-inline: auto;
+    }
 }

@@ -3,17 +3,15 @@
 // call between page load and a populated Home screen.
 
 import { getBookmarks, getQuestProgress, kvGet } from './db.js';
-import { renderOnboardingSection } from './onboarding.js';
+import { renderDiscoveryCard } from './people.js';
 
 export async function renderHome(root) {
   const dataEl = document.getElementById('home-data');
   if (!dataEl) return;
 
-  const eventName = document.title.split(' — ')[0];
-  renderOnboardingSection(eventName);
-
   const { sessions, quests, now } = JSON.parse(dataEl.textContent);
   const eventId = Number(root.dataset.eventId);
+  const eventSlug = root.dataset.eventSlug;
   const nowMs = new Date(now).getTime();
 
   const [bookmarks, questProgress, onboarding] = await Promise.all([
@@ -30,6 +28,14 @@ export async function renderHome(root) {
   renderStartingSoonBanner(sessions, nowMs, bookmarkedIds);
   renderSuggestedAction(quests, completedQuestIds, bookmarks.length);
   renderProgress(quests, completedQuestIds, bookmarks.length);
+
+  const discoveryEl = document.getElementById('people-discovery-home');
+  if (discoveryEl) {
+    renderDiscoveryCard(discoveryEl, eventSlug, eventId, `discovery:${eventId}`, {
+      compact: true,
+      exploreUrl: discoveryEl.dataset.exploreUrl,
+    });
+  }
 }
 
 function timedSessions(sessions) {
