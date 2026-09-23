@@ -8,6 +8,7 @@
 // The form's markup is #onboarding-welcome in welcome.blade.php (hidden
 // until this finds the device hasn't completed it) — this only wires it.
 
+import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 
 export async function renderOnboardingSection() {
@@ -44,7 +45,11 @@ export async function renderOnboardingSection() {
     });
   });
 
-  const finish = async () => {
+  // Skip vs. Continue is the only thing reported — never the answers, which
+  // stay on the device (spec §8.5).
+  const finish = async (outcome) => {
+    track(outcome === 'skip' ? 'onboarding_skip' : 'onboarding_complete');
+
     const profile = {
       firstWordCamp: answers.firstWordCamp ?? null,
       role: answers.role ?? null,
@@ -60,6 +65,6 @@ export async function renderOnboardingSection() {
     section.hidden = true;
   };
 
-  section.querySelector('[data-action="skip"]').addEventListener('click', finish);
-  section.querySelector('[data-action="save"]').addEventListener('click', finish);
+  section.querySelector('[data-action="skip"]').addEventListener('click', () => finish('skip'));
+  section.querySelector('[data-action="save"]').addEventListener('click', () => finish('save'));
 }

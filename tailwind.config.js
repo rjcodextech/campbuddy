@@ -31,6 +31,13 @@ export default {
                 navy: '#0d2343',
                 gold: '#e39d1c',
                 teal: '#049395',
+                // Destructive actions get their own red so "Delete" never
+                // reads as the same thing as the maroon primary "Save".
+                danger: {
+                    DEFAULT: '#b42318',
+                    dark: '#912018',
+                    soft: '#fef3f2',
+                },
             },
         },
     },

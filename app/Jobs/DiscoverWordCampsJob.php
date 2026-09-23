@@ -46,6 +46,8 @@ class DiscoverWordCampsJob implements ShouldQueue
                 continue;
             }
 
+            $info = $wordcamp['location'] ? ['venue' => $wordcamp['location']] : null;
+
             Event::create([
                 'slug' => $this->uniqueSlug($wordcamp['title']),
                 'display_name' => $wordcamp['title'],
@@ -53,7 +55,9 @@ class DiscoverWordCampsJob implements ShouldQueue
                 'starts_on' => $wordcamp['starts_on'],
                 'status' => 'draft',
                 'is_visible' => true,
-                'info' => $wordcamp['location'] ? ['venue' => $wordcamp['location']] : null,
+                'info' => $info,
+                // Machine-filled, so the first Event Information fetch may replace it.
+                'info_fetched' => $info,
             ]);
 
             $created++;

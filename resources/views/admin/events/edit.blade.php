@@ -1,173 +1,183 @@
-<x-app-layout :title="$event->display_name">
-    <div class="max-w-3xl space-y-6">
+@php
+    $info = $event->info ?? [];
 
-        @if (session('status'))
-            <div class="p-4 bg-teal/10 text-teal rounded-md">{{ session('status') }}</div>
+    // Where a field's value came from: still what the last fetch wrote → auto;
+    // anything else that's filled in → typed by an admin, and kept on refresh.
+    $provenance = function (string $field, ?string $extra = null) use ($info, $event) {
+        $value = $info[$field] ?? null;
+        $fetched = ($event->info_fetched ?? [])[$field] ?? null;
+
+        $note = match (true) {
+            blank($value) => $event->info_fetched_at ? 'Nothing found on the WordCamp site — left blank.' : null,
+            $value === $fetched => 'Auto-filled from the WordCamp site. Type here to override it.',
+            default => 'Edited by you — kept when fetching. Clear it to auto-fill again.',
+        };
+
+        return trim(($extra ? $extra.' ' : '').($note ?? ''));
+    };
+@endphp
+
+<x-app-layout :title="$event->display_name" :subtitle="'/event/'.$event->slug"
+              :breadcrumbs="[['Events', route('admin.events.index')], [$event->display_name]]">
+    <x-slot:actions>
+        <x-event-status :status="$event->status" class="!px-3 !py-1" />
+        @if ($event->status === 'active' && $event->is_visible)
+            <x-button :href="route('event.home', $event)" target="_blank" rel="noopener" variant="secondary" icon="external">View in app</x-button>
         @endif
+    </x-slot:actions>
 
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <form method="POST" action="{{ route('admin.events.update', $event) }}">
-                @csrf
-                @method('PUT')
+    <x-admin.event-nav :event="$event" current="details" />
+
+    <div class="max-w-4xl space-y-6">
+        {{-- Core details --}}
+        <form method="POST" action="{{ route('admin.events.update', $event) }}">
+            @csrf
+            @method('PUT')
+
+            <x-card title="Event details">
                 @include('admin.events._form')
 
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                        Save changes
-                    </button>
-                </div>
-            </form>
-        </div>
+                <x-slot:footer>
+                    <x-button>Save changes</x-button>
+                </x-slot:footer>
+            </x-card>
+        </form>
 
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6 flex gap-4">
-            <a href="{{ route('admin.events.quests.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Quests →</a>
-            <a href="{{ route('admin.events.offers.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Offers →</a>
-            <a href="{{ route('admin.events.roster.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Manage Roster →</a>
-            <a href="{{ route('admin.events.deal-leads.index', $event) }}" class="text-maroon hover:text-maroon-dark font-medium text-sm">Deal Leads →</a>
-        </div>
+        {{-- What attendees see on Explore → Event Info. The fetch button posts to this
+             separate form (via its form="" attribute) because a form can't nest inside another. --}}
+        <form id="fetch-info-form" method="POST" action="{{ route('admin.events.fetch-info', $event) }}" class="hidden">
+            @csrf
+        </form>
 
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-2">Ingestion status</h3>
+        <form method="POST" action="{{ route('admin.events.update-info', $event) }}">
+            @csrf
+            @method('PUT')
 
-            @if ($lastFetch)
-                <p class="text-sm text-ink">
-                    Last sessions/speakers/sponsors fetch:
-                    <span class="font-medium {{ $lastFetch->status === 'ok' ? 'text-teal' : 'text-maroon' }}">
-                        {{ $lastFetch->status }}
-                    </span>
-                    — {{ $lastFetch->fetched_at->diffForHumans() }}
+            <x-card title="Event information" description="Shown on Explore → Event Info. Filled in from the event's WordCamp site and refreshed daily; anything you type is kept. Blank fields are left out.">
+                <x-slot:actions>
+                    <x-button type="submit" form="fetch-info-form" variant="secondary" size="sm" icon="refresh">Fetch latest</x-button>
+                </x-slot:actions>
+
+                <p class="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+                    @if ($lastInfoFetch)
+                        <x-badge :variant="$lastInfoFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastInfoFetch->status }}</x-badge>
+                        Last fetched {{ $lastInfoFetch->fetched_at->diffForHumans() }} — {{ $lastInfoFetch->message }}
+                    @else
+                        Not fetched yet — use “Fetch latest” to read it from the WordCamp site.
+                    @endif
                 </p>
-                <p class="text-sm text-muted mt-1">{{ $lastFetch->message }}</p>
-            @else
-                <p class="text-sm text-muted">No ingestion has run yet for this event.</p>
-            @endif
 
-            <form method="POST" action="{{ route('admin.events.refresh', $event) }}" class="mt-4">
-                @csrf
-                <button type="submit" class="px-4 py-2 bg-paper-soft text-ink text-sm font-medium rounded-md hover:bg-line">
-                    Refresh now
-                </button>
-            </form>
-        </div>
+                <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                    <x-form.input name="venue" label="Venue" :value="$info['venue'] ?? ''" :hint="$provenance('venue')" class="sm:col-span-2" />
+                    <x-form.input name="wifi" label="Wifi details" :value="$info['wifi'] ?? ''" :hint="$provenance('wifi')" />
+                    <x-form.input name="contributor_day_location" label="Contributor Day location" :value="$info['contributor_day_location'] ?? ''" :hint="$provenance('contributor_day_location')" />
+                    <x-form.input name="code_of_conduct_url" type="url" label="Code of conduct URL" :value="$info['code_of_conduct_url'] ?? ''" :hint="$provenance('code_of_conduct_url')" class="sm:col-span-2" placeholder="https://" />
+                    <x-form.textarea name="registration_info" label="Registration info" rows="2" :value="$info['registration_info'] ?? ''" :hint="$provenance('registration_info')" />
+                    <x-form.textarea name="emergency_contact" label="Emergency / contact info" rows="2" :value="$info['emergency_contact'] ?? ''"
+                                     :hint="$provenance('emergency_contact', 'A phone number or email here becomes tappable.')" />
+                    <x-form.textarea name="social_event_info" label="Social event info" rows="2" :value="$info['social_event_info'] ?? ''" :hint="$provenance('social_event_info')" />
+                    <x-form.textarea name="nearby_venue_info" label="Nearby venues" rows="2" :value="$info['nearby_venue_info'] ?? ''" :hint="$provenance('nearby_venue_info')" />
+                    <x-form.textarea name="important_links" label="Important links" rows="4" :value="$info['important_links'] ?? ''"
+                                     :hint="$provenance('important_links', 'One link per line.')" class="sm:col-span-2" />
+                </div>
 
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-2">Branding</h3>
+                <x-slot:footer>
+                    <x-button>Save event information</x-button>
+                </x-slot:footer>
+            </x-card>
+        </form>
 
-            <div class="flex items-center gap-6 mb-4">
-                <div class="text-center">
-                    <div class="h-16 w-16 flex items-center justify-center border border-line rounded-md bg-paper-soft">
+        {{-- Logo + favicon --}}
+        <x-card title="Branding" description="The event's logo and favicon, shown in the attendee app.">
+            <div class="flex flex-wrap items-center gap-6">
+                <figure class="text-center">
+                    <div class="flex h-20 w-20 items-center justify-center rounded-lg border border-line bg-paper-soft">
                         @if ($event->logoUrl())
-                            <img src="{{ $event->logoUrl() }}" alt="Logo" class="max-h-14 max-w-14 object-contain">
+                            <img src="{{ $event->logoUrl() }}" alt="Current logo" class="max-h-16 max-w-16 object-contain">
                         @else
                             <span class="text-xs text-muted">No logo</span>
                         @endif
                     </div>
-                    <p class="text-xs text-muted mt-1">Logo</p>
-                </div>
-                <div class="text-center">
-                    <div class="h-16 w-16 flex items-center justify-center border border-line rounded-md bg-paper-soft">
+                    <figcaption class="mt-1 text-xs text-muted">Logo</figcaption>
+                </figure>
+
+                <figure class="text-center">
+                    <div class="flex h-20 w-20 items-center justify-center rounded-lg border border-line bg-paper-soft">
                         @if ($event->faviconUrl())
-                            <img src="{{ $event->faviconUrl() }}" alt="Favicon" class="max-h-10 max-w-10 object-contain">
+                            <img src="{{ $event->faviconUrl() }}" alt="Current favicon" class="max-h-10 max-w-10 object-contain">
                         @else
                             <span class="text-xs text-muted">None</span>
                         @endif
                     </div>
-                    <p class="text-xs text-muted mt-1">Favicon</p>
+                    <figcaption class="mt-1 text-xs text-muted">Favicon</figcaption>
+                </figure>
+
+                <div class="min-w-0 flex-1 basis-56">
+                    @if ($lastBrandingFetch)
+                        <p class="text-sm text-muted">
+                            Last auto-fetch:
+                            <x-badge :variant="$lastBrandingFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastBrandingFetch->status }}</x-badge>
+                            {{ $lastBrandingFetch->fetched_at->diffForHumans() }}
+                        </p>
+                        @if ($lastBrandingFetch->message)
+                            <p class="mt-1 text-xs text-muted">{{ $lastBrandingFetch->message }}</p>
+                        @endif
+                    @else
+                        <p class="text-sm text-muted">Branding hasn't been auto-fetched yet.</p>
+                    @endif
+
+                    <x-action-form :action="route('admin.events.refresh-branding', $event)" icon="refresh" size="sm" class="mt-3">
+                        Re-fetch branding
+                    </x-action-form>
                 </div>
             </div>
 
-            @if ($lastBrandingFetch)
-                <p class="text-sm text-muted mb-4">
-                    Last auto-fetch: {{ $lastBrandingFetch->status }} — {{ $lastBrandingFetch->message }}
-                    ({{ $lastBrandingFetch->fetched_at->diffForHumans() }})
-                </p>
+            <form method="POST" action="{{ route('admin.events.upload-branding', $event) }}" enctype="multipart/form-data"
+                  class="mt-6 border-t border-line pt-5">
+                @csrf
+
+                <p class="mb-4 text-sm font-medium">Upload your own <span class="font-normal text-muted">(overrides the auto-fetched files)</span></p>
+
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <x-form.file name="logo" label="Logo" accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                                 hint="PNG, JPG, SVG or WebP." />
+                    <x-form.file name="favicon" label="Favicon" accept="image/png,image/jpeg,image/x-icon,image/svg+xml"
+                                 hint="PNG, JPG, ICO or SVG." />
+                </div>
+
+                <div class="mt-5">
+                    <x-button variant="secondary" icon="upload">Upload</x-button>
+                </div>
+            </form>
+        </x-card>
+
+        {{-- Sessions / speakers / sponsors ingestion --}}
+        <x-card title="Ingestion status" description="Sessions, speakers and sponsors are read from the event's WordCamp.org site.">
+            @if ($lastFetch)
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                    <x-badge :variant="$lastFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastFetch->status }}</x-badge>
+                    <span class="text-muted">Last fetch {{ $lastFetch->fetched_at->diffForHumans() }}</span>
+                </div>
+                @if ($lastFetch->message)
+                    <p class="mt-2 text-sm text-muted">{{ $lastFetch->message }}</p>
+                @endif
+            @else
+                <p class="text-sm text-muted">No ingestion has run yet for this event.</p>
             @endif
 
-            <form method="POST" action="{{ route('admin.events.refresh-branding', $event) }}" class="mb-4">
-                @csrf
-                <button type="submit" class="px-4 py-2 bg-paper-soft text-ink text-sm font-medium rounded-md hover:bg-line">
-                    Re-fetch branding assets
-                </button>
-            </form>
-
-            <form method="POST" action="{{ route('admin.events.upload-branding', $event) }}" enctype="multipart/form-data" class="space-y-3">
-                @csrf
-                <div>
-                    <x-input-label for="logo" value="Upload/replace logo (overrides auto-fetch)" />
-                    <input id="logo" name="logo" type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" class="mt-1 block w-full text-sm">
-                    <x-input-error :messages="$errors->get('logo')" class="mt-1" />
-                </div>
-                <div>
-                    <x-input-label for="favicon" value="Upload/replace favicon" />
-                    <input id="favicon" name="favicon" type="file" accept="image/png,image/jpeg,image/x-icon,image/svg+xml" class="mt-1 block w-full text-sm">
-                    <x-input-error :messages="$errors->get('favicon')" class="mt-1" />
-                </div>
-                <button type="submit" class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                    Upload
-                </button>
-            </form>
-        </div>
-
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-4">Event Information</h3>
-            <p class="text-sm text-muted mb-4">Every field is optional and simply omitted from the attendee app when blank.</p>
-
-            <form method="POST" action="{{ route('admin.events.update-info', $event) }}" class="space-y-3">
-                @csrf
-                @method('PUT')
-                @php($info = $event->info ?? [])
-
-                <x-input-label for="venue" value="Venue" />
-                <x-text-input id="venue" name="venue" type="text" class="block w-full" :value="$info['venue'] ?? ''" />
-
-                <x-input-label for="important_links" value="Important links (one per line)" />
-                <textarea id="important_links" name="important_links" rows="3" class="block w-full border-line rounded-md">{{ $info['important_links'] ?? '' }}</textarea>
-
-                <x-input-label for="wifi" value="Wifi details" />
-                <x-text-input id="wifi" name="wifi" type="text" class="block w-full" :value="$info['wifi'] ?? ''" />
-
-                <x-input-label for="registration_info" value="Registration info" />
-                <textarea id="registration_info" name="registration_info" rows="2" class="block w-full border-line rounded-md">{{ $info['registration_info'] ?? '' }}</textarea>
-
-                <x-input-label for="contributor_day_location" value="Contributor Day location" />
-                <x-text-input id="contributor_day_location" name="contributor_day_location" type="text" class="block w-full" :value="$info['contributor_day_location'] ?? ''" />
-
-                <x-input-label for="code_of_conduct_url" value="Code of conduct URL" />
-                <x-text-input id="code_of_conduct_url" name="code_of_conduct_url" type="url" class="block w-full" :value="$info['code_of_conduct_url'] ?? ''" />
-
-                <x-input-label for="emergency_contact" value="Emergency / contact info" />
-                <textarea id="emergency_contact" name="emergency_contact" rows="2" class="block w-full border-line rounded-md">{{ $info['emergency_contact'] ?? '' }}</textarea>
-
-                <x-input-label for="social_event_info" value="Social event info" />
-                <textarea id="social_event_info" name="social_event_info" rows="2" class="block w-full border-line rounded-md">{{ $info['social_event_info'] ?? '' }}</textarea>
-
-                <x-input-label for="nearby_venue_info" value="Nearby venue info" />
-                <textarea id="nearby_venue_info" name="nearby_venue_info" rows="2" class="block w-full border-line rounded-md">{{ $info['nearby_venue_info'] ?? '' }}</textarea>
-
-                <div class="flex justify-end">
-                    <button type="submit" class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                        Save event information
-                    </button>
-                </div>
-            </form>
-        </div>
+            <x-slot:footer>
+                <x-action-form :action="route('admin.events.refresh', $event)" icon="refresh">Refresh now</x-action-form>
+            </x-slot:footer>
+        </x-card>
 
         @if ($event->status === 'draft')
-            <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-maroon/20 p-6">
-                <h3 class="text-lg font-medium text-ink mb-2">Delete event</h3>
-                <p class="text-sm text-muted mb-4">
-                    Only possible while this event is still a draft with nothing ingested — once it's
-                    approved/active/archived, use the status field above to archive it instead.
-                </p>
-                <form method="POST" action="{{ route('admin.events.destroy', $event) }}"
-                      onsubmit="return confirm('Delete this draft event? This cannot be undone.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                        Delete draft event
-                    </button>
-                </form>
-            </div>
+            <x-card title="Delete event" danger
+                    description="Only possible while the event is still a draft. Once it's approved, active or archived, archive it instead.">
+                <x-action-form :action="route('admin.events.destroy', $event)" method="DELETE" variant="danger" icon="trash"
+                               :confirm="'Delete “'.$event->display_name.'”? This cannot be undone.'">
+                    Delete draft event
+                </x-action-form>
+            </x-card>
         @endif
     </div>
 </x-app-layout>

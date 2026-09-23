@@ -1,39 +1,20 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
+<x-guest-layout title="Choose a new password" subtitle="Use a long, unique password you don't use anywhere else.">
+    <form method="POST" action="{{ route('password.store') }}" class="grid gap-5" novalidate
+          x-data="{ busy: false }" x-on:submit="busy = true" x-on:pageshow.window="busy = false">
         @csrf
 
-        <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-form.input name="email" type="email" label="Email address" required autofocus
+                      autocomplete="username" inputmode="email" :value="$request->email" />
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <x-form.password name="password" label="New password" required autocomplete="new-password" />
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <x-form.password name="password_confirmation" label="Confirm new password" required autocomplete="new-password" />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <x-button class="w-full" x-bind:disabled="busy">
+            <span x-show="! busy">Reset password</span>
+            <span x-show="busy" x-cloak>Saving…</span>
+        </x-button>
     </form>
 </x-guest-layout>

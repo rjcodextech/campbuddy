@@ -139,13 +139,13 @@
                 @if (!empty($info['emergency_contact']))
                     @php($href = $contactHref($info['emergency_contact']))
                     @if ($href)
-                        <a class="useful-link" href="{{ $href }}"><span class="useful-link__icon" aria-hidden="true">🚨</span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></a>
+                        <a class="useful-link" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency"><span class="useful-link__icon" aria-hidden="true">🚨</span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></a>
                     @else
                         <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🚨</span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></div>
                     @endif
                 @endif
                 @if (!empty($info['code_of_conduct_url']))
-                    <a class="useful-link" href="{{ $info['code_of_conduct_url'] }}" target="_blank" rel="noopener"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
+                    <a class="useful-link" href="{{ $info['code_of_conduct_url'] }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
                 @endif
                 @if (!empty($info['nearby_venue_info']))
                     <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🗺</span><span><span class="useful-link__title">Nearby</span><span class="useful-link__desc">{{ $info['nearby_venue_info'] }}</span></span></div>
@@ -153,7 +153,7 @@
                 @if (!empty($info['important_links']))
                     @foreach (preg_split('/\r?\n/', trim($info['important_links'])) as $link)
                         @continue(blank($link))
-                        <a class="useful-link" href="{{ $link }}" target="_blank" rel="noopener"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ $link }}</span></span></a>
+                        <a class="useful-link" href="{{ $link }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ $link }}</span></span></a>
                     @endforeach
                 @endif
             @endif

@@ -10,6 +10,8 @@
 // Dismissal is remembered per browser; if storage is unavailable it just
 // shows again next visit.
 
+import { track } from './analytics.js';
+
 const DESKTOP = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
 const DISMISSED_KEY = 'campbuddy-desktop-notice-dismissed';
 
@@ -69,5 +71,6 @@ export function initDesktopNotice() {
     query.removeEventListener('change', sync);
     notice.hidden = true;
     rememberDismissed();
+    track('desktop_notice_dismiss');
   });
 }

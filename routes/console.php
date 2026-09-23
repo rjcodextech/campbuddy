@@ -2,6 +2,7 @@
 
 use App\Jobs\DiscoverWordCampsJob;
 use App\Jobs\EvaluateEventLifecycleJob;
+use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
@@ -33,6 +34,15 @@ Schedule::call(function () {
         FetchSpeakersSponsorsSessionsJob::dispatch($event)->delay(now()->addSeconds($index * 5));
     });
 })->everyFifteenMinutes()->name('ingest-sessions-speakers-sponsors');
+
+// Event Information (venue, links, contact…) changes rarely — venue and
+// pages get filled in as organizers finish them — so once a day is plenty,
+// for events that are approved or live. Admin-typed values are never touched.
+Schedule::call(function () {
+    Event::whereIn('status', ['approved', 'active'])->each(function (Event $event, int $index) {
+        FetchEventInfoJob::dispatch($event)->delay(now()->addSeconds($index * 10));
+    });
+})->dailyAt('02:00')->name('ingest-event-info');
 
 Schedule::call(function () {
     Event::where('status', 'active')->each(function (Event $event, int $index) {

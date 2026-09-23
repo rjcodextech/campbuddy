@@ -1,3 +1,111 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+| Admin design system.
+|
+| Every admin page is built from these classes (usually through the
+| components in resources/views/components — <x-button>, <x-form.input>,
+| <x-card> …) so buttons, fields and tables look and behave the same
+| everywhere. Brand tokens (maroon, navy, paper, line …) live in
+| tailwind.config.js; don't hard-code colours in a view.
+*/
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer components {
+    /* ---- Form controls ------------------------------------------------ */
+    .cb-label {
+        @apply block text-sm font-medium text-ink;
+    }
+
+    .cb-input {
+        @apply block w-full rounded-md border-line bg-white px-3 py-2 text-sm text-ink shadow-sm
+               placeholder:text-muted/60
+               focus:border-maroon focus:ring-2 focus:ring-maroon/25
+               disabled:cursor-not-allowed disabled:bg-paper-soft disabled:text-muted;
+    }
+
+    .cb-input[aria-invalid='true'] {
+        @apply border-danger focus:border-danger focus:ring-danger/25;
+    }
+
+    select.cb-input {
+        @apply pr-9;
+    }
+
+    .cb-check {
+        @apply h-4 w-4 rounded border-line text-maroon shadow-sm focus:ring-2 focus:ring-maroon/30 focus:ring-offset-0;
+    }
+
+    .cb-file {
+        @apply block w-full cursor-pointer rounded-md border border-dashed border-line bg-paper px-3 py-2 text-sm text-muted
+               file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5
+               file:text-sm file:font-medium file:text-ink file:shadow-sm file:ring-1 file:ring-line
+               hover:border-maroon/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/30;
+    }
+
+    .cb-hint {
+        @apply mt-1 text-xs text-muted;
+    }
+
+    .cb-error {
+        @apply mt-1 text-xs font-medium text-danger;
+    }
+
+    /* ---- Buttons ------------------------------------------------------ */
+    .cb-btn {
+        @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border border-transparent
+               px-4 py-2 text-sm font-medium transition-colors
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40 focus-visible:ring-offset-2
+               disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .cb-btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+
+    .cb-btn-primary {
+        @apply bg-maroon text-white shadow-sm hover:bg-maroon-dark;
+    }
+
+    .cb-btn-secondary {
+        @apply border-line bg-white text-ink shadow-sm hover:bg-paper-soft;
+    }
+
+    .cb-btn-danger {
+        @apply bg-danger text-white shadow-sm hover:bg-danger-dark focus-visible:ring-danger/40;
+    }
+
+    .cb-btn-danger-outline {
+        @apply border-danger/30 bg-white text-danger hover:bg-danger-soft focus-visible:ring-danger/40;
+    }
+
+    .cb-btn-link {
+        @apply px-0 py-0 text-maroon hover:text-maroon-dark hover:underline;
+    }
+
+    /* ---- Tables ------------------------------------------------------- */
+    .cb-table {
+        @apply min-w-full text-left text-sm;
+    }
+
+    .cb-table thead th {
+        @apply whitespace-nowrap bg-paper-soft px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted;
+    }
+
+    .cb-table tbody tr {
+        @apply border-t border-line;
+    }
+
+    .cb-table tbody tr:hover {
+        @apply bg-paper/60;
+    }
+
+    .cb-table tbody td {
+        @apply px-4 py-3 align-middle text-ink;
+    }
+}

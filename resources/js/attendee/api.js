@@ -3,12 +3,24 @@
 // token as a bearer credential — never a session/cookie, since
 // attendees never log in.
 
+import { track } from './analytics.js';
+
+// Only the first path segment is reported ("discovery", not
+// "discovery/<id>") — the rest can carry IDs that must stay out of analytics.
+function reportFailure(path, method, status) {
+  track('api_error', { endpoint: path.split('?')[0].split('/')[1], method, status });
+}
+
 export async function apiGet(eventSlug, path) {
   const res = await fetch(`/api/v1/events/${eventSlug}${path}`, {
     headers: { Accept: 'application/json' },
   });
 
-  if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
+  if (!res.ok) {
+    reportFailure(path, 'GET', res.status);
+    throw new Error(`GET ${path} failed: ${res.status}`);
+  }
+
   return res.json();
 }
 
@@ -23,6 +35,7 @@ export async function apiMutate(eventSlug, path, method, body, ownerToken) {
   });
 
   if (!res.ok) {
+    reportFailure(path, method, res.status);
     const error = new Error(`${method} ${path} failed: ${res.status}`);
     error.status = res.status;
     throw error;

@@ -1,9 +1,12 @@
 // Deals with Offer::capture_leads enabled (admin-configured per deal,
 // §7) ask for Name/Email/Mobile before the deal opens. This never feeds
-// any analytics/tracking call with the submitted name/email/mobile — if
-// a track() wrapper is ever added to this app, that must stay true here.
+// any analytics/tracking call with the submitted name/email/mobile. Only
+// the offer's own id/title (admin-authored, public) and the fact that a
+// lead was submitted are reported — never `body` or anything read from
+// the form. analytics.js's allowlist has no param that could carry them.
 
 import { apiMutate } from './api.js';
+import { linkDomain, track } from './analytics.js';
 import { openInAppBrowser } from './in-app-browser.js';
 import { render } from './template.js';
 
@@ -21,7 +24,12 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) 
     dialog.remove();
   };
 
-  dialog.querySelector('[data-action="close"]').addEventListener('click', close);
+  track('deal_lead_form_open', { offer_id: leadOfferId, offer_title: leadOfferTitle });
+
+  dialog.querySelector('[data-action="close"]').addEventListener('click', () => {
+    track('deal_lead_form_cancel', { offer_id: leadOfferId });
+    close();
+  });
 
   dialog.querySelector('[data-lead-form]').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -39,6 +47,8 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) 
 
     try {
       await apiMutate(eventSlug, `/offers/${leadOfferId}/leads`, 'POST', body);
+      track('generate_lead', { offer_id: leadOfferId, offer_title: leadOfferTitle });
+      track('deal_open', { offer_title: leadOfferTitle, link_domain: linkDomain(leadOfferUrl), lead_capture: true });
       close();
       openInAppBrowser(leadOfferUrl, leadOfferTitle);
     } catch {

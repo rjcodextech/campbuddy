@@ -15,7 +15,9 @@
             <div class="notice" style="margin-top:14px">{{ session('status') }}</div>
         @endif
 
-        <form method="GET" action="{{ route('event.roster-removal.search', $event) }}" class="card" style="margin-top:16px">
+        {{-- Reported without the name typed here — the roster is other people's data (§8.4). --}}
+        <form method="GET" action="{{ route('event.roster-removal.search', $event) }}" class="card" style="margin-top:16px"
+              data-track="roster_removal_search" data-track-on="submit">
             <label class="field">
                 <span>Your name, exactly as it appears on the Attendees page</span>
                 <input type="text" name="name" value="{{ $searchedName ?? '' }}" required>
@@ -40,6 +42,7 @@
                                 <span style="font-weight:700">{{ $entry->name }}</span>
                             </div>
                             <form method="POST" action="{{ route('event.roster-removal.remove', [$event, $entry]) }}"
+                                  data-track="roster_removal_confirm" data-track-on="submit"
                                   onsubmit="return confirm('Remove this listing? This can\'t be undone by you — contact the organizers if you change your mind.');">
                                 @csrf
                                 <button type="submit" class="btn btn--outline btn--danger btn--compact">This is me — remove</button>

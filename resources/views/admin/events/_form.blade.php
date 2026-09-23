@@ -1,64 +1,34 @@
-@php($isEdit = $event->exists)
+{{-- The core event fields, shared by create and edit. --}}
+<div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+    <x-form.input name="display_name" label="Display name" required
+                  :value="$event->display_name" placeholder="WordCamp Rajasthan 2026"
+                  hint="Shown to attendees as the event's title." />
 
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-    <div>
-        <x-input-label for="slug" value="Slug" />
-        <x-text-input id="slug" name="slug" type="text" class="mt-1 block w-full"
-                      :value="old('slug', $event->slug)" required autofocus placeholder="wordcamp-rajasthan-2026" />
-        <x-input-error :messages="$errors->get('slug')" class="mt-2" />
-    </div>
+    <x-form.input name="slug" label="URL slug" required :autofocus="! $event->exists"
+                  :value="$event->slug" placeholder="wordcamp-rajasthan-2026"
+                  hint="Becomes the event's address: /event/your-slug" />
 
-    <div>
-        <x-input-label for="display_name" value="Display name" />
-        <x-text-input id="display_name" name="display_name" type="text" class="mt-1 block w-full"
-                      :value="old('display_name', $event->display_name)" required placeholder="WordCamp Rajasthan 2026" />
-        <x-input-error :messages="$errors->get('display_name')" class="mt-2" />
-    </div>
+    <x-form.input name="short_name" label="Short name / hashtag"
+                  :value="$event->short_name" placeholder="#WCRajasthan" />
 
-    <div>
-        <x-input-label for="short_name" value="Short name / hashtag" />
-        <x-text-input id="short_name" name="short_name" type="text" class="mt-1 block w-full"
-                      :value="old('short_name', $event->short_name)" placeholder="#WCRajasthan" />
-        <x-input-error :messages="$errors->get('short_name')" class="mt-2" />
-    </div>
+    <x-form.input name="source_site_url" type="url" label="Source site URL" required
+                  :value="$event->source_site_url" placeholder="https://rajasthan.wordcamp.org/2026"
+                  hint="The event's own WordCamp.org site. Schedule and sponsors are read from here." />
 
-    <div>
-        <x-input-label for="source_site_url" value="Source site URL" />
-        <x-text-input id="source_site_url" name="source_site_url" type="url" class="mt-1 block w-full"
-                      :value="old('source_site_url', $event->source_site_url)" required placeholder="https://rajasthan.wordcamp.org/2026" />
-        <x-input-error :messages="$errors->get('source_site_url')" class="mt-2" />
-    </div>
+    <x-form.input name="starts_on" type="date" label="Starts on"
+                  :value="optional($event->starts_on)->toDateString()" />
 
-    <div>
-        <x-input-label for="starts_on" value="Starts on" />
-        <x-text-input id="starts_on" name="starts_on" type="date" class="mt-1 block w-full"
-                      :value="old('starts_on', optional($event->starts_on)->toDateString())" />
-        <x-input-error :messages="$errors->get('starts_on')" class="mt-2" />
-    </div>
+    <x-form.input name="ends_on" type="date" label="Ends on"
+                  :value="optional($event->ends_on)->toDateString()"
+                  hint="Drives when attendee-discovery profiles expire." />
 
-    <div>
-        <x-input-label for="ends_on" value="Ends on (drives discovery-profile expiry)" />
-        <x-text-input id="ends_on" name="ends_on" type="date" class="mt-1 block w-full"
-                      :value="old('ends_on', optional($event->ends_on)->toDateString())" />
-        <x-input-error :messages="$errors->get('ends_on')" class="mt-2" />
-    </div>
+    <x-form.select name="status" label="Lifecycle status" required :value="$event->status ?? 'draft'"
+                   :options="['draft' => 'Draft — not public', 'approved' => 'Approved — branding fetched', 'active' => 'Active — live in the app', 'archived' => 'Archived — read-only']"
+                   hint="Only active, visible events appear to attendees." />
 
-    <div>
-        <x-input-label for="status" value="Lifecycle status" />
-        <select id="status" name="status" class="mt-1 block w-full border-line rounded-md shadow-sm">
-            @foreach (['draft', 'approved', 'active', 'archived'] as $status)
-                <option value="{{ $status }}" @selected(old('status', $event->status) === $status)>{{ ucfirst($status) }}</option>
-            @endforeach
-        </select>
-        <x-input-error :messages="$errors->get('status')" class="mt-2" />
-    </div>
-
-    <div class="flex items-center mt-6">
-        <label class="inline-flex items-center">
-            <input type="hidden" name="is_visible" value="0">
-            <input type="checkbox" name="is_visible" value="1" class="rounded border-line text-maroon"
-                   @checked(old('is_visible', $event->is_visible ?? true))>
-            <span class="ms-2 text-sm text-ink">Visible in the public app (default on)</span>
-        </label>
+    <div class="sm:pt-7">
+        <x-form.checkbox name="is_visible" label="Visible in the public app"
+                         hint="Untick to hide an active event without archiving it."
+                         :checked="$event->is_visible ?? true" unchecked="0" />
     </div>
 </div>

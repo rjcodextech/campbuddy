@@ -3,6 +3,7 @@
 // through the manual "Add to Home Screen" steps instead, since iOS
 // never fires beforeinstallprompt at all.
 
+import { track } from './analytics.js';
 import { render } from './template.js';
 
 function isIosSafari() {
@@ -22,7 +23,10 @@ export function initInstallPrompt() {
 
   if (isIosSafari()) {
     btn.hidden = false;
-    btn.addEventListener('click', showIosInstallSteps);
+    btn.addEventListener('click', () => {
+      track('install_prompt_open', { platform: 'ios' });
+      showIosInstallSteps();
+    });
     return;
   }
 
@@ -35,12 +39,15 @@ export function initInstallPrompt() {
   btn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     btn.hidden = true;
+    track('install_prompt_open', { platform: 'native' });
     deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
+    const { outcome } = await deferredPrompt.userChoice;
+    track('install_prompt_result', { outcome });
     deferredPrompt = null;
   });
 
   window.addEventListener('appinstalled', () => {
+    track('install_complete');
     btn.hidden = true;
     deferredPrompt = null;
   });

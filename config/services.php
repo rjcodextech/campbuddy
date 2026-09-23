@@ -41,4 +41,11 @@ return [
         'subject' => env('VAPID_SUBJECT'),
     ],
 
+    // GA4 for the attendee app (partials/analytics.blade.php). Unset = no
+    // tag, no requests to Google — so local/staging stay out of the
+    // production property unless they're deliberately given the ID.
+    'google_analytics' => [
+        'measurement_id' => env('GA_MEASUREMENT_ID'),
+    ],
+
 ];

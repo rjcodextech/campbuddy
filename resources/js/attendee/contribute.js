@@ -3,6 +3,7 @@
 // plain-language explanation each one needs (CD3), plus the Quest tie-in
 // (CD4).
 
+import { track } from './analytics.js';
 import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
 import { setQuestComplete } from './db.js';
 import { fill, render } from './template.js';
@@ -34,6 +35,7 @@ export async function renderContribute(root) {
   });
 
   document.getElementById('contrib-retry').addEventListener('click', () => {
+    track('contribute_retry');
     document.getElementById('contrib-results').hidden = true;
     document.getElementById('contrib-questions').hidden = false;
   });
@@ -50,6 +52,10 @@ function scoreTeam(team, answers) {
 }
 
 function showMatches(answers, eventId, questId) {
+  // The answers are picks from a fixed, curated list and aren't stored
+  // anywhere — a signal for which contribution areas attendees lean toward.
+  track('contribute_matches_view', { answer_count: answers.length, answers: [...answers].sort().join(',') });
+
   document.getElementById('contrib-questions').hidden = true;
   const resultsEl = document.getElementById('contrib-results');
   resultsEl.hidden = false;
@@ -59,13 +65,13 @@ function showMatches(answers, eventId, questId) {
 
   const listEl = document.getElementById('contrib-team-list');
   listEl.replaceChildren(...top.map(teamCard));
-  wireTeamCards(listEl, eventId, questId);
+  wireTeamCards(listEl, eventId, questId, 'matches');
 }
 
 function renderAllTeams(eventId, questId) {
   const el = document.getElementById('contrib-all-list');
   el.replaceChildren(...CONTRIB_TEAMS.map(teamCard));
-  wireTeamCards(el, eventId, questId);
+  wireTeamCards(el, eventId, questId, 'all');
 }
 
 function teamCard(team) {
@@ -77,10 +83,11 @@ function teamCard(team) {
   });
 }
 
-function wireTeamCards(container, eventId, questId) {
+function wireTeamCards(container, eventId, questId, source) {
   container.querySelectorAll('[data-team-id]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const team = CONTRIB_TEAMS.find((t) => t.id === btn.dataset.teamId);
+      track('contribute_team_view', { team_id: team.id, team_name: team.name, source });
       showTeamDetail(team, eventId, questId);
     });
   });

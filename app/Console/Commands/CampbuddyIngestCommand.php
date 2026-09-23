@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Jobs\FetchBrandingAssetsJob;
+use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Models\Event;
@@ -17,7 +18,7 @@ class CampbuddyIngestCommand extends Command
 {
     protected $signature = 'campbuddy:ingest {slug : The event slug to bootstrap}';
 
-    protected $description = "Bootstrap one event's data: branding, sessions/speakers/sponsors, and the attendee roster";
+    protected $description = "Bootstrap one event's data: branding, event information, sessions/speakers/sponsors, and the attendee roster";
 
     public function handle(): int
     {
@@ -34,6 +35,10 @@ class CampbuddyIngestCommand extends Command
         $this->info('Fetching branding assets...');
         FetchBrandingAssetsJob::dispatchSync($event);
         $ok = $this->reportLastLog($event, 'branding') && $ok;
+
+        $this->info('Fetching event information (venue, links, contact)...');
+        FetchEventInfoJob::dispatchSync($event);
+        $ok = $this->reportLastLog($event, 'event_info') && $ok;
 
         $this->info("Fetching sessions, speakers, and sponsors for \"{$event->display_name}\"...");
         FetchSpeakersSponsorsSessionsJob::dispatchSync($event);

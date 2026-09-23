@@ -3,6 +3,8 @@
 // plus opening sponsor/deal links in the in-app browser instead of
 // fully leaving CampBuddy.
 
+import { linkDomain, track } from './analytics.js';
+
 export function renderExplore() {
   document.querySelectorAll('[data-explore-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -13,11 +15,23 @@ export function renderExplore() {
       document.querySelectorAll('[data-explore-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.explorePanel !== btn.dataset.exploreTab;
       });
+      track('explore_tab_view', { tab: btn.dataset.exploreTab });
     });
   });
 
   document.querySelectorAll('[data-inapp-url]').forEach((btn) => {
     btn.addEventListener('click', async () => {
+      // The panel the button sits in says whether it's a sponsor or a deal
+      // (a lead-capturing deal is reported by deal-leads.js instead).
+      const panel = btn.closest('[data-explore-panel]')?.dataset.explorePanel;
+      const domain = linkDomain(btn.dataset.inappUrl);
+
+      if (panel === 'deals') {
+        track('deal_open', { offer_title: btn.dataset.inappTitle, link_domain: domain, lead_capture: false });
+      } else {
+        track('sponsor_open', { sponsor_name: btn.dataset.inappTitle, link_domain: domain });
+      }
+
       const { openInAppBrowser } = await import('./in-app-browser.js');
       openInAppBrowser(btn.dataset.inappUrl, btn.dataset.inappTitle);
     });

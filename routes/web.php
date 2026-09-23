@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\MediaController;
@@ -54,9 +55,7 @@ Route::middleware('event.public')->group(function () {
 */
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
-        Route::get('/', function () {
-            return view('dashboard');
-        })->name('dashboard');
+        Route::get('/', DashboardController::class)->name('dashboard');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -70,6 +69,7 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/refresh-branding', [EventController::class, 'refreshBranding'])->name('admin.events.refresh-branding');
         Route::post('events/{event}/branding', [EventController::class, 'uploadBranding'])->name('admin.events.upload-branding');
         Route::put('events/{event}/info', [EventController::class, 'updateInfo'])->name('admin.events.update-info');
+        Route::post('events/{event}/fetch-info', [EventController::class, 'fetchInfo'])->name('admin.events.fetch-info');
 
         Route::get('events/{event}/quests', [QuestController::class, 'index'])->name('admin.events.quests.index');
         Route::post('events/{event}/quests', [QuestController::class, 'store'])->name('admin.events.quests.store');

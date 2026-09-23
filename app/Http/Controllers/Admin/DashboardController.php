@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\AttendeeRoster;
+use App\Models\Event;
+use App\Models\FetchLog;
+use App\Models\Offer;
+use App\Models\OfferLead;
+use Illuminate\View\View;
+
+/**
+ * The admin landing page: a glance at what needs attention (events waiting
+ * for approval, ingestion that's failing) plus headline numbers.
+ */
+class DashboardController extends Controller
+{
+    public function __invoke(): View
+    {
+        $eventsByStatus = Event::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return view('dashboard', [
+            'eventsByStatus' => $eventsByStatus,
+            'eventCount' => $eventsByStatus->sum(),
+            'rosterCount' => AttendeeRoster::where('is_suppressed', false)->count(),
+            'activeDeals' => Offer::where('is_active', true)->count(),
+            'leadCount' => OfferLead::count(),
+            'recentLeadCount' => OfferLead::where('created_at', '>=', now()->subDays(7))->count(),
+            'recentEvents' => Event::latest('updated_at')->limit(6)->get(),
+            'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
+            'failedFetches' => FetchLog::with('event:id,display_name')
+                ->where('status', '!=', 'ok')
+                ->latest('fetched_at')
+                ->limit(5)
+                ->get(),
+        ]);
+    }
+}

@@ -270,17 +270,19 @@ body > div > img[width='1'][height='1'] {
     }
 }
 
-// CampBuddy's own mark, standing in for the old "CampBuddy" text — same
-// white-chip treatment as the event mark above, sized down since it's a
-// watermark next to the QR, not a focal point.
+// CampBuddy's own logo (the wordmark lockup, not the square icon) under the
+// QR — a watermark, not a focal point. Sized by height so the wide lockup is
+// never squished, and set on a white chip like the event mark above: the
+// wordmark's dark lettering would disappear on the darker layouts otherwise.
+// (Pass drops the chip — see its override below.)
 .camp-card__brand-mark {
     display: block;
-    width: cc(22);
     height: cc(22);
+    width: auto;
     object-fit: contain;
-    border-radius: cc(4);
+    border-radius: cc(6);
     background: #fff;
-    padding: cc(2);
+    padding: cc(4) cc(10);
 }
 
 // Full-wordmark variants of the event/brand marks above — hidden by
@@ -293,14 +295,6 @@ body > div > img[width='1'][height='1'] {
     max-height: cc(52);
     object-fit: contain;
     margin: 0 auto cc(16);
-}
-
-.camp-card__brand-mark-full {
-    display: none;
-    height: cc(13);
-    width: auto;
-    object-fit: contain;
-    opacity: 0.8;
 }
 
 // A static "Code is Poetry" signature band at the very bottom of the
@@ -594,12 +588,13 @@ body > div > img[width='1'][height='1'] {
         padding-bottom: cc(12);
     }
 
+    // The card itself is already light, so no chip: just the logo, quieter.
     .camp-card__brand-mark {
-        display: none;
-    }
-
-    .camp-card__brand-mark-full {
-        display: block;
+        height: cc(13);
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        opacity: 0.8;
     }
 
     .camp-card__tier-band {

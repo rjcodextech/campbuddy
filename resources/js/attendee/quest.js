@@ -7,6 +7,7 @@
 // local-only completion store (C2, C4) — no points, currency, or
 // leaderboard, deliberately.
 
+import { track } from './analytics.js';
 import { getQuestProgress, setQuestComplete } from './db.js';
 import { render } from './template.js';
 
@@ -53,6 +54,16 @@ export async function renderQuest(root) {
       completed.add(id);
     }
     await setQuestComplete(eventId, id, !isDone);
+
+    // Which quest and whether it was ticked or un-ticked — completion state
+    // itself is never sent, only this event (no points/leaderboard, by design).
+    const quest = quests.find((q) => q.id === id);
+    track(isDone ? 'quest_undo' : 'quest_complete', {
+      quest_id: id,
+      quest_title: quest?.title,
+      quest_group: THINGS_TO_DO_META[quest?.title] ? 'things_to_do' : 'checklist',
+    });
+
     renderProgress();
     renderThings();
     renderChecklist();
@@ -117,7 +128,16 @@ function thingCard(quest, done, eventSlug) {
     icon: meta.icon ?? '✨',
     title: quest.title,
     desc: quest.description || null,
-    nav: meta.nav ? { attrs: { href: navUrl(eventSlug, meta.nav) } } : null,
+    nav: meta.nav
+      ? {
+          attrs: {
+            href: navUrl(eventSlug, meta.nav),
+            'data-track': 'quest_nav_click',
+            'data-track-quest-title': quest.title,
+            'data-track-destination': meta.nav,
+          },
+        }
+      : null,
     'nav-label': meta.navLabel ?? 'Open',
     toggle: {
       text: done ? 'Done ✓' : 'Mark done',

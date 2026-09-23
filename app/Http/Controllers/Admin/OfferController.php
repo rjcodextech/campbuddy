@@ -29,7 +29,12 @@ class OfferController extends Controller
 
     public function store(StoreOfferRequest $request, Event $event): RedirectResponse
     {
-        $event->offers()->create($request->validated());
+        $data = $request->validated();
+
+        // New deals go to the end of the list unless the admin picked a position.
+        $data['sort_order'] ??= ($event->offers()->max('sort_order') ?? 0) + 10;
+
+        $event->offers()->create($data);
 
         return redirect()->route('admin.events.offers.index', $event)->with('status', 'Offer added.');
     }

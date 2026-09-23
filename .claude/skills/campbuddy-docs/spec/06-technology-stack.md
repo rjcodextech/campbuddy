@@ -6,7 +6,7 @@
 |---|---|
 | App structure | **One Laravel app** — no separate frontend/backend repos or mount paths ([5](05-system-architecture.md)) |
 | Templating | **Blade** — attendee pages rendered server-side ([5.1](05-system-architecture.md#51-request-flow-public-pages--updated-for-server-rendering)) |
-| Frontend assets | Vite ([5.5](05-system-architecture.md#55-asset-build--laravels-default-vite-pipeline)) — attendee app keeps vanilla JS + hand-written BEM/SCSS; admin panel uses Breeze's Tailwind + Alpine, scoped to `/admin` only |
+| Frontend assets | Vite ([5.5](05-system-architecture.md#55-asset-build--laravels-default-vite-pipeline)) — attendee app keeps vanilla JS + hand-written BEM/SCSS; admin panel uses Tailwind + Alpine, scoped to `/admin` only — built on its own small design system (`.cb-*` classes in `resources/css/app.css` + Blade components), see [9](09-admin-panel.md) |
 | Frontend libraries | `qrcode-generator`; Web Push client via the browser's native Push API |
 | Backend framework | **Laravel 12** |
 | Auth scaffolding | **Laravel Breeze** for `/admin` — session-based, Argon2id-capable hasher |
@@ -20,4 +20,4 @@
 | Local dev | WAMP (Apache + MySQL + PHP) — vhost `DocumentRoot` points at Laravel's `public/` folder ([11.4](11-installation-setup.md#114-local-wamp-setup)) |
 | Testing | Pest/PHPUnit — see [15](15-testing.md) |
 | CDN | Cloudflare (or equivalent) — mandatory |
-| Analytics | GA4, PII-excluded (see [8.5](08-security-privacy.md#85-analytics-guardrail)) |
+| Analytics | GA4, PII-excluded (see [8.5](08-security-privacy.md#85-analytics-guardrail)) — attendee app only, enabled by `GA_MEASUREMENT_ID`; wiring and event catalogue in [22](22-analytics.md) |

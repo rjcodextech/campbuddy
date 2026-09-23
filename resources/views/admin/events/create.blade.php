@@ -1,16 +1,15 @@
-<x-app-layout title="Add event">
-    <div class="max-w-3xl">
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <form method="POST" action="{{ route('admin.events.store') }}">
-                @csrf
-                @include('admin.events._form')
+<x-app-layout title="Add event" subtitle="You can add branding, information and quests once it's created."
+              :breadcrumbs="[['Events', route('admin.events.index')], ['Add event']]">
+    <form method="POST" action="{{ route('admin.events.store') }}" class="max-w-4xl">
+        @csrf
 
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                        Create event
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+        <x-card title="Event details">
+            @include('admin.events._form')
+
+            <x-slot:footer>
+                <x-button :href="route('admin.events.index')" variant="secondary">Cancel</x-button>
+                <x-button>Create event</x-button>
+            </x-slot:footer>
+        </x-card>
+    </form>
 </x-app-layout>

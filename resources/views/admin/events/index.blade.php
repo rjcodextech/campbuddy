@@ -1,58 +1,56 @@
-<x-app-layout title="Events">
-    <x-slot name="actions">
-        <form method="POST" action="{{ route('admin.events.discover') }}" class="inline">
-            @csrf
-            <button type="submit" class="inline-flex items-center px-4 py-2 bg-paper-soft text-ink text-sm font-medium rounded-md hover:bg-line">
-                Discover WordCamps
-            </button>
-        </form>
-        <a href="{{ route('admin.events.create') }}"
-           class="inline-flex items-center px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-            Add event
-        </a>
-    </x-slot>
+<x-app-layout title="Events" subtitle="Every WordCamp CampBuddy knows about, and where it is in its lifecycle."
+              :breadcrumbs="[['Events']]">
+    <x-slot:actions>
+        <x-action-form :action="route('admin.events.discover')" icon="search" variant="secondary">Discover WordCamps</x-action-form>
+        <x-button :href="route('admin.events.create')" icon="plus">Add event</x-button>
+    </x-slot:actions>
 
-    @if (session('status'))
-        <div class="mb-4 p-4 bg-teal/10 text-teal rounded-md">{{ session('status') }}</div>
-    @endif
+    <x-card flush>
+        <x-table>
+            <x-slot:head>
+                <th>Event</th>
+                <th>Status</th>
+                <th class="hidden md:table-cell">Visibility</th>
+                <th class="hidden md:table-cell">Dates</th>
+                <th class="hidden text-right sm:table-cell">Attendees</th>
+                <th class="w-px"><span class="sr-only">Actions</span></th>
+            </x-slot:head>
 
-    <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line">
-        <table class="min-w-full divide-y divide-line">
-            <thead class="bg-paper-soft">
+            @forelse ($events as $event)
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Event</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Visible</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-muted uppercase">Roster</th>
-                    <th class="px-6 py-3"></th>
+                    <td>
+                        <a href="{{ route('admin.events.edit', $event) }}" class="font-medium hover:text-maroon hover:underline">{{ $event->display_name }}</a>
+                        <div class="text-xs text-muted">{{ $event->slug }}</div>
+                    </td>
+                    <td><x-event-status :status="$event->status" /></td>
+                    <td class="hidden md:table-cell">
+                        @if ($event->is_visible)
+                            <x-badge variant="success">Visible</x-badge>
+                        @else
+                            <x-badge>Hidden</x-badge>
+                        @endif
+                    </td>
+                    <td class="hidden whitespace-nowrap text-muted md:table-cell">
+                        @if ($event->starts_on)
+                            {{ $event->starts_on->format('j M Y') }}@if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) – {{ $event->ends_on->format('j M Y') }}@endif
+                        @else
+                            —
+                        @endif
+                    </td>
+                    <td class="hidden text-right tabular-nums sm:table-cell">{{ number_format($event->attendee_roster_count) }}</td>
+                    <td class="text-right">
+                        <x-button :href="route('admin.events.edit', $event)" variant="secondary" size="sm">Manage</x-button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody class="divide-y divide-line">
-                @forelse ($events as $event)
-                    <tr>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-ink">{{ $event->display_name }}</div>
-                            <div class="text-sm text-muted">{{ $event->slug }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="px-2 py-1 text-xs rounded-full bg-paper-soft text-ink">{{ $event->status }}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-ink">{{ $event->is_visible ? 'Yes' : 'No' }}</td>
-                        <td class="px-6 py-4 text-sm text-ink">{{ $event->attendee_roster_count }}</td>
-                        <td class="px-6 py-4 text-right text-sm">
-                            <a href="{{ route('admin.events.edit', $event) }}" class="text-maroon hover:text-maroon-dark font-medium">Edit</a>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-sm text-muted">
-                            No events yet. Add WordCamp Rajasthan 2026 to get started.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+            @empty
+                <x-table.empty :colspan="6" icon="calendar" title="No events yet">
+                    Add a WordCamp by hand, or run discovery to find upcoming ones — they land here as drafts.
+                </x-table.empty>
+            @endforelse
+        </x-table>
 
-    <div class="mt-4">{{ $events->links() }}</div>
+        @if ($events->hasPages())
+            <x-slot:footer>{{ $events->links() }}</x-slot:footer>
+        @endif
+    </x-card>
 </x-app-layout>

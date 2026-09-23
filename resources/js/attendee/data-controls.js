@@ -3,6 +3,7 @@
 // discovery profile without a separate warning and offer to leave first.
 
 import { apiMutate } from './api.js';
+import { track } from './analytics.js';
 import { clearAll, exportAll, kvGet, kvSet } from './db.js';
 
 // The card itself is attendee/partials/data-controls.blade.php, included
@@ -24,6 +25,7 @@ async function exportData(root) {
   a.download = `campbuddy-export-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
+  track('data_export');
 }
 
 async function clearData(root) {
@@ -58,6 +60,7 @@ async function clearData(root) {
   if (!confirmed) return;
 
   await clearAll();
+  track('data_clear');
   alert('Your local CampBuddy data has been cleared.');
   window.location.reload();
 }

@@ -3,6 +3,7 @@
 // permanently: no automatic re-prompt, ever (N4).
 
 import { apiMutate } from './api.js';
+import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 import { render } from './template.js';
 
@@ -38,26 +39,35 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
   }
 
   if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    track('reminder_offer', { result: 'unsupported' });
     return false;
   }
 
   // N3: iOS needs 16.4+ AND the PWA installed to the home screen first.
   if (isIosSafari() && !isStandalone()) {
+    track('reminder_offer', { result: 'ios_needs_install' });
     showIosInstallPrompt();
     return false;
   }
 
   const wantsReminder = confirm('Want CampBuddy to remind you before this session starts?');
-  if (!wantsReminder) return false;
+  if (!wantsReminder) {
+    track('reminder_offer', { result: 'declined' });
+    return false;
+  }
 
   const permission = await Notification.requestPermission();
 
   if (permission === 'denied') {
     await kvSet('notificationState', { ...state, permanentlyDenied: true });
+    track('reminder_offer', { result: 'permission_denied' });
     return false;
   }
 
-  if (permission !== 'granted') return false;
+  if (permission !== 'granted') {
+    track('reminder_offer', { result: 'permission_dismissed' });
+    return false;
+  }
 
   try {
     const registration = await navigator.serviceWorker.ready;
@@ -85,8 +95,10 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
       reminder_enabled: true,
     });
 
+    track('reminder_offer', { result: 'enabled' });
     return true;
   } catch {
+    track('reminder_offer', { result: 'error' });
     return false;
   }
 }

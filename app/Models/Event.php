@@ -24,6 +24,8 @@ class Event extends Model
         'logo_path',
         'favicon_path',
         'info',
+        'info_fetched',
+        'info_fetched_at',
         'status',
         'is_visible',
     ];
@@ -31,6 +33,8 @@ class Event extends Model
     protected $casts = [
         'is_visible' => 'boolean',
         'info' => 'array',
+        'info_fetched' => 'array',
+        'info_fetched_at' => 'datetime',
         'starts_on' => 'date',
         'ends_on' => 'date',
     ];
@@ -58,6 +62,29 @@ class Event extends Model
     public function quests(): HasMany
     {
         return $this->hasMany(Quest::class);
+    }
+
+    /**
+     * Gives this event its own editable copy of the default checklist
+     * (Quest::DEFAULT_CHECKLIST). Matches on title, so calling it again
+     * only fills in what's missing rather than duplicating.
+     */
+    public function seedDefaultChecklist(): void
+    {
+        $existing = $this->quests()->where('source', 'event')->pluck('title')->all();
+
+        foreach (Quest::DEFAULT_CHECKLIST as $index => $title) {
+            if (in_array($title, $existing, true)) {
+                continue;
+            }
+
+            $this->quests()->create([
+                'source' => 'event',
+                'title' => $title,
+                'sort_order' => ($index + 1) * 10,
+                'is_active' => true,
+            ]);
+        }
     }
 
     public function offers(): HasMany

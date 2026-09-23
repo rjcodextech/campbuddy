@@ -28,8 +28,7 @@
                             <div class="camp-card__qr-frame">
                                 <canvas></canvas>
                             </div>
-                            <img src="/media/icon.svg" alt="CampBuddy" class="camp-card__brand-mark">
-                            <img src="/media/logo.svg" alt="CampBuddy" class="camp-card__brand-mark-full">
+                            <img src="/media/logo.svg" alt="CampBuddy" class="camp-card__brand-mark">
                         </div>
                         <div class="camp-card__tier-band" aria-hidden="true">
                             <span>Code is Poetry</span>

@@ -12,6 +12,7 @@
 // clone of it at print size and get exactly the on-screen layout.
 
 import QRCode from 'qrcode-generator';
+import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 import { withPngDpi } from './png-dpi.js';
 import { render } from './template.js';
@@ -104,6 +105,8 @@ export async function renderCampCard() {
     data.primaryLink = document.querySelector('[data-qr-target].chip--selected')?.dataset.qrTarget ?? DEFAULT_QR_TARGET;
 
     await kvSet('campCard', data);
+    // Camp Card content is local-only (CC5) — only "it was saved" is reported.
+    track('camp_card_save');
     renderAllPreviews(data);
     document.getElementById('cc-edit-details').open = false;
   });
@@ -184,17 +187,21 @@ async function shareCard(layout) {
 
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: 'My Camp Card' });
+      track('share', { method: 'web_share_file', content_type: 'camp_card', item_id: layout });
     } else if (navigator.share) {
       // Some browsers support navigator.share but not file sharing —
       // share a link instead of failing silently.
       await navigator.share({ title: 'My Camp Card', url: location.href });
+      track('share', { method: 'web_share_link', content_type: 'camp_card', item_id: layout });
     } else {
       // No Web Share support at all (most desktop browsers) — fall back
       // to a download so the button still does something useful.
       saveBlob(blob, filename);
+      track('share', { method: 'download_fallback', content_type: 'camp_card', item_id: layout });
     }
   } catch (err) {
     if (err?.name !== 'AbortError') {
+      track('camp_card_export_error', { action: 'share', layout });
       alert("Couldn't share the card — try Download instead.");
     }
   } finally {
@@ -219,7 +226,9 @@ async function downloadCard(layout) {
 
   try {
     saveBlob(await cardPngBlob(layout), `campbuddy-camp-card-${layout}.png`);
+    track('camp_card_download', { layout });
   } catch {
+    track('camp_card_export_error', { action: 'download', layout });
     alert("Couldn't create the image — try again.");
   } finally {
     btn.disabled = false;

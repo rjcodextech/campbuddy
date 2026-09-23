@@ -14,6 +14,7 @@
         @if (\Illuminate\Support\Facades\Route::has($tab['route']))
             <a href="{{ route($tab['route'], $event) }}"
                class="bottom-nav__item @if($active) bottom-nav__item--active @endif"
+               data-track="nav_tab_click" data-track-tab="{{ str_replace('-', '_', $tab['icon']) }}"
                aria-current="{{ $active ? 'page' : 'false' }}">
                 <img src="/media/{{ $tab['icon'] }}.svg" alt="" class="bottom-nav__icon" aria-hidden="true">
                 <span class="bottom-nav__label">{{ $tab['label'] }}</span>

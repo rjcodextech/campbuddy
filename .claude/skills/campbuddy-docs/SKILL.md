@@ -33,7 +33,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 5 | [spec/05-system-architecture.md](spec/05-system-architecture.md) | Request flow, ingestion jobs, central discovery, CDN, asset build |
 | 6 | [spec/06-technology-stack.md](spec/06-technology-stack.md) | The full stack, layer by layer |
 | 7 | [spec/07-data-model.md](spec/07-data-model.md) | Tables added on top of V1's schema |
-| 8 | [spec/08-security-privacy.md](spec/08-security-privacy.md) | Rate limiting, ingestion job safety, matching privacy architecture, roster data policy, analytics guardrail, discovery ownership model |
+| 8 | [spec/08-security-privacy.md](spec/08-security-privacy.md) | Rate limiting, ingestion job safety, matching privacy architecture, roster data policy, analytics guardrail (implemented — see §22), discovery ownership model |
 | 9 | [spec/09-admin-panel.md](spec/09-admin-panel.md) | Full admin CRUD surface |
 | 10 | [spec/10-api-specification.md](spec/10-api-specification.md) | `/api/v1/*` endpoints |
 | 11 | [spec/11-installation-setup.md](spec/11-installation-setup.md) | Local dev setup, WAMP config |
@@ -47,6 +47,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 19 | [spec/19-build-order.md](spec/19-build-order.md) | The original 10-day build sequence |
 | 20 | [spec/20-engineering-principles.md](spec/20-engineering-principles.md) | Process discipline — read before making structural changes |
 | 21 | [spec/21-performance-hygiene.md](spec/21-performance-hygiene.md) | Laravel abstraction discipline, query discipline, security discipline |
+| 22 | [spec/22-analytics.md](spec/22-analytics.md) | GA4 wiring, the `track()` allowlist, the full event catalogue, one-time GA-console setup |
 
 ### §3 quick lookup (functional requirements, split by feature)
 

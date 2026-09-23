@@ -2,8 +2,13 @@
 // is server-rendered; this just wires up the interactive parts:
 // whichever screen's own module the page needs.
 
+import { initAnalytics } from './analytics.js';
 import { initDesktopNotice } from './desktop-notice.js';
 import { initInstallPrompt } from './install.js';
+
+// First, so data-track markup and error reporting are live before any
+// other module wires itself up.
+initAnalytics();
 
 // Registered as early as possible — the browser can fire
 // beforeinstallprompt at any point after this listens for it, and

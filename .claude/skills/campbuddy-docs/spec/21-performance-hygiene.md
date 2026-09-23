@@ -1,6 +1,6 @@
 # 21. Performance & scalability hygiene (code-level, hosting-independent)
 
-[← Back to index](../SKILL.md) · Previous: [20. Engineering principles](20-engineering-principles.md) · Back to: [Index](../SKILL.md)
+[← Back to index](../SKILL.md) · Previous: [20. Engineering principles](20-engineering-principles.md) · Next: [22. Analytics (GA4) →](22-analytics.md)
 
 [5.4](05-system-architecture.md#54-cdn--now-mandatory-not-optional) was explicit: don't build shared-hosting-scale CampBuddy as if it needs to survive a million concurrent users today. This section is the other half of that argument: a set of things that cost **almost nothing to do correctly the first time**, and skipping them is what actually causes a painful rewrite later.
 

@@ -9,6 +9,7 @@
 // threaded through every render so it survives a re-render triggered by
 // a filter/search/bookmark change instead of silently closing.
 
+import { track } from './analytics.js';
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
 import { offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
@@ -67,11 +68,13 @@ export async function renderMyDay(root) {
       bookmarkedIds.delete(session.id);
       await removeBookmark(eventId, session.id);
       starButton.classList.remove('schedule-item__star--saved');
+      track('session_unsave', { session_id: session.id, session_title: session.title });
     } else {
       const conflict = bookmarkedOverlap(session);
       await setBookmark(eventId, session.id, false);
       bookmarkedIds.add(session.id);
       starButton.classList.add('schedule-item__star--saved');
+      track('session_save', { session_id: session.id, session_title: session.title, overlap: Boolean(conflict) });
 
       if (conflict) {
         showToast(`Heads up — this overlaps with ${conflict.title ?? 'another saved session'}. Both are saved.`);
@@ -88,10 +91,16 @@ export async function renderMyDay(root) {
 
   function toggleExpand(sessionId) {
     expandedSessionId = expandedSessionId === sessionId ? null : sessionId;
+
+    if (expandedSessionId !== null) {
+      track('session_expand', { session_id: sessionId, session_title: timed.find((s) => s.id === sessionId)?.title });
+    }
+
     renderFull();
     renderMine();
   }
 
+  // Returns how many sessions matched, for schedule_search's results_count.
   function renderFull() {
     const filtered = timed.filter((s) => {
       const matchesDay = !activeDay || s.dayKey === activeDay;
@@ -104,6 +113,7 @@ export async function renderMyDay(root) {
 
     renderGroupedByDay(fullListEl, filtered, 'tpl-my-day-empty-full');
     wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
+    return filtered.length;
   }
 
   function renderMine() {
@@ -137,9 +147,18 @@ export async function renderMyDay(root) {
     );
   }
 
+  // Reported once typing pauses, and only the length + hit count: what an
+  // attendee types could be anyone's name, so the text itself stays local.
+  let searchTimer;
+
   searchEl.addEventListener('input', () => {
     query = searchEl.value.trim().toLowerCase();
-    renderFull();
+    const resultsCount = renderFull();
+
+    clearTimeout(searchTimer);
+    if (query.length >= 2) {
+      searchTimer = setTimeout(() => track('schedule_search', { query_length: query.length, results_count: resultsCount }), 1000);
+    }
   });
 
   document.getElementById('day-filters').addEventListener('click', (e) => {
@@ -148,6 +167,7 @@ export async function renderMyDay(root) {
     activeDay = btn.dataset.day === '__all' ? null : (btn.dataset.day === activeDay ? null : btn.dataset.day);
     document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.day === (activeDay ?? '__all')));
     document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--outline', b.dataset.day !== (activeDay ?? '__all')));
+    track('schedule_filter', { filter_type: 'day', filter_value: activeDay ? btn.textContent : 'all' });
     renderFull();
   });
 
@@ -156,6 +176,7 @@ export async function renderMyDay(root) {
     if (!btn) return;
     activeTrack = btn.dataset.chip === activeTrack ? null : btn.dataset.chip;
     document.querySelectorAll('#track-filters [data-chip]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.chip === activeTrack));
+    track('schedule_filter', { filter_type: 'track', filter_value: activeTrack ?? 'all' });
     renderFull();
   });
 
@@ -164,6 +185,7 @@ export async function renderMyDay(root) {
     if (!btn) return;
     activeType = btn.dataset.chip === activeType ? null : btn.dataset.chip;
     document.querySelectorAll('#type-filters [data-chip]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.chip === activeType));
+    track('schedule_filter', { filter_type: 'type', filter_value: activeType ?? 'all' });
     renderFull();
   });
 
@@ -190,6 +212,7 @@ function setupTabs() {
       document.querySelectorAll('[data-view-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.viewPanel !== btn.dataset.viewTab;
       });
+      track('schedule_view_switch', { view: btn.dataset.viewTab });
     });
   });
 }
@@ -278,13 +301,18 @@ function sessionDetail(session, speakersById, isSaved) {
     time,
     speakers: speakerList.map(speakerBlock),
     links: Boolean(session.slides_url || session.video_url),
-    slides: session.slides_url ? { attrs: { href: session.slides_url } } : null,
-    video: session.video_url ? { attrs: { href: session.video_url } } : null,
+    slides: session.slides_url ? { attrs: { href: session.slides_url, ...linkTracking(session, 'slides') } } : null,
+    video: session.video_url ? { attrs: { href: session.video_url, ...linkTracking(session, 'video') } } : null,
     save: {
       text: isSaved ? 'Remove from My Day' : 'Save to My Day',
       class: { 'btn--outline': isSaved, 'btn--primary': !isSaved },
     },
   });
+}
+
+// Picked up by analytics.js's data-track handler.
+function linkTracking(session, linkType) {
+  return { 'data-track': 'session_link_click', 'data-track-session-id': session.id, 'data-track-link-type': linkType };
 }
 
 function speakerBlock(sp) {

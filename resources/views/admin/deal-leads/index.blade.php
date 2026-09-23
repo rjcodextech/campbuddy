@@ -1,59 +1,67 @@
-<x-app-layout :title="'Deal Leads — '.$event->display_name">
-    <div class="max-w-4xl space-y-6">
-        <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <form method="GET" class="flex flex-wrap items-end gap-3 mb-4">
-                <div>
-                    <label class="block text-xs font-medium text-muted uppercase mb-1">Deal</label>
-                    <select name="offer_id" class="border-line rounded-md text-sm">
-                        <option value="">All deals</option>
-                        @foreach ($offers as $offer)
-                            <option value="{{ $offer->id }}" @selected(($filters['offer_id'] ?? '') == $offer->id)>{{ $offer->title }}</option>
-                        @endforeach
-                    </select>
+@php
+    $hasFilters = collect($filters)->filter(fn ($v) => filled($v))->isNotEmpty();
+@endphp
+
+<x-app-layout title="Deal leads" :subtitle="$event->display_name"
+              :breadcrumbs="[['Events', route('admin.events.index')], [$event->display_name, route('admin.events.edit', $event)], ['Deal leads']]">
+    <x-slot:actions>
+        <x-button :href="route('admin.events.deal-leads.export', array_merge(['event' => $event], $filters))" variant="secondary" icon="download">
+            Export CSV
+        </x-button>
+    </x-slot:actions>
+
+    <x-admin.event-nav :event="$event" current="leads" />
+
+    <div class="max-w-5xl space-y-6">
+        <x-card title="Filter" description="Narrow the list — the CSV export uses the same filters.">
+            <form method="GET" action="{{ route('admin.events.deal-leads.index', $event) }}" class="flex flex-wrap items-end gap-4">
+                <x-form.select name="offer_id" label="Deal" placeholder="All deals" class="w-full sm:w-56"
+                               :options="$offers->pluck('title', 'id')->all()" :value="$filters['offer_id'] ?? ''" :use-old="false" :show-error="false" />
+                <x-form.input name="from" type="date" label="From" class="w-full sm:w-44" :value="$filters['from'] ?? ''" :use-old="false" :show-error="false" />
+                <x-form.input name="to" type="date" label="To" class="w-full sm:w-44" :value="$filters['to'] ?? ''" :use-old="false" :show-error="false" />
+
+                <div class="flex items-center gap-2">
+                    <x-button variant="secondary">Apply</x-button>
+                    @if ($hasFilters)
+                        <x-button :href="route('admin.events.deal-leads.index', $event)" variant="link" class="px-2">Clear</x-button>
+                    @endif
                 </div>
-                <div>
-                    <label class="block text-xs font-medium text-muted uppercase mb-1">From</label>
-                    <input type="date" name="from" value="{{ $filters['from'] ?? '' }}" class="border-line rounded-md text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-muted uppercase mb-1">To</label>
-                    <input type="date" name="to" value="{{ $filters['to'] ?? '' }}" class="border-line rounded-md text-sm">
-                </div>
-                <button type="submit" class="px-4 py-2 bg-paper-soft text-ink text-sm font-medium rounded-md hover:bg-line">Filter</button>
-                <a href="{{ route('admin.events.deal-leads.export', array_merge(['event' => $event], $filters)) }}"
-                   class="px-4 py-2 bg-maroon text-white text-sm font-medium rounded-md hover:bg-maroon-dark">
-                    Export CSV
-                </a>
             </form>
+        </x-card>
 
-            <table class="min-w-full divide-y divide-line">
-                <thead>
+        <x-card flush>
+            <x-table>
+                <x-slot:head>
+                    <th>Deal</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Mobile</th>
+                    <th>Submitted</th>
+                </x-slot:head>
+
+                @forelse ($leads as $lead)
                     <tr>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted uppercase">Deal</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted uppercase">Name</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted uppercase">Email</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted uppercase">Mobile</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-muted uppercase">Submitted</th>
+                        <td>{{ $lead->offer?->title ?? '—' }}</td>
+                        <td class="font-medium">{{ $lead->name }}</td>
+                        <td><a href="mailto:{{ $lead->email }}" class="text-maroon hover:underline">{{ $lead->email }}</a></td>
+                        <td class="whitespace-nowrap">{{ $lead->mobile ?? '—' }}</td>
+                        <td class="whitespace-nowrap text-muted">{{ $lead->created_at->format('d M Y, g:ia') }}</td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-line">
-                    @forelse ($leads as $lead)
-                        <tr>
-                            <td class="px-3 py-2 text-sm text-ink">{{ $lead->offer?->title ?? '—' }}</td>
-                            <td class="px-3 py-2 text-sm text-ink">{{ $lead->name }}</td>
-                            <td class="px-3 py-2 text-sm text-ink">{{ $lead->email }}</td>
-                            <td class="px-3 py-2 text-sm text-ink">{{ $lead->mobile ?? '—' }}</td>
-                            <td class="px-3 py-2 text-xs text-muted">{{ $lead->created_at->format('d M Y, g:ia') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-3 py-8 text-center text-sm text-muted">No leads captured yet.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                @empty
+                    <x-table.empty :colspan="5" icon="inbox" :title="$hasFilters ? 'No leads match these filters' : 'No leads captured yet'">
+                        @unless ($hasFilters)
+                            Turn on “Require contact info” for a deal and attendee details will appear here.
+                        @endunless
+                    </x-table.empty>
+                @endforelse
+            </x-table>
 
-            <div class="mt-4">{{ $leads->links() }}</div>
-        </div>
+            @if ($leads->hasPages())
+                <x-slot:footer>
+                    <span class="mr-auto text-xs text-muted">Showing {{ $leads->firstItem() }}–{{ $leads->lastItem() }} of {{ number_format($leads->total()) }}</span>
+                    {{ $leads->links() }}
+                </x-slot:footer>
+            @endif
+        </x-card>
     </div>
 </x-app-layout>

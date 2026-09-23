@@ -1,47 +1,32 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+<x-guest-layout title="Sign in" subtitle="Welcome back. Enter your details to manage your events.">
+    <x-auth-session-status class="mb-5" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    {{-- busy: stops a double submit and shows progress; pageshow resets it
+    if the browser restores this page from the back/forward cache. --}}
+    <form method="POST" action="{{ route('login') }}" class="grid gap-5" novalidate
+          x-data="{ busy: false }" x-on:submit="busy = true" x-on:pageshow.window="busy = false">
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-form.input name="email" type="email" label="Email address" required
+                      autocomplete="username" inputmode="email" :autofocus="! old('email')" />
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <x-form.password name="password" label="Password" required
+                         autocomplete="current-password" :autofocus="(bool) old('email')" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <x-form.checkbox name="remember" label="Keep me signed in" unchecked="0" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                <a href="{{ route('password.request') }}"
+                   class="rounded text-sm font-medium text-maroon hover:text-maroon-dark hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                    Forgot your password?
                 </a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <x-button class="w-full" x-bind:disabled="busy">
+            <span x-show="! busy">Sign in</span>
+            <span x-show="busy" x-cloak>Signing in…</span>
+        </x-button>
     </form>
 </x-guest-layout>

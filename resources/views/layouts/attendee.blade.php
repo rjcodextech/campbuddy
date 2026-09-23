@@ -23,6 +23,8 @@
     page load" to scope a separate font request to. --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    @include('attendee.partials.analytics', ['eventSlug' => $event->slug])
+
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell">

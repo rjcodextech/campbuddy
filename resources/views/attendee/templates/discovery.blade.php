@@ -47,7 +47,7 @@
 
 {{-- Home's compact variant links through to the full experience on Explore --}}
 <template id="tpl-discovery-explore-link">
-    <a class="btn btn--outline btn--full" style="margin-top:10px" data-slot="link">See who matches your interests →</a>
+    <a class="btn btn--outline btn--full" style="margin-top:10px" data-track="home_discovery_explore_click" data-slot="link">See who matches your interests →</a>
 </template>
 
 {{-- Everything after the status card in the full (Explore) variant --}}

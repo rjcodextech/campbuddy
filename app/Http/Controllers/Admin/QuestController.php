@@ -28,7 +28,13 @@ class QuestController extends Controller
 
     public function store(StoreQuestRequest $request, Event $event): RedirectResponse
     {
-        $event->quests()->create($request->validated() + ['source' => 'event']);
+        $data = $request->validated();
+
+        // New quests go to the end of the list — after the default checklist
+        // every event starts with — unless the admin picked a position.
+        $data['sort_order'] ??= ($event->quests()->where('source', 'event')->max('sort_order') ?? 0) + 10;
+
+        $event->quests()->create($data + ['source' => 'event']);
 
         return redirect()->route('admin.events.quests.index', $event)->with('status', 'Quest added.');
     }

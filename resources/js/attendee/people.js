@@ -8,6 +8,7 @@
 // rendered from here is a <template> in attendee/templates/{people,discovery}.blade.php.
 
 import { apiGet, apiMutate } from './api.js';
+import { track } from './analytics.js';
 import { getMetHistory, kvGet, kvSet, markMet } from './db.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
@@ -61,7 +62,16 @@ async function renderRoster(eventSlug) {
 
   draw(entries);
 
+  // Roster data is other people's data (§8.4) — only "the search was used"
+  // is reported, once, never what was typed.
+  let searchReported = false;
+
   searchEl.addEventListener('input', () => {
+    if (!searchReported) {
+      searchReported = true;
+      track('roster_search_use');
+    }
+
     const q = searchEl.value.trim().toLowerCase();
     draw(q ? entries.filter((a) => a.name.toLowerCase().includes(q)) : entries);
   });
@@ -119,12 +129,23 @@ export async function renderDiscoveryCard(el, eventSlug, eventId, discoveryKey, 
   const mine = await kvGet(discoveryKey);
 
   if (!mine) {
-    el.replaceChildren(render('tpl-discovery-join-prompt'));
-    el.querySelector('#join-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, null, options));
+    showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
     return;
   }
 
   await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
+}
+
+// Discovery events carry only which screen the action happened on — none of
+// the profile, the matches or the IDs (spec §8.3/§8.5).
+const surfaceOf = (options) => (options.compact ? 'home' : 'explore');
+
+function showJoinPrompt(el, eventSlug, eventId, discoveryKey, options) {
+  el.replaceChildren(render('tpl-discovery-join-prompt'));
+  el.querySelector('#join-discovery-btn').addEventListener('click', () => {
+    track('discovery_join_start', { surface: surfaceOf(options) });
+    showJoinForm(el, eventSlug, eventId, discoveryKey, null, options);
+  });
 }
 
 function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, options = {}) {
@@ -171,6 +192,8 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
         const res = await apiMutate(eventSlug, '/discovery', 'POST', body);
         await kvSet(discoveryKey, { discoveryId: res.discovery_id, ownerToken: res.owner_token, fields: res.fields });
       }
+
+      track(existing ? 'discovery_update' : 'discovery_join', { surface: surfaceOf(options) });
 
       const mine = await kvGet(discoveryKey);
       await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
@@ -228,6 +251,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   el.querySelectorAll('[data-met-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       await markMet(eventId, btn.dataset.metId);
+      track('discovery_met_mark');
       renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
     });
   });
@@ -246,8 +270,8 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   }
 
   await kvSet(discoveryKey, null);
-  el.replaceChildren(render('tpl-discovery-join-prompt'));
-  el.querySelector('#join-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, null, options));
+  track('discovery_leave', { surface: surfaceOf(options) });
+  showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
 function matchCard(profile, isMet) {

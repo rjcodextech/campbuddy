@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+    @include('attendee.partials.analytics')
+
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell">
@@ -18,9 +20,9 @@
         @include('attendee.partials.desktop-notice')
 
         <header class="topbar">
-            <span class="brand">
-                <img src="/media/logo.svg" alt="CampBuddy" class="brand__logo brand__logo--wordmark">
-            </span>
+            <a href="{{ route('home') }}" class="brand">
+                <img src="/media/logo.svg" alt="CampBuddy home" class="brand__logo brand__logo--wordmark">
+            </a>
 
             <div class="topbar__actions">
                 <button type="button" id="install-app-btn" class="topbar__text-btn" hidden>
@@ -114,6 +116,8 @@
 
                             <x-attendee.event-card
                                 :href="route('event.home', $event)"
+                                data-track="select_event"
+                                :data-track-event-slug="$event->slug"
                                 :title="$event->display_name"
                                 :media-url="$event->faviconUrl() ?? '/media/favicon.png'"
                                 media-shape="avatar"
@@ -135,7 +139,7 @@
         @if (($events ?? collect())->isNotEmpty())
             <div class="landing-bottom-bar">
                 @if ($events->count() === 1)
-                    <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full">Open {{ $events->first()->display_name }} →</a>
+                    <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}">Open {{ $events->first()->display_name }} →</a>
                 @else
                     <a href="#find-your-camp" class="btn btn--primary btn--full">Choose your WordCamp ↓</a>
                 @endif
