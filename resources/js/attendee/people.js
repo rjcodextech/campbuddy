@@ -19,6 +19,10 @@ const TAGS = [
   'translator', 'speaker',
 ];
 
+// The discovery API takes at most 5 tags (StoreDiscoveryRequest); the form
+// stops there instead of failing on save with a misleading network error.
+const MAX_DISCOVERY_TAGS = 5;
+
 // aria-labels for the roster's social icons; the glyphs themselves are
 // tpl-social-icon-{type} templates (types without one fall back to "website").
 const SOCIAL_LABEL = { twitter: 'X / Twitter', linkedin: 'LinkedIn', website: 'Website' };
@@ -156,7 +160,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
       verb: existing ? 'Update' : 'Join',
       tags: TAGS.map((t) =>
         render('tpl-discovery-tag-chip', {
-          chip: { text: t, attrs: { 'data-tag': t }, class: { 'chip--selected': selected.has(t) } },
+          chip: { text: t, attrs: { 'data-tag': t, 'aria-pressed': String(selected.has(t)) }, class: { 'chip--selected': selected.has(t) } },
         })
       ),
       profession: { attrs: { value: existing?.fields?.profession ?? '' } },
@@ -167,8 +171,20 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
 
   el.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
-      chip.classList.toggle('chip--selected');
-      selected.has(chip.dataset.tag) ? selected.delete(chip.dataset.tag) : selected.add(chip.dataset.tag);
+      const tag = chip.dataset.tag;
+
+      if (selected.has(tag)) {
+        selected.delete(tag);
+      } else if (selected.size >= MAX_DISCOVERY_TAGS) {
+        showToast(`Pick up to ${MAX_DISCOVERY_TAGS} tags.`);
+        return;
+      } else {
+        selected.add(tag);
+      }
+
+      const on = selected.has(tag);
+      chip.classList.toggle('chip--selected', on);
+      chip.setAttribute('aria-pressed', String(on));
     });
   });
 

@@ -6,7 +6,7 @@
 --}}
 
 <template id="tpl-contribute-chip">
-    <button type="button" class="chip" data-slot="chip"></button>
+    <button type="button" class="chip" aria-pressed="false" data-slot="chip"></button>
 </template>
 
 <template id="tpl-contribute-team-card">

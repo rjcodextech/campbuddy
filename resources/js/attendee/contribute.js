@@ -24,9 +24,12 @@ export async function renderContribute(root) {
 
   tagsEl.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
-      chip.classList.toggle('chip--selected');
       const key = chip.dataset.tag;
       selected.has(key) ? selected.delete(key) : selected.add(key);
+
+      const on = selected.has(key);
+      chip.classList.toggle('chip--selected', on);
+      chip.setAttribute('aria-pressed', String(on));
     });
   });
 

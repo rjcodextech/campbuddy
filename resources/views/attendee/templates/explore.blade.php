@@ -33,10 +33,10 @@
             <p style="font-weight:700;margin:0 0 4px" data-slot="title"></p>
             <p class="footer-note" style="text-align:left;margin:0 0 14px">Share a few details and this deal will open right after — shared with the sponsor to process this deal.</p>
             <form data-lead-form>
-                <label class="field"><span>Name</span><input type="text" name="name" placeholder="e.g. Priya Sharma" required maxlength="191"></label>
-                <label class="field"><span>Email</span><input type="email" name="email" placeholder="you@example.com" required maxlength="191"></label>
-                <label class="field"><span>Mobile (optional)</span><input type="tel" name="mobile" placeholder="e.g. 98765 43210" maxlength="32"></label>
-                <p class="footer-note" style="text-align:left;color:var(--danger)" data-lead-error hidden></p>
+                @include('attendee.partials.form-field', ['id' => 'lead-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Priya Sharma', 'autocomplete' => 'name', 'maxlength' => 191, 'errorLine' => false])
+                @include('attendee.partials.form-field', ['id' => 'lead-email', 'name' => 'email', 'type' => 'email', 'label' => 'Email', 'required' => true, 'placeholder' => 'you@example.com', 'autocomplete' => 'email', 'inputmode' => 'email', 'maxlength' => 191, 'errorLine' => false])
+                @include('attendee.partials.form-field', ['id' => 'lead-mobile', 'name' => 'mobile', 'type' => 'tel', 'label' => 'Mobile', 'placeholder' => 'e.g. 98765 43210', 'autocomplete' => 'tel', 'inputmode' => 'tel', 'maxlength' => 32, 'hint' => 'Optional.', 'errorLine' => false])
+                <p class="form-field__error" role="alert" style="margin:0 0 12px" data-lead-error hidden></p>
                 <div style="display:flex;gap:8px;margin-top:4px">
                     <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Cancel</button>
                     <button type="submit" class="btn btn--primary" style="flex:1">Continue</button>

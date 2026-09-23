@@ -31,11 +31,13 @@ export async function renderOnboardingSection() {
       const idx = answers.interests.indexOf(tag);
       if (idx === -1) {
         answers.interests.push(tag);
-        btn.classList.add('pill--hashtag');
       } else {
         answers.interests.splice(idx, 1);
-        btn.classList.remove('pill--hashtag');
       }
+
+      const on = idx === -1;
+      btn.classList.toggle('chip--selected', on);
+      btn.setAttribute('aria-pressed', String(on));
     });
   });
 

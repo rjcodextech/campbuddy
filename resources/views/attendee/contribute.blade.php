@@ -12,8 +12,9 @@
         </section>
 
         <div id="contrib-questions" class="card">
-            <p style="font-weight:700;margin:0 0 10px">What kind of work do you enjoy?</p>
-            <div class="chip-group" id="contrib-tags"></div>
+            <p class="form-group__title" id="contrib-tags-label">What kind of work do you enjoy?</p>
+            <p class="form-group__desc">Pick as many as you like, or skip straight to the matches.</p>
+            <div class="chip-group" id="contrib-tags" role="group" aria-labelledby="contrib-tags-label"></div>
             <button type="button" class="btn btn--primary btn--full" id="contrib-see-teams">See my matches</button>
         </div>
 

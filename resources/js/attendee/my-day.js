@@ -165,8 +165,7 @@ export async function renderMyDay(root) {
     const btn = e.target.closest('[data-day]');
     if (!btn) return;
     activeDay = btn.dataset.day === '__all' ? null : (btn.dataset.day === activeDay ? null : btn.dataset.day);
-    document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.day === (activeDay ?? '__all')));
-    document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--outline', b.dataset.day !== (activeDay ?? '__all')));
+    document.querySelectorAll('#day-filters [data-day]').forEach((b) => setPressed(b, b.dataset.day === (activeDay ?? '__all')));
     track('schedule_filter', { filter_type: 'day', filter_value: activeDay ? btn.textContent : 'all' });
     renderFull();
   });
@@ -175,7 +174,7 @@ export async function renderMyDay(root) {
     const btn = e.target.closest('[data-chip]');
     if (!btn) return;
     activeTrack = btn.dataset.chip === activeTrack ? null : btn.dataset.chip;
-    document.querySelectorAll('#track-filters [data-chip]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.chip === activeTrack));
+    document.querySelectorAll('#track-filters [data-chip]').forEach((b) => setPressed(b, b.dataset.chip === activeTrack));
     track('schedule_filter', { filter_type: 'track', filter_value: activeTrack ?? 'all' });
     renderFull();
   });
@@ -184,13 +183,19 @@ export async function renderMyDay(root) {
     const btn = e.target.closest('[data-chip]');
     if (!btn) return;
     activeType = btn.dataset.chip === activeType ? null : btn.dataset.chip;
-    document.querySelectorAll('#type-filters [data-chip]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.chip === activeType));
+    document.querySelectorAll('#type-filters [data-chip]').forEach((b) => setPressed(b, b.dataset.chip === activeType));
     track('schedule_filter', { filter_type: 'type', filter_value: activeType ?? 'all' });
     renderFull();
   });
 
   renderFull();
   renderMine();
+}
+
+// A filter chip's on/off state, told to the eye (class) and to assistive tech (aria-pressed).
+function setPressed(chip, on) {
+  chip.classList.toggle('chip--selected', on);
+  chip.setAttribute('aria-pressed', String(on));
 }
 
 function dayKeyOf(ms) {
@@ -234,7 +239,7 @@ function setupDayFilters(sessions) {
 
   el.hidden = false;
   const allChip = render('tpl-my-day-filter-chip', {
-    chip: { text: 'All days', attrs: { 'data-day': '__all' }, class: { 'btn--primary': true, 'btn--outline': false } },
+    chip: { text: 'All days', attrs: { 'data-day': '__all', 'aria-pressed': 'true' }, class: { 'chip--selected': true } },
   });
   const dayChips = days.map((day) => {
     const label = new Date(sessions.find((s) => s.dayKey === day).startMs).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });

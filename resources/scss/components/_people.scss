@@ -89,3 +89,8 @@
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-medium;
 }
+
+// The tag values are lowercase (they're what the API stores); display them capitalised.
+#join-tags .chip {
+    text-transform: capitalize;
+}

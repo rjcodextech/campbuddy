@@ -3,14 +3,10 @@
 
 // Camp Card → "Edit Camp Card" (attendee/camp-card.blade.php, camp-card.js).
 //
-// The form is four titled groups of consistently built fields, not one flat
-// list: label above, 44px+ control at 16px type (anything smaller makes iOS
-// Safari zoom the page on focus), a hint underneath, an error line that only
-// appears when something's wrong.
-//
-// Control selectors are written under #main-content on purpose — the app's
-// shared bare-input rule (components/_field.scss) is an #id selector, and a
-// plain class here would lose that specificity fight.
+// The groups, fields, inputs and choice chips are the shared ones
+// (components/_form.scss, _pill.scss). This file is only what is specific
+// to the editor: the collapsible header, the interest tag box with its
+// suggestions, and the save button.
 
 $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
 
@@ -76,140 +72,6 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     gap: v.$space-4;
 }
 
-// ---- Groups ---------------------------------------------------------------
-
-.cc-group {
-    min-width: 0;
-    margin: 0;
-    padding: v.$space-4;
-    border: 1px solid var(--line);
-    border-radius: v.$radius-md;
-    background: var(--paper);
-    box-shadow: v.$shadow-card;
-}
-
-// A <legend> normally sits on the fieldset's border line; floating it full
-// width makes it an ordinary heading inside the padding instead.
-.cc-group__title {
-    float: left;
-    width: 100%;
-    margin: 0 0 2px;
-    padding: 0;
-    font-size: v.$font-size-md;
-    font-weight: v.$font-weight-bold;
-    line-height: v.$line-height-heading;
-}
-
-.cc-group__desc {
-    clear: both;
-    margin: 0 0 v.$space-4;
-    font-size: v.$font-size-sm;
-    color: var(--muted);
-}
-
-// ---- Fields ---------------------------------------------------------------
-
-.cc-field {
-    display: block;
-    margin-bottom: v.$space-4;
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-}
-
-.cc-field__label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: v.$font-size-sm;
-    font-weight: v.$font-weight-medium;
-    color: var(--ink);
-}
-
-.cc-field__req {
-    margin-left: 3px;
-    color: var(--danger);
-    text-decoration: none;
-}
-
-.cc-field__hint {
-    margin: 6px 0 0;
-    font-size: v.$font-size-xs;
-    line-height: v.$line-height-snug;
-    color: var(--muted);
-}
-
-.cc-field__error {
-    margin: 6px 0 0;
-    font-size: v.$font-size-xs;
-    font-weight: v.$font-weight-medium;
-    line-height: v.$line-height-snug;
-    color: var(--danger);
-
-    &[hidden] {
-        display: none;
-    }
-}
-
-// An adornment fixed to the left of an input (the "@" of a handle).
-.cc-input-wrap {
-    display: flex;
-    align-items: stretch;
-}
-
-.cc-input-wrap__prefix {
-    display: flex;
-    align-items: center;
-    padding: 0 v.$space-3;
-    border: 1px solid var(--line);
-    border-right: 0;
-    border-radius: v.$radius-sm 0 0 v.$radius-sm;
-    background: var(--paper-soft);
-    color: var(--muted);
-    font-weight: v.$font-weight-medium;
-}
-
-#main-content .cc-form {
-    .cc-input {
-        width: 100%;
-        min-width: 0;
-        min-height: 44px;
-        padding: 10px v.$space-3;
-        border: 1px solid var(--line);
-        border-radius: v.$radius-sm;
-        background: #fff;
-        color: var(--ink);
-        font: inherit;
-        font-size: 1rem;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-        &::placeholder {
-            color: var(--muted);
-            opacity: 0.6;
-        }
-
-        &:focus {
-            outline: none;
-            border-color: var(--brand-primary);
-            box-shadow: $cc-focus-ring;
-        }
-
-        &[aria-invalid='true'] {
-            border-color: var(--danger);
-        }
-
-        &--prefixed {
-            border-radius: 0 v.$radius-sm v.$radius-sm 0;
-        }
-    }
-
-    // Kept out of the rule above: a browser without :user-invalid would
-    // throw away the whole selector list.
-    .cc-input:user-invalid {
-        border-color: var(--danger);
-    }
-}
-
 // ---- Interests: tags in an input -----------------------------------------
 
 .cc-tags {
@@ -250,8 +112,11 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     font: inherit;
     font-size: 1rem;
 
+    // The whole .cc-tags box shows the focus ring; the bare input inside must not add a second.
     &:focus {
         outline: none;
+        border: 0;
+        box-shadow: none;
     }
 
     &::placeholder {
@@ -364,35 +229,6 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     &:disabled {
         opacity: 0.45;
         pointer-events: none;
-    }
-}
-
-// ---- Choice chips ("QR code links to", "Show on my card") ----------------
-
-.cc-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: v.$space-2;
-
-    .chip {
-        min-height: 40px;
-        padding: v.$space-2 14px;
-
-        &:focus-visible {
-            @include m.focus-ring;
-        }
-    }
-
-    // Selected gets a check, so the state isn't carried by colour alone.
-    .chip--selected::before {
-        content: '✓';
-        margin-right: 6px;
-        font-weight: v.$font-weight-bold;
-    }
-
-    // A link that hasn't been filled in yet: still choosable, but visibly not ready.
-    .chip--empty:not(.chip--selected) {
-        opacity: 0.5;
     }
 }
 

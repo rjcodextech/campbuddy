@@ -18,10 +18,18 @@
 
 <template id="tpl-discovery-join-form">
     <div class="card">
-        <p style="font-weight:700;margin:0 0 8px"><span data-slot="verb">Join</span> attendee discovery</p>
-        <div class="chip-group" id="join-tags" data-slot="tags"></div>
-        <label class="field"><span>Profession (optional)</span><input type="text" id="join-profession" placeholder="e.g. Plugin developer" data-slot="profession"></label>
-        <label class="field"><span>Who would you like to meet? (optional)</span><input type="text" id="join-who" placeholder="e.g. other agency owners" data-slot="who"></label>
+        <p class="form-group__title"><span data-slot="verb">Join</span> attendee discovery</p>
+        <p class="form-group__desc">Shared under a random ID, never your name. You can leave any time.</p>
+
+        <div class="form-field">
+            <span class="form-field__label" id="join-tags-label">What describes you?</span>
+            <div class="chip-group" id="join-tags" role="group" aria-labelledby="join-tags-label" data-slot="tags"></div>
+            <p class="form-field__hint">Pick at least one, up to 5.</p>
+        </div>
+
+        @include('attendee.partials.form-field', ['id' => 'join-profession', 'label' => 'Profession', 'placeholder' => 'e.g. Plugin developer', 'hint' => 'Optional.', 'dataSlot' => 'profession', 'maxlength' => 100, 'errorLine' => false])
+        @include('attendee.partials.form-field', ['id' => 'join-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other agency owners', 'hint' => 'Optional.', 'dataSlot' => 'who', 'maxlength' => 255, 'errorLine' => false])
+
         <button type="button" class="btn btn--primary btn--full" id="join-submit" data-slot="submit">Join</button>
     </div>
 </template>

@@ -13,7 +13,7 @@
 
 {{-- Day / Track / Session-type filter rows --}}
 <template id="tpl-my-day-filter-chip">
-    <button type="button" class="btn btn--compact btn--outline" data-slot="chip"></button>
+    <button type="button" class="chip" aria-pressed="false" data-slot="chip"></button>
 </template>
 
 {{-- Session rows are direct children of .schedule-day (its rows'

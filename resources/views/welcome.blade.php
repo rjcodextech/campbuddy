@@ -50,40 +50,38 @@
             (the skip/continue buttons and the profile they save are wired there). --}}
             <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
                 <div class="onboarding-card">
-                    <p class="section-head__title" id="onboarding-welcome-heading" style="margin-bottom:2px">Tell us a little about you</p>
-                    <p class="footer-note" style="text-align:left;margin-bottom:16px">Every question here is skippable.</p>
+                    <h2 class="form-group__title" id="onboarding-welcome-heading">Tell us a little about you</h2>
+                    <p class="form-group__desc">Every question is skippable, and your answers stay on this device.</p>
 
-                    <label class="field">
-                        <span>Is this your first WordCamp?</span>
-                        <select data-field="firstWordCamp">
+                    <div class="form-field">
+                        <label class="form-field__label" for="ob-first">Is this your first WordCamp?</label>
+                        <select id="ob-first" data-field="firstWordCamp">
                             <option value="">Prefer not to say</option>
                             <option value="yes">Yes, first one!</option>
                             <option value="no">No, I've been before</option>
                         </select>
-                    </label>
-
-                    <div class="field">
-                        <span>What are you into?</span>
-                        <div class="onboarding-card__tags">
-                            @foreach (['Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
-                                <button type="button" class="pill" data-tag="{{ $tag }}">{{ $tag }}</button>
-                            @endforeach
-                        </div>
                     </div>
 
-                    <label class="field">
-                        <span>Who would you like to meet?</span>
-                        <input type="text" data-field="whoToMeet" placeholder="e.g. other plugin developers">
-                    </label>
+                    <div class="form-field">
+                        <span class="form-field__label" id="ob-interests-label">What are you into?</span>
+                        <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
+                            @foreach (['Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
+                                <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ $tag }}</button>
+                            @endforeach
+                        </div>
+                        <p class="form-field__hint">Pick as many as you like.</p>
+                    </div>
 
-                    <label class="field">
-                        <span>Interested in Contributor Day?</span>
-                        <select data-field="attendingContributorDay">
+                    @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other plugin developers', 'dataField' => 'whoToMeet', 'maxlength' => 120, 'errorLine' => false])
+
+                    <div class="form-field">
+                        <label class="form-field__label" for="ob-contrib">Interested in Contributor Day?</label>
+                        <select id="ob-contrib" data-field="attendingContributorDay">
                             <option value="">Not sure yet</option>
                             <option value="yes">Yes</option>
                             <option value="no">Not this time</option>
                         </select>
-                    </label>
+                    </div>
 
                     <div class="onboarding-card__actions">
                         <button type="button" class="btn btn--outline" data-action="skip">Skip</button>

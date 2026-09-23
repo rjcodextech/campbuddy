@@ -15,9 +15,9 @@
         <div data-view-panel="full">
             <input type="search" id="session-search" class="search-input" placeholder="Search sessions or speakers…">
 
-            <div id="day-filters" class="my-day-filter-row" hidden></div>
-            <div id="track-filters" class="my-day-filter-row"></div>
-            <div id="type-filters" class="my-day-filter-row"></div>
+            <div id="day-filters" class="my-day-filter-row" data-label="Day" role="group" aria-label="Filter by day" hidden></div>
+            <div id="track-filters" class="my-day-filter-row" data-label="Track" role="group" aria-label="Filter by track"></div>
+            <div id="type-filters" class="my-day-filter-row" data-label="Session type" role="group" aria-label="Filter by session type"></div>
 
             <div id="full-schedule-list"></div>
         </div>

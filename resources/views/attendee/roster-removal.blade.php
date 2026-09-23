@@ -18,10 +18,7 @@
         {{-- Reported without the name typed here — the roster is other people's data (§8.4). --}}
         <form method="GET" action="{{ route('event.roster-removal.search', $event) }}" class="card" style="margin-top:16px"
               data-track="roster_removal_search" data-track-on="submit">
-            <label class="field">
-                <span>Your name, exactly as it appears on the Attendees page</span>
-                <input type="text" name="name" value="{{ $searchedName ?? '' }}" required>
-            </label>
+            @include('attendee.partials.form-field', ['id' => 'removal-name', 'name' => 'name', 'label' => 'Your name', 'required' => true, 'value' => $searchedName ?? '', 'autocomplete' => 'name', 'maxlength' => 191, 'errorLine' => false, 'hint' => 'Exactly as it appears on the Attendees page.'])
             <button type="submit" class="btn btn--primary btn--full">Find my listing</button>
         </form>
 

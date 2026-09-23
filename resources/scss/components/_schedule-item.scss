@@ -27,6 +27,20 @@
     &:empty {
         display: none;
     }
+
+    // "DAY" / "TRACK" / "SESSION TYPE" above the chips. Done in CSS (from
+    // data-label) so a row that my-day.js hides — or that has nothing in
+    // it — takes its label with it.
+    &[data-label]::before {
+        content: attr(data-label);
+        flex: 0 0 100%;
+        margin-bottom: -2px;
+        font-size: v.$font-size-xs;
+        font-weight: v.$font-weight-medium;
+        letter-spacing: v.$letter-spacing-caps;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
 }
 
 // Wraps one .schedule-item plus its (optional, collapsed-by-default)
@@ -206,4 +220,8 @@
 
 .schedule-item-detail__actions {
     margin-top: v.$space-2;
+}
+
+#type-filters .chip {
+    text-transform: capitalize;
 }
