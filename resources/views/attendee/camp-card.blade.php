@@ -43,50 +43,89 @@
             @endforeach
         </div>
 
-        <details style="margin-top:24px" open id="cc-edit-details">
-            <summary class="section-head__title" style="cursor:pointer">Edit Camp Card</summary>
+        <details class="cc-editor" open id="cc-edit-details">
+            <summary class="cc-editor__summary">
+                <span class="section-head__title">Edit Camp Card</span>
+                <svg class="cc-editor__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+            </summary>
 
-            <form id="camp-card-form" style="margin-top:12px">
-                <label class="field"><span>Name (required)</span><input type="text" name="name" placeholder="e.g. Priya Sharma" required></label>
-                <label class="field"><span>Role / title</span><input type="text" name="role" placeholder="e.g. WordPress Developer"></label>
-                <label class="field"><span>Company / community</span><input type="text" name="company" placeholder="e.g. Acme Studio"></label>
-                <label class="field"><span>City</span><input type="text" name="city" placeholder="e.g. Jaipur"></label>
+            <p class="cc-editor__privacy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                Saved on this device only. Nothing you type here is sent to CampBuddy.
+            </p>
 
-                <div class="field">
-                    <span>WordPress interests</span>
-                    <div class="tag-input" id="interests-input">
-                        <div class="tag-input__tags" id="interests-tags"></div>
-                        <input type="text" id="interests-text" placeholder="Type an interest and press Enter">
+            <form id="camp-card-form" class="cc-form">
+                <fieldset class="cc-group">
+                    <legend class="cc-group__title">About you</legend>
+                    <p class="cc-group__desc">This is what shows on your card.</p>
+
+                    @include('attendee.partials.cc-field', ['id' => 'name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Priya Sharma', 'autocomplete' => 'name', 'maxlength' => 60, 'hint' => 'Shown large at the top of your card.'])
+                    @include('attendee.partials.cc-field', ['id' => 'role', 'name' => 'role', 'label' => 'Role or title', 'placeholder' => 'e.g. WordPress Developer', 'autocomplete' => 'organization-title', 'maxlength' => 60])
+                    @include('attendee.partials.cc-field', ['id' => 'company', 'name' => 'company', 'label' => 'Company or community', 'placeholder' => 'e.g. Acme Studio', 'autocomplete' => 'organization', 'maxlength' => 60])
+                    @include('attendee.partials.cc-field', ['id' => 'city', 'name' => 'city', 'label' => 'City', 'placeholder' => 'e.g. Jaipur', 'autocomplete' => 'address-level2', 'maxlength' => 40])
+                </fieldset>
+
+                <fieldset class="cc-group">
+                    <legend class="cc-group__title">Your interests</legend>
+                    <p class="cc-group__desc">So people know what to talk to you about.</p>
+
+                    <div class="cc-field">
+                        <label class="cc-field__label" for="interests-text">WordPress interests</label>
+
+                        <div class="cc-tags" id="interests-input">
+                            <div class="cc-tags__items" id="interests-tags"></div>
+                            <input class="cc-tags__input" type="text" id="interests-text" placeholder="Add an interest" maxlength="30"
+                                   enterkeyhint="done" autocomplete="off" aria-describedby="interests-hint">
+                            <button type="button" class="cc-tags__add" id="interests-add" hidden>Add</button>
+                        </div>
+
+                        <p class="cc-field__hint" id="interests-hint" aria-live="polite">
+                            <span id="interests-count">0</span> of 8 added. Press Enter or comma after each one.
+                        </p>
+
+                        <div class="cc-suggest" id="interests-suggest" role="group" aria-label="Suggested interests"></div>
                     </div>
-                </div>
 
-                <label class="field"><span>Ask me about</span><input type="text" name="askMeAbout" placeholder="e.g. Block themes"></label>
+                    @include('attendee.partials.cc-field', ['id' => 'askMeAbout', 'name' => 'askMeAbout', 'label' => 'Ask me about', 'placeholder' => 'e.g. Block themes', 'maxlength' => 80, 'hint' => 'A conversation starter for people who see your card.'])
+                </fieldset>
 
-                <label class="field"><span>LinkedIn</span><input type="url" name="linkedin" placeholder="https://linkedin.com/in/…"></label>
-                <label class="field"><span>Personal website</span><input type="url" name="website" placeholder="https://…"></label>
-                <label class="field"><span>WordPress.org profile</span><input type="url" name="wordpressOrg" placeholder="https://profiles.wordpress.org/…"></label>
-                <label class="field"><span>X / Twitter handle</span><input type="text" name="twitter" placeholder="yourhandle" maxlength="15" pattern="^@?[A-Za-z0-9_]{1,15}$"></label>
+                <fieldset class="cc-group">
+                    <legend class="cc-group__title">Find me online</legend>
+                    <p class="cc-group__desc">Add any you like — your QR code can point to one of them.</p>
 
-                <div class="field">
-                    <span>QR code links to</span>
-                    <div class="chip-group" id="qr-target-chips">
-                        <button type="button" class="chip" data-qr-target="linkedin">LinkedIn</button>
-                        <button type="button" class="chip" data-qr-target="website">Website</button>
-                        <button type="button" class="chip" data-qr-target="wordpressOrg">WordPress.org</button>
-                        <button type="button" class="chip" data-qr-target="twitter">X / Twitter</button>
+                    @include('attendee.partials.cc-field', ['id' => 'linkedin', 'name' => 'linkedin', 'label' => 'LinkedIn', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'linkedin.com/in/your-name'])
+                    @include('attendee.partials.cc-field', ['id' => 'website', 'name' => 'website', 'label' => 'Personal website', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'yoursite.com'])
+                    @include('attendee.partials.cc-field', ['id' => 'wordpressOrg', 'name' => 'wordpressOrg', 'label' => 'WordPress.org profile', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'profiles.wordpress.org/username'])
+                    @include('attendee.partials.cc-field', ['id' => 'twitter', 'name' => 'twitter', 'label' => 'X / Twitter', 'handle' => true, 'prefix' => '@', 'placeholder' => 'yourhandle', 'autocomplete' => 'off', 'hint' => 'Just your handle — pasting a profile link works too.'])
+                </fieldset>
+
+                <fieldset class="cc-group">
+                    <legend class="cc-group__title">On your card</legend>
+                    <p class="cc-group__desc">Choose what's visible and where your QR code goes.</p>
+
+                    <div class="cc-field">
+                        <span class="cc-field__label" id="qr-target-label">QR code links to</span>
+                        <div class="cc-chips" id="qr-target-chips" role="group" aria-labelledby="qr-target-label">
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="linkedin">LinkedIn</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="website">Website</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="wordpressOrg">WordPress.org</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="twitter">X / Twitter</button>
+                        </div>
+                        <p class="cc-field__hint">Faded options need their link filled in above.</p>
                     </div>
-                </div>
 
-                <div class="field">
-                    <span>Show on my visible card</span>
-                    <div class="chip-group" id="visible-fields-chips">
-                        @foreach (['role' => 'Role', 'company' => 'Company', 'city' => 'City', 'interests' => 'Interests', 'askMeAbout' => 'Ask me about'] as $key => $label)
-                            <button type="button" class="chip" data-visible-field="{{ $key }}">{{ $label }}</button>
-                        @endforeach
+                    <div class="cc-field">
+                        <span class="cc-field__label" id="visible-fields-label">Show on my card</span>
+                        <div class="cc-chips" id="visible-fields-chips" role="group" aria-labelledby="visible-fields-label">
+                            @foreach (['role' => 'Role', 'company' => 'Company', 'city' => 'City', 'interests' => 'Interests', 'askMeAbout' => 'Ask me about'] as $key => $label)
+                                <button type="button" class="chip" aria-pressed="false" data-visible-field="{{ $key }}">{{ $label }}</button>
+                            @endforeach
+                        </div>
+                        <p class="cc-field__hint">Your name and QR code always show.</p>
                     </div>
-                </div>
+                </fieldset>
 
-                <button type="submit" class="btn btn--primary btn--full">Save Camp Card</button>
+                <button type="submit" class="btn btn--primary btn--full cc-form__save" id="cc-save">Save Camp Card</button>
             </form>
         </details>
 

@@ -140,10 +140,17 @@ class EventInfoFetcher
 
             foreach ($index as $page) {
                 $tokens = preg_split('/[-_]+/', strtolower($page['slug'])) ?: [];
+                $titleWords = count(preg_split('/\s+/u', trim($page['title'])) ?: []);
+
+                // A page is "the schedule" / "the tickets page" only if it is
+                // that page — not a long, specific one that merely mentions
+                // the word (/evening-programme-november-12th/ is not the
+                // schedule). So partial matches are limited to short slugs
+                // and short titles; an exact slug always counts.
                 $score = match (true) {
                     in_array($page['slug'], $rule['slug'], true) => 3,
-                    array_intersect($tokens, $rule['slug']) !== [] => 2,
-                    $page['title'] !== '' && preg_match($rule['title'], $page['title']) === 1 => 1,
+                    count($tokens) <= 3 && array_intersect($tokens, $rule['slug']) !== [] => 2,
+                    $page['title'] !== '' && $titleWords <= 3 && preg_match($rule['title'], $page['title']) === 1 => 1,
                     default => 0,
                 };
 

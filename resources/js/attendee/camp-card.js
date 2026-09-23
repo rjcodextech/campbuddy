@@ -16,6 +16,7 @@ import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 import { withPngDpi } from './png-dpi.js';
 import { render } from './template.js';
+import { showToast } from './toast.js';
 
 const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
 const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
@@ -84,18 +85,23 @@ export async function renderCampCard() {
   const getInterests = setupTagInput(normalizeInterests(card?.interests));
 
   document.querySelectorAll('[data-visible-field]').forEach((chip) => {
-    if (visibleFields.has(chip.dataset.visibleField)) chip.classList.add('chip--selected');
+    setChipState(chip, visibleFields.has(chip.dataset.visibleField));
 
     chip.addEventListener('click', () => {
-      chip.classList.toggle('chip--selected');
+      setChipState(chip, !chip.classList.contains('chip--selected'));
     });
   });
 
-  setupQrTargetPicker(card?.primaryLink ?? DEFAULT_QR_TARGET);
+  setupQrTargetPicker(card?.primaryLink ?? DEFAULT_QR_TARGET, form);
+  setupLinkFields(form);
   renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // Links are tidied (and checked) first: a malformed one stops the save
+    // with a message beside it, rather than becoming a QR that goes nowhere.
+    if (!tidyLinkFields(form)) return;
 
     const data = Object.fromEntries(new FormData(form).entries());
     data.interests = getInterests();
@@ -109,8 +115,8 @@ export async function renderCampCard() {
     track('camp_card_save');
     renderAllPreviews(data);
     document.getElementById('cc-edit-details').open = false;
+    showToast('Camp Card saved.');
   });
-
   document.querySelectorAll('[data-download-card]').forEach((btn) => {
     btn.addEventListener('click', () => downloadCard(btn.dataset.downloadCard));
   });
@@ -236,15 +242,63 @@ async function downloadCard(layout) {
   }
 }
 
-// A minimal type-and-Enter tag input — no library, matches the app's
-// "vanilla JS by default" posture (§4.2/§5.5). Returns a getter so the
-// form's submit handler can read the current tag list at save time.
+// ---- The edit form -------------------------------------------------------
+
+const MAX_INTERESTS = 8;
+const MAX_INTEREST_LENGTH = 30;
+
+// Tap-to-add ideas under the interests field — WordPress topics people
+// actually start conversations about. Ones already chosen are hidden.
+const SUGGESTED_INTERESTS = [
+  'Gutenberg', 'Block themes', 'WooCommerce', 'Performance', 'Accessibility',
+  'Design', 'Security', 'SEO', 'Plugins', 'Community',
+];
+
+const LINK_MESSAGE = "That doesn't look like a link. Try something like yoursite.com.";
+const HANDLE_MESSAGE = 'Use just your handle: letters, numbers or underscores, up to 15.';
+
+// A toggle chip's on/off state, told to both the eye (class) and assistive tech (aria-pressed).
+function setChipState(chip, on) {
+  chip.classList.toggle('chip--selected', on);
+  chip.setAttribute('aria-pressed', String(on));
+}
+
+// The interests field: tags live inside the input box, added with Enter or
+// a comma (or the Add button, since a phone keyboard's comma is a
+// long-press away), removed with their ×. Returns a getter so the form's
+// submit handler can read the current list at save time. No library —
+// matches the app's "vanilla JS by default" posture (§4.2/§5.5).
 function setupTagInput(initialTags) {
+  const box = document.getElementById('interests-input');
   const textInput = document.getElementById('interests-text');
   const tagsContainer = document.getElementById('interests-tags');
-  let tags = [...initialTags];
+  const addButton = document.getElementById('interests-add');
+  const countEl = document.getElementById('interests-count');
+  const suggestEl = document.getElementById('interests-suggest');
+  const tags = [];
 
-  function renderTags() {
+  const has = (tag) => tags.some((t) => t.toLowerCase() === tag.toLowerCase());
+
+  function add(value) {
+    const tag = value.trim().replace(/\s+/g, ' ').slice(0, MAX_INTEREST_LENGTH);
+    if (!tag || has(tag)) return;
+
+    if (tags.length >= MAX_INTERESTS) {
+      showToast(`That's ${MAX_INTERESTS} interests. Remove one to add another.`);
+      return;
+    }
+
+    tags.push(tag);
+  }
+
+  // Commits whatever's typed; "a, b, c" pasted in one go becomes three tags.
+  function commit() {
+    textInput.value.split(',').forEach(add);
+    textInput.value = '';
+    draw();
+  }
+
+  function draw() {
     tagsContainer.replaceChildren(
       ...tags.map((tag, i) =>
         render('tpl-tag-input-tag', {
@@ -257,51 +311,193 @@ function setupTagInput(initialTags) {
     tagsContainer.querySelectorAll('[data-remove-tag]').forEach((btn) => {
       btn.addEventListener('click', () => {
         tags.splice(Number(btn.dataset.removeTag), 1);
-        renderTags();
+        draw();
+        textInput.focus();
       });
     });
-  }
 
-  function addTag(value) {
-    const tag = value.trim();
-    if (!tag || tags.includes(tag)) return;
-    tags.push(tag);
-    renderTags();
+    countEl.textContent = String(tags.length);
+    addButton.hidden = textInput.value.trim() === '';
+
+    suggestEl.replaceChildren(
+      ...SUGGESTED_INTERESTS.filter((name) => !has(name)).map((name) => {
+        const chip = render('tpl-interest-suggestion', {
+          chip: { text: name, attrs: { 'aria-label': `Add ${name}`, disabled: tags.length >= MAX_INTERESTS } },
+        });
+
+        chip.addEventListener('click', () => {
+          add(name);
+          draw();
+        });
+
+        return chip;
+      })
+    );
   }
 
   textInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
-      addTag(textInput.value);
-      textInput.value = '';
+      commit();
     } else if (e.key === 'Backspace' && textInput.value === '' && tags.length > 0) {
       tags.pop();
-      renderTags();
+      draw();
+    }
+  });
+
+  // A comma typed or pasted mid-text ends a tag; what follows it stays in the box.
+  textInput.addEventListener('input', () => {
+    if (textInput.value.includes(',')) {
+      const parts = textInput.value.split(',');
+      textInput.value = parts.pop();
+      parts.forEach(add);
+      draw();
+    } else {
+      addButton.hidden = textInput.value.trim() === '';
     }
   });
 
   textInput.addEventListener('blur', () => {
-    if (textInput.value.trim()) {
-      addTag(textInput.value);
-      textInput.value = '';
-    }
+    if (textInput.value.trim()) commit();
   });
 
-  renderTags();
+  addButton.addEventListener('click', () => {
+    commit();
+    textInput.focus();
+  });
 
-  return () => tags;
+  // Clicking the empty part of the box should still put the cursor in it.
+  box.addEventListener('click', (e) => {
+    if (e.target === box) textInput.focus();
+  });
+
+  initialTags.forEach(add);
+  draw();
+
+  return () => {
+    commit();
+    return [...tags];
+  };
 }
 
-function setupQrTargetPicker(activeTarget) {
+// "QR code links to": one chip is always chosen. A chip whose link isn't
+// filled in yet is faded (still choosable — the QR falls back to the first
+// link that exists — but visibly not ready).
+function setupQrTargetPicker(activeTarget, form) {
   const chips = document.querySelectorAll('[data-qr-target]');
 
+  const syncEmpty = () => {
+    chips.forEach((chip) => {
+      const empty = !form.elements.namedItem(chip.dataset.qrTarget)?.value.trim();
+      chip.classList.toggle('chip--empty', empty);
+
+      if (empty) {
+        chip.title = 'Add this link above first';
+      } else {
+        chip.removeAttribute('title');
+      }
+    });
+  };
+
   chips.forEach((chip) => {
-    chip.classList.toggle('chip--selected', chip.dataset.qrTarget === activeTarget);
+    setChipState(chip, chip.dataset.qrTarget === activeTarget);
 
     chip.addEventListener('click', () => {
-      chips.forEach((c) => c.classList.toggle('chip--selected', c === chip));
+      chips.forEach((c) => setChipState(c, c === chip));
     });
   });
+
+  form.addEventListener('input', syncEmpty);
+  syncEmpty();
+}
+
+// ---- Link fields ---------------------------------------------------------
+
+// "linkedin.com/in/me" → "https://linkedin.com/in/me". Returns '' for an
+// empty field and null for something that can't be a link.
+function normalizeUrl(raw) {
+  const value = raw.trim();
+  if (!value) return '';
+
+  const withScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(value) ? value : `https://${value.replace(/^\/+/, '')}`;
+
+  try {
+    const url = new URL(withScheme);
+
+    if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.')) return null;
+
+    // "https://yoursite.com/" → "https://yoursite.com" (a shorter QR, too).
+    return url.pathname === '/' && !url.search && !url.hash ? url.origin : url.href;
+  } catch {
+    return null;
+  }
+}
+
+// "@me", "me" or a pasted x.com / twitter.com profile link → "me".
+function normalizeHandle(raw) {
+  let value = raw.trim();
+  if (!value) return '';
+
+  const fromUrl = value.match(/^(?:https?:\/\/)?(?:www\.)?(?:x|twitter)\.com\/@?([A-Za-z0-9_]{1,15})\/?(?:[?#].*)?$/i);
+  if (fromUrl) value = fromUrl[1];
+
+  value = value.replace(/^@/, '');
+
+  return /^[A-Za-z0-9_]{1,15}$/.test(value) ? value : null;
+}
+
+function showFieldError(input, message) {
+  const el = document.getElementById(`${input.id}-error`);
+
+  if (message) {
+    input.setAttribute('aria-invalid', 'true');
+  } else {
+    input.removeAttribute('aria-invalid');
+  }
+
+  if (el) {
+    el.textContent = message ?? '';
+    el.hidden = !message;
+  }
+}
+
+// Rewrites the field to its tidy form; false (with a message beside it) if it can't be.
+function tidyField(input) {
+  const isHandle = input.hasAttribute('data-handle-field');
+  const tidy = isHandle ? normalizeHandle(input.value) : normalizeUrl(input.value);
+
+  if (tidy === null) {
+    showFieldError(input, isHandle ? HANDLE_MESSAGE : LINK_MESSAGE);
+    return false;
+  }
+
+  input.value = tidy;
+  showFieldError(input, null);
+  return true;
+}
+
+function setupLinkFields(form) {
+  form.querySelectorAll('[data-link-field], [data-handle-field]').forEach((input) => {
+    input.addEventListener('blur', () => {
+      tidyField(input);
+      form.dispatchEvent(new Event('input')); // refresh the QR chips' "empty" fade
+    });
+
+    input.addEventListener('input', () => showFieldError(input, null));
+  });
+}
+
+// All of them, so every bad one gets its message; focuses the first bad one.
+function tidyLinkFields(form) {
+  let firstBad = null;
+
+  form.querySelectorAll('[data-link-field], [data-handle-field]').forEach((input) => {
+    if (!tidyField(input) && !firstBad) firstBad = input;
+  });
+
+  firstBad?.focus();
+
+  return firstBad === null;
 }
 
 function renderAllPreviews(card) {

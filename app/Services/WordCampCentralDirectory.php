@@ -63,15 +63,18 @@ class WordCampCentralDirectory
     {
         $name = $this->clean((string) ($record['Venue Name'] ?? ''));
         // Organizers often type the venue name into the address box too, so
-        // the same part can appear on two lines — keep the first of each.
+        // the same part can appear on two lines — keep the first of each, and
+        // drop any part that is just the venue name (it leads the line instead).
         $address = collect(preg_split('/\R+/u', (string) ($record['Physical Address'] ?? '')) ?: [])
             ->flatMap(fn ($line) => explode(',', $line))
             ->map(fn ($part) => $this->clean($part))
             ->filter()
             ->unique(fn ($part) => mb_strtolower($part))
+            ->reject(fn ($part) => $name !== '' && mb_strtolower($part) === mb_strtolower($name))
             ->implode(', ');
 
         $line = match (true) {
+            // "Grand Hall — 1 Main St, Testville" (unless the address already says the name).
             $name !== '' && $address !== '' && ! str_contains(mb_strtolower($address), mb_strtolower($name)) => "{$name} — {$address}",
             $address !== '' => $address,
             $name !== '' => $name,
@@ -109,8 +112,11 @@ class WordCampCentralDirectory
         return rtrim(preg_replace('#^https?://(www\.)?#i', '', mb_strtolower(trim($url))) ?? '', '/');
     }
 
+    /** Central stores some fields HTML-escaped ("St. Joseph&#039;s"), so decode before showing. */
     private function clean(string $value): string
     {
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         return trim(preg_replace('/\s+/u', ' ', $value) ?? '');
     }
 }
