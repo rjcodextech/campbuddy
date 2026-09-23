@@ -1,17 +1,17 @@
 // Camp Card: local-only (CC5), attendee chooses which filled
 // fields actually show (CC2), QR points at whichever link they designate
-// primary (CC3), and it goes fullscreen with one tap (CC4) — the QR now
-// lives inside the card itself (components/_camp-card.scss), so
-// fullscreen actually shows the whole scannable badge, not just the
-// name/tags above it. Always shows a preview — a sample card until the
-// attendee has real data — and lets them pick from 5 layouts.
+// primary (CC3). All 6 layouts render at once in a horizontally
+// scrollable gallery (resources/views/attendee/camp-card.blade.php's
+// #camp-card-scroll) rather than one preview behind a layout picker —
+// each card is its own self-contained subtree (data-layout-card="…"),
+// with its own Share/Download buttons, so nothing here relies on a
+// single #camp-card-preview id.
 
 import QRCode from 'qrcode-generator';
 import { kvGet, kvSet } from './db.js';
 
 const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
-const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge'];
-const DEFAULT_LAYOUT = 'classic';
+const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
 const DEFAULT_QR_TARGET = 'linkedin';
 
 const SAMPLE_CARD = {
@@ -70,8 +70,7 @@ export async function renderCampCard() {
   });
 
   setupQrTargetPicker(card?.primaryLink ?? DEFAULT_QR_TARGET);
-  setupLayoutPicker(card?.layout ?? DEFAULT_LAYOUT);
-  renderPreview(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
+  renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -82,46 +81,90 @@ export async function renderCampCard() {
       (chip) => chip.dataset.visibleField
     );
     data.primaryLink = document.querySelector('[data-qr-target].chip--selected')?.dataset.qrTarget ?? DEFAULT_QR_TARGET;
-    data.layout = document.querySelector('[data-layout].chip--selected')?.dataset.layout ?? DEFAULT_LAYOUT;
 
     await kvSet('campCard', data);
-    renderPreview(data);
+    renderAllPreviews(data);
     document.getElementById('cc-edit-details').open = false;
   });
 
-  document.getElementById('fullscreen-btn')?.addEventListener('click', () => {
-    const el = document.getElementById('camp-card-preview');
-    if (el.requestFullscreen) el.requestFullscreen();
+  document.querySelectorAll('[data-download-card]').forEach((btn) => {
+    btn.addEventListener('click', () => downloadCard(btn.dataset.downloadCard));
   });
 
-  document.getElementById('save-image-btn')?.addEventListener('click', saveAsImage);
-  document.getElementById('print-btn')?.addEventListener('click', () => window.print());
+  document.querySelectorAll('[data-share-card]').forEach((btn) => {
+    btn.addEventListener('click', () => shareCard(btn.dataset.shareCard));
+  });
 }
 
-// html2canvas is dynamically imported so its ~50KB only ever loads for
-// an attendee who actually taps "Save as image" — never on page load,
-// and never on any other screen (app.js only imports camp-card.js at
-// all when #camp-card-form exists). A rasterized screenshot is the only
-// practical way to turn this card's gradients/custom fonts/pseudo-
-// element frames into a downloadable file; there's no reasonable native
-// alternative that doesn't amount to reimplementing a renderer.
-async function saveAsImage() {
-  const btn = document.getElementById('save-image-btn');
+function cardElement(layout) {
+  return document.querySelector(`[data-layout-card="${layout}"] .camp-card`);
+}
+
+// Renders one card to a canvas via html2canvas — shared by Download and
+// Share so both produce the exact same PNG.
+async function renderCardToCanvas(layout) {
+  const { default: html2canvas } = await import('html2canvas');
+  return html2canvas(cardElement(layout), { backgroundColor: null, scale: 2 });
+}
+
+async function shareCard(layout) {
+  const btn = document.querySelector(`[data-share-card="${layout}"]`);
   const original = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Preparing…';
 
   try {
-    const { default: html2canvas } = await import('html2canvas');
-    const el = document.getElementById('camp-card-preview');
-    const canvas = await html2canvas(el, { backgroundColor: null, scale: 2 });
+    const canvas = await renderCardToCanvas(layout);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    const file = new File([blob], `campbuddy-camp-card-${layout}.png`, { type: 'image/png' });
+
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'My Camp Card' });
+    } else if (navigator.share) {
+      // Some browsers support navigator.share but not file sharing —
+      // share a link instead of failing silently.
+      await navigator.share({ title: 'My Camp Card', url: location.href });
+    } else {
+      // No Web Share support at all (most desktop browsers) — fall back
+      // to a download so the button still does something useful.
+      const link = document.createElement('a');
+      link.download = `campbuddy-camp-card-${layout}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  } catch (err) {
+    if (err?.name !== 'AbortError') {
+      alert("Couldn't share the card — try Download instead.");
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+// html2canvas is dynamically imported (inside renderCardToCanvas) so its
+// ~50KB only ever loads for an attendee who actually taps Download or
+// Share — never on page load, and never on any other screen (app.js
+// only imports camp-card.js at all when #camp-card-form exists). A
+// rasterized screenshot is the only practical way to turn this card's
+// gradients/custom fonts/pseudo-element frames into a downloadable or
+// shareable file; there's no reasonable native alternative that doesn't
+// amount to reimplementing a renderer.
+async function downloadCard(layout) {
+  const btn = document.querySelector(`[data-download-card="${layout}"]`);
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+
+  try {
+    const canvas = await renderCardToCanvas(layout);
 
     const link = document.createElement('a');
-    link.download = 'campbuddy-camp-card.png';
+    link.download = `campbuddy-camp-card-${layout}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
   } catch {
-    alert("Couldn't create the image — try again, or use View fullscreen and a screenshot instead.");
+    alert("Couldn't create the image — try again.");
   } finally {
     btn.disabled = false;
     btn.textContent = original;
@@ -198,84 +241,79 @@ function setupQrTargetPicker(activeTarget) {
   });
 }
 
-function setupLayoutPicker(activeLayout) {
-  const chips = document.querySelectorAll('[data-layout]');
-
-  chips.forEach((chip) => {
-    chip.classList.toggle('chip--selected', chip.dataset.layout === activeLayout);
-
-    chip.addEventListener('click', async () => {
-      chips.forEach((c) => c.classList.toggle('chip--selected', c === chip));
-      applyLayoutClass(chip.dataset.layout);
-
-      // A display preference, not form data — applies and saves
-      // immediately rather than waiting for "Save Camp Card".
-      const existing = (await kvGet('campCard')) ?? {};
-      await kvSet('campCard', { ...existing, layout: chip.dataset.layout });
-    });
-  });
-
-  applyLayoutClass(activeLayout);
-}
-
-function applyLayoutClass(layout) {
-  const el = document.getElementById('camp-card-preview');
-  const safeLayout = LAYOUTS.includes(layout) ? layout : DEFAULT_LAYOUT;
-  el.className = `camp-card camp-card--${safeLayout}`;
-}
-
-function renderPreview(card) {
+function renderAllPreviews(card) {
   const sampleNoteEl = document.getElementById('camp-card-sample-note');
-  const qrSection = document.getElementById('qr-section');
-
   const hasPrimaryLink = card && LINK_FIELDS.some((f) => resolveLink(f, card[f]));
   const isSample = !card?.name || !hasPrimaryLink;
+  sampleNoteEl.hidden = !isSample;
+
+  const primaryUrl = !isSample
+    ? resolveLink(card.primaryLink, card[card.primaryLink]) ?? LINK_FIELDS.map((f) => resolveLink(f, card[f])).find(Boolean)
+    : null;
+
+  // Same QR (same primary link) shared across every layout's canvas — no
+  // need to regenerate the module grid per card, just redraw it 6 times.
+  const qr = primaryUrl ? QRCode(0, 'H') : null;
+  if (qr) {
+    qr.addData(primaryUrl);
+    qr.make();
+  }
+
+  LAYOUTS.forEach((layout) => renderPreview(layout, card, isSample, qr));
+}
+
+function renderPreview(layout, card, isSample, qr) {
+  const item = document.querySelector(`[data-layout-card="${layout}"]`);
+  if (!item) return;
+
+  const qrSection = item.querySelector('.camp-card__footer');
   const display = isSample ? SAMPLE_CARD : card;
   const visibleFields = display.visibleFields ?? [];
 
-  sampleNoteEl.hidden = !isSample;
+  item.querySelector('.camp-card__name').textContent = display.name;
 
-  document.getElementById('cc-name').textContent = display.name;
-  document.getElementById('cc-role').textContent = [display.role, display.company].filter(Boolean).join(' · ');
+  // Role/company get their own dedicated line — shown only if chosen
+  // (CC2), and left out of the tag pills below so they're never shown
+  // twice on the same card.
+  item.querySelector('.camp-card__role').textContent = [
+    visibleFields.includes('role') && display.role,
+    visibleFields.includes('company') && display.company,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   // "Interests" expands into one pill per tag rather than a single
-  // combined blob — the rest of visibleFields render as one pill each.
+  // combined blob — the rest of visibleFields (excluding role/company,
+  // already on their own line above) render as one pill each.
   const tagValues = [];
   visibleFields.forEach((f) => {
     if (f === 'interests') {
       (display.interests ?? []).forEach((tag) => tagValues.push(tag));
-    } else if (display[f]) {
+    } else if (f !== 'role' && f !== 'company' && display[f]) {
       tagValues.push(display[f]);
     }
   });
 
-  document.getElementById('cc-tags').innerHTML = tagValues.length
+  item.querySelector('.camp-card__tags').innerHTML = tagValues.length
     ? tagValues.map((t) => `<span class="camp-card__tag">${escapeHtml(t)}</span>`).join('')
     : `<span class="camp-card__tag camp-card__tag--placeholder">Nothing chosen to show yet</span>`;
 
-  if (isSample) {
-    qrSection.hidden = true;
-    return;
-  }
-
-  const primaryUrl = resolveLink(card.primaryLink, card[card.primaryLink])
-    ?? LINK_FIELDS.map((f) => resolveLink(f, card[f])).find(Boolean);
-
-  if (primaryUrl) {
-    qrSection.hidden = false;
-    const qr = QRCode(0, 'M');
-    qr.addData(primaryUrl);
-    qr.make();
-    const canvas = document.getElementById('qr-canvas');
-    drawQrToCanvas(qr, canvas);
-  } else {
-    qrSection.hidden = true;
+  qrSection.hidden = !qr;
+  if (qr) {
+    const canvas = item.querySelector('.camp-card__qr-frame canvas');
+    drawQrToCanvas(qr, canvas, item.querySelector('.camp-card')?.dataset.eventIcon);
   }
 }
 
-function drawQrToCanvas(qr, canvas) {
+// Renders at 320px internally (well above the ~72-120px CSS display size
+// across the 6 layouts, and above the 2x scale html2canvas uses for
+// Download/Share) so the QR stays crisp when scaled up or printed. When
+// eventIconUrl is given, overlays it in a small white plate at dead
+// center — safe at error-correction level 'H' since that plate covers
+// well under the ~30% of modules 'H' can lose and still decode.
+function drawQrToCanvas(qr, canvas, eventIconUrl) {
   const count = qr.getModuleCount();
-  const size = 240;
+  const size = 320;
   const cell = size / count;
   canvas.width = size;
   canvas.height = size;
@@ -291,6 +329,36 @@ function drawQrToCanvas(qr, canvas) {
       }
     }
   }
+
+  if (!eventIconUrl) return;
+
+  const logo = new Image();
+  logo.onload = () => {
+    const plate = size * 0.24;
+    const inset = (size - plate) / 2;
+    const plateRadius = 10;
+
+    ctx.fillStyle = '#fff';
+    roundedRectPath(ctx, inset - 6, inset - 6, plate + 12, plate + 12, plateRadius);
+    ctx.fill();
+
+    ctx.save();
+    roundedRectPath(ctx, inset, inset, plate, plate, plateRadius - 3);
+    ctx.clip();
+    ctx.drawImage(logo, inset, inset, plate, plate);
+    ctx.restore();
+  };
+  logo.src = eventIconUrl;
+}
+
+function roundedRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
 }
 
 function escapeHtml(str) {

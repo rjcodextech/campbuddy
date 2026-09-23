@@ -10,35 +10,38 @@
             This is a preview — fill in the form below to make it yours.
         </p>
 
-        <div id="camp-card-preview" class="camp-card camp-card--classic">
-            <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
-            <div class="camp-card__body">
-                <span class="camp-card__label">Camp Card</span>
-                <p class="camp-card__name" id="cc-name"></p>
-                <p class="camp-card__role" id="cc-role"></p>
-                <div class="camp-card__tags" id="cc-tags"></div>
-            </div>
-            <div class="camp-card__footer" id="qr-section" hidden>
-                <div class="camp-card__qr-frame">
-                    <canvas id="qr-canvas"></canvas>
+        <div class="camp-card-scroll" id="camp-card-scroll">
+            @foreach (['classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
+                <div class="camp-card-scroll__item" data-layout-card="{{ $key }}">
+                    <p class="camp-card-scroll__label">{{ $label }}</p>
+
+                    <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/favicon.png' }}">
+                        <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
+                        <div class="camp-card__body">
+                            <img src="{{ $event->faviconUrl() ?? '/media/favicon.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark">
+                            <img src="{{ $event->logoUrl() ?? '/media/logo.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full">
+                            <p class="camp-card__name"></p>
+                            <p class="camp-card__role"></p>
+                            <div class="camp-card__tags"></div>
+                        </div>
+                        <div class="camp-card__footer" hidden>
+                            <div class="camp-card__qr-frame">
+                                <canvas></canvas>
+                            </div>
+                            <img src="/media/icon.svg" alt="CampBuddy" class="camp-card__brand-mark">
+                            <img src="/media/logo.svg" alt="CampBuddy" class="camp-card__brand-mark-full">
+                        </div>
+                        <div class="camp-card__tier-band" aria-hidden="true">
+                            <span>Code is Poetry</span>
+                        </div>
+                    </div>
+
+                    <div class="qr__actions">
+                        <button type="button" class="btn btn--outline btn--compact" data-share-card="{{ $key }}">Share</button>
+                        <button type="button" class="btn btn--outline btn--compact" data-download-card="{{ $key }}">Download</button>
+                    </div>
                 </div>
-                <span class="camp-card__brand-mark">CampBuddy</span>
-            </div>
-        </div>
-
-        <div class="qr__actions" style="margin-top:12px">
-            <button type="button" class="btn btn--outline btn--compact" id="fullscreen-btn">View fullscreen</button>
-            <button type="button" class="btn btn--outline btn--compact" id="save-image-btn">Save as image</button>
-            <button type="button" class="btn btn--outline btn--compact" id="print-btn">Print</button>
-        </div>
-
-        <div class="field" style="margin-top:18px">
-            <span>Card design</span>
-            <div class="chip-group" id="layout-chips">
-                @foreach (['classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge'] as $key => $label)
-                    <button type="button" class="chip" data-layout="{{ $key }}">{{ $label }}</button>
-                @endforeach
-            </div>
+            @endforeach
         </div>
 
         <details style="margin-top:24px" open id="cc-edit-details">

@@ -57,12 +57,27 @@
     @include m.pressable-subtle;
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: v.$space-3;
     text-decoration: none;
     font-weight: v.$font-weight-bold;
     color: var(--ink);
     transition: transform 0.12s ease;
+}
+
+.landing-event-card__logo {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: v.$radius-full;
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 4px;
+}
+
+.landing-event-card__text {
+    flex: 1;
+    min-width: 0;
 }
 
 .landing-event-card__meta {

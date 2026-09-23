@@ -58,10 +58,16 @@
                         @foreach ($events as $event)
                             <li>
                                 <a href="{{ route('event.home', $event) }}" class="card landing-event-card">
-                                    <span>
+                                    <img src="{{ $event->faviconUrl() ?? '/media/favicon.png' }}" alt="" class="landing-event-card__logo">
+                                    <span class="landing-event-card__text">
                                         {{ $event->display_name }}
                                         @if ($event->starts_on)
-                                            <span class="landing-event-card__meta">{{ $event->starts_on->format('j M Y') }}</span>
+                                            <span class="landing-event-card__meta">
+                                                {{ $event->starts_on->format('j M Y') }}
+                                                @if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on))
+                                                    – {{ $event->ends_on->format('j M Y') }}
+                                                @endif
+                                            </span>
                                         @endif
                                     </span>
                                     <span class="landing-event-card__arrow" aria-hidden="true">→</span>

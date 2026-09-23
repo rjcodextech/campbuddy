@@ -14,3 +14,5 @@ Home is the most important screen in CampBuddy and must not become a generic car
 | H6 | Home renders from already-downloaded event data ([5.1](../05-system-architecture.md#51-request-flow-public-pages--updated-for-server-rendering), [4.4 offline-first](../04-non-functional-requirements.md#44-offline-first)) — no blocking network call between opening the app and seeing a populated Home screen. |
 
 > **Current implementation note:** Home also carries a hero section (event logo/name/dates) and a "Find people who match your interests" entry point above Happening Now — see [What CampBuddy does](../../about/02-what-it-does.md) and [3.4 Matching](04-matching.md).
+>
+> **Before Home:** `/` (`resources/views/welcome.blade.php`) is the always-reachable WordCamp picker attendees land on before any event is selected — up to 5 upcoming events (`HomeController`), each row showing the event's own icon (`Event::faviconUrl()`, falling back to the app's shared default favicon), name, and start date.
