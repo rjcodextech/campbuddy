@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\DiscoverWordCampsJob;
+use App\Jobs\EvaluateEventLifecycleJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
@@ -43,6 +44,15 @@ Schedule::call(function () {
 // minute is the tightest useful cadence without spamming the queue.
 Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders');
 
-// Central discovery — weekly is plenty; new WordCamps don't appear
-// hourly, and every result lands as a draft pending admin approval.
-Schedule::job(new DiscoverWordCampsJob)->weekly()->name('discover-wordcamps');
+// Central discovery, every 2 days — new WordCamps don't appear hourly,
+// and every result lands as a draft pending admin approval. Laravel's
+// scheduler has no built-in "every N days" helper, so this is a raw cron
+// expression: day-of-month divisible by 2 (i.e. every even calendar
+// day), not a rolling 48-hour timer — close enough for a discovery job
+// with no real time pressure.
+Schedule::job(new DiscoverWordCampsJob)->cron('0 3 */2 * *')->name('discover-wordcamps');
+
+// Auto-publish a draft once its site is up and it has a real attendee,
+// and archive whatever's dates have already passed — daily, offset from
+// midnight so it doesn't pile onto ingest-attendee-roster's own run.
+Schedule::job(new EvaluateEventLifecycleJob)->dailyAt('01:00')->name('evaluate-event-lifecycle');

@@ -10,7 +10,7 @@ class DiscoverWordCampsCommand extends Command
 {
     protected $signature = 'campbuddy:discover-wordcamps';
 
-    protected $description = 'Query api.wordpress.org/events/1.0/ across a seed list of cities and add any new upcoming WordCamps as draft events';
+    protected $description = "Read events.wordpress.org's upcoming in-person WordCamps listing and add any new ones as draft events";
 
     public function handle(): int
     {
