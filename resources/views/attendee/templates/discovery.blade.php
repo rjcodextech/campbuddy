@@ -67,7 +67,7 @@
 
 <template id="tpl-discovery-match">
     <div class="card" style="margin-bottom:10px">
-        <div class="camp-card__tags" style="margin-top:0" data-slot="tags"></div>
+        <div class="match-tags" data-slot="tags"></div>
         <p style="margin:8px 0 0;font-weight:600" data-slot="profession"></p>
         <p class="footer-note" style="text-align:left;margin:4px 0 0" data-slot="who-row">Wants to meet: <span data-slot="who"></span></p>
         <button type="button" class="btn btn--outline btn--compact" style="margin-top:10px" data-slot="met-btn">I met them</button>
@@ -76,5 +76,5 @@
 </template>
 
 <template id="tpl-discovery-match-tag">
-    <span class="camp-card__tag" style="color:var(--ink);background:var(--peach)" data-slot="tag"></span>
+    <span class="match-tag" data-slot="tag"></span>
 </template>

@@ -69,3 +69,23 @@
         color: #fff;
     }
 }
+
+// Interest tags on an Explore → People match card (js/attendee/people.js →
+// tpl-discovery-match). Deliberately its own pair of classes rather than
+// borrowing Camp Card's, whose tags scale with the card's width
+// (components/_camp-card.scss) and so only make sense inside one.
+.match-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}
+
+.match-tag {
+    display: inline-flex;
+    padding: v.$space-1 v.$space-3;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+}

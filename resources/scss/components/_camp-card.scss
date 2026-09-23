@@ -1,24 +1,64 @@
+@use 'sass:math';
 @use '../abstracts/variables' as v;
 
-// All 6 layouts render at once as a horizontally swipeable gallery
-// (camp-card.blade.php's #camp-card-scroll) rather than one preview
-// behind a layout picker — bleeds to the viewport edges by canceling
-// #main-content's own v.$space-4 side padding, then re-adds it as
-// scroll-padding so the first/last card don't sit flush against it.
+// Camp Card was designed on a 300px-wide card. Every dimension inside
+// the card is written in those design pixels and converted here to
+// `cqw` — 1% of the width of the nearest size container
+// (.camp-card-scroll__item on screen, .camp-card-export when exporting).
+// That is what makes the card fully responsive AND identical at every
+// size: it's a fixed 3:5 shape (below) whose type, spacing and artwork
+// all scale together, so a 240px phone card, a 340px desktop card and
+// the 900px print export are the same layout. Needs container query
+// units (Chrome 105+, Safari 16+, Firefox 110+).
+@function cc($design-px) {
+    @return math.div($design-px, 3) * 1cqw;
+}
+
+// --- Gallery ---------------------------------------------------------
+// All 6 layouts render at once (camp-card.blade.php's #camp-card-scroll).
+// Phones: one swipeable row that bleeds to the viewport edges by
+// canceling #main-content's side padding, then re-adds it as padding so
+// the first/last card don't sit flush against the edge. Tablets and up:
+// the same equal-width cards wrap into a grid instead.
 .camp-card-scroll {
     display: flex;
+    align-items: flex-start;
     gap: v.$space-4;
     overflow-x: auto;
     scroll-snap-type: x proximity;
+    // Without this the first card snaps flush against the screen edge,
+    // undoing the padding above.
+    scroll-padding-inline: v.$space-4;
     margin: 0 -#{v.$space-4};
     padding: v.$space-1 v.$space-4 v.$space-2;
     -webkit-overflow-scrolling: touch;
+
+    @media (min-width: v.$bp-tablet) {
+        display: grid;
+        // Equal columns, 280–340px wide: never so wide the card looks
+        // blown up, and centered when the row doesn't fill the screen.
+        grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
+        justify-content: center;
+        overflow: visible;
+        scroll-snap-type: none;
+        margin: 0;
+        padding: 0;
+    }
 }
 
+// Every item is the same width (fluid on phones, one grid column on
+// larger screens) and — because the card inside is a fixed 3:5 —
+// the same height too. It's the size container the card's cqw units
+// measure against.
 .camp-card-scroll__item {
     flex: 0 0 auto;
-    width: min(300px, 78vw);
+    width: clamp(240px, 78vw, 320px);
     scroll-snap-align: start;
+    container-type: inline-size;
+
+    @media (min-width: v.$bp-tablet) {
+        width: auto;
+    }
 }
 
 .camp-card-scroll__label {
@@ -32,6 +72,34 @@
     margin-top: v.$space-3;
 }
 
+// Off-screen stage the Share/Download export renders a clone of the card
+// on (js/attendee/camp-card.js) — a fixed print-size container, so the
+// clone lays out at export resolution instead of being stretched up from
+// the on-screen size. Its width is set inline from the same constants
+// the PNG's DPI is computed from.
+.camp-card-export {
+    position: absolute;
+    top: 0;
+    left: -10000px;
+    container-type: inline-size;
+    pointer-events: none;
+
+    // The on-screen drop shadow belongs to the gallery, not the image.
+    .camp-card {
+        box-shadow: none;
+    }
+}
+
+// html2canvas works out where a font's baseline sits by appending a 1×1
+// <img> to <body> and reading where it lands on the text's line. The
+// global `img { display: block }` reset drops that probe onto a line of
+// its own, so every exported word came out ~0.4em too low — pills and
+// names visibly off-centre. Keep the probe (and only the probe: nothing
+// else is a direct 1×1 img child of a div in <body>) inline.
+body > div > img[width='1'][height='1'] {
+    display: inline;
+}
+
 // Camp Card is the one place in the app deliberately styled as its own
 // designed object rather than more app UI — its own accent palette
 // ($cc-*) and typography (serif for the name, mono for handle-style
@@ -40,59 +108,95 @@
 // supplies the visual treatment.
 .camp-card {
     position: relative;
-    border-radius: v.$radius-lg;
-    border: 3px solid v.$cc-charcoal;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    aspect-ratio: 3 / 5;
+    border-radius: cc(5);
+    border: cc(3) solid v.$cc-charcoal;
     box-shadow: v.$shadow-raised;
     overflow: hidden;
 }
 
 // A simulated lanyard punch-hole — hidden by default, shown only by the
-// layouts whose brief calls for it (Minimal, Badge). Matches the page
-// background behind the card so it reads as a cutout, not a sticker.
+// layouts whose brief calls for it (Minimal, Badge, Pass). Flat, with a
+// darker rim, rather than an inset shadow: it has to look the same in
+// the exported PNG, where inset shadows aren't drawn.
 .camp-card__lanyard-hole {
     display: none;
     position: absolute;
-    top: v.$space-2;
+    top: cc(8);
     left: 50%;
     transform: translateX(-50%);
-    width: 18px;
-    height: 18px;
+    width: cc(18);
+    height: cc(18);
     border-radius: 50%;
-    background: var(--paper-soft);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+    background: v.$color-paper-soft;
+    border: cc(1.5) solid rgba(0, 0, 0, 0.22);
     z-index: 2;
 }
 
+// Takes whatever height the footer leaves and never grows past it — the
+// card is a fixed size, so anything that doesn't fit is dropped rather
+// than stretching it (js/attendee/camp-card.js trims the tag list to
+// fit). When there's no QR footer (the sample preview) the content sits
+// vertically centered instead of hugging the top.
 .camp-card__body {
-    padding: v.$space-6 v.$space-5 v.$space-4;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: cc(24) cc(20) cc(16);
+
+    > * {
+        flex-shrink: 0;
+    }
+}
+
+.camp-card:has(.camp-card__footer[hidden]) .camp-card__body {
+    &::before,
+    &::after {
+        content: '';
+        flex: 0 0 0;
+    }
+
+    &::before {
+        margin-top: auto;
+    }
+
+    &::after {
+        margin-bottom: auto;
+    }
 }
 
 // The event's own icon, standing in for the old "Camp Card" text label —
 // a small white chip so it reads clearly against any of the 5 layouts'
 // backgrounds, light or dark, without per-layout color overrides.
 .camp-card__event-mark {
-    display: inline-block;
-    width: 32px;
-    height: 32px;
+    width: cc(32);
+    height: cc(32);
     object-fit: contain;
     border-radius: v.$radius-full;
     background: #fff;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    padding: 3px;
-    margin-bottom: v.$space-3;
+    border: cc(1) solid rgba(0, 0, 0, 0.08);
+    padding: cc(3);
+    margin-bottom: cc(12);
 }
 
 .camp-card__name {
     font-family: v.$font-serif;
-    font-size: v.$font-size-xl;
+    font-size: cc(24);
     font-weight: v.$font-weight-bold;
     line-height: v.$line-height-tight;
+    overflow-wrap: anywhere;
 }
 
 .camp-card__role {
-    font-size: v.$font-size-base;
+    font-size: cc(16);
     opacity: 0.85;
-    margin-top: v.$space-1;
+    margin-top: cc(4);
+    overflow-wrap: anywhere;
 
     // Empty when neither "Role" nor "Company" is in the attendee's
     // chosen visible fields — collapse rather than leave a blank line.
@@ -105,16 +209,19 @@
 .camp-card__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: v.$space-2;
-    margin-top: v.$space-4;
+    gap: cc(8);
+    margin-top: cc(16);
 }
 
+// Explicit line-height and padding (rather than letting the font decide)
+// so the pill's text sits exactly where it does on screen once exported.
 .camp-card__tag {
-    display: inline-flex;
-    padding: v.$space-1 v.$space-3;
+    display: inline-block;
+    padding: cc(4) cc(12);
     border-radius: v.$radius-full;
     background: rgba(255, 255, 255, 0.16);
-    font-size: v.$font-size-sm;
+    font-size: cc(14);
+    line-height: cc(20);
     font-weight: v.$font-weight-medium;
 
     &--placeholder {
@@ -127,12 +234,13 @@
 // so Share/Download (resources/js/attendee/camp-card.js) capture the
 // whole scannable badge in one image, not just the name/tags above it.
 .camp-card__footer {
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: v.$space-3;
-    padding: v.$space-4 v.$space-5;
+    gap: cc(10);
+    padding: cc(14) cc(20);
 
     // The `hidden` attribute is author-overridable by any rule that sets
     // `display`, including this one — without this it stops actually
@@ -143,23 +251,22 @@
     }
 }
 
-// One shared QR size across all 6 layouts (previously ranged 72–120px
-// per layout, the single biggest driver of the gallery's uneven card
-// heights) — also a more usefully scannable size than the old 72px
-// default.
+// One shared QR size across all 6 layouts. The <canvas>'s own pixel
+// grid is sized by JS (crisp at on-screen and print resolution alike);
+// this is only how big it's shown.
 .camp-card__qr-frame {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: v.$space-3;
+    padding: cc(10);
     background: #fff;
-    border-radius: v.$radius-sm;
-    border: 1px solid rgba(30, 30, 30, 0.08);
+    border-radius: cc(4);
+    border: cc(1) solid rgba(30, 30, 30, 0.08);
 
     canvas {
         display: block;
-        width: 112px;
-        height: 112px;
+        width: cc(104);
+        height: cc(104);
     }
 }
 
@@ -168,12 +275,12 @@
 // watermark next to the QR, not a focal point.
 .camp-card__brand-mark {
     display: block;
-    width: 22px;
-    height: 22px;
+    width: cc(22);
+    height: cc(22);
     object-fit: contain;
-    border-radius: v.$radius-sm;
+    border-radius: cc(4);
     background: #fff;
-    padding: 2px;
+    padding: cc(2);
 }
 
 // Full-wordmark variants of the event/brand marks above — hidden by
@@ -183,14 +290,14 @@
 .camp-card__event-mark-full {
     display: none;
     max-width: 70%;
-    max-height: 52px;
+    max-height: cc(52);
     object-fit: contain;
-    margin: 0 auto v.$space-4;
+    margin: 0 auto cc(16);
 }
 
 .camp-card__brand-mark-full {
     display: none;
-    height: 13px;
+    height: cc(13);
     width: auto;
     object-fit: contain;
     opacity: 0.8;
@@ -204,14 +311,15 @@
 // shows even on the sample preview.
 .camp-card__tier-band {
     display: none;
+    flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-    padding: v.$space-3;
+    padding: cc(12);
     background: v.$cc-dark-wine;
     color: #fff;
     font-family: v.$font-serif;
     font-style: italic;
-    font-size: v.$font-size-base;
+    font-size: cc(16);
 }
 
 // --- Layout 1: Minimal — airy, centered, antique-white ---
@@ -225,15 +333,17 @@
     }
 
     .camp-card__body {
-        padding-top: v.$space-8;
+        align-items: center;
+        padding-top: cc(32);
     }
 
     .camp-card__role {
         font-family: v.$font-mono;
-        font-size: v.$font-size-sm;
+        font-size: cc(14);
     }
 
     .camp-card__tags {
+        align-self: stretch;
         justify-content: center;
     }
 
@@ -244,16 +354,23 @@
 
     .camp-card__footer {
         background: transparent;
-        border-top: 1px solid rgba(30, 30, 30, 0.08);
+        border-top: cc(1) solid rgba(30, 30, 30, 0.08);
     }
 }
 
 // --- Layout 2: Classic — charcoal + warm diagonal geometry, serif ---
+// The diagonal lines are two square-tiled linear-gradients (a corner-to-
+// corner stroke tiles into unbroken "/" lines: 20px and 42px apart,
+// measured across the lines) rather than repeating-linear-gradient,
+// which the PNG export can't draw.
 .camp-card--classic {
-    background:
-        repeating-linear-gradient(135deg, transparent 0 18px, rgba(215, 123, 6, 0.08) 18px 20px),
-        repeating-linear-gradient(135deg, transparent 0 40px, rgba(114, 19, 19, 0.18) 40px 42px),
-        v.$cc-charcoal;
+    // Longhand on purpose: Sass would read the `0 0 / size` shorthand's
+    // slash as division.
+    background-color: v.$cc-charcoal;
+    background-image:
+        linear-gradient(135deg, transparent 47.5%, rgba(215, 123, 6, 0.08) 47.5%, rgba(215, 123, 6, 0.08) 52.5%, transparent 52.5%),
+        linear-gradient(135deg, transparent 48.8%, rgba(114, 19, 19, 0.18) 48.8%, rgba(114, 19, 19, 0.18) 51.2%, transparent 51.2%);
+    background-size: cc(28.28) cc(28.28), cc(59.4) cc(59.4);
     color: #fff;
 
     .camp-card__role {
@@ -270,7 +387,7 @@
 
     .camp-card__footer {
         background: rgba(0, 0, 0, 0.15);
-        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        border-top: cc(1) solid rgba(255, 255, 255, 0.12);
     }
 }
 
@@ -280,7 +397,7 @@
     color: #fff;
 
     .camp-card__body {
-        padding-bottom: v.$space-5;
+        padding-bottom: cc(20);
     }
 
     .camp-card__name {
@@ -294,15 +411,15 @@
     // "blockquote/callout card container" for ask-me-about/interests.
     .camp-card__tags {
         display: block;
-        padding: v.$space-3 v.$space-4;
-        border-left: 3px solid v.$cc-ochre;
+        padding: cc(12) cc(16);
+        border-left: cc(3) solid v.$cc-ochre;
         background: rgba(255, 255, 255, 0.05);
     }
 
     .camp-card__tag {
         background: none;
         padding: 0;
-        margin-right: v.$space-3;
+        margin-right: cc(12);
         color: rgba(255, 255, 255, 0.85);
     }
 
@@ -319,22 +436,22 @@
         &::after {
             content: '';
             position: absolute;
-            width: 14px;
-            height: 14px;
+            width: cc(14);
+            height: cc(14);
             border-color: v.$cc-ochre;
             border-style: solid;
         }
 
         &::before {
-            top: -5px;
-            left: -5px;
-            border-width: 2px 0 0 2px;
+            top: cc(-5);
+            left: cc(-5);
+            border-width: cc(2) 0 0 cc(2);
         }
 
         &::after {
-            bottom: -5px;
-            right: -5px;
-            border-width: 0 2px 2px 0;
+            bottom: cc(-5);
+            right: cc(-5);
+            border-width: 0 cc(2) cc(2) 0;
         }
     }
 }
@@ -347,7 +464,7 @@
     .camp-card__body {
         background: v.$cc-ochre;
         color: v.$cc-charcoal;
-        padding: v.$space-6 v.$space-5;
+        padding: cc(24) cc(20);
     }
 
     .camp-card__name {
@@ -379,24 +496,26 @@
     }
 
     .camp-card__body {
-        padding-top: v.$space-8;
+        align-items: center;
+        padding-top: cc(32);
     }
 
     .camp-card__name {
         font-family: v.$font-sans;
         font-weight: v.$font-weight-black;
-        font-size: v.$font-size-xl * 1.15;
+        font-size: cc(27.6);
         text-transform: uppercase;
     }
 
     .camp-card__tags {
+        align-self: stretch;
         justify-content: center;
     }
 
     .camp-card__tag {
         background: v.$cc-antique-white;
         color: v.$cc-dark-wine;
-        border: 1px solid rgba(114, 19, 19, 0.2);
+        border: cc(1) solid rgba(114, 19, 19, 0.2);
     }
 
     .camp-card__footer {
@@ -431,18 +550,19 @@
 
     &::before {
         left: 0;
-        border-width: 64px 64px 0 0;
+        border-width: cc(64) cc(64) 0 0;
         border-color: v.$cc-dark-wine transparent transparent transparent;
     }
 
     &::after {
         right: 0;
-        border-width: 0 64px 64px 0;
+        border-width: 0 cc(64) cc(64) 0;
         border-color: transparent v.$cc-ochre transparent transparent;
     }
 
     .camp-card__body {
-        padding-top: v.$space-8;
+        align-items: center;
+        padding-top: cc(32);
     }
 
     .camp-card__event-mark {
@@ -455,10 +575,11 @@
 
     .camp-card__role {
         font-family: v.$font-mono;
-        font-size: v.$font-size-sm;
+        font-size: cc(14);
     }
 
     .camp-card__tags {
+        align-self: stretch;
         justify-content: center;
     }
 
@@ -469,8 +590,8 @@
 
     .camp-card__footer {
         background: transparent;
-        border-top: 1px solid rgba(30, 30, 30, 0.08);
-        padding-bottom: v.$space-3;
+        border-top: cc(1) solid rgba(30, 30, 30, 0.08);
+        padding-bottom: cc(12);
     }
 
     .camp-card__brand-mark {
