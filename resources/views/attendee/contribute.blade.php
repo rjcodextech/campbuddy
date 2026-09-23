@@ -23,7 +23,7 @@
                 <p class="mission-big u-text-lg" style="margin:0">"Hi, this is my first Contributor Day. Can you help me get started?"</p>
             </div>
             <div id="contrib-team-list" style="margin-top:14px"></div>
-            <button type="button" class="btn btn--ghost btn--full" id="contrib-retry" style="margin-top:14px">Answer again</button>
+            <button type="button" class="btn btn--outline btn--full" id="contrib-retry" style="margin-top:14px">Answer again</button>
         </div>
 
         <div id="contrib-all-teams" style="margin-top:24px">

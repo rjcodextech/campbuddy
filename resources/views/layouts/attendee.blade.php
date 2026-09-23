@@ -16,7 +16,12 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {{-- Inter is the app-wide UI font. Playfair Display + JetBrains Mono
+    are used nowhere except Camp Card's badge design (components/_camp-card.scss) —
+    loaded here in the shared attendee layout since Camp Card is reachable
+    from every screen via the bottom nav, so there's no single "Camp Card
+    page load" to scope a separate font request to. --}}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>

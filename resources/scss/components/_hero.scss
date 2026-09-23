@@ -31,9 +31,9 @@
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: v.$letter-spacing-caps;
     color: var(--brand-primary);
-    margin: 0 0 2px;
+    margin: 0 0 v.$space-1;
 }
 
 .home-hero__title {

@@ -24,7 +24,7 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) 
         <label class="field"><span>Mobile (optional)</span><input type="tel" name="mobile" placeholder="e.g. 98765 43210" maxlength="32"></label>
         <p class="footer-note" style="text-align:left;color:var(--danger)" data-lead-error hidden></p>
         <div style="display:flex;gap:8px;margin-top:4px">
-          <button type="button" class="btn btn--ghost" data-action="close" style="flex:1">Cancel</button>
+          <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Cancel</button>
           <button type="submit" class="btn btn--primary" style="flex:1">Continue</button>
         </div>
       </form>

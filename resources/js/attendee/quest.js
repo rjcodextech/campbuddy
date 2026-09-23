@@ -114,7 +114,7 @@ export async function renderQuest(root) {
 function thingCardHtml(quest, done, eventSlug) {
   const meta = THINGS_TO_DO_META[quest.title] ?? {};
   const navBtn = meta.nav
-    ? `<a href="${navUrl(eventSlug, meta.nav)}" class="btn btn--ghost btn--compact">${escapeHtml(meta.navLabel ?? 'Open')} →</a>`
+    ? `<a href="${navUrl(eventSlug, meta.nav)}" class="btn btn--outline btn--compact">${escapeHtml(meta.navLabel ?? 'Open')} →</a>`
     : '';
 
   return `
@@ -125,7 +125,7 @@ function thingCardHtml(quest, done, eventSlug) {
         ${quest.description ? `<p class="quest-card__desc">${escapeHtml(quest.description)}</p>` : ''}
         <div class="quest-card__actions">
           ${navBtn}
-          <button type="button" class="btn btn--compact ${done ? 'btn--ghost' : 'btn--primary'}" data-toggle-id="${quest.id}">${done ? 'Done ✓' : 'Mark done'}</button>
+          <button type="button" class="btn btn--compact ${done ? 'btn--outline' : 'btn--primary'}" data-toggle-id="${quest.id}">${done ? 'Done ✓' : 'Mark done'}</button>
         </div>
       </div>
     </div>

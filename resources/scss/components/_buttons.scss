@@ -1,6 +1,9 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
+// Exactly 3 button styles app-wide — Primary, Secondary, Outline. Size
+// (--compact, --full) and the --danger color accent are modifiers that
+// layer on top of one of the 3, not additional styles of their own.
 .btn {
     @include m.pressable;
     display: inline-flex;
@@ -11,25 +14,44 @@
     border-radius: v.$radius-sm;
     font-weight: v.$font-weight-bold;
     font-size: v.$font-size-base;
-    background: var(--paper);
-    border: 1px solid var(--line);
+    border: 1px solid transparent;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    // Same look as --secondary by default, so a bare .btn with no style
+    // modifier never renders unstyled — every call site should still
+    // carry one of the 3 modifiers explicitly.
+    background: var(--peach);
     color: var(--ink);
-    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
 
     &--primary {
         background: var(--brand-primary);
         border-color: var(--brand-primary);
         color: #fff;
+
+        &:hover {
+            background: var(--brand-accent);
+            border-color: var(--brand-accent);
+        }
     }
 
-    &--ghost {
-        background: transparent;
+    &--secondary {
+        background: var(--peach);
+        color: var(--ink);
+
+        &:hover {
+            background: var(--gold);
+        }
     }
 
-    &--danger {
+    &--outline {
         background: transparent;
-        border-color: var(--danger);
-        color: var(--danger);
+        border-color: var(--line);
+        color: var(--ink);
+
+        &:hover {
+            background: var(--peach);
+            border-color: var(--peach);
+        }
     }
 
     &--compact {
@@ -41,6 +63,23 @@
         width: 100%;
     }
 
+    // Destructive actions: pairs with --outline (e.g. `btn btn--outline
+    // btn--danger`) rather than being a 4th base style.
+    &--danger {
+        border-color: var(--danger);
+        color: var(--danger);
+
+        &:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+    }
+
+    // The one exception to "3 button styles" — a plain inline text link
+    // (Slides/Video, etc.) is conceptually a hyperlink, not a button: no
+    // padding, border, or fill, so it never looks like a 4th button
+    // shape.
     &--link {
         display: inline;
         padding: 0;

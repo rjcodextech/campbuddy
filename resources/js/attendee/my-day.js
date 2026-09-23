@@ -145,7 +145,7 @@ export async function renderMyDay(root) {
     if (!btn) return;
     activeDay = btn.dataset.day === '__all' ? null : (btn.dataset.day === activeDay ? null : btn.dataset.day);
     document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--primary', b.dataset.day === (activeDay ?? '__all')));
-    document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--ghost', b.dataset.day !== (activeDay ?? '__all')));
+    document.querySelectorAll('#day-filters [data-day]').forEach((b) => b.classList.toggle('btn--outline', b.dataset.day !== (activeDay ?? '__all')));
     renderFull();
   });
 
@@ -183,7 +183,7 @@ function setupTabs() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-view-tab]').forEach((b) => {
         b.setAttribute('aria-selected', String(b === btn));
-        b.classList.toggle('btn--ghost', b !== btn);
+        b.classList.toggle('btn--outline', b !== btn);
       });
       document.querySelectorAll('[data-view-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.viewPanel !== btn.dataset.viewTab;
@@ -212,7 +212,7 @@ function setupDayFilters(sessions) {
   const dayChips = days
     .map((day) => {
       const label = new Date(sessions.find((s) => s.dayKey === day).startMs).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
-      return `<button type="button" class="btn btn--compact btn--ghost" data-day="${day}">${escapeHtml(label)}</button>`;
+      return `<button type="button" class="btn btn--compact btn--outline" data-day="${day}">${escapeHtml(label)}</button>`;
     })
     .join('');
 
@@ -232,14 +232,14 @@ function setupChipFilter(elId, sessions, valuesOf) {
   }
 
   el.hidden = false;
-  el.innerHTML = names.map((name) => `<button type="button" class="btn btn--compact btn--ghost" data-chip="${escapeAttr(name)}">${escapeHtml(name)}</button>`).join('');
+  el.innerHTML = names.map((name) => `<button type="button" class="btn btn--compact btn--outline" data-chip="${escapeAttr(name)}">${escapeHtml(name)}</button>`).join('');
   return names;
 }
 
 function sessionItemHtml(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  const track = session.track_names?.[0] ?? '';
+  const metaLine = [session.track_names?.[0], session.session_type].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);
   const isOpen = expandedSessionId === session.id;
 
@@ -248,13 +248,12 @@ function sessionItemHtml(session, speakersById, bookmarkedIds, overlapWarning, e
       <div class="schedule-item" data-session-id="${session.id}">
         <div class="schedule-item__time">${time}</div>
         <div>
-          <button type="button" class="btn--link schedule-item__title" data-open-detail aria-expanded="${isOpen}" style="padding:0">
+          <button type="button" class="schedule-item__title" data-open-detail aria-expanded="${isOpen}">
             <span>${escapeHtml(session.title)}</span>
             <svg class="schedule-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
           </button>
-          ${speakerNames ? `<div class="footer-note u-text-sm" style="margin:2px 0 0;text-align:left">${escapeHtml(speakerNames)}</div>` : ''}
-          ${track ? `<span class="schedule-item__track">${escapeHtml(track)}</span>` : ''}
-          ${session.session_type ? `<span class="schedule-item__type">${escapeHtml(session.session_type)}</span>` : ''}
+          ${speakerNames ? `<p class="schedule-item__speakers">${escapeHtml(speakerNames)}</p>` : ''}
+          ${metaLine ? `<span class="schedule-item__meta">${escapeHtml(metaLine)}</span>` : ''}
           ${overlapWarning ? `<div class="notice" style="margin-top:6px">Overlaps with ${escapeHtml(overlapWarning.title)}</div>` : ''}
         </div>
         <button type="button" class="schedule-item__star ${saved ? 'schedule-item__star--saved' : ''}" aria-label="${saved ? 'Remove from My Day' : 'Save to My Day'}" aria-pressed="${saved}">★</button>
@@ -279,15 +278,22 @@ function sessionDetailHtml(session, speakersById, isSaved) {
     <p class="schedule-item-detail__meta">${escapeHtml(time)}</p>
 
     ${speakerList
-      .map(
-        (sp) => `
-          <div class="schedule-item-detail__speaker">
-            ${sp.avatar_url ? `<img src="${escapeAttr(sp.avatar_url)}" alt="" class="schedule-item-detail__speaker-avatar">` : ''}
-            <p class="schedule-item-detail__speaker-name">${escapeHtml(sp.name)}</p>
+      .map((sp) => {
+        const initial = escapeHtml((sp.name ?? '?').trim().charAt(0).toUpperCase() || '?');
+        const avatar = sp.avatar_url
+          ? `<img src="${escapeAttr(sp.avatar_url)}" alt="" class="schedule-item-detail__speaker-avatar">`
+          : `<span class="schedule-item-detail__speaker-avatar schedule-item-detail__speaker-avatar--initial">${initial}</span>`;
+
+        return `
+          <div class="schedule-item-detail__speaker-block">
+            <div class="schedule-item-detail__speaker">
+              ${avatar}
+              <p class="schedule-item-detail__speaker-name">${escapeHtml(sp.name)}</p>
+            </div>
+            ${sp.bio_html ? `<div class="schedule-item-detail__bio">${sanitizeBio(sp.bio_html)}</div>` : ''}
           </div>
-          ${sp.bio_html ? `<div class="schedule-item-detail__bio">${sanitizeBio(sp.bio_html)}</div>` : ''}
-        `
-      )
+        `;
+      })
       .join('')}
 
     ${
@@ -302,7 +308,7 @@ function sessionDetailHtml(session, speakersById, isSaved) {
     }
 
     <div class="schedule-item-detail__actions">
-      <button type="button" class="btn btn--compact ${isSaved ? 'btn--ghost' : 'btn--primary'}" data-toggle-save>${isSaved ? 'Remove from My Day' : 'Save to My Day'}</button>
+      <button type="button" class="btn btn--compact ${isSaved ? 'btn--outline' : 'btn--primary'}" data-toggle-save>${isSaved ? 'Remove from My Day' : 'Save to My Day'}</button>
     </div>
   `;
 }

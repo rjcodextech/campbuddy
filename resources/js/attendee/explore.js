@@ -8,7 +8,7 @@ export function renderExplore() {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-explore-tab]').forEach((b) => {
         b.setAttribute('aria-selected', String(b === btn));
-        b.classList.toggle('btn--ghost', b !== btn);
+        b.classList.toggle('btn--outline', b !== btn);
       });
       document.querySelectorAll('[data-explore-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.explorePanel !== btn.dataset.exploreTab;

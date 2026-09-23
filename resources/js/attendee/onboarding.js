@@ -67,7 +67,7 @@ export async function renderOnboardingSection() {
       </label>
 
       <div class="onboarding-card__actions">
-        <button type="button" class="btn btn--ghost" data-action="skip">Skip for now</button>
+        <button type="button" class="btn btn--outline" data-action="skip">Skip for now</button>
         <button type="button" class="btn btn--primary" data-action="save">Save &amp; continue</button>
       </div>
     </div>

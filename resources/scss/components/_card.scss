@@ -52,5 +52,5 @@
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: v.$letter-spacing-caps;
 }

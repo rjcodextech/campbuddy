@@ -14,7 +14,7 @@
     font-weight: v.$font-weight-bold;
     color: var(--muted);
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: v.$letter-spacing-caps;
     margin: 0 0 v.$space-2;
 }
 
@@ -56,15 +56,33 @@
     white-space: nowrap;
 }
 
+// Plain, quiet text — an underline and regular weight read as "this is
+// tappable" without the row needing to shout. The underline itself
+// brightens on hover/expanded instead of the text turning bold, so the
+// state change is in the affordance, not the type weight.
 .schedule-item__title {
     display: flex;
     align-items: center;
     gap: v.$space-1;
     width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+    cursor: pointer;
     font-size: v.$font-size-base;
-    font-weight: v.$font-weight-bold;
+    font-weight: v.$font-weight-regular;
     line-height: v.$line-height-heading;
     color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--line);
+    transition: text-decoration-color 0.15s ease;
+
+    &:hover,
+    &[aria-expanded='true'] {
+        text-decoration-color: var(--brand-primary);
+    }
 }
 
 // Rotates to point up once the inline detail panel below it is open —
@@ -82,21 +100,22 @@
     transform: rotate(180deg);
 }
 
-.schedule-item__track {
-    display: inline-block;
-    margin-top: v.$space-1;
-    font-size: v.$font-size-xs;
-    font-weight: v.$font-weight-medium;
-    color: var(--brand-primary);
+.schedule-item__speakers {
+    margin: v.$space-1 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
 }
 
-.schedule-item__type {
-    display: inline-block;
+// Track + session type collapsed onto one quiet meta line instead of
+// two separately-colored tags — less visual noise, still scannable.
+.schedule-item__meta {
+    display: block;
     margin-top: v.$space-1;
-    margin-left: v.$space-2;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-medium;
     color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: v.$letter-spacing-caps;
 }
 
 .schedule-item__star {
@@ -124,11 +143,24 @@
     margin: 0 0 v.$space-3;
 }
 
+// One designed block per speaker (tinted surface, not just loose text)
+// rather than an ad hoc list — a proper little speaker card, so this
+// stays worth showing instead of reading as filler.
+.schedule-item-detail__speaker-block {
+    padding: v.$space-3;
+    margin-bottom: v.$space-2;
+    border-radius: v.$radius-sm;
+    background: var(--paper-soft);
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
 .schedule-item-detail__speaker {
     display: flex;
     align-items: center;
     gap: v.$space-2;
-    margin-bottom: v.$space-2;
 }
 
 .schedule-item-detail__speaker-avatar {
@@ -137,6 +169,16 @@
     flex-shrink: 0;
     border-radius: 50%;
     object-fit: cover;
+    background: var(--peach);
+}
+
+.schedule-item-detail__speaker-avatar--initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-sm;
 }
 
 .schedule-item-detail__speaker-name {
@@ -149,7 +191,7 @@
     font-size: v.$font-size-sm;
     color: var(--muted);
     line-height: v.$line-height-body;
-    margin: v.$space-1 0 v.$space-3;
+    margin: v.$space-2 0 0;
 }
 
 .schedule-item-detail__links {

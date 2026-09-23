@@ -11,17 +11,25 @@
         </p>
 
         <div id="camp-card-preview" class="camp-card camp-card--classic">
-            <span class="camp-card__label">Camp Card</span>
-            <p class="camp-card__name" id="cc-name"></p>
-            <p class="camp-card__role" id="cc-role"></p>
-            <div class="camp-card__tags" id="cc-tags"></div>
+            <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
+            <div class="camp-card__body">
+                <span class="camp-card__label">Camp Card</span>
+                <p class="camp-card__name" id="cc-name"></p>
+                <p class="camp-card__role" id="cc-role"></p>
+                <div class="camp-card__tags" id="cc-tags"></div>
+            </div>
+            <div class="camp-card__footer" id="qr-section" hidden>
+                <div class="camp-card__qr-frame">
+                    <canvas id="qr-canvas"></canvas>
+                </div>
+                <span class="camp-card__brand-mark">CampBuddy</span>
+            </div>
         </div>
 
-        <div id="qr-section" class="qr" hidden>
-            <div class="qr__box"><canvas id="qr-canvas"></canvas></div>
-            <div class="qr__actions">
-                <button type="button" class="btn btn--ghost" id="fullscreen-btn">View fullscreen</button>
-            </div>
+        <div class="qr__actions" style="margin-top:12px">
+            <button type="button" class="btn btn--outline btn--compact" id="fullscreen-btn">View fullscreen</button>
+            <button type="button" class="btn btn--outline btn--compact" id="save-image-btn">Save as image</button>
+            <button type="button" class="btn btn--outline btn--compact" id="print-btn">Print</button>
         </div>
 
         <div class="field" style="margin-top:18px">
@@ -41,7 +49,15 @@
                 <label class="field"><span>Role / title</span><input type="text" name="role" placeholder="e.g. WordPress Developer"></label>
                 <label class="field"><span>Company / community</span><input type="text" name="company" placeholder="e.g. Acme Studio"></label>
                 <label class="field"><span>City</span><input type="text" name="city" placeholder="e.g. Jaipur"></label>
-                <label class="field"><span>WordPress interests</span><input type="text" name="interests" placeholder="e.g. Gutenberg, WooCommerce"></label>
+
+                <div class="field">
+                    <span>WordPress interests</span>
+                    <div class="tag-input" id="interests-input">
+                        <div class="tag-input__tags" id="interests-tags"></div>
+                        <input type="text" id="interests-text" placeholder="Type an interest and press Enter">
+                    </div>
+                </div>
+
                 <label class="field"><span>Ask me about</span><input type="text" name="askMeAbout" placeholder="e.g. Block themes"></label>
 
                 <label class="field"><span>LinkedIn</span><input type="url" name="linkedin" placeholder="https://linkedin.com/in/…"></label>
@@ -51,12 +67,12 @@
 
                 <div class="field">
                     <span>QR code links to</span>
-                    <select name="primaryLink" id="primary-link-select">
-                        <option value="linkedin">LinkedIn</option>
-                        <option value="website">Personal website</option>
-                        <option value="wordpressOrg">WordPress.org profile</option>
-                        <option value="twitter">X / Twitter</option>
-                    </select>
+                    <div class="chip-group" id="qr-target-chips">
+                        <button type="button" class="chip" data-qr-target="linkedin">LinkedIn</button>
+                        <button type="button" class="chip" data-qr-target="website">Website</button>
+                        <button type="button" class="chip" data-qr-target="wordpressOrg">WordPress.org</button>
+                        <button type="button" class="chip" data-qr-target="twitter">X / Twitter</button>
+                    </div>
                 </div>
 
                 <div class="field">

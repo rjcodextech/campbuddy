@@ -42,7 +42,7 @@
                             <form method="POST" action="{{ route('event.roster-removal.remove', [$event, $entry]) }}"
                                   onsubmit="return confirm('Remove this listing? This can\'t be undone by you — contact the organizers if you change your mind.');">
                                 @csrf
-                                <button type="submit" class="btn btn--danger btn--compact">This is me — remove</button>
+                                <button type="submit" class="btn btn--outline btn--danger btn--compact">This is me — remove</button>
                             </form>
                         </div>
                     @endforeach

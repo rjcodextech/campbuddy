@@ -1,139 +1,37 @@
 @use '../abstracts/variables' as v;
 
-// Structural base, shared by all 5 layouts — each --modifier below
-// supplies its own background/color/shadow. CC1/CC2: same underlying
-// fields (label/name/role/tags), the attendee just picks which of the 5
-// looks they want, not a different data model per layout.
+// Camp Card is the one place in the app deliberately styled as its own
+// designed object rather than more app UI — its own accent palette
+// ($cc-*) and typography (serif for the name, mono for handle-style
+// text) live only here. Structure is shared across all 5 layouts (the
+// same markup: label/name/role/tags/footer), each --modifier below
+// supplies the visual treatment.
 .camp-card {
     position: relative;
-    padding: v.$space-6 v.$space-5;
     border-radius: v.$radius-lg;
     box-shadow: v.$shadow-raised;
-}
-
-// --- Layout 1: Classic — the original gradient brand treatment ---
-.camp-card--classic {
-    background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
-    color: #fff;
-}
-
-// --- Layout 2: Minimal — quiet paper card, colored accent bar ---
-.camp-card--minimal {
-    background: var(--paper);
-    color: var(--ink);
-    border: 1px solid var(--line);
-    border-left: 5px solid var(--brand-primary);
-    box-shadow: v.$shadow-card;
-
-    .camp-card__label {
-        color: var(--brand-primary);
-        opacity: 1;
-    }
-
-    .camp-card__role {
-        color: var(--muted);
-        opacity: 1;
-    }
-
-    .camp-card__tag {
-        background: none;
-        padding: 0;
-        color: var(--muted);
-        font-weight: 600;
-
-        &::after {
-            content: '·';
-            margin-left: v.$space-2;
-            color: var(--line);
-        }
-
-        &:last-child::after {
-            content: '';
-            margin: 0;
-        }
-    }
-}
-
-// --- Layout 3: Bold — solid high-contrast block, gold accents ---
-.camp-card--bold {
-    background: var(--brand-primary);
-    color: #fff;
-
-    .camp-card__label {
-        color: var(--gold);
-        font-weight: 800;
-    }
-
-    .camp-card__name {
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
-    }
-
-    .camp-card__tag {
-        background: var(--gold);
-        color: var(--ink);
-    }
-}
-
-// --- Layout 4: Split — two-tone band up top, paper below ---
-.camp-card--split {
-    padding: 0;
     overflow: hidden;
-    background: var(--paper);
-    color: var(--ink);
-
-    &::before {
-        content: '';
-        display: block;
-        height: 48px;
-        background: linear-gradient(135deg, var(--brand-primary), var(--brand-accent));
-    }
-
-    .camp-card__label {
-        margin: -30px v.$space-5 0;
-        color: #fff;
-        opacity: 1;
-    }
-
-    .camp-card__name,
-    .camp-card__role {
-        margin-left: v.$space-5;
-        margin-right: v.$space-5;
-    }
-
-    .camp-card__tags {
-        margin: v.$space-4 v.$space-5 0;
-    }
-
-    .camp-card__tag {
-        background: var(--peach);
-        color: var(--ink);
-    }
-
-    // Structural padding the base .camp-card normally provides —
-    // reapplied here since this layout zeroes it out for the top band.
-    > *:last-child {
-        padding-bottom: v.$space-5;
-    }
 }
 
-// --- Layout 5: Badge — centered, badge-style label ---
-.camp-card--badge {
-    background: var(--navy);
-    color: #fff;
-    text-align: center;
+// A simulated lanyard punch-hole — hidden by default, shown only by the
+// layouts whose brief calls for it (Minimal, Badge). Matches the page
+// background behind the card so it reads as a cutout, not a sticker.
+.camp-card__lanyard-hole {
+    display: none;
+    position: absolute;
+    top: v.$space-2;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--paper-soft);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+    z-index: 2;
+}
 
-    .camp-card__label {
-        display: inline-flex;
-        padding: v.$space-1 v.$space-3;
-        border-radius: v.$radius-full;
-        background: rgba(255, 255, 255, 0.16);
-        opacity: 1;
-    }
-
-    .camp-card__tags {
-        justify-content: center;
-    }
+.camp-card__body {
+    padding: v.$space-6 v.$space-5 v.$space-4;
 }
 
 .camp-card__label {
@@ -141,14 +39,15 @@
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: v.$letter-spacing-caps;
     opacity: 0.75;
     margin-bottom: v.$space-2;
 }
 
 .camp-card__name {
+    font-family: v.$font-serif;
     font-size: v.$font-size-xl;
-    font-weight: v.$font-weight-black;
+    font-weight: v.$font-weight-bold;
     line-height: v.$line-height-tight;
 }
 
@@ -174,28 +73,354 @@
     font-weight: v.$font-weight-medium;
 
     &--placeholder {
-        background: rgba(255, 255, 255, 0.1);
-        font-weight: v.$font-weight-regular;
-        opacity: 0.8;
+        opacity: 0.7;
+        font-style: italic;
     }
 }
 
-.qr {
+// The QR now lives inside the card itself (not a separate section below
+// it) — CC4 wants "easy to bring to fullscreen with one tap, for the
+// moment of handing a phone to someone else to scan," which only
+// actually works if fullscreen shows the QR too.
+.camp-card__footer {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    justify-content: space-between;
     gap: v.$space-3;
-    margin-top: v.$space-5;
+    padding: v.$space-4 v.$space-5;
 }
 
-.qr__box {
-    padding: v.$space-3;
+.camp-card__qr-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: v.$space-2;
     background: #fff;
-    border-radius: v.$radius-md;
+    border-radius: v.$radius-sm;
+
+    canvas {
+        display: block;
+        width: 72px;
+        height: 72px;
+    }
+}
+
+.camp-card__brand-mark {
+    font-family: v.$font-mono;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    letter-spacing: v.$letter-spacing-wide;
+    opacity: 0.7;
+}
+
+// --- Layout 1: Minimal — airy, centered, antique-white ---
+.camp-card--minimal {
+    background: v.$cc-antique-white;
+    color: v.$cc-charcoal;
+    text-align: center;
+
+    .camp-card__lanyard-hole {
+        display: block;
+    }
+
+    .camp-card__body {
+        padding-top: v.$space-8;
+    }
+
+    .camp-card__label {
+        color: v.$cc-dark-wine;
+    }
+
+    .camp-card__role {
+        font-family: v.$font-mono;
+        font-size: v.$font-size-sm;
+    }
+
+    .camp-card__tags {
+        justify-content: center;
+    }
+
+    .camp-card__tag {
+        background: rgba(114, 19, 19, 0.08);
+        color: v.$cc-dark-wine;
+    }
+
+    .camp-card__footer {
+        flex-direction: column;
+        background: transparent;
+        border-top: 1px solid rgba(30, 30, 30, 0.08);
+    }
+
+    .camp-card__qr-frame {
+        width: 120px;
+        height: 120px;
+        border: 1px solid rgba(30, 30, 30, 0.1);
+
+        canvas {
+            width: 100px;
+            height: 100px;
+        }
+    }
+
+    .camp-card__brand-mark {
+        color: v.$cc-charcoal;
+    }
+}
+
+// --- Layout 2: Classic — charcoal + warm diagonal geometry, serif ---
+.camp-card--classic {
+    background:
+        repeating-linear-gradient(135deg, transparent 0 18px, rgba(215, 123, 6, 0.08) 18px 20px),
+        repeating-linear-gradient(135deg, transparent 0 40px, rgba(114, 19, 19, 0.18) 40px 42px),
+        v.$cc-charcoal;
+    color: #fff;
+
+    .camp-card__label {
+        color: v.$cc-ochre;
+    }
+
+    .camp-card__role {
+        font-family: v.$font-serif;
+        font-style: italic;
+        color: v.$cc-ochre;
+        opacity: 1;
+    }
+
+    .camp-card__tag {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+    }
+
+    // Split two-column footer: QR left, brand mark right, thin divider
+    // between — the "event lockup" from the brief is CampBuddy's own
+    // mark, not a per-event one, since Camp Card is the attendee's
+    // identity, not the event's (see §3.2's branding notes).
+    .camp-card__footer {
+        position: relative;
+        background: rgba(0, 0, 0, 0.15);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: v.$space-3;
+            bottom: v.$space-3;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.18);
+        }
+    }
+
+    .camp-card__brand-mark {
+        color: rgba(255, 255, 255, 0.65);
+    }
+}
+
+// --- Layout 3: Bold — high-contrast editorial, ochre accent ---
+.camp-card--bold {
+    background: v.$cc-charcoal;
+    color: #fff;
+
+    .camp-card__label {
+        display: block;
+        width: 100%;
+        padding: v.$space-2 v.$space-5;
+        margin: 0 0 v.$space-4;
+        background: rgba(255, 255, 255, 0.06);
+        font-size: v.$font-size-md;
+        letter-spacing: v.$letter-spacing-wide;
+        opacity: 1;
+    }
+
+    .camp-card__body {
+        padding-top: 0;
+        padding-bottom: v.$space-5;
+    }
+
+    .camp-card__name {
+        font-family: v.$font-sans;
+        font-weight: v.$font-weight-black;
+        text-transform: uppercase;
+        color: v.$cc-ochre;
+    }
+
+    // A blockquote-style callout, not loose pills — matches the brief's
+    // "blockquote/callout card container" for ask-me-about/interests.
+    .camp-card__tags {
+        display: block;
+        padding: v.$space-3 v.$space-4;
+        border-left: 3px solid v.$cc-ochre;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .camp-card__tag {
+        background: none;
+        padding: 0;
+        margin-right: v.$space-3;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .camp-card__footer {
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    // Corner-bracket QR frame instead of a plain box.
+    .camp-card__qr-frame {
+        position: relative;
+        background: #fff;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: v.$cc-ochre;
+            border-style: solid;
+        }
+
+        &::before {
+            top: -5px;
+            left: -5px;
+            border-width: 2px 0 0 2px;
+        }
+
+        &::after {
+            bottom: -5px;
+            right: -5px;
+            border-width: 0 2px 2px 0;
+        }
+    }
+
+    .camp-card__brand-mark {
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+// --- Layout 4: Split — two-tone ochre/charcoal horizontal block ---
+.camp-card--split {
+    background: v.$cc-charcoal;
+    color: #fff;
+
+    .camp-card__body {
+        background: v.$cc-ochre;
+        color: v.$cc-charcoal;
+        padding: v.$space-6 v.$space-5;
+    }
+
+    .camp-card__label {
+        color: rgba(30, 30, 30, 0.6);
+    }
+
+    .camp-card__name {
+        color: v.$cc-charcoal;
+    }
+
+    .camp-card__role {
+        color: v.$cc-charcoal;
+    }
+
+    .camp-card__tag {
+        background: #fff;
+        color: v.$cc-charcoal;
+    }
+
+    .camp-card__footer {
+        background: v.$cc-charcoal;
+    }
+
+    .camp-card__brand-mark {
+        color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+// --- Layout 5: Badge — physical conference-badge aesthetic ---
+.camp-card--badge {
+    background: #fff;
+    color: v.$cc-charcoal;
+    text-align: center;
     border: 1px solid var(--line);
+
+    .camp-card__lanyard-hole {
+        display: block;
+    }
+
+    .camp-card__body {
+        padding-top: v.$space-8;
+    }
+
+    .camp-card__label {
+        display: block;
+        width: 100%;
+        padding: v.$space-2 0;
+        margin: -#{v.$space-6} -#{v.$space-5} v.$space-5;
+        background: v.$cc-dark-wine;
+        color: #fff;
+        opacity: 1;
+    }
+
+    .camp-card__name {
+        font-family: v.$font-sans;
+        font-weight: v.$font-weight-black;
+        font-size: v.$font-size-xl * 1.15;
+        text-transform: uppercase;
+    }
+
+    .camp-card__tags {
+        justify-content: center;
+    }
+
+    .camp-card__tag {
+        background: v.$cc-antique-white;
+        color: v.$cc-dark-wine;
+        border: 1px solid rgba(114, 19, 19, 0.2);
+    }
+
+    .camp-card__footer {
+        flex-direction: column;
+        background: v.$cc-charcoal;
+    }
+
+    .camp-card__qr-frame {
+        width: 110px;
+        height: 110px;
+
+        canvas {
+            width: 96px;
+            height: 96px;
+        }
+    }
+
+    .camp-card__brand-mark {
+        color: rgba(255, 255, 255, 0.6);
+    }
 }
 
 .qr__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: v.$space-2;
+}
+
+// "Print" (qr__actions' #print-btn, resources/js/attendee/camp-card.js)
+// just calls window.print() — everything else on the page is hidden via
+// this rule rather than needing print-awareness anywhere else in the
+// app, so it stays correct even as other screens change around it.
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #camp-card-preview,
+    #camp-card-preview * {
+        visibility: visible;
+    }
+
+    #camp-card-preview {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 3.5in;
+        box-shadow: none;
+    }
 }

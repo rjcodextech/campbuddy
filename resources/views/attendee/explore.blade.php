@@ -33,9 +33,9 @@
 
         <div role="tablist" aria-label="Explore section" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
             <button type="button" class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true">People</button>
-            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
-            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
-            <button type="button" class="btn btn--compact btn--ghost" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
+            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
+            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
+            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
         </div>
 
         <div data-explore-panel="people">
@@ -104,8 +104,8 @@
 
         <div data-explore-panel="info" hidden>
             @if ($event->logoUrl())
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
-                    <img src="{{ $event->logoUrl() }}" alt="" style="height:44px;width:44px;border-radius:12px;object-fit:contain;background:var(--paper);border:1px solid var(--line)">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+                    <img src="{{ $event->logoUrl() }}" alt="" style="height:44px;width:44px;border-radius:5px;object-fit:contain;background:var(--paper);border:1px solid var(--line)">
                     <span style="font-weight:700">{{ $event->display_name }}</span>
                 </div>
             @endif

@@ -186,8 +186,8 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
           <p class="footer-note" style="text-align:left;margin:2px 0 0">${mine.fields.tags.map(escapeHtml).join(', ')}</p>
         </div>
         <div style="display:flex;gap:6px">
-          <button type="button" class="btn btn--compact btn--ghost" id="edit-discovery-btn">Edit</button>
-          <button type="button" class="btn btn--compact btn--ghost" id="leave-discovery-btn">Leave</button>
+          <button type="button" class="btn btn--compact btn--outline" id="edit-discovery-btn">Edit</button>
+          <button type="button" class="btn btn--compact btn--outline" id="leave-discovery-btn">Leave</button>
         </div>
       </div>
     </div>
@@ -196,7 +196,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   if (options.compact) {
     el.innerHTML = `
       ${statusCard}
-      <a href="${escapeAttr(options.exploreUrl ?? '#')}" class="btn btn--ghost btn--full" style="margin-top:10px">See who matches your interests →</a>
+      <a href="${escapeAttr(options.exploreUrl ?? '#')}" class="btn btn--outline btn--full" style="margin-top:10px">See who matches your interests →</a>
     `;
     el.querySelector('#edit-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, mine, options));
     el.querySelector('#leave-discovery-btn').addEventListener('click', () => leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, options));
@@ -274,7 +274,7 @@ function matchCardHtml(profile, isMet) {
       <div class="camp-card__tags" style="margin-top:0">${tags}</div>
       ${profile.fields.profession ? `<p style="margin:8px 0 0;font-weight:600">${escapeHtml(profile.fields.profession)}</p>` : ''}
       ${profile.fields.who_to_meet ? `<p class="footer-note" style="text-align:left;margin:4px 0 0">Wants to meet: ${escapeHtml(profile.fields.who_to_meet)}</p>` : ''}
-      ${!isMet ? `<button type="button" class="btn btn--ghost btn--compact" style="margin-top:10px" data-met-id="${escapeAttr(profile.discovery_id)}">I met them</button>` : `<p class="footer-note" style="text-align:left;margin-top:8px">✓ Met</p>`}
+      ${!isMet ? `<button type="button" class="btn btn--outline btn--compact" style="margin-top:10px" data-met-id="${escapeAttr(profile.discovery_id)}">I met them</button>` : `<p class="footer-note" style="text-align:left;margin-top:8px">✓ Met</p>`}
     </div>
   `;
 }
