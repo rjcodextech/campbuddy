@@ -1,0 +1,15 @@
+# 3.2 Event branding
+
+[← Index](00-index.md) · Previous: [3.1 Home](01-home.md) · Next: [3.3 Attendee roster ingestion →](03-roster-ingestion.md)
+
+> **Current implementation note (supersedes BR1, BR2, BR7 below):** per-event **color** theming was removed after launch, by explicit product decision. Every event now shares one fixed CampBuddy palette and typography system — only the event's own **logo** and **display name** still vary per event (logo shown on Home's hero and in Explore → Event Info; the global topbar always shows CampBuddy's own mark, never the event's). BR3–BR6 (fallback behavior, auto-fetch, admin override, visibility toggle) are otherwise still accurate.
+
+| ID | Requirement |
+|---|---|
+| BR1 | ~~Every event record carries: display name, short name/hashtag, primary/accent color, logo asset, favicon asset.~~ Color fields were later dropped from the schema; display name, short name, logo, and favicon remain. |
+| BR2 | ~~The active event's branding (including color) is applied to CSS custom properties at load time.~~ Only logo/name are event-specific now; the color palette is fixed app-wide. |
+| BR3 | Fallback: if an event has no logo set, the app uses CampBuddy's default icon — never a broken/unstyled state. |
+| BR4 | **Best-effort auto-fetch**, run once when an event is approved (see [finding 0.6](../00-findings.md), not on the daily schedule): try the event site's REST `site_icon_url` first (cheap, works when set); if absent, parse the homepage `<head>`/header markup for the site logo `<img>` and a favicon `<link rel="icon">`; if that also fails, fall back to `/favicon.ico` at the site's domain. Whatever is found is **downloaded and re-hosted on CampBuddy's own storage** — never hotlinked — so the event's own site going down later doesn't break CampBuddy's branding. |
+| BR5 | **Admin can always upload/replace the logo and favicon manually**, overriding whatever auto-fetch found (or filling the gap if auto-fetch found nothing). This is a deliberate reversal of V1's "brand assets aren't admin-manageable" limitation — scoped specifically to per-event logo/favicon, not CampBuddy's own app-wide icon/mascot, which stays a file-replace + redeploy as in V1. |
+| BR6 | **Frontend visibility toggle**, independent of the event's lifecycle status (draft/approved/active/archived, [7. Data model](../07-data-model.md)): a simple enabled/disabled switch controlling whether the event appears in the public app at all. **Default: enabled** — every approved event is visible unless an admin explicitly turns it off. This lets an admin approve/ingest an event without immediately publishing it, or temporarily hide one without touching its data or lifecycle state. |
+| BR7 | Branding stays bounded: only the logo and event name vary; CampBuddy's own layout, color palette, type scale, and component shapes stay constant across every event — an attendee should always recognize it as CampBuddy first, the specific WordCamp second. This is a stronger version of the original "bounded branding" intent (which allowed per-event colors within a contrast guardrail) — see the note at the top of this file. |
