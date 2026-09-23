@@ -13,9 +13,8 @@ use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
 
 /**
- * §3.5 N1: a scheduled Web Push 5-10 minutes before a bookmarked
- * session's start. Runs every minute (§12.6's single cron entry drives
- * this like every other scheduled job) and is idempotent per bookmark
+ * A scheduled Web Push 5-10 minutes before a bookmarked
+ * session's start. Runs every minute and is idempotent per bookmark
  * via reminder_sent_at.
  */
 class SendSessionRemindersJob implements ShouldQueue

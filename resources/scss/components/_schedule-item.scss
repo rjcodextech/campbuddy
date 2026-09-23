@@ -1,0 +1,39 @@
+@use '../abstracts/variables' as v;
+
+.schedule-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: start;
+    gap: v.$space-3;
+    padding: v.$space-3 0;
+    border-bottom: 1px solid var(--line);
+
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+.schedule-item__time {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.schedule-item__track {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--maroon);
+}
+
+.schedule-item__star {
+    font-size: 1.2rem;
+    color: var(--line);
+    line-height: 1;
+
+    &--saved {
+        color: var(--gold);
+    }
+}

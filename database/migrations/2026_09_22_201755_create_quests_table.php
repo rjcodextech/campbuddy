@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('quests', function (Blueprint $table) {
             $table->id();
-            // Nullable = a default, cross-event quest (§3.6 C3, §7).
+            // Nullable = a default, cross-event quest.
             $table->foreignId('event_id')->nullable()->constrained()->cascadeOnDelete();
             $table->enum('source', ['default', 'event', 'contributor_day'])->default('event');
             $table->string('title');

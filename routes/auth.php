@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 | No public registration route: admin accounts are created via
-| `php artisan db:seed --class=AdminUserSeeder` (§11.2), never self-signup.
+| `php artisan db:seed --class=AdminUserSeeder`, never self-signup.
 */
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])

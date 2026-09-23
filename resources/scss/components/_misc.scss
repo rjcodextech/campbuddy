@@ -1,0 +1,49 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.contributor-result {
+    @include m.card-surface;
+    padding: v.$space-5;
+    text-align: center;
+}
+
+.ios-install-steps {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    margin: v.$space-3 0 v.$space-4;
+    padding-left: v.$space-5;
+    list-style: decimal;
+    font-size: 0.88rem;
+    color: var(--ink);
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(v.$bottom-nav-height + v.$space-4);
+    transform: translateX(-50%);
+    z-index: 40;
+    max-width: 90vw;
+    padding: v.$space-3 v.$space-5;
+    border-radius: v.$radius-full;
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.85rem;
+    text-align: center;
+    box-shadow: v.$shadow-raised;
+}
+
+.u-eyebrow {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--maroon);
+    margin-bottom: v.$space-1;
+}
+
+.u-page-intro {
+    margin-bottom: v.$space-5;
+}

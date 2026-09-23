@@ -1,4 +1,4 @@
-// My Day (§3.8): Full Schedule + My Schedule, session detail, and the
+// My Day: Full Schedule + My Schedule, session detail, and the
 // overlap warning (MD4) — bookmarking two overlapping sessions is always
 // allowed, this only ever warns, never blocks.
 
@@ -219,9 +219,9 @@ function showToast(message) {
   setTimeout(() => toast.remove(), 4000);
 }
 
-// Speaker bios come from the event's own WordPress content (§0.1) — real
+// Speaker bios come from the event's own WordPress content — real
 // but still third-party HTML, so it's stripped to text-with-line-breaks
-// rather than injected raw (§21.3's "never {!! !!} on untrusted content",
+// rather than injected raw ("never {!! !!} on untrusted content",
 // applied here in the JS layer since this never touches Blade).
 function sanitizeBio(html) {
   const div = document.createElement('div');

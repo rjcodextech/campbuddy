@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * View/search the ingested roster and the takedown path (§9, §8.4) —
+ * View/search the ingested roster and the takedown path —
  * suppression, not deletion, so a re-run of the scraper can't silently
- * un-suppress someone who asked to be removed (§3.3 IN5).
+ * un-suppress someone who asked to be removed.
  */
 class RosterController extends Controller
 {

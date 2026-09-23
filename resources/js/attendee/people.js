@@ -1,4 +1,4 @@
-// Explore → People (§3.4, §0.4): two distinct, clearly-labeled sections
+// Explore → People: two distinct, clearly-labeled sections
 // — the ingested roster ("see who's attending") and CampBuddy discovery
 // matching ("see who matches your interests") — never blended into one
 // list, since the roster has no interest data and never opted into

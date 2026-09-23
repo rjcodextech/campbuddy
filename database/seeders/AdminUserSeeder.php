@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class AdminUserSeeder extends Seeder
 {
     /**
-     * Creates the first /admin login (§11.2). Reads ADMIN_EMAIL from the
+     * Creates the first /admin login. Reads ADMIN_EMAIL from the
      * environment if set; otherwise defaults to admin@campbuddy.test.
      * The password is always freshly generated and printed once — never
      * a hardcoded default credential.

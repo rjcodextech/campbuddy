@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 /**
- * Server-rendered attendee pages (§5.1) — one controller per §1.2 tab.
+ * Server-rendered attendee pages — one controller per tab.
  * Branding and schedule data are read here and injected into the Blade
  * shell directly; nothing about the *content* of a page requires a
- * client-side fetch before first paint (§3.1 H6).
+ * client-side fetch before first paint.
  */
 class EventPageController extends Controller
 {

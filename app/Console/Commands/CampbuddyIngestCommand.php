@@ -9,7 +9,7 @@ use App\Models\Event;
 use Illuminate\Console\Command;
 
 /**
- * Bootstraps one event's data (§11.2, §12.5): runs each job synchronously
+ * Bootstraps one event's data: runs each job synchronously
  * so the very first `campbuddy:ingest` gives immediate feedback instead
  * of silently queuing.
  */

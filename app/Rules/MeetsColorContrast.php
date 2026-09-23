@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * Enforces §3.2 BR7: event branding colors must never drop text/background
+ * Enforces that event branding colors must never drop text/background
  * contrast below WCAG AA (4.5:1) against white, since CampBuddy renders
  * white text on the primary/accent color for buttons and badges.
  */

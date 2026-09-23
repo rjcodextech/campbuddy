@@ -1,6 +1,6 @@
-// Explore (§3.12, §3.7): Sponsors/Deals/Event Info are fully server-
+// Explore: Sponsors/Deals/Event Info are fully server-
 // rendered — the only client behavior is switching between the three
-// sub-sections. People (§3.4) joins this page in a later phase.
+// sub-sections. People joins this page in a later phase.
 
 export function renderExplore() {
   document.querySelectorAll('[data-explore-tab]').forEach((btn) => {

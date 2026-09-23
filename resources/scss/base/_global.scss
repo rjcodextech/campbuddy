@@ -1,0 +1,53 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    font-family: v.$font-sans;
+    background: var(--paper-soft);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+#main-content:focus {
+    outline: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+    @include m.focus-ring;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--ink);
+}
+
+// Native <dialog> elements — used for session detail, contributor team
+// detail, and the iOS install prompt. Styled once here rather than
+// per-caller.
+dialog {
+    width: min(92vw, 420px);
+    max-height: 85vh;
+    overflow-y: auto;
+    border: none;
+    border-radius: v.$radius-lg;
+    padding: v.$space-6;
+    box-shadow: v.$shadow-raised;
+
+    &::backdrop {
+        background: rgba(35, 31, 32, 0.5);
+    }
+}

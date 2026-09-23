@@ -8,9 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * §10 GET /api/v1/events/{slug}/roster — the ingested Attendees-page
- * mirror (§3.3). Paginated (§21.2) and never includes suppressed
- * entries (§3.3 IN5, §8.4).
+ * GET /api/v1/events/{slug}/roster — the ingested Attendees-page
+ * mirror. Paginated and never includes suppressed
+ * entries.
  */
 class RosterController extends Controller
 {

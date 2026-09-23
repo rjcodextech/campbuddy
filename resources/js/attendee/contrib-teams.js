@@ -1,5 +1,5 @@
-// Fixed, curated Contributor Team list (§3.9 CD2 — launch scope; the
-// full dynamically-current official list is fast-follow, §2.2). Each
+// Fixed, curated Contributor Team list (CD2 — launch scope; the
+// full dynamically-current official list is fast-follow). Each
 // team carries the full CD3 field set: what the team does, who it
 // suits, whether technical knowledge is required, a beginner-friendly
 // task, and concretely what to do at that team's table.

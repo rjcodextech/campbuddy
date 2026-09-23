@@ -3,7 +3,7 @@
 namespace App\Services;
 
 /**
- * Transforms raw wp/v2 REST payloads (§0.1) into the flat shape CampBuddy
+ * Transforms raw wp/v2 REST payloads into the flat shape CampBuddy
  * actually renders from — resolving taxonomy joins and pulling the meta
  * fields that matter (session start time, sponsor website, ...) out from
  * under WordPress's generic post envelope.

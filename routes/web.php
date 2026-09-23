@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Attendee-facing routes
 |--------------------------------------------------------------------------
-| Built out per event across §3 (Home, My Day, Quest, Contribute, Explore,
-| Camp Card) — §19 phases 4-11. {event} here binds by slug and is scoped
+| Built out per event across the tabs (Home, My Day, Quest, Contribute, Explore,
+| Camp Card) — phases 4-11. {event} here binds by slug and is scoped
 | to public visibility inside EventPageController — deliberately not a
 | global Route::bind(), since the /admin/events/{event} routes reuse the
 | same parameter name but must resolve ANY event regardless of status.
@@ -33,7 +33,7 @@ Route::middleware('event.public')->group(function () {
     Route::get('/event/{event:slug}/camp-card', [EventPageController::class, 'campCard'])->name('event.camp-card');
     Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
 
-    // §8.4's takedown path — public, no login, throttled against abuse.
+    // The takedown path — public, no login, throttled against abuse.
     Route::middleware('throttle:20,1')->group(function () {
         Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->name('event.roster-removal.show');
         Route::get('/event/{event:slug}/roster-removal/search', [RosterRemovalController::class, 'search'])->name('event.roster-removal.search');
@@ -43,10 +43,10 @@ Route::middleware('event.public')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin panel — Breeze-scaffolded, session-based auth (§6, §9)
+| Admin panel — Breeze-scaffolded, session-based auth
 |--------------------------------------------------------------------------
 | Kept under /admin so it never bleeds into the attendee-facing app or its
-| design system (§4.5). Route *names* stay Breeze's defaults (login,
+| design system. Route *names* stay Breeze's defaults (login,
 | dashboard, profile.*, ...) so the framework's own redirect targets
 | (e.g. the Authenticate middleware's route('login')) resolve correctly
 | without extra config — only the URI prefix changes.
@@ -61,7 +61,7 @@ Route::prefix('admin')->group(function () {
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-        // Full CRUD on events (§9) — Create/Read/Update always available;
+        // Full CRUD on events — Create/Read/Update always available;
         // Delete is policy-gated to draft events only (EventPolicy::delete).
         Route::resource('events', EventController::class)->except('show')->names('admin.events');
         Route::post('events/discover', [EventController::class, 'discover'])->name('admin.events.discover');

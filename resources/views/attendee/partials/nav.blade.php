@@ -5,7 +5,6 @@
         ['route' => 'event.quest', 'icon' => 'quest', 'label' => 'Quest'],
         ['route' => 'event.contribute', 'icon' => 'contribute', 'label' => 'Contribute'],
         ['route' => 'event.explore', 'icon' => 'explore', 'label' => 'Explore'],
-        ['route' => 'event.camp-card', 'icon' => 'camp-card', 'label' => 'Camp Card'],
     ];
 @endphp
 <nav class="bottom-nav" aria-label="Primary">

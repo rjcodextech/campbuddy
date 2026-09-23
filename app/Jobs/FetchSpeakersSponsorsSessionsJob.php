@@ -13,10 +13,10 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * The primary ingestion job (§0.1, §5.2): pulls sessions/speakers/
+ * The primary ingestion job: pulls sessions/speakers/
  * sponsors/organizers straight from the event's own wp-json REST API and
- * caches the normalized result. Runs every 15 minutes per active event
- * (§12), plus on-demand via the admin "Refresh now" action (§9).
+ * caches the normalized result. Runs every 15 minutes per active event,
+ * plus on-demand via the admin "Refresh now" action.
  */
 class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
 {
@@ -50,7 +50,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             $organizers = $normalizer->normalizeOrganizers($client->fetchOrganizers());
 
             // Long TTL: this is "last known good" data served under a
-            // stale-while-revalidate posture (§5.1) — reads never block
+            // stale-while-revalidate posture — reads never block
             // on the upstream site, so a broken feed degrades slowly
             // rather than blanking the event the moment one fetch fails.
             $ttl = now()->addDays(2);

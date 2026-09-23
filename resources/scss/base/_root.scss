@@ -1,0 +1,21 @@
+@use '../abstracts/variables' as v;
+
+// Neutral/utility palette as CSS custom properties, so hand-written
+// markup in resources/js/attendee/*.js can read them via var(--x) at
+// runtime. --maroon/--maroon2 are deliberately NOT set here — the
+// attendee layout sets those inline, per event, before this stylesheet
+// loads, and redefining them here would win the cascade and stomp the
+// per-event branding.
+:root {
+    --ink: #{v.$color-ink};
+    --paper: #{v.$color-paper};
+    --paper-soft: #{v.$color-paper-soft};
+    --muted: #{v.$color-muted};
+    --line: #{v.$color-line};
+    --peach: #{v.$color-peach};
+    --gold: #{v.$color-gold};
+    --navy: #{v.$color-navy};
+    --teal: #{v.$color-teal};
+    --danger: #{v.$color-danger};
+    --success: #{v.$color-success};
+}

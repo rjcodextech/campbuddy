@@ -1,4 +1,4 @@
-// Camp Card (§3.10): local-only (CC5), attendee chooses which filled
+// Camp Card: local-only (CC5), attendee chooses which filled
 // fields actually show (CC2), QR points at whichever link they designate
 // primary (CC3), and it goes fullscreen with one tap (CC4).
 

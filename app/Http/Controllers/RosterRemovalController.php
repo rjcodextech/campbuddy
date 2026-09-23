@@ -9,10 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * §8.4's takedown path: a visible, no-login-required way for anyone to
+ * The takedown path: a visible, no-login-required way for anyone to
  * request removal from the ingested roster — self-service immediate
  * suppression by name match, no email infrastructure required. This is
- * a §13 pre-launch blocker, not deferrable once real people's data is
+ * a pre-launch blocker, not deferrable once real people's data is
  * involved.
  */
 class RosterRemovalController extends Controller

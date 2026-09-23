@@ -9,8 +9,8 @@ use App\Models\PushSubscription;
 use Illuminate\Http\JsonResponse;
 
 /**
- * §10 POST /api/v1/push/subscribe — registers a Web Push endpoint for a
- * device (§3.5 N1). Requested only right after a bookmark, never on
+ * POST /api/v1/push/subscribe — registers a Web Push endpoint for a
+ * device. Requested only right after a bookmark, never on
  * page load (enforced client-side, N1).
  */
 class PushSubscriptionController extends Controller

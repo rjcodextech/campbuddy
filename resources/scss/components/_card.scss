@@ -1,0 +1,56 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.card {
+    @include m.card-surface;
+    padding: v.$space-4;
+
+    &--now {
+        border-color: var(--maroon);
+        background: var(--peach);
+    }
+}
+
+// The content wrapper rendered inside a native <dialog> — the dialog
+// element itself provides the surface/shadow (base/_global.scss), this
+// is just internal spacing rhythm.
+.dialog-card {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+}
+
+.mission-big {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: v.$space-1;
+}
+
+.footer-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+.notice {
+    padding: v.$space-3;
+    border-radius: v.$radius-sm;
+    background: var(--peach);
+    border: 1px solid var(--gold);
+    color: var(--ink);
+    font-size: 0.88rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--maroon);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}

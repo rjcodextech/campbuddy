@@ -1,13 +1,12 @@
-// Attendee app entry point (§5.5) — vanilla JS, no framework. Each page
-// is server-rendered (§5.1); this just wires up the interactive parts:
-// onboarding, and whichever screen's own module the page needs.
-
-import { runOnboardingIfNeeded } from './onboarding.js';
+// Attendee app entry point — vanilla JS, no framework. Each page
+// is server-rendered; this just wires up the interactive parts:
+// whichever screen's own module the page needs. The onboarding section
+// is Home-specific and wired up inside home.js, not blocking every page.
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
-      // Offline-first degrades gracefully without it (§4.4) — a failed
+      // Offline-first degrades gracefully without it — a failed
       // registration just means no offline caching or push this visit.
     });
   });
@@ -16,9 +15,6 @@ if ('serviceWorker' in navigator) {
 async function init() {
   const root = document.getElementById('app');
   if (!root) return;
-
-  const eventName = document.title.split(' — ')[0];
-  await runOnboardingIfNeeded(eventName);
 
   if (document.getElementById('home-data')) {
     const { renderHome } = await import('./home.js');

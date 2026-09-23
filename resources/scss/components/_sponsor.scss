@@ -1,0 +1,114 @@
+@use '../abstracts/variables' as v;
+
+.sponsor-group {
+    margin-bottom: v.$space-5;
+}
+
+.sponsor-group__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-3;
+    margin-top: v.$space-2;
+}
+
+.sponsor-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: v.$space-3 v.$space-4;
+    min-height: 48px;
+    border-radius: v.$radius-sm;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    font-weight: 700;
+    font-size: 0.85rem;
+
+    &--platinum {
+        border-color: var(--gold);
+        background: var(--peach);
+    }
+
+    &--silver {
+        border-color: #c7c2bd;
+    }
+
+    &--bronze {
+        border-color: #c8905e;
+    }
+}
+
+.sponsor-chip__logo {
+    max-height: 28px;
+    width: auto;
+}
+
+.offer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: v.$space-3;
+}
+
+.offer-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-1;
+    padding: v.$space-4;
+    border-radius: v.$radius-md;
+    border: 1px solid var(--line);
+    background: var(--paper);
+}
+
+.offer-card__icon {
+    font-size: 1.4rem;
+}
+
+.offer-card__title {
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.offer-card__desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.useful-link {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-3 0;
+    border-bottom: 1px solid var(--line);
+
+    &:last-of-type {
+        border-bottom: none;
+    }
+}
+
+.useful-link__icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.useful-link__title {
+    display: block;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.useful-link__desc {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.social-chip {
+    display: inline-flex;
+    padding: 3px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: capitalize;
+}

@@ -6,10 +6,10 @@ use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Thin client over a WordCamp site's own wp-json/wp/v2 REST API (§0.1).
+ * Thin client over a WordCamp site's own wp-json/wp/v2 REST API.
  * Every site on the shared WordCamp.org codebase exposes the same schema,
  * so this is the single, generic ingestion path for any event — no
- * per-event special-casing and no dependency on wpsimplified.in (§0.5).
+ * per-event special-casing and no dependency on wpsimplified.in.
  */
 class WordCampRestClient
 {
@@ -17,7 +17,7 @@ class WordCampRestClient
 
     private const MAX_PAGES = 10;
 
-    /** Domains recognised as a speaker's social links (§0.1's one real gap). */
+    /** Domains recognised as a speaker's social links. */
     private const SOCIAL_DOMAINS = [
         'twitter.com' => 'twitter',
         'x.com' => 'twitter',
@@ -60,7 +60,7 @@ class WordCampRestClient
     }
 
     /**
-     * Resolves a taxonomy's numeric term IDs to names (§0.1) — session
+     * Resolves a taxonomy's numeric term IDs to names — session
      * tracks and sponsor tiers are meaningless without this join.
      *
      * @return array<int, string> term ID => name
@@ -74,7 +74,7 @@ class WordCampRestClient
 
     /**
      * Scans a speaker/organizer bio's rendered HTML for links to known
-     * social platforms — the one thing not in structured meta (§0.1).
+     * social platforms — the one thing not in structured meta.
      *
      * @return array<int, array{type: string, url: string}>
      */
@@ -112,7 +112,7 @@ class WordCampRestClient
     /**
      * Pulls the first rendered <img> src from a post's content HTML —
      * used as a sponsor's logo since it's embedded in the render, not a
-     * structured field (mirrors the branding-asset approach in §0.6).
+     * structured field (mirrors the branding-asset approach).
      */
     public function extractFirstImage(string $html): ?string
     {

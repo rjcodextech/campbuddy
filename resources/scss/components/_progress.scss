@@ -1,0 +1,17 @@
+@use '../abstracts/variables' as v;
+
+.progress {
+    position: relative;
+    height: 8px;
+    border-radius: v.$radius-full;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.progress__bar {
+    display: block;
+    height: 100%;
+    background: var(--gold);
+    border-radius: v.$radius-full;
+    transition: width 0.25s ease;
+}

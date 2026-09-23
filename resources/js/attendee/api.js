@@ -1,7 +1,7 @@
-// Thin fetch wrapper for /api/v1/* (§10). Every call here is either
+// Thin fetch wrapper for /api/v1/*. Every call here is either
 // public GET or a discovery mutation carrying the caller's own owner
-// token as a bearer credential (§8.6) — never a session/cookie, since
-// attendees never log in (§2.3).
+// token as a bearer credential — never a session/cookie, since
+// attendees never log in.
 
 export async function apiGet(eventSlug, path) {
   const res = await fetch(`/api/v1/events/${eventSlug}${path}`, {

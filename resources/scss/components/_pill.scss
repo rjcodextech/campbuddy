@@ -1,0 +1,34 @@
+@use '../abstracts/variables' as v;
+
+.pill,
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px v.$space-3;
+    border-radius: v.$radius-full;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.pill--hashtag {
+    background: var(--maroon);
+    border-color: var(--maroon);
+    color: #fff;
+}
+
+.chip--selected {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+}
+
+.chip-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    margin: v.$space-2 0 v.$space-4;
+}

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('event_id')->nullable()->constrained()->nullOnDelete();
             $table->string('source', 20);
-            // Distinguishes which §5.2 job wrote this row (§7).
+            // Distinguishes which job wrote this row.
             $table->string('job_type', 30);
             $table->string('status', 10);
             $table->string('message', 500)->nullable();

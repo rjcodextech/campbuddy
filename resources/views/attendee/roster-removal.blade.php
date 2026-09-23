@@ -15,7 +15,7 @@
 
         <p class="footer-note" style="text-align:left">
             {{ $event->display_name }}'s public Attendees page is opted into by you at checkout, and CampBuddy mirrors
-            it here (§0.3). If you'd rather not appear, search your name below and remove yourself — no login needed.
+            it here. If you'd rather not appear, search your name below and remove yourself — no login needed.
         </p>
 
         @if (session('status'))

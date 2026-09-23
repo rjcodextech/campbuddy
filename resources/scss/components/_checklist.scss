@@ -1,0 +1,32 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.checklist {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+}
+
+.checklist__item {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    @include m.card-surface;
+    padding: v.$space-3 v.$space-4;
+
+    &--done {
+        opacity: 0.6;
+    }
+}
+
+.checklist__input {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    accent-color: var(--maroon);
+}
+
+.checklist__label {
+    font-weight: 600;
+    color: var(--ink);
+}

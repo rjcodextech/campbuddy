@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('session_bookmarks', function (Blueprint $table) {
-            // Prevents the reminder job (§3.5 N1) from sending the same
+            // Prevents the reminder job from sending the same
             // push twice — set once a send succeeds for this bookmark.
             $table->timestamp('reminder_sent_at')->nullable()->after('reminder_enabled');
         });

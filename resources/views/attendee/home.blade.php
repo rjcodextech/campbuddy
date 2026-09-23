@@ -1,14 +1,9 @@
 <x-attendee-layout :event="$event">
-    <header class="topbar">
-        <span class="brand">
-            @if ($event->logoUrl())
-                <img src="{{ $event->logoUrl() }}" alt="" class="brand__logo">
-            @endif
-            <span>{{ $event->display_name }}</span>
-        </span>
-    </header>
+    @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
+        <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" hidden></section>
+
         <div id="starting-soon-banner" hidden></div>
 
         <section aria-labelledby="happening-now-heading">

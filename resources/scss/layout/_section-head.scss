@@ -1,0 +1,21 @@
+@use '../abstracts/variables' as v;
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: v.$space-3;
+    margin-bottom: v.$space-3;
+}
+
+.section-head__title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.section-head__desc {
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+}

@@ -10,8 +10,7 @@ use Illuminate\View\View;
 
 /**
  * The shared Media Library (admin-only) — images uploaded here are
- * pickable from any form that references a MediaAsset (currently Offers,
- * §3.7/§9).
+ * pickable from any form that references a MediaAsset (currently Offers).
  */
 class MediaController extends Controller
 {

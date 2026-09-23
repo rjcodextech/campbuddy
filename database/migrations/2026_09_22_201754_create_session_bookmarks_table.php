@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('session_bookmarks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();
-            // Client-generated identifier (not an account ID, §2.3) that
+            // Client-generated identifier (not an account ID) that
             // scopes this device's bookmarks and reminder schedule.
             $table->string('device_id', 64);
-            // The WordCamp site's own wp/v2 session post ID (§0.1).
+            // The WordCamp site's own wp/v2 session post ID.
             $table->unsignedBigInteger('session_id');
             $table->boolean('reminder_enabled')->default(false);
             $table->timestamps();

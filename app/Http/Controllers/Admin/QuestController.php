@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Full CRUD on an event's quests (§9) — event-specific quests only; the
+ * Full CRUD on an event's quests — event-specific quests only; the
  * default/cross-event list is seeded (DefaultQuestSeeder), not admin
- * content, per §3.6 C3.
+ * content.
  */
 class QuestController extends Controller
 {

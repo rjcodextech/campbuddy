@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            // A real gap in §7's original table list: §3.4 M7 and §8.4's
-            // roster-purge policy both need "the event's end" to compute
+            // A real gap in the original table list: the
+            // roster-purge policy needs "the event's end" to compute
             // an expiry against, but no date field existed anywhere on
             // events. Nullable because a just-created draft event may not
             // have its dates set yet.

@@ -1,0 +1,43 @@
+@use '../abstracts/variables' as v;
+
+.bottom-nav {
+    // Sticky, not fixed: it's a normal-flow sibling of #app inside
+    // .app-frame, so it's confined to the frame's width for free and
+    // never needs to fight for viewport-relative centering.
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-around;
+    height: v.$bottom-nav-height;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+}
+
+.bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    flex: 1;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+
+    &--active {
+        color: var(--maroon);
+    }
+}
+
+.bottom-nav__icon {
+    height: 22px;
+    width: 22px;
+    opacity: 0.85;
+}
+
+.bottom-nav__label {
+    line-height: 1;
+}

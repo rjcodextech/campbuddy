@@ -35,7 +35,7 @@ class DiscoveryProfile extends Model
 
     /**
      * Generates the public discovery_id and the one-time-shown owner
-     * token as a pair — only the token's hash is ever persisted (§8.6).
+     * token as a pair — only the token's hash is ever persisted.
      *
      * @return array{discovery_id: string, owner_token: string, owner_token_hash: string}
      */

@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('discovery_profiles', function (Blueprint $table) {
             $table->id();
-            // Public, non-guessable identifier (§3.4 M2) — safe to show to
+            // Public, non-guessable identifier — safe to show to
             // every attendee, authorizes nothing by itself.
             $table->char('discovery_id', 64)->unique();
-            // Only the hash is stored (§8.6) — the raw owner token is
+            // Only the hash is stored — the raw owner token is
             // returned once at creation and never persisted server-side.
             $table->char('owner_token_hash', 64);
             $table->foreignId('event_id')->constrained()->cascadeOnDelete();

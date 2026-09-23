@@ -7,7 +7,7 @@ use App\Models\User;
 
 /**
  * Every authenticated user is currently an admin — there is no second
- * admin role yet (§21.3 notes this becomes a policy change, not a
+ * admin role yet (this becomes a policy change, not a
  * rearchitect, when one is needed).
  */
 class EventPolicy
@@ -34,7 +34,7 @@ class EventPolicy
 
     /**
      * Hard delete is allowed only for draft events with nothing ingested
-     * yet — anything else must be archived instead (§9 Events–Delete).
+     * yet — anything else must be archived instead.
      */
     public function delete(User $user, Event $event): bool
     {

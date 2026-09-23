@@ -6,9 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * The "Join attendee discovery" action (§3.4 M2). A fixed, curated tag
+ * The "Join attendee discovery" action. A fixed, curated tag
  * set drives matching — never free text (M3) — and the field set here is
- * deliberately narrower than onboarding's full answer set (§8.3).
+ * deliberately narrower than onboarding's full answer set.
  */
 class StoreDiscoveryRequest extends FormRequest
 {

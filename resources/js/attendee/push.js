@@ -1,4 +1,4 @@
-// Web Push opt-in (§3.5 N1, N3, N4). Permission is asked ONLY right
+// Web Push opt-in. Permission is asked ONLY right
 // after a bookmark — never on page load — and a denial is respected
 // permanently: no automatic re-prompt, ever (N4).
 

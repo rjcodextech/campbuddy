@@ -73,8 +73,8 @@ class Event extends Model
     }
 
     /**
-     * Never hotlinked (§3.2 BR4) — null falls back to CampBuddy's own
-     * default branding at the view layer (§3.2 BR3), not a broken image.
+     * Never hotlinked — null falls back to CampBuddy's own
+     * default branding at the view layer, not a broken image.
      */
     public function logoUrl(): ?string
     {

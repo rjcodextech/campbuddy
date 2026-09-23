@@ -1,4 +1,4 @@
-// Local-first storage (§3.13 DP4): IndexedDB for everything beyond
+// Local-first storage: IndexedDB for everything beyond
 // trivial flags, so state survives reloads/restarts/network loss. This is
 // the ONLY place that talks to IndexedDB directly — every other module
 // goes through the functions exported here.
@@ -130,7 +130,7 @@ export async function setQuestComplete(eventId, questId, complete) {
   );
 }
 
-// --- met history: people this device has marked "I met them" (§3.4 M5) ---
+// --- met history: people this device has marked "I met them" ---
 
 export async function getMetHistory(eventId) {
   return withStore('metHistory', 'readonly', async (store) => {
@@ -146,7 +146,7 @@ export async function markMet(eventId, discoveryId) {
 }
 
 /**
- * Wipes every store — the "Clear My CampBuddy Data" action (§3.13 DP2).
+ * Wipes every store — the "Clear My CampBuddy Data" action.
  */
 export async function clearAll() {
   const db = await openDb();
@@ -157,8 +157,7 @@ export async function clearAll() {
 }
 
 /**
- * Dumps every store's contents — the "Export My CampBuddy Data" action
- * (§3.13 DP1).
+ * Dumps every store's contents — the "Export My CampBuddy Data" action.
  */
 export async function exportAll() {
   const db = await openDb();

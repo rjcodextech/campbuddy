@@ -17,7 +17,7 @@ export default {
             // CampBuddy's own brand tokens (resources/scss/abstracts/_variables.scss,
             // carried from V1) — reused here so the admin panel reads as the same
             // product as the attendee app, even though its component library
-            // (Tailwind + Alpine) is deliberately different (§5.5).
+            // (Tailwind + Alpine) is deliberately different.
             colors: {
                 ink: '#231f20',
                 paper: '#fffaf4',

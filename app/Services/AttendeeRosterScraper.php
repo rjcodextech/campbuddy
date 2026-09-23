@@ -5,10 +5,9 @@ namespace App\Services;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Parses a WordCamp site's public Attendees page (§0.3) — the one place
+ * Parses a WordCamp site's public Attendees page — the one place
  * in the ingestion pipeline with no REST endpoint and no stable contract
- * (it's CampTix's plain template markup, "tix-*" classes). §3.3 IN4:
- * a structural change here must be detectable, not silently ingested as
+ * (it's CampTix's plain template markup, "tix-*" classes). A structural change here must be detectable, not silently ingested as
  * an empty roster.
  */
 class AttendeeRosterScraper
@@ -16,7 +15,7 @@ class AttendeeRosterScraper
     /**
      * @return array<int, array{name: string, gravatar_url: ?string, links: array<int, array{type: string, url: string}>}>|null
      *         null means the page's expected structure wasn't found at
-     *         all (§3.3 IN4) — distinct from a structure that parsed
+     *         all — distinct from a structure that parsed
      *         cleanly into zero entries (nobody's opted in yet).
      */
     public function parse(string $html): ?array

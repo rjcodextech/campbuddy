@@ -9,8 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Bookmarks are local-only by default (§1.0, §7) — this endpoint only
- * exists because a reminder (§3.5 N1) requires the server to know which
+ * Bookmarks are local-only by default — this endpoint only
+ * exists because a reminder requires the server to know which
  * session to push about. A plain bookmark with no reminder never calls
  * this at all.
  */

@@ -46,7 +46,7 @@
                 @empty
                     <tr>
                         <td colspan="5" class="px-6 py-8 text-center text-sm text-muted">
-                            No events yet. Add WordCamp Rajasthan 2026 to get started (§2.1 F2).
+                            No events yet. Add WordCamp Rajasthan 2026 to get started.
                         </td>
                     </tr>
                 @endforelse

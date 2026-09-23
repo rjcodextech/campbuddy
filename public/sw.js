@@ -1,10 +1,10 @@
-// CampBuddy service worker (§4.4 offline-first, §3.5 N1 push).
+// CampBuddy service worker (offline-first, push).
 //
-// Strategy: pages (server-rendered Blade, §5.1) are network-first with a
+// Strategy: pages (server-rendered Blade) are network-first with a
 // cache fallback, so a returning visitor with no connection still gets
 // their last-downloaded Home/My Day/etc. Hashed build assets are
-// cache-first since their filename changes whenever their content does
-// (§5.5's Vite manifest hashing) — safe to cache indefinitely.
+// cache-first since their filename changes whenever their content does —
+// safe to cache indefinitely.
 
 const CACHE_NAME = 'campbuddy-v1';
 
@@ -29,7 +29,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Never cache the API — it's either live data or a deliberate
-  // "you're offline" state handled in the page's own JS (§4.4).
+  // "you're offline" state handled in the page's own JS.
   if (url.pathname.startsWith('/api/')) {
     return;
   }
@@ -64,7 +64,7 @@ async function networkFirst(request) {
   }
 }
 
-// §3.5 N1: the scheduled reminder itself.
+// The scheduled reminder itself.
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 

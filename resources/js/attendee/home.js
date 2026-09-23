@@ -1,12 +1,16 @@
-// Home's guidance logic (§3.1 H1-H4). Deliberately reads from the
+// Home's guidance logic. Deliberately reads from the
 // server-embedded schedule JSON plus local IndexedDB state — no network
-// call between page load and a populated Home screen (§3.1 H6).
+// call between page load and a populated Home screen.
 
 import { getBookmarks, getQuestProgress, kvGet } from './db.js';
+import { renderOnboardingSection } from './onboarding.js';
 
 export async function renderHome(root) {
   const dataEl = document.getElementById('home-data');
   if (!dataEl) return;
+
+  const eventName = document.title.split(' — ')[0];
+  renderOnboardingSection(eventName);
 
   const { sessions, quests, now } = JSON.parse(dataEl.textContent);
   const eventId = Number(root.dataset.eventId);
@@ -64,7 +68,7 @@ function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
     return;
   }
 
-  // Priority order (§3.1 H2): the attendee's own saved sessions first.
+  // Priority order: the attendee's own saved sessions first.
   const savedUpcoming = upcoming.filter((s) => bookmarkedIds.has(s.id));
   const interests = (onboarding?.interests ?? []).map((i) => i.toLowerCase());
   const matchingInterest = upcoming.find((s) =>
@@ -87,7 +91,7 @@ function renderUpNext(sessions, nowMs, bookmarkedIds, onboarding) {
   `;
 }
 
-// §3.5 N2: the guaranteed path, regardless of push support — a
+// The guaranteed path, regardless of push support — a
 // bookmarked session starting in the next 15 minutes gets an in-app
 // banner right on Home, where an open device is most likely to see it.
 function renderStartingSoonBanner(sessions, nowMs, bookmarkedIds) {
@@ -123,7 +127,7 @@ function renderSuggestedAction(quests, completedQuestIds, bookmarkCount) {
   const incomplete = quests.filter((q) => !completedQuestIds.has(q.id));
   const pool = incomplete.length > 0 ? incomplete : DEFAULT_SUGGESTIONS;
 
-  // A single rotating suggestion (§3.1 H3 — "one suggestion at a time"),
+  // A single rotating suggestion ("one suggestion at a time"),
   // picked deterministically per hour so it doesn't flicker on re-render.
   const index = Math.floor(Date.now() / 3600000) % pool.length;
   const pick = pool[index];

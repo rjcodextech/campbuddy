@@ -15,17 +15,17 @@ Artisan::command('inspire', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Scheduled ingestion (§5.2, §12)
+| Scheduled ingestion
 |--------------------------------------------------------------------------
-| One cPanel cron entry (`schedule:run` every minute, §12.6) dispatches
+| One cPanel cron entry (`schedule:run` every minute) dispatches
 | each job on its own cadence from here. FetchSpeakersSponsorsSessionsJob
 | runs every 15 minutes per active event, matching V1's old refresh
-| cadence (§12); ParseAttendeeRosterJob runs once daily (§3.3 IN2) since
+| cadence; ParseAttendeeRosterJob runs once daily since
 | it's a scrape of someone else's site, not an API with a rate limit.
-| FetchBrandingAssetsJob is on-demand only (§5.2), not on this schedule.
+| FetchBrandingAssetsJob is on-demand only, not on this schedule.
 |
 | Jobs run sequentially with a small stagger, never concurrently against
-| multiple upstream WordCamp sites at once (§5.2, §3.3 IN3).
+| multiple upstream WordCamp sites at once.
 */
 Schedule::call(function () {
     Event::where('status', 'active')->each(function (Event $event, int $index) {
@@ -39,10 +39,10 @@ Schedule::call(function () {
     });
 })->daily()->name('ingest-attendee-roster');
 
-// §3.5 N1's reminder window is 5-10 minutes before a session — every
+// The reminder window is 5-10 minutes before a session — every
 // minute is the tightest useful cadence without spamming the queue.
 Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders');
 
-// §5.3 central discovery — weekly is plenty; new WordCamps don't appear
+// Central discovery — weekly is plenty; new WordCamps don't appear
 // hourly, and every result lands as a draft pending admin approval.
 Schedule::job(new DiscoverWordCampsJob)->weekly()->name('discover-wordcamps');

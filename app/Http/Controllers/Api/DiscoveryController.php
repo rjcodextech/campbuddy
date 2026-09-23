@@ -11,7 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * The anonymous-discovery matching API (§3.4, §8.3, §8.6, §10). The
+ * The anonymous-discovery matching API. The
  * public discovery_id authorizes nothing by itself — every mutating call
  * requires the one-time-shown owner token as a bearer credential.
  */
@@ -20,7 +20,7 @@ class DiscoveryController extends Controller
     /**
      * GET — every active profile's public fields. Never owner_token_hash
      * (hidden on the model) — client-side tag-overlap matching runs on
-     * this list (§3.4 M2).
+     * this list.
      */
     public function index(Event $event): JsonResponse
     {
@@ -34,9 +34,9 @@ class DiscoveryController extends Controller
     }
 
     /**
-     * POST — "Join attendee discovery" (§3.4 M2). Returns the owner
+     * POST — "Join attendee discovery". Returns the owner
      * token exactly once; the client must store it locally, since it is
-     * never recoverable from the server again (§8.6, §3.4 M8).
+     * never recoverable from the server again.
      */
     public function store(StoreDiscoveryRequest $request, Event $event): JsonResponse
     {
@@ -59,8 +59,7 @@ class DiscoveryController extends Controller
 
     /**
      * PATCH — update the exposed fields. Requires the owner token; a
-     * missing or wrong token gets a generic 403 (§10 — no hint about
-     * which part was wrong).
+     * missing or wrong token gets a generic 403.
      */
     public function update(UpdateDiscoveryRequest $request, Event $event, string $discoveryId): JsonResponse
     {
@@ -72,7 +71,7 @@ class DiscoveryController extends Controller
     }
 
     /**
-     * DELETE — "Leave attendee discovery" (§3.4 M6). Same owner-token
+     * DELETE — "Leave attendee discovery". Same owner-token
      * requirement as PATCH.
      */
     public function destroy(Request $request, Event $event, string $discoveryId): JsonResponse
@@ -92,7 +91,7 @@ class DiscoveryController extends Controller
         $token = $request->bearerToken();
 
         // Deliberately the same generic 403 whether the profile is
-        // missing or the token is wrong — §10 says never hint which.
+        // missing or the token is wrong — never hint which.
         abort_if(! $profile || ! $token || ! $profile->ownerTokenMatches($token), 403);
 
         return $profile;

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * Best-effort branding asset discovery (§0.6, §3.2 BR4) — a one-time job
+ * Best-effort branding asset discovery — a one-time job
  * per event, not a daily one, since none of this has a stable contract.
  * Whatever it finds is downloaded and re-hosted by the caller; this class
  * only resolves source URLs, it never fetches the bytes itself.
@@ -27,7 +27,7 @@ class BrandingAssetFetcher
 
     /**
      * The event's visual logo — only ever found in the homepage header
-     * markup (§0.6); WordPress's "Site Icon" setting is a favicon, not a
+     * markup; WordPress's "Site Icon" setting is a favicon, not a
      * logo, so there's no REST shortcut for this one.
      */
     public function findLogoUrl(): ?string
@@ -48,7 +48,7 @@ class BrandingAssetFetcher
         }
 
         // Fallback: any image inside the page header whose class/alt
-        // mentions "logo" — organizer themes vary (§0.6).
+        // mentions "logo" — organizer themes vary.
         $headerImg = $crawler->filter('header img, .site-logo img, .site-branding img')->reduce(
             fn (Crawler $node) => str_contains(strtolower($node->attr('class') ?? ''), 'logo')
                 || str_contains(strtolower($node->attr('alt') ?? ''), 'logo')
@@ -58,7 +58,7 @@ class BrandingAssetFetcher
     }
 
     /**
-     * The favicon, tried in the priority order §3.2 BR4 specifies.
+     * The favicon, tried in priority order.
      */
     public function findFaviconUrl(): ?string
     {

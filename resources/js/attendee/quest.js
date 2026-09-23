@@ -1,5 +1,5 @@
-// Quest (§3.6): binary done/not-done, local-only progress (C2, C4) — no
-// points, currency, or leaderboard, deliberately (§1.0).
+// Quest: binary done/not-done, local-only progress (C2, C4) — no
+// points, currency, or leaderboard, deliberately.
 
 import { getQuestProgress, setQuestComplete } from './db.js';
 

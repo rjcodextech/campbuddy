@@ -1,0 +1,46 @@
+@use '../abstracts/variables' as v;
+
+// Forces the attendee app into a fixed, phone-width column at every
+// viewport size — including desktop, where it sits centered on a
+// neutral backdrop instead of stretching edge-to-edge. This is
+// deliberate: CampBuddy is designed one-handed, for a phone, and should
+// always read as a mobile app, not a responsive website.
+body.app-shell {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    background: #e7ded2;
+
+    @media (min-width: v.$app-frame-width + 40px) {
+        padding: v.$space-6 0;
+    }
+}
+
+.app-frame {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: v.$app-frame-width;
+    min-height: 100vh;
+    background: var(--paper-soft);
+    position: relative;
+    overflow-x: hidden;
+
+    @media (min-width: v.$app-frame-width + 40px) {
+        min-height: calc(100vh - #{v.$space-6 * 2});
+        border-radius: v.$radius-lg;
+        box-shadow: 0 0 0 1px var(--line), 0 30px 70px -25px rgba(35, 31, 32, 0.45);
+    }
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+#main-content {
+    display: block;
+    flex: 1;
+    padding: v.$space-4 v.$space-4 v.$space-8;
+}

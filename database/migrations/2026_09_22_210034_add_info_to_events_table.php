@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('events', function (Blueprint $table) {
-            // Event Information (§3.12 EI2): venue, wifi, registration
+            // Event Information: venue, wifi, registration
             // info, code of conduct, emergency contact, etc. — a flexible
             // set of optional organizer-supplied text fields, each simply
-            // omitted from display when empty (§3.12 EI3), so a JSON blob
+            // omitted from display when empty, so a JSON blob
             // fits better than a wide table of mostly-null columns.
             $table->json('info')->nullable()->after('favicon_path');
         });

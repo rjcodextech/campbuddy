@@ -1,0 +1,72 @@
+@use '../abstracts/variables' as v;
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    height: v.$topbar-height;
+    padding: 0 v.$space-4;
+    background: var(--paper-soft);
+    border-bottom: 1px solid var(--line);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    min-width: 0;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--maroon);
+
+    span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.brand__logo {
+    height: 32px;
+    width: 32px;
+    flex-shrink: 0;
+    border-radius: v.$radius-sm;
+    object-fit: cover;
+}
+
+.topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    flex-shrink: 0;
+}
+
+.topbar__icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: v.$radius-full;
+    color: var(--ink);
+    background: transparent;
+
+    svg,
+    img {
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        background: var(--peach);
+    }
+
+    &--active {
+        color: var(--maroon);
+        background: var(--peach);
+    }
+}

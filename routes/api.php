@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public, read-mostly, CDN-cacheable JSON API (§10)
+| Public, read-mostly, CDN-cacheable JSON API
 |--------------------------------------------------------------------------
-| GET routes are public and cacheable at the edge (§5.4). Mutating routes
+| GET routes are public and cacheable at the edge. Mutating routes
 | (discovery POST/PATCH/DELETE) are the one place this API writes
 | anything, and are throttled here as defense-in-depth on top of the
-| CDN-edge limiting (§8.1, §21.3) — 60/min general, tighter on discovery
-| writes specifically per §21.3.
+| CDN-edge limiting — 60/min general, tighter on discovery
+| writes specifically.
 */
 Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
     Route::get('/health', HealthController::class)->name('api.health');

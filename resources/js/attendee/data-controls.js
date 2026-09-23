@@ -1,4 +1,4 @@
-// §3.13: Export/Clear, reached contextually (not a nav tab). DP3 is the
+// Export/Clear, reached contextually (not a nav tab). DP3 is the
 // one non-obvious rule — clearing never silently drops an active
 // discovery profile without a separate warning and offer to leave first.
 
@@ -46,7 +46,7 @@ async function clearData(root) {
   // offered as a distinct step, not silently skipped.
   if (discovery) {
     const leaveFirst = confirm(
-      "You're still discoverable to other attendees (§3.4). Leave attendee discovery first? " +
+      "You're still discoverable to other attendees. Leave attendee discovery first? " +
       '(Choosing Cancel keeps your discovery profile active even after clearing local data.)'
     );
 
@@ -55,7 +55,7 @@ async function clearData(root) {
         await apiMutate(eventSlug, `/discovery/${discovery.discoveryId}`, 'DELETE', null, discovery.ownerToken);
       } catch {
         // Proceed with the local clear regardless — the profile will
-        // still expire with the event (§3.4 M7) if this call failed.
+        // still expire with the event if this call failed.
       }
     }
   }

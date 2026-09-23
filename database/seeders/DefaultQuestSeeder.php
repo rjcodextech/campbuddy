@@ -6,9 +6,9 @@ use App\Models\Quest;
 use Illuminate\Database\Seeder;
 
 /**
- * Default quests apply to every event (§3.6 C3) — event_id stays null.
- * Seeded once; admins edit/extend the list per event from §9's Quest
- * editor (§19 Phase 6), not by re-running this seeder.
+ * Default quests apply to every event — event_id stays null.
+ * Seeded once; admins edit/extend the list per event from the Quest
+ * editor, not by re-running this seeder.
  */
 class DefaultQuestSeeder extends Seeder
 {
@@ -34,8 +34,8 @@ class DefaultQuestSeeder extends Seeder
             $sortOrder += 10;
         }
 
-        // Contextual, surfaced once the attendee engages with Contribute
-        // (§3.6 C3, §3.9 CD4) — matched by title client-side, not a
+        // Contextual, surfaced once the attendee engages with Contribute —
+        // matched by title client-side, not a
         // foreign key, since Contribute has no server-side state of its own.
         Quest::firstOrCreate(
             ['event_id' => null, 'source' => 'contributor_day', 'title' => 'Learn what one Contributor Team does'],

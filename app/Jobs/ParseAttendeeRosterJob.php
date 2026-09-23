@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * The one recurring scraper in the pipeline (§0.3, §3.3, §5.2) — once
+ * The one recurring scraper in the pipeline — once
  * daily per active event (IN2), never concurrent with another event's run
  * (IN3). Respects the local suppression list on every re-run (IN5) and
  * alerts rather than silently ingesting garbage if the page's structure

@@ -5,7 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 
 /**
- * The official WordCamp discovery API (§0.2, §5.3):
+ * The official WordCamp discovery API:
  * api.wordpress.org/events/1.0/. It's a location/radius "events near X"
  * API (built for the wp-admin events widget), not a flat global list —
  * so finding "all" upcoming WordCamps means a seeded search across many

@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Offers/Deals, full CRUD, now event-scoped (§9, §3.7) — a deal doesn't
+ * Offers/Deals, full CRUD, now event-scoped — a deal doesn't
  * roll over to the next event unless resubmitted against it.
  */
 class OfferController extends Controller

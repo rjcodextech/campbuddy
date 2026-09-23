@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
- * One-time branding asset discovery (§0.6, §3.2 BR4, §5.2) — dispatched
+ * One-time branding asset discovery — dispatched
  * once when an event is approved, never on the daily schedule. Downloads
  * and re-hosts whatever it finds on CampBuddy's own storage so the
  * source site going down later can't break CampBuddy's branding.
@@ -63,7 +63,7 @@ class FetchBrandingAssetsJob implements ShouldQueue
             $this->log(
                 'ok',
                 $found === []
-                    ? 'Nothing found automatically — admin upload is needed (§3.2 BR5).'
+                    ? 'Nothing found automatically — admin upload is needed.'
                     : 'Fetched: '.implode(', ', $found)
             );
         } catch (Throwable $e) {
@@ -75,7 +75,7 @@ class FetchBrandingAssetsJob implements ShouldQueue
 
     /**
      * Downloads one asset with the same "don't trust a third party"
-     * posture as the REST ingestion job (§8.2): size-capped, MIME-checked,
+     * posture as the REST ingestion job: size-capped, MIME-checked,
      * short timeout. Returns the stored path (relative to the public
      * disk) or null if the source didn't pass validation.
      */

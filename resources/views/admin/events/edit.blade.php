@@ -108,7 +108,7 @@
         </div>
 
         <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-line p-6">
-            <h3 class="text-lg font-medium text-ink mb-4">Event Information (§3.12 EI2)</h3>
+            <h3 class="text-lg font-medium text-ink mb-4">Event Information</h3>
             <p class="text-sm text-muted mb-4">Every field is optional and simply omitted from the attendee app when blank.</p>
 
             <form method="POST" action="{{ route('admin.events.update-info', $event) }}" class="space-y-3">
@@ -155,7 +155,7 @@
             <div class="bg-white overflow-hidden shadow-sm rounded-lg border border-maroon/20 p-6">
                 <h3 class="text-lg font-medium text-ink mb-2">Delete event</h3>
                 <p class="text-sm text-muted mb-4">
-                    Only possible while this event is still a draft with nothing ingested (§9) — once it's
+                    Only possible while this event is still a draft with nothing ingested — once it's
                     approved/active/archived, use the status field above to archive it instead.
                 </p>
                 <form method="POST" action="{{ route('admin.events.destroy', $event) }}"

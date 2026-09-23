@@ -29,7 +29,7 @@ class EventController extends Controller
     }
 
     /**
-     * Manual "Discover WordCamps" (§5.3) — queued so a large seed-list
+     * Manual "Discover WordCamps" — queued so a large seed-list
      * scan doesn't block the request; new finds land as drafts.
      */
     public function discover(): RedirectResponse
@@ -90,7 +90,7 @@ class EventController extends Controller
     }
 
     /**
-     * Manual "Refresh now" (§9 Ingestion status) — dispatches the
+     * Manual "Refresh now" — dispatches the
      * sessions/speakers/sponsors REST ingestion job for this event.
      */
     public function refresh(Event $event): RedirectResponse
@@ -105,7 +105,7 @@ class EventController extends Controller
     }
 
     /**
-     * Event Information (§3.12 EI2/EI3) — every field optional, simply
+     * Event Information — every field optional, simply
      * omitted from the attendee-facing page when blank.
      */
     public function updateInfo(Event $event): RedirectResponse
@@ -135,9 +135,9 @@ class EventController extends Controller
     }
 
     /**
-     * Manual "Re-fetch branding assets" (§9) — separate from the data
+     * Manual "Re-fetch branding assets" — separate from the data
      * refresh above, since branding is a one-time/on-demand job, not part
-     * of the daily ingestion cadence (§5.2).
+     * of the daily ingestion cadence.
      */
     public function refreshBranding(Event $event): RedirectResponse
     {
@@ -151,7 +151,7 @@ class EventController extends Controller
     }
 
     /**
-     * Admin upload/replace of logo or favicon (§3.2 BR5) — always
+     * Admin upload/replace of logo or favicon — always
      * overrides whatever auto-fetch found, or fills the gap if it found
      * nothing.
      */

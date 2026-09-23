@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Per-event PWA manifest — install-to-home-screen picks up that event's
- * own name/colors/icon (§3.2), not a generic CampBuddy manifest.
+ * own name/colors/icon, not a generic CampBuddy manifest.
  */
 class ManifestController extends Controller
 {

@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('gravatar_url', 500)->nullable();
             $table->json('links')->nullable();
-            // sha256 of name+links — the upsert key (§3.3 IN1), since the
+            // sha256 of name+links — the upsert key, since the
             // Attendees page gives no stable upstream attendee ID.
             $table->char('content_hash', 64);
             $table->boolean('is_suppressed')->default(false);

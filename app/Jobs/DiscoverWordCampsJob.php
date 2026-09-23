@@ -10,10 +10,9 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Str;
 
 /**
- * Central event discovery (§5.3, fast-follow per §2.2, now built at the
+ * Central event discovery (fast-follow, now built at the
  * user's request). Every discovered event lands as a **draft** — nothing
- * goes live in the app without an admin approving it (§5.3, §9's
- * Events-Create). Re-running this never touches an event that already
+ * goes live in the app without an admin approving it. Re-running this never touches an event that already
  * exists (matched by source_site_url), so admin edits are never clobbered.
  */
 class DiscoverWordCampsJob implements ShouldQueue
@@ -22,7 +21,7 @@ class DiscoverWordCampsJob implements ShouldQueue
 
     /**
      * A seed list covering WordCamp's major regions — the discovery API
-     * has no global/unscoped query (§5.3's location-radius caveat), so
+     * has no global/unscoped query, so
      * broad coverage means searching many cities and unioning results.
      *
      * @var array<int, string>

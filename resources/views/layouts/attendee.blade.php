@@ -14,10 +14,14 @@
     <link rel="apple-touch-icon" href="{{ $event->logoUrl() ?? '/media/logo.png' }}">
     <link rel="manifest" href="{{ route('event.manifest', $event) }}">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     {{--
         Per-event branding as CSS custom properties, set server-side at
-        render time (§5.1, §3.2 BR2) — no client round trip, no flash of
-        unstyled content. Falls back to CampBuddy's own palette (§3.2 BR3)
+        render time — no client round trip, no flash of
+        unstyled content. Falls back to CampBuddy's own palette
         when an event hasn't set colors, via the ?? default here.
     --}}
     <style>
@@ -30,10 +34,12 @@
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell">
-    <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}">
-        {{ $slot }}
-    </div>
+    <div class="app-frame">
+        <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}">
+            {{ $slot }}
+        </div>
 
-    @include('attendee.partials.nav')
+        @include('attendee.partials.nav')
+    </div>
 </body>
 </html>

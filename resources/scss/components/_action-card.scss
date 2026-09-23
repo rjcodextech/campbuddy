@@ -1,0 +1,33 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    @include m.card-surface;
+    padding: v.$space-4;
+    text-align: left;
+
+    &--wide {
+        width: 100%;
+    }
+}
+
+.action-card__icon {
+    flex-shrink: 0;
+    font-size: 1.4rem;
+}
+
+.action-card__title {
+    display: block;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.action-card__desc {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 2px;
+}

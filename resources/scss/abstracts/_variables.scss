@@ -1,0 +1,54 @@
+// CampBuddy's own brand tokens — reused by tailwind.config.js's admin
+// theme so the admin panel and attendee app read as the same product
+// even though their component systems (Tailwind vs. hand-written
+// BEM/SCSS) are deliberately separate.
+
+// --- Colors (compile-time — mirrored as CSS custom properties in
+// base/_root.scss so JS-driven markup can read them via var(...)) ---
+$color-ink: #231f20;
+$color-paper: #fffaf4;
+$color-paper-soft: #fff0df;
+$color-muted: #6b625e;
+$color-line: #eadfd6;
+$color-peach: #ffe4c4;
+
+$color-maroon: #c33a19;
+$color-maroon-dark: #a12f14;
+$color-gold: #e39d1c;
+$color-navy: #0d2343;
+$color-teal: #049395;
+
+$color-danger: #b3261e;
+$color-success: #1f7a4d;
+
+// --- Type ---
+$font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+// --- Spacing scale ---
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 20px;
+$space-6: 24px;
+$space-8: 32px;
+
+// --- Radii & shadows ---
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 18px;
+$radius-full: 999px;
+
+$shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 32, 0.18);
+$shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
+
+// --- Layout ---
+// The attendee app is forced into a phone-width column at every viewport
+// size — on desktop it sits centered on a neutral backdrop rather than
+// stretching to fill the window, so it always reads as a mobile app.
+$app-frame-width: 428px;
+$topbar-height: 56px;
+$bottom-nav-height: 64px;
+
+// --- Breakpoints ---
+$bp-tablet: 640px;

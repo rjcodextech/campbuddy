@@ -1,0 +1,31 @@
+@use 'variables' as v;
+
+@mixin tablet {
+    @media (min-width: v.$bp-tablet) {
+        @content;
+    }
+}
+
+@mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@mixin focus-ring {
+    outline: 2px solid var(--maroon);
+    outline-offset: 2px;
+}
+
+@mixin card-surface {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: v.$radius-md;
+    box-shadow: v.$shadow-card;
+}

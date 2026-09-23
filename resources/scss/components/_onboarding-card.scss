@@ -1,0 +1,27 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// The inline "welcome / tell us about you" section on Home — replaces
+// what used to be a blocking <dialog> popup. Styled as an emphasized
+// card so it reads as the first thing to notice without blocking the
+// rest of Home underneath it.
+.onboarding-card {
+    @include m.card-surface;
+    border-top: 3px solid var(--maroon);
+    padding: v.$space-5;
+    margin-bottom: v.$space-5;
+}
+
+.onboarding-card__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    margin-top: v.$space-4;
+}
+
+.onboarding-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}

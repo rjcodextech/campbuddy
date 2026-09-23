@@ -1,0 +1,39 @@
+@use '../abstracts/variables' as v;
+
+.field {
+    display: block;
+    margin-bottom: v.$space-3;
+
+    > span {
+        display: block;
+        margin-bottom: v.$space-1;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--muted);
+    }
+}
+
+// Bare inputs/selects/textareas throughout the attendee app (onboarding,
+// Camp Card, People join form, My Day search) share this baseline
+// whether or not they sit inside a .field wrapper.
+#main-content,
+dialog {
+    input[type='text'],
+    input[type='url'],
+    input[type='date'],
+    input[type='search'],
+    input[type='email'],
+    select,
+    textarea {
+        width: 100%;
+        padding: v.$space-2 v.$space-3;
+        border-radius: v.$radius-sm;
+        border: 1px solid var(--line);
+        background: var(--paper);
+        color: var(--ink);
+    }
+
+    textarea {
+        resize: vertical;
+    }
+}

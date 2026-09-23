@@ -1,0 +1,25 @@
+// CampBuddy attendee app stylesheet — hand-written BEM, deliberately
+// separate from the admin panel's Tailwind + Alpine stack so neither
+// design system bleeds into the other.
+
+@use 'base/root';
+@use 'base/reset';
+@use 'base/global';
+
+@use 'layout/app-frame';
+@use 'layout/topbar';
+@use 'layout/bottom-nav';
+@use 'layout/section-head';
+
+@use 'components/buttons';
+@use 'components/card';
+@use 'components/action-card';
+@use 'components/progress';
+@use 'components/pill';
+@use 'components/field';
+@use 'components/checklist';
+@use 'components/schedule-item';
+@use 'components/camp-card';
+@use 'components/sponsor';
+@use 'components/onboarding-card';
+@use 'components/misc';

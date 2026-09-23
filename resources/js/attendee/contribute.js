@@ -1,7 +1,7 @@
-// Contribute (§3.9): a short, skippable question flow (CD1) that
+// Contribute: a short, skippable question flow (CD1) that
 // recommends curated WordPress Contributor Teams (CD2) with the full
 // plain-language explanation each one needs (CD3), plus the Quest tie-in
-// (CD4, §3.6 C3).
+// (CD4).
 
 import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
 import { setQuestComplete } from './db.js';
@@ -110,7 +110,7 @@ async function showTeamDetail(team, eventId, questId) {
 
   // CD4: opening a team's detail is "learning what one team does" —
   // mark the linked Quest complete directly by its real ID (from the
-  // server-embedded contribute-data, §9's Quest editor governs its text).
+  // server-embedded contribute-data, the Quest editor governs its text).
   if (questId) {
     await setQuestComplete(eventId, questId, true);
   }

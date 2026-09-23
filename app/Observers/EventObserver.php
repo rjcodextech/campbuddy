@@ -8,9 +8,8 @@ use App\Models\Event;
 class EventObserver
 {
     /**
-     * Branding auto-fetch runs once, when an event is first approved
-     * (§0.6, §3.2 BR4) — not on every save, and not on the daily
-     * ingestion schedule.
+     * Branding auto-fetch runs once, when an event is first approved —
+     * not on every save, and not on the daily ingestion schedule.
      */
     public function updated(Event $event): void
     {
