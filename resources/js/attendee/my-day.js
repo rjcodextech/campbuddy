@@ -1,7 +1,13 @@
 // My Day: Full Schedule + My Schedule, grouped by calendar day so
-// multi-day events never blur into one long list (MD1), session detail,
-// and the overlap warning (MD4) — bookmarking two overlapping sessions is
-// always allowed, this only ever warns, never blocks.
+// multi-day events never blur into one long list (MD1), and the overlap
+// warning (MD4) — bookmarking two overlapping sessions is always
+// allowed, this only ever warns, never blocks.
+//
+// Session detail is an inline accordion under the tapped session, not a
+// popup — no <dialog> anywhere in this module. Only one session's detail
+// is open at a time; expandedSessionId lives in this closure and is
+// threaded through every render so it survives a re-render triggered by
+// a filter/search/bookmark change instead of silently closing.
 
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
 import { offerReminder } from './push.js';
@@ -16,6 +22,7 @@ export async function renderMyDay(root) {
   const speakersById = new Map(speakers.map((s) => [s.id, s]));
 
   let bookmarkedIds = new Set((await getBookmarks(eventId)).map((b) => b.sessionId));
+  let expandedSessionId = null;
 
   const timed = sessions
     .filter((s) => s.starts_at)
@@ -75,6 +82,12 @@ export async function renderMyDay(root) {
     renderMine();
   }
 
+  function toggleExpand(sessionId) {
+    expandedSessionId = expandedSessionId === sessionId ? null : sessionId;
+    renderFull();
+    renderMine();
+  }
+
   function renderFull() {
     const filtered = timed.filter((s) => {
       const matchesDay = !activeDay || s.dayKey === activeDay;
@@ -86,7 +99,7 @@ export async function renderMyDay(root) {
     });
 
     renderGroupedByDay(fullListEl, filtered, 'No sessions match.');
-    wireItemInteractions(fullListEl, timed, speakersById, toggleBookmark, showDetail);
+    wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
   }
 
   function renderMine() {
@@ -97,7 +110,7 @@ export async function renderMyDay(root) {
       'Nothing saved yet — star a session in Full Schedule to add it here.',
       (s) => overlapsWithBookmarked(s, null)
     );
-    wireItemInteractions(mineListEl, timed, speakersById, toggleBookmark, showDetail);
+    wireItemInteractions(mineListEl, timed, toggleBookmark, toggleExpand);
   }
 
   function renderGroupedByDay(container, list, emptyMessage, overlapFn) {
@@ -115,18 +128,11 @@ export async function renderMyDay(root) {
         return `
           <div class="schedule-day">
             ${showHeadings ? `<p class="schedule-day-heading">${escapeHtml(dayLabelOf(dayItems[0].startMs))}</p>` : ''}
-            ${dayItems.map((s) => sessionItemHtml(s, speakersById, bookmarkedIds, overlapFn?.(s))).join('')}
+            ${dayItems.map((s) => sessionItemHtml(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId)).join('')}
           </div>
         `;
       })
       .join('');
-  }
-
-  function showDetail(session) {
-    renderSessionDetail(session, speakersById, bookmarkedIds.has(session.id), (starred) => {
-      const btn = document.querySelector(`[data-session-id="${session.id}"] .schedule-item__star`);
-      if (btn) toggleBookmark(session, btn);
-    });
   }
 
   searchEl.addEventListener('input', () => {
@@ -230,75 +236,88 @@ function setupChipFilter(elId, sessions, valuesOf) {
   return names;
 }
 
-function sessionItemHtml(session, speakersById, bookmarkedIds, overlapWarning) {
+function sessionItemHtml(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   const track = session.track_names?.[0] ?? '';
   const saved = bookmarkedIds.has(session.id);
+  const isOpen = expandedSessionId === session.id;
 
   return `
-    <div class="schedule-item" data-session-id="${session.id}">
-      <div class="schedule-item__time">${time}</div>
-      <div>
-        <button type="button" class="btn--link schedule-item__title" data-open-detail style="padding:0;text-align:left">${escapeHtml(session.title)}</button>
-        ${speakerNames ? `<div class="footer-note u-text-sm" style="margin:2px 0 0;text-align:left">${escapeHtml(speakerNames)}</div>` : ''}
-        ${track ? `<span class="schedule-item__track">${escapeHtml(track)}</span>` : ''}
-        ${session.session_type ? `<span class="schedule-item__type">${escapeHtml(session.session_type)}</span>` : ''}
-        ${overlapWarning ? `<div class="notice" style="margin-top:6px">Overlaps with ${escapeHtml(overlapWarning.title)}</div>` : ''}
+    <div class="schedule-item-row">
+      <div class="schedule-item" data-session-id="${session.id}">
+        <div class="schedule-item__time">${time}</div>
+        <div>
+          <button type="button" class="btn--link schedule-item__title" data-open-detail aria-expanded="${isOpen}" style="padding:0">
+            <span>${escapeHtml(session.title)}</span>
+            <svg class="schedule-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
+          </button>
+          ${speakerNames ? `<div class="footer-note u-text-sm" style="margin:2px 0 0;text-align:left">${escapeHtml(speakerNames)}</div>` : ''}
+          ${track ? `<span class="schedule-item__track">${escapeHtml(track)}</span>` : ''}
+          ${session.session_type ? `<span class="schedule-item__type">${escapeHtml(session.session_type)}</span>` : ''}
+          ${overlapWarning ? `<div class="notice" style="margin-top:6px">Overlaps with ${escapeHtml(overlapWarning.title)}</div>` : ''}
+        </div>
+        <button type="button" class="schedule-item__star ${saved ? 'schedule-item__star--saved' : ''}" aria-label="${saved ? 'Remove from My Day' : 'Save to My Day'}" aria-pressed="${saved}">★</button>
       </div>
-      <button type="button" class="schedule-item__star ${saved ? 'schedule-item__star--saved' : ''}" aria-label="${saved ? 'Remove from My Day' : 'Save to My Day'}" aria-pressed="${saved}">★</button>
+      <div class="schedule-item-detail" ${isOpen ? '' : 'hidden'}>
+        ${isOpen ? sessionDetailHtml(session, speakersById, saved) : ''}
+      </div>
     </div>
   `;
 }
 
-function wireItemInteractions(container, allSessions, speakersById, toggleBookmark, showDetail) {
-  container.querySelectorAll('.schedule-item').forEach((item) => {
+// The inline replacement for the old session-detail dialog — same
+// content (time, speakers + bios, slides/video links, save toggle),
+// just rendered under the session instead of over the whole screen.
+function sessionDetailHtml(session, speakersById, isSaved) {
+  const speakerList = (session.speaker_ids ?? []).map((id) => speakersById.get(id)).filter(Boolean);
+  const time = session.starts_at
+    ? new Date(session.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+    : 'Time TBA';
+
+  return `
+    <p class="schedule-item-detail__meta">${escapeHtml(time)}</p>
+
+    ${speakerList
+      .map(
+        (sp) => `
+          <div class="schedule-item-detail__speaker">
+            ${sp.avatar_url ? `<img src="${escapeAttr(sp.avatar_url)}" alt="" class="schedule-item-detail__speaker-avatar">` : ''}
+            <p class="schedule-item-detail__speaker-name">${escapeHtml(sp.name)}</p>
+          </div>
+          ${sp.bio_html ? `<div class="schedule-item-detail__bio">${sanitizeBio(sp.bio_html)}</div>` : ''}
+        `
+      )
+      .join('')}
+
+    ${
+      session.slides_url || session.video_url
+        ? `
+          <div class="schedule-item-detail__links">
+            ${session.slides_url ? `<a class="btn--link" href="${escapeAttr(session.slides_url)}" target="_blank" rel="noopener">Slides</a>` : ''}
+            ${session.video_url ? `<a class="btn--link" href="${escapeAttr(session.video_url)}" target="_blank" rel="noopener">Video</a>` : ''}
+          </div>
+        `
+        : ''
+    }
+
+    <div class="schedule-item-detail__actions">
+      <button type="button" class="btn btn--compact ${isSaved ? 'btn--ghost' : 'btn--primary'}" data-toggle-save>${isSaved ? 'Remove from My Day' : 'Save to My Day'}</button>
+    </div>
+  `;
+}
+
+function wireItemInteractions(container, allSessions, toggleBookmark, toggleExpand) {
+  container.querySelectorAll('.schedule-item-row').forEach((row) => {
+    const item = row.querySelector('.schedule-item');
     const session = allSessions.find((s) => s.id === Number(item.dataset.sessionId));
     if (!session) return;
 
-    item.querySelector('.schedule-item__star')?.addEventListener('click', () => toggleBookmark(session, item.querySelector('.schedule-item__star')));
-    item.querySelector('[data-open-detail]')?.addEventListener('click', () => showDetail(session));
+    const starBtn = item.querySelector('.schedule-item__star');
+    starBtn?.addEventListener('click', () => toggleBookmark(session, starBtn));
+    item.querySelector('[data-open-detail]')?.addEventListener('click', () => toggleExpand(session.id));
+    row.querySelector('[data-toggle-save]')?.addEventListener('click', () => toggleBookmark(session, starBtn));
   });
-}
-
-function renderSessionDetail(session, speakersById, isSaved, onToggle) {
-  const dialog = document.getElementById('session-detail');
-  const speakerList = (session.speaker_ids ?? []).map((id) => speakersById.get(id)).filter(Boolean);
-  const time = session.starts_at ? new Date(session.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' }) : 'Time TBA';
-
-  dialog.innerHTML = `
-    <div class="dialog-card">
-      <p class="badge">${escapeHtml(session.track_names?.[0] ?? 'Session')}</p>
-      <h2 style="margin:10px 0 4px">${escapeHtml(session.title)}</h2>
-      <p class="footer-note" style="margin:0;text-align:left">${escapeHtml(time)}</p>
-
-      ${speakerList.map((sp) => `
-        <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
-          ${sp.avatar_url ? `<img src="${escapeAttr(sp.avatar_url)}" alt="" style="width:44px;height:44px;border-radius:50%">` : ''}
-          <div>
-            <p style="margin:0;font-weight:700">${escapeHtml(sp.name)}</p>
-          </div>
-        </div>
-        ${sp.bio_html ? `<div class="u-text-sm" style="margin-top:8px;color:var(--muted)">${sanitizeBio(sp.bio_html)}</div>` : ''}
-      `).join('')}
-
-      ${session.slides_url ? `<p style="margin-top:12px"><a class="btn--link" href="${escapeAttr(session.slides_url)}" target="_blank" rel="noopener">Slides</a></p>` : ''}
-      ${session.video_url ? `<p style="margin-top:4px"><a class="btn--link" href="${escapeAttr(session.video_url)}" target="_blank" rel="noopener">Video</a></p>` : ''}
-
-      <div style="margin-top:18px;display:flex;justify-content:space-between">
-        <button type="button" class="btn btn--ghost" data-action="close">Close</button>
-        <button type="button" class="btn btn--primary" data-action="toggle-save">${isSaved ? 'Remove from My Day' : 'Save to My Day'}</button>
-      </div>
-    </div>
-  `;
-
-  dialog.querySelector('[data-action="close"]').addEventListener('click', () => dialog.close());
-  dialog.querySelector('[data-action="toggle-save"]').addEventListener('click', () => {
-    onToggle(!isSaved);
-    dialog.close();
-  });
-
-  dialog.showModal();
 }
 
 function showToast(message) {

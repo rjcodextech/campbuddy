@@ -29,15 +29,15 @@
     border-radius: v.$radius-full;
     background: var(--ink);
     color: #fff;
-    font-size: 0.85rem;
+    font-size: v.$font-size-sm;
     text-align: center;
     box-shadow: v.$shadow-raised;
 }
 
 .u-eyebrow {
     display: block;
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--brand-primary);

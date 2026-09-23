@@ -1,22 +1,20 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
 
 .btn {
+    @include m.pressable;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: v.$space-2;
-    padding: 11px v.$space-5;
+    padding: v.$space-3 v.$space-5;
     border-radius: v.$radius-sm;
-    font-weight: 700;
-    font-size: 0.92rem;
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-base;
     background: var(--paper);
     border: 1px solid var(--line);
     color: var(--ink);
     transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
-
-    &:active {
-        transform: translateY(1px);
-    }
 
     &--primary {
         background: var(--brand-primary);
@@ -35,8 +33,8 @@
     }
 
     &--compact {
-        padding: 7px v.$space-3;
-        font-size: 0.82rem;
+        padding: v.$space-2 v.$space-3;
+        font-size: v.$font-size-sm;
     }
 
     &--full {
@@ -48,7 +46,7 @@
         padding: 0;
         border: 0;
         background: none;
-        font-weight: 700;
+        font-weight: v.$font-weight-bold;
         color: var(--brand-primary);
         text-decoration: underline;
         text-underline-offset: 2px;

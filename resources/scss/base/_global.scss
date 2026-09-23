@@ -10,8 +10,13 @@ body {
     font-family: v.$font-sans;
     background: var(--paper-soft);
     color: var(--ink);
-    line-height: 1.5;
+    line-height: v.$line-height-body;
     -webkit-font-smoothing: antialiased;
+    // No flash of blue/grey on tap, no vertical rubber-banding past the
+    // top/bottom of the page — both read as "web page," not "app,"
+    // when left at browser defaults.
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
 }
 
 #main-content:focus {
@@ -31,20 +36,27 @@ h1,
 h2,
 h3 {
     font-weight: 800;
-    line-height: 1.2;
+    line-height: v.$line-height-heading;
     color: var(--ink);
 }
 
-// Native <dialog> elements — used for session detail, contributor team
-// detail, and the iOS install prompt. Styled once here rather than
-// per-caller.
+// Native <dialog> elements — used for the Contribute team detail, the
+// in-app browser, deal lead-capture, and the iOS install prompt (My
+// Day's session detail is deliberately NOT one of these — it's an
+// inline accordion, see resources/js/attendee/my-day.js). Styled once
+// here rather than per-caller, as a rounded paper surface (not a stark
+// white popup) so it reads as part of the app rather than a bolted-on
+// overlay.
 dialog {
     width: min(92vw, 420px);
     max-height: 85vh;
     overflow-y: auto;
-    border: none;
+    overscroll-behavior: contain;
+    border: 1px solid var(--line);
     border-radius: v.$radius-lg;
     padding: v.$space-6;
+    background: var(--paper);
+    color: var(--ink);
     box-shadow: v.$shadow-raised;
 
     &::backdrop {

@@ -8,25 +8,33 @@
 }
 
 .checklist__item {
+    @include m.pressable-subtle;
     display: flex;
     align-items: flex-start;
     gap: v.$space-3;
     @include m.card-surface;
     padding: v.$space-3 v.$space-4;
+    transition: transform 0.12s ease, border-color 0.15s ease;
 
+    // A muted label color reads as "done" without an opacity-fade
+    // dimming the checkbox and card border along with it — the row
+    // stays fully legible, just visually quieted.
     &--done {
-        opacity: 0.6;
+        .checklist__label {
+            color: var(--muted);
+        }
     }
 }
 
 .checklist__input {
-    margin-top: 3px;
+    margin-top: v.$space-1;
     width: 18px;
     height: 18px;
     accent-color: var(--brand-primary);
 }
 
 .checklist__label {
-    font-weight: 600;
+    font-weight: v.$font-weight-medium;
     color: var(--ink);
+    transition: color 0.15s ease;
 }

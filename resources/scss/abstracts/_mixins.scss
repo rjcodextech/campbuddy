@@ -23,6 +23,46 @@
     outline-offset: 2px;
 }
 
+// The tap/press micro-interaction shared by every interactive control
+// (buttons, chips, nav items, card-as-button rows) — a quick scale-down
+// on press, not the old translateY nudge, so it reads as a native app
+// button rather than a web link. Respects reduced-motion (§4.1, carried
+// forward from V1's existing hover-animation posture).
+//
+// Deliberately does NOT set `transition` itself: `transition` is a
+// shorthand, and a caller that also needs to transition e.g.
+// background-color must declare transform in that same shorthand list
+// or its declaration would silently replace this one instead of
+// merging with it. Every caller below includes `transform 0.1s ease`
+// (or equivalent) explicitly in its own transition line.
+@mixin pressable {
+    &:active {
+        transform: scale(0.95);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &:active {
+            transform: none;
+        }
+    }
+}
+
+// Same idea as pressable, but for large tap surfaces (grid cards, full
+// rows) — a 5% scale-down looks natural on a small chip/button but
+// jarring on something card-sized, so these get a gentler settle
+// instead. Same "declare your own transition" contract as pressable.
+@mixin pressable-subtle {
+    &:active {
+        transform: scale(0.985);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &:active {
+            transform: none;
+        }
+    }
+}
+
 @mixin card-surface {
     background: var(--paper);
     border: 1px solid var(--line);

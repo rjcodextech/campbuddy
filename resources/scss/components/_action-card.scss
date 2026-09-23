@@ -2,12 +2,14 @@
 @use '../abstracts/mixins' as m;
 
 .action-card {
+    @include m.pressable-subtle;
     display: flex;
     align-items: center;
     gap: v.$space-3;
     @include m.card-surface;
     padding: v.$space-4;
     text-align: left;
+    transition: transform 0.12s ease;
 
     &--wide {
         width: 100%;
@@ -21,13 +23,13 @@
 
 .action-card__title {
     display: block;
-    font-weight: 700;
+    font-weight: v.$font-weight-bold;
     color: var(--ink);
 }
 
 .action-card__desc {
     display: block;
-    font-size: 0.85rem;
+    font-size: v.$font-size-sm;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: v.$space-1;
 }

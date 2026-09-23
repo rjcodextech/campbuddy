@@ -27,8 +27,6 @@
         </div>
     </main>
 
-    <dialog id="session-detail"></dialog>
-
     <script type="application/json" id="my-day-data">{!! json_encode([
         'sessions' => $sessions,
         'speakers' => $speakers,

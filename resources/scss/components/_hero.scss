@@ -39,6 +39,7 @@
 .home-hero__title {
     font-size: v.$font-size-lg;
     font-weight: v.$font-weight-black;
+    line-height: v.$line-height-tight;
     color: var(--ink);
     margin: 0;
     overflow-wrap: anywhere;
@@ -47,5 +48,5 @@
 .home-hero__meta {
     font-size: v.$font-size-sm;
     color: var(--muted);
-    margin: 4px 0 0;
+    margin: v.$space-1 0 0;
 }

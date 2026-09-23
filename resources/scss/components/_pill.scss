@@ -1,17 +1,19 @@
 @use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
 
 .pill,
 .chip {
+    @include m.pressable;
     display: inline-flex;
     align-items: center;
-    padding: 6px v.$space-3;
+    padding: v.$space-2 v.$space-3;
     border-radius: v.$radius-full;
     border: 1px solid var(--line);
     background: var(--paper);
     color: var(--ink);
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .pill--hashtag {

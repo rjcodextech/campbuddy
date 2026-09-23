@@ -39,6 +39,13 @@ $font-weight-medium: 600;
 $font-weight-bold: 700;
 $font-weight-black: 800;
 
+// Line heights — tight for headings/labels, relaxed for body copy, so
+// paragraph text and stacked headings both read comfortably instead of
+// each element declaring its own ad hoc value.
+$line-height-tight: 1.15;
+$line-height-heading: 1.3;
+$line-height-body: 1.5;
+
 // --- Spacing scale ---
 $space-1: 4px;
 $space-2: 8px;

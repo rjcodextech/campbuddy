@@ -125,7 +125,7 @@
 
     .camp-card__label {
         display: inline-flex;
-        padding: 3px v.$space-3;
+        padding: v.$space-1 v.$space-3;
         border-radius: v.$radius-full;
         background: rgba(255, 255, 255, 0.16);
         opacity: 1;
@@ -138,8 +138,8 @@
 
 .camp-card__label {
     display: inline-block;
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     opacity: 0.75;
@@ -147,14 +147,15 @@
 }
 
 .camp-card__name {
-    font-size: 1.4rem;
-    font-weight: 800;
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-black;
+    line-height: v.$line-height-tight;
 }
 
 .camp-card__role {
-    font-size: 0.9rem;
+    font-size: v.$font-size-base;
     opacity: 0.85;
-    margin-top: 2px;
+    margin-top: v.$space-1;
 }
 
 .camp-card__tags {
@@ -166,15 +167,15 @@
 
 .camp-card__tag {
     display: inline-flex;
-    padding: 4px v.$space-3;
+    padding: v.$space-1 v.$space-3;
     border-radius: v.$radius-full;
     background: rgba(255, 255, 255, 0.16);
-    font-size: 0.78rem;
-    font-weight: 600;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
 
     &--placeholder {
         background: rgba(255, 255, 255, 0.1);
-        font-weight: 500;
+        font-weight: v.$font-weight-regular;
         opacity: 0.8;
     }
 }

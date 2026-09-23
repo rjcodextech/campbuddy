@@ -21,11 +21,23 @@
 .my-day-filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: v.$space-2;
     margin-bottom: v.$space-3;
 
     &:empty {
         display: none;
+    }
+}
+
+// Wraps one .schedule-item plus its (optional, collapsed-by-default)
+// .schedule-item-detail — the divider between sessions lives here now,
+// not on .schedule-item itself, since that's no longer reliably the
+// last element in the list once a detail panel can follow it.
+.schedule-item-row {
+    border-bottom: 1px solid var(--line);
+
+    &:last-child {
+        border-bottom: none;
     }
 }
 
@@ -35,30 +47,44 @@
     align-items: start;
     gap: v.$space-3;
     padding: v.$space-3 0;
-    border-bottom: 1px solid var(--line);
-
-    &:last-child {
-        border-bottom: none;
-    }
 }
 
 .schedule-item__time {
-    font-size: v.$font-size-sm;
-    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
     color: var(--muted);
     white-space: nowrap;
 }
 
 .schedule-item__title {
-    display: block;
-    font-size: v.$font-size-md;
+    display: flex;
+    align-items: center;
+    gap: v.$space-1;
+    width: 100%;
+    font-size: v.$font-size-base;
     font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-heading;
     color: var(--ink);
+}
+
+// Rotates to point up once the inline detail panel below it is open —
+// the only "is this expanded" affordance, since there's no dialog close
+// button to signal that state anymore.
+.schedule-item__chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+}
+
+[data-open-detail][aria-expanded='true'] .schedule-item__chevron {
+    transform: rotate(180deg);
 }
 
 .schedule-item__track {
     display: inline-block;
-    margin-top: 4px;
+    margin-top: v.$space-1;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-medium;
     color: var(--brand-primary);
@@ -66,7 +92,7 @@
 
 .schedule-item__type {
     display: inline-block;
-    margin-top: 4px;
+    margin-top: v.$space-1;
     margin-left: v.$space-2;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-medium;
@@ -74,11 +100,65 @@
 }
 
 .schedule-item__star {
+    @include m.pressable;
     font-size: v.$font-size-lg;
     color: var(--line);
     line-height: 1;
+    transition: transform 0.1s ease, color 0.15s ease;
 
     &--saved {
         color: var(--gold);
     }
+}
+
+// The inline expansion that replaced the session-detail popup — sits
+// directly under the tapped session, indented to align under its title
+// (64px time column + the gap between it and the title column).
+.schedule-item-detail {
+    padding: 0 0 v.$space-4 (64px + v.$space-3);
+}
+
+.schedule-item-detail__meta {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    margin: 0 0 v.$space-3;
+}
+
+.schedule-item-detail__speaker {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    margin-bottom: v.$space-2;
+}
+
+.schedule-item-detail__speaker-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.schedule-item-detail__speaker-name {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+}
+
+.schedule-item-detail__bio {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    line-height: v.$line-height-body;
+    margin: v.$space-1 0 v.$space-3;
+}
+
+.schedule-item-detail__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-4;
+    margin-bottom: v.$space-3;
+}
+
+.schedule-item-detail__actions {
+    margin-top: v.$space-2;
 }
