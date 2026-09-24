@@ -17,6 +17,8 @@
 // The attendee's own data (saved sessions, Quest progress, Camp Card) lives
 // in IndexedDB and is never touched.
 
+import { apiHeaders } from './api.js';
+
 const CHECK_EVERY_MS = 5 * 60 * 1000;
 const MIN_GAP_MS = 45 * 1000;
 const IDLE_MS = 30 * 1000;
@@ -88,7 +90,7 @@ async function check(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
   try {
     const response = await fetch(`/api/v1/events/${encodeURIComponent(slug)}/data-version?t=${Date.now()}`, {
       cache: 'no-store',
-      headers: { Accept: 'application/json' },
+      headers: apiHeaders(),
     });
     if (!response.ok) return;
     latest = (await response.json()).version;

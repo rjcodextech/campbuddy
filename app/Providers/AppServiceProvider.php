@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Rules\NotPrivateNetworkUrl;
+use App\Support\ApiClient;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -56,28 +57,32 @@ class AppServiceProvider extends ServiceProvider
             ],
         ]);
 
-        // Named on purpose: each limiter keeps its own counters. At a WordCamp
-        // most attendees share the venue wifi's one public IP, so a per-IP
-        // limit alone would throttle the whole room at once. Limits are per
-        // person where a request says who it is (a discovery owner token, a
-        // device id), with a far higher per-IP ceiling as the backstop.
-        RateLimiter::for('api-general', fn (Request $request) => Limit::perMinute(600)->by('api-general:'.$request->ip()));
+        // Named on purpose: each limiter keeps its own counters. Counted per
+        // phone (ApiClient::key) so a venue's shared wifi or a mobile network's
+        // shared address doesn't throttle everyone at once; the per-address
+        // limit is only a high backstop. Numbers: config/campbuddy.php.
+        RateLimiter::for('api-general', fn (Request $request) => $this->apiLimits($request, 'reads'));
+        RateLimiter::for('api-writes', fn (Request $request) => $this->apiLimits($request, 'writes', 'w'));
+        // Saving a morning's sessions is a quick burst: twice the write allowance.
+        RateLimiter::for('api-bookmarks', fn (Request $request) => $this->apiLimits($request, 'writes', 'b', 2));
+    }
 
-        RateLimiter::for('api-writes', function (Request $request) {
-            $token = $request->bearerToken();
+    /**
+     * @return array<int, Limit>
+     */
+    private function apiLimits(Request $request, string $kind, string $bucket = 'r', int $factor = 1): array
+    {
+        $limits = config('campbuddy.rate_limits');
+        $who = ApiClient::key($request);
+        $ip = $request->ip();
 
-            return $token
-                ? [
-                    Limit::perMinute(30)->by('api-writes:t:'.hash('sha256', $token)),
-                    Limit::perMinute(300)->by('api-writes:ip:'.$request->ip()),
-                ]
-                // Joining, deal leads: nothing identifies the person yet.
-                : [Limit::perMinute(120)->by('api-writes:anon:'.$request->ip())];
-        });
+        if ($who === null) {
+            return [Limit::perMinute($limits["anonymous_{$kind}"] * $factor)->by("api:{$bucket}:anon:{$ip}")];
+        }
 
-        RateLimiter::for('api-bookmarks', fn (Request $request) => [
-            Limit::perMinute(30)->by('api-bookmarks:d:'.sha1((string) $request->input('device_id', $request->ip()))),
-            Limit::perMinute(600)->by('api-bookmarks:ip:'.$request->ip()),
-        ]);
+        return [
+            Limit::perMinute($limits["device_{$kind}"] * $factor)->by("api:{$bucket}:who:{$who}"),
+            Limit::perMinute($limits["address_{$kind}"] * $factor)->by("api:{$bucket}:ip:{$ip}"),
+        ];
     }
 }

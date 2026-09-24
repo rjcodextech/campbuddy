@@ -7,15 +7,8 @@ import { track } from './analytics.js';
 import { kvGet, kvSet, setBookmark } from './db.js';
 import { isIos, isStandalone } from './platform.js';
 import { render } from './template.js';
+import { getDeviceId } from './device.js';
 
-function getDeviceId() {
-  let id = localStorage.getItem('campbuddy-device-id');
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem('campbuddy-device-id', id);
-  }
-  return id;
-}
 
 /**
  * Called right after a bookmark is saved. Returns true if a reminder was

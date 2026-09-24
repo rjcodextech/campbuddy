@@ -29,15 +29,19 @@ class AbuseLimitsTest extends TestCase
         ]));
     }
 
-    public function test_bookmark_writes_are_rate_limited(): void
+    public function test_bookmark_writes_are_rate_limited_per_phone(): void
     {
         $event = $this->event();
+        $phone = '11111111-1111-4111-8111-111111111111';
 
-        for ($i = 1; $i <= 30; $i++) {
-            $this->postJson(route('api.bookmarks.store', $event), ['device_id' => 'd1', 'session_id' => $i])->assertCreated();
+        // A quick burst of saving a morning's sessions is fine: twice the write allowance.
+        for ($i = 1; $i <= 80; $i++) {
+            $this->postJson(route('api.bookmarks.store', $event), ['device_id' => $phone, 'session_id' => $i])->assertCreated();
         }
 
-        $this->postJson(route('api.bookmarks.store', $event), ['device_id' => 'd1', 'session_id' => 31])->assertStatus(429);
+        $this->postJson(route('api.bookmarks.store', $event), ['device_id' => $phone, 'session_id' => 81])->assertStatus(429);
+        // Someone else on the same wifi isn't affected.
+        $this->postJson(route('api.bookmarks.store', $event), ['device_id' => '22222222-2222-4222-8222-222222222222', 'session_id' => 1])->assertCreated();
     }
 
     public function test_one_device_cannot_hold_unbounded_reminders(): void
