@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\EventTime;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
@@ -35,6 +36,23 @@ class WordCampRestClient
     public function __construct(string $siteUrl)
     {
         $this->baseUrl = rtrim($siteUrl, '/');
+    }
+
+    /**
+     * The site's time zone, from its REST index (`/wp-json/`): timezone_string,
+     * or gmt_offset when the site is set to a plain "UTC+5.5". Null if the
+     * index doesn't say.
+     */
+    public function fetchTimezone(): ?string
+    {
+        $index = Http::timeout(self::TIMEOUT_SECONDS)
+            ->acceptJson()
+            ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
+            ->get("{$this->baseUrl}/wp-json/")
+            ->throw()
+            ->json();
+
+        return is_array($index) ? EventTime::fromWordPress($index['timezone_string'] ?? null, $index['gmt_offset'] ?? null) : null;
     }
 
     /** @return array<int, array<string, mixed>> */

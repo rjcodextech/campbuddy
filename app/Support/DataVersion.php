@@ -24,6 +24,7 @@ class DataVersion
                 $event->ends_on?->toDateString(),
                 json_encode($event->info),
                 $event->logo_path,
+                $event->timezone,
                 (string) $event->offers()->max('updated_at'),
                 (string) $event->quests()->max('updated_at'),
             ];

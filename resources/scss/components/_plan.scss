@@ -566,3 +566,20 @@ dialog.meet-sheet {
 .convo__card {
     justify-self: start;
 }
+
+.convo__open {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--teal);
+}
+
+.convo__day {
+    justify-self: center;
+    padding: 2px v.$space-3;
+    border-radius: v.$radius-full;
+    background: var(--paper-soft);
+    font-size: 0.7rem;
+    font-weight: v.$font-weight-bold;
+    color: var(--muted);
+}

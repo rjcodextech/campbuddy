@@ -502,6 +502,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const mutualById = new Map((waves.mutual ?? []).map((m) => [m.discovery_id, m]));
   const pendingById = new Map((waves.pending ?? []).map((p) => [p.discovery_id, p]));
   const maxMessages = waves.max_messages ?? 3;
+  const chat = waves.chat ?? { open: false };
 
   const others = profiles
     .filter((p) => p.discovery_id !== mine.discoveryId)
@@ -537,10 +538,11 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
 
   const rerender = () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
-    onWave: () => waveAt(p, mine, eventSlug, rerender),
+    onWave: () => waveAt(p, mine, eventSlug, rerender, chat),
     convo: p.convo
       ? buildConvo(p.convo, {
           max: maxMessages,
+          chat,
           cardUrl: `/event/${eventSlug}/camp-card`,
           onSend: async (body) => {
             await apiMutate(eventSlug, `/discovery/${mine.discoveryId}/messages`, 'POST', { to: p.discovery_id, body }, mine.ownerToken);
@@ -566,6 +568,8 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
       met: met.map((p) => card(p, true)),
     })
   );
+
+  scheduleChatFlip(chat, rerender);
 
   el.querySelectorAll('[data-met-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -663,7 +667,7 @@ function matchCard(profile, isMet, eventId, { onWave = null, convo = null } = {}
  * 👋 Wave (or take a wave back). Waving asks for a first name only when the
  * profile is anonymous — it's shown to the other person only if they wave back.
  */
-async function waveAt(profile, mine, eventSlug, rerender) {
+async function waveAt(profile, mine, eventSlug, rerender, chat = { open: false }) {
   const base = `/discovery/${mine.discoveryId}/waves`;
 
   if (profile.wave === 'sent') {
@@ -682,11 +686,14 @@ async function waveAt(profile, mine, eventSlug, rerender) {
   const dialog = render('tpl-wave-sheet', {
     title: profile.name || `A match who's into ${(profile.common?.length ? profile.common : profile.fields.tags ?? []).slice(0, 2).join(' & ') || 'WordPress'}`,
     'name-field': !myName,
+    // Words only while the chat is open; a wave on its own works any time.
+    'message-field': Boolean(chat.open),
+    'closed-note': chat.open ? null : chatClosedText(chat),
   });
   document.body.appendChild(dialog);
 
   const nameEl = dialog.querySelector('#wave-name');
-  const messageEl = dialog.querySelector('#wave-message');
+  const messageEl = dialog.querySelector('#wave-message'); // absent while the chat is closed
   const errorEl = dialog.querySelector('[data-wave-error]');
   if (nameEl) nameEl.value = readSavedWaveName();
 
@@ -715,7 +722,7 @@ async function waveAt(profile, mine, eventSlug, rerender) {
 
     sendBtn.disabled = true;
     try {
-      const state = await apiMutate(eventSlug, base, 'POST', { to: profile.discovery_id, name: name || null, message: messageEl.value.trim() || null }, mine.ownerToken);
+      const state = await apiMutate(eventSlug, base, 'POST', { to: profile.discovery_id, name: name || null, message: messageEl?.value.trim() || null }, mine.ownerToken);
       if (name) saveWaveName(name);
       track('discovery_wave', { surface: 'explore' });
       close();
@@ -730,7 +737,7 @@ async function waveAt(profile, mine, eventSlug, rerender) {
   });
 
   dialog.showModal();
-  (nameEl && !nameEl.value ? nameEl : messageEl).focus();
+  (nameEl && !nameEl.value ? nameEl : messageEl ?? dialog.querySelector('[data-wave-send]')).focus();
 }
 
 // The name given with a wave, remembered on this device so it isn't retyped.
@@ -756,39 +763,58 @@ function saveWaveName(name) {
  * "Message 2 of 3 sent", waiting for their reply, or the limit reached with
  * a nudge to swap Camp Cards instead.
  */
-function buildConvo(convo, { max, cardUrl, onSend }) {
-  const mine = convo.messages?.filter((m) => m.mine) ?? [];
-  let myN = 0;
-  let theirN = 0;
+function buildConvo(convo, { max, chat, cardUrl, onSend }) {
+  const messages = convo.messages ?? [];
+  const days = [...new Set(messages.map((m) => m.day).filter(Boolean))].sort();
+  const multiDay = days.length > 1;
+  const counters = new Map();
 
-  const bubbles = (convo.messages ?? []).map((m) =>
-    render('tpl-convo-bubble', {
-      bubble: { class: { 'convo__bubble--mine': m.mine } },
-      text: m.body,
-      meta: m.mine ? `Message ${++myN} of ${max} · sent ✓` : `Their message ${++theirN} of ${max}`,
-    })
-  );
+  const bubbles = [];
+  let lastDay = null;
+  for (const m of messages) {
+    if (multiDay && m.day !== lastDay) {
+      bubbles.push(render('tpl-convo-day', { label: dayLabel(m.day) }));
+      lastDay = m.day;
+    }
+    const key = `${m.day}|${m.mine ? 'me' : 'them'}`;
+    const n = (counters.get(key) ?? 0) + 1;
+    counters.set(key, n);
+    bubbles.push(
+      render('tpl-convo-bubble', {
+        bubble: { class: { 'convo__bubble--mine': m.mine } },
+        text: m.body,
+        meta: m.mine ? `Message ${n} of ${max} · sent ✓` : `Their message ${n} of ${max}`,
+      })
+    );
+  }
 
+  const moreDaysLeft = chat.day_number && chat.days && chat.day_number < chat.days;
   let status = null;
   if (convo.kind === 'waiting') {
     status = '💬 They sent you a message — wave back to read it.';
   } else if (convo.kind === 'pending') {
     status = 'Waiting for them to wave back — then you can both see names and reply.';
+  } else if (!chat.open) {
+    status = chatClosedText(chat);
   } else if (convo.reason === 'waiting') {
-    status = `⏳ Sent. You can write again after they reply (${mine.length} of ${max} used).`;
+    status = `⏳ Sent. You can write again after they reply (${convo.mine} of ${max} used today).`;
   } else if (convo.reason === 'limit') {
-    status = `That's all ${max} of your messages. To keep in touch, share your Camp Card — or add them to your plan with + Meet.`;
+    status = `That's all ${max} of today's messages.${moreDaysLeft ? ' You get 3 more tomorrow.' : ''} To keep in touch, share your Camp Card — or add them to your plan with + Meet.`;
   }
 
-  const canSend = convo.kind === 'mutual' && convo.can_send;
+  const canSend = convo.kind === 'mutual' && chat.open && convo.can_send;
+  const next = (convo.mine ?? 0) + 1;
   const el = render('tpl-convo', {
-    hint: convo.kind === 'mutual' && bubbles.length === 0 ? `Agree where to meet — you each have ${max} short messages.` : null,
+    open: convo.kind === 'mutual' && chat.open
+      ? `🟢 Chat open until ${chat.closes_label} (event time)${chat.days > 1 ? ` · Day ${chat.day_number} of ${chat.days}` : ''} · ${max} messages each today`
+      : null,
+    hint: convo.kind === 'mutual' && chat.open && messages.length === 0 ? 'Agree where to meet — take turns, short and sweet.' : null,
     list: bubbles.length ? bubbles : null,
     composer: canSend,
-    label: canSend ? `Message ${mine.length + 1} of ${max}` : null,
-    input: canSend ? { attrs: { placeholder: `Message ${mine.length + 1} of ${max} — e.g. Meet at the sponsor hall?` } } : null,
+    label: canSend ? `Message ${next} of ${max} today` : null,
+    input: canSend ? { attrs: { placeholder: `Message ${next} of ${max} — e.g. Meet at the sponsor hall?` } } : null,
     status,
-    'card-link': convo.kind === 'mutual' && convo.reason === 'limit' ? { attrs: { href: cardUrl } } : null,
+    'card-link': convo.kind === 'mutual' && (convo.reason === 'limit' || chat.ended) ? { attrs: { href: cardUrl } } : null,
   });
 
   const form = el.querySelector('form');
@@ -819,4 +845,32 @@ function buildConvo(convo, { max, cardUrl, onSend }) {
   }
 
   return el;
+}
+
+/** Why the chat is closed and when it opens — in the event's own time. */
+function chatClosedText(chat) {
+  if (chat.opens_label) return `🌙 Chat is closed now. It opens ${chat.opens_label} (event time) — an hour before the first session.`;
+  if (chat.ended) return 'The event is over, so the chat is closed. Use Camp Cards to stay in touch.';
+  return 'The chat opens during the event, once its schedule is published.';
+}
+
+function dayLabel(ymd) {
+  const [y, m, d] = String(ymd).split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short' });
+}
+
+// Re-draw at the moment the chat opens or closes, so an app left open
+// never shows a send box after closing time (the server refuses it anyway).
+let chatFlipTimer = null;
+
+function scheduleChatFlip(chat, rerender) {
+  clearTimeout(chatFlipTimer);
+  const at = Date.parse(chat.open ? chat.closes_at : chat.opens_at ?? '');
+  if (!Number.isFinite(at)) return;
+
+  const wait = at - Date.now() + 1500;
+  // Long waits are left to the next visit (and the app's own refresh).
+  if (wait > 0 && wait < 12 * 60 * 60 * 1000) {
+    chatFlipTimer = setTimeout(rerender, wait);
+  }
 }

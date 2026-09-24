@@ -6,7 +6,9 @@ use App\Models\Event;
 use App\Models\FetchLog;
 use App\Services\WordCampNormalizer;
 use App\Services\WordCampRestClient;
+use App\Support\DataVersion;
 use App\Support\EventData;
+use App\Support\EventTime;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
@@ -57,8 +59,11 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
         $tierNames = $this->labels($client, 'sponsor_level', 'sponsor levels', $problems);
         $categoryNames = $this->labels($client, 'session_category', 'session categories', $problems);
 
+        $notes = [];
+        $zone = $this->resolveTimezone($client, $notes);
+
         try {
-            $sessions = $normalizer->normalizeSessions($client->fetchSessions(), $trackNames, $categoryNames);
+            $sessions = $normalizer->normalizeSessions($client->fetchSessions(), $trackNames, $categoryNames, $zone);
         } catch (Throwable $e) {
             Log::warning('FetchSpeakersSponsorsSessionsJob failed', [
                 'event_id' => $this->event->id,
@@ -98,8 +103,38 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
 
         $this->log(
             $problems === [] ? 'ok' : 'partial',
-            substr($summary.($problems === [] ? '' : ' — '.implode('; ', $problems)), 0, 500)
+            substr($summary.($problems === [] ? '' : ' — '.implode('; ', $problems)).($notes === [] ? '' : ' · Note: '.implode('; ', $notes)), 0, 500)
         );
+    }
+
+    /**
+     * The event's time zone, which gives session times their meaning. Kept
+     * as the admin set it (timezone_locked); otherwise read from the site's
+     * own REST index each run. If the site doesn't say, the last known zone
+     * stays — and if none was ever known, the app's (noted for the admin).
+     *
+     * @param  array<int, string>  $notes
+     */
+    private function resolveTimezone(WordCampRestClient $client, array &$notes): \DateTimeZone
+    {
+        if (! $this->event->timezone_locked) {
+            try {
+                $found = $client->fetchTimezone();
+
+                if ($found !== null && $found !== $this->event->timezone) {
+                    $this->event->forceFill(['timezone' => $found])->saveQuietly();
+                    DataVersion::forget($this->event->id);
+                }
+            } catch (Throwable) {
+                // Keep what we had; sessions still come through.
+            }
+        }
+
+        if (! EventTime::known($this->event)) {
+            $notes[] = 'time zone unknown — set it on the event page so session times are right';
+        }
+
+        return EventTime::zone($this->event);
     }
 
     /**

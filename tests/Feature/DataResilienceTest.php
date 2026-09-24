@@ -75,6 +75,8 @@ class DataResilienceTest extends TestCase
         foreach ($routes as $endpoint => $response) {
             $fakes[self::SITE."/wp-json/wp/v2/{$endpoint}*"] = $response;
         }
+        // The site's REST index: its time zone.
+        $fakes[self::SITE.'/wp-json/'] = Http::response(['timezone_string' => 'UTC', 'gmt_offset' => 0]);
 
         Http::fake($fakes);
     }

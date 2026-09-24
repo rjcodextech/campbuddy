@@ -24,9 +24,11 @@ class WordCampNormalizer
      * @param  array<int, string>  $categoryNames
      * @return array<int, array<string, mixed>>
      */
-    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = []): array
+    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = [], ?\DateTimeZone $zone = null): array
     {
-        return array_map(function (array $session) use ($trackNames, $categoryNames) {
+        $clock = $zone ? self::sessionClock($sessions, $zone) : null;
+
+        return array_map(function (array $session) use ($trackNames, $categoryNames, $zone, $clock) {
             $meta = is_array($session['meta'] ?? null) ? $session['meta'] : [];
             $trackIds = $this->ids($session['session_track'] ?? []);
             $categoryIds = $this->ids($session['session_category'] ?? []);
@@ -41,7 +43,7 @@ class WordCampNormalizer
                 'track_ids' => $trackIds,
                 'track_names' => $this->names($trackIds, $trackNames),
                 'category_names' => $this->names($categoryIds, $categoryNames),
-                'starts_at' => $startsAt > 0 ? gmdate('c', $startsAt) : null,
+                'starts_at' => $startsAt > 0 ? self::sessionInstant($startsAt, $zone, $clock) : null,
                 'duration_seconds' => $duration !== null && $duration > 0 ? $duration : null,
                 'session_type' => is_string($meta['_wcpt_session_type'] ?? null) ? $meta['_wcpt_session_type'] : null,
                 // What the talk is about — the one thing a first-timer needs to
@@ -188,5 +190,91 @@ class WordCampNormalizer
     private function decodeTitle(string $title): string
     {
         return html_entity_decode($title, ENT_QUOTES | ENT_HTML5);
+    }
+
+    /**
+     * WordCamp saves a session's time as the clock time at the venue, packed
+     * into a Unix timestamp as if that clock time were UTC ("10:00" in Jaipur
+     * is stored as 10:00 UTC). So the real moment is that clock time *in the
+     * event's zone*. $clock 'instant' is the other reading (a true UTC
+     * timestamp), used only when the site itself shows otherwise.
+     */
+    public static function sessionInstant(int $timestamp, ?\DateTimeZone $zone, ?string $clock = 'wall'): string
+    {
+        if ($zone === null) {
+            return gmdate('c', $timestamp);
+        }
+
+        if ($clock === 'instant') {
+            return (new \DateTimeImmutable('@'.$timestamp))->setTimezone($zone)->format('c');
+        }
+
+        return (new \DateTimeImmutable(gmdate('Y-m-d H:i:s', $timestamp), $zone))->format('c');
+    }
+
+    /**
+     * Double-checks which reading the site uses, against the time it shows
+     * for the same sessions (its session_date_time field, e.g. "10:00 am"):
+     * does that match the timestamp read as clock time ('wall', WordCamp's
+     * normal behaviour) or as a true UTC moment shown in the event's zone
+     * ('instant')? 'wall' unless the site clearly says otherwise.
+     *
+     * @param  array<int, array<string, mixed>>  $sessions  raw REST items
+     */
+    public static function sessionClock(array $sessions, \DateTimeZone $zone): string
+    {
+        $wall = 0;
+        $instant = 0;
+
+        foreach (array_slice($sessions, 0, 40) as $session) {
+            $timestamp = $session['meta']['_wcpt_session_time'] ?? null;
+            $shown = $session['session_date_time']['time'] ?? null;
+
+            if (! is_numeric($timestamp) || (int) $timestamp <= 0 || ! is_string($shown)) {
+                continue;
+            }
+
+            $minutes = self::minutesOfDay($shown);
+            if ($minutes === null) {
+                continue;
+            }
+
+            $asWall = (int) gmdate('G', (int) $timestamp) * 60 + (int) gmdate('i', (int) $timestamp);
+            $local = (new \DateTimeImmutable('@'.(int) $timestamp))->setTimezone($zone);
+            $asInstant = (int) $local->format('G') * 60 + (int) $local->format('i');
+
+            if ($asWall === $asInstant) {
+                continue; // a UTC event: both readings agree
+            }
+
+            $wall += (int) ($minutes === $asWall);
+            $instant += (int) ($minutes === $asInstant);
+        }
+
+        return $instant > $wall ? 'instant' : 'wall';
+    }
+
+    /** "10:00 am", "10:00 AM", "10.00", "22:00", "10h00" → minutes after midnight. */
+    private static function minutesOfDay(string $text): ?int
+    {
+        if (! preg_match('/(\d{1,2})\s*[:.h]\s*(\d{2})\s*([ap])?\.?\s*m?\.?/i', $text, $m)) {
+            return null;
+        }
+
+        $hour = (int) $m[1];
+        $minute = (int) $m[2];
+        $meridiem = strtolower($m[3] ?? '');
+
+        if ($hour > 23 || $minute > 59) {
+            return null;
+        }
+        if ($meridiem === 'p' && $hour < 12) {
+            $hour += 12;
+        }
+        if ($meridiem === 'a' && $hour === 12) {
+            $hour = 0;
+        }
+
+        return $hour * 60 + $minute;
     }
 }

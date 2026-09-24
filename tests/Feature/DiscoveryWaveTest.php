@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\DiscoveryWave;
 use App\Models\Event;
+use App\Support\EventData;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,7 +26,15 @@ class DiscoveryWaveTest extends TestCase
         $this->event = Event::withoutEvents(fn () => Event::create([
             'slug' => 'wc-test', 'display_name' => 'WordCamp Test 2026', 'source_site_url' => 'https://test.wordcamp.org/2026',
             'status' => 'active', 'is_visible' => true,
+            'starts_on' => '2026-10-10', 'ends_on' => '2026-10-10', 'timezone' => 'UTC',
         ]));
+        EventData::put($this->event->id, 'sessions', [
+            ['id' => 1, 'title' => 'Opening', 'starts_at' => '2026-10-10T09:00:00+00:00', 'duration_seconds' => 1800],
+            ['id' => 2, 'title' => 'Closing', 'starts_at' => '2026-10-10T17:00:00+00:00', 'duration_seconds' => 1800],
+        ]);
+
+        // Mid-event: the chat is open (08:00–18:30 UTC that day).
+        $this->travelTo(CarbonImmutable::parse('2026-10-10T12:00:00Z'));
     }
 
     /** @return array{id: string, token: string} */

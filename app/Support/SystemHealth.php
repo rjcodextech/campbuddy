@@ -32,6 +32,7 @@ class SystemHealth
             self::queueBacklog(),
             self::failedJobs(),
             ...self::eventsWithoutData(),
+            ...self::eventsWithoutTimezone(),
         ]));
     }
 
@@ -154,6 +155,32 @@ class SystemHealth
                 'title' => "{$event->display_name} has no schedule data yet",
                 'detail' => 'Attendees see an empty schedule and no sponsors. Open the event and use "Refresh now" — its Data health card shows what the WordCamp site answered.',
                 'fix' => 'php artisan campbuddy:ingest '.$event->slug,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Live events whose time zone isn't known: their session times, days and
+     * discovery chat hours would be read in the server's zone instead.
+     *
+     * @return array<int, array>
+     */
+    private static function eventsWithoutTimezone(): array
+    {
+        try {
+            $events = Event::where('status', 'active')->where('is_visible', true)->get(['id', 'display_name', 'slug', 'timezone']);
+        } catch (Throwable) {
+            return [];
+        }
+
+        return $events
+            ->reject(fn (Event $event) => EventTime::known($event))
+            ->map(fn (Event $event) => [
+                'level' => 'warning',
+                'title' => "{$event->display_name} has no time zone",
+                'detail' => 'Session times and the discovery chat hours use it. "Refresh now" reads it from the WordCamp site; or type it on the event page (e.g. Asia/Kolkata).',
+                'fix' => null,
             ])
             ->values()
             ->all();

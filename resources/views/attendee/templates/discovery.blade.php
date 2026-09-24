@@ -185,7 +185,9 @@
                 <input type="text" id="wave-name" maxlength="60" autocomplete="given-name" placeholder="Shown only if they wave back">
             </div>
 
-            <div>
+            <p class="meet-sheet__privacy" data-slot="closed-note"></p>
+
+            <div data-slot="message-field">
                 <label class="meet-sheet__label" for="wave-message">First message <span style="font-weight:400;color:var(--muted)">(optional · 1 of 3)</span></label>
                 <input type="text" id="wave-message" maxlength="140" placeholder="e.g. Coffee stand after the keynote?">
                 <p class="meet-sheet__privacy" style="margin-top:6px">You each get 3 short messages to agree where to meet — then swap Camp Cards.</p>
@@ -204,6 +206,7 @@
     taking turns — a way to agree where to meet, not a chat app. --}}
 <template id="tpl-convo">
     <div class="convo__inner">
+        <p class="convo__open" data-slot="open"></p>
         <p class="convo__hint" data-slot="hint"></p>
         <ol class="convo__list" data-slot="list"></ol>
         <form class="convo__composer" data-slot="composer">
@@ -214,6 +217,10 @@
         <p class="convo__status" data-slot="status"></p>
         <a class="btn btn--outline btn--compact convo__card" data-slot="card-link">📇 Share your Camp Card</a>
     </div>
+</template>
+
+<template id="tpl-convo-day">
+    <li class="convo__day" data-slot="label"></li>
 </template>
 
 <template id="tpl-convo-bubble">

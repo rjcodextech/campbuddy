@@ -13,6 +13,7 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Support\EventData;
+use App\Support\EventTime;
 use App\Support\SvgGuard;
 use Closure;
 use Illuminate\Http\RedirectResponse;
@@ -73,7 +74,7 @@ class EventController extends Controller
 
     public function store(StoreEventRequest $request): RedirectResponse
     {
-        $event = Event::create($request->validated());
+        $event = Event::create($this->withTimezone($request->validated(), null));
 
         return redirect()
             ->route('admin.events.edit', $event)
@@ -117,11 +118,49 @@ class EventController extends Controller
 
     public function update(UpdateEventRequest $request, Event $event): RedirectResponse
     {
-        $event->update($request->validated());
+        $zoneBefore = $event->timezone;
+        $event->update($this->withTimezone($request->validated(), $event));
+
+        // Session times depend on the zone: re-read them in the new one.
+        if ($event->timezone !== $zoneBefore && $event->status === 'active') {
+            try {
+                FetchSpeakersSponsorsSessionsJob::dispatch($event);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
 
         return redirect()
             ->route('admin.events.edit', $event)
             ->with('status', "Event \"{$event->display_name}\" updated.");
+    }
+
+    /**
+     * A time zone typed by an admin is theirs to keep (timezone_locked): the
+     * WordCamp site's own setting never overwrites it. Left blank, the zone
+     * is read from the site again on the next fetch.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function withTimezone(array $data, ?Event $event): array
+    {
+        if (! array_key_exists('timezone', $data)) {
+            return $data;
+        }
+
+        $zone = EventTime::normalize($data['timezone']);
+
+        if ($zone === null) {
+            // Unlocking keeps the last known zone until the next fetch reads the site's.
+            $data['timezone'] = $event?->timezone_locked ? null : $event?->timezone;
+            $data['timezone_locked'] = false;
+        } else {
+            $data['timezone'] = $zone;
+            $data['timezone_locked'] = true;
+        }
+
+        return $data;
     }
 
     public function destroy(Event $event): RedirectResponse

@@ -51,6 +51,10 @@ class DemoEventSeeder extends Seeder
             'source_site_url' => self::SITE,
             'starts_on' => today(),
             'ends_on' => today()->addDay(),
+            // The demo's times are generated in the app's own zone; locked so
+            // a fetch (of a site that doesn't exist) never changes it.
+            'timezone' => config('app.timezone', 'UTC'),
+            'timezone_locked' => true,
             'status' => 'active',
             'is_visible' => true,
             'info' => [

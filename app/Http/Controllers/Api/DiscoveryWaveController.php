@@ -7,6 +7,7 @@ use App\Models\DiscoveryMessage;
 use App\Models\DiscoveryProfile;
 use App\Models\DiscoveryWave;
 use App\Models\Event;
+use App\Support\ChatWindow;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,9 +24,13 @@ use Illuminate\Validation\ValidationException;
  *     can carry a first message; they can read it once they wave back.
  *   - Once both have waved, each sees the name the other gave, and they can
  *     exchange a few messages to agree where to meet:
- *       · at most three messages each (CampBuddy is a guide, not a chat app —
- *         after that they swap Camp Cards to keep in touch);
- *       · taking turns: you can't send again until the other person replies.
+ *       · only while the event is on — each day from an hour before its first
+ *         session to an hour after its last, in the event's time zone
+ *         (ChatWindow). Outside that, nobody can send, whatever their count;
+ *       · at most three messages each per event day (CampBuddy is a guide,
+ *         not a chat app — after that they swap Camp Cards);
+ *       · taking turns within the day: you can't send again until the other
+ *         person replies.
  *     Everyone else still sees the same anonymous cards as before.
  *
  * Every call acts as {discoveryId} and needs its owner token, like editing
@@ -64,8 +69,14 @@ class DiscoveryWaveController extends Controller
         }
 
         $message = $this->clean($data['message'] ?? null);
+        $window = ChatWindow::for($event);
 
-        DB::transaction(function () use ($me, $target, $event, $name, $message) {
+        // A wave is fine any time; words only while the chat is open.
+        if ($message !== null && $window->current() === null) {
+            throw ValidationException::withMessages(['message' => $this->closedMessage($window)]);
+        }
+
+        DB::transaction(function () use ($me, $target, $event, $name, $message, $window) {
             if (DiscoveryWave::where('from_profile_id', $me->id)->where('to_profile_id', $target->id)->lockForUpdate()->exists()) {
                 throw ValidationException::withMessages(['to' => 'You\'ve already waved — wait for them to wave back.']);
             }
@@ -82,7 +93,7 @@ class DiscoveryWaveController extends Controller
             ]);
 
             if ($message !== null) {
-                $this->sendChecked($me, $target, $event, $message);
+                $this->sendChecked($me, $target, $event, $message, $window);
             }
         });
 
@@ -109,7 +120,9 @@ class DiscoveryWaveController extends Controller
             throw ValidationException::withMessages(['to' => 'That attendee has left discovery.']);
         }
 
-        DB::transaction(function () use ($me, $target, $event, $body) {
+        $window = ChatWindow::for($event);
+
+        DB::transaction(function () use ($me, $target, $event, $body, $window) {
             // Locking both waves serialises two sends in the same conversation,
             // so a double tap can't slip past the turn or the limit.
             $waves = DiscoveryWave::where(fn ($q) => $q->where('from_profile_id', $me->id)->where('to_profile_id', $target->id))
@@ -121,7 +134,7 @@ class DiscoveryWaveController extends Controller
                 throw ValidationException::withMessages(['to' => 'You can message each other once you\'ve both waved.']);
             }
 
-            $this->sendChecked($me, $target, $event, $body);
+            $this->sendChecked($me, $target, $event, $body, $window);
         });
 
         return response()->json($this->state($me), 201);
@@ -143,14 +156,25 @@ class DiscoveryWaveController extends Controller
         return response()->json($this->state($me));
     }
 
-    /** Stores a message if the rules allow it; otherwise says why not. */
-    private function sendChecked(DiscoveryProfile $me, DiscoveryProfile $target, Event $event, string $body): void
+    /**
+     * Stores a message if the rules allow it right now; otherwise says why
+     * not. Checked against the clock at the moment of sending, so a phone
+     * left open past closing time can't slip one in.
+     */
+    private function sendChecked(DiscoveryProfile $me, DiscoveryProfile $target, Event $event, string $body, ChatWindow $window): void
     {
-        $rules = $this->rules($this->between($me->id, $target->id)->orderBy('id')->get(['from_profile_id']), $me->id, true);
+        $open = $window->current();
+
+        if ($open === null) {
+            throw ValidationException::withMessages(['body' => $this->closedMessage($window)]);
+        }
+
+        $today = $this->inWindow($this->between($me->id, $target->id)->orderBy('id')->get(['from_profile_id', 'created_at']), $open);
+        $rules = $this->rules($today, $me->id, true, true);
 
         if (! $rules['can_send']) {
             throw ValidationException::withMessages(['body' => match ($rules['reason']) {
-                'limit' => 'You\'ve sent all '.DiscoveryMessage::MAX_PER_PERSON.' messages — swap Camp Cards to keep talking.',
+                'limit' => 'You\'ve sent all '.DiscoveryMessage::MAX_PER_PERSON.' of today\'s messages — swap Camp Cards to keep talking.',
                 default => 'Wait for their reply before sending another message.',
             }]);
         }
@@ -163,17 +187,44 @@ class DiscoveryWaveController extends Controller
         ]);
     }
 
+    private function closedMessage(ChatWindow $window): string
+    {
+        $status = $window->status();
+
+        return match (true) {
+            $status['opens_label'] !== null => "Messages open during the event — next at {$status['opens_label']} (event time).",
+            $status['ended'] => 'The event is over, so messages are closed. Use Camp Cards to stay in touch.',
+            default => 'Messages open during the event, once its schedule is published.',
+        };
+    }
+
     /**
-     * Whose turn it is. $messages: this conversation, oldest first.
+     * The messages sent inside one day's window — the day's count and turn
+     * only look at these. Compared as absolute moments.
+     */
+    private function inWindow(Collection $messages, ?array $window): Collection
+    {
+        if ($window === null) {
+            return collect();
+        }
+
+        return $messages->filter(fn ($m) => $m->created_at !== null
+            && $m->created_at->gte($window['opens'])
+            && $m->created_at->lt($window['closes']))->values();
+    }
+
+    /**
+     * Whose turn it is. $messages: today's part of the conversation, oldest first.
      *
      * @return array{mine: int, theirs: int, can_send: bool, reason: ?string}
      */
-    private function rules(Collection $messages, int $meId, bool $mutual): array
+    private function rules(Collection $messages, int $meId, bool $mutual, bool $open): array
     {
         $mine = $messages->where('from_profile_id', $meId)->count();
         $lastIsMine = $messages->isNotEmpty() && $messages->last()->from_profile_id === $meId;
 
         $reason = match (true) {
+            ! $open => 'closed',
             $mine >= DiscoveryMessage::MAX_PER_PERSON => 'limit',
             ! $mutual => 'not_mutual',
             $lastIsMine => 'waiting',
@@ -198,6 +249,8 @@ class DiscoveryWaveController extends Controller
      */
     private function state(DiscoveryProfile $me): array
     {
+        $window = ChatWindow::for($me->event);
+        $open = $window->current();
         $activeIds = $this->active($me->event)->pluck('id')->flip();
 
         $sent = DiscoveryWave::where('from_profile_id', $me->id)->with('to:id,discovery_id')->get()
@@ -216,16 +269,19 @@ class DiscoveryWaveController extends Controller
             'mine' => $m->from_profile_id === $me->id,
             'body' => $m->body,
             'at' => $m->created_at?->toIso8601String(),
+            // The event day it was sent on, in the event's own time zone.
+            'day' => $m->created_at ? $window->localDay($m->created_at) : null,
         ])->all();
 
-        $mutual = $received->filter(fn ($w) => $sentTo->has($w->from_profile_id))->map(function ($w) use ($me, $thread, $publicMessages) {
+        $mutual = $received->filter(fn ($w) => $sentTo->has($w->from_profile_id))->map(function ($w) use ($me, $thread, $publicMessages, $open) {
             $list = $thread($w->from_profile_id);
 
             return [
                 'discovery_id' => $w->from->discovery_id,
                 'name' => $w->reveal_name ?: $w->from->publicCard()['name'],
                 'messages' => $publicMessages($list),
-                ...$this->rules($list, $me->id, true),
+                // Counts and turn are today's (the open window's) only.
+                ...$this->rules($this->inWindow($list, $open), $me->id, true, $open !== null),
             ];
         })->values();
 
@@ -240,6 +296,7 @@ class DiscoveryWaveController extends Controller
 
         return [
             'max_messages' => DiscoveryMessage::MAX_PER_PERSON,
+            'chat' => $window->status(),
             'sent' => $sent->pluck('to.discovery_id')->values()->all(),
             'received' => $waiting->pluck('from.discovery_id')->values()->all(),
             // They wrote something: "wave back to read it" — never the words.

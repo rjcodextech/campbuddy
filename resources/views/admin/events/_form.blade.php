@@ -22,6 +22,17 @@
                   :value="optional($event->ends_on)->toDateString()"
                   hint="Drives when attendee-discovery profiles expire." />
 
+    {{-- Blank = read from the WordCamp site on every fetch; typed = kept. --}}
+    <x-form.input name="timezone" label="Time zone" list="timezone-list"
+                  :value="$event->timezone_locked ? $event->timezone : ''"
+                  :placeholder="$event->timezone ? $event->timezone.' (from the WordCamp site)' : 'Read from the WordCamp site'"
+                  hint="Session times, event days and when the discovery chat opens all use this. Leave blank to use the WordCamp site's own setting." />
+    <datalist id="timezone-list">
+        @foreach (\DateTimeZone::listIdentifiers() as $zoneName)
+            <option value="{{ $zoneName }}"></option>
+        @endforeach
+    </datalist>
+
     <x-form.select name="status" label="Lifecycle status" required :value="$event->status ?? 'draft'"
                    :options="['draft' => 'Draft — not public', 'approved' => 'Approved — branding fetched', 'active' => 'Active — live in the app', 'archived' => 'Archived — read-only']"
                    hint="Only active, visible events appear to attendees." />
