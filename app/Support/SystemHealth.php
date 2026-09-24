@@ -84,7 +84,7 @@ class SystemHealth
             'level' => 'error',
             'title' => $last ? 'The scheduler stopped running '.Carbon::parse($last)->diffForHumans() : 'The scheduler has never run',
             'detail' => 'Without it nothing is refreshed on schedule: sessions, sponsors, the attendee list, reminders. Event pages now fetch missing or stale data themselves, but the cron job is still needed.',
-            'fix' => '* * * * * php '.base_path('artisan').' schedule:run >> /dev/null 2>&1   (one cPanel cron entry, every minute)',
+            'fix' => 'cPanel → Cron Jobs → Common Settings: "Once Per Minute (* * * * *)", and in Command put only: '.self::cronCommand(),
         ];
     }
 
@@ -157,5 +157,24 @@ class SystemHealth
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * The exact cron command for this server: the full path of the PHP that
+     * runs artisan here (cron's plain "php" is often a different, older one),
+     * then the scheduler. Only the command — cPanel asks for the timing in
+     * separate fields, and "* * * * *" pasted into the command is rejected.
+     */
+    public static function cronCommand(): string
+    {
+        $php = PHP_BINARY;
+
+        // Asked from a web request, PHP_BINARY can be the FPM/CGI server — not
+        // something cron can run.
+        if ($php === '' || preg_match('/fpm|cgi|httpd|apache/i', basename($php))) {
+            $php = 'php';
+        }
+
+        return $php.' '.base_path('artisan').' schedule:run >> /dev/null 2>&1';
     }
 }
