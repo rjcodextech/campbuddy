@@ -418,3 +418,74 @@ dialog.meet-sheet {
     font-size: 1.3rem;
     cursor: pointer;
 }
+
+// --- 👋 Waves on discovery matches -------------------------------------------
+.wave-btn {
+    min-height: 32px;
+    padding: 0 v.$space-3;
+    border: 1px solid var(--gold);
+    border-radius: v.$radius-full;
+    background: #fff8e8;
+    color: var(--ink);
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    cursor: pointer;
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.wave-btn--sent {
+    border-color: var(--line);
+    background: var(--paper-soft);
+    color: var(--muted);
+}
+
+.wave-btn--back {
+    border-color: var(--brand-primary);
+    background: var(--brand-primary);
+    color: #fff;
+}
+
+.person-card--waved-you {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(244, 166, 41, 0.25), v.$shadow-card;
+}
+
+.person-card--mutual {
+    border-color: var(--teal);
+    background: linear-gradient(135deg, #fff, #e8f7f6);
+}
+
+.person-card__waved-you {
+    margin: 0 0 v.$space-2;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}
+
+.person-card__message,
+.person-card__my-message {
+    margin: v.$space-2 0 0;
+    font-size: v.$font-size-sm;
+    overflow-wrap: anywhere;
+}
+
+.person-card__my-message {
+    color: var(--muted);
+    font-size: v.$font-size-xs;
+}
+
+.wave-sheet__emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--peach);
+    font-size: 1.6rem;
+}

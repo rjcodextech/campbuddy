@@ -466,15 +466,29 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     );
     el.querySelector('#edit-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, mine, options));
     el.querySelector('#leave-discovery-btn').addEventListener('click', () => leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, options));
+
+    // Home: say so when matches have waved and are waiting for a wave back.
+    apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken)
+      .then((state) => {
+        const n = (state?.received ?? []).length;
+        const link = el.querySelector('[data-track="home_discovery_explore_click"]');
+        if (n > 0 && link) link.textContent = `👋 ${n} ${n === 1 ? 'match wants' : 'matches want'} to meet you →`;
+      })
+      .catch(() => {});
     return;
   }
 
   let profiles = [];
   let offline = false;
+  let waves = { sent: [], received: [], mutual: [] };
 
   try {
-    const res = await apiGet(eventSlug, '/discovery');
+    const [res, waveState] = await Promise.all([
+      apiGet(eventSlug, '/discovery'),
+      apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken).catch(() => waves),
+    ]);
     profiles = res.data ?? [];
+    waves = waveState ?? waves;
   } catch {
     offline = true;
   }
@@ -482,28 +496,52 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const metHistory = await getMetHistory(eventId);
   const metIds = new Set(metHistory.map((m) => m.discoveryId));
   const myTags = new Set(mine.fields.tags);
+  const sent = new Set(waves.sent ?? []);
+  const received = new Set(waves.received ?? []);
+  const mutualById = new Map((waves.mutual ?? []).map((m) => [m.discovery_id, m]));
 
   const others = profiles
     .filter((p) => p.discovery_id !== mine.discoveryId)
-    .map((p) => ({ ...p, common: (p.fields.tags ?? []).filter((t) => myTags.has(t)) }));
+    .map((p) => {
+      const mutual = mutualById.get(p.discovery_id);
+      return {
+        ...p,
+        common: (p.fields.tags ?? []).filter((t) => myTags.has(t)),
+        wave: mutual ? 'mutual' : sent.has(p.discovery_id) ? 'sent' : received.has(p.discovery_id) ? 'received' : null,
+        revealed_name: mutual?.name ?? null,
+        their_message: mutual?.message ?? null,
+        my_message: mutual?.my_message ?? null,
+      };
+    });
   const notMet = others.filter((p) => !metIds.has(p.discovery_id));
-  // Named people first within each group — they're the ones you can find.
-  const byStrength = (a, b) => b.common.length - a.common.length || Number(Boolean(b.name)) - Number(Boolean(a.name));
-  const matches = notMet.filter((p) => p.common.length > 0).sort(byStrength);
-  const rest = notMet.filter((p) => p.common.length === 0).sort(byStrength);
+  // Whoever waved at you first, then named people — they're the ones you can find.
+  const byStrength = (a, b) => Number(b.wave === 'received') - Number(a.wave === 'received')
+    || b.common.length - a.common.length
+    || Number(Boolean(b.name)) - Number(Boolean(a.name));
+  const mutual = notMet.filter((p) => p.wave === 'mutual');
+  const matches = notMet.filter((p) => p.wave !== 'mutual' && (p.common.length > 0 || p.wave === 'received')).sort(byStrength);
+  const rest = notMet.filter((p) => p.wave !== 'mutual' && p.common.length === 0 && p.wave !== 'received').sort(byStrength);
   const met = others.filter((p) => metIds.has(p.discovery_id));
+
+  if (mutual.length > 0) track('discovery_mutual_view');
+
+  const card = (p, isMet) => matchCard(p, isMet, eventId, {
+    onWave: () => waveAt(p, mine, eventSlug, () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options)),
+  });
 
   el.replaceChildren(
     statusCard(mine),
     renderFragment('tpl-discovery-matches', {
       offline,
       empty: others.length === 0 && !offline,
+      'mutual-section': mutual.length > 0,
+      mutual: mutual.map((p) => card(p, false)),
       'matches-section': matches.length > 0,
-      matches: matches.map((p) => matchCard(p, false, eventId)),
+      matches: matches.map((p) => card(p, false)),
       'others-section': rest.length > 0,
-      others: rest.map((p) => matchCard(p, false, eventId)),
+      others: rest.map((p) => card(p, false)),
       'met-section': met.length > 0,
-      met: met.map((p) => matchCard(p, true, eventId)),
+      met: met.map((p) => card(p, true)),
     })
   );
 
@@ -533,7 +571,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet, eventId) {
+function matchCard(profile, isMet, eventId, { onWave = null } = {}) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -553,9 +591,21 @@ function matchCard(profile, isMet, eventId) {
     })
   );
 
+  const wave = profile.wave ?? null;
   const card = render('tpl-discovery-match', {
+    card: { class: { 'person-card--mutual': wave === 'mutual', 'person-card--waved-you': wave === 'received' } },
+    'waved-you': wave === 'received' && !isMet,
+    'their-message': profile.their_message ? `💬 “${profile.their_message}”` : null,
+    'my-message': profile.my_message ? `You said: “${profile.my_message}”` : null,
+    wave: isMet || wave === 'mutual' || !onWave
+      ? null
+      : {
+          text: { sent: '👋 Waved', received: '👋 Wave back' }[wave] ?? '👋 Wave',
+          class: { 'wave-btn--sent': wave === 'sent', 'wave-btn--back': wave === 'received' },
+          attrs: { 'aria-pressed': String(wave === 'sent'), title: wave === 'sent' ? 'Tap to take your wave back' : null },
+        },
     avatar: { attrs: { src: isWeb(profile.avatar_url) ? profile.avatar_url : '/media/illustrations/avatar.svg' } },
-    name: profile.name || 'Anonymous attendee',
+    name: profile.revealed_name || profile.name || 'Anonymous attendee',
     verified: Boolean(profile.on_attendee_list),
     profession: profession || null,
     'common-row': common.size > 0,
@@ -568,6 +618,8 @@ function matchCard(profile, isMet, eventId) {
     'met-btn': isMet ? null : { attrs: { 'data-met-id': profile.discovery_id } },
     'met-label': isMet,
   });
+
+  card.querySelector('.wave-btn')?.addEventListener('click', () => onWave?.());
 
   const meetBtn = card.querySelector('.meet-btn');
   if (isMet) {
@@ -584,4 +636,95 @@ function matchCard(profile, isMet, eventId) {
   }
 
   return card;
+}
+
+/**
+ * 👋 Wave (or take a wave back). Waving asks for a first name only when the
+ * profile is anonymous — it's shown to the other person only if they wave back.
+ */
+async function waveAt(profile, mine, eventSlug, rerender) {
+  const base = `/discovery/${mine.discoveryId}/waves`;
+
+  if (profile.wave === 'sent') {
+    try {
+      await apiMutate(eventSlug, `${base}/${profile.discovery_id}`, 'DELETE', null, mine.ownerToken);
+      track('discovery_wave_undo');
+      showToast('Wave taken back.');
+    } catch {
+      showToast("Couldn't reach the server — try again in a moment.");
+    }
+    rerender();
+    return;
+  }
+
+  const myName = mine.card?.name ?? mine.fields?.display_name ?? null;
+  const dialog = render('tpl-wave-sheet', {
+    title: profile.name || `A match who's into ${(profile.common?.length ? profile.common : profile.fields.tags ?? []).slice(0, 2).join(' & ') || 'WordPress'}`,
+    'name-field': !myName,
+  });
+  document.body.appendChild(dialog);
+
+  const nameEl = dialog.querySelector('#wave-name');
+  const messageEl = dialog.querySelector('#wave-message');
+  const errorEl = dialog.querySelector('[data-wave-error]');
+  if (nameEl) nameEl.value = readSavedWaveName();
+
+  const close = () => {
+    dialog.close();
+    dialog.remove();
+  };
+  dialog.querySelector('[data-wave-close]').addEventListener('click', close);
+  dialog.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    close();
+  });
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) close();
+  });
+
+  const sendBtn = dialog.querySelector('[data-wave-send]');
+  sendBtn.addEventListener('click', async () => {
+    const name = nameEl?.value.trim() ?? '';
+    if (!myName && name.length < 2) {
+      errorEl.textContent = 'Add your first name — they only see it if they wave back.';
+      errorEl.hidden = false;
+      nameEl.focus();
+      return;
+    }
+
+    sendBtn.disabled = true;
+    try {
+      const state = await apiMutate(eventSlug, base, 'POST', { to: profile.discovery_id, name: name || null, message: messageEl.value.trim() || null }, mine.ownerToken);
+      if (name) saveWaveName(name);
+      track('discovery_wave', { surface: 'explore' });
+      close();
+      const nowMutual = (state?.mutual ?? []).some((m) => m.discovery_id === profile.discovery_id);
+      showToast(nowMutual ? '🎉 You both waved — names revealed!' : 'Wave sent. If they wave back, you\'ll both see names.');
+      rerender();
+    } catch (error) {
+      sendBtn.disabled = false;
+      errorEl.textContent = error.userMessage ?? "Couldn't send — check your connection and try again.";
+      errorEl.hidden = false;
+    }
+  });
+
+  dialog.showModal();
+  (nameEl && !nameEl.value ? nameEl : messageEl).focus();
+}
+
+// The name given with a wave, remembered on this device so it isn't retyped.
+function readSavedWaveName() {
+  try {
+    return localStorage.getItem('campbuddy:wave-name') ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function saveWaveName(name) {
+  try {
+    localStorage.setItem('campbuddy:wave-name', name);
+  } catch {
+    // Retyped next time.
+  }
 }

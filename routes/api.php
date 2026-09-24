@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
 use App\Http\Controllers\Api\DataVersionController;
 use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\DiscoveryWaveController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\RosterController;
@@ -29,12 +30,16 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
         Route::get('/data-version', DataVersionController::class)->name('api.events.data-version');
 
         Route::get('/discovery', [DiscoveryController::class, 'index'])->name('api.discovery.index');
+        // Waves: only the profile's owner (bearer owner token) sees its own.
+        Route::get('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'index'])->name('api.discovery.waves.index');
 
         Route::middleware('throttle:api-writes')->group(function () {
             Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');
             Route::post('/discovery', [DiscoveryController::class, 'store'])->name('api.discovery.store');
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
+            Route::post('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'store'])->name('api.discovery.waves.store');
+            Route::delete('/discovery/{discoveryId}/waves/{targetId}', [DiscoveryWaveController::class, 'destroy'])->name('api.discovery.waves.destroy');
 
             Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');
         });

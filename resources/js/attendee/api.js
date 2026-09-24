@@ -11,10 +11,11 @@ function reportFailure(path, method, status) {
   track('api_error', { endpoint: path.split('?')[0].split('/')[1], method, status });
 }
 
-export async function apiGet(eventSlug, path) {
-  const res = await fetch(`/api/v1/events/${eventSlug}${path}`, {
-    headers: { Accept: 'application/json' },
-  });
+export async function apiGet(eventSlug, path, ownerToken = null) {
+  const headers = { Accept: 'application/json' };
+  if (ownerToken) headers.Authorization = `Bearer ${ownerToken}`;
+
+  const res = await fetch(`/api/v1/events/${eventSlug}${path}`, { headers });
 
   if (!res.ok) {
     reportFailure(path, 'GET', res.status);

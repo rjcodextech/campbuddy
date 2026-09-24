@@ -56,14 +56,28 @@ class AppServiceProvider extends ServiceProvider
             ],
         ]);
 
-        // Named on purpose. Two plain `throttle:N,M` middleware on one route share a
-        // single counter per IP, so every write counted twice and ate into the read
-        // budget — "10 writes a minute" was really about five. Each limiter now
-        // has its own key: 60 requests of any kind, and 10 writes, per IP per
-        // minute (routes/api.php). Behind venue wifi many attendees share one IP,
-        // so if writes get refused at a busy event, this is the number to raise.
-        RateLimiter::for('api-general', fn (Request $request) => Limit::perMinute(60)->by('api-general:'.$request->ip()));
-        RateLimiter::for('api-writes', fn (Request $request) => Limit::perMinute(10)->by('api-writes:'.$request->ip()));
-        RateLimiter::for('api-bookmarks', fn (Request $request) => Limit::perMinute(30)->by('api-bookmarks:'.$request->ip()));
+        // Named on purpose: each limiter keeps its own counters. At a WordCamp
+        // most attendees share the venue wifi's one public IP, so a per-IP
+        // limit alone would throttle the whole room at once. Limits are per
+        // person where a request says who it is (a discovery owner token, a
+        // device id), with a far higher per-IP ceiling as the backstop.
+        RateLimiter::for('api-general', fn (Request $request) => Limit::perMinute(600)->by('api-general:'.$request->ip()));
+
+        RateLimiter::for('api-writes', function (Request $request) {
+            $token = $request->bearerToken();
+
+            return $token
+                ? [
+                    Limit::perMinute(30)->by('api-writes:t:'.hash('sha256', $token)),
+                    Limit::perMinute(300)->by('api-writes:ip:'.$request->ip()),
+                ]
+                // Joining, deal leads: nothing identifies the person yet.
+                : [Limit::perMinute(120)->by('api-writes:anon:'.$request->ip())];
+        });
+
+        RateLimiter::for('api-bookmarks', fn (Request $request) => [
+            Limit::perMinute(30)->by('api-bookmarks:d:'.sha1((string) $request->input('device_id', $request->ip()))),
+            Limit::perMinute(600)->by('api-bookmarks:ip:'.$request->ip()),
+        ]);
     }
 }

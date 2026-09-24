@@ -105,9 +105,15 @@
 <template id="tpl-discovery-matches">
     <p class="notice" style="margin-top:10px" data-slot="offline">You're offline — matches will refresh when you're connected again.</p>
 
+    <div data-slot="mutual-section">
+        <p class="u-eyebrow" style="margin-top:20px">🎉 You both want to meet</p>
+        <p class="footer-note" style="text-align:left;margin:0 0 10px">You waved at each other, so you can see each other's names now. Nobody else can.</p>
+        <slot data-slot="mutual"></slot>
+    </div>
+
     <div data-slot="matches-section">
         <p class="u-eyebrow" style="margin-top:20px">Your best matches</p>
-        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. Say hi — start with what you have in common.</p>
+        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. <strong>👋 Wave</strong> at someone — if they wave back, you both see each other's names, even if you joined anonymously.</p>
         <slot data-slot="matches"></slot>
     </div>
 
@@ -125,7 +131,8 @@
 </template>
 
 <template id="tpl-discovery-match">
-    <article class="person-card">
+    <article class="person-card" data-slot="card">
+        <p class="person-card__waved-you" data-slot="waved-you">👋 Wants to meet you — wave back to swap names</p>
         <div class="person-card__head">
             <img class="person-card__avatar" alt="" width="52" height="52" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
             <div class="person-card__who">
@@ -138,6 +145,8 @@
         <p class="person-card__common" data-slot="common-row">You both: <strong data-slot="common"></strong></p>
         <div class="match-tags" data-slot="tags"></div>
         <p class="person-card__who-to-meet" data-slot="who-row">Wants to meet: <span data-slot="who"></span></p>
+        <p class="person-card__message" data-slot="their-message"></p>
+        <p class="person-card__my-message" data-slot="my-message"></p>
 
         <div class="person-card__actions">
             <a class="btn btn--compact btn--outline person-card__wporg" target="_blank" rel="noopener" data-track="discovery_profile_link_click" data-track-link-type="wporg" data-slot="wporg">
@@ -145,6 +154,7 @@
                 WordPress.org
             </a>
             <slot data-slot="links"></slot>
+            <button type="button" class="wave-btn" data-slot="wave"></button>
             <button type="button" class="meet-btn meet-btn--card" data-slot="meet"></button>
             <button type="button" class="btn btn--primary btn--compact person-card__met" data-slot="met-btn">I met them</button>
             <span class="person-card__met-label" data-slot="met-label">✓ Met</span>
@@ -154,4 +164,38 @@
 
 <template id="tpl-discovery-match-tag">
     <span class="match-tag" data-slot="tag"></span>
+</template>
+
+{{-- 👋 Wave at a match (people.js). An anonymous profile gives the name to
+    reveal — shown only if the other person waves back. --}}
+<template id="tpl-wave-sheet">
+    <dialog class="meet-sheet" aria-labelledby="wave-sheet-title">
+        <form class="meet-sheet__card" method="dialog">
+            <div class="meet-sheet__head">
+                <span class="wave-sheet__emoji" aria-hidden="true">👋</span>
+                <div class="meet-sheet__who">
+                    <p class="meet-sheet__eyebrow">Wave at this match</p>
+                    <h2 class="meet-sheet__name" id="wave-sheet-title" data-slot="title"></h2>
+                </div>
+                <button type="button" class="meet-sheet__close" data-wave-close aria-label="Close">×</button>
+            </div>
+            <p class="meet-sheet__sub" style="font-size:.875rem">If they wave back, you'll both see each other's names and messages. If not, nothing is revealed.</p>
+
+            <div data-slot="name-field">
+                <label class="meet-sheet__label" for="wave-name">Your first name</label>
+                <input type="text" id="wave-name" maxlength="60" autocomplete="given-name" placeholder="Shown only if they wave back">
+            </div>
+
+            <div>
+                <label class="meet-sheet__label" for="wave-message">Where to meet? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+                <input type="text" id="wave-message" maxlength="140" placeholder="e.g. By the coffee stand after the keynote">
+            </div>
+
+            <p class="meet-sheet__privacy" data-wave-error hidden style="color:var(--danger)"></p>
+
+            <div class="meet-sheet__actions">
+                <button type="button" class="btn btn--primary" data-wave-send>👋 Send wave</button>
+            </div>
+        </form>
+    </dialog>
 </template>

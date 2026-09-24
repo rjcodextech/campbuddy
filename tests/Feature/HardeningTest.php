@@ -50,7 +50,7 @@ class HardeningTest extends TestCase
 
     // ---- Rate limits -------------------------------------------------------
 
-    public function test_writes_are_limited_to_ten_a_minute_and_reads_do_not_use_that_budget(): void
+    public function test_joins_are_limited_per_ip_and_reads_do_not_use_that_budget(): void
     {
         $event = $this->event();
 
@@ -59,24 +59,41 @@ class HardeningTest extends TestCase
             $this->getJson("/api/v1/events/{$event->slug}/roster")->assertOk();
         }
 
-        for ($i = 1; $i <= 10; $i++) {
-            $this->postJson("/api/v1/events/{$event->slug}/discovery", $this->discoveryBody())
-                ->assertCreated();
+        // A whole venue shares one IP: a keynote's worth of people can join at once.
+        for ($i = 1; $i <= 120; $i++) {
+            $this->postJson("/api/v1/events/{$event->slug}/discovery", $this->discoveryBody())->assertCreated();
         }
 
-        $this->postJson("/api/v1/events/{$event->slug}/discovery", $this->discoveryBody())
-            ->assertStatus(429);
+        $this->postJson("/api/v1/events/{$event->slug}/discovery", $this->discoveryBody())->assertStatus(429);
+    }
+
+    public function test_one_person_is_limited_without_throttling_others_on_the_same_wifi(): void
+    {
+        $event = $this->event();
+        $join = fn () => $this->postJson("/api/v1/events/{$event->slug}/discovery", $this->discoveryBody())->json();
+        $busy = $join();
+        $calm = $join();
+
+        for ($i = 1; $i <= 30; $i++) {
+            $this->withToken($busy['owner_token'])
+                ->patchJson("/api/v1/events/{$event->slug}/discovery/{$busy['discovery_id']}", $this->discoveryBody())->assertOk();
+        }
+
+        $this->withToken($busy['owner_token'])
+            ->patchJson("/api/v1/events/{$event->slug}/discovery/{$busy['discovery_id']}", $this->discoveryBody())->assertStatus(429);
+
+        // Same IP, different person: unaffected.
+        $this->withToken($calm['owner_token'])
+            ->patchJson("/api/v1/events/{$event->slug}/discovery/{$calm['discovery_id']}", $this->discoveryBody())->assertOk();
     }
 
     public function test_the_overall_api_limit_still_applies(): void
     {
-        $event = $this->event();
-
-        for ($i = 0; $i < 60; $i++) {
-            $this->getJson("/api/v1/events/{$event->slug}/roster")->assertOk();
+        for ($i = 0; $i < 600; $i++) {
+            $this->getJson('/api/v1/health');
         }
 
-        $this->getJson("/api/v1/events/{$event->slug}/roster")->assertStatus(429);
+        $this->getJson('/api/v1/health')->assertStatus(429);
     }
 
     // ---- Push subscriptions (the server later POSTs to the endpoint) -------
