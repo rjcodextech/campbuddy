@@ -20,7 +20,7 @@
     <div class="empty-state">
         <img src="/media/illustrations/schedule.svg" alt="" width="160" height="120">
         <p class="empty-state__title">Your day is still empty</p>
-        <p class="empty-state__text">Tap the ☆ next to any session in Full Schedule to save it here. Tip: pick three or four, and leave room for the hallway track.</p>
+        <p class="empty-state__text">Tap the ☆ next to any session in Full schedule to save it here. Tip: pick three or four, and leave room for the hallway track.</p>
     </div>
 </template>
 

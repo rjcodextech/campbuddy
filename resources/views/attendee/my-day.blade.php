@@ -8,8 +8,8 @@
 
         {{-- MD1: two distinct views, not a blended filtered list. --}}
         <div role="tablist" aria-label="Schedule view" class="tab-strip">
-            <button type="button" class="btn btn--compact" data-view-tab="full" role="tab" aria-selected="true">Full Schedule</button>
-            <button type="button" class="btn btn--compact btn--outline" data-view-tab="mine" role="tab" aria-selected="false">My Schedule</button>
+            <button type="button" class="btn btn--compact" data-view-tab="full" role="tab" aria-selected="true">Full schedule</button>
+            <button type="button" class="btn btn--compact btn--outline" data-view-tab="mine" role="tab" aria-selected="false">My schedule</button>
         </div>
 
         <div data-view-panel="full">

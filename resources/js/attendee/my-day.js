@@ -1,4 +1,4 @@
-// My Day: Full Schedule + My Schedule, grouped by calendar day so
+// My Day: Full schedule + My schedule, grouped by calendar day so
 // multi-day events never blur into one long list (MD1), and the overlap
 // warning (MD4) — bookmarking two overlapping sessions is always
 // allowed, this only ever warns, never blocks.

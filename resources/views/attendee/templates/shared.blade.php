@@ -60,7 +60,7 @@
             <ol class="install-steps">
                 <li>Tap the Share button in Safari</li>
                 <li>Choose "Add to Home Screen"</li>
-                <li>Open CampBuddy from your home screen and bookmark again</li>
+                <li>Open CampBuddy from your home screen and star the session again</li>
             </ol>
             <button type="button" class="btn btn--primary btn--full" data-action="close">Got it</button>
         </div>

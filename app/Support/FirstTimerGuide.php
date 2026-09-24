@@ -174,7 +174,7 @@ class FirstTimerGuide
             ['term' => 'Core', 'meaning' => 'The WordPress software itself, as opposed to plugins and themes built on top of it.'],
             ['term' => 'Block editor (Gutenberg)', 'meaning' => 'The editor you use to build pages and posts out of "blocks". Gutenberg is the name of the project behind it.'],
             ['term' => 'Meetup', 'meaning' => 'A smaller, regular local WordPress gathering. Great for staying in touch with people you meet at WordCamp.'],
-            ['term' => 'Wapuu', 'meaning' => 'The cute, unofficial WordPress mascot. Many WordCamps make their own version — look for it on stickers and swag.'],
+            ['term' => 'Wapuu', 'meaning' => 'The cute WordPress mascot. Many WordCamps make their own version — look for it on stickers and swag.'],
             ['term' => 'Code of Conduct', 'meaning' => 'The rules everyone agrees to so the event is welcoming and safe for all. Organizers enforce it — reach out to them if anything feels wrong.'],
             ['term' => 'WordPress.tv', 'meaning' => 'Where many WordCamp talks are published after the event, so you can catch sessions you missed.'],
         ];

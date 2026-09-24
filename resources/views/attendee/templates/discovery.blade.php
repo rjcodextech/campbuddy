@@ -107,11 +107,11 @@
 
     <div data-slot="matches-section">
         <p class="u-eyebrow" style="margin-top:20px">Your best matches</p>
-        <p class="footer-note" style="text-align:left;margin:0 0 10px">Share at least one interest with you. Say hi — mention what you have in common.</p>
+        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. Say hi — start with what you have in common.</p>
         <slot data-slot="matches"></slot>
     </div>
 
-    <p class="footer-note" style="text-align:left;margin-top:16px" data-slot="empty">No one else has joined yet — check back as more people join. Sharing your Camp Card helps too!</p>
+    <p class="footer-note" style="text-align:left;margin-top:16px" data-slot="empty">No one else has joined yet — check back later as more attendees sign up. Sharing your Camp Card helps too!</p>
 
     <div data-slot="others-section">
         <p class="u-eyebrow" style="margin-top:20px">Also open to meet</p>

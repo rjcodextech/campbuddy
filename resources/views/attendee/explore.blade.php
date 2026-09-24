@@ -166,7 +166,7 @@
                     @endif
                 @endif
                 @if ($webUrl($info['code_of_conduct_url'] ?? null))
-                    <a class="useful-link" href="{{ $webUrl($info['code_of_conduct_url']) }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
+                    <a class="useful-link" href="{{ $webUrl($info['code_of_conduct_url']) }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of Conduct</span></span></a>
                 @endif
                 @if (!empty($info['nearby_venue_info']))
                     <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🗺</span><span><span class="useful-link__title">Nearby</span><span class="useful-link__desc">{{ $info['nearby_venue_info'] }}</span></span></div>

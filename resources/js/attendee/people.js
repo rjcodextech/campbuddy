@@ -231,7 +231,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
       if (selected.has(tag)) {
         selected.delete(tag);
       } else if (selected.size >= MAX_DISCOVERY_TAGS) {
-        showToast(`Pick up to ${MAX_DISCOVERY_TAGS} tags.`);
+        showToast(`Pick up to ${MAX_DISCOVERY_TAGS} interests.`);
         return;
       } else {
         selected.add(tag);

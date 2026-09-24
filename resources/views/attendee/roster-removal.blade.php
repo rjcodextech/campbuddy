@@ -7,8 +7,9 @@
         </div>
 
         <p class="footer-note" style="text-align:left">
-            {{ $event->display_name }}'s public Attendees page is opted into by you at checkout, and CampBuddy mirrors
-            it here. If you'd rather not appear, search your name below and remove yourself — no login needed.
+            You're on {{ $event->display_name }}'s public Attendees page because you chose to be listed when you
+            got your ticket, and CampBuddy shows the same list. If you'd rather not appear here, find your name
+            below and remove yourself — no login needed.
         </p>
 
         @if (session('status'))

@@ -34,7 +34,7 @@
     <dialog>
         <div class="dialog-card">
             <p style="font-weight:700;margin:0 0 4px" data-slot="title"></p>
-            <p class="footer-note" style="text-align:left;margin:0 0 14px">Share a few details and this deal will open right after — shared with the sponsor to process this deal.</p>
+            <p class="footer-note" style="text-align:left;margin:0 0 14px">Share a few details to unlock this deal. They go only to the sponsor, so they can process it.</p>
             <form data-lead-form>
                 @include('attendee.partials.form-field', ['id' => 'lead-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Priya Sharma', 'autocomplete' => 'name', 'maxlength' => 191, 'errorLine' => false])
                 @include('attendee.partials.form-field', ['id' => 'lead-email', 'name' => 'email', 'type' => 'email', 'label' => 'Email', 'required' => true, 'placeholder' => 'you@example.com', 'autocomplete' => 'email', 'inputmode' => 'email', 'maxlength' => 191, 'errorLine' => false])
