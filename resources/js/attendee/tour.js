@@ -71,11 +71,50 @@ export function initTour(root) {
     schedule();
   });
 
-  const hold = (on) => () => { held = on; schedule(); };
+  // Hovering with a mouse holds the current screen. (Touch has no "leave",
+  // so a tap mustn't count as hovering — it would pause the tour for good.)
+  const hold = (on) => (e) => {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    held = on;
+    schedule();
+  };
   root.addEventListener('pointerenter', hold(true));
   root.addEventListener('pointerleave', hold(false));
   root.addEventListener('focusin', hold(true));
   root.addEventListener('focusout', hold(false));
+
+  // Swipe the phone left/right to change screens, or tap its left/right
+  // half — like any photo gallery. Vertical moves are left to the page, so
+  // scrolling past the tour still works (touch-action: pan-y in the CSS).
+  const phone = root.querySelector('.tour__phone');
+  let startX = null;
+  let startY = null;
+
+  phone.addEventListener('pointerdown', (e) => {
+    startX = e.clientX;
+    startY = e.clientY;
+  });
+
+  phone.addEventListener('pointerup', (e) => {
+    if (startX === null) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startX = null;
+
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      show(index + (dx < 0 ? 1 : -1));
+    } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+      const box = phone.getBoundingClientRect();
+      show(index + (e.clientX > box.left + box.width / 2 ? 1 : -1));
+    } else {
+      return;
+    }
+
+    // They're driving it now: restart the timer from this screen.
+    schedule();
+  });
+
+  phone.addEventListener('pointercancel', () => { startX = null; });
 
   // Only runs (and only counts as watched) while it's on screen.
   new IntersectionObserver(([entry]) => {

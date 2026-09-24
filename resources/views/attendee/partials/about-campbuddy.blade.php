@@ -31,7 +31,7 @@
     <section class="about-tour" aria-labelledby="about-tour-heading">
         <div class="section-head">
             <h2 id="about-tour-heading" class="section-head__title">See it in action</h2>
-            <span class="section-head__desc">30 seconds, real screens</span>
+            <span class="section-head__desc">Real screens — swipe or tap the phone</span>
         </div>
 
         {{-- A short, silent "video" made of the app's real screens (tour.js):

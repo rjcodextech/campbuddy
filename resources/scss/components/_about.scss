@@ -117,6 +117,11 @@
 
 .tour__phone {
     flex-shrink: 0;
+    // Horizontal swipes change screens (tour.js); vertical ones still scroll the page.
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
     width: min(250px, 70vw);
     padding: 10px;
     border-radius: 34px;
@@ -147,6 +152,9 @@
         height: 100%;
         object-fit: cover;
         object-position: top;
+        // Dragging would otherwise pick up the picture instead of swiping.
+        pointer-events: none;
+        -webkit-user-drag: none;
     }
 }
 
