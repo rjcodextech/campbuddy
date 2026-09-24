@@ -164,4 +164,20 @@ class FirstTimerExperienceTest extends TestCase
                 ->assertSee('Continue on this computer');
         }
     }
+
+    public function test_every_camp_card_design_names_the_event_and_can_be_printed(): void
+    {
+        $event = $this->event();
+
+        $response = $this->get(route('event.camp-card', $event))->assertOk();
+
+        foreach (['classic', 'minimal', 'bold', 'split', 'badge', 'pass'] as $layout) {
+            $response->assertSee('data-print-card="'.$layout.'"', false)
+                ->assertSee('data-download-card="'.$layout.'"', false);
+        }
+
+        $this->assertSame(6, substr_count($response->getContent(), '<span class="camp-card__event-name">WordCamp Test 2026</span>'));
+        $this->assertSame(6, substr_count($response->getContent(), 'class="camp-card__scan"'));
+        $response->assertSee('600&nbsp;DPI', false);
+    }
 }

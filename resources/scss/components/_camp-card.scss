@@ -68,7 +68,17 @@
     margin-bottom: v.$space-2;
 }
 
-.camp-card-scroll__item .qr__actions {
+.camp-card-scroll__item // The centred layouts stack the event mark over its name.
+.camp-card--minimal,
+.camp-card--badge,
+.camp-card--pass {
+    .camp-card__event {
+        flex-direction: column;
+        gap: cc(6);
+    }
+}
+
+.qr__actions {
     margin-top: v.$space-3;
 }
 
@@ -174,6 +184,7 @@ body > div > img[width='1'][height='1'] {
 // a small white chip so it reads clearly against any of the 5 layouts'
 // backgrounds, light or dark, without per-layout color overrides.
 .camp-card__event-mark {
+    flex-shrink: 0;
     width: cc(32);
     height: cc(32);
     object-fit: contain;
@@ -181,7 +192,56 @@ body > div > img[width='1'][height='1'] {
     background: #fff;
     border: cc(1) solid rgba(0, 0, 0, 0.08);
     padding: cc(3);
+}
+
+// Which WordCamp this card is from — so a card shared later, or found in
+// a pocket a week after, still says where you met.
+.camp-card__event {
+    display: flex;
+    align-items: center;
+    gap: cc(8);
     margin-bottom: cc(12);
+}
+
+.camp-card__event-name {
+    font-family: v.$font-sans;
+    font-size: cc(10.5);
+    font-weight: v.$font-weight-bold;
+    line-height: 1.25;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    overflow-wrap: anywhere;
+}
+
+// "Hi, I'm" — the name-badge greeting. It and the tags push against the
+// free space around them, so name + role + tags sit centred in whatever
+// room the event header and QR footer leave, instead of hugging the top
+// with a gap below.
+.camp-card__hello {
+    margin-top: auto;
+    margin-bottom: cc(2);
+    font-family: v.$font-sans;
+    font-size: cc(11);
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+// "Scan to connect on LinkedIn" — says what the QR does.
+.camp-card__scan {
+    margin: 0;
+    font-family: v.$font-sans;
+    font-size: cc(11);
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.04em;
+    text-align: center;
+    line-height: 1.2;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .camp-card__name {
@@ -211,6 +271,7 @@ body > div > img[width='1'][height='1'] {
     flex-wrap: wrap;
     gap: cc(8);
     margin-top: cc(16);
+    margin-bottom: auto;
 }
 
 // Explicit line-height and padding (rather than letting the font decide)
@@ -516,6 +577,7 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__footer {
         background: v.$cc-charcoal;
+        color: #fff;
     }
 }
 
@@ -567,6 +629,18 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__event-mark-full {
         display: block;
+        max-height: cc(40);
+        margin-bottom: cc(10);
+    }
+
+    // A pass already says who it's for with its tier band — no greeting,
+    // which also leaves the room this busier layout needs.
+    .camp-card__hello {
+        display: none;
+    }
+
+    .camp-card__name {
+        margin-top: auto;
     }
 
     .camp-card__role {
@@ -608,4 +682,61 @@ body > div > img[width='1'][height='1'] {
     display: flex;
     flex-wrap: wrap;
     gap: v.$space-2;
+}
+
+.cc-print-note {
+    margin: v.$space-4 0 v.$space-5;
+    padding: v.$space-3;
+    border-radius: v.$radius-sm;
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+
+    strong {
+        color: var(--ink);
+    }
+}
+
+// --- Print / PDF ------------------------------------------------------
+// camp-card.js puts one card on this sheet and calls window.print(): the
+// card is printed by the browser itself, at exactly 3 × 5 in, so its text
+// and shapes stay vector (sharp at any size, and in a "Save as PDF" file),
+// with the QR drawn at print resolution. Off screen otherwise.
+.cc-print-sheet {
+    position: absolute;
+    top: 0;
+    left: -10000px;
+    width: 3in;
+    container-type: inline-size;
+    page: campcard;
+
+    .camp-card {
+        box-shadow: none;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+@page campcard {
+    size: 3in 5in;
+    margin: 0;
+}
+
+@media print {
+    body.cc-printing {
+        display: block;
+        min-height: 0;
+        background: #fff;
+
+        > *:not(.cc-print-sheet) {
+            display: none !important;
+        }
+    }
+
+    .cc-print-sheet {
+        position: static;
+        left: auto;
+    }
 }

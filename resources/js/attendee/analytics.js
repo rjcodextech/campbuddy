@@ -101,6 +101,7 @@ const EVENTS = {
   // Camp Card — never its content
   camp_card_save: [],
   camp_card_download: ['layout'],
+  camp_card_print: ['layout'],
   share: ['method', 'content_type', 'item_id'], // GA4 recommended event
   camp_card_export_error: ['action', 'layout'],
 

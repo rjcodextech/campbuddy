@@ -18,8 +18,12 @@
                     <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}">
                         <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
                         <div class="camp-card__body">
-                            <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png">
+                            <div class="camp-card__event">
+                                <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png">
+                                <span class="camp-card__event-name">{{ $event->display_name }}</span>
+                            </div>
                             <img src="{{ $event->logoUrl() ?? '/media/logo-wordmark.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full" data-fallback="/media/logo-wordmark.png">
+                            <p class="camp-card__hello">Hi, I'm</p>
                             <p class="camp-card__name"></p>
                             <p class="camp-card__role"></p>
                             <div class="camp-card__tags"></div>
@@ -28,6 +32,7 @@
                             <div class="camp-card__qr-frame">
                                 <canvas></canvas>
                             </div>
+                            <p class="camp-card__scan"></p>
                             <img src="/media/logo-wordmark.png" alt="CampBuddy" class="camp-card__brand-mark">
                         </div>
                         <div class="camp-card__tier-band" aria-hidden="true">
@@ -38,10 +43,17 @@
                     <div class="qr__actions">
                         <button type="button" class="btn btn--outline btn--compact" data-share-card="{{ $key }}">Share</button>
                         <button type="button" class="btn btn--outline btn--compact" data-download-card="{{ $key }}">Download</button>
+                        <button type="button" class="btn btn--outline btn--compact" data-print-card="{{ $key }}">Print / PDF</button>
                     </div>
                 </div>
             @endforeach
         </div>
+
+        <p class="cc-print-note">
+            <strong>Print quality:</strong> Download and Share give a 600&nbsp;DPI image (3&nbsp;×&nbsp;5&nbsp;in).
+            <strong>Print / PDF</strong> prints the card at exactly 3&nbsp;×&nbsp;5&nbsp;in with sharp text — choose
+            “Save as PDF” in the print dialog for a file a print shop can use.
+        </p>
 
         <details class="cc-editor" open id="cc-edit-details">
             <summary class="cc-editor__summary">

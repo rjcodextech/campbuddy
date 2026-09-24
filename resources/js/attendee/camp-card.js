@@ -22,16 +22,29 @@ const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
 const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
 const DEFAULT_QR_TARGET = 'linkedin';
 
-// Share/Download export a 3 × 5 in card at 300 DPI (900 × 1500 px). The
-// height follows from the card's 3:5 aspect ratio.
+// Share/Download export a 3 × 5 in card at 600 DPI (1800 × 3000 px) —
+// print-shop quality. The card is laid out at 300 DPI size (900 px wide)
+// and captured at 2×, so its design is identical to the on-screen one;
+// only the pixel density doubles. The height follows from the 3:5 shape.
 const PRINT_WIDTH_IN = 3;
-const PRINT_DPI = 300;
-const EXPORT_WIDTH_PX = PRINT_WIDTH_IN * PRINT_DPI;
+const LAYOUT_DPI = 300;
+const EXPORT_SCALE = 2;
+const PRINT_DPI = LAYOUT_DPI * EXPORT_SCALE;
+const EXPORT_WIDTH_PX = PRINT_WIDTH_IN * LAYOUT_DPI;
 
-// Pixel budget for the QR canvas: plenty for its ~104px on-screen size,
-// and enough to stay crisp across the ~310px it covers in the export.
+// Pixel budget for the QR canvas: plenty for its ~104px on-screen size;
+// in the export it covers ~310 layout px, i.e. ~620 real pixels at 2× —
+// drawn at that size directly so it's never scaled (and blurred) up.
 const QR_PREVIEW_PX = 320;
-const QR_EXPORT_PX = 720;
+const QR_EXPORT_PX = 720 * EXPORT_SCALE;
+
+// What "Scan to …" says under the QR, by where the QR points.
+const SCAN_LABELS = {
+  linkedin: 'Scan to connect on LinkedIn',
+  website: 'Scan to visit my website',
+  wordpressOrg: 'Scan for my WordPress.org profile',
+  twitter: 'Scan to follow me on X',
+};
 
 // What every card on screen currently shows — kept so an export can
 // repaint a clone of any card from the same content.
@@ -131,6 +144,10 @@ export async function renderCampCard() {
     document.getElementById('cc-edit-details').open = false;
     showToast('Camp Card saved.');
   });
+  document.querySelectorAll('[data-print-card]').forEach((btn) => {
+    btn.addEventListener('click', () => printCard(btn.dataset.printCard));
+  });
+
   document.querySelectorAll('[data-download-card]').forEach((btn) => {
     btn.addEventListener('click', () => downloadCard(btn.dataset.downloadCard));
   });
@@ -168,17 +185,24 @@ async function renderCardToCanvas(layout) {
 
   try {
     await paintCard(clone, shown.content, shown.qr, QR_EXPORT_PX);
+    forExport(clone);
 
     const { default: html2canvas } = await import('html2canvas');
-    return await html2canvas(clone, { backgroundColor: null, scale: 1, useCORS: true, logging: false });
+    return await html2canvas(clone, { backgroundColor: null, scale: EXPORT_SCALE, useCORS: true, logging: false });
   } finally {
     stage.remove();
   }
 }
 
+// On-screen hints never reach a file or a printer: the "Nothing chosen to
+// show yet" pill is for the person editing, not for the people they meet.
+function forExport(card) {
+  card.querySelectorAll('.camp-card__tag--placeholder').forEach((el) => el.remove());
+}
+
 // The PNG itself, stamped with its real DPI: canvas.toBlob() records none,
-// so without this an editor or print dialog would treat the 900 × 1500 px
-// image as 72 DPI (a 12.5 × 20.8 in print) instead of 3 × 5 in.
+// so without this an editor or print dialog would treat the 1800 × 3000 px
+// image as 72 DPI (a 25 × 41.7 in print) instead of 3 × 5 in.
 async function cardPngBlob(layout) {
   const canvas = await renderCardToCanvas(layout);
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
@@ -253,6 +277,44 @@ async function downloadCard(layout) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
+  }
+}
+
+// Print / PDF: the browser prints the card itself — not an image of it —
+// so text and shapes stay vector at any size, and "Save as PDF" gives a
+// file a print shop can use. One card on its own 3 × 5 in page (the
+// .cc-print-sheet rules in components/_camp-card.scss), QR at print size.
+async function printCard(layout) {
+  const btn = document.querySelector(`[data-print-card="${layout}"]`);
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Preparing…';
+
+  const sheet = document.createElement('div');
+  sheet.className = 'cc-print-sheet';
+  sheet.appendChild(cardElement(layout).cloneNode(true));
+  document.body.appendChild(sheet);
+
+  const cleanUp = () => {
+    document.body.classList.remove('cc-printing');
+    sheet.remove();
+    btn.disabled = false;
+    btn.textContent = original;
+  };
+
+  try {
+    await document.fonts?.ready;
+    await paintCard(sheet.firstElementChild, shown.content, shown.qr, QR_EXPORT_PX);
+    forExport(sheet.firstElementChild);
+
+    document.body.classList.add('cc-printing');
+    window.addEventListener('afterprint', cleanUp, { once: true });
+    track('camp_card_print', { layout });
+    window.print();
+  } catch {
+    cleanUp();
+    track('camp_card_export_error', { action: 'print', layout });
+    alert("Couldn't prepare the card for printing — try Download instead.");
   }
 }
 
@@ -555,9 +617,11 @@ function renderAllPreviews(card) {
   const isSample = !card?.name || !hasPrimaryLink;
   sampleNoteEl.hidden = !isSample;
 
-  const primaryUrl = !isSample
-    ? resolveLink(card.primaryLink, card[card.primaryLink]) ?? LINK_FIELDS.map((f) => resolveLink(f, card[f])).find(Boolean)
+  // The link the QR opens: the chosen one, else the first that's filled in.
+  const qrField = !isSample
+    ? [card.primaryLink, ...LINK_FIELDS].find((f) => f && resolveLink(f, card[f]))
     : null;
+  const primaryUrl = qrField ? resolveLink(qrField, card[qrField]) : null;
 
   // Same QR (same primary link) shared across every layout's canvas — no
   // need to regenerate the module grid per card, just redraw it 6 times.
@@ -567,7 +631,7 @@ function renderAllPreviews(card) {
     qr.make();
   }
 
-  shown = { content: cardContent(isSample ? SAMPLE_CARD : card), qr };
+  shown = { content: { ...cardContent(isSample ? SAMPLE_CARD : card), scan: SCAN_LABELS[qrField] ?? '' }, qr };
   repaintPreviews();
 
   // The tag trimming below measures text, so it has to be redone once the
@@ -618,6 +682,7 @@ function cardContent(display) {
 async function paintCard(card, content, qr, qrPixels = QR_PREVIEW_PX) {
   card.querySelector('.camp-card__name').textContent = content.name;
   card.querySelector('.camp-card__role').textContent = content.roleLine;
+  card.querySelector('.camp-card__scan').textContent = content.scan ?? '';
   card.querySelector('.camp-card__footer').hidden = !qr;
 
   paintTags(card, content.tags);
@@ -661,10 +726,15 @@ function paintTags(card, tags) {
   tagsEl.replaceChildren(...tags.map(pill));
 
   let visible = tags.length;
-  while (visible > 1 && body.scrollHeight > body.clientHeight + 1) {
+  const overflowing = () => body.scrollHeight > body.clientHeight + 1;
+  while (visible > 0 && overflowing()) {
     visible -= 1;
     tagsEl.replaceChildren(...tags.slice(0, visible).map(pill), pill(`+${tags.length - visible}`));
   }
+
+  // Not even a "+N" pill fits (a long name on a busy layout): no tags at
+  // all rather than a half-cut row running into the footer.
+  if (overflowing()) tagsEl.replaceChildren();
 }
 
 // Draws at whole pixels per module (so every module edge is crisp at any
