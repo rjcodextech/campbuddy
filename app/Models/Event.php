@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Jobs\FetchBrandingAssetsJob;
+use App\Jobs\FetchEventInfoJob;
+use App\Jobs\FetchSpeakersSponsorsSessionsJob;
+use App\Jobs\ParseAttendeeRosterJob;
 use App\Observers\EventObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -98,16 +102,112 @@ class Event extends Model
     }
 
     /**
+     * Live = approved or active. Both mean "an admin has accepted this
+     * event", and both need its branding, event information and (once active)
+     * schedule data to exist.
+     */
+    public function isLive(): bool
+    {
+        return in_array($this->status, ['approved', 'active'], true);
+    }
+
+    /**
+     * Queues everything a newly-live event needs so its pages aren't empty:
+     * branding (only what's missing — never over an admin upload), event
+     * information, and for an active event its schedule and attendee roster.
+     *
+     * Called whenever an event becomes live by ANY route — an admin approving
+     * or activating it, creating it as active, or the lifecycle sweep
+     * auto-publishing a draft — not only on the "approved" step, which the
+     * sweep skips entirely.
+     */
+    public function queueInitialIngest(): void
+    {
+        if ($this->logo_path === null || $this->favicon_path === null) {
+            FetchBrandingAssetsJob::dispatch($this, onlyMissing: true);
+        }
+
+        FetchEventInfoJob::dispatch($this);
+
+        if ($this->status === 'active') {
+            FetchSpeakersSponsorsSessionsJob::dispatch($this);
+
+            if (! $this->attendeeRoster()->exists()) {
+                ParseAttendeeRosterJob::dispatch($this);
+            }
+        }
+    }
+
+    /**
      * Never hotlinked — null falls back to CampBuddy's own
      * default branding at the view layer, not a broken image.
      */
     public function logoUrl(): ?string
     {
-        return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
+        return $this->brandingUrl($this->logo_path);
     }
 
     public function faviconUrl(): ?string
     {
-        return $this->favicon_path ? Storage::disk('public')->url($this->favicon_path) : null;
+        return $this->brandingUrl($this->favicon_path);
+    }
+
+    /**
+     * The best small, roughly-square mark for cards and avatars: the site icon
+     * (favicon) if there is one, otherwise the logo, otherwise null.
+     */
+    public function markUrl(): ?string
+    {
+        return $this->faviconUrl() ?? $this->logoUrl();
+    }
+
+    /**
+     * Saves a logo or favicon under branding/{id}/ and points the event at
+     * it, deleting any earlier file of that kind (including one with a
+     * different extension, e.g. logo.svg after a new logo.png).
+     */
+    public function storeBranding(string $kind, string $extension, string $contents): void
+    {
+        if (! in_array($kind, ['logo', 'favicon'], true)) {
+            throw new \InvalidArgumentException("Unknown branding kind \"{$kind}\".");
+        }
+
+        $disk = Storage::disk('public');
+        $directory = "branding/{$this->id}";
+        $path = "{$directory}/{$kind}.{$extension}";
+
+        $disk->put($path, $contents);
+
+        foreach ($disk->files($directory) as $existing) {
+            if ($existing !== $path && pathinfo($existing, PATHINFO_FILENAME) === $kind) {
+                $disk->delete($existing);
+            }
+        }
+
+        $this->update(["{$kind}_path" => $path]);
+    }
+
+    /**
+     * Root-relative public URL with a version stamp. Branding files are
+     * replaced in place (branding/1/logo.png stays the same path), so without
+     * the stamp a re-fetched or re-uploaded logo would keep showing the old
+     * one from browser, CDN and service-worker caches. The stamp is the file's
+     * own modification time, so it only changes when the file does.
+     */
+    private function brandingUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+
+        try {
+            $version = (int) $disk->lastModified($path);
+        } catch (\Throwable) {
+            $version = 0;
+        }
+
+        return $disk->url($path).($version > 0 ? '?v='.$version : '');
     }
 }

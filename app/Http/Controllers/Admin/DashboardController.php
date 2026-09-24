@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\Offer;
 use App\Models\OfferLead;
+use App\Support\CacheVersion;
 use Illuminate\View\View;
 
 /**
@@ -32,6 +33,8 @@ class DashboardController extends Controller
             'recentLeadCount' => OfferLead::where('created_at', '>=', now()->subDays(7))->count(),
             'recentEvents' => Event::latest('updated_at')->limit(6)->get(),
             'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
+            'lastPurge' => CacheVersion::last(),
+            'cloudflareConfigured' => filled(config('services.cloudflare.zone_id')) && filled(config('services.cloudflare.api_token')),
             'failedFetches' => FetchLog::with('event:id,display_name')
                 ->where('status', '!=', 'ok')
                 ->latest('fetched_at')

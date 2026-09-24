@@ -5,7 +5,7 @@
     and the event's own logo/name live prominently on Home's hero
     instead (and in Explore → Event Info). --}}
     <a href="{{ route('home') }}" class="brand">
-        <img src="/media/logo.svg" alt="CampBuddy home" class="brand__logo brand__logo--wordmark">
+        <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
     </a>
 
     <div class="topbar__actions">

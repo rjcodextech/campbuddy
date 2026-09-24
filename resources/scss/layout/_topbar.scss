@@ -26,7 +26,7 @@
     min-width: 0;
 }
 
-// The wordmark (public/media/logo.svg) is a wide lockup, not a square
+// The wordmark (public/media/logo-wordmark-sm.png) is a wide lockup, not a square
 // mark — sized by height with width left auto so it's never squished
 // into a square box (that was the original bug: a 3.37:1 wordmark
 // forced into a 1:1 frame). object-fit:contain is a safety net, not

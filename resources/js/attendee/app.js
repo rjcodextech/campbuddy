@@ -3,7 +3,9 @@
 // whichever screen's own module the page needs.
 
 import { initAnalytics } from './analytics.js';
+import { initCacheVersion } from './cache-version.js';
 import { initDesktopNotice } from './desktop-notice.js';
+import { initImageFallbacks } from './image-fallback.js';
 import { initInstallPrompt } from './install.js';
 
 // First, so data-track markup and error reporting are live before any
@@ -18,6 +20,13 @@ initInstallPrompt();
 // On every page (event pages and the WordCamp picker alike): points
 // laptop/desktop visitors at their phone.
 initDesktopNotice();
+
+// A logo that fails to load falls back to CampBuddy's icon, not a broken image.
+initImageFallbacks();
+
+// An admin's "Purge cache" reaches this device: saved page copies are dropped
+// and, if the app was left open, it reloads with fresh data.
+initCacheVersion();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

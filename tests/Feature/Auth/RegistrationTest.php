@@ -5,27 +5,27 @@ namespace Tests\Feature\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * There is deliberately no public sign-up: admin accounts are created with
+ * `php artisan db:seed --class=AdminUserSeeder`. This guards against the
+ * Breeze registration routes ever being switched back on.
+ */
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_screen_can_be_rendered(): void
+    public function test_there_is_no_registration_screen(): void
     {
-        $response = $this->get('/register');
-
-        $response->assertStatus(200);
+        $this->get('/register')->assertNotFound();
+        $this->get('/admin/register')->assertNotFound();
     }
 
-    public function test_new_users_can_register(): void
+    public function test_self_signup_cannot_create_an_account(): void
     {
-        $response = $this->post('/register', [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
+        $this->post('/register', ['name' => 'Eve', 'email' => 'eve@example.com', 'password' => 'password', 'password_confirmation' => 'password']);
+        $this->post('/admin/register', ['name' => 'Eve', 'email' => 'eve@example.com', 'password' => 'password', 'password_confirmation' => 'password']);
 
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseMissing('users', ['email' => 'eve@example.com']);
+        $this->assertGuest();
     }
 }

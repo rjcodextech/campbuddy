@@ -6,28 +6,44 @@ use App\Models\Event;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Per-event PWA manifest — install-to-home-screen picks up that event's
- * own name/icon, not a generic CampBuddy manifest. Color theming is a
- * single fixed CampBuddy palette across every event (see resources/scss
- * /base/_root.scss) — only the logo and display name vary per event.
+ * The PWA manifest. There is one product identity — "CampBuddy | Your
+ * WordCamp Companion", short name "CampBuddy", CampBuddy's own icon — on
+ * every page. Installing from an event's page still opens that event
+ * directly (start_url), but the name and icon on the home screen are always
+ * CampBuddy's: an event's own logo is rarely square, and an install prompt
+ * that changes name per page is confusing.
+ *
+ * Every URL here is a root-relative path, resolved by the browser against the
+ * manifest's own URL — so it stays correct whatever APP_URL says or which
+ * host/scheme the visitor arrived on.
  */
 class ManifestController extends Controller
 {
-    public function __invoke(Event $event): JsonResponse
+    public function __invoke(?Event $event = null): JsonResponse
     {
-        $icon = $event->logoUrl() ?? url('/media/icon.svg');
+        $pwa = config('campbuddy.pwa');
+        $startUrl = $event ? route('event.home', $event, absolute: false) : '/';
 
         return response()->json([
-            'name' => $event->display_name,
-            'short_name' => $event->short_name ?? $event->display_name,
-            'start_url' => route('event.home', $event),
-            'scope' => route('event.home', $event),
+            'id' => $startUrl,
+            'name' => $pwa['name'],
+            'short_name' => $pwa['short_name'],
+            'description' => $pwa['description'],
+            'lang' => 'en',
+            'start_url' => $startUrl,
+            // The whole origin, not just /event/{slug}: the WordCamp picker
+            // ("/") and every other event must stay inside the installed app
+            // rather than bouncing out to a browser tab.
+            'scope' => '/',
             'display' => 'standalone',
-            'background_color' => '#fffaf4',
-            'theme_color' => '#c33a19',
+            'background_color' => $pwa['background_color'],
+            'theme_color' => $pwa['theme_color'],
+            'categories' => ['events', 'productivity', 'social'],
             'icons' => [
-                ['src' => $icon, 'sizes' => 'any', 'type' => 'image/svg+xml'],
+                ['src' => '/media/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => '/media/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
+                ['src' => '/media/icons/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
             ],
-        ])->header('Content-Type', 'application/manifest+json');
+        ], 200, ['Content-Type' => 'application/manifest+json'], JSON_UNESCAPED_SLASHES);
     }
 }

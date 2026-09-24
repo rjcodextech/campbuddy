@@ -11,6 +11,7 @@
 
 import { track } from './analytics.js';
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
+import { setSectionTitle } from './page-title.js';
 import { offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
@@ -217,6 +218,7 @@ function setupTabs() {
       document.querySelectorAll('[data-view-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.viewPanel !== btn.dataset.viewTab;
       });
+      setSectionTitle(btn.textContent.trim());
       track('schedule_view_switch', { view: btn.dataset.viewTab });
     });
   });

@@ -7,7 +7,8 @@ One Laravel app, one deploy — no more static-PWA-plus-separate-backend split:
 ```
 /                        Laravel app root (repo root = Laravel app root)
   /public/               Docroot. Vite-built, hashed assets (app.css, app.js bundles),
-                          manifest.webmanifest, sw.js, icons. On shared hosting, this is
+                          sw.js, PNG icons (media/icons/). The PWA manifest is a route
+                          (ManifestController), not a file. On shared hosting, this is
                           what the domain actually points at (§12 documents the standard
                           Laravel-on-shared-hosting docroot workaround).
   /resources/views/      Blade views — attendee pages (Home, My Day, Camp Quest,
@@ -64,6 +65,16 @@ Laravel Scheduler (daily, offset from the roster job):
 
 For more than one active event, jobs run **sequentially with a cooldown between events**, never concurrently against multiple upstream sites.
 
+> **Current implementation note (making ingestion actually run and stay filled — reliability pass):**
+>
+> - **The scheduler works the queue off.** Every job above is *dispatched* onto the database queue, and shared/cPanel hosting has no long-running worker — so previously nothing was ever processed (no branding, no refreshed schedules) unless a `campbuddy:ingest` was run by hand. `routes/console.php` now ends with a `work-queue` task: once a minute, after the dispatching tasks have queued their work, it runs `queue:work --stop-when-empty --max-time=50` *in the same process* (`Artisan::call`, not a spawned command — hosts often disable `proc_open`). It is skipped on the `sync` connection. If a real worker (Supervisor) exists, this is harmless.
+> - **Going live by any route triggers the first fetch.** `EventObserver` calls `Event::queueInitialIngest()` whenever an event becomes *approved or active* from a non-live state, or is created that way: branding (`onlyMissing` — never over an admin upload), event information, and for `active` the sessions/speakers/sponsors and (if none yet) the roster. Previously this keyed on the "approved" step only, which `EvaluateEventLifecycleJob` skips (draft → active directly) — so auto-published events never got a logo or event info. Queueing errors are reported, never thrown at the admin's save.
+> - **Daily branding backfill** (02:30): live events still missing a logo or favicon get `FetchBrandingAssetsJob(onlyMissing: true)` again.
+> - **Roster: midnight, and a true mirror.** `ingest-attendee-roster` runs `dailyAt('00:00')` in the app timezone (`APP_TIMEZONE`, default UTC). After upserting, `ParseAttendeeRosterJob` deletes rows whose attendee is no longer on the source page — never suppressed rows (IN5), and never on an empty scrape.
+> - **Last-known-good for two weeks.** The ingested lists live in the application cache (`event:{id}:{sessions,speakers,sponsors,organizers}`) with a 14-day TTL (was 2 days, which a missed weekend of runs could exhaust and blank a live event).
+> - **Cold-cache self-heal.** `EventPageController::cached()` treats a missing key as "never fetched / expired": the page renders empty once and a `FetchSpeakersSponsorsSessionsJob` is queued, at most once per event per 5 minutes (`Cache::add` guard).
+> - **Manual admin buttons run now.** "Refresh now" and "Re-fetch branding" execute synchronously (like "Fetch latest" already did) and report the result on the redirect, instead of queuing into a worker that might not exist.
+> - **Sources are treated as untrusted.** `WordCampNormalizer` only lets `http(s)` URLs through as links/iframe targets (a `javascript:` sponsor website would otherwise run in CampBuddy's origin) and tolerates missing `meta` keys (previously one missing key aborted an event's whole ingestion). Fetched/uploaded SVG logos containing scripts are refused (`App\Support\SvgGuard`).
 ## 5.3 Central event discovery
 
 > **Current implementation note — supersedes most of this section as originally written.** The original plan below queried `api.wordpress.org/events/1.0/`, a location/radius "events near X" API with no flat global query, requiring a seeded search across dozens of cities to approximate global coverage. **What actually shipped instead:** `WordCampDiscoveryScraper` reads `events.wordpress.org`'s own upcoming in-person WordCamps listing directly — a JS-rendered filter page with no public JSON endpoint, but which embeds the complete dataset server-side as a `globalEventsPayload["eventsN"] = {...}` assignment (extracted via regex, matched generically since the `N` suffix varies per request). This is a complete, non-seeded list — a strict improvement, and the seed-location approach described below was removed entirely (`WordPressEventsClient` was deleted). Runs every 2 days (`0 3 */2 * *` — Laravel's scheduler has no native "every N days," so this is a day-of-month step, not a rolling 48-hour timer). Every discovered event still lands as an **admin approval queue** draft — nothing auto-publishes from discovery alone; auto-publishing is a separate, narrower rule (below).

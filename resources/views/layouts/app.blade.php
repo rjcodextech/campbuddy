@@ -24,9 +24,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="noindex, nofollow">
 
-        <title>{{ $pageTitle }} — {{ config('app.name') }} Admin</title>
+        <title>{{ $pageTitle }} | {{ config('campbuddy.name') }} Admin</title>
 
-        <link rel="icon" href="/media/favicon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -48,7 +48,7 @@
                    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col bg-navy transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0">
                 <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-                        <img src="/media/icon.svg" alt="" class="h-8 w-8 shrink-0 rounded-lg">
+                        <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
                         <span class="leading-tight">
                             <span class="block text-sm font-semibold text-white">{{ config('app.name') }}</span>
                             <span class="block text-[11px] font-medium uppercase tracking-[0.15em] text-white/50">Admin</span>
@@ -122,7 +122,7 @@
                             x-on:click="sidebarOpen = true" aria-controls="admin-sidebar" x-bind:aria-expanded="sidebarOpen.toString()" aria-label="Open menu">
                         <x-icon name="menu" class="h-6 w-6" />
                     </button>
-                    <img src="/media/icon.svg" alt="" class="h-7 w-7 rounded-md">
+                    <img src="/media/icons/icon-192.png" alt="" class="h-7 w-7 rounded-md">
                     <span class="text-sm font-semibold">{{ config('app.name') }} Admin</span>
                 </div>
 

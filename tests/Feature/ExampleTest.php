@@ -2,18 +2,18 @@
 
 namespace Tests\Feature;
 
-// use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
+    use RefreshDatabase;
+
+    /** The public front door — the WordCamp picker — renders even with no events yet. */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $this->withoutVite();
 
-        $response->assertStatus(200);
+        $this->get('/')->assertOk()->assertSee('No WordCamp is live yet');
     }
 }

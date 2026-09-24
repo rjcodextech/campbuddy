@@ -5,11 +5,11 @@ namespace App\Jobs;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Services\BrandingAssetFetcher;
+use App\Support\SvgGuard;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
 use Throwable;
 
 /**
@@ -31,7 +31,14 @@ class FetchBrandingAssetsJob implements ShouldQueue
 
     public int $timeout = 45;
 
-    public function __construct(public readonly Event $event) {}
+    /**
+     * @param  bool  $onlyMissing  Fill in only the assets the event doesn't
+     *                             have yet, leaving an existing logo/favicon
+     *                             (e.g. an admin's upload) untouched. The
+     *                             admin's "Re-fetch branding" button passes
+     *                             false: it deliberately replaces both.
+     */
+    public function __construct(public readonly Event $event, public readonly bool $onlyMissing = false) {}
 
     public function handle(): void
     {
@@ -46,16 +53,14 @@ class FetchBrandingAssetsJob implements ShouldQueue
         $found = [];
 
         try {
-            if ($logoUrl = $fetcher->findLogoUrl()) {
-                if ($path = $this->downloadTo($logoUrl, 'logo')) {
-                    $this->event->update(['logo_path' => $path]);
+            if ($this->wants('logo_path') && ($logoUrl = $fetcher->findLogoUrl())) {
+                if ($this->downloadTo($logoUrl, 'logo')) {
                     $found[] = 'logo';
                 }
             }
 
-            if ($faviconUrl = $fetcher->findFaviconUrl()) {
-                if ($path = $this->downloadTo($faviconUrl, 'favicon')) {
-                    $this->event->update(['favicon_path' => $path]);
+            if ($this->wants('favicon_path') && ($faviconUrl = $fetcher->findFaviconUrl())) {
+                if ($this->downloadTo($faviconUrl, 'favicon')) {
                     $found[] = 'favicon';
                 }
             }
@@ -73,25 +78,36 @@ class FetchBrandingAssetsJob implements ShouldQueue
         }
     }
 
+    /** Whether this run should fetch the asset held in the given column. */
+    private function wants(string $column): bool
+    {
+        return ! $this->onlyMissing || blank($this->event->{$column});
+    }
+
     /**
      * Downloads one asset with the same "don't trust a third party"
      * posture as the REST ingestion job: size-capped, MIME-checked,
-     * short timeout. Returns the stored path (relative to the public
-     * disk) or null if the source didn't pass validation.
+     * short timeout. Stores it and points the event at it; returns false
+     * if the source didn't pass validation (nothing is changed then).
      */
-    private function downloadTo(string $url, string $baseName): ?string
+    private function downloadTo(string $url, string $baseName): bool
     {
-        $response = Http::timeout(10)->get($url);
+        try {
+            $response = Http::timeout(10)->get($url);
+        } catch (Throwable) {
+            // One unreachable asset host shouldn't stop the other asset from being fetched.
+            return false;
+        }
 
         if (! $response->successful()) {
-            return null;
+            return false;
         }
 
         $contentType = $response->header('Content-Type', '');
         $isImage = collect(self::ALLOWED_MIME_PREFIXES)->contains(fn ($prefix) => str_starts_with($contentType, $prefix));
 
         if (! $isImage || strlen($response->body()) > self::MAX_BYTES) {
-            return null;
+            return false;
         }
 
         $extension = match (true) {
@@ -103,10 +119,13 @@ class FetchBrandingAssetsJob implements ShouldQueue
             default => 'png',
         };
 
-        $path = "branding/{$this->event->id}/{$baseName}.{$extension}";
-        Storage::disk('public')->put($path, $response->body());
+        if ($extension === 'svg' && ! SvgGuard::isSafe($response->body())) {
+            return false;
+        }
 
-        return $path;
+        $this->event->storeBranding($baseName, $extension, $response->body());
+
+        return true;
     }
 
     private function log(string $status, string $message): void

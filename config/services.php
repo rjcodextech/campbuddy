@@ -41,6 +41,14 @@ return [
         'subject' => env('VAPID_SUBJECT'),
     ],
 
+    // Optional. With both set, the admin "Purge cache & refresh data" button also
+    // purges Cloudflare's edge cache. The token needs only the "Cache Purge"
+    // permission (Zone → Cache Purge → Purge) on this one zone.
+    'cloudflare' => [
+        'zone_id' => env('CLOUDFLARE_ZONE_ID'),
+        'api_token' => env('CLOUDFLARE_API_TOKEN'),
+    ],
+
     // GA4 for the attendee app (partials/analytics.blade.php). Unset = no
     // tag, no requests to Google — so local/staging stay out of the
     // production property unless they're deliberately given the ID.

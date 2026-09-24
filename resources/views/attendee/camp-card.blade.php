@@ -1,4 +1,4 @@
-<x-attendee-layout :event="$event">
+<x-attendee-layout :event="$event" title="Camp Card">
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
@@ -15,11 +15,11 @@
                 <div class="camp-card-scroll__item" data-layout-card="{{ $key }}">
                     <p class="camp-card-scroll__label">{{ $label }}</p>
 
-                    <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/favicon.png' }}">
+                    <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}">
                         <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
                         <div class="camp-card__body">
-                            <img src="{{ $event->faviconUrl() ?? '/media/favicon.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark">
-                            <img src="{{ $event->logoUrl() ?? '/media/logo.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full">
+                            <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png">
+                            <img src="{{ $event->logoUrl() ?? '/media/logo-wordmark.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full" data-fallback="/media/logo-wordmark.png">
                             <p class="camp-card__name"></p>
                             <p class="camp-card__role"></p>
                             <div class="camp-card__tags"></div>
@@ -28,7 +28,7 @@
                             <div class="camp-card__qr-frame">
                                 <canvas></canvas>
                             </div>
-                            <img src="/media/logo.svg" alt="CampBuddy" class="camp-card__brand-mark">
+                            <img src="/media/logo-wordmark.png" alt="CampBuddy" class="camp-card__brand-mark">
                         </div>
                         <div class="camp-card__tier-band" aria-hidden="true">
                             <span>Code is Poetry</span>

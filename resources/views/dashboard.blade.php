@@ -78,6 +78,39 @@
                     </p>
                 @endforelse
             </x-card>
+
+            <x-card title="Cache & fresh data" description="Website or installed app showing something out of date?">
+                <p class="text-sm text-muted">
+                    Clears CampBuddy's caches, re-fetches the schedule, speakers, sponsors and event information
+                    from every live WordCamp's site, @if ($cloudflareConfigured) purges Cloudflare, @endif
+                    and tells every open or installed app to drop its saved copies and reload with the fresh data.
+                </p>
+                <p class="mt-2 text-xs text-muted">
+                    Attendees keep seeing the current schedule until the new one is in, and their saved sessions and
+                    Camp Card (kept on their own phones) aren't touched.
+                    @unless ($cloudflareConfigured)
+                        Cloudflare isn't connected here — if it caches your pages, purge it from its own dashboard too
+                        (or set <code>CLOUDFLARE_ZONE_ID</code> and <code>CLOUDFLARE_API_TOKEN</code>).
+                    @endunless
+                </p>
+
+                @if ($lastPurge)
+                    <p class="mt-3 border-t border-line pt-3 text-xs text-muted">
+                        <span class="font-medium text-ink">Last purged {{ \Illuminate\Support\Carbon::parse($lastPurge['purged_at'])->diffForHumans() }}</span>
+                        @if (! empty($lastPurge['by'])) by {{ $lastPurge['by'] }} @endif
+                        @if (! empty($lastPurge['summary'])) — {{ $lastPurge['summary'] }} @endif
+                    </p>
+                @else
+                    <p class="mt-3 border-t border-line pt-3 text-xs text-muted">Not purged yet.</p>
+                @endif
+
+                <x-slot:footer>
+                    <x-action-form :action="route('admin.cache.purge')" icon="refresh" variant="secondary"
+                                   confirm="Purge all caches and re-fetch fresh data for every live event? This can take up to about half a minute.">
+                        Purge cache &amp; refresh data
+                    </x-action-form>
+                </x-slot:footer>
+            </x-card>
         </div>
     </div>
 </x-app-layout>

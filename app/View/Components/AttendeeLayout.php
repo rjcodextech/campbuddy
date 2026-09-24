@@ -8,7 +8,11 @@ use Illuminate\View\View;
 
 class AttendeeLayout extends Component
 {
-    public function __construct(public Event $event) {}
+    /**
+     * @param  string|null  $title  The tab/page the attendee is on ("My Day",
+     *                              "Explore"…) — leads the document title.
+     */
+    public function __construct(public Event $event, public ?string $title = null) {}
 
     public function render(): View
     {

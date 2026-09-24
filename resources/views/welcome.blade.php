@@ -3,9 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>{{ config('app.name', 'CampBuddy') }} — Your WordCamp companion</title>
+    <title>{{ config('campbuddy.name') }} | {{ config('campbuddy.tagline') }}</title>
     <meta name="description" content="CampBuddy is the mobile-first companion app for WordCamp attendees — guidance on what to do next, session planning, Contributor Day matching, and a digital Camp Card, all local-first and privacy-respecting.">
-    <link rel="icon" href="/media/favicon.png">
+
+    @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false)])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +22,7 @@
 
         <header class="topbar">
             <a href="{{ route('home') }}" class="brand">
-                <img src="/media/logo.svg" alt="CampBuddy home" class="brand__logo brand__logo--wordmark">
+                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
             </a>
 
             <div class="topbar__actions">
@@ -117,7 +118,8 @@
                                 data-track="select_event"
                                 :data-track-event-slug="$event->slug"
                                 :title="$event->display_name"
-                                :media-url="$event->faviconUrl() ?? '/media/favicon.png'"
+                                :media-url="$event->markUrl() ?? '/media/icons/icon-192.png'"
+                                media-fallback="/media/icons/icon-192.png"
                                 media-shape="avatar"
                                 :date="$dateLabel"
                                 :location="$event->info['venue'] ?? null"
@@ -132,7 +134,7 @@
             </section>
         </main>
 
-        <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('app.name', 'CampBuddy') }}. Made for the WordPress community.</footer>
+        <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>
 
         @if (($events ?? collect())->isNotEmpty())
             <div class="landing-bottom-bar">

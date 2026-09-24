@@ -14,6 +14,7 @@
     'title',
     'subtitle' => null,
     'mediaUrl' => null,
+    'mediaFallback' => null, // shown instead if mediaUrl fails to load (see image-fallback.js)
     'mediaShape' => 'banner', // 'banner' (16:9) or 'avatar' (small circle) — see _event-card.scss
     'category' => null,
     'date' => null,
@@ -25,7 +26,7 @@
     <div class="event-card__main">
         @if ($mediaUrl)
             <div class="event-card__media event-card__media--{{ $mediaShape }}">
-                <img src="{{ $mediaUrl }}" alt="" loading="lazy">
+                <img src="{{ $mediaUrl }}" alt="" loading="lazy"@if ($mediaFallback) data-fallback="{{ $mediaFallback }}"@endif>
 
                 @if ($category && $mediaShape === 'banner')
                     <span class="event-card__category">{{ $category }}</span>

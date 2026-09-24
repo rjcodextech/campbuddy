@@ -18,6 +18,7 @@ Same envelope conventions as V1 (`/api/v1/*`, public, GET-only except where note
 | `POST /api/v1/events/{slug}/offers/{offer}/leads` *(added post-launch)* | Submit a Name/Email/Mobile lead before opening a deal with `capture_leads` enabled — one-shot public write, no owner-token lifecycle. 422 if the deal doesn't have lead capture on. See [3.7](03-functional-requirements/07-deals.md). |
 | `POST /api/v1/push/subscribe` | Register a Web Push subscription for a bookmarked session |
 | `POST /api/v1/events/{slug}/bookmarks` / `DELETE ...` | Bookmark a session server-side (only needed for reminder scheduling) |
+| `GET /api/v1/cache-version` *(added)* | `{"version": "<ms timestamp>"}` — bumped by the admin's *Purge cache & refresh data* ([9](09-admin-panel.md)); `Cache-Control: no-store`. An open app polls it when returning to the foreground and reloads if it changed. `"0"` until the first purge. |
 | `GET /api/v1/health` | Health check |
 
 Existing V1 endpoints (`event`, `media`, `sponsors`, `agenda`) become event-scoped: `/api/v1/events/{slug}/media`, etc.

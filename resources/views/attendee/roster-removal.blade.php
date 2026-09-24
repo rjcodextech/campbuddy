@@ -1,4 +1,4 @@
-<x-attendee-layout :event="$event">
+<x-attendee-layout :event="$event" title="Remove me from the attendee list">
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">

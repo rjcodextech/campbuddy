@@ -6,9 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="robots" content="noindex, nofollow">
 
-        <title>{{ $title ?: 'Sign in' }} — {{ config('app.name') }} Admin</title>
+        <title>{{ $title ?: 'Sign in' }} | {{ config('campbuddy.name') }} Admin</title>
 
-        <link rel="icon" href="/media/favicon.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
                 <div class="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-gold/10 blur-3xl" aria-hidden="true"></div>
 
                 <a href="{{ url('/') }}" class="relative flex w-fit items-center gap-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-                    <img src="/media/icon.svg" alt="" class="h-10 w-10 rounded-xl">
+                    <img src="/media/icons/icon-192.png" alt="" class="h-10 w-10 rounded-xl">
                     <span class="text-lg font-semibold">{{ config('app.name') }}</span>
                 </a>
 
@@ -43,7 +43,7 @@
             <main class="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
                 <div class="w-full max-w-md">
                     <a href="{{ url('/') }}" class="mb-8 flex w-fit items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40 lg:hidden">
-                        <img src="/media/icon.svg" alt="" class="h-9 w-9 rounded-lg">
+                        <img src="/media/icons/icon-192.png" alt="" class="h-9 w-9 rounded-lg">
                         <span class="text-base font-semibold">{{ config('app.name') }}</span>
                     </a>
 

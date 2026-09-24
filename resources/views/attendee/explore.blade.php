@@ -16,6 +16,13 @@
     // tappable — a phone number or email is actionable in a way plain
     // venue/wifi/registration text isn't. Everything else in this panel
     // renders as plain info, not a link to nowhere.
+    // Only real web addresses become links. Event Info can be auto-filled from
+    // a third-party site, and sponsor data is cached from one — a `javascript:`
+    // value must never reach an href or the in-app browser's iframe.
+    $webUrl = function (?string $v): ?string {
+        $v = trim((string) $v);
+        return preg_match('#^https?://\S+$#i', $v) === 1 ? $v : null;
+    };
     $contactHref = function (?string $v): ?string {
         if (blank($v)) return null;
         if (filter_var($v, FILTER_VALIDATE_EMAIL)) return "mailto:{$v}";
@@ -23,7 +30,7 @@
         return strlen(preg_replace('/\D/', '', $digits)) >= 7 ? "tel:{$digits}" : null;
     };
 @endphp
-<x-attendee-layout :event="$event">
+<x-attendee-layout :event="$event" title="Explore">
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
@@ -57,15 +64,27 @@
                     <p class="u-eyebrow">{{ $tier }}</p>
                     <div class="sponsor-group__row">
                         @foreach ($tierSponsors as $sponsor)
-                            <button type="button" class="sponsor-chip {{ $tierClass($tier) }}"
-                                    data-inapp-url="{{ $sponsor['website'] ?? $sponsor['link'] }}"
-                                    data-inapp-title="{{ $sponsor['name'] }}">
-                                @if ($sponsor['logo_url'])
-                                    <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo">
-                                @else
-                                    {{ $sponsor['name'] }}
-                                @endif
-                            </button>
+                            @php($sponsorUrl = $webUrl($sponsor['website'] ?? null) ?? $webUrl($sponsor['link'] ?? null))
+                            {{-- No usable link → a plain chip, not a button that opens nothing. --}}
+                            @if ($sponsorUrl)
+                                <button type="button" class="sponsor-chip {{ $tierClass($tier) }}"
+                                        data-inapp-url="{{ $sponsorUrl }}"
+                                        data-inapp-title="{{ $sponsor['name'] }}">
+                                    @if (! empty($sponsor['logo_url']))
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                    @else
+                                        {{ $sponsor['name'] }}
+                                    @endif
+                                </button>
+                            @else
+                                <span class="sponsor-chip {{ $tierClass($tier) }}">
+                                    @if (! empty($sponsor['logo_url']))
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                    @else
+                                        {{ $sponsor['name'] }}
+                                    @endif
+                                </span>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -114,7 +133,7 @@
         <div data-explore-panel="info" hidden>
             @if ($event->logoUrl())
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-                    <img src="{{ $event->logoUrl() }}" alt="" style="height:44px;width:44px;border-radius:5px;object-fit:contain;background:var(--paper);border:1px solid var(--line)">
+                    <img src="{{ $event->logoUrl() }}" alt="" data-fallback="/media/icons/icon-192.png" style="height:44px;width:44px;border-radius:5px;object-fit:contain;background:var(--paper);border:1px solid var(--line)">
                     <span style="font-weight:700">{{ $event->display_name }}</span>
                 </div>
             @endif
@@ -144,8 +163,8 @@
                         <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🚨</span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></div>
                     @endif
                 @endif
-                @if (!empty($info['code_of_conduct_url']))
-                    <a class="useful-link" href="{{ $info['code_of_conduct_url'] }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
+                @if ($webUrl($info['code_of_conduct_url'] ?? null))
+                    <a class="useful-link" href="{{ $webUrl($info['code_of_conduct_url']) }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true">📋</span><span><span class="useful-link__title">Code of conduct</span></span></a>
                 @endif
                 @if (!empty($info['nearby_venue_info']))
                     <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🗺</span><span><span class="useful-link__title">Nearby</span><span class="useful-link__desc">{{ $info['nearby_venue_info'] }}</span></span></div>
@@ -153,7 +172,13 @@
                 @if (!empty($info['important_links']))
                     @foreach (preg_split('/\r?\n/', trim($info['important_links'])) as $link)
                         @continue(blank($link))
-                        <a class="useful-link" href="{{ $link }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ $link }}</span></span></a>
+                        {{-- A line may be "Label: https://…" — link the address, show the whole line. --}}
+                        @php($linkHref = preg_match('#https?://\S+#i', $link, $urlMatch) ? $urlMatch[0] : null)
+                        @if ($linkHref)
+                            <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ trim($link) }}</span></span></a>
+                        @else
+                            <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ trim($link) }}</span></span></div>
+                        @endif
                     @endforeach
                 @endif
             @endif

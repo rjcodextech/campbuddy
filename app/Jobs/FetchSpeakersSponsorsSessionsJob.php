@@ -53,7 +53,9 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             // stale-while-revalidate posture — reads never block
             // on the upstream site, so a broken feed degrades slowly
             // rather than blanking the event the moment one fetch fails.
-            $ttl = now()->addDays(2);
+            // Two weeks, not two days: a missed weekend of runs (host
+            // outage, a stopped cron) must not wipe a live schedule.
+            $ttl = now()->addDays(14);
             Cache::put("event:{$this->event->id}:sessions", $sessions, $ttl);
             Cache::put("event:{$this->event->id}:speakers", $speakers, $ttl);
             Cache::put("event:{$this->event->id}:sponsors", $sponsors, $ttl);

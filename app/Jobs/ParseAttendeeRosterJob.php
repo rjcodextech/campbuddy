@@ -76,13 +76,51 @@ class ParseAttendeeRosterJob implements ShouldQueue
                 );
             }
 
-            $this->log('ok', sprintf('%d attendees parsed', count($entries)));
+            $removed = $this->pruneDepartedAttendees($seenHashes);
+
+            $this->log('ok', sprintf(
+                '%d attendees parsed%s',
+                count($entries),
+                $removed > 0 ? ", {$removed} no longer listed and removed" : ''
+            ));
         } catch (Throwable $e) {
             Log::warning('ParseAttendeeRosterJob failed', ['event_id' => $this->event->id, 'error' => $e->getMessage()]);
             $this->log('error', substr($e->getMessage(), 0, 500));
 
             throw $e;
         }
+    }
+
+    /**
+     * Keeps CampBuddy's roster a true mirror of the event's Attendees page:
+     * someone who has left that page (opted out at the source, or removed by
+     * the organizers) must not linger here. Two safeguards:
+     *   - an empty scrape never prunes — that's more likely a page hiccup
+     *     than every attendee vanishing at once, and the next run recovers;
+     *   - suppressed rows are never deleted — the suppression list is what
+     *     stops a removed attendee from being re-added (IN5).
+     *
+     * @param  array<int, string>  $seenHashes
+     */
+    private function pruneDepartedAttendees(array $seenHashes): int
+    {
+        if ($seenHashes === []) {
+            return 0;
+        }
+
+        $seen = array_flip($seenHashes);
+
+        $staleIds = AttendeeRoster::where('event_id', $this->event->id)
+            ->where('is_suppressed', false)
+            ->get(['id', 'content_hash'])
+            ->reject(fn ($row) => isset($seen[$row->content_hash]))
+            ->pluck('id');
+
+        foreach ($staleIds->chunk(500) as $chunk) {
+            AttendeeRoster::whereIn('id', $chunk->all())->delete();
+        }
+
+        return $staleIds->count();
     }
 
     private function log(string $status, string $message): void

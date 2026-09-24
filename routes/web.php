@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\EventController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\RosterRemovalController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +27,14 @@ use Illuminate\Support\Facades\Route;
 | same parameter name but must resolve ANY event regardless of status.
 */
 Route::get('/', HomeController::class)->name('home');
+
+// PWA manifest for the picker page and any page without an event of its own.
+Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
+
+// Serves the public disk when the web server doesn't do it itself (no
+// public/storage symlink — see PublicStorageController). Files that exist on
+// disk under public/ are served by the web server before PHP ever runs.
+Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.+')->name('storage.public');
 
 Route::middleware('event.public')->group(function () {
     Route::get('/event/{event:slug}', [EventPageController::class, 'home'])->name('event.home');
@@ -87,6 +97,10 @@ Route::prefix('admin')->group(function () {
 
         Route::get('events/{event}/deal-leads', [DealLeadController::class, 'index'])->name('admin.events.deal-leads.index');
         Route::get('events/{event}/deal-leads/export', [DealLeadController::class, 'export'])->name('admin.events.deal-leads.export');
+
+        // Clears every cache, re-fetches live events' data, and tells open apps to reload.
+        // Rate-limited inside the controller (a cooldown + lock), not with `throttle` — a purge empties the cache that throttle counts in.
+        Route::post('cache/purge', CachePurgeController::class)->name('admin.cache.purge');
 
         Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
         Route::post('media', [MediaController::class, 'store'])->name('admin.media.store');

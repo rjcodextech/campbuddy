@@ -25,7 +25,7 @@ class WordCampNormalizer
             return [
                 'id' => $session['id'],
                 'title' => $this->decodeTitle($session['title']['rendered'] ?? ''),
-                'link' => $session['link'] ?? null,
+                'link' => $this->httpUrl($session['link'] ?? null),
                 'speaker_ids' => $session['meta']['_wcpt_speaker_id'] ?? [],
                 'track_ids' => $trackIds,
                 'track_names' => array_values(array_filter(array_map(
@@ -37,8 +37,8 @@ class WordCampNormalizer
                     : null,
                 'duration_seconds' => $session['meta']['_wcpt_session_duration'] ?? null,
                 'session_type' => $session['meta']['_wcpt_session_type'] ?? null,
-                'slides_url' => $session['meta']['_wcpt_session_slides'] ?: null,
-                'video_url' => $session['meta']['_wcpt_session_video'] ?: null,
+                'slides_url' => $this->httpUrl($session['meta']['_wcpt_session_slides'] ?? null),
+                'video_url' => $this->httpUrl($session['meta']['_wcpt_session_video'] ?? null),
             ];
         }, $sessions);
     }
@@ -57,7 +57,7 @@ class WordCampNormalizer
                 'name' => $this->decodeTitle($speaker['title']['rendered'] ?? ''),
                 'bio_html' => $bioHtml,
                 'avatar_url' => $speaker['avatar_urls'][96] ?? $speaker['avatar_urls'][24] ?? null,
-                'link' => $speaker['link'] ?? null,
+                'link' => $this->httpUrl($speaker['link'] ?? null),
                 'social_links' => $this->client->extractSocialLinks($bioHtml),
             ];
         }, $speakers);
@@ -78,14 +78,14 @@ class WordCampNormalizer
                 'id' => $sponsor['id'],
                 'name' => $this->decodeTitle($sponsor['title']['rendered'] ?? ''),
                 'description_html' => $contentHtml,
-                'website' => $sponsor['meta']['_wcpt_sponsor_website'] ?: null,
+                'website' => $this->httpUrl($sponsor['meta']['_wcpt_sponsor_website'] ?? null),
                 'logo_url' => $this->client->extractFirstImage($contentHtml),
                 'tier_ids' => $tierIds,
                 'tier_names' => array_values(array_filter(array_map(
                     fn ($id) => $tierNames[$id] ?? null,
                     $tierIds
                 ))),
-                'link' => $sponsor['link'] ?? null,
+                'link' => $this->httpUrl($sponsor['link'] ?? null),
             ];
         }, $sponsors);
     }
@@ -102,6 +102,24 @@ class WordCampNormalizer
             'bio_html' => $organizer['content']['rendered'] ?? '',
             'avatar_url' => $organizer['avatar_urls'][96] ?? null,
         ], $organizers);
+    }
+
+    /**
+     * These URLs come from a third-party site and end up as link targets and
+     * the in-app browser's iframe src — so only real web addresses get through.
+     * A `javascript:` (or `data:`) value would otherwise run in CampBuddy's
+     * own origin. Also absorbs a missing/empty meta key without an
+     * "undefined array key" error aborting the whole event's ingestion.
+     */
+    private function httpUrl(mixed $url): ?string
+    {
+        if (! is_string($url)) {
+            return null;
+        }
+
+        $url = trim($url);
+
+        return preg_match('#^https?://#i', $url) === 1 ? $url : null;
     }
 
     /**

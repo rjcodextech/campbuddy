@@ -1,18 +1,22 @@
+@php
+    // "Explore | WordCamp Rajasthan 2026 | CampBuddy" — the tab you're on
+    // first (that's the part a narrow browser tab still shows), then the
+    // event, then the product. explore.js / my-day.js refine it further when
+    // an in-page section is switched.
+    $documentTitle = collect([$title, $event->display_name, config('campbuddy.name')])->filter()->implode(' | ');
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#c33a19">
     <meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
 
-    <title>{{ $event->display_name }} — {{ config('app.name') }}</title>
+    <title>{{ $documentTitle }}</title>
     <meta name="description" content="Your guide to {{ $event->display_name }} — schedule, people, and what to do next.">
 
-    <link rel="icon" href="{{ $event->faviconUrl() ?? '/media/favicon.png' }}">
-    <link rel="apple-touch-icon" href="{{ $event->logoUrl() ?? '/media/logo.png' }}">
-    <link rel="manifest" href="{{ route('event.manifest', $event) }}">
+    @include('attendee.partials.head-meta', ['manifestUrl' => route('event.manifest', $event, absolute: false), 'tabIcon' => $event->faviconUrl()])
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

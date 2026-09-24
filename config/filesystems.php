@@ -33,7 +33,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Off: with it on, the framework registers GET /storage/{path} for
+            // THIS private disk, which shadows the public disk's URLs (below)
+            // and turns every logo into a 404 wherever the web server isn't
+            // serving public/storage itself. Nothing here needs signed URLs.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],
@@ -41,7 +45,12 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            // Root-relative on purpose, not APP_URL-based: an APP_URL with the
+            // wrong scheme/host (http vs https, www vs apex) would otherwise
+            // produce mixed-content or cross-origin image URLs, which break
+            // logos on the page and taint the Camp Card canvas export.
+            // Served by PublicStorageController when the symlink is missing.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

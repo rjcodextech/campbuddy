@@ -11,10 +11,12 @@ use App\Jobs\FetchBrandingAssetsJob;
 use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
+use App\Support\SvgGuard;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Throwable;
 
 class EventController extends Controller
 {
@@ -93,18 +95,21 @@ class EventController extends Controller
     }
 
     /**
-     * Manual "Refresh now" — dispatches the
-     * sessions/speakers/sponsors REST ingestion job for this event.
+     * Manual "Refresh now" — runs the sessions/speakers/sponsors REST
+     * ingestion for this event right now, so the admin sees what it found on
+     * the redirect instead of "queued" and hoping a worker picks it up.
      */
     public function refresh(Event $event): RedirectResponse
     {
         Gate::authorize('update', $event);
 
-        FetchSpeakersSponsorsSessionsJob::dispatch($event);
-
-        return redirect()
-            ->route('admin.events.edit', $event)
-            ->with('status', 'Refresh queued — check the ingestion status below shortly.');
+        return $this->runNow(
+            $event,
+            fn () => FetchSpeakersSponsorsSessionsJob::dispatchSync($event),
+            'sessions_speakers_sponsors',
+            'Refreshed',
+            'Couldn\'t refresh sessions, speakers and sponsors'
+        );
     }
 
     /**
@@ -172,11 +177,13 @@ class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        FetchBrandingAssetsJob::dispatch($event);
-
-        return redirect()
-            ->route('admin.events.edit', $event)
-            ->with('status', 'Branding re-fetch queued.');
+        return $this->runNow(
+            $event,
+            fn () => FetchBrandingAssetsJob::dispatchSync($event),
+            'branding',
+            'Branding re-fetched',
+            'Couldn\'t re-fetch branding'
+        );
     }
 
     /**
@@ -192,19 +199,53 @@ class EventController extends Controller
             }
 
             $file = $request->file($field);
-            $path = "branding/{$event->id}/{$field}.".$file->extension();
+            $extension = strtolower($file->extension());
+            $contents = (string) file_get_contents($file->getRealPath());
 
-            Storage::disk('public')->putFileAs(
-                "branding/{$event->id}",
-                $file,
-                "{$field}.".$file->extension()
-            );
+            if ($extension === 'svg' && ! SvgGuard::isSafe($contents)) {
+                return back()->withErrors([
+                    $field => 'That SVG contains scripts or embedded content, which CampBuddy won\'t host. Export it as a plain SVG, or use a PNG.',
+                ]);
+            }
 
-            $event->update(["{$field}_path" => $path]);
+            $event->storeBranding($field, $extension, $contents);
         }
 
         return redirect()
             ->route('admin.events.edit', $event)
             ->with('status', 'Branding updated.');
+    }
+
+    /**
+     * Manual buttons (Refresh now, Re-fetch branding) run the job right now,
+     * in the request — a handful of short HTTP calls — so the redirect can say
+     * what happened, and so they work whether or not a queue worker is running.
+     * The job records its own outcome in the fetch log; a failure is shown,
+     * never thrown at the admin as an error page.
+     */
+    private function runNow(Event $event, Closure $run, string $jobType, string $success, string $failure): RedirectResponse
+    {
+        @set_time_limit(120);
+
+        $startedAt = now()->subSecond();
+
+        try {
+            $run();
+        } catch (Throwable) {
+            // Already written to the fetch log (and the app log) by the job itself.
+        }
+
+        $log = $event->fetchLogs()
+            ->where('job_type', $jobType)
+            ->where('fetched_at', '>=', $startedAt)
+            ->latest('fetched_at')
+            ->latest('id')
+            ->first();
+
+        return redirect()
+            ->route('admin.events.edit', $event)
+            ->with('status', $log?->status === 'ok'
+                ? "{$success} — {$log->message}"
+                : "{$failure} — ".($log?->message ?? 'see the logs.'));
     }
 }

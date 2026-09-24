@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookmarkController;
+use App\Http\Controllers\Api\CacheVersionController;
 use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
     Route::get('/health', HealthController::class)->name('api.health');
+    Route::get('/cache-version', CacheVersionController::class)->name('api.cache-version');
 
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');

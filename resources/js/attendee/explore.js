@@ -4,6 +4,7 @@
 // fully leaving CampBuddy.
 
 import { linkDomain, track } from './analytics.js';
+import { setSectionTitle } from './page-title.js';
 
 export function renderExplore() {
   document.querySelectorAll('[data-explore-tab]').forEach((btn) => {
@@ -15,6 +16,7 @@ export function renderExplore() {
       document.querySelectorAll('[data-explore-panel]').forEach((panel) => {
         panel.hidden = panel.dataset.explorePanel !== btn.dataset.exploreTab;
       });
+      setSectionTitle(btn.textContent.trim());
       track('explore_tab_view', { tab: btn.dataset.exploreTab });
     });
   });

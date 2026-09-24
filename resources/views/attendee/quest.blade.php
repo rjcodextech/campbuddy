@@ -1,4 +1,4 @@
-<x-attendee-layout :event="$event">
+<x-attendee-layout :event="$event" title="Quest">
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
