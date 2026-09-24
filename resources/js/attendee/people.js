@@ -123,7 +123,12 @@ function rosterRow(a) {
   const links = (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')).map((l) =>
     render('tpl-roster-link', {
       link: {
-        attrs: { href: l.url, 'aria-label': SOCIAL_LABEL[l.type] ?? l.type },
+        attrs: {
+          href: l.url,
+          'aria-label': SOCIAL_LABEL[l.type] ?? l.type,
+          'data-track': 'roster_link_click',
+          'data-track-link-type': SOCIAL_LABEL[l.type] ? l.type : 'website',
+        },
         children: [render(`tpl-social-icon-${SOCIAL_LABEL[l.type] ? l.type : 'website'}`)],
       },
     })
@@ -272,7 +277,12 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
         await kvSet(discoveryKey, { discoveryId: card.discovery_id, ownerToken, fields: savedFields(body, publicCard), card: publicCard });
       }
 
-      track(existing ? 'discovery_update' : 'discovery_join', { surface: surfaceOf(options) });
+      track(existing ? 'discovery_update' : 'discovery_join', {
+        surface: surfaceOf(options),
+        // Which way they chose to appear — never the name or the entry itself.
+        identity: { roster: 'attendee_list', typed: 'typed_name', anonymous: 'anonymous' }[identity],
+        tag_count: body.tags.length,
+      });
 
       const mine = await kvGet(discoveryKey);
       await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
@@ -349,6 +359,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
         });
         row.addEventListener('click', () => {
           if (taken) {
+            track('discovery_name_taken');
             showToast('Someone already linked this name. If that wasn\'t you, ask an organizer.');
             return;
           }
@@ -473,7 +484,13 @@ function matchCard(profile, isMet) {
   const links = (profile.links ?? []).filter((l) => isWeb(l.url)).map((l) =>
     render('tpl-roster-link', {
       link: {
-        attrs: { href: l.url, 'aria-label': `${SOCIAL_LABEL[l.type] ?? l.type}${profile.name ? ` — ${profile.name}` : ''}` },
+        attrs: {
+          href: l.url,
+          'aria-label': `${SOCIAL_LABEL[l.type] ?? l.type}${profile.name ? ` — ${profile.name}` : ''}`,
+          // Only the kind of link is reported, never the address (someone's profile).
+          'data-track': 'discovery_profile_link_click',
+          'data-track-link-type': SOCIAL_LABEL[l.type] ? l.type : 'website',
+        },
         children: [render(`tpl-social-icon-${SOCIAL_LABEL[l.type] ? l.type : 'website'}`)],
       },
     })

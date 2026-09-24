@@ -133,6 +133,7 @@ export async function cancelReminder(eventSlug, bookmark) {
       device_id: getDeviceId(),
       session_id: bookmark.sessionId,
     });
+    track('reminder_cancel');
   } catch {
     // Offline or refused: the reminder may still arrive. Nothing else to do
     // from here — the local bookmark is already gone.

@@ -4,6 +4,17 @@
     // event, then the product. explore.js / my-day.js refine it further when
     // an in-page section is switched.
     $documentTitle = collect([$title, $event->display_name, config('campbuddy.name')])->filter()->implode(' | ');
+
+    // For analytics (page_context): which screen, and where the event is in
+    // time — so reports can split "used during the event" from "before it".
+    $pageType = str_replace(['event.', '-', '.show'], ['', '_', ''], (string) request()->route()?->getName()) ?: 'event_page';
+    $today = today();
+    $eventPhase = match (true) {
+        $event->starts_on === null => 'unknown',
+        $today->lt($event->starts_on) => 'before',
+        $today->gt($event->ends_on ?? $event->starts_on) => 'after',
+        default => 'during',
+    };
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -30,7 +41,7 @@
 
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
-<body class="app-shell">
+<body class="app-shell" data-page-type="{{ $pageType }}" data-event-phase="{{ $eventPhase }}">
     {{-- --with-nav reserves room under the page for the fixed tab bar. --}}
     <div class="app-frame app-frame--with-nav">
         @include('attendee.partials.desktop-notice')

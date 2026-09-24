@@ -19,7 +19,7 @@
             <div id="day-filters" class="my-day-filter-row" data-label="Day" role="group" aria-label="Filter by day" hidden></div>
             {{-- Track / Type / Topic stay folded away until wanted — on a phone
             four rows of chips pushed the schedule itself off the first screen. --}}
-            <details class="filters-panel" id="more-filters">
+            <details class="filters-panel" id="more-filters" data-track-open="schedule_filters_open">
                 <summary class="filters-panel__toggle">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4" /></svg>
                     More filters

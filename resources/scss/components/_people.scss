@@ -403,3 +403,25 @@
         width: 64px;
     }
 }
+
+// Holds the discovery card's place until people.js fills it in, so the
+// attendee list below doesn't jump down when it appears (layout shift).
+.discovery-skeleton {
+    min-height: 208px;
+    background: linear-gradient(90deg, var(--paper) 25%, var(--paper-soft) 50%, var(--paper) 75%) 0 0 / 200% 100%;
+    animation: discovery-skeleton 1.2s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+
+    @media (max-width: 479px) {
+        min-height: 300px;
+    }
+}
+
+@keyframes discovery-skeleton {
+    to {
+        background-position: -200% 0;
+    }
+}

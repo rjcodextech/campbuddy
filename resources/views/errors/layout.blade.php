@@ -11,6 +11,9 @@
     <meta name="robots" content="noindex">
     <title>@yield('title') | {{ config('campbuddy.name', 'CampBuddy') }}</title>
     <link rel="icon" href="/media/icons/favicon-32.png" type="image/png">
+    {{-- Counts broken links and outages in GA (a page_view titled with the
+    error). No app bundle here, so just the tag. --}}
+    @include('attendee.partials.analytics')
     <style>
         :root { --ink:#2b1a14; --muted:#6b5a52; --paper:#fffaf4; --line:#eaded3; --brand:#c33a19; --brand-dark:#8f2a12; }
         * { box-sizing: border-box; }

@@ -30,9 +30,19 @@ const EVENTS = {
   desktop_notice_view: ['via'], // auto | button
   desktop_notice_dismiss: [],
 
+  // Page context — sent once per page load (sendPageContext below)
+  page_context: ['page_type', 'event_phase', 'is_online'],
+
+  // Home
+  home_link_click: ['target'], // full_schedule | all_quests | prep_guide | prep_my_day | prep_quest
+
   // First-timer guide
   guide_open: ['surface'], // home_start_here | topbar | picker
   guide_next_click: ['target'], // my_day | quest | camp_card
+  guide_section_jump: ['section'], // here | what | day | words | tips | bring | faq
+  guide_section_view: ['section'], // how far people read — once per section per page load
+  glossary_open: ['term'], // the guide's own public content
+  faq_open: ['question'],
   start_here_dismiss: [],
 
   // Onboarding — outcome only, never the answers
@@ -41,13 +51,15 @@ const EVENTS = {
 
   // My Day
   schedule_view_switch: ['view'], // full | mine
-  schedule_filter: ['filter_type', 'filter_value'], // day | track | type
+  schedule_filter: ['filter_type', 'filter_value'], // day | track | type | topic
+  schedule_filters_open: [],
   schedule_search: ['query_length', 'results_count'], // never the text
   session_expand: ['session_id', 'session_title'],
   session_save: ['session_id', 'session_title', 'overlap'],
   session_unsave: ['session_id', 'session_title'],
   session_link_click: ['session_id', 'link_type'], // slides | video
   reminder_offer: ['result'],
+  reminder_cancel: [],
 
   // Quest
   quest_complete: ['quest_id', 'quest_title', 'quest_group'], // things_to_do | checklist
@@ -72,8 +84,13 @@ const EVENTS = {
 
   // People / discovery — actions only, no profile or match data
   discovery_join_start: ['surface'], // home | explore
-  discovery_join: ['surface'],
-  discovery_update: ['surface'],
+  // identity = which way they chose to be shown (attendee_list | typed_name |
+  // anonymous) — the kind of choice, never the name or the entry picked.
+  discovery_join: ['surface', 'identity', 'tag_count'],
+  discovery_update: ['surface', 'identity', 'tag_count'],
+  discovery_name_taken: [], // the "pick my name" search hit a name already linked
+  discovery_profile_link_click: ['link_type'], // wporg | linkedin | twitter | website — never the address
+  roster_link_click: ['link_type'], // same, on "Who's attending"
   discovery_leave: ['surface'],
   discovery_met_mark: [],
   home_discovery_explore_click: [],
@@ -94,6 +111,7 @@ const EVENTS = {
   // Health
   exception: ['description'], // GA4 recommended event
   api_error: ['endpoint', 'method', 'status'],
+  web_vitals: ['metric_name', 'metric_value', 'metric_rating'], // LCP | CLS | INP, from real phones
 };
 
 const MAX_VALUE_LENGTH = 100; // GA4's limit for an event parameter value
@@ -156,7 +174,7 @@ function paramsFrom(el) {
   const params = {};
 
   for (const [key, value] of Object.entries(el.dataset)) {
-    if (!key.startsWith('track') || key === 'track' || key === 'trackOn') continue;
+    if (!key.startsWith('track') || ['track', 'trackOn', 'trackOpen', 'trackSectionView'].includes(key)) continue;
 
     const name = key.slice('track'.length).replace(/[A-Z]/g, (c, i) => (i ? '_' : '') + c.toLowerCase());
     params[name] = value;
@@ -202,9 +220,99 @@ function onRejection(e) {
   reportError(e.reason?.name ? `Unhandled${e.reason.name}` : 'UnhandledRejection');
 }
 
+// The kind of page and — on an event page — where the event is in time
+// (before / during / after, from Home's status line), so every report can
+// be split by "how many used it during the event itself".
+function sendPageContext() {
+  const pageType = document.body?.dataset.pageType;
+  if (!pageType) return;
+
+  track('page_context', {
+    page_type: pageType,
+    event_phase: document.body.dataset.eventPhase,
+    is_online: navigator.onLine,
+  });
+}
+
+// Core Web Vitals as real phones on venue wifi experience them: Largest
+// Contentful Paint, Cumulative Layout Shift and (roughly) Interaction to
+// Next Paint, each sent once when the page is hidden. Rated with Google's
+// own thresholds, so GA can report "% of good page loads".
+function observeWebVitals() {
+  if (typeof PerformanceObserver !== 'function') return;
+
+  const metrics = { LCP: null, CLS: 0, INP: null };
+  const watch = (type, fn) => {
+    try {
+      new PerformanceObserver((list) => list.getEntries().forEach(fn)).observe({ type, buffered: true });
+    } catch {
+      // Not supported in this browser — that metric just isn't sent.
+    }
+  };
+
+  watch('largest-contentful-paint', (e) => { metrics.LCP = e.startTime; });
+  watch('layout-shift', (e) => { if (!e.hadRecentInput) metrics.CLS += e.value; });
+  watch('event', (e) => { if (e.interactionId) metrics.INP = Math.max(metrics.INP ?? 0, e.duration); });
+
+  const thresholds = { LCP: [2500, 4000], CLS: [0.1, 0.25], INP: [200, 500] };
+  let sent = false;
+
+  document.addEventListener('visibilitychange', () => {
+    if (sent || document.visibilityState !== 'hidden') return;
+    sent = true;
+
+    for (const [name, value] of Object.entries(metrics)) {
+      if (value === null) continue;
+      const [good, poor] = thresholds[name];
+      track('web_vitals', {
+        metric_name: name,
+        metric_value: name === 'CLS' ? Math.round(value * 1000) / 1000 : Math.round(value),
+        metric_rating: value <= good ? 'good' : value <= poor ? 'needs_improvement' : 'poor',
+      });
+    }
+  });
+}
+
+// <details data-track-open="glossary_open" data-track-term="…"> — reported
+// when opened, not when closed again.
+function onToggle(e) {
+  const el = e.target;
+  if (!(el instanceof HTMLDetailsElement) || !el.open || !el.dataset.trackOpen) return;
+  track(el.dataset.trackOpen, paramsFrom(el));
+}
+
+// Sections marked data-track-section-view="name": reported once each, the
+// first time its top reaches the middle of the screen — how far people
+// actually read. (Not "half of it visible": a section taller than two
+// screens, like the day timeline, would never count.)
+function observeSectionViews() {
+  const sections = document.querySelectorAll('[data-track-section-view]');
+  if (sections.length === 0 || typeof IntersectionObserver !== 'function') return;
+
+  const seen = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      seen.unobserve(entry.target);
+      track('guide_section_view', { section: entry.target.dataset.trackSectionView });
+    });
+  }, { rootMargin: '0px 0px -50% 0px' });
+
+  sections.forEach((s) => seen.observe(s));
+}
+
 export function initAnalytics() {
   document.addEventListener('click', onClick, true);
   document.addEventListener('submit', onSubmit);
+  document.addEventListener('toggle', onToggle, true);
   window.addEventListener('error', onError);
   window.addEventListener('unhandledrejection', onRejection);
+
+  sendPageContext();
+  observeWebVitals();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeSectionViews);
+  } else {
+    observeSectionViews();
+  }
 }

@@ -18,7 +18,7 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
 
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
-<body class="app-shell">
+<body class="app-shell" data-page-type="guide_general">
     <div class="app-frame">
         @include('attendee.partials.desktop-notice')
 

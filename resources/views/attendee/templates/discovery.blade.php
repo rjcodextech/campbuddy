@@ -140,7 +140,7 @@
         <p class="person-card__who-to-meet" data-slot="who-row">Wants to meet: <span data-slot="who"></span></p>
 
         <div class="person-card__actions">
-            <a class="btn btn--compact btn--outline person-card__wporg" target="_blank" rel="noopener" data-slot="wporg">
+            <a class="btn btn--compact btn--outline person-card__wporg" target="_blank" rel="noopener" data-track="discovery_profile_link_click" data-track-link-type="wporg" data-slot="wporg">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-8.5 10c0-1.2.26-2.35.72-3.39l3.97 10.87A8.5 8.5 0 0 1 3.5 12Zm8.5 8.5c-.83 0-1.64-.12-2.4-.35l2.55-7.4 2.61 7.15.06.12c-.88.31-1.82.48-2.82.48Zm1.17-12.48c.51-.03.97-.08.97-.08.46-.06.4-.73-.05-.7 0 0-1.37.1-2.26.1-.83 0-2.23-.1-2.23-.1-.46-.03-.51.67-.06.7 0 0 .43.05.89.08l1.32 3.62-1.86 5.57-3.09-9.19c.51-.03.97-.08.97-.08.46-.06.4-.73-.05-.7 0 0-1.37.1-2.26.1l-.55-.01A8.49 8.49 0 0 1 17.8 5.8h-.1c-.83 0-1.42.73-1.42 1.51 0 .7.4 1.3.83 2 .33.57.71 1.3.71 2.36 0 .73-.28 1.58-.65 2.77l-.86 2.86-3.14-9.28Zm3.1 11.34 2.6-7.5c.48-1.21.64-2.18.64-3.04 0-.31-.02-.6-.06-.87A8.5 8.5 0 0 1 15.77 19.36Z"/></svg>
                 WordPress.org
             </a>

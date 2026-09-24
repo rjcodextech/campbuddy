@@ -56,18 +56,18 @@
 
 <nav class="guide-jump" aria-label="Guide sections">
     @if ($event && ($practical || $cocUrl))
-        <a class="chip" href="#guide-here">At this event</a>
+        <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">At this event</a>
     @endif
-    <a class="chip" href="#guide-what">What is it?</a>
-    <a class="chip" href="#guide-day">Your day</a>
-    <a class="chip" href="#guide-words">Words you'll hear</a>
-    <a class="chip" href="#guide-tips">Tips</a>
-    <a class="chip" href="#guide-bring">What to bring</a>
-    <a class="chip" href="#guide-faq">FAQ</a>
+    <a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">What is it?</a>
+    <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">Your day</a>
+    <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">Words you'll hear</a>
+    <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">Tips</a>
+    <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">What to bring</a>
+    <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">FAQ</a>
 </nav>
 
 @if ($event && ($practical || $cocUrl))
-    <section id="guide-here" class="guide-section" aria-labelledby="guide-here-heading">
+    <section id="guide-here" class="guide-section" data-track-section-view="here" aria-labelledby="guide-here-heading">
         <h2 id="guide-here-heading" class="guide-section__title">At {{ $event->display_name }}</h2>
         <div class="card guide-practical">
             @foreach ($practical as [$icon, $label, $value, $href])
@@ -93,7 +93,7 @@
     </section>
 @endif
 
-<section id="guide-what" class="guide-section" aria-labelledby="guide-what-heading">
+<section id="guide-what" class="guide-section" data-track-section-view="what" aria-labelledby="guide-what-heading">
     <h2 id="guide-what-heading" class="guide-section__title">What is a WordCamp?</h2>
     <div class="card guide-prose">
         <p>A <strong>WordCamp</strong> is a conference about WordPress — the free software behind a huge share of the world's websites. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
@@ -102,7 +102,7 @@
     </div>
 </section>
 
-<section id="guide-day" class="guide-section" aria-labelledby="guide-day-heading">
+<section id="guide-day" class="guide-section" data-track-section-view="day" aria-labelledby="guide-day-heading">
     <h2 id="guide-day-heading" class="guide-section__title">How the day usually goes</h2>
     <p class="guide-section__desc">
         Every WordCamp is a little different, but most follow this shape.
@@ -125,12 +125,12 @@
     </ol>
 </section>
 
-<section id="guide-words" class="guide-section" aria-labelledby="guide-words-heading">
+<section id="guide-words" class="guide-section" data-track-section-view="words" aria-labelledby="guide-words-heading">
     <h2 id="guide-words-heading" class="guide-section__title">Words you'll hear</h2>
     <p class="guide-section__desc">Tap a word to see what it means.</p>
     <div class="guide-accordion">
         @foreach (FirstTimerGuide::glossary() as $entry)
-            <details class="guide-accordion__item">
+            <details class="guide-accordion__item" data-track-open="glossary_open" data-track-term="{{ $entry['term'] }}">
                 <summary>{{ $entry['term'] }}</summary>
                 <p>{{ $entry['meaning'] }}</p>
             </details>
@@ -138,7 +138,7 @@
     </div>
 </section>
 
-<section id="guide-tips" class="guide-section" aria-labelledby="guide-tips-heading">
+<section id="guide-tips" class="guide-section" data-track-section-view="tips" aria-labelledby="guide-tips-heading">
     <h2 id="guide-tips-heading" class="guide-section__title">Tips from WordCamp regulars</h2>
     <div class="guide-tips">
         @foreach (FirstTimerGuide::tips() as $tip)
@@ -153,7 +153,7 @@
     </div>
 </section>
 
-<section id="guide-bring" class="guide-section" aria-labelledby="guide-bring-heading">
+<section id="guide-bring" class="guide-section" data-track-section-view="bring" aria-labelledby="guide-bring-heading">
     <h2 id="guide-bring-heading" class="guide-section__title">What to bring</h2>
     <ul class="card guide-bring">
         @foreach (FirstTimerGuide::bring() as $item)
@@ -162,11 +162,11 @@
     </ul>
 </section>
 
-<section id="guide-faq" class="guide-section" aria-labelledby="guide-faq-heading">
+<section id="guide-faq" class="guide-section" data-track-section-view="faq" aria-labelledby="guide-faq-heading">
     <h2 id="guide-faq-heading" class="guide-section__title">Questions newcomers ask</h2>
     <div class="guide-accordion">
         @foreach (FirstTimerGuide::faq() as $entry)
-            <details class="guide-accordion__item">
+            <details class="guide-accordion__item" data-track-open="faq_open" data-track-question="{{ $entry['q'] }}">
                 <summary>{{ $entry['q'] }}</summary>
                 <p>{{ $entry['a'] }}</p>
             </details>

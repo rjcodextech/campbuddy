@@ -16,7 +16,7 @@
 
     @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
-<body class="app-shell">
+<body class="app-shell" data-page-type="picker">
     <div class="app-frame">
         @include('attendee.partials.desktop-notice')
 

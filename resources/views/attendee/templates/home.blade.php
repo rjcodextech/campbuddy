@@ -18,9 +18,9 @@
         <p style="margin:0;font-weight:700"><span data-slot="countdown"></span></p>
         <p class="home-guidance">A few minutes now makes the day much easier:</p>
         <ul class="home-prep">
-            <li><a data-slot="guide">Read the 5-minute first-timer guide</a></li>
-            <li><a data-slot="my-day">Save 3 sessions you'd enjoy</a></li>
-            <li><a data-slot="quest">Tick off the "get ready" checklist</a></li>
+            <li><a data-slot="guide" data-track="home_link_click" data-track-target="prep_guide">Read the 5-minute first-timer guide</a></li>
+            <li><a data-slot="my-day" data-track="home_link_click" data-track-target="prep_my_day">Save 3 sessions you'd enjoy</a></li>
+            <li><a data-slot="quest" data-track="home_link_click" data-track-target="prep_quest">Tick off the "get ready" checklist</a></li>
         </ul>
     </div>
 </template>

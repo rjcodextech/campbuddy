@@ -48,7 +48,7 @@
         <div data-explore-panel="people">
             {{-- people.js fills #people-discovery and #people-roster --}}
             <div id="people-root">
-                <div id="people-discovery"></div>
+                <div id="people-discovery"><div class="card discovery-skeleton" aria-hidden="true"></div></div>
                 <div class="section-head" style="margin-top:24px">
                     <h2 class="section-head__title">Who's attending</h2>
                     <span class="section-head__desc">From the event's own Attendees page</span>

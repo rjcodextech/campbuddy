@@ -53,7 +53,7 @@
         <section aria-labelledby="up-next-heading" class="home-section">
             <div class="section-head">
                 <h2 id="up-next-heading" class="section-head__title">Up next</h2>
-                <a class="section-head__link" href="{{ route('event.my-day', $event) }}">Full schedule →</a>
+                <a class="section-head__link" href="{{ route('event.my-day', $event) }}" data-track="home_link_click" data-track-target="full_schedule">Full schedule →</a>
             </div>
             <div id="up-next" class="card"></div>
         </section>
@@ -61,7 +61,7 @@
         <section aria-labelledby="suggested-action-heading" class="home-section">
             <div class="section-head">
                 <h2 id="suggested-action-heading" class="section-head__title">One thing to try</h2>
-                <a class="section-head__link" href="{{ route('event.quest', $event) }}">All quests →</a>
+                <a class="section-head__link" href="{{ route('event.quest', $event) }}" data-track="home_link_click" data-track-target="all_quests">All quests →</a>
             </div>
             <div id="suggested-action" class="action-card action-card--wide">
                 <span class="action-card__icon" aria-hidden="true">💡</span>
@@ -76,7 +76,7 @@
             <div class="section-head">
                 <h2 id="people-cta-heading" class="section-head__title">Meet people</h2>
             </div>
-            <div id="people-discovery-home" data-explore-url="{{ route('event.explore', $event) }}"></div>
+            <div id="people-discovery-home" data-explore-url="{{ route('event.explore', $event) }}"><div class="card discovery-skeleton" aria-hidden="true"></div></div>
         </section>
 
         <section aria-labelledby="progress-heading" class="home-section">
