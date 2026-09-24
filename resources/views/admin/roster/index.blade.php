@@ -10,6 +10,8 @@
         <x-alert type="info">
             This mirrors the event's public Attendees page. <strong>Suppress</strong> hides someone from the attendee
             app (and it stays hidden when the roster is re-imported); <strong>Restore</strong> brings them back.
+            <strong>In discovery</strong> means someone picked this name as themselves in attendee discovery — if the
+            real person says it wasn't them, <strong>Unlink</strong> frees the name.
         </x-alert>
 
         <x-card flush>
@@ -61,13 +63,22 @@
                             @else
                                 <x-badge variant="success">Visible</x-badge>
                             @endif
+                            @if ($entry->in_discovery)
+                                <x-badge variant="info">In discovery</x-badge>
+                            @endif
                         </td>
                         <td class="text-right">
+                            <div class="flex justify-end gap-2">
+                            @if ($entry->in_discovery)
+                                <x-action-form :action="route('admin.events.roster.release-claim', [$event, $entry])" variant="secondary" size="sm"
+                                               :confirm="'Unlink '.$entry->name.' from the discovery profile that claimed this name?'">Unlink</x-action-form>
+                            @endif
                             @if ($entry->is_suppressed)
                                 <x-action-form :action="route('admin.events.roster.unsuppress', [$event, $entry])" size="sm">Restore</x-action-form>
                             @else
                                 <x-action-form :action="route('admin.events.roster.suppress', [$event, $entry])" variant="danger-outline" size="sm">Suppress</x-action-form>
                             @endif
+                            </div>
                         </td>
                     </tr>
                 @empty

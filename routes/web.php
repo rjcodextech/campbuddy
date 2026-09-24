@@ -120,6 +120,7 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
         Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
+        Route::post('events/{event}/roster/{entry}/release-claim', [RosterController::class, 'releaseClaim'])->name('admin.events.roster.release-claim');
 
         Route::get('events/{event}/deal-leads', [DealLeadController::class, 'index'])->name('admin.events.deal-leads.index');
         Route::get('events/{event}/deal-leads/export', [DealLeadController::class, 'export'])->name('admin.events.deal-leads.export');

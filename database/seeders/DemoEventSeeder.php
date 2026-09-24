@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AttendeeRoster;
+use App\Models\DiscoveryProfile;
 use App\Models\Event;
 use App\Models\Offer;
 use App\Services\AttendeeRosterScraper;
@@ -79,6 +80,7 @@ class DemoEventSeeder extends Seeder
         Cache::put("event:{$event->id}:organizers", $normalizer->normalizeOrganizers([]), $ttl);
 
         $this->roster($event);
+        $this->discovery($event);
 
         Offer::create([
             'event_id' => $event->id,
@@ -220,6 +222,39 @@ class DemoEventSeeder extends Seeder
                 'gravatar_url' => 'https://secure.gravatar.com/avatar/'.md5($name).'?s=96&d=identicon',
                 'links' => $links,
                 'content_hash' => $scraper->contentHash($name, $links),
+            ]);
+        }
+    }
+
+    /**
+     * Other attendees already in discovery: two picked themselves from the
+     * attendee list, one typed a name, one stayed anonymous.
+     */
+    private function discovery(Event $event): void
+    {
+        $profiles = [
+            ['Aisha Khan', null, ['developer', 'speaker'], 'Plugin developer', 'People building block themes', 'aishakhan'],
+            ['Dev Patel', null, ['designer', 'site builder'], 'Freelance designer', 'Agency owners', null],
+            [null, 'Marco from Lisbon', ['developer', 'translator'], 'Polyglots contributor', 'Anyone curious about translating WordPress', 'marcolisbon'],
+            [null, null, ['marketer', 'business owner'], 'Growth marketer', null, null],
+        ];
+
+        foreach ($profiles as [$rosterName, $typedName, $tags, $profession, $who, $wporg]) {
+            $credentials = DiscoveryProfile::generateCredentials();
+
+            DiscoveryProfile::create([
+                'discovery_id' => $credentials['discovery_id'],
+                'owner_token_hash' => $credentials['owner_token_hash'],
+                'event_id' => $event->id,
+                'attendee_roster_id' => $rosterName ? $event->attendeeRoster()->where('name', $rosterName)->value('id') : null,
+                'fields' => array_filter([
+                    'tags' => $tags,
+                    'profession' => $profession,
+                    'who_to_meet' => $who,
+                    'display_name' => $typedName,
+                    'wporg_username' => $wporg,
+                ]),
+                'expires_at' => $event->ends_on?->endOfDay(),
             ]);
         }
     }

@@ -38,7 +38,7 @@ class RosterRemovalController extends Controller
     {
         abort_unless($entry->event_id === $event->id, 404);
 
-        $entry->update(['is_suppressed' => true]);
+        $entry->suppress();
 
         return redirect()
             ->route('event.roster-removal.show', $event)

@@ -20,7 +20,7 @@
     <div class="roster-row">
         <img class="roster-row__avatar" alt="" width="40" height="40" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
-        <span class="roster-row__name" data-slot="name"></span>
+        <span class="roster-row__name"><span data-slot="name"></span> <span class="roster-row__open" data-slot="open-badge">👋 Open to meet</span></span>
         <div class="roster-row__links" data-slot="links"></div>
     </div>
 </template>

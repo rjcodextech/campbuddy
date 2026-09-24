@@ -87,7 +87,20 @@ async function renderRoster(eventSlug) {
 // one flat list into #people-roster's normal flow. No inner scroll box:
 // this list is exactly as tall as its content, and the page itself
 // scrolls, same as every other list in the app.
-async function fetchFullRoster(eventSlug) {
+// One fetch per page view, shared by the roster list and the discovery
+// form's "pick your name" search.
+const rosterRequests = new Map();
+
+function fetchFullRoster(eventSlug) {
+  if (!rosterRequests.has(eventSlug)) {
+    const request = loadFullRoster(eventSlug);
+    request.catch(() => rosterRequests.delete(eventSlug));
+    rosterRequests.set(eventSlug, request);
+  }
+  return rosterRequests.get(eventSlug);
+}
+
+async function loadFullRoster(eventSlug) {
   const first = await apiGet(eventSlug, '/roster');
   const entries = [...(first.data ?? [])];
   const lastPage = first.last_page ?? 1;
@@ -120,6 +133,7 @@ function rosterRow(a) {
     'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
     'avatar-initial': a.gravatar_url ? null : initial,
     name: a.name ?? '',
+    'open-badge': Boolean(a.open_to_meet),
     links: links.length > 0 ? links : null,
   });
 }
@@ -155,7 +169,12 @@ function showJoinPrompt(el, eventSlug, eventId, discoveryKey, options) {
 }
 
 function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, options = {}) {
-  const selected = new Set(existing?.fields?.tags ?? []);
+  const fields = existing?.fields ?? {};
+  const selected = new Set(fields.tags ?? []);
+  let identity = fields.attendee_roster_id ? 'roster' : fields.display_name ? 'typed' : existing ? 'anonymous' : 'roster';
+  let picked = fields.attendee_roster_id
+    ? { id: fields.attendee_roster_id, name: existing.card?.name, gravatar_url: existing.card?.avatar_url }
+    : null;
 
   el.replaceChildren(
     render('tpl-discovery-join-form', {
@@ -165,12 +184,35 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
           chip: { text: t, attrs: { 'data-tag': t, 'aria-pressed': String(selected.has(t)) }, class: { 'chip--selected': selected.has(t) } },
         })
       ),
-      profession: { attrs: { value: existing?.fields?.profession ?? '' } },
-      who: { attrs: { value: existing?.fields?.who_to_meet ?? '' } },
+      'display-name': { attrs: { value: fields.display_name ?? '' } },
+      profession: { attrs: { value: fields.profession ?? '' } },
+      who: { attrs: { value: fields.who_to_meet ?? '' } },
+      wporg: { attrs: { value: fields.wporg_username ?? '', autocapitalize: 'none', spellcheck: 'false' } },
       submit: existing ? 'Save' : 'Join',
     })
   );
 
+  const errorEl = el.querySelector('[data-join-error]');
+  const showError = (message) => {
+    errorEl.textContent = message;
+    errorEl.hidden = !message;
+  };
+
+  // --- Who are you? ----------------------------------------------------
+  const panels = el.querySelectorAll('[data-identity-panel]');
+  const setIdentity = (value) => {
+    identity = value;
+    el.querySelectorAll('input[name="identity"]').forEach((r) => { r.checked = r.value === value; });
+    panels.forEach((p) => { p.hidden = p.dataset.identityPanel !== value; });
+  };
+  el.querySelectorAll('input[name="identity"]').forEach((radio) => {
+    radio.addEventListener('change', () => setIdentity(radio.value));
+  });
+  setIdentity(identity);
+
+  mountRosterPicker(el, eventSlug, () => picked, (entry) => { picked = entry; showError(''); }, fields.attendee_roster_id ?? null);
+
+  // --- Tags ------------------------------------------------------------
   el.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
       const tag = chip.dataset.tag;
@@ -190,43 +232,168 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
     });
   });
 
-  el.querySelector('#join-submit').addEventListener('click', async () => {
+  // --- Save ------------------------------------------------------------
+  const submitBtn = el.querySelector('#join-submit');
+  submitBtn.addEventListener('click', async () => {
+    const displayName = el.querySelector('#join-display-name').value.trim();
     const body = {
       tags: [...selected],
-      profession: el.querySelector('#join-profession').value || null,
-      who_to_meet: el.querySelector('#join-who').value || null,
+      profession: el.querySelector('#join-profession').value.trim() || null,
+      who_to_meet: el.querySelector('#join-who').value.trim() || null,
+      wporg_username: el.querySelector('#join-wporg').value.trim() || null,
+      attendee_roster_id: identity === 'roster' ? picked?.id ?? null : null,
+      display_name: identity === 'typed' ? displayName || null : null,
     };
 
+    if (identity === 'roster' && !picked) {
+      showError('Find and tap your name in the list — or choose "Type my name".');
+      return;
+    }
+    if (identity === 'typed' && displayName.length < 2) {
+      showError('Type the name people know you by — or choose "Stay anonymous".');
+      return;
+    }
     if (body.tags.length === 0) {
-      showToast('Pick at least one tag.');
+      showError('Pick at least one tag that describes you.');
       return;
     }
 
+    showError('');
+    submitBtn.disabled = true;
+
     try {
+      let card;
       if (existing) {
-        await apiMutate(eventSlug, `/discovery/${existing.discoveryId}`, 'PATCH', body, existing.ownerToken);
-        await kvSet(discoveryKey, { ...existing, fields: body });
+        card = await apiMutate(eventSlug, `/discovery/${existing.discoveryId}`, 'PATCH', body, existing.ownerToken);
+        await kvSet(discoveryKey, { ...existing, fields: savedFields(body, card), card });
       } else {
-        const res = await apiMutate(eventSlug, '/discovery', 'POST', body);
-        await kvSet(discoveryKey, { discoveryId: res.discovery_id, ownerToken: res.owner_token, fields: res.fields });
+        card = await apiMutate(eventSlug, '/discovery', 'POST', body);
+        const { owner_token: ownerToken, ...publicCard } = card;
+        await kvSet(discoveryKey, { discoveryId: card.discovery_id, ownerToken, fields: savedFields(body, publicCard), card: publicCard });
       }
 
       track(existing ? 'discovery_update' : 'discovery_join', { surface: surfaceOf(options) });
 
       const mine = await kvGet(discoveryKey);
       await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
-    } catch {
-      showToast("Couldn't save — check your connection and try again.");
+    } catch (error) {
+      submitBtn.disabled = false;
+      showError(error.userMessage ?? "Couldn't save — check your connection and try again.");
     }
   });
 }
 
-async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options = {}) {
-  const statusCard = () => render('tpl-discovery-status', { tags: mine.fields.tags.join(', ') });
+/**
+ * What was sent, as the server saved it: the WordPress.org username the
+ * server tidied (a pasted profile link becomes just the username), so the
+ * edit form shows what's really shared.
+ */
+function savedFields(body, card) {
+  const match = /^https:\/\/profiles\.wordpress\.org\/([^/]+)\/$/.exec(card?.wporg_url ?? '');
+  return { ...body, wporg_username: match ? decodeURIComponent(match[1]) : null };
+}
 
+/**
+ * "Pick my name": a search over the event's attendee list. Names someone
+ * else already linked are shown but can't be picked — one name, one profile.
+ */
+function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
+  const searchWrap = el.querySelector('[data-roster-search]');
+  const selectedWrap = el.querySelector('[data-roster-selected]');
+  const input = el.querySelector('#join-roster-search');
+  const results = el.querySelector('[data-roster-results]');
+  let entries = null;
+
+  const showPicked = () => {
+    const picked = getPicked();
+    selectedWrap.hidden = !picked;
+    searchWrap.hidden = Boolean(picked);
+    if (!picked) return;
+
+    selectedWrap.querySelector('[data-picked-name]').textContent = picked.name ?? '';
+    const avatar = selectedWrap.querySelector('[data-picked-avatar]');
+    avatar.src = picked.gravatar_url || '/media/illustrations/avatar.svg';
+  };
+
+  const draw = () => {
+    const q = input.value.trim().toLowerCase();
+
+    if (entries === null) {
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'Loading the attendee list…' }));
+      return;
+    }
+    if (entries.length === 0) {
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'This event has no public attendee list yet — choose "Type my name" instead.' }));
+      return;
+    }
+    if (q.length < 2) {
+      results.replaceChildren();
+      return;
+    }
+
+    const found = entries.filter((a) => (a.name ?? '').toLowerCase().includes(q)).slice(0, 8);
+    if (found.length === 0) {
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'No one by that name on the list — check the spelling, or choose "Type my name".' }));
+      return;
+    }
+
+    results.replaceChildren(
+      ...found.map((a) => {
+        // Taken = another profile already uses this name (my own current one isn't).
+        const taken = Boolean(a.open_to_meet) && a.id !== myRosterId;
+        const row = render('tpl-roster-picker-row', {
+          row: { attrs: { 'aria-disabled': taken ? 'true' : null }, class: { 'roster-picker__row--taken': taken } },
+          avatar: { attrs: { src: a.gravatar_url || '/media/illustrations/avatar.svg' } },
+          name: a.name,
+          note: taken,
+        });
+        row.addEventListener('click', () => {
+          if (taken) {
+            showToast('Someone already linked this name. If that wasn\'t you, ask an organizer.');
+            return;
+          }
+          onPick(a);
+          showPicked();
+        });
+        return row;
+      })
+    );
+  };
+
+  selectedWrap.querySelector('[data-picked-change]').addEventListener('click', () => {
+    onPick(null);
+    showPicked();
+    input.value = '';
+    draw();
+    input.focus();
+  });
+  input.addEventListener('input', draw);
+
+  showPicked();
+  draw();
+  fetchFullRoster(eventSlug)
+    .then((list) => { entries = list; draw(); })
+    .catch(() => {
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'You\'re offline, so the attendee list can\'t load — choose "Type my name" for now.' }));
+    });
+}
+
+function statusCard(mine) {
+  const name = mine.card?.name ?? mine.fields.display_name ?? null;
+  const avatar = mine.card?.avatar_url;
+
+  return render('tpl-discovery-status', {
+    avatar: avatar ? { attrs: { src: avatar } } : { attrs: { src: '/media/illustrations/avatar.svg' } },
+    'as-part': Boolean(name),
+    name: name ?? '',
+    tags: name ? mine.fields.tags.join(', ') : `Anonymously · ${mine.fields.tags.join(', ')}`,
+  });
+}
+
+async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options = {}) {
   if (options.compact) {
     el.replaceChildren(
-      statusCard(),
+      statusCard(mine),
       render('tpl-discovery-explore-link', { link: { attrs: { href: options.exploreUrl ?? '#' } } })
     );
     el.querySelector('#edit-discovery-btn').addEventListener('click', () => showJoinForm(el, eventSlug, eventId, discoveryKey, mine, options));
@@ -248,19 +415,25 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const metIds = new Set(metHistory.map((m) => m.discoveryId));
   const myTags = new Set(mine.fields.tags);
 
-  const others = profiles.filter((p) => p.discovery_id !== mine.discoveryId);
-  const matches = others
-    .map((p) => ({ ...p, overlap: (p.fields.tags ?? []).filter((t) => myTags.has(t)).length }))
-    .filter((p) => p.overlap > 0 && !metIds.has(p.discovery_id))
-    .sort((a, b) => b.overlap - a.overlap);
+  const others = profiles
+    .filter((p) => p.discovery_id !== mine.discoveryId)
+    .map((p) => ({ ...p, common: (p.fields.tags ?? []).filter((t) => myTags.has(t)) }));
+  const notMet = others.filter((p) => !metIds.has(p.discovery_id));
+  // Named people first within each group — they're the ones you can find.
+  const byStrength = (a, b) => b.common.length - a.common.length || Number(Boolean(b.name)) - Number(Boolean(a.name));
+  const matches = notMet.filter((p) => p.common.length > 0).sort(byStrength);
+  const rest = notMet.filter((p) => p.common.length === 0).sort(byStrength);
   const met = others.filter((p) => metIds.has(p.discovery_id));
 
   el.replaceChildren(
-    statusCard(),
+    statusCard(mine),
     renderFragment('tpl-discovery-matches', {
       offline,
-      empty: matches.length === 0,
+      empty: others.length === 0 && !offline,
+      'matches-section': matches.length > 0,
       matches: matches.map((p) => matchCard(p, false)),
+      'others-section': rest.length > 0,
+      others: rest.map((p) => matchCard(p, false)),
       'met-section': met.length > 0,
       met: met.map((p) => matchCard(p, true)),
     })
@@ -294,12 +467,30 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
 
 function matchCard(profile, isMet) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
+  const common = new Set(profile.common ?? []);
+  const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
+
+  const links = (profile.links ?? []).filter((l) => isWeb(l.url)).map((l) =>
+    render('tpl-roster-link', {
+      link: {
+        attrs: { href: l.url, 'aria-label': `${SOCIAL_LABEL[l.type] ?? l.type}${profile.name ? ` — ${profile.name}` : ''}` },
+        children: [render(`tpl-social-icon-${SOCIAL_LABEL[l.type] ? l.type : 'website'}`)],
+      },
+    })
+  );
 
   return render('tpl-discovery-match', {
-    tags: (tags ?? []).map((t) => render('tpl-discovery-match-tag', { tag: t })),
+    avatar: { attrs: { src: isWeb(profile.avatar_url) ? profile.avatar_url : '/media/illustrations/avatar.svg' } },
+    name: profile.name || 'Anonymous attendee',
+    verified: Boolean(profile.on_attendee_list),
     profession: profession || null,
+    'common-row': common.size > 0,
+    common: [...common].join(', '),
+    tags: (tags ?? []).filter((t) => !common.has(t)).map((t) => render('tpl-discovery-match-tag', { tag: t })),
     'who-row': Boolean(whoToMeet),
     who: whoToMeet,
+    wporg: isWeb(profile.wporg_url) ? { attrs: { href: profile.wporg_url } } : null,
+    links: links.length ? links : [],
     'met-btn': isMet ? null : { attrs: { 'data-met-id': profile.discovery_id } },
     'met-label': isMet,
   });

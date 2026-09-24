@@ -38,9 +38,7 @@
     min-width: 0;
     font-weight: v.$font-weight-bold;
     color: var(--ink);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
 }
 
 .roster-row__links {
@@ -101,4 +99,292 @@
 // The tag values are lowercase (they're what the API stores); display them capitalised.
 #join-tags .chip {
     text-transform: capitalize;
+}
+
+// "👋 Open to meet" under a roster name: they picked themselves in discovery.
+.roster-row__open {
+    display: block;
+    margin-top: 2px;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--teal);
+}
+
+.match-tag {
+    text-transform: capitalize;
+}
+
+// --- Attendee discovery ---------------------------------------------------
+
+.discovery-prompt {
+    display: flex;
+    gap: v.$space-3;
+    align-items: flex-start;
+}
+
+.discovery-prompt__art {
+    flex-shrink: 0;
+    width: 72px;
+    height: auto;
+}
+
+// Avatar + who you are on one row; Edit / Leave underneath, so a long name
+// never gets squeezed into a narrow column beside the buttons.
+.discovery-status {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    align-items: center;
+    gap: v.$space-3;
+}
+
+.discovery-status__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: v.$radius-full;
+    object-fit: cover;
+    background: var(--paper-soft);
+    flex-shrink: 0;
+}
+
+.discovery-status__body {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.discovery-status__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: v.$space-2;
+}
+
+// "How should people see you?" — three big, tappable choices.
+.identity-choice {
+    border: 0;
+    padding: 0;
+    margin: 0 0 v.$space-4;
+    min-width: 0;
+}
+
+.identity-choice__options {
+    display: grid;
+    gap: v.$space-2;
+    margin: v.$space-2 0 v.$space-3;
+}
+
+.identity-option {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    min-height: 48px;
+    padding: v.$space-2 v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-md;
+    background: var(--paper);
+    font-size: v.$font-size-sm;
+    cursor: pointer;
+
+    input {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        accent-color: var(--brand-primary);
+    }
+
+    &:has(input:checked) {
+        border-color: var(--brand-primary);
+        background: var(--peach);
+    }
+
+    &:has(input:focus-visible) {
+        @include m.focus-ring;
+    }
+}
+
+.identity-panel[hidden] {
+    display: none;
+}
+
+.roster-picker {
+    display: grid;
+    gap: 2px;
+    margin-top: v.$space-2;
+}
+
+.roster-picker__row {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    width: 100%;
+    min-height: 48px;
+    padding: v.$space-2;
+    border-radius: v.$radius-sm;
+    text-align: left;
+    color: var(--ink);
+
+    .roster-row__avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    @include m.hover {
+        background: var(--peach);
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+
+    &--taken {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+}
+
+.roster-picker__name {
+    flex: 1;
+    min-width: 0;
+    font-weight: v.$font-weight-bold;
+    overflow-wrap: anywhere;
+}
+
+.roster-picker__note {
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.roster-picked {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-2 v.$space-3;
+    border: 1px solid var(--brand-primary);
+    border-radius: v.$radius-md;
+    background: var(--peach);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.roster-picked__name {
+    flex: 1;
+    min-width: 0;
+    font-weight: v.$font-weight-bold;
+    overflow-wrap: anywhere;
+
+    &::before {
+        content: '✓ ';
+        color: var(--success);
+    }
+}
+
+.form-error {
+    margin: 0 0 v.$space-3;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-sm;
+    background: rgba(179, 38, 30, 0.08);
+    color: var(--danger);
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+// A person in discovery: who they are first, then why you'd talk.
+.person-card {
+    @include m.card-surface;
+    padding: v.$space-4;
+    margin-bottom: v.$space-3;
+}
+
+.person-card__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    margin-bottom: v.$space-3;
+}
+
+.person-card__avatar {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: v.$radius-full;
+    object-fit: cover;
+    background: var(--paper-soft);
+    border: 2px solid var(--peach);
+}
+
+.person-card__who {
+    min-width: 0;
+}
+
+.person-card__name {
+    margin: 0;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-black;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.person-card__verified {
+    margin: 2px 0 0;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--teal);
+}
+
+.person-card__profession {
+    margin: 2px 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.person-card__common {
+    margin: 0 0 v.$space-2;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-sm;
+    background: rgba(4, 147, 149, 0.1);
+    font-size: v.$font-size-sm;
+    color: #03676a;
+
+    strong {
+        text-transform: capitalize;
+    }
+}
+
+.person-card__who-to-meet {
+    margin: v.$space-2 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.person-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: v.$space-2;
+    margin-top: v.$space-3;
+    padding-top: v.$space-3;
+    border-top: 1px solid var(--line);
+}
+
+.person-card__wporg {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.person-card__met {
+    margin-left: auto;
+}
+
+.person-card__met-label {
+    margin-left: auto;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--success);
 }

@@ -38,6 +38,15 @@ export async function apiMutate(eventSlug, path, method, body, ownerToken) {
     reportFailure(path, method, res.status);
     const error = new Error(`${method} ${path} failed: ${res.status}`);
     error.status = res.status;
+    // A validation failure (422) says what to fix — keep the first message
+    // so the form can show it instead of a generic "try again".
+    try {
+      const body = await res.json();
+      error.message = Object.values(body.errors ?? {})[0]?.[0] ?? body.message ?? error.message;
+      error.userMessage = res.status === 422 ? error.message : null;
+    } catch {
+      error.userMessage = null;
+    }
     throw error;
   }
 

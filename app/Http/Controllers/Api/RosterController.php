@@ -21,10 +21,18 @@ class RosterController extends Controller
     {
         $roster = $event->attendeeRoster()
             ->where('is_suppressed', false)
+            // "Open to meet": they picked this entry as themselves in attendee
+            // discovery — their own choice to be found. One subquery, not one per row.
+            ->withExists(['discoveryProfile as open_to_meet' => fn ($q) => $q->where(
+                fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now())
+            )])
             ->orderBy('name')
             ->paginate(200)
             ->through(fn ($entry) => [
+                // The id is what "that's me" in the discovery form sends back.
+                'id' => $entry->id,
                 'name' => $entry->name,
+                'open_to_meet' => (bool) $entry->open_to_meet,
                 // Only web addresses leave here, whatever was stored (rows
                 // scraped before the scraper checked, or a future source).
                 'gravatar_url' => SafeUrl::web($entry->gravatar_url),

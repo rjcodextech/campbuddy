@@ -18,3 +18,15 @@ The architecture note in [8.3](../08-security-privacy.md#83-matching-data--the-l
 > **Current implementation note:** a compact version of this join/status flow (not the full match list) is also surfaced directly on [Home](01-home.md) under "Meet people," reusing the same code as the full Explore → People experience so there's one source of truth either way.
 >
 > **"Who's attending" (the roster, M3/M4):** `Api\RosterController` paginates at 200/request (bounding any single response, not limiting what the attendee sees) — `people.js`'s `fetchFullRoster()` walks every page in parallel and renders the complete roster as one flat list in `#people-roster`'s normal flow, no inner scrollbox. Fixed from an earlier version that only fetched page 1 (50/request), silently hiding every attendee past the 50th alphabetically for any event with a larger roster.
+
+> **Current implementation note (who you are in discovery — supersedes "never your name" in M2):** anonymous-only profiles made matches unusable in practice — a card with three tags and no name can't be found in a room of 500 people. Joining now asks **"How should people see you?"** with three choices, the attendee's own decision each time:
+>
+> 1. **Pick my name from the attendee list** — search this event's public attendee list (the roster, [3.3](03-roster-ingestion.md)) and tap your name. The profile then shows *that entry's* public name, Gravatar and links (the same data already on the WordCamp's own Attendees page), marked "✓ On this WordCamp's attendee list". The name can't be typed over: the list's name always wins.
+> 2. **Type my name** — for someone not on the list (60 characters max, control characters stripped). Shown as typed, without the attendee-list mark.
+> 3. **Stay anonymous** — interests only, exactly as before.
+>
+> Plus an optional **WordPress.org username** (a pasted `profiles.wordpress.org/…` link is reduced to the username), shown as a "WordPress.org" button linking to their profile.
+>
+> **One name, one profile:** `discovery_profiles.attendee_roster_id` is unique, so a name already claimed can't be picked again (the picker shows it as "Already linked"; the API answers 422). Leaving discovery frees the name. Suppressing an attendee-list entry — self-service removal ([8.4](../08-security-privacy.md)) or an admin's Suppress — also unlinks it. Admin → Roster marks claimed names **In discovery** with an **Unlink** action, for when the real person says "that wasn't me".
+>
+> **Match list:** *Your best matches* (sharing at least one tag, strongest first, named people before anonymous ones, shared tags called out as "You both: …") → *Also open to meet* (everyone else who joined) → *People you've met*. Explore's "Who's attending" list marks names that joined discovery with **👋 Open to meet**. What's public is defined in one place: `DiscoveryProfile::publicCard()`.
