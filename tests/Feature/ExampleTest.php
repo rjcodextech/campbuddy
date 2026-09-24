@@ -14,6 +14,6 @@ class ExampleTest extends TestCase
     {
         $this->withoutVite();
 
-        $this->get('/')->assertOk()->assertSee('No WordCamp is live yet');
+        $this->get('/')->assertOk()->assertSee('No WordCamp is open yet');
     }
 }

@@ -16,10 +16,16 @@
 }
 
 .about-steps__title {
-    margin: 0 0 v.$space-4;
+    margin: 0 0 v.$space-1;
     font-size: v.$font-size-md;
     font-weight: v.$font-weight-black;
     color: #fff;
+}
+
+.about-steps__lead {
+    margin: 0 0 v.$space-4;
+    font-size: v.$font-size-sm;
+    color: rgba(251, 239, 217, 0.8);
 }
 
 .about-steps__list {
@@ -85,16 +91,6 @@
     font-size: v.$font-size-xs;
     line-height: v.$line-height-body;
     color: rgba(251, 239, 217, 0.85);
-}
-
-.about-steps__promise {
-    margin: v.$space-4 0 0;
-    padding-top: v.$space-3;
-    border-top: 1px solid rgba(251, 239, 217, 0.2);
-    font-size: v.$font-size-xs;
-    font-weight: v.$font-weight-bold;
-    letter-spacing: 0.04em;
-    color: #f4c77a;
 }
 
 // --- Tour: real screens in a phone frame -------------------------------------

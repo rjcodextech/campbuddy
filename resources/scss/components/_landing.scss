@@ -12,14 +12,99 @@
     padding: v.$space-5 v.$space-4 v.$space-8;
 }
 
-.landing-intro {
+// The first screen: what CampBuddy is, three promises, and two ways in.
+.landing-hero {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: v.$space-3;
     margin-bottom: v.$space-6;
+
+    @media (min-width: v.$bp-tablet) {
+        flex-direction: row;
+        align-items: center;
+        gap: v.$space-6;
+    }
 }
 
-.landing-intro__title {
-    font-size: v.$font-size-xl;
-    line-height: v.$line-height-tight;
+.landing-hero__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.landing-hero__title {
+    font-size: 1.75rem;
+    font-weight: v.$font-weight-black;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     margin: v.$space-1 0 v.$space-2;
+
+    @media (min-width: v.$bp-tablet) {
+        font-size: 2.1rem;
+    }
+}
+
+.landing-hero__lead {
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}
+
+.landing-hero__promises {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    margin: 0 0 v.$space-4;
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: v.$radius-full;
+        background: var(--peach);
+        font-size: v.$font-size-xs;
+        font-weight: v.$font-weight-bold;
+        color: var(--ink);
+
+        &::before {
+            content: '✓';
+            color: var(--brand-primary);
+            font-weight: v.$font-weight-black;
+        }
+    }
+}
+
+.landing-hero__actions {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+
+    @media (min-width: 420px) {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        text-align: center;
+    }
+}
+
+.landing-hero__art {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    max-height: 160px;
+    object-fit: contain;
+    object-position: left center;
+
+    @media (min-width: v.$bp-tablet) {
+        flex: 0 0 38%;
+        max-height: none;
+    }
 }
 
 // The event list itself now renders via .card-grid + <x-attendee.event-card>
@@ -49,4 +134,17 @@
     @media (min-width: v.$bp-desktop) {
         display: none;
     }
+}
+
+// A long event name shortens with "…" instead of pushing the arrow onto a
+// second line.
+.landing-bottom-bar__btn {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.landing-bottom-bar__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

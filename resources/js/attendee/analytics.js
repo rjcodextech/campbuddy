@@ -20,6 +20,7 @@
 const EVENTS = {
   // Navigation & acquisition
   select_event: ['event_slug'], // picker: an event card / "Open …" button
+  picker_cta: ['target'], // picker hero: choose
   nav_tab_click: ['tab'], // bottom nav
   switch_event_click: [], // topbar "WordCamp's" link back to the picker
 
@@ -37,7 +38,7 @@ const EVENTS = {
   home_link_click: ['target'], // full_schedule | all_quests | prep_guide | prep_my_day | prep_quest
 
   // First-timer guide
-  guide_open: ['surface'], // home_start_here | topbar | picker | picker_who_first | picker_who_student
+  guide_open: ['surface'], // home_start_here | topbar | picker (hero) | picker_who_first | picker_who_student
   tour_view: [], // the picker's "See it in action" tour came on screen
   guide_next_click: ['target'], // my_day | quest | camp_card
   guide_section_jump: ['section'], // here | what | day | words | tips | bring | faq

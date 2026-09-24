@@ -46,34 +46,41 @@
         </header>
 
         <main id="main-content" class="landing-main" tabindex="-1">
-            <section class="landing-intro">
-                <p class="u-eyebrow">Your WordCamp companion</p>
-                <h1 class="landing-intro__title">What should I do now?</h1>
-                <p class="footer-note" style="text-align:left">
-                    CampBuddy guides you through the day — schedule, people, and what to do next.
-                    No account, ever.
-                </p>
+            {{-- The first screen answers "what is this, and what do I do?" before
+            anything else: one plain sentence, the three promises people ask
+            about most, and the two ways in. --}}
+            <section class="landing-hero" aria-labelledby="landing-hero-title">
+                <div class="landing-hero__text">
+                    <p class="u-eyebrow">Your WordCamp companion</p>
+                    <h1 id="landing-hero-title" class="landing-hero__title">Your friendly guide to WordCamp</h1>
+                    <p class="landing-hero__lead">
+                        Know what's on, plan the talks you want and meet the right people — all from your phone.
+                        Made for first-timers, students and regulars.
+                    </p>
+                    <ul class="landing-hero__promises" aria-label="Good to know">
+                        <li>Free</li>
+                        <li>No sign-up</li>
+                        <li>Works offline</li>
+                    </ul>
+                    <div class="landing-hero__actions">
+                        <a class="btn btn--primary" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">Choose your WordCamp</a>
+                        {{-- WordCamp 101, before an event is even chosen — for someone
+                        who isn't sure yet what a WordCamp is. --}}
+                        <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">First WordCamp? Read this first</a>
+                    </div>
+                </div>
+                <img class="landing-hero__art" src="/media/illustrations/welcome.svg" alt="" width="320" height="200">
             </section>
 
             @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
-
-            {{-- WordCamp 101, before an event is even chosen — for someone who
-            isn't sure yet what a WordCamp is. --}}
-            <a class="start-here start-here--link" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                <span class="start-here__art" aria-hidden="true"><img src="/media/icons/icon-192.png" alt="" width="64" height="64"></span>
-                <span>
-                    <span class="start-here__title">First WordCamp? Read this first</span>
-                    <span class="start-here__desc">What happens during the day, the words people use, and how to meet people.</span>
-                    <span class="start-here__cta">Open the 5-minute guide →</span>
-                </span>
-            </a>
 
             {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
             (the skip/continue buttons and the profile they save are wired there). --}}
             <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
                 <div class="onboarding-card">
-                    <h2 class="form-group__title" id="onboarding-welcome-heading">Tell us a little about you</h2>
-                    <p class="form-group__desc">Every question is skippable, and your answers stay on this device.</p>
+                    <p class="onboarding-card__badge">Optional · 30 seconds</p>
+                    <h2 class="form-group__title" id="onboarding-welcome-heading">Make CampBuddy yours</h2>
+                    <p class="form-group__desc">Your answers help us suggest talks and people for you. They stay on this device.</p>
 
                     <div class="form-field">
                         <label class="form-field__label" for="ob-first">Is this your first WordCamp?</label>
@@ -85,7 +92,7 @@
                     </div>
 
                     <div class="form-field">
-                        <span class="form-field__label" id="ob-interests-label">What are you into?</span>
+                        <span class="form-field__label" id="ob-interests-label">What describes you?</span>
                         <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
                             @foreach (['Student', 'Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
                                 <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ $tag }}</button>
@@ -98,6 +105,7 @@
 
                     <div class="form-field">
                         <label class="form-field__label" for="ob-contrib">Interested in Contributor Day?</label>
+                        <p class="form-field__hint" style="margin:0 0 6px">A hands-on day helping improve WordPress — beginners are welcome.</p>
                         <select id="ob-contrib" data-field="attendingContributorDay">
                             <option value="">Not sure yet</option>
                             <option value="yes">Yes</option>
@@ -106,8 +114,8 @@
                     </div>
 
                     <div class="onboarding-card__actions">
-                        <button type="button" class="btn btn--outline" data-action="skip">Skip</button>
-                        <button type="button" class="btn btn--primary" data-action="save">Continue</button>
+                        <button type="button" class="btn btn--outline" data-action="skip">Skip for now</button>
+                        <button type="button" class="btn btn--primary" data-action="save">Save</button>
                     </div>
                 </div>
             </section>
@@ -115,11 +123,12 @@
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
                     <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
+                    <span class="section-head__desc">Tap your event to see its schedule, people and guide</span>
                 </div>
 
                 @if (($events ?? collect())->isEmpty())
                     <div class="card" style="text-align:center">
-                        <p class="footer-note">No WordCamp is live yet — check back closer to the event.</p>
+                        <p class="footer-note">No WordCamp is open yet — events appear here a few weeks before they start. Meanwhile, the <a href="{{ route('guide') }}">first-timer guide</a> is a great place to begin.</p>
                     </div>
                 @else
                     <div class="card-grid">
@@ -146,7 +155,7 @@
                                 :location="$event->info['venue'] ?? null"
                             >
                                 <x-slot:footer>
-                                    <span class="event-card__cta">View event <span aria-hidden="true">→</span></span>
+                                    <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
                                 </x-slot:footer>
                             </x-attendee.event-card>
                         @endforeach
@@ -162,7 +171,7 @@
         @if (($events ?? collect())->isNotEmpty())
             <nav class="landing-bottom-bar" aria-label="Continue">
                 @if ($events->count() === 1)
-                    <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}">Open {{ $events->first()->display_name }} →</a>
+                    <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full landing-bottom-bar__btn" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}"><span class="landing-bottom-bar__label">Open {{ $events->first()->display_name }}</span> <span aria-hidden="true">→</span></a>
                 @else
                     <a href="#find-your-camp" class="btn btn--primary btn--full">Choose your WordCamp ↓</a>
                 @endif

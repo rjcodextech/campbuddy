@@ -1,4 +1,4 @@
-// Inline "Tell us a little about you" onboarding section — lives on the
+// Inline "Make CampBuddy yours" onboarding section — lives on the
 // WordCamp picker page ("/"), right after the intro, before any event is
 // even selected (OB1/OB3 in the product spec), replacing the old
 // blocking <dialog> popup. Never blocks the rest of the page from
@@ -65,6 +65,12 @@ export async function renderOnboardingSection() {
 
     await kvSet('onboarding', profile);
     section.hidden = true;
+
+    // The next step is choosing an event, which sits right below.
+    document.getElementById('find-your-camp')?.scrollIntoView({
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      block: 'start',
+    });
   };
 
   section.querySelector('[data-action="skip"]').addEventListener('click', () => finish('skip'));

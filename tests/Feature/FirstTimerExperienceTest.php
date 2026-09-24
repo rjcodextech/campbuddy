@@ -188,7 +188,7 @@ class FirstTimerExperienceTest extends TestCase
         $response->assertSee('How CampBuddy helps you at WordCamp')
             ->assertSee('See it in action')
             ->assertSee('data-tour', false)
-            ->assertSee('Made for')
+            ->assertSee('Made for you, whoever you are')
             ->assertSee('College students')
             ->assertSee('Is it free?')
             ->assertSee('data-tag="Student"', false);

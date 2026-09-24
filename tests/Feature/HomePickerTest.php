@@ -124,7 +124,7 @@ class HomePickerTest extends TestCase
 
     public function test_the_empty_state_still_renders(): void
     {
-        $this->get('/')->assertOk()->assertSee('No WordCamp is live yet');
+        $this->get('/')->assertOk()->assertSee('No WordCamp is open yet');
     }
 
     public function test_a_single_event_offers_a_direct_open_button_and_several_offer_the_picker(): void
