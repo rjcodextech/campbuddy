@@ -12,6 +12,7 @@
                 <th>Status</th>
                 <th class="hidden md:table-cell">Visibility</th>
                 <th class="hidden md:table-cell">Dates</th>
+                <th class="hidden lg:table-cell">Data</th>
                 <th class="hidden text-right sm:table-cell">Attendees</th>
                 <th class="w-px"><span class="sr-only">Actions</span></th>
             </x-slot:head>
@@ -37,13 +38,21 @@
                             —
                         @endif
                     </td>
+                    <td class="hidden whitespace-nowrap lg:table-cell">
+                        @if ($fetch = $lastFetches[$event->id] ?? null)
+                            <x-fetch-status :status="$fetch->status" />
+                            <span class="ml-1 text-xs text-muted">{{ $fetch->fetched_at->diffForHumans(short: true) }}</span>
+                        @else
+                            <span class="text-xs text-muted">Not fetched</span>
+                        @endif
+                    </td>
                     <td class="hidden text-right tabular-nums sm:table-cell">{{ number_format($event->attendee_roster_count) }}</td>
                     <td class="text-right">
                         <x-button :href="route('admin.events.edit', $event)" variant="secondary" size="sm">Manage</x-button>
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="6" icon="calendar" title="No events yet">
+                <x-table.empty :colspan="7" icon="calendar" title="No events yet">
                     Add a WordCamp by hand, or run discovery to find upcoming ones — they land here as drafts.
                 </x-table.empty>
             @endforelse

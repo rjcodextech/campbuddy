@@ -356,10 +356,10 @@ class EventInfoFetchTest extends TestCase
         $html = $this->actingAs($admin)->get(route('admin.events.edit', $event))->assertOk()->getContent();
 
         $this->assertStringContainsString('Fetch latest', $html);
-        $this->assertStringContainsString('Auto-filled from the WordCamp site', $html);
-        $this->assertStringContainsString('Edited by you', $html);   // the wifi they typed
+        $this->assertStringContainsString('From the WordCamp site.', $html);
+        $this->assertStringContainsString('Your edit — kept on refresh.', $html);   // the wifi they typed
         $this->assertStringContainsString('Grand Hall', $html);
-        $this->assertStringContainsString('Nothing found on the WordCamp site — left blank.', $html);
+        $this->assertStringContainsString('Not found on the WordCamp site.', $html);
     }
 
     public function test_saving_the_form_untouched_does_not_turn_auto_values_into_edits(): void

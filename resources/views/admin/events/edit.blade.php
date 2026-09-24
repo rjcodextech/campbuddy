@@ -8,9 +8,9 @@
         $fetched = ($event->info_fetched ?? [])[$field] ?? null;
 
         $note = match (true) {
-            blank($value) => $event->info_fetched_at ? 'Nothing found on the WordCamp site — left blank.' : null,
-            $value === $fetched => 'Auto-filled from the WordCamp site. Type here to override it.',
-            default => 'Edited by you — kept when fetching. Clear it to auto-fill again.',
+            blank($value) => $event->info_fetched_at ? 'Not found on the WordCamp site.' : null,
+            $value === $fetched => 'From the WordCamp site.',
+            default => 'Your edit — kept on refresh.',
         };
 
         return trim(($extra ? $extra.' ' : '').($note ?? ''));
@@ -29,6 +29,66 @@
     <x-admin.event-nav :event="$event" current="details" />
 
     <div class="max-w-4xl space-y-6">
+        {{-- Sessions / speakers / sponsors ingestion --}}
+        <x-card title="Event data" description="What attendees see right now. Updates by itself every 15 minutes (the attendee list daily) — new items added, changes updated, removed ones dropped; never cleared first.">
+            <x-slot:actions>
+                <x-action-form :action="route('admin.events.refresh', $event)" icon="refresh" size="sm">Refresh now</x-action-form>
+            </x-slot:actions>
+
+            <dl class="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                @foreach ($dataCounts as $label => $count)
+                    <div class="rounded-lg border border-line bg-paper-soft px-3 py-2">
+                        <dt class="text-xs text-muted">{{ $label }}</dt>
+                        <dd class="text-lg font-semibold {{ $count === null ? 'text-muted' : '' }}">{{ $count ?? '—' }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+            @if (in_array(null, $dataCounts, true))
+                <p class="mt-2 text-xs text-muted">"—" means nothing has been fetched yet.</p>
+            @endif
+
+            <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                @if ($lastFetch)
+                    <span class="font-medium">Last fetch:</span>
+                    <x-fetch-status :status="$lastFetch->status" />
+                    <span class="text-muted">{{ $lastFetch->fetched_at->diffForHumans() }}</span>
+                    @if ($lastFetch->message)
+                        <span class="basis-full text-muted">{{ $lastFetch->message }}</span>
+                    @endif
+                @else
+                    <span class="text-muted">No schedule fetch has run yet for this event.</span>
+                @endif
+            </div>
+
+            @if ($recentFetches->isNotEmpty())
+                <details class="mt-5 rounded-lg border border-line">
+                    <summary class="cursor-pointer px-4 py-2.5 text-sm font-medium">Recent fetch history ({{ $recentFetches->count() }})</summary>
+                    <div class="overflow-x-auto border-t border-line">
+                        <table class="min-w-full text-left text-sm">
+                            <thead class="bg-paper-soft text-xs text-muted">
+                                <tr>
+                                    <th scope="col" class="px-4 py-2 font-medium">When</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">What</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">Result</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-line">
+                                @foreach ($recentFetches as $log)
+                                    <tr class="align-top">
+                                        <td class="whitespace-nowrap px-4 py-2 text-muted" title="{{ $log->fetched_at }}">{{ $log->fetched_at->diffForHumans() }}</td>
+                                        <td class="whitespace-nowrap px-4 py-2">{{ $jobLabels[$log->job_type] ?? $log->job_type }}</td>
+                                        <td class="px-4 py-2"><x-fetch-status :status="$log->status" /></td>
+                                        <td class="px-4 py-2 text-muted">{{ $log->message }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            @endif
+        </x-card>
+
         {{-- Core details --}}
         <form method="POST" action="{{ route('admin.events.update', $event) }}">
             @csrf
@@ -53,7 +113,7 @@
             @csrf
             @method('PUT')
 
-            <x-card title="Event information" description="Shown on Explore → Event Info. Filled in from the event's WordCamp site and refreshed daily; anything you type is kept. Blank fields are left out.">
+            <x-card title="Event information" description="Shown on Explore → Event Info. Filled in from the WordCamp site; anything you type is kept. Blank fields are hidden.">
                 <x-slot:actions>
                     <x-button type="submit" form="fetch-info-form" variant="secondary" size="sm" icon="refresh">Fetch latest</x-button>
                 </x-slot:actions>
@@ -149,66 +209,6 @@
                     <x-button variant="secondary" icon="upload">Upload</x-button>
                 </div>
             </form>
-        </x-card>
-
-        {{-- Sessions / speakers / sponsors ingestion --}}
-        <x-card title="Data health" description="What attendees currently see, where it came from, and the last few fetches. Sessions, speakers and sponsors refresh every 15 minutes while the event is active; the attendee list nightly.">
-            <dl class="grid grid-cols-2 gap-3 sm:grid-cols-5">
-                @foreach ($dataCounts as $label => $count)
-                    <div class="rounded-lg border border-line bg-paper-soft px-3 py-2">
-                        <dt class="text-xs text-muted">{{ $label }}</dt>
-                        <dd class="text-lg font-semibold {{ $count === null ? 'text-muted' : '' }}">{{ $count ?? '—' }}</dd>
-                    </div>
-                @endforeach
-            </dl>
-            @if (in_array(null, $dataCounts, true))
-                <p class="mt-2 text-xs text-muted">"—" means nothing has been fetched yet (or the cache was purged and the next run hasn't happened).</p>
-            @endif
-
-            <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                @if ($lastFetch)
-                    <span class="font-medium">Schedule:</span>
-                    <x-fetch-status :status="$lastFetch->status" />
-                    <span class="text-muted">{{ $lastFetch->fetched_at->diffForHumans() }}</span>
-                    @if ($lastFetch->message)
-                        <span class="basis-full text-muted">{{ $lastFetch->message }}</span>
-                    @endif
-                @else
-                    <span class="text-muted">No schedule fetch has run yet for this event.</span>
-                @endif
-            </div>
-
-            @if ($recentFetches->isNotEmpty())
-                <details class="mt-5 rounded-lg border border-line">
-                    <summary class="cursor-pointer px-4 py-2.5 text-sm font-medium">Recent fetch history ({{ $recentFetches->count() }})</summary>
-                    <div class="overflow-x-auto border-t border-line">
-                        <table class="min-w-full text-left text-sm">
-                            <thead class="bg-paper-soft text-xs text-muted">
-                                <tr>
-                                    <th scope="col" class="px-4 py-2 font-medium">When</th>
-                                    <th scope="col" class="px-4 py-2 font-medium">What</th>
-                                    <th scope="col" class="px-4 py-2 font-medium">Result</th>
-                                    <th scope="col" class="px-4 py-2 font-medium">Details</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-line">
-                                @foreach ($recentFetches as $log)
-                                    <tr class="align-top">
-                                        <td class="whitespace-nowrap px-4 py-2 text-muted" title="{{ $log->fetched_at }}">{{ $log->fetched_at->diffForHumans() }}</td>
-                                        <td class="whitespace-nowrap px-4 py-2">{{ $jobLabels[$log->job_type] ?? $log->job_type }}</td>
-                                        <td class="px-4 py-2"><x-fetch-status :status="$log->status" /></td>
-                                        <td class="px-4 py-2 text-muted">{{ $log->message }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </details>
-            @endif
-
-            <x-slot:footer>
-                <x-action-form :action="route('admin.events.refresh', $event)" icon="refresh">Refresh now</x-action-form>
-            </x-slot:footer>
         </x-card>
 
         @if ($event->status === 'draft')

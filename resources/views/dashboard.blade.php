@@ -110,8 +110,8 @@
             sites (DataRefresher) vs. dropping saved copies (CachePurger). --}}
             <x-card title="Event data" description="Schedule, speakers, sponsors and event info from each WordCamp site.">
                 <p class="text-sm text-muted">
-                    Updates by itself every 15 minutes. New items are added, changes updated and removed ones dropped —
-                    nothing is cleared first, so a site hiccup never empties the app. Open apps update on their own.
+                    Updates by itself every 15 minutes. Nothing is cleared first — new items are added, changes
+                    updated, removed ones dropped — and open apps update on their own.
                 </p>
                 <p class="mt-3 border-t border-line pt-3 text-xs text-muted">
                     @if ($lastDataFetch)
@@ -129,7 +129,7 @@
 
             <x-card title="Cache" description="Site or installed app showing an old page?">
                 <p class="text-sm text-muted">
-                    Clears the server's caches@if ($cloudflareConfigured) and Cloudflare@endif, and makes every open app reload.
+                    Clears the server's caches{{ $cloudflareConfigured ? ' and Cloudflare' : '' }} and makes every open app reload.
                     It doesn't fetch data, and attendees' saved sessions and Camp Cards aren't touched.
                 </p>
                 @unless ($cloudflareConfigured)

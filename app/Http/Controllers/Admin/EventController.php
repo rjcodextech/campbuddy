@@ -11,6 +11,7 @@ use App\Jobs\FetchBrandingAssetsJob;
 use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
+use App\Models\FetchLog;
 use App\Support\EventData;
 use App\Support\SvgGuard;
 use Closure;
@@ -29,7 +30,15 @@ class EventController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('admin.events.index', compact('events'));
+        // Each event's latest schedule fetch, for the "Data" column — one query.
+        $lastFetches = FetchLog::whereIn('id', FetchLog::selectRaw('max(id)')
+            ->whereIn('event_id', $events->pluck('id'))
+            ->where('job_type', 'sessions_speakers_sponsors')
+            ->groupBy('event_id'))
+            ->get()
+            ->keyBy('event_id');
+
+        return view('admin.events.index', compact('events', 'lastFetches'));
     }
 
     /**

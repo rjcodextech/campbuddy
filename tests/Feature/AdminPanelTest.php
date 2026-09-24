@@ -115,7 +115,7 @@ class AdminPanelTest extends TestCase
             route('dashboard') => ['Dashboard', 'Recently updated events', 'Upstream timed out'],
             route('admin.events.index') => ['Events', 'WordCamp Test', 'Manage'],
             route('admin.events.create') => ['Add event', 'Create event'],
-            route('admin.events.edit', $event) => ['WordCamp Test', 'Event information', 'Branding', 'Data health', 'View in app'],
+            route('admin.events.edit', $event) => ['WordCamp Test', 'Event information', 'Branding', 'Event data', 'View in app'],
             route('admin.events.quests.index', $event) => ['Quests &amp; checklist', 'Save venue directions', 'Add a checklist item'],
             route('admin.events.offers.index', $event) => ['Deals', 'Hosting deal', 'Add a deal'],
             route('admin.events.roster.index', $event) => ['Roster', 'Jamie Rivera', 'Suppress'],
