@@ -43,16 +43,14 @@
                     <div class="qr__actions">
                         <button type="button" class="btn btn--outline btn--compact" data-share-card="{{ $key }}">Share</button>
                         <button type="button" class="btn btn--outline btn--compact" data-download-card="{{ $key }}">Download</button>
-                        <button type="button" class="btn btn--outline btn--compact" data-print-card="{{ $key }}">Print / PDF</button>
                     </div>
                 </div>
             @endforeach
         </div>
 
         <p class="cc-print-note">
-            <strong>Print quality:</strong> Download and Share give a 600&nbsp;DPI image (3&nbsp;×&nbsp;5&nbsp;in).
-            <strong>Print / PDF</strong> prints the card at exactly 3&nbsp;×&nbsp;5&nbsp;in with sharp text — choose
-            “Save as PDF” in the print dialog for a file a print shop can use.
+            <strong>Print quality:</strong> Download and Share give a 600&nbsp;DPI image, sized for a 3&nbsp;×&nbsp;5&nbsp;in card —
+            sharp enough for a print shop.
         </p>
 
         <details class="cc-editor" open id="cc-edit-details">

@@ -144,10 +144,6 @@ export async function renderCampCard() {
     document.getElementById('cc-edit-details').open = false;
     showToast('Camp Card saved.');
   });
-  document.querySelectorAll('[data-print-card]').forEach((btn) => {
-    btn.addEventListener('click', () => printCard(btn.dataset.printCard));
-  });
-
   document.querySelectorAll('[data-download-card]').forEach((btn) => {
     btn.addEventListener('click', () => downloadCard(btn.dataset.downloadCard));
   });
@@ -277,44 +273,6 @@ async function downloadCard(layout) {
   } finally {
     btn.disabled = false;
     btn.textContent = original;
-  }
-}
-
-// Print / PDF: the browser prints the card itself — not an image of it —
-// so text and shapes stay vector at any size, and "Save as PDF" gives a
-// file a print shop can use. One card on its own 3 × 5 in page (the
-// .cc-print-sheet rules in components/_camp-card.scss), QR at print size.
-async function printCard(layout) {
-  const btn = document.querySelector(`[data-print-card="${layout}"]`);
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Preparing…';
-
-  const sheet = document.createElement('div');
-  sheet.className = 'cc-print-sheet';
-  sheet.appendChild(cardElement(layout).cloneNode(true));
-  document.body.appendChild(sheet);
-
-  const cleanUp = () => {
-    document.body.classList.remove('cc-printing');
-    sheet.remove();
-    btn.disabled = false;
-    btn.textContent = original;
-  };
-
-  try {
-    await document.fonts?.ready;
-    await paintCard(sheet.firstElementChild, shown.content, shown.qr, QR_EXPORT_PX);
-    forExport(sheet.firstElementChild);
-
-    document.body.classList.add('cc-printing');
-    window.addEventListener('afterprint', cleanUp, { once: true });
-    track('camp_card_print', { layout });
-    window.print();
-  } catch {
-    cleanUp();
-    track('camp_card_export_error', { action: 'print', layout });
-    alert("Couldn't prepare the card for printing — try Download instead.");
   }
 }
 
@@ -683,6 +641,9 @@ async function paintCard(card, content, qr, qrPixels = QR_PREVIEW_PX) {
   card.querySelector('.camp-card__name').textContent = content.name;
   card.querySelector('.camp-card__role').textContent = content.roleLine;
   card.querySelector('.camp-card__scan').textContent = content.scan ?? '';
+  // Size the name to the card's content (see .camp-card__name's --name-scale).
+  card.classList.toggle('camp-card--long-name', (content.name ?? '').length > 20);
+  card.classList.toggle('camp-card--name-only', !content.roleLine && content.tags.length === 0 && (content.name ?? '').length <= 20);
   card.querySelector('.camp-card__footer').hidden = !qr;
 
   paintTags(card, content.tags);

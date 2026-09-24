@@ -244,9 +244,12 @@ body > div > img[width='1'][height='1'] {
     }
 }
 
+// --name-scale fits the name to what's on the card (camp-card.js): a
+// long name steps down so it doesn't crowd out the rest, and a card with
+// nothing but a name shows it bigger instead of leaving the card empty.
 .camp-card__name {
     font-family: v.$font-serif;
-    font-size: cc(24);
+    font-size: calc(#{cc(24)} * var(--name-scale, 1));
     font-weight: v.$font-weight-bold;
     line-height: v.$line-height-tight;
     overflow-wrap: anywhere;
@@ -272,6 +275,23 @@ body > div > img[width='1'][height='1'] {
     gap: cc(8);
     margin-top: cc(16);
     margin-bottom: auto;
+
+    // No tags (none chosen, or none fit): no gap, and no empty box — it
+    // stays in the flow only to keep the name block centred.
+    &:empty {
+        margin-top: 0;
+        padding: 0 !important;
+        border: 0 !important;
+        background: none !important;
+    }
+}
+
+.camp-card--long-name {
+    --name-scale: 0.8;
+}
+
+.camp-card--name-only {
+    --name-scale: 1.35;
 }
 
 // Explicit line-height and padding (rather than letting the font decide)
@@ -560,7 +580,7 @@ body > div > img[width='1'][height='1'] {
     .camp-card__name {
         font-family: v.$font-sans;
         font-weight: v.$font-weight-black;
-        font-size: cc(27.6);
+        font-size: calc(#{cc(27.6)} * var(--name-scale, 1));
         text-transform: uppercase;
     }
 
@@ -699,44 +719,3 @@ body > div > img[width='1'][height='1'] {
     }
 }
 
-// --- Print / PDF ------------------------------------------------------
-// camp-card.js puts one card on this sheet and calls window.print(): the
-// card is printed by the browser itself, at exactly 3 × 5 in, so its text
-// and shapes stay vector (sharp at any size, and in a "Save as PDF" file),
-// with the QR drawn at print resolution. Off screen otherwise.
-.cc-print-sheet {
-    position: absolute;
-    top: 0;
-    left: -10000px;
-    width: 3in;
-    container-type: inline-size;
-    page: campcard;
-
-    .camp-card {
-        box-shadow: none;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-}
-
-@page campcard {
-    size: 3in 5in;
-    margin: 0;
-}
-
-@media print {
-    body.cc-printing {
-        display: block;
-        min-height: 0;
-        background: #fff;
-
-        > *:not(.cc-print-sheet) {
-            display: none !important;
-        }
-    }
-
-    .cc-print-sheet {
-        position: static;
-        left: auto;
-    }
-}
