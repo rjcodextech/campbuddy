@@ -83,6 +83,11 @@ async function init() {
     renderPeople(root);
   }
 
+  if (document.getElementById('guide-data')) {
+    const { renderGuide } = await import('./guide.js');
+    renderGuide();
+  }
+
   if (document.getElementById('data-controls')) {
     const { mountDataControls } = await import('./data-controls.js');
     mountDataControls(root, 'data-controls');

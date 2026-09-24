@@ -56,3 +56,42 @@
 .u-page-intro {
     margin-bottom: v.$space-5;
 }
+
+.u-visually-hidden {
+    @include m.visually-hidden;
+}
+
+// A friendly empty screen: illustration, a heading, what to do next.
+.empty-state {
+    padding: v.$space-6 v.$space-2;
+    text-align: center;
+
+    img {
+        display: block;
+        width: 140px;
+        height: auto;
+        margin: 0 auto v.$space-3;
+    }
+}
+
+.empty-state__title {
+    margin: 0 0 v.$space-1;
+    font-weight: v.$font-weight-black;
+    color: var(--ink);
+}
+
+.empty-state__text {
+    max-width: 30rem;
+    margin: 0 auto;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}
+
+// One sentence at the top of a panel saying what it is and why it matters.
+.panel-intro {
+    margin: 0 0 v.$space-4;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}

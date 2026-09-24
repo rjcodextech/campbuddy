@@ -18,19 +18,30 @@
                         @endif
                     </p>
                 @endif
+                {{-- "Starts in 3 days" / "Day 1 of 2" / "That's a wrap" — home.js,
+                from the device's own clock and date. --}}
+                <p class="home-hero__status" id="event-status" hidden></p>
             </div>
         </section>
 
         <div id="starting-soon-banner" hidden></div>
 
-        <section aria-labelledby="people-cta-heading">
-            <div class="section-head">
-                <h2 id="people-cta-heading" class="section-head__title">Meet people</h2>
+        {{-- Shown by default — first-timers are who CampBuddy is for — and
+        hidden by home.js for someone who told onboarding it isn't their first
+        WordCamp, or who dismissed it. --}}
+        <div class="start-here" id="start-here">
+            <img class="start-here__art" src="/media/illustrations/welcome.svg" alt="" width="84" height="53">
+            <div>
+                <a class="start-here__link" href="{{ route('event.guide', $event) }}" data-track="guide_open" data-track-surface="home_start_here">
+                    <span class="start-here__title">New to WordCamp? Start here</span>
+                </a>
+                <span class="start-here__desc">What happens during the day, the words people use, and how to meet people — in five minutes.</span>
+                <span class="start-here__cta" aria-hidden="true">Read the guide →</span>
             </div>
-            <div id="people-discovery-home" data-explore-url="{{ route('event.explore', $event) }}"></div>
-        </section>
+            <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss">×</button>
+        </div>
 
-        <section aria-labelledby="happening-now-heading" style="margin-top:20px">
+        <section aria-labelledby="happening-now-heading">
             <div class="section-head">
                 <h2 id="happening-now-heading" class="section-head__title">Happening now</h2>
             </div>
@@ -39,16 +50,18 @@
             </div>
         </section>
 
-        <section aria-labelledby="up-next-heading" style="margin-top:20px">
+        <section aria-labelledby="up-next-heading" class="home-section">
             <div class="section-head">
                 <h2 id="up-next-heading" class="section-head__title">Up next</h2>
+                <a class="section-head__link" href="{{ route('event.my-day', $event) }}">Full schedule →</a>
             </div>
             <div id="up-next" class="card"></div>
         </section>
 
-        <section aria-labelledby="suggested-action-heading" style="margin-top:20px">
+        <section aria-labelledby="suggested-action-heading" class="home-section">
             <div class="section-head">
                 <h2 id="suggested-action-heading" class="section-head__title">One thing to try</h2>
+                <a class="section-head__link" href="{{ route('event.quest', $event) }}">All quests →</a>
             </div>
             <div id="suggested-action" class="action-card action-card--wide">
                 <span class="action-card__icon" aria-hidden="true">💡</span>
@@ -59,12 +72,21 @@
             </div>
         </section>
 
-        <section aria-labelledby="progress-heading" style="margin-top:20px">
+        <section aria-labelledby="people-cta-heading" class="home-section">
+            <div class="section-head">
+                <h2 id="people-cta-heading" class="section-head__title">Meet people</h2>
+            </div>
+            <div id="people-discovery-home" data-explore-url="{{ route('event.explore', $event) }}"></div>
+        </section>
+
+        <section aria-labelledby="progress-heading" class="home-section">
             <div class="section-head">
                 <h2 id="progress-heading" class="section-head__title">Your progress</h2>
                 <span class="section-head__desc" id="progress-summary"></span>
             </div>
-            <div class="progress"><span class="progress__bar" id="progress-bar" style="width:0%"></span></div>
+            <div class="progress" role="progressbar" aria-labelledby="progress-heading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-track">
+                <span class="progress__bar" id="progress-bar" style="width:0%"></span>
+            </div>
         </section>
     </main>
 
@@ -77,5 +99,15 @@
     <script type="application/json" id="home-data">{!! json_encode([
         'sessions' => $sessions,
         'quests' => $quests->map(fn ($q) => ['id' => $q->id, 'title' => $q->title, 'description' => $q->description]),
+        'moments' => \App\Support\FirstTimerGuide::moments(),
+        'sessionNow' => \App\Support\FirstTimerGuide::sessionNow(),
+        'startsOn' => $event->starts_on?->toDateString(),
+        'endsOn' => ($event->ends_on ?? $event->starts_on)?->toDateString(),
+        'urls' => [
+            'myDay' => route('event.my-day', $event),
+            'guide' => route('event.guide', $event),
+            'quest' => route('event.quest', $event),
+            'contribute' => route('event.contribute', $event),
+        ],
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
 </x-attendee-layout>

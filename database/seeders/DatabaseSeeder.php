@@ -13,5 +13,9 @@ class DatabaseSeeder extends Seeder
      * `php artisan db:seed --class=AdminUserSeeder` — never as a
      * side effect of a general `db:seed` run.
      */
-    public function run(): void {}
+    public function run(): void
+    {
+        // Idempotent — also run by a migration, so this only fills gaps.
+        $this->call(DefaultQuestSeeder::class);
+    }
 }

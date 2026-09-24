@@ -50,3 +50,95 @@
     color: var(--muted);
     margin: v.$space-1 0 0;
 }
+
+// "Starts in 3 days" / "Day 1 of 2 · happening now" — home.js.
+.home-hero__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: v.$space-2 0 0;
+    padding: 2px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+
+    &[hidden] {
+        display: none;
+    }
+
+    // A live dot while the event is on.
+    &[data-phase='during']::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: v.$radius-full;
+        background: var(--success);
+        box-shadow: 0 0 0 3px rgba(31, 122, 77, 0.18);
+    }
+}
+
+.home-section {
+    margin-top: v.$space-6;
+}
+
+// "What to do about it" under a schedule fact (spec H5).
+.home-guidance {
+    margin: v.$space-2 0 0;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--ink);
+
+    &::before {
+        content: '👉 ';
+    }
+}
+
+.home-now-list {
+    list-style: none;
+    margin: v.$space-2 0 0;
+    padding: 0;
+}
+
+.home-now-item {
+    padding: v.$space-2 0;
+    border-bottom: 1px solid rgba(195, 58, 25, 0.18);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.home-now-item__title {
+    display: block;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+    line-height: v.$line-height-snug;
+}
+
+.home-now-item__meta {
+    display: block;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+    margin-top: 2px;
+}
+
+.home-prep {
+    margin: v.$space-2 0 0;
+    padding-left: v.$space-5;
+    list-style: disc;
+
+    li {
+        padding: 3px 0;
+        font-size: v.$font-size-sm;
+    }
+
+    a {
+        color: var(--brand-primary);
+        font-weight: v.$font-weight-bold;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}

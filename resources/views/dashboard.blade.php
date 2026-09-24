@@ -67,7 +67,7 @@
                     <div class="border-t border-line py-2.5 first:border-t-0 first:pt-0 last:pb-0">
                         <div class="flex items-center justify-between gap-2">
                             <span class="truncate text-sm font-medium">{{ $log->event?->display_name ?? 'All events' }}</span>
-                            <x-badge variant="danger">{{ $log->status }}</x-badge>
+                            <x-fetch-status :status="$log->status" />
                         </div>
                         <p class="mt-0.5 line-clamp-2 text-xs text-muted">{{ $log->message ?: $log->job_type }}</p>
                         <p class="mt-0.5 text-xs text-muted/70">{{ $log->fetched_at->diffForHumans() }}</p>

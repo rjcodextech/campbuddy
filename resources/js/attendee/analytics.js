@@ -29,6 +29,11 @@ const EVENTS = {
   install_complete: [],
   desktop_notice_dismiss: [],
 
+  // First-timer guide
+  guide_open: ['surface'], // home_start_here | topbar | picker
+  guide_next_click: ['target'], // my_day | quest | camp_card
+  start_here_dismiss: [],
+
   // Onboarding — outcome only, never the answers
   onboarding_complete: [],
   onboarding_skip: [],

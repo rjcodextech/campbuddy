@@ -165,6 +165,16 @@
                         <x-alert type="success" class="mb-6">{{ $flashMessages[$flash] ?? $flash }}</x-alert>
                     @endif
 
+                    {{-- A manual action that didn't fully work (a refresh, a fetch)
+                    says so in its own colour — never as a green "success". --}}
+                    @if (session('warning'))
+                        <x-alert type="warning" class="mb-6" title="Partly done">{{ session('warning') }}</x-alert>
+                    @endif
+
+                    @if (session('error'))
+                        <x-alert type="error" class="mb-6" title="That didn't work">{{ session('error') }}</x-alert>
+                    @endif
+
                     @if ($errors->any())
                         <x-alert type="error" class="mb-6" title="Please fix the following and try again.">
                             <ul class="list-inside list-disc space-y-0.5">

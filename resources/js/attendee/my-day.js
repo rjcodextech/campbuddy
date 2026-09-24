@@ -12,7 +12,7 @@
 import { track } from './analytics.js';
 import { getBookmarks, setBookmark, removeBookmark } from './db.js';
 import { setSectionTitle } from './page-title.js';
-import { offerReminder } from './push.js';
+import { cancelReminder, offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
 
@@ -36,10 +36,12 @@ export async function renderMyDay(root) {
   setupTabs();
   setupDayFilters(timed);
   const trackNames = setupChipFilter('track-filters', timed, (s) => s.track_names ?? []);
-  const typeNames = setupChipFilter('type-filters', timed, (s) => (s.session_type ? [s.session_type] : []));
+  const typeNames = setupChipFilter('type-filters', timed, (s) => (s.session_type ? [s.session_type] : []), typeFilterLabel);
+  setupChipFilter('topic-filters', timed, (s) => s.category_names ?? []);
   let activeDay = null;
   let activeTrack = null;
   let activeType = null;
+  let activeTopic = null;
   let query = '';
 
   const fullListEl = document.getElementById('full-schedule-list');
@@ -67,7 +69,9 @@ export async function renderMyDay(root) {
   async function toggleBookmark(session, starButton) {
     if (bookmarkedIds.has(session.id)) {
       bookmarkedIds.delete(session.id);
+      const saved = (await getBookmarks(eventId)).find((b) => b.sessionId === session.id);
       await removeBookmark(eventId, session.id);
+      cancelReminder(eventSlug, saved);
       starButton.classList.remove('schedule-item__star--saved');
       track('session_unsave', { session_id: session.id, session_title: session.title });
     } else {
@@ -107,12 +111,13 @@ export async function renderMyDay(root) {
       const matchesDay = !activeDay || s.dayKey === activeDay;
       const matchesTrack = !activeTrack || (s.track_names ?? []).includes(activeTrack);
       const matchesType = !activeType || s.session_type === activeType;
+      const matchesTopic = !activeTopic || (s.category_names ?? []).includes(activeTopic);
       const haystack = `${s.title} ${(s.speaker_ids ?? []).map((id) => speakersById.get(id)?.name ?? '').join(' ')}`.toLowerCase();
       const matchesQuery = !query || haystack.includes(query);
-      return matchesDay && matchesTrack && matchesType && matchesQuery;
+      return matchesDay && matchesTrack && matchesType && matchesTopic && matchesQuery;
     });
 
-    renderGroupedByDay(fullListEl, filtered, 'tpl-my-day-empty-full');
+    renderGroupedByDay(fullListEl, filtered, timed.length === 0 ? 'tpl-my-day-no-schedule' : 'tpl-my-day-empty-full');
     wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
     return filtered.length;
   }
@@ -189,8 +194,33 @@ export async function renderMyDay(root) {
     renderFull();
   });
 
+  document.getElementById('topic-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-chip]');
+    if (!btn) return;
+    activeTopic = btn.dataset.chip === activeTopic ? null : btn.dataset.chip;
+    document.querySelectorAll('#topic-filters [data-chip]').forEach((b) => setPressed(b, b.dataset.chip === activeTopic));
+    track('schedule_filter', { filter_type: 'topic', filter_value: activeTopic ?? 'all' });
+    renderFull();
+  });
+
   renderFull();
   renderMine();
+}
+
+// WordPress's own session types, in words a first-timer understands.
+const TYPE_LABELS = { session: 'Talk', custom: 'Break / activity' };
+const TYPE_FILTER_LABELS = { session: 'Talks', custom: 'Breaks & activities' };
+
+function typeLabel(type) {
+  return TYPE_LABELS[type] ?? (type ? type.charAt(0).toUpperCase() + type.slice(1) : null);
+}
+
+function typeFilterLabel(type) {
+  return TYPE_FILTER_LABELS[type] ?? typeLabel(type);
+}
+
+function isBeginnerFriendly(session) {
+  return (session.category_names ?? []).some((c) => /beginner|introduct|getting started|101/i.test(c));
 }
 
 // A filter chip's on/off state, told to the eye (class) and to assistive tech (aria-pressed).
@@ -254,7 +284,7 @@ function setupDayFilters(sessions) {
 // Shared by the Track and Session Type filter rows — same chip-row
 // pattern, different field. Hidden entirely when the event's data has
 // nothing to filter by (e.g. no session_type set upstream).
-function setupChipFilter(elId, sessions, valuesOf) {
+function setupChipFilter(elId, sessions, valuesOf, labelOf = (name) => name) {
   const names = [...new Set(sessions.flatMap(valuesOf))].filter(Boolean).sort();
   const el = document.getElementById(elId);
 
@@ -264,19 +294,26 @@ function setupChipFilter(elId, sessions, valuesOf) {
   }
 
   el.hidden = false;
-  el.replaceChildren(...names.map((name) => render('tpl-my-day-filter-chip', { chip: { text: name, attrs: { 'data-chip': name } } })));
+  el.replaceChildren(...names.map((name) => render('tpl-my-day-filter-chip', { chip: { text: labelOf(name), attrs: { 'data-chip': name } } })));
   return names;
 }
 
 function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  const metaLine = [session.track_names?.[0], session.session_type].filter(Boolean).join(' · ');
+  const metaLine = [session.track_names?.[0], typeLabel(session.session_type)].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);
   const isOpen = expandedSessionId === session.id;
+  const nowMs = Date.now();
+  const endMs = session.startMs + (session.duration_seconds ?? 1800) * 1000;
+  const isLive = session.startMs <= nowMs && nowMs < endMs;
+  const isPast = endMs <= nowMs;
+  const tags = isBeginnerFriendly(session) ? [render('tpl-schedule-tag', { tag: { text: 'Beginner friendly', class: { 'schedule-tag--beginner': true } } })] : [];
 
   return render('tpl-schedule-session', {
-    item: { attrs: { 'data-session-id': session.id } },
+    item: { attrs: { 'data-session-id': session.id }, class: { 'schedule-item--live': isLive, 'schedule-item--past': isPast } },
+    live: isLive,
+    tags: tags.length ? tags : false,
     time,
     'title-btn': { attrs: { 'aria-expanded': String(isOpen) } },
     title: session.title,
@@ -304,8 +341,11 @@ function sessionDetail(session, speakersById, isSaved) {
     ? new Date(session.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
     : 'Time TBA';
 
+  const topics = (session.category_names ?? []).join(' · ');
+
   return renderFragment('tpl-schedule-detail', {
-    time,
+    time: topics ? `${time} · ${topics}` : time,
+    description: session.description || false,
     speakers: speakerList.map(speakerBlock),
     links: Boolean(session.slides_url || session.video_url),
     slides: session.slides_url ? { attrs: { href: session.slides_url, ...linkTracking(session, 'slides') } } : null,

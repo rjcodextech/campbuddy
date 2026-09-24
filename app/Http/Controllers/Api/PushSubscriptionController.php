@@ -17,6 +17,13 @@ class PushSubscriptionController extends Controller
 {
     public function __invoke(StorePushSubscriptionRequest $request, Event $event): JsonResponse
     {
+        // A phone has one push endpoint per browser; a handful covers every
+        // real case, and keeps this anonymous endpoint from growing the table.
+        $isNew = ! PushSubscription::where('endpoint', $request->input('endpoint'))->exists();
+        $held = PushSubscription::where('event_id', $event->id)->where('device_id', $request->input('device_id'))->count();
+
+        abort_if($isNew && $held >= 5, 422, 'Too many push subscriptions on this device.');
+
         PushSubscription::updateOrCreate(
             ['endpoint' => $request->input('endpoint')],
             [

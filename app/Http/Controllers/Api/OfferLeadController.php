@@ -20,7 +20,8 @@ class OfferLeadController extends Controller
 {
     public function store(Request $request, Event $event, Offer $offer): JsonResponse
     {
-        abort_unless($offer->event_id === $event->id, 404);
+        // A switched-off deal isn't shown to attendees, so it takes no leads either.
+        abort_unless($offer->event_id === $event->id && $offer->is_active, 404);
         abort_unless($offer->capture_leads, 422, 'This deal does not require contact info.');
 
         $data = $request->validate([
@@ -29,11 +30,12 @@ class OfferLeadController extends Controller
             'mobile' => ['nullable', 'string', 'max:32'],
         ]);
 
-        OfferLead::create([
-            ...$data,
-            'event_id' => $event->id,
-            'offer_id' => $offer->id,
-        ]);
+        // Opening the same deal twice (or a double-tap) is one lead, not two:
+        // the sponsor gets a clean list, and replaying the request can't pad it.
+        OfferLead::updateOrCreate(
+            ['offer_id' => $offer->id, 'email' => mb_strtolower(trim($data['email']))],
+            ['event_id' => $event->id, 'name' => trim($data['name']), 'mobile' => $data['mobile'] ?? null]
+        );
 
         return response()->json(null, 201);
     }

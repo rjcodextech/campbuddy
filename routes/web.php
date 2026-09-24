@@ -44,6 +44,10 @@ Route::withoutMiddleware([
 ])->group(function () {
     Route::get('/', HomeController::class)->name('home');
 
+    // WordCamp 101 for first-timers, before any event is picked. Each event
+    // has its own copy (event.guide) that adds that event's venue and times.
+    Route::view('/guide', 'attendee.guide-general')->name('guide');
+
     // PWA manifest for the picker page and any page without an event of its own.
     Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 
@@ -59,6 +63,7 @@ Route::withoutMiddleware([
         Route::get('/event/{event:slug}/contribute', [EventPageController::class, 'contribute'])->name('event.contribute');
         Route::get('/event/{event:slug}/explore', [EventPageController::class, 'explore'])->name('event.explore');
         Route::get('/event/{event:slug}/camp-card', [EventPageController::class, 'campCard'])->name('event.camp-card');
+        Route::get('/event/{event:slug}/guide', [EventPageController::class, 'guide'])->name('event.guide');
         Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
     });
 });

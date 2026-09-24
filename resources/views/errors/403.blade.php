@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Not allowed')
+@section('code', 'Error 403')
+@section('art', 'lost')
+@section('heading', "That isn't available to you")
+@section('message', "You don't have access to this page.")

@@ -9,6 +9,18 @@
     </a>
 
     <div class="topbar__actions">
+        {{-- WordCamp 101 — one tap from any screen for anyone who feels lost. --}}
+        @php($onGuide = request()->routeIs('event.guide'))
+        <a href="{{ route('event.guide', $event) }}" class="topbar__text-btn @if($onGuide) topbar__text-btn--active @endif"
+           data-track="guide_open" data-track-surface="topbar" @if($onGuide) aria-current="page" @endif>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6" />
+                <path d="M12 17h.01" />
+            </svg>
+            <span>Guide</span>
+        </a>
+
         <a href="{{ route('home') }}" class="topbar__text-btn" data-track="switch_event_click">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />

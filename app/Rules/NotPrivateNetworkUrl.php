@@ -23,16 +23,26 @@ class NotPrivateNetworkUrl implements ValidationRule
             return;
         }
 
+        if (self::isPrivateHost($host)) {
+            $fail("The {$attribute} resolves to a private or reserved network address, which isn't allowed.");
+        }
+    }
+
+    /**
+     * True when a host name (or IP literal) points at loopback, a private
+     * range or a reserved range. Shared with the outbound HTTP client's
+     * redirect check (AppServiceProvider), so a public WordCamp address that
+     * answers with a redirect can't bounce a fetch into the internal network.
+     */
+    public static function isPrivateHost(string $host): bool
+    {
+        $host = trim($host, '[]');
         $ip = filter_var($host, FILTER_VALIDATE_IP) ? $host : gethostbyname($host);
 
-        $isPrivate = filter_var(
+        return filter_var(
             $ip,
             FILTER_VALIDATE_IP,
             FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
         ) === false;
-
-        if ($isPrivate) {
-            $fail("The {$attribute} resolves to a private or reserved network address, which isn't allowed.");
-        }
     }
 }

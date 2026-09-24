@@ -239,3 +239,73 @@
 #type-filters .chip {
     text-transform: capitalize;
 }
+
+// Happening right now: a tinted row and a "Live now" marker.
+.schedule-item--live {
+    margin: 0 (-(v.$space-2));
+    padding-right: v.$space-2;
+    padding-left: v.$space-2;
+    border-radius: v.$radius-sm;
+    background: var(--peach);
+}
+
+.schedule-item__live {
+    display: none;
+    margin-right: v.$space-2;
+    color: var(--brand-primary);
+    font-weight: v.$font-weight-bold;
+
+    .schedule-item--live & {
+        display: inline;
+    }
+
+    &::before {
+        content: '● ';
+    }
+}
+
+// Already over: still listed (slides and video links live here), but quieter.
+.schedule-item--past {
+    .schedule-item__time,
+    .schedule-item__title,
+    .schedule-item__speakers {
+        opacity: 0.6;
+    }
+}
+
+.schedule-item__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-1;
+    margin-top: v.$space-2;
+}
+
+.schedule-tag {
+    display: inline-flex;
+    padding: 2px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+
+    &--beginner {
+        background: rgba(4, 147, 149, 0.1);
+        border-color: rgba(4, 147, 149, 0.35);
+        color: #03676a;
+
+        &::before {
+            content: '🌱 ';
+        }
+    }
+}
+
+// "What's this talk about" — the session's own description, as text.
+.schedule-item-detail__desc {
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--ink);
+    white-space: pre-line;
+}

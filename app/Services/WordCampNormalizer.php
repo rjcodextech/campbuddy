@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Support\HtmlText;
+use App\Support\SafeUrl;
+
 /**
  * Transforms raw wp/v2 REST payloads into the flat shape CampBuddy
  * actually renders from — resolving taxonomy joins and pulling the meta
@@ -12,33 +15,41 @@ class WordCampNormalizer
 {
     public function __construct(private readonly WordCampRestClient $client) {}
 
+    /** Longest session description kept — enough to decide, small enough for the page. */
+    private const DESCRIPTION_LIMIT = 600;
+
     /**
      * @param  array<int, array<string, mixed>>  $sessions
      * @param  array<int, string>  $trackNames
+     * @param  array<int, string>  $categoryNames
      * @return array<int, array<string, mixed>>
      */
-    public function normalizeSessions(array $sessions, array $trackNames): array
+    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = []): array
     {
-        return array_map(function (array $session) use ($trackNames) {
-            $trackIds = $session['session_track'] ?? [];
+        return array_map(function (array $session) use ($trackNames, $categoryNames) {
+            $meta = is_array($session['meta'] ?? null) ? $session['meta'] : [];
+            $trackIds = $this->ids($session['session_track'] ?? []);
+            $categoryIds = $this->ids($session['session_category'] ?? []);
+            $startsAt = is_numeric($meta['_wcpt_session_time'] ?? null) ? (int) $meta['_wcpt_session_time'] : 0;
+            $duration = is_numeric($meta['_wcpt_session_duration'] ?? null) ? (int) $meta['_wcpt_session_duration'] : null;
 
             return [
                 'id' => $session['id'],
-                'title' => $this->decodeTitle($session['title']['rendered'] ?? ''),
+                'title' => $this->decodeTitle($this->rendered($session['title'] ?? null)),
                 'link' => $this->httpUrl($session['link'] ?? null),
-                'speaker_ids' => $session['meta']['_wcpt_speaker_id'] ?? [],
+                'speaker_ids' => $this->ids($meta['_wcpt_speaker_id'] ?? []),
                 'track_ids' => $trackIds,
-                'track_names' => array_values(array_filter(array_map(
-                    fn ($id) => $trackNames[$id] ?? null,
-                    $trackIds
-                ))),
-                'starts_at' => isset($session['meta']['_wcpt_session_time']) && $session['meta']['_wcpt_session_time'] > 0
-                    ? gmdate('c', (int) $session['meta']['_wcpt_session_time'])
-                    : null,
-                'duration_seconds' => $session['meta']['_wcpt_session_duration'] ?? null,
-                'session_type' => $session['meta']['_wcpt_session_type'] ?? null,
-                'slides_url' => $this->httpUrl($session['meta']['_wcpt_session_slides'] ?? null),
-                'video_url' => $this->httpUrl($session['meta']['_wcpt_session_video'] ?? null),
+                'track_names' => $this->names($trackIds, $trackNames),
+                'category_names' => $this->names($categoryIds, $categoryNames),
+                'starts_at' => $startsAt > 0 ? gmdate('c', $startsAt) : null,
+                'duration_seconds' => $duration !== null && $duration > 0 ? $duration : null,
+                'session_type' => is_string($meta['_wcpt_session_type'] ?? null) ? $meta['_wcpt_session_type'] : null,
+                // What the talk is about — the one thing a first-timer needs to
+                // choose between two sessions. Plain text, never markup.
+                'description' => HtmlText::plain($this->rendered($session['content'] ?? null), self::DESCRIPTION_LIMIT)
+                    ?? HtmlText::plain($this->rendered($session['excerpt'] ?? null), self::DESCRIPTION_LIMIT),
+                'slides_url' => $this->httpUrl($meta['_wcpt_session_slides'] ?? null),
+                'video_url' => $this->httpUrl($meta['_wcpt_session_video'] ?? null),
             ];
         }, $sessions);
     }
@@ -50,13 +61,13 @@ class WordCampNormalizer
     public function normalizeSpeakers(array $speakers): array
     {
         return array_map(function (array $speaker) {
-            $bioHtml = $speaker['content']['rendered'] ?? '';
+            $bioHtml = $this->rendered($speaker['content'] ?? null);
 
             return [
                 'id' => $speaker['id'],
-                'name' => $this->decodeTitle($speaker['title']['rendered'] ?? ''),
+                'name' => $this->decodeTitle($this->rendered($speaker['title'] ?? null)),
                 'bio_html' => $bioHtml,
-                'avatar_url' => $speaker['avatar_urls'][96] ?? $speaker['avatar_urls'][24] ?? null,
+                'avatar_url' => $this->avatar($speaker),
                 'link' => $this->httpUrl($speaker['link'] ?? null),
                 'social_links' => $this->client->extractSocialLinks($bioHtml),
             ];
@@ -71,20 +82,18 @@ class WordCampNormalizer
     public function normalizeSponsors(array $sponsors, array $tierNames): array
     {
         return array_map(function (array $sponsor) use ($tierNames) {
-            $tierIds = $sponsor['sponsor_level'] ?? [];
-            $contentHtml = $sponsor['content']['rendered'] ?? '';
+            $tierIds = $this->ids($sponsor['sponsor_level'] ?? []);
+            $contentHtml = $this->rendered($sponsor['content'] ?? null);
 
             return [
                 'id' => $sponsor['id'],
-                'name' => $this->decodeTitle($sponsor['title']['rendered'] ?? ''),
+                'name' => $this->decodeTitle($this->rendered($sponsor['title'] ?? null)),
                 'description_html' => $contentHtml,
                 'website' => $this->httpUrl($sponsor['meta']['_wcpt_sponsor_website'] ?? null),
-                'logo_url' => $this->client->extractFirstImage($contentHtml),
+                // Shown as an <img> in CampBuddy's pages: web addresses only.
+                'logo_url' => SafeUrl::web($this->client->extractFirstImage($contentHtml)),
                 'tier_ids' => $tierIds,
-                'tier_names' => array_values(array_filter(array_map(
-                    fn ($id) => $tierNames[$id] ?? null,
-                    $tierIds
-                ))),
+                'tier_names' => $this->names($tierIds, $tierNames),
                 'link' => $this->httpUrl($sponsor['link'] ?? null),
             ];
         }, $sponsors);
@@ -98,10 +107,53 @@ class WordCampNormalizer
     {
         return array_map(fn (array $organizer) => [
             'id' => $organizer['id'],
-            'name' => $this->decodeTitle($organizer['title']['rendered'] ?? ''),
-            'bio_html' => $organizer['content']['rendered'] ?? '',
-            'avatar_url' => $organizer['avatar_urls'][96] ?? null,
+            'name' => $this->decodeTitle($this->rendered($organizer['title'] ?? null)),
+            'bio_html' => $this->rendered($organizer['content'] ?? null),
+            'avatar_url' => $this->avatar($organizer),
         ], $organizers);
+    }
+
+    /** A WordPress `{ rendered: "…" }` field's string, or "" for anything else. */
+    private function rendered(mixed $field): string
+    {
+        return is_array($field) && is_string($field['rendered'] ?? null) ? $field['rendered'] : '';
+    }
+
+    /**
+     * A list of positive integer ids out of whatever the site sent — a
+     * single id, a list, numeric strings — never a crash on odd data.
+     *
+     * @return array<int, int>
+     */
+    private function ids(mixed $value): array
+    {
+        $list = is_array($value) ? $value : [$value];
+
+        return array_values(array_unique(array_map('intval', array_filter(
+            $list,
+            fn ($id) => is_numeric($id) && (int) $id > 0
+        ))));
+    }
+
+    /**
+     * @param  array<int, int>  $ids
+     * @param  array<int, string>  $lookup
+     * @return array<int, string>
+     */
+    private function names(array $ids, array $lookup): array
+    {
+        return array_values(array_filter(array_map(
+            fn ($id) => isset($lookup[$id]) ? $this->decodeTitle((string) $lookup[$id]) : null,
+            $ids
+        )));
+    }
+
+    /** The largest Gravatar the site offers, as a safe web address. */
+    private function avatar(array $person): ?string
+    {
+        $urls = is_array($person['avatar_urls'] ?? null) ? $person['avatar_urls'] : [];
+
+        return SafeUrl::web($urls[96] ?? $urls['96'] ?? $urls[48] ?? $urls['48'] ?? $urls[24] ?? $urls['24'] ?? null);
     }
 
     /**

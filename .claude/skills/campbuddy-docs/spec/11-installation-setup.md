@@ -20,6 +20,7 @@ npm install
 npm run build                          # or `npm run dev` while developing (Vite HMR)
 php artisan migrate
 php artisan db:seed --class=AdminUserSeeder   # creates the first admin login
+php artisan db:seed --class=DemoEventSeeder   # optional, local only: demo event at /event/demo-wordcamp
 php artisan campbuddy:ingest wordcamp-rajasthan-2026   # bootstraps one event: runs
                                                           # FetchBrandingAssetsJob once,
                                                           # then FetchSpeakersSponsorsSessionsJob

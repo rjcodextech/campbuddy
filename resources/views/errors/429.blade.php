@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('title', 'Slow down')
+@section('code', 'Too many requests')
+@section('art', 'wait')
+@section('heading', 'Whoa — lots of taps at once')
+@section('message', 'Conference wifi means many people share one connection, so we limit how fast requests can come in. Wait a minute and try again.')

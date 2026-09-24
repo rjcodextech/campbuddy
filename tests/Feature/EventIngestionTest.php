@@ -365,7 +365,7 @@ class EventIngestionTest extends TestCase
         $this->actingAs($this->admin())
             ->post(route('admin.events.refresh', $event))
             ->assertRedirect(route('admin.events.edit', $event))
-            ->assertSessionHas('status', fn ($s) => str_starts_with($s, "Couldn't refresh sessions, speakers and sponsors"));
+            ->assertSessionHas('error', fn ($s) => str_starts_with($s, "Couldn't refresh sessions, speakers and sponsors"));
     }
 
     public function test_refetching_branding_runs_immediately_too(): void

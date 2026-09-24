@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\Quest;
+use App\Support\HtmlText;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
@@ -17,9 +18,6 @@ use Throwable;
  */
 class EventPageController extends Controller
 {
-    /** Elements whose end starts a new line when HTML is turned into text. */
-    private const BLOCK_TAGS = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'br', 'blockquote', 'figure', 'section', 'article', 'tr'];
-
     /** Whole lines of a speaker page that are just a social-link button's label. */
     private const SOCIAL_BUTTON_LABELS = ['wordpress', 'linkedin', 'x', 'twitter', 'link', 'website', 'github', 'instagram', 'facebook', 'youtube'];
 
@@ -84,6 +82,19 @@ class EventPageController extends Controller
         ]);
     }
 
+    /**
+     * WordCamp 101 for this event: the general first-timer guide, plus this
+     * event's own practical details and — client-side — the real times of
+     * the moments the guide describes (registration, lunch, keynote…).
+     */
+    public function guide(Event $event): View
+    {
+        return view('attendee.guide', [
+            'event' => $event,
+            'sessions' => $this->cached($event, 'sessions'),
+        ]);
+    }
+
     public function campCard(Event $event): View
     {
         return view('attendee.camp-card', ['event' => $event]);
@@ -99,6 +110,24 @@ class EventPageController extends Controller
      */
     private function withPlainBios(array $speakers): array
     {
+        if ($speakers === []) {
+            return [];
+        }
+
+        // Parsing every bio is the heaviest thing a page view does, and the
+        // result only changes when the ingested speakers do — so it's keyed
+        // on their content and worked out once, not on every My Day view.
+        $key = 'speakers-plain:'.md5((string) json_encode($speakers));
+
+        return Cache::remember($key, now()->addDay(), fn () => $this->toPlainBios($speakers));
+    }
+
+    /**
+     * @param  array<int, mixed>  $speakers
+     * @return array<int, mixed>
+     */
+    private function toPlainBios(array $speakers): array
+    {
         return array_map(function ($speaker) {
             if (! is_array($speaker)) {
                 return $speaker;
@@ -112,47 +141,12 @@ class EventPageController extends Controller
     }
 
     /**
-     * The text of some third-party HTML: tags dropped (with the contents of
-     * <script> and <style>), entities decoded, runs of blank lines collapsed to
-     * one line break (the bio is shown with white-space: pre-line). Never
-     * markup — the browser sets it as text.
+     * A speaker bio's plain text, minus the parts of the speaker page's own
+     * layout that aren't bio (see below).
      */
     private function plainText(?string $html, ?string $speakerName = null): ?string
     {
-        if ($html === null || trim($html) === '') {
-            return null;
-        }
-
-        $previous = libxml_use_internal_errors(true);
-        $document = new \DOMDocument;
-        // The <?xml> line makes libxml read the fragment as UTF-8; LIBXML_NONET
-        // keeps it from fetching anything.
-        $document->loadHTML('<?xml encoding="UTF-8"><body>'.$html.'</body>', LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
-        libxml_clear_errors();
-        libxml_use_internal_errors($previous);
-
-        foreach (['script', 'style'] as $tag) {
-            foreach (iterator_to_array($document->getElementsByTagName($tag)) as $node) {
-                $node->parentNode?->removeChild($node);
-            }
-        }
-
-        // Blocks end a line, so "<h2>Ada</h2><p>Bio…</p>" reads as two lines, not "AdaBio…".
-        foreach (self::BLOCK_TAGS as $tag) {
-            foreach (iterator_to_array($document->getElementsByTagName($tag)) as $node) {
-                if ($tag === 'br') {
-                    $node->parentNode?->replaceChild($document->createTextNode("\n"), $node);
-                } else {
-                    $node->appendChild($document->createTextNode("\n"));
-                }
-            }
-        }
-
-        $text = $document->getElementsByTagName('body')->item(0)?->textContent ?? '';
-        $lines = array_values(array_filter(
-            array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $text))),
-            fn (string $line) => $line !== ''
-        ));
+        $lines = HtmlText::lines($html);
 
         // The speaker's page wraps the bio in its own layout: a heading that
         // repeats their name, and the labels of the social-link buttons

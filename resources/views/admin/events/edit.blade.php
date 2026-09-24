@@ -60,7 +60,7 @@
 
                 <p class="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
                     @if ($lastInfoFetch)
-                        <x-badge :variant="$lastInfoFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastInfoFetch->status }}</x-badge>
+                        <x-fetch-status :status="$lastInfoFetch->status" />
                         Last fetched {{ $lastInfoFetch->fetched_at->diffForHumans() }} — {{ $lastInfoFetch->message }}
                     @else
                         Not fetched yet — use “Fetch latest” to read it from the WordCamp site.
@@ -116,7 +116,7 @@
                     @if ($lastBrandingFetch)
                         <p class="text-sm text-muted">
                             Last auto-fetch:
-                            <x-badge :variant="$lastBrandingFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastBrandingFetch->status }}</x-badge>
+                            <x-fetch-status :status="$lastBrandingFetch->status" />
                             {{ $lastBrandingFetch->fetched_at->diffForHumans() }}
                         </p>
                         @if ($lastBrandingFetch->message)
@@ -152,17 +152,58 @@
         </x-card>
 
         {{-- Sessions / speakers / sponsors ingestion --}}
-        <x-card title="Ingestion status" description="Sessions, speakers and sponsors are read from the event's WordCamp.org site.">
-            @if ($lastFetch)
-                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                    <x-badge :variant="$lastFetch->status === 'ok' ? 'success' : 'danger'">{{ $lastFetch->status }}</x-badge>
-                    <span class="text-muted">Last fetch {{ $lastFetch->fetched_at->diffForHumans() }}</span>
-                </div>
-                @if ($lastFetch->message)
-                    <p class="mt-2 text-sm text-muted">{{ $lastFetch->message }}</p>
+        <x-card title="Data health" description="What attendees currently see, where it came from, and the last few fetches. Sessions, speakers and sponsors refresh every 15 minutes while the event is active; the attendee list nightly.">
+            <dl class="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                @foreach ($dataCounts as $label => $count)
+                    <div class="rounded-lg border border-line bg-paper-soft px-3 py-2">
+                        <dt class="text-xs text-muted">{{ $label }}</dt>
+                        <dd class="text-lg font-semibold {{ $count === null ? 'text-muted' : '' }}">{{ $count ?? '—' }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+            @if (in_array(null, $dataCounts, true))
+                <p class="mt-2 text-xs text-muted">"—" means nothing has been fetched yet (or the cache was purged and the next run hasn't happened).</p>
+            @endif
+
+            <div class="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                @if ($lastFetch)
+                    <span class="font-medium">Schedule:</span>
+                    <x-fetch-status :status="$lastFetch->status" />
+                    <span class="text-muted">{{ $lastFetch->fetched_at->diffForHumans() }}</span>
+                    @if ($lastFetch->message)
+                        <span class="basis-full text-muted">{{ $lastFetch->message }}</span>
+                    @endif
+                @else
+                    <span class="text-muted">No schedule fetch has run yet for this event.</span>
                 @endif
-            @else
-                <p class="text-sm text-muted">No ingestion has run yet for this event.</p>
+            </div>
+
+            @if ($recentFetches->isNotEmpty())
+                <details class="mt-5 rounded-lg border border-line">
+                    <summary class="cursor-pointer px-4 py-2.5 text-sm font-medium">Recent fetch history ({{ $recentFetches->count() }})</summary>
+                    <div class="overflow-x-auto border-t border-line">
+                        <table class="min-w-full text-left text-sm">
+                            <thead class="bg-paper-soft text-xs text-muted">
+                                <tr>
+                                    <th scope="col" class="px-4 py-2 font-medium">When</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">What</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">Result</th>
+                                    <th scope="col" class="px-4 py-2 font-medium">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-line">
+                                @foreach ($recentFetches as $log)
+                                    <tr class="align-top">
+                                        <td class="whitespace-nowrap px-4 py-2 text-muted" title="{{ $log->fetched_at }}">{{ $log->fetched_at->diffForHumans() }}</td>
+                                        <td class="whitespace-nowrap px-4 py-2">{{ $jobLabels[$log->job_type] ?? $log->job_type }}</td>
+                                        <td class="px-4 py-2"><x-fetch-status :status="$log->status" /></td>
+                                        <td class="px-4 py-2 text-muted">{{ $log->message }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
             @endif
 
             <x-slot:footer>

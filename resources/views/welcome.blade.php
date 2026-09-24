@@ -47,6 +47,17 @@
                 </p>
             </section>
 
+            {{-- WordCamp 101, before an event is even chosen — for someone who
+            isn't sure yet what a WordCamp is. --}}
+            <a class="start-here start-here--link" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
+                <img class="start-here__art" src="/media/illustrations/welcome.svg" alt="" width="84" height="53">
+                <span>
+                    <span class="start-here__title">First WordCamp? Read this first</span>
+                    <span class="start-here__desc">What happens during the day, the words people use, and how to meet people.</span>
+                    <span class="start-here__cta">Open the 5-minute guide →</span>
+                </span>
+            </a>
+
             {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
             (the skip/continue buttons and the profile they save are wired there). --}}
             <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>

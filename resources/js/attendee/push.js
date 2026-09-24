@@ -4,7 +4,7 @@
 
 import { apiMutate } from './api.js';
 import { track } from './analytics.js';
-import { kvGet, kvSet } from './db.js';
+import { kvGet, kvSet, setBookmark } from './db.js';
 import { isIos, isStandalone } from './platform.js';
 import { render } from './template.js';
 
@@ -51,13 +51,25 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
     return false;
   }
 
-  const wantsReminder = confirm('Want CampBuddy to remind you before this session starts?');
-  if (!wantsReminder) {
-    track('reminder_offer', { result: 'declined' });
-    return false;
+  // Once reminders are switched on, every later save just gets one — no
+  // question on each star (N1: a dialog per bookmark would be nagging).
+  const alreadyOn = state.enabled && Notification.permission === 'granted';
+
+  if (!alreadyOn) {
+    // A "no thanks" is asked once per device, not on every saved session.
+    if (state.declined) {
+      return false;
+    }
+
+    const wantsReminder = confirm('Want CampBuddy to remind you a few minutes before the sessions you save start?');
+    if (!wantsReminder) {
+      await kvSet('notificationState', { ...state, declined: true });
+      track('reminder_offer', { result: 'declined' });
+      return false;
+    }
   }
 
-  const permission = await Notification.requestPermission();
+  const permission = alreadyOn ? 'granted' : await Notification.requestPermission();
 
   if (permission === 'denied') {
     await kvSet('notificationState', { ...state, permanentlyDenied: true });
@@ -96,11 +108,34 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
       reminder_enabled: true,
     });
 
-    track('reminder_offer', { result: 'enabled' });
+    // Remembered locally, so un-saving the session knows to cancel it.
+    await setBookmark(eventId, sessionId, true);
+    await kvSet('notificationState', { ...((await kvGet('notificationState')) ?? {}), enabled: true });
+
+    if (!alreadyOn) track('reminder_offer', { result: 'enabled' });
     return true;
   } catch {
     track('reminder_offer', { result: 'error' });
     return false;
+  }
+}
+
+/**
+ * Called when a saved session is un-saved. If the server was holding a
+ * reminder for it, that reminder is cancelled — otherwise the attendee
+ * would still get a push for a session they took off their day.
+ */
+export async function cancelReminder(eventSlug, bookmark) {
+  if (!bookmark?.reminderEnabled) return;
+
+  try {
+    await apiMutate(eventSlug, '/bookmarks', 'DELETE', {
+      device_id: getDeviceId(),
+      session_id: bookmark.sessionId,
+    });
+  } catch {
+    // Offline or refused: the reminder may still arrive. Nothing else to do
+    // from here — the local bookmark is already gone.
   }
 }
 

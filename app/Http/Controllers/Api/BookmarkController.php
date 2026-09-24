@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
  */
 class BookmarkController extends Controller
 {
+    /** No real schedule has more sessions than this worth a reminder on one device. */
+    private const MAX_PER_DEVICE = 150;
+
     public function store(Request $request, Event $event): JsonResponse
     {
         $data = $request->validate([
@@ -23,6 +26,16 @@ class BookmarkController extends Controller
             'session_id' => ['required', 'integer', 'min:1'],
             'reminder_enabled' => ['boolean'],
         ]);
+
+        // An anonymous endpoint must not be a way to fill the table: one
+        // device can hold reminders for a whole schedule, not unbounded rows.
+        $held = SessionBookmark::where('event_id', $event->id)->where('device_id', $data['device_id'])->count();
+        $isNew = ! SessionBookmark::where('event_id', $event->id)
+            ->where('device_id', $data['device_id'])
+            ->where('session_id', $data['session_id'])
+            ->exists();
+
+        abort_if($isNew && $held >= self::MAX_PER_DEVICE, 422, 'Too many reminders on this device.');
 
         SessionBookmark::updateOrCreate(
             ['event_id' => $event->id, 'device_id' => $data['device_id'], 'session_id' => $data['session_id']],

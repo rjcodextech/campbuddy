@@ -59,6 +59,7 @@
         </div>
 
         <div data-explore-panel="sponsors" hidden>
+            <p class="panel-intro">Sponsors help keep WordCamp tickets affordable. Visit their booths — you don't have to buy anything, and many have swag, demos and job openings.</p>
             @forelse ($sponsorsByTier as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>
@@ -94,6 +95,7 @@
         </div>
 
         <div data-explore-panel="deals" hidden>
+            <p class="panel-intro">Special offers from this WordCamp's sponsors, just for attendees.</p>
             @if ($offers->isEmpty())
                 <p class="footer-note" style="text-align:left">No active deals right now — check back later.</p>
             @else

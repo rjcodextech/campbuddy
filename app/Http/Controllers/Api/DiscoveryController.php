@@ -28,6 +28,10 @@ class DiscoveryController extends Controller
             ->where(function ($q) {
                 $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
             })
+            // Bounded, so one response can't grow without limit. Far above any
+            // WordCamp's opted-in attendee count; newest first if ever reached.
+            ->latest('id')
+            ->limit(2000)
             ->get(['discovery_id', 'fields']);
 
         return response()->json(['data' => $profiles]);

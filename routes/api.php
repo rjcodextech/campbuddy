@@ -37,7 +37,11 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');
         });
 
-        Route::post('/bookmarks', [BookmarkController::class, 'store'])->name('api.bookmarks.store');
-        Route::delete('/bookmarks', [BookmarkController::class, 'destroy'])->name('api.bookmarks.destroy');
+        // Reminder bookmarks: a public write, so throttled too — on their own,
+        // roomier limiter, since saving a morning's sessions is a quick burst.
+        Route::middleware('throttle:api-bookmarks')->group(function () {
+            Route::post('/bookmarks', [BookmarkController::class, 'store'])->name('api.bookmarks.store');
+            Route::delete('/bookmarks', [BookmarkController::class, 'destroy'])->name('api.bookmarks.destroy');
+        });
     });
 });

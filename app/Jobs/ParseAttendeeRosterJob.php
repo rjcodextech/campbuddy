@@ -8,6 +8,7 @@ use App\Models\FetchLog;
 use App\Services\AttendeeRosterScraper;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -42,45 +43,65 @@ class ParseAttendeeRosterJob implements ShouldQueue
         $url = rtrim($this->event->source_site_url, '/').'/attendees/';
 
         try {
-            $response = Http::timeout(15)->get($url)->throw();
-            $entries = (new AttendeeRosterScraper)->parse($response->body());
+            $response = Http::timeout(15)
+                ->accept('text/html')
+                ->retry(2, 1000, fn ($e) => $e instanceof ConnectionException, throw: true)
+                ->get($url)
+                ->throw();
+            $scraper = new AttendeeRosterScraper;
+            $entries = $scraper->parse($response->body());
 
             if ($entries === null) {
                 // The .tix-attendee-list markup wasn't found at all —
                 // treat as a parse failure, not an empty roster (IN4).
-                $this->log('error', 'Attendees page structure not recognized — the site markup may have changed.');
+                $this->log('error', 'Attendees page structure not recognized — the site markup may have changed, or the page is not public yet.');
 
                 return;
             }
 
-            $seenHashes = [];
-
+            // Keyed by hash, so the same person listed twice is stored once.
+            $rows = [];
             foreach ($entries as $entry) {
-                $hash = (new AttendeeRosterScraper)->contentHash($entry['name'], $entry['links']);
-                $seenHashes[] = $hash;
+                $rows[$scraper->contentHash($entry['name'], $entry['links'])] = $entry;
+            }
+            $seenHashes = array_keys($rows);
 
-                $existing = AttendeeRoster::where('event_id', $this->event->id)
-                    ->where('content_hash', $hash)
-                    ->first();
+            // One query for what's already stored instead of one per attendee.
+            $existing = AttendeeRoster::where('event_id', $this->event->id)
+                ->pluck('is_suppressed', 'content_hash');
 
+            $now = now();
+            $upserts = [];
+
+            foreach ($rows as $hash => $entry) {
                 // IN5: a suppressed entry stays suppressed across re-runs
                 // even though its content_hash still matches — never
                 // silently reactivated by the next scrape.
-                if ($existing?->is_suppressed) {
+                if ($existing[$hash] ?? false) {
                     continue;
                 }
 
-                AttendeeRoster::updateOrCreate(
-                    ['event_id' => $this->event->id, 'content_hash' => $hash],
-                    ['name' => $entry['name'], 'gravatar_url' => $entry['gravatar_url'], 'links' => $entry['links']]
-                );
+                $upserts[] = [
+                    'event_id' => $this->event->id,
+                    'content_hash' => $hash,
+                    'name' => mb_substr($entry['name'], 0, 191),
+                    'gravatar_url' => $entry['gravatar_url'],
+                    'links' => json_encode($entry['links']),
+                    'is_suppressed' => false,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+
+            foreach (array_chunk($upserts, 200) as $chunk) {
+                AttendeeRoster::upsert($chunk, ['event_id', 'content_hash'], ['name', 'gravatar_url', 'links', 'updated_at']);
             }
 
             $removed = $this->pruneDepartedAttendees($seenHashes);
 
             $this->log('ok', sprintf(
                 '%d attendees parsed%s',
-                count($entries),
+                count($rows),
                 $removed > 0 ? ", {$removed} no longer listed and removed" : ''
             ));
         } catch (Throwable $e) {

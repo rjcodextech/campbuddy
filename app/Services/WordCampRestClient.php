@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -127,6 +129,13 @@ class WordCampRestClient
     }
 
     /**
+     * Every page of a wp/v2 collection. Transient trouble (a timeout, a 5xx
+     * from a busy host, a 429) is retried twice with a short pause before it
+     * counts as a failure; a 4xx is a real answer and isn't. A 200 whose body
+     * isn't a JSON list — a maintenance page, a security plugin's challenge,
+     * a site that has turned the REST API off — is a failure too, never
+     * silently read as "this event has no sessions".
+     *
      * @return array<int, array<string, mixed>>
      */
     private function fetchCollection(string $endpoint): array
@@ -137,17 +146,49 @@ class WordCampRestClient
 
         do {
             $response = Http::timeout(self::TIMEOUT_SECONDS)
+                ->acceptJson()
+                ->retry(3, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
                 ->get("{$this->baseUrl}/wp-json/wp/v2/{$endpoint}", [
                     'per_page' => 100,
                     'page' => $page,
                 ])
                 ->throw();
 
-            $items = array_merge($items, $response->json() ?? []);
-            $totalPages = (int) $response->header('X-WP-TotalPages', 1);
+            $batch = $response->json();
+
+            if (! is_array($batch) || ! array_is_list($batch)) {
+                throw new UnexpectedResponseException(
+                    "{$endpoint}: the site answered, but not with a list of items (is its REST API switched off or behind a login?)."
+                );
+            }
+
+            // Only well-formed posts: an item without a numeric id can't be
+            // bookmarked, linked to a speaker or reminded about.
+            foreach ($batch as $item) {
+                if (is_array($item) && isset($item['id']) && is_int($item['id'])) {
+                    $items[] = $item;
+                }
+            }
+
+            $totalPages = max(1, (int) $response->header('X-WP-TotalPages'));
             $page++;
         } while ($page <= $totalPages && $page <= self::MAX_PAGES);
 
         return $items;
+    }
+
+    private function isTransient(\Throwable $e): bool
+    {
+        if ($e instanceof ConnectionException) {
+            return true;
+        }
+
+        if ($e instanceof RequestException) {
+            $status = $e->response->status();
+
+            return $status === 429 || $status >= 500;
+        }
+
+        return false;
     }
 }

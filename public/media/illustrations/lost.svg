@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" width="240" height="180" fill="none" role="img" aria-label="A signpost pointing in different directions">
+  <ellipse cx="120" cy="160" rx="92" ry="12" fill="#FFE4C4"/>
+  <circle cx="190" cy="42" r="18" fill="#F7D47D"/>
+  <path d="M26 150l40-46 22 20 30-34 36 42 26-24 34 42" fill="#FFF0DF" stroke="#8D1D2C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M120 44v116" stroke="#8D1D2C" stroke-width="8" stroke-linecap="round"/>
+  <path d="M120 50h52l12 12-12 12h-52z" fill="#F4A629" stroke="#8D1D2C" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M120 84H70l-12 12 12 12h50z" fill="#C33A19" stroke="#8D1D2C" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M138 62h26M76 96h30" stroke="#F9F1E1" stroke-width="5" stroke-linecap="round"/>
+  <path d="M60 36c0-9 7-15 15-15s15 6 15 14c0 10-15 11-15 20" stroke="#C33A19" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <circle cx="75" cy="66" r="4" fill="#C33A19"/>
+</svg>

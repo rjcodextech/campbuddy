@@ -13,11 +13,13 @@
         </div>
 
         <div data-view-panel="full">
+            <label class="u-visually-hidden" for="session-search">Search sessions or speakers</label>
             <input type="search" id="session-search" class="search-input" placeholder="Search sessions or speakers…">
 
             <div id="day-filters" class="my-day-filter-row" data-label="Day" role="group" aria-label="Filter by day" hidden></div>
             <div id="track-filters" class="my-day-filter-row" data-label="Track" role="group" aria-label="Filter by track"></div>
-            <div id="type-filters" class="my-day-filter-row" data-label="Session type" role="group" aria-label="Filter by session type"></div>
+            <div id="type-filters" class="my-day-filter-row" data-label="Type" role="group" aria-label="Filter by type"></div>
+            <div id="topic-filters" class="my-day-filter-row" data-label="Topic" role="group" aria-label="Filter by topic" hidden></div>
 
             <div id="full-schedule-list"></div>
         </div>

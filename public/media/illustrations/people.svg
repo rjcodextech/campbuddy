@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 180" width="240" height="180" fill="none" role="img" aria-label="Three people waving hello">
+  <ellipse cx="120" cy="162" rx="96" ry="10" fill="#FFE4C4"/>
+  <circle cx="70" cy="74" r="17" fill="#F9F1E1" stroke="#8D1D2C" stroke-width="6"/>
+  <path d="M42 156c0-30 12-50 28-50s28 20 28 50" fill="#049395" stroke="#8D1D2C" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="170" cy="74" r="17" fill="#F9F1E1" stroke="#8D1D2C" stroke-width="6"/>
+  <path d="M142 156c0-30 12-50 28-50s28 20 28 50" fill="#F4A629" stroke="#8D1D2C" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="120" cy="60" r="19" fill="#F9F1E1" stroke="#8D1D2C" stroke-width="6"/>
+  <path d="M88 158c0-34 14-56 32-56s32 22 32 56" fill="#C33A19" stroke="#8D1D2C" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M198 110l18-26" stroke="#8D1D2C" stroke-width="7" stroke-linecap="round"/>
+  <path d="M206 64l4 8M222 70l-6 6M196 70l6 6" stroke="#E39D1C" stroke-width="4" stroke-linecap="round"/>
+  <path d="M112 64c4 4 12 4 16 0M62 78c3 3 9 3 12 0M162 78c3 3 9 3 12 0" stroke="#8D1D2C" stroke-width="3" stroke-linecap="round"/>
+</svg>

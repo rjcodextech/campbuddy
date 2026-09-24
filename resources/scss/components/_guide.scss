@@ -1,0 +1,425 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// WordCamp 101 (attendee/partials/guide-body.blade.php) — the first-timer
+// guide, and Home's "New here? Start here" card that leads to it.
+
+.guide-hero {
+    text-align: center;
+    margin-bottom: v.$space-4;
+}
+
+.guide-hero__art {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    height: auto;
+    margin: 0 auto v.$space-4;
+    border-radius: v.$radius-md;
+}
+
+.guide-hero__title {
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-black;
+    line-height: v.$line-height-tight;
+    letter-spacing: v.$letter-spacing-tight;
+    color: var(--ink);
+    margin: 0 0 v.$space-2;
+}
+
+.guide-hero__lead {
+    color: var(--muted);
+    line-height: v.$line-height-body;
+    max-width: 34rem;
+    margin: 0 auto;
+}
+
+// Section shortcuts: one scrollable row, never wrapping into a wall of
+// chips on a phone. The row scrolls, the page doesn't.
+.guide-jump {
+    display: flex;
+    gap: v.$space-2;
+    overflow-x: auto;
+    margin: 0 (-(v.$space-4)) v.$space-5;
+    padding: v.$space-1 v.$space-4 v.$space-2;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chip {
+        flex-shrink: 0;
+        white-space: nowrap;
+        text-decoration: none;
+    }
+}
+
+.guide-section {
+    margin-bottom: v.$space-8;
+    // Jump links land below the sticky top bar, not under it.
+    scroll-margin-top: calc(#{v.$topbar-height} + #{v.$space-3});
+}
+
+.guide-section__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-black;
+    color: var(--ink);
+    margin: 0 0 v.$space-2;
+}
+
+.guide-section__desc {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    margin: 0 0 v.$space-3;
+}
+
+.guide-prose p {
+    line-height: v.$line-height-body;
+    margin: 0 0 v.$space-3;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.guide-practical {
+    padding-top: v.$space-1;
+    padding-bottom: v.$space-1;
+
+    .useful-link:last-child {
+        border-bottom: 0;
+    }
+}
+
+// The day, as a vertical timeline: an icon bubble on a connecting line.
+.guide-timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.guide-step {
+    position: relative;
+    display: flex;
+    gap: v.$space-3;
+    padding-bottom: v.$space-5;
+
+    // The connecting line, from this bubble down to the next one.
+    &:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        top: 44px;
+        bottom: 0;
+        left: 21px;
+        width: 2px;
+        background: var(--line);
+    }
+}
+
+.guide-step__icon {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    border: 2px solid var(--paper);
+    box-shadow: 0 0 0 1px var(--line);
+    font-size: 1.25rem;
+}
+
+.guide-step__body {
+    min-width: 0;
+    padding-top: v.$space-2;
+}
+
+.guide-step__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+    margin: 0 0 v.$space-1;
+}
+
+// "At this WordCamp: 9:00 · Main Hall" — filled in by guide.js.
+.guide-step__when {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-1;
+    margin: 0 0 v.$space-2;
+    padding: 3px v.$space-2;
+    // A soft rectangle, not a pill: a long track name wraps onto two lines.
+    border-radius: 10px;
+    line-height: v.$line-height-snug;
+    background: var(--brand-primary);
+    color: #fff;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.guide-step__what {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--ink);
+    margin: 0 0 v.$space-2;
+}
+
+.guide-step__tip {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+    margin: 0;
+    padding: v.$space-2 v.$space-3;
+    border-left: 3px solid var(--gold);
+    background: var(--paper-soft);
+    border-radius: 0 v.$radius-sm v.$radius-sm 0;
+
+    strong {
+        color: var(--ink);
+    }
+}
+
+// Glossary + FAQ: native <details>, one bordered list.
+.guide-accordion {
+    @include m.card-surface;
+    overflow: hidden;
+}
+
+.guide-accordion__item {
+    border-bottom: 1px solid var(--line);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+
+    summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: v.$space-3;
+        min-height: 48px;
+        padding: v.$space-3 v.$space-4;
+        font-weight: v.$font-weight-bold;
+        color: var(--ink);
+        cursor: pointer;
+        list-style: none;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        &::after {
+            content: '+';
+            flex-shrink: 0;
+            font-size: 1.25rem;
+            font-weight: v.$font-weight-regular;
+            color: var(--brand-primary);
+            transition: transform 0.15s ease;
+        }
+
+        &:focus-visible {
+            @include m.focus-ring;
+            outline-offset: -2px;
+        }
+    }
+
+    &[open] summary::after {
+        transform: rotate(45deg);
+    }
+
+    p {
+        margin: 0;
+        padding: 0 v.$space-4 v.$space-4;
+        font-size: v.$font-size-sm;
+        line-height: v.$line-height-body;
+        color: var(--muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        summary::after {
+            transition: none;
+        }
+    }
+}
+
+.guide-tips {
+    display: grid;
+    gap: v.$space-3;
+
+    @include m.tablet {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.guide-tip {
+    @include m.card-surface;
+    display: flex;
+    gap: v.$space-3;
+    padding: v.$space-4;
+}
+
+.guide-tip__icon {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.guide-tip__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+    margin: 0 0 v.$space-1;
+}
+
+.guide-tip__text {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+    margin: 0;
+}
+
+.guide-bring {
+    list-style: none;
+    margin: 0;
+
+    li {
+        position: relative;
+        padding: v.$space-2 0 v.$space-2 v.$space-6;
+        font-size: v.$font-size-sm;
+        line-height: v.$line-height-body;
+        border-bottom: 1px dashed var(--line);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        &::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            top: v.$space-2;
+            color: var(--success);
+            font-weight: v.$font-weight-black;
+        }
+    }
+}
+
+.guide-next__list {
+    display: grid;
+    gap: v.$space-3;
+
+    .action-card {
+        text-decoration: none;
+    }
+}
+
+// Home: "New to WordCamp? Start here" — shown to first-timers (and anyone
+// who hasn't said otherwise) until dismissed.
+.start-here {
+    @include m.card-surface;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    padding-right: v.$space-8;
+    margin-bottom: v.$space-5;
+    background: linear-gradient(135deg, var(--peach), var(--paper));
+    border-color: var(--gold);
+    text-decoration: none;
+    color: var(--ink);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.start-here__art {
+    flex-shrink: 0;
+    width: 84px;
+    height: auto;
+    border-radius: v.$radius-sm;
+}
+
+.start-here__title {
+    display: block;
+    font-weight: v.$font-weight-black;
+    font-size: v.$font-size-base;
+    margin-bottom: v.$space-1;
+}
+
+.start-here__desc {
+    display: block;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    line-height: v.$line-height-snug;
+}
+
+.start-here__cta {
+    display: inline-block;
+    margin-top: v.$space-2;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}
+
+.start-here__link {
+    color: inherit;
+    text-decoration: none;
+
+    // The whole card is the link's tap target; the dismiss button sits above it.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+    }
+
+    &:focus-visible::after {
+        @include m.focus-ring;
+        border-radius: v.$radius-md;
+    }
+}
+
+.start-here__dismiss {
+    position: absolute;
+    top: v.$space-1;
+    right: v.$space-1;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: v.$radius-full;
+    color: var(--muted);
+    font-size: 1.25rem;
+
+    @include m.hover {
+        background: var(--paper-soft);
+        color: var(--ink);
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+// The picker's version is a plain link card — nothing to dismiss.
+.start-here--link {
+    padding-right: v.$space-4;
+
+    @include m.pressable-subtle;
+    transition: transform 0.12s ease;
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}

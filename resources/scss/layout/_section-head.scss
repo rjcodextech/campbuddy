@@ -21,3 +21,15 @@
     font-size: 0.82rem;
     color: var(--muted);
 }
+
+// A quiet "see all →" link on the right of a section heading.
+.section-head__link {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}

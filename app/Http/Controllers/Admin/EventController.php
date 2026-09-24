@@ -14,6 +14,7 @@ use App\Models\Event;
 use App\Support\SvgGuard;
 use Closure;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Throwable;
@@ -39,7 +40,15 @@ class EventController extends Controller
     {
         Gate::authorize('create', Event::class);
 
-        DiscoverWordCampsJob::dispatch();
+        try {
+            DiscoverWordCampsJob::dispatch();
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('admin.events.index')
+                ->with('error', 'Discovery couldn\'t be queued — the job queue isn\'t reachable. Check the queue connection, then try again.');
+        }
 
         return redirect()
             ->route('admin.events.index')
@@ -71,7 +80,32 @@ class EventController extends Controller
 
         $lastInfoFetch = $event->fetchLogs()->where('job_type', 'event_info')->latest('fetched_at')->latest('id')->first();
 
-        return view('admin.events.edit', compact('event', 'lastFetch', 'lastBrandingFetch', 'lastInfoFetch'));
+        // What attendees see right now: the cached lists (null = never fetched)
+        // and the visible attendee list.
+        $cachedCount = function (string $key) use ($event): ?int {
+            $value = Cache::get("event:{$event->id}:{$key}");
+
+            return is_array($value) ? count($value) : null;
+        };
+
+        $dataCounts = [
+            'Sessions' => $cachedCount('sessions'),
+            'Speakers' => $cachedCount('speakers'),
+            'Sponsors' => $cachedCount('sponsors'),
+            'Organizers' => $cachedCount('organizers'),
+            'Attendees' => $event->attendeeRoster()->where('is_suppressed', false)->count(),
+        ];
+
+        $recentFetches = $event->fetchLogs()->latest('fetched_at')->latest('id')->limit(10)->get();
+
+        $jobLabels = [
+            'sessions_speakers_sponsors' => 'Schedule',
+            'roster' => 'Attendee list',
+            'event_info' => 'Event information',
+            'branding' => 'Branding',
+        ];
+
+        return view('admin.events.edit', compact('event', 'lastFetch', 'lastBrandingFetch', 'lastInfoFetch', 'dataCounts', 'recentFetches', 'jobLabels'));
     }
 
     public function update(UpdateEventRequest $request, Event $event): RedirectResponse
@@ -127,7 +161,7 @@ class EventController extends Controller
             'social_event_info' => ['nullable', 'string', 'max:1000'],
             'registration_info' => ['nullable', 'string', 'max:1000'],
             'contributor_day_location' => ['nullable', 'string', 'max:255'],
-            'code_of_conduct_url' => ['nullable', 'url', 'max:500'],
+            'code_of_conduct_url' => ['nullable', 'url:http,https', 'max:500'],
             'emergency_contact' => ['nullable', 'string', 'max:500'],
             'nearby_venue_info' => ['nullable', 'string', 'max:1000'],
         ]);
@@ -157,15 +191,13 @@ class EventController extends Controller
     {
         Gate::authorize('update', $event);
 
-        FetchEventInfoJob::dispatchSync($event);
-
-        $log = $event->fetchLogs()->where('job_type', 'event_info')->latest('fetched_at')->latest('id')->first();
-
-        return redirect()
-            ->route('admin.events.edit', $event)
-            ->with('status', $log?->status === 'ok'
-                ? 'Event information updated — '.$log->message
-                : 'Couldn\'t fetch event information — '.($log?->message ?? 'see the logs.'));
+        return $this->runNow(
+            $event,
+            fn () => FetchEventInfoJob::dispatchSync($event),
+            'event_info',
+            'Event information updated',
+            'Couldn\'t fetch event information'
+        );
     }
 
     /**
@@ -242,10 +274,13 @@ class EventController extends Controller
             ->latest('id')
             ->first();
 
-        return redirect()
-            ->route('admin.events.edit', $event)
-            ->with('status', $log?->status === 'ok'
-                ? "{$success} — {$log->message}"
-                : "{$failure} — ".($log?->message ?? 'see the logs.'));
+        [$level, $message] = match ($log?->status) {
+            'ok' => ['status', "{$success} — {$log->message}"],
+            'partial' => ['warning', "{$success}, with problems — {$log->message}"],
+            null => ['error', "{$failure} — nothing was recorded. Check the application log (storage/logs) for details."],
+            default => ['error', "{$failure} — {$log->message}"],
+        };
+
+        return redirect()->route('admin.events.edit', $event)->with($level, $message);
     }
 }
