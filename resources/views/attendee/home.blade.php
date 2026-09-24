@@ -30,7 +30,7 @@
         hidden by home.js for someone who told onboarding it isn't their first
         WordCamp, or who dismissed it. --}}
         <div class="start-here" id="start-here">
-            <img class="start-here__art" src="/media/illustrations/welcome.svg" alt="" width="84" height="53">
+            <span class="start-here__art" aria-hidden="true"><img src="/media/icons/icon-192.png" alt="" width="64" height="64"></span>
             <div>
                 <a class="start-here__link" href="{{ route('event.guide', $event) }}" data-track="guide_open" data-track-surface="home_start_here">
                     <span class="start-here__title">New to WordCamp? Start here</span>

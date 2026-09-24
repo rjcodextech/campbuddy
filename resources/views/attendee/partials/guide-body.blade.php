@@ -31,19 +31,27 @@
 @endphp
 
 <section class="guide-hero" aria-labelledby="guide-title">
-    <img class="guide-hero__art" src="/media/illustrations/welcome.svg" alt="" width="320" height="200">
-    <p class="u-eyebrow">WordCamp 101</p>
-    <h1 id="guide-title" class="guide-hero__title">
-        @if ($event)
-            New to {{ $event->short_name ?: 'WordCamp' }}? Start here.
-        @else
-            Your first WordCamp? Start here.
-        @endif
-    </h1>
-    <p class="guide-hero__lead">
-        Everything regulars wish someone had told them on day one — what happens when, the words people use, and how to
-        make the most of it. Five minutes of reading, and you'll walk in like you've been before.
-    </p>
+    <div class="guide-hero__text">
+        <p class="guide-hero__eyebrow">
+            <img src="/media/icons/icon-192.png" alt="" width="22" height="22">
+            WordCamp 101
+        </p>
+        <h1 id="guide-title" class="guide-hero__title">
+            @if ($event)
+                New to {{ $event->short_name ?: 'WordCamp' }}?<br>Start here.
+            @else
+                Your first WordCamp?<br>Start here.
+            @endif
+        </h1>
+        <p class="guide-hero__lead">
+            What happens when, the words people use, and how to make friends — everything regulars wish they'd known on day one.
+        </p>
+        <ul class="guide-hero__meta" aria-label="About this guide">
+            <li>⏱ 5-minute read</li>
+            <li>📶 Works offline</li>
+        </ul>
+    </div>
+    <img class="guide-hero__art" src="/media/illustrations/first-badge.svg" alt="" width="260" height="300">
 </section>
 
 <nav class="guide-jump" aria-label="Guide sections">

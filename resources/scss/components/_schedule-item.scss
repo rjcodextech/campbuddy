@@ -309,3 +309,63 @@
     color: var(--ink);
     white-space: pre-line;
 }
+
+
+// My Day's "More filters" fold (Track / Type / Topic).
+.filters-panel {
+    margin: 0 0 v.$space-3;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &[open] .filters-panel__toggle {
+        margin-bottom: v.$space-2;
+        background: var(--peach);
+    }
+}
+
+.filters-panel__toggle {
+    @include m.pressable;
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-2;
+    min-height: 44px;
+    padding: v.$space-2 v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: var(--paper);
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+    transition: transform 0.1s ease, background 0.15s ease;
+
+    &::-webkit-details-marker {
+        display: none;
+    }
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.filters-panel__count {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: v.$radius-full;
+    background: var(--brand-primary);
+    color: #fff;
+    font-size: v.$font-size-xs;
+    text-align: center;
+
+    &[hidden] {
+        display: none;
+    }
+}

@@ -26,6 +26,14 @@
             </a>
 
             <div class="topbar__actions">
+        <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="7" y="2" width="10" height="20" rx="2" />
+                <path d="M11 18h2" />
+            </svg>
+            <span>Open on phone</span>
+        </button>
+
                 <button type="button" id="install-app-btn" class="topbar__text-btn" hidden>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M12 3v12" />
@@ -50,7 +58,7 @@
             {{-- WordCamp 101, before an event is even chosen — for someone who
             isn't sure yet what a WordCamp is. --}}
             <a class="start-here start-here--link" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                <img class="start-here__art" src="/media/illustrations/welcome.svg" alt="" width="84" height="53">
+                <span class="start-here__art" aria-hidden="true"><img src="/media/icons/icon-192.png" alt="" width="64" height="64"></span>
                 <span>
                     <span class="start-here__title">First WordCamp? Read this first</span>
                     <span class="start-here__desc">What happens during the day, the words people use, and how to meet people.</span>

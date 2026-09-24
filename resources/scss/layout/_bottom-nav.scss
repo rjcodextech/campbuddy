@@ -67,3 +67,24 @@
     line-height: 1.1;
     text-align: center;
 }
+
+// The current tab reads at a glance: its icon sits on a soft pill.
+.bottom-nav__item--active .bottom-nav__icon {
+    box-sizing: content-box;
+    padding: 3px 14px;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    opacity: 1;
+}
+
+.bottom-nav__item--active .bottom-nav__label {
+    font-weight: v.$font-weight-bold;
+}
+
+@media (min-width: v.$bp-desktop) {
+    // The sidebar highlights the whole row instead.
+    .bottom-nav__item--active .bottom-nav__icon {
+        padding: 0;
+        background: none;
+    }
+}

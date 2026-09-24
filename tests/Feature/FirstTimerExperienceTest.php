@@ -43,7 +43,7 @@ class FirstTimerExperienceTest extends TestCase
     {
         $response = $this->get(route('guide'))->assertOk();
 
-        $response->assertSee('Your first WordCamp? Start here.')
+        $response->assertSeeInOrder(['Your first WordCamp?', 'Start here.'])
             ->assertSee('What is a WordCamp?')
             ->assertSee('Hallway track')
             ->assertSee('Contributor Day')
@@ -68,7 +68,7 @@ class FirstTimerExperienceTest extends TestCase
 
         $response = $this->get(route('event.guide', $event))->assertOk();
 
-        $response->assertSee('New to WCTest? Start here.')
+        $response->assertSeeInOrder(['New to WCTest?', 'Start here.'])
             ->assertSee('At WordCamp Test 2026')
             ->assertSee('Town Hall, Main Street')
             ->assertSee('id="guide-data"', false)
@@ -150,5 +150,18 @@ class FirstTimerExperienceTest extends TestCase
         // Re-running resets rather than duplicating.
         $this->seed(DemoEventSeeder::class);
         $this->assertSame(1, Event::where('slug', DemoEventSeeder::SLUG)->count());
+    }
+
+    public function test_every_attendee_page_carries_the_open_on_your_phone_popup(): void
+    {
+        $event = $this->event();
+
+        foreach ([route('home'), route('guide'), route('event.home', $event), route('event.guide', $event), route('event.my-day', $event)] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('<dialog id="desktop-notice"', false)
+                ->assertSee('id="open-on-phone-btn"', false)
+                ->assertSee('Continue on this computer');
+        }
     }
 }

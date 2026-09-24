@@ -38,7 +38,7 @@
             <h1 class="section-head__title">Explore</h1>
         </div>
 
-        <div role="tablist" aria-label="Explore section" style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div role="tablist" aria-label="Explore section" class="tab-strip">
             <button type="button" class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true">People</button>
             <button type="button" class="btn btn--compact btn--outline" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
             <button type="button" class="btn btn--compact btn--outline" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>

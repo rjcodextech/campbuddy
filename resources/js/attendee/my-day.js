@@ -118,6 +118,7 @@ export async function renderMyDay(root) {
     });
 
     renderGroupedByDay(fullListEl, filtered, timed.length === 0 ? 'tpl-my-day-no-schedule' : 'tpl-my-day-empty-full');
+    updateMoreFiltersCount([activeTrack, activeType, activeTopic].filter(Boolean).length);
     wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
     return filtered.length;
   }
@@ -207,8 +208,21 @@ export async function renderMyDay(root) {
   renderMine();
 }
 
+// The "More filters" toggle says how many of its filters are on, so a
+// folded-away filter never silently hides sessions.
+function updateMoreFiltersCount(count) {
+  const badge = document.getElementById('more-filters-count');
+  const panel = document.getElementById('more-filters');
+  if (!badge || !panel) return;
+
+  badge.textContent = String(count);
+  badge.hidden = count === 0;
+  // Nothing to filter by (e.g. a one-track event with no types or topics).
+  panel.hidden = ['track-filters', 'type-filters', 'topic-filters'].every((id) => document.getElementById(id).hidden);
+}
+
 // WordPress's own session types, in words a first-timer understands.
-const TYPE_LABELS = { session: 'Talk', custom: 'Break / activity' };
+const TYPE_LABELS = { session: 'Talk', custom: 'Activity' };
 const TYPE_FILTER_LABELS = { session: 'Talks', custom: 'Breaks & activities' };
 
 function typeLabel(type) {

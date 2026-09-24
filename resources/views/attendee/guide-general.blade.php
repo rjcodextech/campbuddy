@@ -20,11 +20,21 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
 </head>
 <body class="app-shell">
     <div class="app-frame">
+        @include('attendee.partials.desktop-notice')
+
         <header class="topbar">
             <a href="{{ route('home') }}" class="brand">
                 <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
             </a>
             <div class="topbar__actions">
+        <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="7" y="2" width="10" height="20" rx="2" />
+                <path d="M11 18h2" />
+            </svg>
+            <span>Open on phone</span>
+        </button>
+
                 <a href="{{ route('home') }}" class="topbar__text-btn">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
                     <span>All WordCamps</span>

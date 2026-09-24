@@ -388,3 +388,18 @@
     font-weight: v.$font-weight-bold;
     color: var(--success);
 }
+
+// Phones: illustration above the text, and a full-width button.
+@media (max-width: 479px) {
+    .discovery-prompt {
+        flex-direction: column;
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    .discovery-prompt__art {
+        width: 64px;
+    }
+}

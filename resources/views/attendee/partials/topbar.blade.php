@@ -9,6 +9,14 @@
     </a>
 
     <div class="topbar__actions">
+        <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="7" y="2" width="10" height="20" rx="2" />
+                <path d="M11 18h2" />
+            </svg>
+            <span>Open on phone</span>
+        </button>
+
         {{-- WordCamp 101 — one tap from any screen for anyone who feels lost. --}}
         @php($onGuide = request()->routeIs('event.guide'))
         <a href="{{ route('event.guide', $event) }}" class="topbar__text-btn @if($onGuide) topbar__text-btn--active @endif"

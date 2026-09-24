@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300" fill="none" role="img" aria-label="A WordCamp name badge that says: Hello, it's my first WordCamp">
+  <!-- lanyard -->
+  <path d="M58 0 L112 118" stroke="#D98A1C" stroke-width="16" stroke-linecap="round"/>
+  <path d="M202 0 L148 118" stroke="#D98A1C" stroke-width="16" stroke-linecap="round"/>
+  <path d="M68 8 L112 104M192 8 L148 104" stroke="#F4C77A" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 10"/>
+  <!-- clip -->
+  <rect x="112" y="100" width="36" height="30" rx="6" fill="#B9B2A6" stroke="#5C1A1B" stroke-width="5"/>
+  <!-- badge card -->
+  <g transform="rotate(-4 130 210)">
+    <rect x="34" y="122" width="192" height="168" rx="18" fill="#FBEFD9" stroke="#5C1A1B" stroke-width="7"/>
+    <path d="M34 162 V140 a18 18 0 0 1 18-18 h156 a18 18 0 0 1 18 18 V162 z" fill="#5C1A1B"/>
+    <rect x="115" y="129" width="30" height="8" rx="4" fill="#FBEFD9"/>
+    <text x="130" y="200" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="30" fill="#5C1A1B" letter-spacing="1">HELLO!</text>
+    <text x="130" y="224" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="600" font-size="14" fill="#7A4A3A">it's my first</text>
+    <rect x="58" y="236" width="144" height="34" rx="17" fill="#D98A1C"/>
+    <text x="130" y="259" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-weight="800" font-size="16" fill="#5C1A1B">WordCamp</text>
+  </g>
+  <!-- sparkles -->
+  <path d="M232 150 l5 11 11 5 -11 5 -5 11 -5 -11 -11 -5 11 -5z" fill="#F4A629"/>
+  <path d="M22 206 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#F4A629"/>
+  <circle cx="242" cy="226" r="4" fill="#FBEFD9"/>
+  <circle cx="18" cy="160" r="3" fill="#FBEFD9"/>
+</svg>

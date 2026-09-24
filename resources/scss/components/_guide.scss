@@ -4,34 +4,121 @@
 // WordCamp 101 (attendee/partials/guide-body.blade.php) — the first-timer
 // guide, and Home's "New here? Start here" card that leads to it.
 
+// A warm, logo-coloured panel: the promise on the left, a "HELLO, it's my
+// first WordCamp" badge on the right — the moment every first-timer has.
 .guide-hero {
-    text-align: center;
-    margin-bottom: v.$space-4;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    margin: 0 0 v.$space-5;
+    padding: v.$space-6 v.$space-5;
+    border-radius: 14px;
+    overflow: hidden;
+    color: #fbefd9;
+    background:
+        radial-gradient(circle at 92% 12%, rgba(244, 166, 41, 0.35), transparent 42%),
+        radial-gradient(circle at 0% 100%, rgba(195, 58, 25, 0.55), transparent 55%),
+        linear-gradient(150deg, #6d2021, #4a1415);
+    box-shadow: v.$shadow-raised;
+
+    // A faint bunting line along the top — WordCamp's festive feel, quietly.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 12px;
+        background: repeating-linear-gradient(90deg, #d98a1c 0 18px, transparent 18px 26px);
+        clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+        opacity: 0.8;
+    }
 }
 
-.guide-hero__art {
-    display: block;
-    width: 100%;
-    max-width: 360px;
-    height: auto;
-    margin: 0 auto v.$space-4;
-    border-radius: v.$radius-md;
+.guide-hero__text {
+    position: relative;
+    z-index: 1;
+    flex: 1 1 60%;
+    min-width: 0;
+}
+
+.guide-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-2;
+    margin: 0 0 v.$space-3;
+    padding: 4px 10px 4px 4px;
+    border-radius: v.$radius-full;
+    background: rgba(251, 239, 217, 0.12);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: v.$letter-spacing-caps;
+    text-transform: uppercase;
+
+    img {
+        width: 22px;
+        height: 22px;
+        border-radius: v.$radius-full;
+        background: #fbefd9;
+    }
 }
 
 .guide-hero__title {
-    font-size: v.$font-size-xl;
+    margin: 0 0 v.$space-2;
+    font-size: clamp(1.5rem, 6.4vw, 2.25rem);
     font-weight: v.$font-weight-black;
     line-height: v.$line-height-tight;
     letter-spacing: v.$letter-spacing-tight;
-    color: var(--ink);
-    margin: 0 0 v.$space-2;
+    color: #fff;
 }
 
 .guide-hero__lead {
-    color: var(--muted);
+    margin: 0 0 v.$space-4;
+    font-size: v.$font-size-sm;
     line-height: v.$line-height-body;
-    max-width: 34rem;
-    margin: 0 auto;
+    color: rgba(251, 239, 217, 0.88);
+    max-width: 30rem;
+}
+
+.guide-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        padding: 4px 10px;
+        border-radius: v.$radius-full;
+        background: #d98a1c;
+        color: #4a1415;
+        font-size: v.$font-size-xs;
+        font-weight: v.$font-weight-bold;
+    }
+}
+
+.guide-hero__art {
+    position: relative;
+    flex: 0 0 auto;
+    width: 38%;
+    max-width: 200px;
+    height: auto;
+    margin: -8px -6px -24px 0;
+    transform: rotate(6deg);
+    filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.3));
+}
+
+// Very narrow phones: the badge would squeeze the headline — tuck it behind.
+@media (max-width: 359px) {
+    .guide-hero__art {
+        position: absolute;
+        right: -24px;
+        bottom: -30px;
+        width: 120px;
+        opacity: 0.35;
+    }
 }
 
 // Section shortcuts: one scrollable row, never wrapping into a wall of
@@ -342,11 +429,35 @@
     }
 }
 
+// CampBuddy's own mark with a "101" sticker — says "your guide" at a glance.
 .start-here__art {
+    position: relative;
     flex-shrink: 0;
-    width: 84px;
-    height: auto;
-    border-radius: v.$radius-sm;
+    width: 64px;
+    height: 64px;
+
+    img {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #fbefd9;
+        box-shadow: 0 6px 14px -6px rgba(92, 26, 27, 0.45);
+    }
+
+    &::after {
+        content: '101';
+        position: absolute;
+        right: -8px;
+        bottom: -6px;
+        padding: 2px 6px;
+        border: 2px solid var(--paper);
+        border-radius: v.$radius-full;
+        background: var(--brand-primary);
+        color: #fff;
+        font-size: 11px;
+        font-weight: v.$font-weight-black;
+        letter-spacing: 0.02em;
+    }
 }
 
 .start-here__title {

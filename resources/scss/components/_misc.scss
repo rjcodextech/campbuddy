@@ -95,3 +95,25 @@
     line-height: v.$line-height-body;
     color: var(--muted);
 }
+
+// In-page tabs (Explore's People / Sponsors / Deals / Event Info, My Day's
+// two views): always one row. On a narrow phone the row scrolls sideways
+// instead of wrapping "Event Info" onto a second line.
+.tab-strip {
+    display: flex;
+    gap: v.$space-2;
+    margin: 0 (-(v.$space-4)) v.$space-4;
+    padding: 2px v.$space-4 v.$space-1;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    > * {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+}

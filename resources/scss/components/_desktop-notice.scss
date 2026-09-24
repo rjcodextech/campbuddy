@@ -1,56 +1,82 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
-// "Best on your phone" notice for laptop/desktop visitors
+// "Best on your phone" popup for laptop/desktop visitors
 // (partials/desktop-notice.blade.php, wired by js/attendee/desktop-notice.js).
-// A slim, dismissible strip above the topbar — not a modal, so it never
-// blocks the app. The `[hidden]` rules are explicit because `display: flex`
-// here (and the global `img { display: block }` reset) would otherwise
-// override the browser's own `hidden` handling.
-.desktop-notice {
+// A modal <dialog>: illustration on the left, message + QR code on the right.
+
+dialog.desktop-notice {
+    width: min(720px, calc(100vw - 48px));
+    max-width: none;
+    padding: 0;
+    border: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--paper);
+    box-shadow: 0 40px 80px -30px rgba(35, 31, 32, 0.55);
+
+    &[open] {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+    }
+
+    &::backdrop {
+        background: rgba(35, 20, 20, 0.55);
+        backdrop-filter: blur(3px);
+    }
+}
+
+.desktop-notice__art {
     display: flex;
     align-items: center;
-    gap: v.$space-4;
-    padding: v.$space-3 v.$space-4;
-    background: var(--peach);
-    border-bottom: 1px solid var(--line);
+    justify-content: center;
+    padding: v.$space-6;
+    background:
+        radial-gradient(circle at 80% 15%, rgba(244, 166, 41, 0.35), transparent 45%),
+        linear-gradient(150deg, #6d2021, #4a1415);
+
+    img {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+        filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.3));
+    }
+}
+
+.desktop-notice__body {
+    padding: v.$space-8 v.$space-8 v.$space-6;
+}
+
+.desktop-notice__title {
+    margin: 0 0 v.$space-2;
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-black;
+    line-height: v.$line-height-tight;
     color: var(--ink);
-    font-size: v.$font-size-sm;
-    line-height: v.$line-height-snug;
-
-    &[hidden] {
-        display: none;
-    }
 }
 
-.desktop-notice__icon {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    color: var(--brand-primary);
-}
-
-// Text and QR sit together on the left; only the close button is pushed
-// to the far edge, so a wide screen doesn't strand the QR code away from
-// the sentence that explains it.
 .desktop-notice__text {
-    flex: 0 1 auto;
-    min-width: 0;
+    margin: 0 0 v.$space-4;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}
 
-    strong {
-        display: block;
-        font-size: v.$font-size-base;
-        margin-bottom: 2px;
-    }
+.desktop-notice__qr-wrap {
+    display: flex;
+    align-items: center;
+    gap: v.$space-5;
+    margin-bottom: v.$space-5;
 }
 
 .desktop-notice__qr {
     flex-shrink: 0;
-    width: 88px;
-    height: 88px;
+    width: 132px;
+    height: 132px;
+    padding: 6px;
     background: #fff;
     border: 1px solid var(--line);
-    border-radius: v.$radius-sm;
+    border-radius: 10px;
     image-rendering: pixelated;
 
     &[hidden] {
@@ -58,15 +84,25 @@
     }
 }
 
+.desktop-notice__steps {
+    margin: 0;
+    padding-left: v.$space-5;
+    list-style: decimal;
+    font-size: v.$font-size-sm;
+    line-height: 1.9;
+    color: var(--ink);
+}
+
 .desktop-notice__close {
     @include m.pressable;
-    flex-shrink: 0;
-    margin-left: auto;
+    position: absolute;
+    top: v.$space-3;
+    right: v.$space-3;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: v.$radius-full;
     font-size: v.$font-size-lg;
     line-height: 1;
@@ -74,7 +110,16 @@
     transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
 
     @include m.hover {
-        background: var(--paper);
+        background: var(--paper-soft);
         color: var(--ink);
     }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+// The topbar's "Open on phone" — only ever unhidden on desktop.
+#open-on-phone-btn[hidden] {
+    display: none;
 }
