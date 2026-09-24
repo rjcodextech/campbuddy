@@ -80,7 +80,19 @@
                         <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">First WordCamp? Read this first</a>
                     </div>
                 </div>
-                <img class="landing-hero__art" src="/media/illustrations/welcome.svg" alt="" width="320" height="200">
+                {{-- Line icons around the CampBuddy mark: what it helps with, at a glance.
+                Decorative — the text beside it says the same in words. --}}
+                <div class="hero-orbit" aria-hidden="true">
+                    <span class="hero-orbit__ring"></span>
+                    <span class="hero-orbit__ring hero-orbit__ring--inner"></span>
+                    <span class="hero-orbit__core"><img src="/media/icons/icon-192.png" alt="" width="72" height="72"></span>
+                    <span class="hero-orbit__item hero-orbit__item--1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg><b>Talks</b></span>
+                    <span class="hero-orbit__item hero-orbit__item--2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><b>People</b></span>
+                    <span class="hero-orbit__item hero-orbit__item--3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b>Reminders</b></span>
+                    <span class="hero-orbit__item hero-orbit__item--4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v.01M14 21h.01M17 21h4v-4"/></svg><b>Camp Card</b></span>
+                    <span class="hero-orbit__dot hero-orbit__dot--1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg></span>
+                    <span class="hero-orbit__dot hero-orbit__dot--2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                </div>
             </section>
 
             @include('attendee.partials.about-campbuddy', ['part' => 'steps'])

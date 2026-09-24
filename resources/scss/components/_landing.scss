@@ -14,15 +14,41 @@
 
 // The first screen: what CampBuddy is, three promises, and two ways in.
 .landing-hero {
+    position: relative;
+    isolation: isolate;
     display: flex;
     flex-direction: column-reverse;
-    gap: v.$space-3;
-    margin-bottom: v.$space-6;
+    gap: v.$space-2;
+    margin: 0 (-(v.$space-4)) v.$space-6;
+    padding: v.$space-4 v.$space-4 v.$space-5;
+    overflow: hidden;
+
+    // A faint tile of WordCamp-day line icons, fading out towards the text.
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: url('/media/pattern-icons.svg') repeat 0 0 / 220px 220px;
+        opacity: 0.09;
+        mask-image: radial-gradient(ellipse 90% 70% at 70% 20%, #000 20%, transparent 75%);
+        -webkit-mask-image: radial-gradient(ellipse 90% 70% at 70% 20%, #000 20%, transparent 75%);
+    }
 
     @media (min-width: v.$bp-tablet) {
         flex-direction: row;
         align-items: center;
         gap: v.$space-6;
+        margin: 0 0 v.$space-6;
+        padding: v.$space-6;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 236, 214, 0.6));
+        box-shadow: inset 0 0 0 1px rgba(195, 58, 25, 0.08);
+
+        &::before {
+            mask-image: radial-gradient(ellipse 60% 90% at 85% 50%, #000 25%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 60% 90% at 85% 50%, #000 25%, transparent 80%);
+        }
     }
 }
 
@@ -92,18 +118,136 @@
     }
 }
 
-.landing-hero__art {
-    display: block;
+// --- The line-icon "orbit" around the CampBuddy mark --------------------------------
+.hero-orbit {
+    position: relative;
+    flex-shrink: 0;
     width: 100%;
-    max-width: 320px;
-    height: auto;
-    max-height: 160px;
-    object-fit: contain;
-    object-position: left center;
+    max-width: 340px;
+    height: 176px;
+    margin: 0 auto;
 
     @media (min-width: v.$bp-tablet) {
-        flex: 0 0 38%;
-        max-height: none;
+        flex: 0 0 300px;
+        height: 280px;
+    }
+}
+
+.hero-orbit__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 74%;
+    height: 88%;
+    border: 1.5px dashed rgba(195, 58, 25, 0.28);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hero-orbit__ring--inner {
+    width: 42%;
+    height: 52%;
+    border-style: solid;
+    border-color: rgba(244, 166, 41, 0.35);
+}
+
+.hero-orbit__core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 30px -14px rgba(92, 26, 27, 0.55), 0 0 0 6px rgba(255, 236, 214, 0.9);
+    transform: translate(-50%, -50%);
+
+    img {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        width: 96px;
+        height: 96px;
+        border-radius: 26px;
+
+        img {
+            width: 72px;
+            height: 72px;
+        }
+    }
+}
+
+.hero-orbit__item {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: #fff;
+    box-shadow: v.$shadow-card;
+    font-size: v.$font-size-xs;
+    white-space: nowrap;
+    animation: hero-float 5s ease-in-out infinite;
+
+    svg {
+        width: 26px;
+        height: 26px;
+        padding: 5px;
+        border-radius: 50%;
+        background: var(--peach);
+        color: var(--brand-primary);
+    }
+
+    b {
+        font-weight: v.$font-weight-bold;
+        color: var(--ink);
+    }
+}
+
+.hero-orbit__item--1 { top: 4%; left: 4%; }
+.hero-orbit__item--2 { top: 10%; right: 0; animation-delay: -1.2s; }
+.hero-orbit__item--3 { bottom: 8%; left: 0; animation-delay: -2.4s; }
+.hero-orbit__item--4 { bottom: 2%; right: 6%; animation-delay: -3.6s; }
+
+.hero-orbit__dot {
+    position: absolute;
+    display: flex;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: v.$shadow-card;
+    color: var(--gold);
+    animation: hero-float 6s ease-in-out infinite;
+
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.hero-orbit__dot--1 { top: 42%; left: 12%; animation-delay: -2s; }
+.hero-orbit__dot--2 { top: 38%; right: 12%; color: var(--teal); animation-delay: -4s; }
+
+@keyframes hero-float {
+    0%,
+    100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-orbit__item,
+    .hero-orbit__dot {
+        animation: none;
     }
 }
 

@@ -11,8 +11,8 @@
         <ol class="about-steps__list">
             @foreach ([
                 ['home', 'Know what\'s happening', 'See what\'s on now and next — with a tip on what to do.'],
-                ['my-day', 'Plan your day', 'Star the talks you like. We\'ll remind you before they start.'],
-                ['explore', 'Meet your people', 'Find attendees who share your interests — with names and profiles.'],
+                ['my-day', 'Plan your day', 'Star talks, add people to meet, and tick them off as you go.'],
+                ['explore', 'Meet your people', 'Find attendees who share your interests — wave to swap names.'],
                 ['camp-card', 'Stay in touch', 'Share your Camp Card\'s QR code. No paper cards to lose.'],
             ] as $i => [$icon, $title, $text])
                 <li class="about-step">
