@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class DiscoveryWave extends Model
 {
-    protected $fillable = ['event_id', 'from_profile_id', 'to_profile_id', 'reveal_name', 'message'];
+    protected $fillable = ['event_id', 'from_profile_id', 'to_profile_id', 'reveal_name'];
 
     public function from(): BelongsTo
     {

@@ -97,6 +97,7 @@ const EVENTS = {
   discovery_met_mark: [],
   discovery_wave: ['surface'], // waved at a match (never who)
   discovery_wave_undo: [],
+  discovery_message: ['message_number'], // 1-3 — never the text or who
   discovery_mutual_view: [], // a mutual wave revealed names on this device
 
   // Day planner (My schedule): people to meet, ticking things off, calendar

@@ -489,3 +489,80 @@ dialog.meet-sheet {
     background: var(--peach);
     font-size: 1.6rem;
 }
+
+// --- The three-message thread between matches ---------------------------------
+.convo {
+    margin-top: v.$space-3;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.convo__inner {
+    display: grid;
+    gap: v.$space-2;
+    padding: v.$space-3;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.convo__hint,
+.convo__status {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.convo__list {
+    display: grid;
+    gap: v.$space-2;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.convo__bubble {
+    justify-self: start;
+    max-width: 88%;
+    padding: v.$space-2 v.$space-3;
+    border-radius: 12px 12px 12px 4px;
+    background: var(--paper-soft);
+    box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.convo__bubble--mine {
+    justify-self: end;
+    border-radius: 12px 12px 4px 12px;
+    background: var(--peach);
+    box-shadow: none;
+}
+
+.convo__text {
+    display: block;
+    font-size: v.$font-size-sm;
+    overflow-wrap: anywhere;
+}
+
+.convo__meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.7rem;
+    font-weight: v.$font-weight-bold;
+    color: var(--muted);
+}
+
+.convo__composer {
+    display: flex;
+    gap: v.$space-2;
+
+    input {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.convo__card {
+    justify-self: start;
+}

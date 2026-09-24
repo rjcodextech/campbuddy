@@ -74,6 +74,7 @@ return [
 
         // Discovery
         'identity' => 'How someone appears in discovery: attendee_list, typed_name, anonymous',
+        'message_number' => 'Which of the three discovery messages was sent: 1, 2 or 3',
 
         // Day planner
         'timed' => 'A person to meet has a set time',

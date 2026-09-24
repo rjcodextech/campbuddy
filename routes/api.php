@@ -39,6 +39,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
             Route::post('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'store'])->name('api.discovery.waves.store');
+            Route::post('/discovery/{discoveryId}/messages', [DiscoveryWaveController::class, 'message'])->name('api.discovery.messages.store');
             Route::delete('/discovery/{discoveryId}/waves/{targetId}', [DiscoveryWaveController::class, 'destroy'])->name('api.discovery.waves.destroy');
 
             Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');

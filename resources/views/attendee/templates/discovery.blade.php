@@ -145,8 +145,7 @@
         <p class="person-card__common" data-slot="common-row">You both: <strong data-slot="common"></strong></p>
         <div class="match-tags" data-slot="tags"></div>
         <p class="person-card__who-to-meet" data-slot="who-row">Wants to meet: <span data-slot="who"></span></p>
-        <p class="person-card__message" data-slot="their-message"></p>
-        <p class="person-card__my-message" data-slot="my-message"></p>
+        <div class="convo" data-slot="convo"></div>
 
         <div class="person-card__actions">
             <a class="btn btn--compact btn--outline person-card__wporg" target="_blank" rel="noopener" data-track="discovery_profile_link_click" data-track-link-type="wporg" data-slot="wporg">
@@ -187,8 +186,9 @@
             </div>
 
             <div>
-                <label class="meet-sheet__label" for="wave-message">Where to meet? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-                <input type="text" id="wave-message" maxlength="140" placeholder="e.g. By the coffee stand after the keynote">
+                <label class="meet-sheet__label" for="wave-message">First message <span style="font-weight:400;color:var(--muted)">(optional · 1 of 3)</span></label>
+                <input type="text" id="wave-message" maxlength="140" placeholder="e.g. Coffee stand after the keynote?">
+                <p class="meet-sheet__privacy" style="margin-top:6px">You each get 3 short messages to agree where to meet — then swap Camp Cards.</p>
             </div>
 
             <p class="meet-sheet__privacy" data-wave-error hidden style="color:var(--danger)"></p>
@@ -198,4 +198,27 @@
             </div>
         </form>
     </dialog>
+</template>
+
+{{-- The few messages two matches may exchange (people.js): three each,
+    taking turns — a way to agree where to meet, not a chat app. --}}
+<template id="tpl-convo">
+    <div class="convo__inner">
+        <p class="convo__hint" data-slot="hint"></p>
+        <ol class="convo__list" data-slot="list"></ol>
+        <form class="convo__composer" data-slot="composer">
+            <label class="u-visually-hidden" data-slot="label">Your message</label>
+            <input type="text" maxlength="140" autocomplete="off" enterkeyhint="send" data-slot="input">
+            <button type="submit" class="btn btn--primary btn--compact" data-slot="send">Send</button>
+        </form>
+        <p class="convo__status" data-slot="status"></p>
+        <a class="btn btn--outline btn--compact convo__card" data-slot="card-link">📇 Share your Camp Card</a>
+    </div>
+</template>
+
+<template id="tpl-convo-bubble">
+    <li class="convo__bubble" data-slot="bubble">
+        <span class="convo__text" data-slot="text"></span>
+        <span class="convo__meta" data-slot="meta"></span>
+    </li>
 </template>

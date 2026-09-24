@@ -498,7 +498,10 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const myTags = new Set(mine.fields.tags);
   const sent = new Set(waves.sent ?? []);
   const received = new Set(waves.received ?? []);
+  const receivedWithMessage = new Set(waves.received_with_message ?? []);
   const mutualById = new Map((waves.mutual ?? []).map((m) => [m.discovery_id, m]));
+  const pendingById = new Map((waves.pending ?? []).map((p) => [p.discovery_id, p]));
+  const maxMessages = waves.max_messages ?? 3;
 
   const others = profiles
     .filter((p) => p.discovery_id !== mine.discoveryId)
@@ -509,8 +512,15 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
         common: (p.fields.tags ?? []).filter((t) => myTags.has(t)),
         wave: mutual ? 'mutual' : sent.has(p.discovery_id) ? 'sent' : received.has(p.discovery_id) ? 'received' : null,
         revealed_name: mutual?.name ?? null,
-        their_message: mutual?.message ?? null,
-        my_message: mutual?.my_message ?? null,
+        // The short thread (mutual), my unanswered first message (pending),
+        // or just "they wrote something" (waiting for my wave back).
+        convo: mutual
+          ? { kind: 'mutual', ...mutual }
+          : pendingById.get(p.discovery_id)?.messages?.length
+            ? { kind: 'pending', messages: pendingById.get(p.discovery_id).messages }
+            : receivedWithMessage.has(p.discovery_id)
+              ? { kind: 'waiting' }
+              : null,
       };
     });
   const notMet = others.filter((p) => !metIds.has(p.discovery_id));
@@ -525,8 +535,20 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
 
   if (mutual.length > 0) track('discovery_mutual_view');
 
+  const rerender = () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
-    onWave: () => waveAt(p, mine, eventSlug, () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options)),
+    onWave: () => waveAt(p, mine, eventSlug, rerender),
+    convo: p.convo
+      ? buildConvo(p.convo, {
+          max: maxMessages,
+          cardUrl: `/event/${eventSlug}/camp-card`,
+          onSend: async (body) => {
+            await apiMutate(eventSlug, `/discovery/${mine.discoveryId}/messages`, 'POST', { to: p.discovery_id, body }, mine.ownerToken);
+            track('discovery_message', { message_number: (p.convo.mine ?? 0) + 1 });
+            rerender();
+          },
+        })
+      : null,
   });
 
   el.replaceChildren(
@@ -571,7 +593,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet, eventId, { onWave = null } = {}) {
+function matchCard(profile, isMet, eventId, { onWave = null, convo = null } = {}) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -595,8 +617,7 @@ function matchCard(profile, isMet, eventId, { onWave = null } = {}) {
   const card = render('tpl-discovery-match', {
     card: { class: { 'person-card--mutual': wave === 'mutual', 'person-card--waved-you': wave === 'received' } },
     'waved-you': wave === 'received' && !isMet,
-    'their-message': profile.their_message ? `💬 “${profile.their_message}”` : null,
-    'my-message': profile.my_message ? `You said: “${profile.my_message}”` : null,
+    convo: convo && !isMet ? [convo] : null,
     wave: isMet || wave === 'mutual' || !onWave
       ? null
       : {
@@ -727,4 +748,75 @@ function saveWaveName(name) {
   } catch {
     // Retyped next time.
   }
+}
+
+/**
+ * The short thread two matches may exchange: three messages each, taking
+ * turns. The server enforces the rules; this shows where things stand —
+ * "Message 2 of 3 sent", waiting for their reply, or the limit reached with
+ * a nudge to swap Camp Cards instead.
+ */
+function buildConvo(convo, { max, cardUrl, onSend }) {
+  const mine = convo.messages?.filter((m) => m.mine) ?? [];
+  let myN = 0;
+  let theirN = 0;
+
+  const bubbles = (convo.messages ?? []).map((m) =>
+    render('tpl-convo-bubble', {
+      bubble: { class: { 'convo__bubble--mine': m.mine } },
+      text: m.body,
+      meta: m.mine ? `Message ${++myN} of ${max} · sent ✓` : `Their message ${++theirN} of ${max}`,
+    })
+  );
+
+  let status = null;
+  if (convo.kind === 'waiting') {
+    status = '💬 They sent you a message — wave back to read it.';
+  } else if (convo.kind === 'pending') {
+    status = 'Waiting for them to wave back — then you can both see names and reply.';
+  } else if (convo.reason === 'waiting') {
+    status = `⏳ Sent. You can write again after they reply (${mine.length} of ${max} used).`;
+  } else if (convo.reason === 'limit') {
+    status = `That's all ${max} of your messages. To keep in touch, share your Camp Card — or add them to your plan with + Meet.`;
+  }
+
+  const canSend = convo.kind === 'mutual' && convo.can_send;
+  const el = render('tpl-convo', {
+    hint: convo.kind === 'mutual' && bubbles.length === 0 ? `Agree where to meet — you each have ${max} short messages.` : null,
+    list: bubbles.length ? bubbles : null,
+    composer: canSend,
+    label: canSend ? `Message ${mine.length + 1} of ${max}` : null,
+    input: canSend ? { attrs: { placeholder: `Message ${mine.length + 1} of ${max} — e.g. Meet at the sponsor hall?` } } : null,
+    status,
+    'card-link': convo.kind === 'mutual' && convo.reason === 'limit' ? { attrs: { href: cardUrl } } : null,
+  });
+
+  const form = el.querySelector('form');
+  if (form) {
+    const input = form.querySelector('input');
+    const button = form.querySelector('button');
+    const statusEl = el.querySelector('.convo__status') ?? el.appendChild(Object.assign(document.createElement('p'), { className: 'convo__status' }));
+    input.id = `convo-${Math.random().toString(36).slice(2)}`;
+    form.querySelector('label').htmlFor = input.id;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = input.value.trim();
+      if (!body) {
+        input.focus();
+        return;
+      }
+      button.disabled = true;
+      input.disabled = true;
+      try {
+        await onSend(body);
+      } catch (error) {
+        button.disabled = false;
+        input.disabled = false;
+        statusEl.textContent = error.userMessage ?? "Couldn't send — check your connection and try again.";
+      }
+    });
+  }
+
+  return el;
 }
