@@ -1,0 +1,168 @@
+// "Meet this person": pick anyone from the attendee list (or a discovery
+// match), write yourself a note, optionally set a time — and they show up in
+// My Day → My schedule, where you can tick them off as met.
+//
+// Everything is stored on this device only (db.js 'meetings'); the person
+// isn't told. The same sheet edits an entry from My schedule.
+
+import { track } from './analytics.js';
+import { buildIcs, defaultMeetingDay, deliverIcs, eventFacts, googleCalendarUrl } from './calendar.js';
+import { removeMeeting, saveMeeting } from './db.js';
+import { render } from './template.js';
+import { showToast } from './toast.js';
+
+/**
+ * @param {object} opts
+ * @param {number} opts.eventId
+ * @param {object} opts.person   { personKey, name, avatarUrl, sub, source, links }
+ * @param {object} [opts.existing] the saved meeting, when editing
+ * @param {Function} [opts.onChange] called after save/remove with the row (or null)
+ */
+export function openMeetSheet({ eventId, person, existing = null, onChange = () => {} }) {
+  const facts = eventFacts();
+  const atValue = existing?.at ? toLocalInput(new Date(existing.at)) : '';
+
+  const dialog = render('tpl-meet-sheet', {
+    avatar: { attrs: { src: person.avatarUrl || '/media/illustrations/avatar.svg' } },
+    name: person.name || 'Anonymous attendee',
+    sub: person.sub || null,
+    note: { text: existing?.note ?? '' },
+    'when-any': { attrs: { checked: !existing?.at } },
+    'when-time': { attrs: { checked: Boolean(existing?.at) } },
+    at: {
+      attrs: {
+        value: atValue,
+        hidden: !existing?.at,
+        min: facts.start ? `${facts.start}T00:00` : null,
+        max: facts.end ? `${facts.end}T23:59` : null,
+      },
+    },
+    calendar: true,
+    remove: Boolean(existing),
+    save: existing ? 'Save changes' : 'Save to My schedule',
+  });
+  dialog.querySelector('.meet-sheet__eyebrow').textContent = existing ? 'Person to meet' : 'Add to people to meet';
+
+  document.body.appendChild(dialog);
+
+  const noteEl = dialog.querySelector('#meet-note');
+  const atEl = dialog.querySelector('#meet-at');
+  const radios = dialog.querySelectorAll('input[name="meet-when"]');
+
+  radios.forEach((r) =>
+    r.addEventListener('change', () => {
+      const timed = dialog.querySelector('input[name="meet-when"]:checked')?.value === 'time';
+      atEl.hidden = !timed;
+      if (timed && !atEl.value) atEl.value = suggestedTime(facts);
+      if (timed) atEl.focus();
+    })
+  );
+
+  const close = () => {
+    dialog.close();
+    dialog.remove();
+  };
+
+  dialog.querySelector('[data-meet-close]').addEventListener('click', close);
+  dialog.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    close();
+  });
+  // Tapping the dimmed backdrop closes it, like any bottom sheet.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) close();
+  });
+
+  const current = () => {
+    const timed = dialog.querySelector('input[name="meet-when"]:checked')?.value === 'time' && atEl.value;
+    const atMs = timed ? new Date(atEl.value).getTime() : NaN;
+
+    return {
+      name: person.name || null,
+      avatarUrl: person.avatarUrl || null,
+      sub: person.sub || null,
+      source: person.source,
+      links: person.links ?? [],
+      note: noteEl.value.trim().slice(0, 280),
+      at: Number.isFinite(atMs) ? new Date(atMs).toISOString() : null,
+    };
+  };
+
+  dialog.querySelector('[data-meet-save]').addEventListener('click', async () => {
+    const row = await saveMeeting(eventId, person.personKey, current());
+    track(existing ? 'meet_update' : 'meet_add', { source: person.source, timed: Boolean(row.at) });
+    showToast(existing ? 'Saved.' : 'Added to My schedule — see My Day.');
+    close();
+    onChange(row);
+  });
+
+  dialog.querySelector('[data-meet-remove]')?.addEventListener('click', async () => {
+    await removeMeeting(eventId, person.personKey);
+    track('meet_remove', { source: person.source });
+    showToast('Removed from My schedule.');
+    close();
+    onChange(null);
+  });
+
+  dialog.querySelector('[data-meet-ics]')?.addEventListener('click', () => {
+    const item = meetingCalendarItem({ ...existing, ...current(), personKey: person.personKey }, facts);
+    deliverIcs(`meet-${person.name || 'attendee'}`, buildIcs([item]));
+    track('calendar_export', { scope: 'meeting', method: 'ics' });
+  });
+
+  const google = dialog.querySelector('[data-meet-google]');
+  if (google) {
+    const refreshGoogle = () => {
+      google.href = googleCalendarUrl(meetingCalendarItem({ ...existing, ...current(), personKey: person.personKey }, facts));
+    };
+    refreshGoogle();
+    [noteEl, atEl, ...radios].forEach((el) => el.addEventListener('input', refreshGoogle));
+    radios.forEach((r) => r.addEventListener('change', refreshGoogle));
+    google.addEventListener('click', () => track('calendar_export', { scope: 'meeting', method: 'google' }));
+  }
+
+  dialog.showModal();
+  if (!existing) noteEl.focus();
+}
+
+/** One meeting as a calendar entry: timed if it has a time, otherwise all day. */
+export function meetingCalendarItem(meeting, facts = eventFacts()) {
+  const who = meeting.name || 'someone from the attendee list';
+  const description = [
+    meeting.note ? `Note: ${meeting.note}` : null,
+    meeting.sub || null,
+    ...(meeting.links ?? []).map((l) => l.url).filter((u) => /^https?:\/\//i.test(u ?? '')),
+    `Your plan: ${facts.myDayUrl}`,
+  ].filter(Boolean).join('\n');
+
+  const base = {
+    uid: `meet-${facts.slug}-${String(meeting.personKey ?? who).replace(/[^a-zA-Z0-9]/g, '')}`,
+    title: `Meet ${who} · ${facts.name}`,
+    description,
+    location: facts.venue || undefined,
+    alarmMinutes: 10,
+  };
+
+  if (meeting.at) {
+    const startMs = new Date(meeting.at).getTime();
+    return { ...base, startMs, endMs: startMs + 15 * 60 * 1000 };
+  }
+
+  return { ...base, date: defaultMeetingDay(facts) };
+}
+
+// The next quarter hour today during the event, otherwise 11:00 on day one.
+function suggestedTime(facts) {
+  const now = new Date();
+  const today = toLocalInput(now).slice(0, 10);
+  if (facts.start && (today < facts.start || today > (facts.end ?? facts.start))) {
+    return `${facts.start}T11:00`;
+  }
+  const next = new Date(Math.ceil(now.getTime() / (15 * 60 * 1000)) * 15 * 60 * 1000);
+  return toLocalInput(next);
+}
+
+function toLocalInput(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}

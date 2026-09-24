@@ -1,0 +1,420 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// The day planner: "+ Meet" buttons, the meet sheet, My schedule's progress,
+// people-to-meet cards, attended/met buttons and the "things left" banner
+// (meet-sheet.js, my-day.js, plan-reminder.js).
+
+// --- "+ Meet" on attendee rows and match cards --------------------------------
+.meet-btn {
+    flex-shrink: 0;
+    min-height: 36px;
+    padding: 0 v.$space-3;
+    border: 1px solid var(--brand-primary);
+    border-radius: v.$radius-full;
+    background: #fff;
+    color: var(--brand-primary);
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.meet-btn--saved {
+    border-color: transparent;
+    background: var(--peach);
+    color: var(--ink);
+}
+
+// --- The meet sheet: a bottom sheet on phones, a centred card on wide screens --
+dialog.meet-sheet {
+    width: 100%;
+    max-width: 480px;
+    max-height: 92dvh;
+    margin: auto auto 0;
+    padding: 0;
+    border: 0;
+    border-radius: 16px 16px 0 0;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: v.$shadow-raised;
+
+    &::backdrop {
+        background: rgba(35, 31, 32, 0.45);
+    }
+
+    &[open] {
+        animation: meet-sheet-up 0.22s ease-out;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        margin: auto;
+        border-radius: 14px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &[open] {
+            animation: none;
+        }
+    }
+}
+
+@keyframes meet-sheet-up {
+    from {
+        transform: translateY(24px);
+        opacity: 0;
+    }
+}
+
+.meet-sheet__card {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-5 v.$space-4 calc(#{v.$space-4} + env(safe-area-inset-bottom, 0px));
+}
+
+.meet-sheet__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+}
+
+.meet-sheet__avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--peach);
+}
+
+.meet-sheet__who {
+    flex: 1;
+    min-width: 0;
+}
+
+.meet-sheet__eyebrow {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+}
+
+.meet-sheet__name {
+    margin: 0;
+    font-size: v.$font-size-md;
+    overflow-wrap: anywhere;
+}
+
+.meet-sheet__sub {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.meet-sheet__close {
+    align-self: flex-start;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: v.$radius-full;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.meet-sheet__label {
+    display: block;
+    margin: 0 0 v.$space-1;
+    padding: 0;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+}
+
+.meet-sheet__when {
+    display: grid;
+    gap: v.$space-2;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.meet-sheet__choice {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    min-height: 36px;
+    font-size: v.$font-size-sm;
+
+    input {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--brand-primary);
+    }
+}
+
+.meet-sheet__privacy {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.meet-sheet__calendar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    padding-top: v.$space-3;
+    border-top: 1px solid var(--line);
+}
+
+.meet-sheet__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+
+    .btn--primary {
+        margin-left: auto;
+    }
+}
+
+// --- My schedule ---------------------------------------------------------------
+.plan-summary {
+    @include m.card-surface;
+    margin-bottom: v.$space-5;
+    padding: v.$space-4;
+    background: linear-gradient(135deg, #fff, var(--peach));
+}
+
+.plan-summary__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+}
+
+.plan-summary__title {
+    margin: 0;
+    font-weight: v.$font-weight-black;
+}
+
+.plan-summary__count {
+    margin: 2px 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.plan-summary__ring {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-black;
+    color: var(--brand-primary);
+}
+
+.plan-summary__bar {
+    height: 8px;
+    margin: v.$space-3 0;
+    overflow: hidden;
+    border-radius: v.$radius-full;
+    background: rgba(35, 31, 32, 0.08);
+
+    span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--brand-primary), var(--gold));
+        transition: width 0.3s ease;
+    }
+}
+
+.plan-summary__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-2;
+}
+
+.plan-section-title {
+    margin: v.$space-5 0 v.$space-2;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.plan-empty {
+    margin: 0 0 v.$space-2;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.plan-person {
+    @include m.card-surface;
+    display: flex;
+    gap: v.$space-3;
+    margin-bottom: v.$space-2;
+    padding: v.$space-3;
+}
+
+.plan-person--done {
+    opacity: 0.7;
+}
+
+.plan-person__avatar {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--peach);
+}
+
+.plan-person__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.plan-person__name {
+    margin: 0;
+    font-weight: v.$font-weight-bold;
+    overflow-wrap: anywhere;
+}
+
+.plan-person__state {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--teal);
+}
+
+.plan-person__when,
+.plan-person__note {
+    margin: 2px 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.plan-person__note {
+    color: var(--ink);
+    white-space: pre-line;
+}
+
+.plan-person__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: v.$space-2;
+    margin-top: v.$space-2;
+}
+
+.plan-person__edit {
+    min-height: 32px;
+    margin-left: auto;
+    padding: 0 v.$space-2;
+    border: 0;
+    background: none;
+    color: var(--brand-primary);
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    cursor: pointer;
+}
+
+// Attended / Missed, Met / Couldn't — one tap marks, a second clears.
+.plan-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    margin-top: v.$space-2;
+}
+
+.plan-status__btn {
+    min-height: 32px;
+    padding: 0 v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: #fff;
+    color: var(--ink);
+    font: inherit;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    cursor: pointer;
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.plan-status__btn--on {
+    border-color: var(--teal);
+    background: var(--teal);
+    color: #fff;
+}
+
+.plan-status__btn--no.plan-status__btn--on {
+    border-color: var(--muted);
+    background: var(--muted);
+}
+
+.schedule-item--attended .schedule-item__title,
+.schedule-item--missed .schedule-item__title {
+    opacity: 0.75;
+}
+
+.schedule-item--missed .schedule-item__title {
+    text-decoration: line-through;
+}
+
+// --- "N things left in your plan today" -----------------------------------------
+.plan-reminder {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    margin-bottom: v.$space-4;
+    padding: v.$space-3;
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    background: var(--peach);
+    animation: plan-reminder-in 0.3s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+@keyframes plan-reminder-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+}
+
+.plan-reminder__icon {
+    font-size: 1.4rem;
+}
+
+.plan-reminder__text {
+    flex: 1;
+    margin: 0;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+}
+
+.plan-reminder__close {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 1.3rem;
+    cursor: pointer;
+}

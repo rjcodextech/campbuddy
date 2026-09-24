@@ -95,6 +95,19 @@ const EVENTS = {
   roster_link_click: ['link_type'], // same, on "Who's attending"
   discovery_leave: ['surface'],
   discovery_met_mark: [],
+  discovery_wave: ['surface'], // waved at a match (never who)
+  discovery_wave_undo: [],
+  discovery_mutual_view: [], // a mutual wave revealed names on this device
+
+  // Day planner (My schedule): people to meet, ticking things off, calendar
+  meet_add: ['source', 'timed'], // source: roster | discovery — never who or the note
+  meet_update: ['source', 'timed'],
+  meet_remove: ['source'],
+  meet_status: ['plan_status'], // met | missed | cleared
+  session_status: ['plan_status'], // attended | missed | cleared
+  calendar_export: ['scope', 'method'], // scope: meeting | plan; method: ics | google
+  plan_reminder_view: ['left_count'],
+  plan_reminder_click: ['left_count'],
   home_discovery_explore_click: [],
   roster_search_use: [], // once per page load; never the query
   roster_removal_search: [], // never the name

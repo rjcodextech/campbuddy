@@ -75,9 +75,14 @@ return [
         // Discovery
         'identity' => 'How someone appears in discovery: attendee_list, typed_name, anonymous',
 
+        // Day planner
+        'timed' => 'A person to meet has a set time',
+        'plan_status' => 'Plan item ticked: attended, met, missed or cleared',
+        'scope' => 'Calendar export: one meeting or the whole plan',
+
         // Camp Card
         'layout' => 'Camp Card design',
-        'method' => 'Share method',
+        'method' => 'Share or calendar method',
         'content_type' => 'What was shared',
         'item_id' => 'Shared item',
         'action' => 'Camp Card export step that failed',
@@ -95,6 +100,7 @@ return [
         'results_count' => 'Schedule search results',
         'answer_count' => 'Contribute answers chosen',
         'tag_count' => 'Discovery interest tags chosen',
+        'left_count' => 'Plan items still to do when reminded',
         'metric_value' => 'Web Vitals value (ms, or unitless for CLS)',
     ],
 

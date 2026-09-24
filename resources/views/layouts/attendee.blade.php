@@ -63,7 +63,13 @@
     <div class="app-frame app-frame--with-nav">
         @include('attendee.partials.desktop-notice')
 
-        <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}">
+        {{-- Event facts the planner and calendar exports need (plan.js, calendar.js). --}}
+        <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}"
+             data-event-name="{{ $event->display_name }}"
+             data-event-start="{{ $event->starts_on?->toDateString() }}"
+             data-event-end="{{ ($event->ends_on ?? $event->starts_on)?->toDateString() }}"
+             data-event-venue="{{ $event->info['venue'] ?? '' }}"
+             data-my-day-url="{{ route('event.my-day', $event) }}">
             {{ $slot }}
         </div>
 

@@ -145,6 +145,7 @@
                 WordPress.org
             </a>
             <slot data-slot="links"></slot>
+            <button type="button" class="meet-btn meet-btn--card" data-slot="meet"></button>
             <button type="button" class="btn btn--primary btn--compact person-card__met" data-slot="met-btn">I met them</button>
             <span class="person-card__met-label" data-slot="met-label">✓ Met</span>
         </div>

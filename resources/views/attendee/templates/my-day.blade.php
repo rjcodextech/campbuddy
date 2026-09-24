@@ -51,6 +51,11 @@
                 <span class="schedule-item__meta"><span class="schedule-item__live" data-slot="live">Live now</span><span data-slot="meta"></span></span>
                 <span class="schedule-item__tags" data-slot="tags"></span>
                 <div class="notice" style="margin-top:6px" data-slot="overlap-row">Overlaps with <span data-slot="overlap"></span></div>
+                {{-- My schedule only, once the session has started. --}}
+                <div class="plan-status" data-slot="status-row">
+                    <button type="button" class="plan-status__btn" data-status="attended" data-slot="attended">✓ Attended</button>
+                    <button type="button" class="plan-status__btn plan-status__btn--no" data-status="missed" data-slot="missed">✗ Missed</button>
+                </div>
             </div>
             <button type="button" class="schedule-item__star" data-slot="star">★</button>
         </div>
@@ -91,4 +96,50 @@
 
 <template id="tpl-schedule-tag">
     <span class="schedule-tag" data-slot="tag"></span>
+</template>
+
+{{-- My schedule: the plan's progress, and a calendar export of all of it. --}}
+<template id="tpl-plan-summary">
+    <div class="plan-summary">
+        <div class="plan-summary__top">
+            <div>
+                <p class="plan-summary__title" data-slot="title">Your plan</p>
+                <p class="plan-summary__count" data-slot="count"></p>
+            </div>
+            <span class="plan-summary__ring" data-slot="ring" aria-hidden="true"></span>
+        </div>
+        <div class="plan-summary__bar" role="progressbar" aria-valuemin="0" data-slot="bar"><span data-slot="fill"></span></div>
+        <div class="plan-summary__actions">
+            <button type="button" class="chip" aria-pressed="false" data-plan-hide-done data-slot="hide-done">Hide done</button>
+            <button type="button" class="btn btn--outline btn--compact" data-plan-calendar data-slot="calendar">📅 Add all to calendar</button>
+        </div>
+    </div>
+</template>
+
+<template id="tpl-plan-people">
+    <div>
+        <h2 class="plan-section-title" id="plan-people-heading">People to meet</h2>
+        <slot data-slot="items"></slot>
+        <p class="plan-empty" data-slot="empty">No one yet. In <a data-slot="explore">Explore → People</a>, tap <strong>+ Meet</strong> next to anyone and add a note.</p>
+    </div>
+</template>
+
+<template id="tpl-plan-person">
+    <article class="plan-person" data-slot="card">
+        <img class="plan-person__avatar" alt="" width="44" height="44" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+        <div class="plan-person__body">
+            <p class="plan-person__name"><span data-slot="name"></span> <span class="plan-person__state" data-slot="state"></span></p>
+            <p class="plan-person__when" data-slot="when"></p>
+            <p class="plan-person__note" data-slot="note"></p>
+            <div class="plan-person__actions">
+                <button type="button" class="plan-status__btn" data-person-status="met" data-slot="met">✓ Met</button>
+                <button type="button" class="plan-status__btn plan-status__btn--no" data-person-status="missed" data-slot="missed">✗ Couldn't</button>
+                <button type="button" class="plan-person__edit" data-person-edit>Edit · Calendar</button>
+            </div>
+        </div>
+    </article>
+</template>
+
+<template id="tpl-plan-sessions-done">
+    <p class="plan-empty">All your saved sessions are done ✓ — tap <strong>Hide done</strong> to see them again.</p>
 </template>

@@ -4,7 +4,8 @@
 // goes through the functions exported here.
 
 const DB_NAME = 'campbuddy';
-const DB_VERSION = 1;
+// 2: 'meetings' (people to meet, with a note) for the day planner.
+const DB_VERSION = 2;
 
 /** @type {Promise<IDBDatabase>|null} */
 let dbPromise = null;
@@ -36,6 +37,13 @@ function openDb() {
 
       if (!db.objectStoreNames.contains('metHistory')) {
         const store = db.createObjectStore('metHistory', { keyPath: 'discoveryId' });
+        store.createIndex('eventId', 'eventId');
+      }
+
+      // People this attendee wants to meet, with their own note: one row per
+      // (eventId, personKey). Never leaves the device.
+      if (!db.objectStoreNames.contains('meetings')) {
+        const store = db.createObjectStore('meetings', { keyPath: 'key' });
         store.createIndex('eventId', 'eventId');
       }
     };
@@ -97,11 +105,25 @@ export async function getBookmarks(eventId) {
   });
 }
 
-export async function setBookmark(eventId, sessionId, reminderEnabled) {
+// `meta` (title, startMs, endMs) lets screens without the schedule — the
+// "things left today" reminder — know when a saved session is over.
+export async function setBookmark(eventId, sessionId, reminderEnabled, meta = {}) {
   const key = `${eventId}:${sessionId}`;
   return withStore('bookmarks', 'readwrite', (store) =>
-    promisify(store.put({ key, eventId, sessionId, reminderEnabled, savedAt: Date.now() }))
+    promisify(store.put({ key, eventId, sessionId, reminderEnabled, savedAt: Date.now(), status: null, ...meta }))
   );
+}
+
+/** Merges fields into a saved session (status 'attended' | 'missed' | null, or meta). */
+export async function updateBookmark(eventId, sessionId, changes) {
+  const key = `${eventId}:${sessionId}`;
+  return withStore('bookmarks', 'readwrite', async (store) => {
+    const row = await promisify(store.get(key));
+    if (!row) return null;
+    const next = { ...row, ...changes };
+    await promisify(store.put(next));
+    return next;
+  });
 }
 
 export async function removeBookmark(eventId, sessionId) {
@@ -143,6 +165,42 @@ export async function markMet(eventId, discoveryId) {
   return withStore('metHistory', 'readwrite', (store) =>
     promisify(store.put({ discoveryId, eventId, metAt: Date.now() }))
   );
+}
+
+// --- meetings: people to meet, each with a note and an optional time ---
+//
+// { key, eventId, personKey, name, avatarUrl, source: 'roster'|'discovery'|'match',
+//   links, note, at (ISO string or null = any time), status: null|'met'|'missed',
+//   createdAt, updatedAt }
+
+export async function getMeetings(eventId) {
+  return withStore('meetings', 'readonly', async (store) => {
+    const index = store.index('eventId');
+    return promisify(index.getAll(eventId));
+  });
+}
+
+export async function saveMeeting(eventId, personKey, fields) {
+  const key = `${eventId}:${personKey}`;
+  return withStore('meetings', 'readwrite', async (store) => {
+    const existing = await promisify(store.get(key));
+    const row = {
+      status: null,
+      createdAt: Date.now(),
+      ...existing,
+      ...fields,
+      key,
+      eventId,
+      personKey,
+      updatedAt: Date.now(),
+    };
+    await promisify(store.put(row));
+    return row;
+  });
+}
+
+export async function removeMeeting(eventId, personKey) {
+  return withStore('meetings', 'readwrite', (store) => promisify(store.delete(`${eventId}:${personKey}`)));
 }
 
 /**

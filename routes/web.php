@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
+use App\Http\Controllers\CalendarFileController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManifestController;
@@ -51,6 +52,9 @@ Route::withoutMiddleware([
     Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
     Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
     Route::get('/llms.txt', [SeoController::class, 'llms'])->name('llms');
+    // "Add to calendar" on iPhone: echoes a calendar file built on the device
+    // back with the headers Safari needs (CalendarFileController). Stateless.
+    Route::post('/calendar.ics', CalendarFileController::class)->middleware('throttle:30,1')->name('calendar.file');
     Route::get('/indexnow-{key}.txt', [SeoController::class, 'indexNowKey'])->where('key', '[A-Za-z0-9-]{8,128}')->name('indexnow.key');
 
     // WordCamp 101 for first-timers, before any event is picked. Each event

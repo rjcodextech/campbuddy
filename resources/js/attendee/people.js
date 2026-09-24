@@ -9,7 +9,8 @@
 
 import { apiGet, apiMutate } from './api.js';
 import { track } from './analytics.js';
-import { getMetHistory, kvGet, kvSet, markMet } from './db.js';
+import { getMeetings, getMetHistory, kvGet, kvSet, markMet } from './db.js';
+import { openMeetSheet } from './meet-sheet.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
 
@@ -35,13 +36,52 @@ export async function renderPeople(root) {
   const eventId = Number(root.dataset.eventId);
   const discoveryKey = `discovery:${eventId}`;
 
+  await loadMeetings(eventId);
+
   await Promise.all([
     renderDiscoveryCard(discoveryEl, eventSlug, eventId, discoveryKey),
-    renderRoster(eventSlug),
+    renderRoster(eventSlug, eventId),
   ]);
 }
 
-async function renderRoster(eventSlug) {
+// People this device plans to meet, keyed by personKey — the Meet buttons
+// on the attendee list and match cards show whether someone's already on it.
+const meetingsByKey = new Map();
+
+async function loadMeetings(eventId) {
+  meetingsByKey.clear();
+  try {
+    (await getMeetings(eventId)).forEach((m) => meetingsByKey.set(m.personKey, m));
+  } catch {
+    // Private mode / storage blocked: the buttons still work for this visit.
+  }
+}
+
+/** Fills a Meet button for a person and opens the sheet on tap. */
+function wireMeetButton(btn, eventId, person) {
+  const paint = () => {
+    const saved = meetingsByKey.has(person.personKey);
+    btn.textContent = saved ? '✓ To meet' : '+ Meet';
+    btn.classList.toggle('meet-btn--saved', saved);
+    btn.setAttribute('aria-label', saved ? `Edit your note about meeting ${person.name}` : `Plan to meet ${person.name}`);
+  };
+  paint();
+
+  btn.addEventListener('click', () => {
+    openMeetSheet({
+      eventId,
+      person,
+      existing: meetingsByKey.get(person.personKey) ?? null,
+      onChange: (row) => {
+        if (row) meetingsByKey.set(person.personKey, row);
+        else meetingsByKey.delete(person.personKey);
+        paint();
+      },
+    });
+  });
+}
+
+async function renderRoster(eventSlug, eventId) {
   const el = document.getElementById('people-roster');
   const searchEl = document.getElementById('roster-search');
   let entries = [];
@@ -54,7 +94,7 @@ async function renderRoster(eventSlug) {
     el.replaceChildren(render(navigator.onLine === false ? 'tpl-roster-offline' : 'tpl-roster-error'));
     el.querySelector('[data-roster-retry]')?.addEventListener('click', () => {
       el.replaceChildren(document.createTextNode('Loading…'));
-      renderRoster(eventSlug);
+      renderRoster(eventSlug, eventId);
     });
     return;
   }
@@ -66,7 +106,7 @@ async function renderRoster(eventSlug) {
     }
 
     const rows = document.createDocumentFragment();
-    list.forEach((a) => rows.appendChild(rosterRow(a)));
+    list.forEach((a) => rows.appendChild(rosterRow(a, eventId)));
     el.replaceChildren(rows);
   };
 
@@ -121,7 +161,7 @@ async function loadFullRoster(eventSlug) {
   return entries;
 }
 
-function rosterRow(a) {
+function rosterRow(a, eventId) {
   const initial = (a.name ?? '?').trim().charAt(0).toUpperCase() || '?';
 
   // Only web addresses become links (the server filters too) — a javascript:
@@ -140,13 +180,24 @@ function rosterRow(a) {
     })
   );
 
-  return render('tpl-roster-row', {
+  const row = render('tpl-roster-row', {
     'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
     'avatar-initial': a.gravatar_url ? null : initial,
     name: a.name ?? '',
     'open-badge': Boolean(a.open_to_meet),
     links: links.length > 0 ? links : null,
   });
+
+  wireMeetButton(row.querySelector('.meet-btn'), eventId, {
+    personKey: `r:${a.id}`,
+    name: a.name ?? '',
+    avatarUrl: a.gravatar_url || null,
+    sub: 'On the attendee list',
+    source: 'roster',
+    links: (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')),
+  });
+
+  return row;
 }
 
 /**
@@ -448,11 +499,11 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
       offline,
       empty: others.length === 0 && !offline,
       'matches-section': matches.length > 0,
-      matches: matches.map((p) => matchCard(p, false)),
+      matches: matches.map((p) => matchCard(p, false, eventId)),
       'others-section': rest.length > 0,
-      others: rest.map((p) => matchCard(p, false)),
+      others: rest.map((p) => matchCard(p, false, eventId)),
       'met-section': met.length > 0,
-      met: met.map((p) => matchCard(p, true)),
+      met: met.map((p) => matchCard(p, true, eventId)),
     })
   );
 
@@ -482,7 +533,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet) {
+function matchCard(profile, isMet, eventId) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -502,7 +553,7 @@ function matchCard(profile, isMet) {
     })
   );
 
-  return render('tpl-discovery-match', {
+  const card = render('tpl-discovery-match', {
     avatar: { attrs: { src: isWeb(profile.avatar_url) ? profile.avatar_url : '/media/illustrations/avatar.svg' } },
     name: profile.name || 'Anonymous attendee',
     verified: Boolean(profile.on_attendee_list),
@@ -517,4 +568,20 @@ function matchCard(profile, isMet) {
     'met-btn': isMet ? null : { attrs: { 'data-met-id': profile.discovery_id } },
     'met-label': isMet,
   });
+
+  const meetBtn = card.querySelector('.meet-btn');
+  if (isMet) {
+    meetBtn.remove();
+  } else {
+    wireMeetButton(meetBtn, eventId, {
+      personKey: `d:${profile.discovery_id}`,
+      name: profile.revealed_name || profile.name || 'Anonymous attendee',
+      avatarUrl: isWeb(profile.avatar_url) ? profile.avatar_url : null,
+      sub: [profession, (tags ?? []).join(', ')].filter(Boolean).join(' · ') || null,
+      source: 'discovery',
+      links: [...(profile.links ?? []), ...(isWeb(profile.wporg_url) ? [{ type: 'wporg', url: profile.wporg_url }] : [])].filter((l) => isWeb(l.url)),
+    });
+  }
+
+  return card;
 }

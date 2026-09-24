@@ -60,6 +60,9 @@ async function init() {
   const root = document.getElementById('app');
   if (!root) return;
 
+  // On the event's days: "N things left in your plan" (plan-reminder.js).
+  import('./plan-reminder.js').then(({ initPlanReminder }) => initPlanReminder()).catch(() => {});
+
   if (document.getElementById('home-data')) {
     const { renderHome } = await import('./home.js');
     renderHome(root);

@@ -33,7 +33,12 @@
             <div id="full-schedule-list"></div>
         </div>
 
+        {{-- My schedule is the attendee's plan: saved talks plus people to meet,
+        each ticked off as the day goes (my-day.js, plan.js). --}}
         <div data-view-panel="mine" hidden>
+            <div id="plan-summary"></div>
+            <section id="plan-people" aria-labelledby="plan-people-heading"></section>
+            <h2 class="plan-section-title" id="plan-sessions-heading">Talks &amp; sessions</h2>
             <div id="my-schedule-list"></div>
         </div>
     </main>

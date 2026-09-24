@@ -29,6 +29,7 @@
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
         <span class="roster-row__name"><span data-slot="name"></span> <span class="roster-row__open" data-slot="open-badge">👋 Open to meet</span></span>
         <div class="roster-row__links" data-slot="links"></div>
+        <button type="button" class="meet-btn" data-slot="meet"></button>
     </div>
 </template>
 

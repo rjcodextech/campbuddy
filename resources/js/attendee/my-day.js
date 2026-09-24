@@ -10,7 +10,10 @@
 // a filter/search/bookmark change instead of silently closing.
 
 import { track } from './analytics.js';
-import { getBookmarks, setBookmark, removeBookmark } from './db.js';
+import { buildIcs, deliverIcs, eventFacts } from './calendar.js';
+import { getBookmarks, getMeetings, removeBookmark, saveMeeting, setBookmark, updateBookmark } from './db.js';
+import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
+import { computePlan } from './plan.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
@@ -25,8 +28,11 @@ export async function renderMyDay(root) {
   const eventSlug = root.dataset.eventSlug;
   const speakersById = new Map(speakers.map((s) => [s.id, s]));
 
-  let bookmarkedIds = new Set((await getBookmarks(eventId)).map((b) => b.sessionId));
+  let bookmarks = await getBookmarks(eventId);
+  let bookmarkedIds = new Set(bookmarks.map((b) => b.sessionId));
+  let meetings = await safeMeetings(eventId);
   let expandedSessionId = null;
+  let hideDone = readPref('campbuddy:plan-hide-done') === '1';
 
   // Every session is listed — including ones the WordCamp site hasn't given
   // a time yet (common weeks before the event, when talks are announced
@@ -39,6 +45,17 @@ export async function renderMyDay(root) {
       return { ...s, startMs: known ? ms : Number.POSITIVE_INFINITY, dayKey: known ? dayKeyOf(ms) : TBA };
     })
     .sort((a, b) => (a.startMs === b.startMs ? (a.title ?? '').localeCompare(b.title ?? '') : a.startMs < b.startMs ? -1 : 1));
+
+  const sessionsById = new Map(timed.map((s) => [s.id, s]));
+
+  // Saved sessions carry their title and times, so the "things left today"
+  // reminder on other screens knows when each one is over.
+  for (const b of bookmarks) {
+    const s = sessionsById.get(b.sessionId);
+    if (s && Number.isFinite(s.startMs) && (b.startMs !== s.startMs || b.title !== s.title)) {
+      updateBookmark(eventId, b.sessionId, sessionMeta(s)).catch(() => {});
+    }
+  }
 
   setupTabs();
   setupDayFilters(timed);
@@ -84,7 +101,7 @@ export async function renderMyDay(root) {
       track('session_unsave', { schedule_session_id: session.id, session_title: session.title });
     } else {
       const conflict = bookmarkedOverlap(session);
-      await setBookmark(eventId, session.id, false);
+      await setBookmark(eventId, session.id, false, sessionMeta(session));
       bookmarkedIds.add(session.id);
       starButton.classList.add('schedule-item__star--saved');
       track('session_save', { schedule_session_id: session.id, session_title: session.title, overlap: Boolean(conflict) });
@@ -98,6 +115,7 @@ export async function renderMyDay(root) {
       offerReminder(eventSlug, eventId, session.id);
     }
 
+    bookmarks = await getBookmarks(eventId);
     renderFull();
     renderMine();
   }
@@ -132,17 +150,136 @@ export async function renderMyDay(root) {
   }
 
   function renderMine() {
-    const mine = timed.filter((s) => bookmarkedIds.has(s.id));
+    const plan = computePlan(bookmarks, meetings, sessionsById);
+    const doneIds = new Set(plan.sessions.filter((i) => i.done).map((i) => i.id));
+    const statusById = new Map(bookmarks.map((b) => [b.sessionId, b.status ?? null]));
+
+    renderPlanSummary(plan);
+    renderPeople(plan);
+
+    const mine = timed.filter((s) => bookmarkedIds.has(s.id) && !(hideDone && doneIds.has(s.id)));
     renderGroupedByDay(
       mineListEl,
       mine,
-      'tpl-my-day-empty-mine',
-      (s) => bookmarkedOverlap(s, null)
+      mine.length === 0 && bookmarkedIds.size > 0 ? 'tpl-plan-sessions-done' : 'tpl-my-day-empty-mine',
+      (s) => bookmarkedOverlap(s, null),
+      statusById
     );
     wireItemInteractions(mineListEl, timed, toggleBookmark, toggleExpand);
+
+    mineListEl.querySelectorAll('[data-status]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = Number(btn.closest('.schedule-item').dataset.sessionId);
+        const next = statusById.get(id) === btn.dataset.status ? null : btn.dataset.status;
+        await updateBookmark(eventId, id, { status: next });
+        bookmarks = await getBookmarks(eventId);
+        track('session_status', { plan_status: next ?? 'cleared' });
+        renderMine();
+      });
+    });
   }
 
-  function renderGroupedByDay(container, list, emptyTemplateId, overlapFn) {
+  function renderPlanSummary(plan) {
+    const el = document.getElementById('plan-summary');
+    if (!el) return;
+
+    if (plan.total === 0) {
+      el.replaceChildren();
+      return;
+    }
+
+    const pct = Math.round((plan.done / plan.total) * 100);
+    const card = render('tpl-plan-summary', {
+      count: plan.left === 0
+        ? `All ${plan.total} done — nice work! 🎉`
+        : `${plan.done} of ${plan.total} done · ${plan.left} left`,
+      ring: `${pct}%`,
+      bar: { attrs: { 'aria-valuemax': String(plan.total), 'aria-valuenow': String(plan.done), 'aria-label': 'Plan progress' } },
+      fill: { attrs: { style: `width:${pct}%` } },
+      'hide-done': { attrs: { 'aria-pressed': String(hideDone) }, class: { 'chip--selected': hideDone } },
+    });
+
+    card.querySelector('[data-plan-hide-done]').addEventListener('click', () => {
+      hideDone = !hideDone;
+      writePref('campbuddy:plan-hide-done', hideDone ? '1' : '0');
+      renderMine();
+    });
+
+    card.querySelector('[data-plan-calendar]').addEventListener('click', () => {
+      const facts = eventFacts();
+      const items = [
+        ...timed
+          .filter((s) => bookmarkedIds.has(s.id) && Number.isFinite(s.startMs))
+          .map((s) => ({
+            uid: `session-${facts.slug}-${s.id}`,
+            title: s.title,
+            startMs: s.startMs,
+            endMs: s.startMs + (s.duration_seconds ? s.duration_seconds * 1000 : 30 * 60 * 1000),
+            description: [(s.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', '), s.link].filter(Boolean).join('\n'),
+            location: [s.track_names?.[0], facts.venue].filter(Boolean).join(', ') || undefined,
+            url: s.link || undefined,
+            alarmMinutes: 10,
+          })),
+        ...meetings.map((m) => meetingCalendarItem(m, facts)),
+      ];
+
+      if (items.length === 0) {
+        showToast('Nothing with a time yet — save a session or add someone to meet first.');
+        return;
+      }
+
+      deliverIcs(`${facts.slug}-my-plan`, buildIcs(items));
+      track('calendar_export', { scope: 'plan', method: 'ics' });
+    });
+
+    el.replaceChildren(card);
+  }
+
+  function renderPeople(plan) {
+    const el = document.getElementById('plan-people');
+    if (!el) return;
+
+    const byTime = (a, b) => Number(a.done) - Number(b.done)
+      || (Number.isFinite(a.startMs) ? a.startMs : Infinity) - (Number.isFinite(b.startMs) ? b.startMs : Infinity)
+      || a.title.localeCompare(b.title);
+    const people = plan.people.filter((p) => !(hideDone && p.done)).sort(byTime);
+
+    const section = render('tpl-plan-people', {
+      items: people.map((p) => personCard(p.meeting)),
+      empty: plan.people.length === 0,
+      explore: { attrs: { href: `/event/${eventSlug}/explore` } },
+    });
+    el.replaceChildren(section);
+
+    el.querySelectorAll('[data-person-key]').forEach((card) => {
+      const meeting = meetings.find((m) => m.personKey === card.dataset.personKey);
+      if (!meeting) return;
+
+      card.querySelectorAll('[data-person-status]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const next = meeting.status === btn.dataset.personStatus ? null : btn.dataset.personStatus;
+          await saveMeeting(eventId, meeting.personKey, { status: next });
+          meetings = await safeMeetings(eventId);
+          track('meet_status', { plan_status: next ?? 'cleared' });
+          renderMine();
+        });
+      });
+
+      card.querySelector('[data-person-edit]').addEventListener('click', () => {
+        openMeetSheet({
+          eventId,
+          person: { personKey: meeting.personKey, name: meeting.name, avatarUrl: meeting.avatarUrl, sub: meeting.sub, source: meeting.source, links: meeting.links },
+          existing: meeting,
+          onChange: async () => {
+            meetings = await safeMeetings(eventId);
+            renderMine();
+          },
+        });
+      });
+    });
+  }
+
+  function renderGroupedByDay(container, list, emptyTemplateId, overlapFn, statusById = null) {
     if (list.length === 0) {
       container.replaceChildren(render(emptyTemplateId));
       return;
@@ -158,7 +295,7 @@ export async function renderMyDay(root) {
         const dayItems = list.filter((s) => s.dayKey === day);
         return render('tpl-schedule-day', {
           heading: showHeadings ? (day === TBA ? 'Time to be announced' : dayLabelOf(dayItems[0].startMs)) : null,
-          items: dayItems.map((s) => sessionItem(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId)),
+          items: dayItems.map((s) => sessionItem(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId, statusById)),
         });
       })
     );
@@ -216,6 +353,70 @@ export async function renderMyDay(root) {
 
   renderFull();
   renderMine();
+
+  // Coming back to the app (or from the meet sheet elsewhere): the clock has
+  // moved on and more may be done — refresh the plan.
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible') return;
+    bookmarks = await getBookmarks(eventId);
+    meetings = await safeMeetings(eventId);
+    renderMine();
+  });
+
+  // "#mine" (the reminder's link) opens straight on My schedule.
+  if (location.hash === '#mine') {
+    document.querySelector('[data-view-tab="mine"]')?.click();
+  }
+}
+
+function sessionMeta(s) {
+  return {
+    title: s.title ?? '',
+    startMs: Number.isFinite(s.startMs) ? s.startMs : null,
+    endMs: Number.isFinite(s.startMs) ? s.startMs + (s.duration_seconds ? s.duration_seconds * 1000 : 30 * 60 * 1000) : null,
+  };
+}
+
+async function safeMeetings(eventId) {
+  try {
+    return await getMeetings(eventId);
+  } catch {
+    return [];
+  }
+}
+
+function readPref(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writePref(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Just not remembered.
+  }
+}
+
+function personCard(m) {
+  const when = m.at
+    ? new Date(m.at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+    : 'Any time';
+  const state = { met: '✓ Met', missed: 'Couldn\'t meet' }[m.status] ?? null;
+
+  return render('tpl-plan-person', {
+    card: { attrs: { 'data-person-key': m.personKey }, class: { 'plan-person--done': Boolean(m.status) } },
+    avatar: { attrs: { src: /^https?:\/\//i.test(m.avatarUrl ?? '') ? m.avatarUrl : '/media/illustrations/avatar.svg' } },
+    name: m.name || 'Anonymous attendee',
+    state,
+    when: `🕒 ${when}`,
+    note: m.note || null,
+    met: { attrs: { 'aria-pressed': String(m.status === 'met') }, class: { 'plan-status__btn--on': m.status === 'met' } },
+    missed: { attrs: { 'aria-pressed': String(m.status === 'missed') }, class: { 'plan-status__btn--on': m.status === 'missed' } },
+  });
 }
 
 // The "More filters" toggle says how many of its filters are on, so a
@@ -324,7 +525,7 @@ function setupChipFilter(elId, sessions, valuesOf, labelOf = (name) => name) {
   return names;
 }
 
-function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
+function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId, statusById = null) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = Number.isFinite(session.startMs)
     ? new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
@@ -337,9 +538,18 @@ function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expan
   const isLive = session.startMs <= nowMs && nowMs < endMs;
   const isPast = endMs <= nowMs;
   const tags = isBeginnerFriendly(session) ? [render('tpl-schedule-tag', { tag: { text: 'Beginner friendly', class: { 'schedule-tag--beginner': true } } })] : [];
+  // My schedule only: tick a session off once it has started.
+  const status = statusById?.get(session.id) ?? null;
+  const showStatus = statusById !== null && (session.startMs <= nowMs || status !== null);
 
   return render('tpl-schedule-session', {
-    item: { attrs: { 'data-session-id': session.id }, class: { 'schedule-item--live': isLive, 'schedule-item--past': isPast } },
+    item: {
+      attrs: { 'data-session-id': session.id },
+      class: { 'schedule-item--live': isLive, 'schedule-item--past': isPast, 'schedule-item--attended': status === 'attended', 'schedule-item--missed': status === 'missed' },
+    },
+    'status-row': showStatus,
+    attended: { attrs: { 'aria-pressed': String(status === 'attended') }, class: { 'plan-status__btn--on': status === 'attended' } },
+    missed: { attrs: { 'aria-pressed': String(status === 'missed') }, class: { 'plan-status__btn--on': status === 'missed' } },
     live: isLive,
     tags: tags.length ? tags : false,
     time,
