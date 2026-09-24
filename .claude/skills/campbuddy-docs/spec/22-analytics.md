@@ -35,7 +35,7 @@ Names are `snake_case`; `share`, `generate_lead` and `exception` are GA4 recomme
 | Area | Event | Params |
 |---|---|---|
 | Navigation | `select_event` (picker card / "Open …"), `nav_tab_click`, `switch_event_click` | `event_slug` / `tab` |
-| Install / PWA | `install_prompt_open`, `install_prompt_result`, `install_complete`, `desktop_notice_dismiss` | `platform` (native\|ios), `outcome` |
+| Install / PWA | `install_prompt_open`, `install_prompt_result`, `install_complete`, `desktop_notice_dismiss` | `platform` (native\|ios\|android_firefox\|in_app_browser), `outcome` |
 | Onboarding | `onboarding_complete`, `onboarding_skip` | — (never the answers) |
 | My Day | `schedule_view_switch`, `schedule_filter`, `schedule_search`, `session_expand`, `session_save`, `session_unsave`, `session_link_click`, `reminder_offer` | `view`; `filter_type`, `filter_value`; `query_length`, `results_count` (never the text); `session_id`, `session_title`, `overlap`, `link_type`; `result` |
 | Quest | `quest_complete`, `quest_undo`, `quest_nav_click` | `quest_id`, `quest_title`, `quest_group`, `destination` |

@@ -65,7 +65,7 @@
 <template id="tpl-schedule-speaker">
     <div class="schedule-item-detail__speaker-block">
         <div class="schedule-item-detail__speaker">
-            <img class="schedule-item-detail__speaker-avatar" alt="" data-slot="avatar-img">
+            <img class="schedule-item-detail__speaker-avatar" alt="" width="36" height="36" loading="lazy" decoding="async" data-slot="avatar-img">
             <span class="schedule-item-detail__speaker-avatar schedule-item-detail__speaker-avatar--initial" data-slot="avatar-initial"></span>
             <p class="schedule-item-detail__speaker-name" data-slot="name"></p>
         </div>

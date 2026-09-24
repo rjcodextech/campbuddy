@@ -18,7 +18,7 @@
 
 <template id="tpl-roster-row">
     <div class="roster-row">
-        <img class="roster-row__avatar" alt="" data-slot="avatar-img">
+        <img class="roster-row__avatar" alt="" width="40" height="40" loading="lazy" decoding="async" data-slot="avatar-img">
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
         <span class="roster-row__name" data-slot="name"></span>
         <div class="roster-row__links" data-slot="links"></div>

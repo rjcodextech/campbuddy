@@ -107,6 +107,13 @@
     flex-shrink: 0;
 }
 
+// The text column: a long address (Event Info's "Important links") wraps
+// instead of running past the edge of the screen.
+.useful-link > :not(.useful-link__icon) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 .useful-link__title {
     display: block;
     font-weight: v.$font-weight-bold;

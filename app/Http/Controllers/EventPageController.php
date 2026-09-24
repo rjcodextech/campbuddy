@@ -17,6 +17,12 @@ use Throwable;
  */
 class EventPageController extends Controller
 {
+    /** Elements whose end starts a new line when HTML is turned into text. */
+    private const BLOCK_TAGS = ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'br', 'blockquote', 'figure', 'section', 'article', 'tr'];
+
+    /** Whole lines of a speaker page that are just a social-link button's label. */
+    private const SOCIAL_BUTTON_LABELS = ['wordpress', 'linkedin', 'x', 'twitter', 'link', 'website', 'github', 'instagram', 'facebook', 'youtube'];
+
     public function home(Event $event): View
     {
         $sessions = $this->cached($event, 'sessions');
@@ -26,7 +32,6 @@ class EventPageController extends Controller
             'event' => $event,
             'sessions' => $sessions,
             'quests' => $quests,
-            'now' => now()->toIso8601String(),
         ]);
     }
 
@@ -35,7 +40,7 @@ class EventPageController extends Controller
         return view('attendee.my-day', [
             'event' => $event,
             'sessions' => $this->cached($event, 'sessions'),
-            'speakers' => $this->cached($event, 'speakers'),
+            'speakers' => $this->withPlainBios($this->cached($event, 'speakers')),
         ]);
     }
 
@@ -50,12 +55,18 @@ class EventPageController extends Controller
     public function contribute(Event $event): View
     {
         // CD4's quest tie-in needs this quest's real ID so the JS can
-        // mark it complete directly — not a title-matching guess.
-        $contributorDayQuestId = Quest::where('source', 'contributor_day')
+        // mark it complete directly — not a title-matching guess in the
+        // browser. It's the seeded "Contribution Curious" default (or an
+        // admin-made quest with the old dedicated source).
+        $contributorDayQuestId = Quest::where('is_active', true)
             ->where(function ($q) use ($event) {
                 $q->whereNull('event_id')->orWhere('event_id', $event->id);
             })
-            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->where('source', 'contributor_day')
+                    ->orWhere(fn ($q) => $q->where('source', 'default')->where('title', Quest::CONTRIBUTION_CURIOUS));
+            })
+            ->orderBy('sort_order')
             ->value('id');
 
         return view('attendee.contribute', [
@@ -76,6 +87,86 @@ class EventPageController extends Controller
     public function campCard(Event $event): View
     {
         return view('attendee.camp-card', ['event' => $event]);
+    }
+
+    /**
+     * A speaker's bio is stored as the raw WordPress block markup of their
+     * speaker page — about 7 KB each, three quarters of the whole My Day page
+     * — and the app only ever shows it as plain text. Send the text.
+     *
+     * @param  array<int, mixed>  $speakers
+     * @return array<int, mixed>
+     */
+    private function withPlainBios(array $speakers): array
+    {
+        return array_map(function ($speaker) {
+            if (! is_array($speaker)) {
+                return $speaker;
+            }
+
+            $speaker['bio_text'] = $this->plainText($speaker['bio_html'] ?? null, $speaker['name'] ?? null);
+            unset($speaker['bio_html']);
+
+            return $speaker;
+        }, $speakers);
+    }
+
+    /**
+     * The text of some third-party HTML: tags dropped (with the contents of
+     * <script> and <style>), entities decoded, runs of blank lines collapsed to
+     * one line break (the bio is shown with white-space: pre-line). Never
+     * markup — the browser sets it as text.
+     */
+    private function plainText(?string $html, ?string $speakerName = null): ?string
+    {
+        if ($html === null || trim($html) === '') {
+            return null;
+        }
+
+        $previous = libxml_use_internal_errors(true);
+        $document = new \DOMDocument;
+        // The <?xml> line makes libxml read the fragment as UTF-8; LIBXML_NONET
+        // keeps it from fetching anything.
+        $document->loadHTML('<?xml encoding="UTF-8"><body>'.$html.'</body>', LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        foreach (['script', 'style'] as $tag) {
+            foreach (iterator_to_array($document->getElementsByTagName($tag)) as $node) {
+                $node->parentNode?->removeChild($node);
+            }
+        }
+
+        // Blocks end a line, so "<h2>Ada</h2><p>Bio…</p>" reads as two lines, not "AdaBio…".
+        foreach (self::BLOCK_TAGS as $tag) {
+            foreach (iterator_to_array($document->getElementsByTagName($tag)) as $node) {
+                if ($tag === 'br') {
+                    $node->parentNode?->replaceChild($document->createTextNode("\n"), $node);
+                } else {
+                    $node->appendChild($document->createTextNode("\n"));
+                }
+            }
+        }
+
+        $text = $document->getElementsByTagName('body')->item(0)?->textContent ?? '';
+        $lines = array_values(array_filter(
+            array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $text))),
+            fn (string $line) => $line !== ''
+        ));
+
+        // The speaker's page wraps the bio in its own layout: a heading that
+        // repeats their name, and the labels of the social-link buttons
+        // ("LinkedIn", "X", "Link") as lines of their own. Neither is bio.
+        if ($speakerName !== null && isset($lines[0]) && mb_strtolower($lines[0]) === mb_strtolower(trim($speakerName))) {
+            array_shift($lines);
+        }
+
+        $lines = array_values(array_filter(
+            $lines,
+            fn (string $line) => ! in_array(mb_strtolower($line), self::SOCIAL_BUTTON_LABELS, true)
+        ));
+
+        return $lines === [] ? null : implode("\n", $lines);
     }
 
     /**

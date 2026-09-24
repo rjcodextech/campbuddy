@@ -4,7 +4,7 @@
     <main id="main-content" tabindex="-1">
         <section class="u-page-intro">
             <div class="badge">Contribute</div>
-            <h1 style="margin:6px 0">Where could you help?</h1>
+            <h1 class="u-page-title">Where could you help?</h1>
             <p class="footer-note" style="text-align:left">
                 Contributor Day is for developers, designers, writers, translators, testers, organizers and curious
                 newcomers — not only coders. A few quick questions (all skippable) point you to a team.

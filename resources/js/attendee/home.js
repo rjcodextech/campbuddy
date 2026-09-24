@@ -10,10 +10,13 @@ export async function renderHome(root) {
   const dataEl = document.getElementById('home-data');
   if (!dataEl) return;
 
-  const { sessions, quests, now } = JSON.parse(dataEl.textContent);
+  const { sessions, quests } = JSON.parse(dataEl.textContent);
   const eventId = Number(root.dataset.eventId);
   const eventSlug = root.dataset.eventSlug;
-  const nowMs = new Date(now).getTime();
+  // The device clock, not the moment the server rendered the page: with no
+  // signal this page comes from the saved copy, which can be hours old — and
+  // "Happening now" / "Up next" from then would be wrong.
+  const nowMs = Date.now();
 
   const [bookmarks, questProgress, onboarding] = await Promise.all([
     getBookmarks(eventId),

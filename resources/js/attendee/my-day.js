@@ -329,7 +329,7 @@ function speakerBlock(sp) {
     'avatar-img': sp.avatar_url ? { attrs: { src: sp.avatar_url } } : null,
     'avatar-initial': sp.avatar_url ? null : initial,
     name: sp.name ?? '',
-    bio: sp.bio_html ? bioText(sp.bio_html) : null,
+    bio: sp.bio_text || null,
   });
 }
 
@@ -344,15 +344,4 @@ function wireItemInteractions(container, allSessions, toggleBookmark, toggleExpa
     item.querySelector('[data-open-detail]')?.addEventListener('click', () => toggleExpand(session.id));
     row.querySelector('[data-toggle-save]')?.addEventListener('click', () => toggleBookmark(session, starBtn));
   });
-}
-
-// Speaker bios come from the event's own WordPress content — real
-// but still third-party HTML, so it's reduced to plain text and shown as
-// text (never injected as markup). The parse is inert (DOMParser doesn't
-// load images or run handlers); newline runs collapse to one so
-// .schedule-item-detail__bio's `white-space: pre-line` renders each as a
-// single line break.
-function bioText(html) {
-  const text = new DOMParser().parseFromString(html, 'text/html').body.textContent ?? '';
-  return text.replace(/\n+/g, '\n');
 }

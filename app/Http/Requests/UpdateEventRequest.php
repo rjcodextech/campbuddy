@@ -22,7 +22,7 @@ class UpdateEventRequest extends FormRequest
             'slug' => ['required', 'string', 'max:191', 'alpha_dash', Rule::unique('events', 'slug')->ignore($this->route('event'))],
             'display_name' => ['required', 'string', 'max:255'],
             'short_name' => ['nullable', 'string', 'max:60'],
-            'source_site_url' => ['required', 'url', 'max:500', new NotPrivateNetworkUrl],
+            'source_site_url' => ['required', 'url:http,https', 'max:500', new NotPrivateNetworkUrl],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'status' => ['required', Rule::in(['draft', 'approved', 'active', 'archived'])],

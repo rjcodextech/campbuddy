@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\SafeUrl;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -45,11 +46,13 @@ class AttendeeRosterScraper
             }
 
             $avatar = $li->filter('img.avatar');
-            $gravatarUrl = $avatar->count() ? $avatar->attr('src') : null;
+            $gravatarUrl = $avatar->count() ? SafeUrl::web($avatar->attr('src')) : null;
 
             $links = [];
             $li->filter('a.tix-field')->each(function (Crawler $a) use (&$links) {
-                $href = $a->attr('href');
+                // These are typed in by the attendees themselves. Only web
+                // addresses are kept — a javascript: link would run in CampBuddy.
+                $href = SafeUrl::web($a->attr('href'));
                 if (! $href) {
                     return;
                 }

@@ -22,6 +22,8 @@
 - **Chunk, don't load-all-then-loop**, in the ingestion jobs ([5.2](05-system-architecture.md#52-ingestion-flow)).
 - Select only the columns a query actually needs on hot paths (Home's data load, [3.1](03-functional-requirements/01-home.md) H6).
 
+> **Current implementation note (measured, then fixed):** a review on emulated phones found — **My Day's page was 272 KB** because every speaker's bio travelled as raw WordPress block markup (197 KB of it); it now sends plain-text `bio_text` (the browser only ever showed text), ~62 KB, and the text drops the speaker page's own heading and social-button labels. **Attendee pages no longer start a session** (no DB write, no cookies per view — [8.2a](08-security-privacy.md#82a-hardening-pass-full-review)). **`public/.htaccess`** gained guarded `mod_deflate` (text/JSON/SVG) and `Cache-Control` for `/build/assets/*` (`immutable`, one year — content-hashed names) and `/media/*` (one day). Roster and speaker avatars are `loading="lazy" decoding="async"` with their real size (Explore → People used to fire ~200 image requests at once). Home's "now" is the **device clock** (it used the server render time, which is stale on a page served offline from the service worker). Measured on the local build afterwards: 15–52 requests and 184–434 KB uncompressed per page, LCP ≈ 0.4–0.7 s, CLS ≈ 0.
+
 ## 21.3 Security discipline that scales with the codebase, not just the traffic
 
 - **Laravel Form Requests for all incoming data** — every admin form ([9](09-admin-panel.md)) and every mutating API call (the discovery `POST`/`PATCH` in [10](10-api-specification.md), above all) validates through a dedicated Form Request class.

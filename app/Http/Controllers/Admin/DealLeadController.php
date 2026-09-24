@@ -51,16 +51,35 @@ class DealLeadController extends Controller
 
             foreach ($leads as $lead) {
                 fputcsv($handle, [
-                    $lead->offer?->title,
-                    $lead->name,
-                    $lead->email,
-                    $lead->mobile,
+                    $this->csvSafe($lead->offer?->title),
+                    $this->csvSafe($lead->name),
+                    $this->csvSafe($lead->email),
+                    $this->csvSafe($lead->mobile),
                     $lead->created_at->toDateTimeString(),
                 ]);
             }
 
             fclose($handle);
         }, $filename, ['Content-Type' => 'text/csv']);
+    }
+
+    /**
+     * These cells hold whatever an anonymous visitor typed, and a spreadsheet
+     * runs a cell that starts with = + - @ (or a tab / carriage return) as a
+     * formula — so an admin opening the export could be running a stranger's
+     * formula. A leading apostrophe makes it plain text. Phone-style values
+     * ("+91 98765 43210") are just digits and are left alone.
+     */
+    private function csvSafe(?string $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        $looksLikeFormula = preg_match('/^[=+\-@\t\r]/', $value) === 1;
+        $isPlainNumber = preg_match('/^[+\-]?[0-9][0-9 ().\-]*$/', $value) === 1;
+
+        return $looksLikeFormula && ! $isPlainNumber ? "'".$value : $value;
     }
 
     private function filteredQuery(Request $request, Event $event): Builder

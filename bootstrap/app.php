@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // by everyone in a city — and sees plain http when TLS ends at the
         // edge, which yields http:// asset URLs (mixed content) on https pages.
         $middleware->trustProxies(at: '*');
+
+        // Every response — pages, the API, the admin panel, /up.
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

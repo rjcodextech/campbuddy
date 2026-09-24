@@ -174,8 +174,10 @@
                         @continue(blank($link))
                         {{-- A line may be "Label: https://…" — link the address, show the whole line. --}}
                         @php($linkHref = preg_match('#https?://\S+#i', $link, $urlMatch) ? $urlMatch[0] : null)
+                        {{-- A bare address reads better without "https://" and the trailing slash. --}}
+                        @php($linkLabel = $linkHref && trim($link) === $linkHref ? preg_replace('#^https?://(www\.)?#i', '', rtrim($linkHref, '/')) : trim($link))
                         @if ($linkHref)
-                            <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ trim($link) }}</span></span></a>
+                            <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ $linkLabel }}</span></span></a>
                         @else
                             <div class="useful-link"><span class="useful-link__icon" aria-hidden="true">🔗</span><span><span class="useful-link__title">{{ trim($link) }}</span></span></div>
                         @endif

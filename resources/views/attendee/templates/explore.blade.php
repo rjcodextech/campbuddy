@@ -18,7 +18,10 @@
             </div>
         </div>
         <div class="in-app-browser__body">
-            <iframe referrerpolicy="no-referrer" data-slot="frame"></iframe>
+            {{-- sandbox: the framed site can run and submit forms and open new tabs, but not
+                 navigate CampBuddy itself away (no allow-top-navigation) — a compromised
+                 sponsor page can't redirect the app to a phishing page. --}}
+            <iframe referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads" data-slot="frame"></iframe>
             <div class="in-app-browser__fallback" hidden>
                 <p class="footer-note">This site couldn't be shown here.</p>
                 <a target="_blank" rel="noopener" class="btn btn--primary" data-slot="fallback-link">Open in your browser →</a>

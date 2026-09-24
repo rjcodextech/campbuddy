@@ -7,8 +7,23 @@ Carries forward all of V1's security posture (prepared statements, secrets handl
 ## 8.1 Rate limiting
 Moves to the CDN edge ([5.4](05-system-architecture.md#54-cdn--now-mandatory-not-optional)). DB-backed limiting is retained only as a secondary control on the admin login route.
 
+> **Current implementation note (app-level limits):** the API throttle now uses two **named** limiters (`AppServiceProvider`) — `api-general` (60 requests/min/IP, everything under `/api/v1`) and `api-writes` (10/min/IP: discovery POST/PATCH/DELETE, deal leads, **push subscribe**). They used to be two plain `throttle:N,M` middleware, which share *one* counter per IP — every write counted twice and ate the read budget, so "10 writes a minute" was really about five. Behind venue wifi many attendees share one IP: if writes get refused at a busy event, raise `api-writes` (or move the primary limit to the Cloudflare edge as above).
+
 ## 8.2 Ingestion jobs
 Treated as outbound requests to a third party — same strict timeouts, same "validate before trusting" posture. Applies to the REST client against each event's own `wp-json` ([finding 0.1](00-findings.md)), the Attendees-page HTML parser ([finding 0.3](00-findings.md), the one part of the pipeline without a stable contract, needing the markup-change alert from [3.3](03-functional-requirements/03-roster-ingestion.md) IN4), and (post-launch) the `events.wordpress.org` discovery scraper (same "no stable contract, alert on structural change" posture — see [5.3](05-system-architecture.md#53-central-event-discovery)).
+
+## 8.2a Hardening pass (full review)
+
+What a full security/performance review added or fixed, in one place:
+
+- **Response headers** (`App\Http\Middleware\SecurityHeaders`, on every response): `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` (clickjacking — the admin panel especially), `Referrer-Policy: strict-origin-when-cross-origin`, and a `Permissions-Policy` that switches off camera/mic/geolocation/payment/usb. **Deliberately not set here:** a Content-Security-Policy (the pages carry inline analytics/styles — write and test one against a real deployment) and HSTS (best set once at Cloudflare, where the https decision is made).
+- **Push endpoint SSRF.** `POST …/push/subscribe` stores an address the server later POSTs to, so the endpoint must be `https` and pass `NotPrivateNetworkUrl` (no loopback/private/link-local/metadata addresses). It also moved into the 10/min write limiter.
+- **CSV formula injection.** The admin's deal-leads export writes what anonymous visitors typed; a cell starting with `= + - @` (or tab/CR) is prefixed with `'` so a spreadsheet can't run it. Phone-style values like `+91 98765 43210` are left alone.
+- **Only web addresses become links.** `App\Support\SafeUrl::web()` (http/https only): the roster scraper, the roster API output (so rows stored earlier are covered too) and the roster JS all drop `javascript:`/`data:` hrefs and avatars — attendees type those links themselves. Deal and event-site URLs are validated `url:http,https`.
+- **SVG uploads.** The media library now runs `SvgGuard` (as event logos already did) — an SVG with a `<script>` is refused; the storage route additionally serves SVGs with a sandboxing CSP.
+- **In-app browser.** `openInAppBrowser()` refuses non-http(s) URLs and the iframe is `sandbox`ed **without** `allow-top-navigation`, so a framed sponsor page can't redirect the app itself.
+- **No sessions or cookies for attendees.** Attendee pages, the manifest and `/storage/*` run without `StartSession`/cookies/CSRF (`Route::withoutMiddleware` in `routes/web.php`) — before, every page view wrote a session row and sent two `Set-Cookie` headers to people who never log in. Only the roster-takedown form (CSRF + flash message) and the admin panel keep sessions. The unused `csrf-token` meta tag is gone from the attendee layout.
+- **Accepted, by design:** the roster takedown (`POST …/roster-removal/{entry}`) is public and unauthenticated on purpose (a takedown that needs an account defeats its purpose); it is throttled 20/min/IP, and the roster it edits is already public. Mass abuse is limited to hiding entries, which an admin can undo (`unsuppress`).
 
 ## 8.3 Matching data — the "local by default, shared only by choice" architecture
 Matching ([3.4](03-functional-requirements/04-matching.md)) is the one place V2 asks a user to share more than V1 ever did, so it gets a deliberate privacy boundary rather than a general opt-in checkbox:

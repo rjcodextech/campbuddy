@@ -24,7 +24,8 @@ async function exportData(root) {
   a.href = url;
   a.download = `campbuddy-export-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
-  URL.revokeObjectURL(url);
+  // Revoking straight away cancels the download on iOS Safari and some Firefox versions.
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
   track('data_export');
 }
 

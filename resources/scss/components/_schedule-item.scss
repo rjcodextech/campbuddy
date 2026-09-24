@@ -147,7 +147,9 @@
     padding: 11px 8px;
     margin: -11px -8px;
     font-size: v.$font-size-lg;
-    color: var(--line);
+    // An unsaved star is the only cue that a session can be saved: it was the
+    // page's border colour (1.2:1 against the card), now a 3:1 grey.
+    color: #9c8f86;
     line-height: 1;
     transition: transform 0.1s ease, color 0.15s ease;
 

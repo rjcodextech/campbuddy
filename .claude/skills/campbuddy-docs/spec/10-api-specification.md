@@ -22,3 +22,5 @@ Same envelope conventions as V1 (`/api/v1/*`, public, GET-only except where note
 | `GET /api/v1/health` | Health check |
 
 Existing V1 endpoints (`event`, `media`, `sponsors`, `agenda`) become event-scoped: `/api/v1/events/{slug}/media`, etc.
+
+> **Current implementation note:** the mutating routes (discovery POST/PATCH/DELETE, deal leads, **push subscribe**) share the `api-writes` limiter (10/min/IP); everything under `/api/v1` also counts against `api-general` (60/min/IP) — see [8.1](08-security-privacy.md#81-rate-limiting). `push/subscribe` requires an `https` endpoint that isn't a private/internal address. `GET …/roster` returns only `http(s)` links and avatar URLs. Every response carries the security headers in [8.2a](08-security-privacy.md#82a-hardening-pass-full-review).

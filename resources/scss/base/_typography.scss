@@ -10,6 +10,13 @@
 .u-text-lg { font-size: v.$font-size-lg; }
 .u-text-xl { font-size: v.$font-size-xl; }
 
+// A page's own headline where it isn't a .section-head (Contribute's intro).
+.u-page-title {
+    margin: 6px 0;
+    font-size: v.$font-size-xl;
+    line-height: v.$line-height-tight;
+}
+
 .u-font-regular { font-weight: v.$font-weight-regular; }
 .u-font-medium { font-weight: v.$font-weight-medium; }
 .u-font-bold { font-weight: v.$font-weight-bold; }

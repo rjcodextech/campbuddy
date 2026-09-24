@@ -40,9 +40,11 @@
 }
 
 // A choice that isn't ready yet (Camp Card's QR target whose link is still
-// empty): still tappable, but visibly faded.
+// empty): still tappable, but visibly quieter — muted text and a dashed edge
+// rather than an opacity fade, which dropped the label below readable contrast.
 .chip--empty:not(.chip--selected) {
-    opacity: 0.5;
+    border-style: dashed;
+    color: var(--muted);
 }
 
 .chip-group {

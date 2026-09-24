@@ -31,6 +31,13 @@ class Quest extends Model
         'Prepare a 15-second introduction',
     ];
 
+    /**
+     * The default quest that opening a Contribute team completes (CD4). Like
+     * every default title it's also quest.js's THINGS_TO_DO_META key, so it
+     * can't be renamed without changing both.
+     */
+    public const CONTRIBUTION_CURIOUS = 'Contribution Curious';
+
     protected $fillable = [
         'event_id',
         'source',

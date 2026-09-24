@@ -20,7 +20,7 @@ class BookmarkController extends Controller
     {
         $data = $request->validate([
             'device_id' => ['required', 'string', 'max:64'],
-            'session_id' => ['required', 'integer'],
+            'session_id' => ['required', 'integer', 'min:1'],
             'reminder_enabled' => ['boolean'],
         ]);
 
@@ -36,7 +36,7 @@ class BookmarkController extends Controller
     {
         $data = $request->validate([
             'device_id' => ['required', 'string', 'max:64'],
-            'session_id' => ['required', 'integer'],
+            'session_id' => ['required', 'integer', 'min:1'],
         ]);
 
         SessionBookmark::where('event_id', $event->id)

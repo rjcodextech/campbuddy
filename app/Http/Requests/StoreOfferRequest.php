@@ -20,7 +20,7 @@ class StoreOfferRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:120'],
             'description' => ['required', 'string', 'max:255'],
-            'url' => ['required', 'url', 'max:500'],
+            'url' => ['required', 'url:http,https', 'max:500'],
             'icon' => ['nullable', 'string', 'max:10'],
             'media_asset_id' => ['nullable', 'exists:media_assets,id'],
             'sort_order' => ['integer', 'min:0'],

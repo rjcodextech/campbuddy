@@ -16,6 +16,7 @@
 // simply never appears.
 
 import { track } from './analytics.js';
+import { isIos, isStandalone } from './platform.js';
 import { render } from './template.js';
 
 const IN_APP_BROWSER = /FBAN|FBAV|FBIOS|FB_IAB|Instagram|LinkedInApp|Snapchat|MicroMessenger|\bLine\/|Twitter|Pinterest|TikTok|musical_ly|; wv\)/;
@@ -25,16 +26,11 @@ function detectPlatform() {
 
   if (IN_APP_BROWSER.test(ua)) return 'in_app_browser';
 
-  // iPadOS 13+ Safari sends a desktop-Mac user agent; its touch screen is the giveaway.
-  if (/iP(hone|ad|od)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+  if (isIos()) return 'ios';
 
   if (/Android/.test(ua) && /Firefox\//.test(ua)) return 'android_firefox';
 
   return 'native';
-}
-
-function isStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
 // Which list of steps the dialog shows for a platform.

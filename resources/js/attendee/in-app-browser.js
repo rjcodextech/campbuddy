@@ -10,7 +10,19 @@
 import { linkDomain, track } from './analytics.js';
 import { render } from './template.js';
 
+// Only web pages open here. A javascript: or data: address as the frame's
+// source would run script in, or right beside, the app itself.
+function isWebUrl(url) {
+  try {
+    return ['http:', 'https:'].includes(new URL(url).protocol);
+  } catch {
+    return false;
+  }
+}
+
 export function openInAppBrowser(url, title) {
+  if (!isWebUrl(url)) return;
+
   const label = title || url;
   const dialog = render('tpl-in-app-browser', {
     title: label,

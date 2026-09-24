@@ -5,6 +5,7 @@
 import { apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
+import { isIos, isStandalone } from './platform.js';
 import { render } from './template.js';
 
 function getDeviceId() {
@@ -14,15 +15,6 @@ function getDeviceId() {
     localStorage.setItem('campbuddy-device-id', id);
   }
   return id;
-}
-
-function isIosSafari() {
-  const ua = navigator.userAgent;
-  return /iP(hone|ad|od)/.test(ua) && /WebKit/.test(ua) && !/CriOS|FxiOS/.test(ua);
-}
-
-function isStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
 /**
@@ -38,15 +30,24 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
     return false;
   }
 
-  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
-    track('reminder_offer', { result: 'unsupported' });
+  // N3: iOS needs 16.4+ AND the PWA installed to the home screen first. In an
+  // ordinary Safari tab the Notification and PushManager APIs aren't even
+  // there, so this has to be checked before the support test below — after it,
+  // this instruction was never shown. It's shown once, not on every saved
+  // session: a dialog on each star would be nagging (N1).
+  if (isIos() && !isStandalone()) {
+    track('reminder_offer', { result: 'ios_needs_install' });
+
+    if (!state.iosInstallPromptShown) {
+      await kvSet('notificationState', { ...state, iosInstallPromptShown: true });
+      showIosInstallPrompt();
+    }
+
     return false;
   }
 
-  // N3: iOS needs 16.4+ AND the PWA installed to the home screen first.
-  if (isIosSafari() && !isStandalone()) {
-    track('reminder_offer', { result: 'ios_needs_install' });
-    showIosInstallPrompt();
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    track('reminder_offer', { result: 'unsupported' });
     return false;
   }
 

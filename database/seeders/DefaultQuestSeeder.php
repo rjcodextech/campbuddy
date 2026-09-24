@@ -21,7 +21,7 @@ class DefaultQuestSeeder extends Seeder
             'First Hello' => 'Say hello to someone attending their first WordCamp.',
             'Beyond My City' => 'Meet someone who traveled from another city.',
             'Speaker Hello' => 'Introduce yourself to a speaker after their session.',
-            'Contribution Curious' => 'Open a team on the Contribute tab and read what they do.',
+            Quest::CONTRIBUTION_CURIOUS => 'Open a team on the Contribute tab and read what they do.',
             'Sponsor Explore' => "Visit a sponsor booth — they're not just logos, most are happy to talk about what they build.",
             'Asked Something' => 'Ask a question during or after a session.',
             'Keep The Connection' => 'Opt in to attendee discovery and find people who match your interests.',

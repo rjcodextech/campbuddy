@@ -23,3 +23,24 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# ---- Speed -----------------------------------------------------------------
+# Each block is skipped if the module isn't enabled, so this can't break a host.
+
+# Pages, styles, scripts and JSON travel as a fraction of their size.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml text/javascript application/javascript application/json application/manifest+json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Vite's build files carry a content hash in their name (a new build is a new
+    # URL), so a browser can keep them for good.
+    <If "%{REQUEST_URI} =~ m#^/build/assets/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+
+    # Logos and icons keep their names when they change, so: a day, then ask again.
+    <If "%{REQUEST_URI} =~ m#^/media/#">
+        Header set Cache-Control "public, max-age=86400"
+    </If>
+</IfModule>

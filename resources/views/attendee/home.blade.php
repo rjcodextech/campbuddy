@@ -75,7 +75,6 @@
     back with JSON.parse(textContent) client-side — not Js::from(), which
     outputs a JSON.parse(...) JS *expression*, not parseable JSON itself. --}}
     <script type="application/json" id="home-data">{!! json_encode([
-        'now' => $now,
         'sessions' => $sessions,
         'quests' => $quests->map(fn ($q) => ['id' => $q->id, 'title' => $q->title, 'description' => $q->description]),
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>

@@ -137,13 +137,13 @@
         <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>
 
         @if (($events ?? collect())->isNotEmpty())
-            <div class="landing-bottom-bar">
+            <nav class="landing-bottom-bar" aria-label="Continue">
                 @if ($events->count() === 1)
                     <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}">Open {{ $events->first()->display_name }} →</a>
                 @else
                     <a href="#find-your-camp" class="btn btn--primary btn--full">Choose your WordCamp ↓</a>
                 @endif
-            </div>
+            </nav>
         @endif
     </div>
 

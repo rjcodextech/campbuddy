@@ -32,12 +32,15 @@
     gap: v.$space-1;
     flex: 1;
     min-width: 0;
-    padding: 0 v.$space-1;
+    padding: 0 2px;
     color: var(--muted);
     // Deliberately smaller than $font-size-xs — this is a 6-item label
     // that has to fit a phone-width tab bar without wrapping; the type
-    // scale's smallest token is still too wide for that at 6 columns.
-    font-size: 0.62rem;
+    // scale's smallest token is still too wide for that at 6 columns. It
+    // grows with the screen instead of staying at the smallest size:
+    // 9.9px on a 360px phone ("Camp Card" is then 53px in a 56px column)
+    // up to 11.2px from ~415px, where there's room.
+    font-size: clamp(0.62rem, 2.7vw, 0.7rem);
     font-weight: v.$font-weight-medium;
     transition: transform 0.1s ease, color 0.15s ease;
 

@@ -14,7 +14,12 @@ use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\RosterRemovalController;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,25 +31,41 @@ use Illuminate\Support\Facades\Route;
 | global Route::bind(), since the /admin/events/{event} routes reuse the
 | same parameter name but must resolve ANY event regardless of status.
 */
-Route::get('/', HomeController::class)->name('home');
+// Attendees never log in and these routes only read, so they run without a
+// session, cookies or CSRF check. With the web group's defaults every page view
+// (and every image the storage route serves) wrote a session row and sent two
+// Set-Cookie headers to someone who has no account and never will.
+Route::withoutMiddleware([
+    EncryptCookies::class,
+    AddQueuedCookiesToResponse::class,
+    StartSession::class,
+    ShareErrorsFromSession::class,
+    ValidateCsrfToken::class,
+])->group(function () {
+    Route::get('/', HomeController::class)->name('home');
 
-// PWA manifest for the picker page and any page without an event of its own.
-Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
+    // PWA manifest for the picker page and any page without an event of its own.
+    Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 
-// Serves the public disk when the web server doesn't do it itself (no
-// public/storage symlink — see PublicStorageController). Files that exist on
-// disk under public/ are served by the web server before PHP ever runs.
-Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.+')->name('storage.public');
+    // Serves the public disk when the web server doesn't do it itself (no
+    // public/storage symlink — see PublicStorageController). Files that exist on
+    // disk under public/ are served by the web server before PHP ever runs.
+    Route::get('/storage/{path}', PublicStorageController::class)->where('path', '.+')->name('storage.public');
 
+    Route::middleware('event.public')->group(function () {
+        Route::get('/event/{event:slug}', [EventPageController::class, 'home'])->name('event.home');
+        Route::get('/event/{event:slug}/my-day', [EventPageController::class, 'myDay'])->name('event.my-day');
+        Route::get('/event/{event:slug}/quest', [EventPageController::class, 'quest'])->name('event.quest');
+        Route::get('/event/{event:slug}/contribute', [EventPageController::class, 'contribute'])->name('event.contribute');
+        Route::get('/event/{event:slug}/explore', [EventPageController::class, 'explore'])->name('event.explore');
+        Route::get('/event/{event:slug}/camp-card', [EventPageController::class, 'campCard'])->name('event.camp-card');
+        Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
+    });
+});
+
+// The one attendee form that does need a session: CSRF protection and its
+// "you've been removed" message.
 Route::middleware('event.public')->group(function () {
-    Route::get('/event/{event:slug}', [EventPageController::class, 'home'])->name('event.home');
-    Route::get('/event/{event:slug}/my-day', [EventPageController::class, 'myDay'])->name('event.my-day');
-    Route::get('/event/{event:slug}/quest', [EventPageController::class, 'quest'])->name('event.quest');
-    Route::get('/event/{event:slug}/contribute', [EventPageController::class, 'contribute'])->name('event.contribute');
-    Route::get('/event/{event:slug}/explore', [EventPageController::class, 'explore'])->name('event.explore');
-    Route::get('/event/{event:slug}/camp-card', [EventPageController::class, 'campCard'])->name('event.camp-card');
-    Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
-
     // The takedown path — public, no login, throttled against abuse.
     Route::middleware('throttle:20,1')->group(function () {
         Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->name('event.roster-removal.show');

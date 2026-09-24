@@ -467,6 +467,8 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__role {
         color: v.$cc-charcoal;
+        // Full strength: the base 85% opacity left this at 4.3:1 on ochre.
+        opacity: 1;
     }
 
     .camp-card__tag {

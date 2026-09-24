@@ -105,7 +105,9 @@ async function fetchFullRoster(eventSlug) {
 function rosterRow(a) {
   const initial = (a.name ?? '?').trim().charAt(0).toUpperCase() || '?';
 
-  const links = (a.links ?? []).map((l) =>
+  // Only web addresses become links (the server filters too) — a javascript:
+  // href would run in the app itself.
+  const links = (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')).map((l) =>
     render('tpl-roster-link', {
       link: {
         attrs: { href: l.url, 'aria-label': SOCIAL_LABEL[l.type] ?? l.type },
