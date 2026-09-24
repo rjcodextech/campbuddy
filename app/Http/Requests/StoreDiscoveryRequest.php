@@ -21,7 +21,7 @@ class StoreDiscoveryRequest extends FormRequest
     public const TAGS = [
         'developer', 'designer', 'content creator', 'site builder',
         'community organizer', 'marketer', 'business owner', 'blogger',
-        'translator', 'speaker',
+        'translator', 'speaker', 'student', 'mentor',
     ];
 
     public function authorize(): bool

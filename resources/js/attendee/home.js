@@ -22,6 +22,8 @@ const INTEREST_WORDS = {
   'site builder': ['site', 'builder', 'no-code', 'page', 'theme', 'woocommerce', 'template', 'pattern'],
   'community organizer': ['community', 'meetup', 'contribut', 'volunteer', 'organiz', 'diversity', 'open source'],
   marketer: ['marketing', 'seo', 'social', 'growth', 'brand', 'analytics', 'email', 'conversion'],
+  // Students: the sessions that assume nothing, and the ones about getting started in a career.
+  student: ['beginner', 'introduct', 'getting started', '101', 'first', 'career', 'learn', 'student', 'freelanc', 'job'],
   'business owner': ['business', 'freelanc', 'agency', 'client', 'ecommerce', 'woocommerce', 'pricing', 'sales', 'career'],
 };
 

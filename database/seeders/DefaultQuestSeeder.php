@@ -6,7 +6,7 @@ use App\Models\Quest;
 use Illuminate\Database\Seeder;
 
 /**
- * Default quests apply to every event — event_id stays null. These 8
+ * Default quests apply to every event — event_id stays null. These 9
  * double as the "Things to do" rich cards on the Quest tab (see
  * resources/js/attendee/quest.js's THINGS_TO_DO_META, matched by exact
  * title) — event-specific quests admins add per event render in the
@@ -26,6 +26,7 @@ class DefaultQuestSeeder extends Seeder
             'Asked Something' => 'Ask a question during or after a session.',
             'Keep The Connection' => 'Opt in to attendee discovery and find people who match your interests.',
             'Share Camp Card' => 'Show your Camp Card QR to someone new.',
+            'Career Chat' => 'Ask a sponsor or speaker how they got started — and what they\'d tell someone new to the field.',
         ];
 
         // Titles are the match key for THINGS_TO_DO_META client-side —

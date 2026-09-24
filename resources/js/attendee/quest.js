@@ -20,6 +20,7 @@ const THINGS_TO_DO_META = {
   'Asked Something': { icon: '🙋' },
   'Keep The Connection': { icon: '🤝', nav: 'explore-people', navLabel: 'Find people' },
   'Share Camp Card': { icon: '📇', nav: 'camp-card', navLabel: 'Open Camp Card' },
+  'Career Chat': { icon: '💼', nav: 'explore-sponsors', navLabel: 'See who\'s here' },
 };
 
 export async function renderQuest(root) {

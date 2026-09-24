@@ -55,6 +55,8 @@
                 </p>
             </section>
 
+            @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
+
             {{-- WordCamp 101, before an event is even chosen — for someone who
             isn't sure yet what a WordCamp is. --}}
             <a class="start-here start-here--link" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
@@ -85,7 +87,7 @@
                     <div class="form-field">
                         <span class="form-field__label" id="ob-interests-label">What are you into?</span>
                         <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
-                            @foreach (['Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
+                            @foreach (['Student', 'Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
                                 <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ $tag }}</button>
                             @endforeach
                         </div>
@@ -151,6 +153,8 @@
                     </div>
                 @endif
             </section>
+
+            @include('attendee.partials.about-campbuddy', ['part' => 'more'])
         </main>
 
         <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>

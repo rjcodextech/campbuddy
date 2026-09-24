@@ -62,6 +62,7 @@
     <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">Your day</a>
     <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">Words you'll hear</a>
     <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">Tips</a>
+    <a class="chip" href="#guide-students" data-track="guide_section_jump" data-track-section="students">Students</a>
     <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">What to bring</a>
     <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">FAQ</a>
 </nav>
@@ -150,6 +151,27 @@
                 </div>
             </div>
         @endforeach
+    </div>
+</section>
+
+<section id="guide-students" class="guide-section" data-track-section-view="students" aria-labelledby="guide-students-heading">
+    <h2 id="guide-students-heading" class="guide-section__title">🎓 For college students</h2>
+    <p class="guide-section__desc">WordCamp is one of the best-value things a student can do: skills, real experience, and people who hire — in one day.</p>
+    <div class="guide-tips">
+        @foreach (FirstTimerGuide::students() as $tip)
+            <div class="guide-tip">
+                <span class="guide-tip__icon" aria-hidden="true">{{ $tip['icon'] }}</span>
+                <div>
+                    <h3 class="guide-tip__title">{{ $tip['title'] }}</h3>
+                    <p class="guide-tip__text">{{ $tip['text'] }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    <div class="card guide-student-intro">
+        <p class="u-eyebrow">Your 15-second intro</p>
+        <p class="guide-student-intro__line">{{ FirstTimerGuide::studentIntro() }}</p>
+        <p class="footer-note" style="text-align:left;margin:0">Ending with a question hands the conversation to them — the easiest way to keep it going.</p>
     </div>
 </section>
 

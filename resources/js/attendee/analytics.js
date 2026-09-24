@@ -37,7 +37,8 @@ const EVENTS = {
   home_link_click: ['target'], // full_schedule | all_quests | prep_guide | prep_my_day | prep_quest
 
   // First-timer guide
-  guide_open: ['surface'], // home_start_here | topbar | picker
+  guide_open: ['surface'], // home_start_here | topbar | picker | picker_who_first | picker_who_student
+  tour_view: [], // the picker's "See it in action" tour came on screen
   guide_next_click: ['target'], // my_day | quest | camp_card
   guide_section_jump: ['section'], // here | what | day | words | tips | bring | faq
   guide_section_view: ['section'], // how far people read — once per section per page load

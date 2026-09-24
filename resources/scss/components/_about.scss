@@ -1,0 +1,314 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// "What is CampBuddy?" on the WordCamp picker
+// (attendee/partials/about-campbuddy.blade.php).
+
+// --- Four steps -----------------------------------------------------------
+.about-steps {
+    margin: 0 0 v.$space-6;
+    padding: v.$space-5 v.$space-4;
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(244, 166, 41, 0.28), transparent 45%),
+        linear-gradient(150deg, #6d2021, #4a1415);
+    color: #fbefd9;
+}
+
+.about-steps__title {
+    margin: 0 0 v.$space-4;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-black;
+    color: #fff;
+}
+
+.about-steps__list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: v.$space-4 v.$space-3;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include m.tablet {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.about-step {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+}
+
+.about-step__icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: v.$space-1;
+    border-radius: 14px;
+    background: #fbefd9;
+
+    img {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+.about-step__num {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #5c1a1b;
+    border-radius: v.$radius-full;
+    background: #d98a1c;
+    color: #4a1415;
+    font-size: 11px;
+    font-weight: v.$font-weight-black;
+}
+
+.about-step__title {
+    font-weight: v.$font-weight-bold;
+    color: #fff;
+    line-height: v.$line-height-snug;
+}
+
+.about-step__text {
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-body;
+    color: rgba(251, 239, 217, 0.85);
+}
+
+.about-steps__promise {
+    margin: v.$space-4 0 0;
+    padding-top: v.$space-3;
+    border-top: 1px solid rgba(251, 239, 217, 0.2);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.04em;
+    color: #f4c77a;
+}
+
+// --- Tour: real screens in a phone frame -------------------------------------
+.about-tour {
+    margin-top: v.$space-8;
+}
+
+.tour {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: v.$space-4;
+
+    @include m.tablet {
+        flex-direction: row;
+        align-items: center;
+        gap: v.$space-8;
+    }
+}
+
+.tour__phone {
+    flex-shrink: 0;
+    width: min(250px, 70vw);
+    padding: 10px;
+    border-radius: 34px;
+    background: #231f20;
+    box-shadow: v.$shadow-raised, inset 0 0 0 2px #3a3435;
+}
+
+.tour__screen {
+    position: relative;
+    aspect-ratio: 1 / 2;
+    overflow: hidden;
+    border-radius: 24px;
+    background: var(--paper-soft);
+}
+
+.tour__slide {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+
+    &[hidden] {
+        display: none;
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+    }
+}
+
+.tour__slide--in {
+    animation: tour-in 0.45s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+@keyframes tour-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+}
+
+.tour__side {
+    width: 100%;
+    max-width: 22rem;
+    text-align: center;
+
+    @include m.tablet {
+        text-align: left;
+    }
+}
+
+.tour__caption {
+    min-height: 4.5em;
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: var(--ink);
+}
+
+.tour__controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: v.$space-2;
+
+    @include m.tablet {
+        justify-content: flex-start;
+    }
+}
+
+.tour__btn {
+    @include m.pressable;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 1.1rem;
+    font-weight: v.$font-weight-bold;
+    transition: transform 0.1s ease;
+
+    &--play {
+        font-size: 0.7rem;
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.tour__dots {
+    display: flex;
+    gap: 2px;
+}
+
+// A 24px tap target around an 8px dot.
+.tour__dot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 40px;
+
+    &::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: v.$radius-full;
+        background: var(--line);
+        transition: width 0.2s ease, background 0.2s ease;
+    }
+
+    &[aria-selected='true']::before {
+        width: 18px;
+        background: var(--brand-primary);
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+// --- Who it's for -----------------------------------------------------------
+.about-who {
+    margin-top: v.$space-8;
+}
+
+.about-who__grid {
+    display: grid;
+    gap: v.$space-3;
+
+    @include m.tablet {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.about-who__card {
+    @include m.card-surface;
+    @include m.pressable-subtle;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+    padding: v.$space-4;
+    color: var(--ink);
+    text-decoration: none;
+    transition: transform 0.12s ease, border-color 0.15s ease;
+
+    @include m.hover {
+        border-color: var(--gold);
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.about-who__emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-bottom: v.$space-1;
+}
+
+.about-who__title {
+    font-weight: v.$font-weight-black;
+}
+
+.about-who__text {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}
+
+.about-who__cta {
+    margin-top: auto;
+    padding-top: v.$space-2;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}
+
+.about-faq {
+    margin-top: v.$space-8;
+}

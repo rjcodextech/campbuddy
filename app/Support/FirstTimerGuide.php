@@ -197,6 +197,30 @@ class FirstTimerGuide
     }
 
     /**
+     * For college students — often the biggest group of first-timers, and the
+     * ones with the most to gain: skills, experience, and people who hire.
+     *
+     * @return array<int, array{icon: string, title: string, text: string}>
+     */
+    public static function students(): array
+    {
+        return [
+            ['icon' => '🎟️', 'title' => 'Ask about student tickets', 'text' => 'WordCamp tickets are kept affordable, and many events have student pricing or free volunteer spots. Check the event\'s Tickets page — or just email the organizers and ask.'],
+            ['icon' => '🧠', 'title' => 'Learn what the industry actually uses', 'text' => 'Talks come from people building real sites, plugins and businesses every day. Look for "Beginner friendly" sessions in My Day, and don\'t worry if some go over your head — pick one idea to try at home.'],
+            ['icon' => '🛠️', 'title' => 'Get real open-source experience', 'text' => 'At Contributor Day you work on WordPress itself — code, design, docs, translation, testing. Your contributions show on your WordPress.org profile: a public, verifiable line for your résumé and LinkedIn.'],
+            ['icon' => '💼', 'title' => 'Meet people who hire', 'text' => 'Sponsors and agencies are often looking for interns and juniors. At their booth, ask: "What do you look for in someone just starting out?" Then show your Camp Card so they can find you later.'],
+            ['icon' => '🙌', 'title' => 'Volunteer next time', 'text' => 'WordCamps are run by volunteers. Helping at the registration desk or in a session room is the fastest way to get to know the organizers — and it looks great on a CV.'],
+            ['icon' => '📚', 'title' => 'Keep learning after', 'text' => 'Learn WordPress (learn.wordpress.org) has free courses and online workshops, and your local WordPress Meetup is where you\'ll see today\'s people again.'],
+        ];
+    }
+
+    /** A 15-second introduction a student can say out loud. */
+    public static function studentIntro(): string
+    {
+        return '"Hi, I\'m Priya — I\'m studying computer science at … and I\'m just getting into WordPress. What are you working on?"';
+    }
+
+    /**
      * @return array<int, string>
      */
     public static function bring(): array
@@ -218,6 +242,7 @@ class FirstTimerGuide
     public static function faq(): array
     {
         return [
+            ['q' => 'I\'m a student with no WordPress experience. Will I fit in?', 'a' => 'Absolutely. Lots of attendees are students or career-switchers, and speakers love questions from people who are new. Start with "Beginner friendly" sessions, and see "For students" above.'],
             ['q' => 'Do I need to be a developer?', 'a' => 'Not at all. WordCamps are for bloggers, business owners, designers, marketers, students, writers and anyone curious about WordPress. Most schedules include beginner-friendly sessions.'],
             ['q' => 'Is it OK to leave a session halfway?', 'a' => 'Yes. Quietly slip out — use the aisle seats if you think you might. Switching rooms is normal at WordCamp.'],
             ['q' => 'What should I wear?', 'a' => 'Whatever you\'re comfortable in. WordCamps are very casual.'],

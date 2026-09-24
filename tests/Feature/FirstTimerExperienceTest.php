@@ -130,7 +130,7 @@ class FirstTimerExperienceTest extends TestCase
 
     public function test_a_fresh_install_has_the_default_things_to_do(): void
     {
-        $this->assertSame(8, Quest::whereNull('event_id')->where('source', 'default')->count());
+        $this->assertSame(9, Quest::whereNull('event_id')->where('source', 'default')->count());
     }
 
     public function test_the_demo_seeder_builds_a_complete_walkthrough_event(): void
@@ -179,5 +179,41 @@ class FirstTimerExperienceTest extends TestCase
         $this->assertSame(6, substr_count($response->getContent(), '<span class="camp-card__event-name">WordCamp Test 2026</span>'));
         $this->assertSame(6, substr_count($response->getContent(), 'class="camp-card__scan"'));
         $response->assertSee('600&nbsp;DPI', false)->assertDontSee('data-print-card', false);
+    }
+
+    public function test_the_picker_explains_what_campbuddy_is_for(): void
+    {
+        $response = $this->get(route('home'))->assertOk();
+
+        $response->assertSee('How CampBuddy helps you at WordCamp')
+            ->assertSee('See it in action')
+            ->assertSee('data-tour', false)
+            ->assertSee('Made for')
+            ->assertSee('College students')
+            ->assertSee('Is it free?')
+            ->assertSee('data-tag="Student"', false);
+
+        foreach (['1-home', '2-schedule', '3-people', '4-guide', '5-camp-card'] as $screen) {
+            $response->assertSee("/media/tour/{$screen}.jpg", false);
+            $this->assertFileExists(public_path("media/tour/{$screen}.jpg"));
+        }
+    }
+
+    public function test_the_guide_has_a_section_for_college_students(): void
+    {
+        $this->get(route('guide'))
+            ->assertOk()
+            ->assertSee('id="guide-students"', false)
+            ->assertSee('For college students')
+            ->assertSee('Get real open-source experience')
+            ->assertSee('Your 15-second intro')
+            ->assertSee("I'm a student with no WordPress experience");
+    }
+
+    public function test_students_can_find_each_other_in_discovery(): void
+    {
+        $event = $this->event();
+
+        $this->postJson(route('api.discovery.store', $event), ['tags' => ['student', 'mentor']])->assertCreated();
     }
 }

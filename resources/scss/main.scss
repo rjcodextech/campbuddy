@@ -32,6 +32,7 @@
 @use 'components/in-app-browser';
 @use 'components/desktop-notice';
 @use 'components/guide';
+@use 'components/about';
 @use 'components/misc';
 
 // Last, so its wide-screen overrides win over the base component rules.

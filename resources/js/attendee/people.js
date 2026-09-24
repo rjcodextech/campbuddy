@@ -16,7 +16,7 @@ import { showToast } from './toast.js';
 const TAGS = [
   'developer', 'designer', 'content creator', 'site builder',
   'community organizer', 'marketer', 'business owner', 'blogger',
-  'translator', 'speaker',
+  'translator', 'speaker', 'student', 'mentor',
 ];
 
 // The discovery API takes at most 5 tags (StoreDiscoveryRequest); the form

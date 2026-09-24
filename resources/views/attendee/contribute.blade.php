@@ -8,6 +8,8 @@
             <p class="footer-note" style="text-align:left">
                 Contributor Day is for developers, designers, writers, translators, testers, organizers and curious
                 newcomers — not only coders. A few quick questions (all skippable) point you to a team.
+                <strong>Students:</strong> what you contribute shows on your WordPress.org profile — real open-source
+                experience you can put on your résumé.
             </p>
         </section>
 

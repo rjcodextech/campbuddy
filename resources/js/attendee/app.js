@@ -45,6 +45,13 @@ async function init() {
     renderOnboardingSection();
   }
 
+  // Also on the picker page: the "See it in action" tour of real screens.
+  const tour = document.querySelector('[data-tour]');
+  if (tour) {
+    const { initTour } = await import('./tour.js');
+    initTour(tour);
+  }
+
   const root = document.getElementById('app');
   if (!root) return;
 
