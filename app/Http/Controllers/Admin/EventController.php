@@ -11,10 +11,10 @@ use App\Jobs\FetchBrandingAssetsJob;
 use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
+use App\Support\EventData;
 use App\Support\SvgGuard;
 use Closure;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Throwable;
@@ -83,9 +83,7 @@ class EventController extends Controller
         // What attendees see right now: the cached lists (null = never fetched)
         // and the visible attendee list.
         $cachedCount = function (string $key) use ($event): ?int {
-            $value = Cache::get("event:{$event->id}:{$key}");
-
-            return is_array($value) ? count($value) : null;
+            return EventData::count($event->id, $key);
         };
 
         $dataCounts = [

@@ -18,7 +18,7 @@
 
 // Bumped whenever caching behaviour changes: activate() deletes every other
 // cache, which also clears anything an older worker wrongly stored.
-const CACHE_NAME = 'campbuddy-v2';
+const CACHE_NAME = 'campbuddy-v3';
 
 // With a cached copy to fall back on, don't make someone on flaky conference
 // wifi wait for a stalled request — give the network this long, then serve it.
@@ -72,7 +72,7 @@ self.addEventListener('fetch', (event) => {
 
   const isBuildAsset = url.pathname.startsWith('/build/');
 
-  event.respondWith(isBuildAsset ? cacheFirst(request) : networkFirst(request));
+  event.respondWith(isBuildAsset ? cacheFirst(request) : networkFirst(request, event));
 });
 
 // Only a plain, complete, non-redirected response is worth keeping.
@@ -101,17 +101,24 @@ async function cacheFirst(request) {
   return response;
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, event) {
   const cached = await caches.match(request);
+  const network = fetch(request);
+
+  // However long the network takes, a good answer still replaces the saved
+  // copy. (Before, a slow answer was dropped once the timeout had served the
+  // saved copy — so a page saved while the event had no data yet kept being
+  // shown, empty, to anyone on slow venue wifi.)
+  const refreshed = network.then((response) => store(request, response.clone())).catch(() => {});
+  event?.waitUntil(refreshed);
 
   try {
-    const response = await (cached ? fetchWithTimeout(request, NETWORK_TIMEOUT_MS) : fetch(request));
+    const response = await (cached ? withTimeout(network, NETWORK_TIMEOUT_MS) : network);
 
     // The server is up but erroring (deploy in progress, database blip): a
     // good saved copy beats an error page. A 404 is a real answer, so it isn't masked.
     if (cached && response.status >= 500) return cached;
 
-    store(request, response.clone());
     return response;
   } catch (err) {
     if (cached) return cached;
@@ -130,11 +137,11 @@ async function networkFirst(request) {
   }
 }
 
-function fetchWithTimeout(request, ms) {
+function withTimeout(promise, ms) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('network timeout')), ms);
 
-    fetch(request).then(
+    promise.then(
       (response) => {
         clearTimeout(timer);
         resolve(response);

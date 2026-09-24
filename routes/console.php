@@ -8,8 +8,10 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
 use App\Models\Event;
+use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
@@ -69,6 +71,12 @@ Schedule::call(function () {
             FetchBrandingAssetsJob::dispatch($event, onlyMissing: true)->delay(now()->addSeconds($index * 10));
         });
 })->dailyAt('02:30')->name('backfill-event-branding');
+
+// Proof of life for the admin dashboard: if this stops being written, the
+// cron entry that runs the scheduler isn't running (App\Support\SystemHealth).
+Schedule::call(fn () => Cache::forever(SystemHealth::HEARTBEAT_KEY, now()->toIso8601String()))
+    ->everyMinute()
+    ->name('heartbeat');
 
 // The reminder window is 5-10 minutes before a session — every
 // minute is the tightest useful cadence without spamming the queue.

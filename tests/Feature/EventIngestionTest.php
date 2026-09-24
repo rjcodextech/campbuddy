@@ -292,30 +292,73 @@ class EventIngestionTest extends TestCase
 
     // ---- Pages heal themselves when the cache is cold ----------------------------------------------
 
-    public function test_a_page_view_on_a_cold_cache_queues_a_refresh_once_not_per_visitor(): void
+    public function test_a_page_view_on_a_cold_cache_fetches_after_its_response_once_not_per_visitor(): void
     {
         $event = $this->event(['status' => 'active']);
-        Queue::fake();
+        // After the event exists: its own "went live" ingest isn't what's measured here.
+        Bus::fake();
 
         $this->get(route('event.my-day', $event))->assertOk();
         $this->get(route('event.my-day', $event))->assertOk();
         $this->get(route('event.home', $event))->assertOk();
 
-        Queue::assertPushed(FetchSpeakersSponsorsSessionsJob::class, 1);
+        // Run in the request itself, after the response — works with no cron or queue worker.
+        Bus::assertDispatchedSync(FetchSpeakersSponsorsSessionsJob::class, 1);
     }
 
-    public function test_a_warm_cache_queues_nothing(): void
+    public function test_fresh_cached_data_fetches_nothing(): void
     {
         $event = $this->event(['status' => 'active']);
         foreach (['sessions', 'speakers', 'sponsors'] as $key) {
             Cache::put("event:{$event->id}:{$key}", [], 3600); // an empty list is still "fetched"
         }
-        Queue::fake();
+        Cache::put("event:{$event->id}:fetched-at", now()->subMinutes(10), 3600);
+        FetchLog::create(['event_id' => $event->id, 'source' => 'attendees_page', 'job_type' => 'roster', 'status' => 'ok', 'message' => '', 'fetched_at' => now()]);
+        Bus::fake();
 
         $this->get(route('event.my-day', $event))->assertOk();
         $this->get(route('event.explore', $event))->assertOk();
 
-        Queue::assertNothingPushed();
+        Bus::assertNothingDispatched();
+    }
+
+    public function test_stale_data_is_refreshed_when_the_scheduler_has_stopped(): void
+    {
+        $event = $this->event(['status' => 'active']);
+        Cache::put("event:{$event->id}:sessions", [['id' => 1, 'title' => 'Keynote']], 3600);
+        Cache::put("event:{$event->id}:fetched-at", now()->subHours(3), 3600);
+        Bus::fake();
+
+        $this->get(route('event.my-day', $event))->assertOk()->assertSee('Keynote');
+
+        Bus::assertDispatchedSync(FetchSpeakersSponsorsSessionsJob::class, 1);
+    }
+
+    public function test_explore_fetches_the_attendee_list_when_it_has_not_been_fetched_for_a_day(): void
+    {
+        $event = $this->event(['status' => 'active']);
+        foreach (['sessions', 'speakers', 'sponsors'] as $key) {
+            Cache::put("event:{$event->id}:{$key}", [], 3600);
+        }
+        Cache::put("event:{$event->id}:fetched-at", now(), 3600);
+        Bus::fake();
+
+        $this->get(route('event.explore', $event))->assertOk();
+        $this->get(route('event.explore', $event))->assertOk();
+
+        Bus::assertDispatchedSync(ParseAttendeeRosterJob::class, 1);
+    }
+
+    public function test_a_successful_fetch_records_when_it_happened(): void
+    {
+        $event = $this->event(['status' => 'active']);
+        Http::fake([
+            self::SITE.'/wp-json/wp/v2/*' => Http::response([], 200, ['X-WP-TotalPages' => '1']),
+        ]);
+
+        FetchSpeakersSponsorsSessionsJob::dispatchSync($event);
+
+        $this->assertTrue(now()->diffInSeconds(Cache::get("event:{$event->id}:fetched-at"), true) < 5);
     }
 
     public function test_ingested_data_is_kept_for_two_weeks_not_two_days(): void

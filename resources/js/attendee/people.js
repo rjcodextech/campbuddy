@@ -49,7 +49,13 @@ async function renderRoster(eventSlug) {
   try {
     entries = await fetchFullRoster(eventSlug);
   } catch {
-    el.replaceChildren(render('tpl-roster-offline'));
+    // Offline is one thing; the server having a problem is another — say
+    // which, and let them try again rather than leaving an empty list.
+    el.replaceChildren(render(navigator.onLine === false ? 'tpl-roster-offline' : 'tpl-roster-error'));
+    el.querySelector('[data-roster-retry]')?.addEventListener('click', () => {
+      el.replaceChildren(document.createTextNode('Loading…'));
+      renderRoster(eventSlug);
+    });
     return;
   }
 

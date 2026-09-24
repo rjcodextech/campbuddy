@@ -9,6 +9,7 @@ use App\Models\FetchLog;
 use App\Models\Offer;
 use App\Models\OfferLead;
 use App\Support\CacheVersion;
+use App\Support\SystemHealth;
 use Illuminate\View\View;
 
 /**
@@ -25,6 +26,7 @@ class DashboardController extends Controller
             ->pluck('total', 'status');
 
         return view('dashboard', [
+            'problems' => SystemHealth::problems(),
             'eventsByStatus' => $eventsByStatus,
             'eventCount' => $eventsByStatus->sum(),
             'rosterCount' => AttendeeRoster::where('is_suppressed', false)->count(),

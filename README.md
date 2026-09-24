@@ -16,6 +16,7 @@ cp .env.example .env && php artisan key:generate
 npm run build
 php artisan migrate
 php artisan db:seed --class=AdminUserSeeder
+php artisan campbuddy:doctor                  # after every deploy: caches, logs, build, migrations, data, health check
 php artisan db:seed --class=DemoEventSeeder   # optional, local only: a full demo WordCamp at /event/demo-wordcamp
 ```
 

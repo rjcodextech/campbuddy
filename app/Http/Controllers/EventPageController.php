@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
+use App\Jobs\ParseAttendeeRosterJob;
 use App\Models\Event;
 use App\Models\Quest;
+use App\Support\EventData;
 use App\Support\HtmlText;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
+
+use function Illuminate\Support\defer;
 
 /**
  * Server-rendered attendee pages — one controller per tab.
@@ -76,6 +80,8 @@ class EventPageController extends Controller
 
     public function explore(Event $event): View
     {
+        $this->refreshRosterIfStale($event);
+
         return view('attendee.explore', [
             'event' => $event,
             'sponsors' => $this->cached($event, 'sponsors'),
@@ -164,44 +170,84 @@ class EventPageController extends Controller
         return $lines === [] ? null : implode("\n", $lines);
     }
 
+    /** Older than this and the scheduled 15-minute refresh has evidently stopped. */
+    private const STALE_AFTER_MINUTES = 60;
+
     /**
      * One of the event's ingested lists (sessions, speakers, sponsors) from
      * the cache. A miss means the data has never been fetched or has expired,
-     * so the page renders empty this once — and a refresh is queued right
-     * away, rather than leaving the event blank until the next scheduled run
-     * (which, if scheduling is misconfigured, never comes).
+     * so the page renders empty this once — and a refresh runs right after
+     * this response, so the next view has it. Data that's gone stale (the
+     * scheduler that refreshes it every 15 minutes isn't running) is
+     * refreshed the same way.
      *
      * @return array<int, mixed>
      */
     private function cached(Event $event, string $key): array
     {
-        $value = Cache::get("event:{$event->id}:{$key}");
+        $value = EventData::get($event->id, $key);
 
         if (! is_array($value)) {
-            $this->requestIngest($event);
+            $this->refreshAfterResponse($event);
 
             return [];
+        }
+
+        $fetchedAt = Cache::get("event:{$event->id}:fetched-at");
+        if (! $fetchedAt || now()->diffInMinutes($fetchedAt, true) > self::STALE_AFTER_MINUTES) {
+            $this->refreshAfterResponse($event);
         }
 
         return $value;
     }
 
     /**
-     * At most one refresh per event per five minutes: a room full of
-     * attendees opening the app on a cold cache must not each trigger a fetch
-     * against the WordCamp site.
+     * Fetches the event's data after the response has gone out — in this same
+     * request, so it works on hosting where the cron/queue isn't running (the
+     * cause of live events showing no schedule and no sponsors). The visitor
+     * never waits for it. At most one per event per five minutes: a room full
+     * of attendees opening the app must not each trigger a fetch against the
+     * WordCamp site.
      */
-    private function requestIngest(Event $event): void
+    private function refreshAfterResponse(Event $event): void
     {
         if (! Cache::add("event:{$event->id}:ingest-requested", true, now()->addMinutes(5))) {
             return;
         }
 
-        try {
-            FetchSpeakersSponsorsSessionsJob::dispatch($event);
-        } catch (Throwable $e) {
-            report($e);
+        defer(function () use ($event) {
+            try {
+                FetchSpeakersSponsorsSessionsJob::dispatchSync($event);
+            } catch (Throwable $e) {
+                // Already in the fetch log for the admin; never the visitor's problem.
+                report($e);
+            }
+        });
+    }
+
+    /**
+     * The attendee list is refreshed nightly by the scheduler. If that hasn't
+     * happened in a day (no cron), Explore fetches it after its response, at
+     * most every half hour per event.
+     */
+    private function refreshRosterIfStale(Event $event): void
+    {
+        $freshRun = $event->fetchLogs()
+            ->where('job_type', 'roster')
+            ->where('fetched_at', '>=', now()->subDay())
+            ->exists();
+
+        if ($freshRun || ! Cache::add("event:{$event->id}:roster-requested", true, now()->addMinutes(30))) {
+            return;
         }
+
+        defer(function () use ($event) {
+            try {
+                ParseAttendeeRosterJob::dispatchSync($event);
+            } catch (Throwable $e) {
+                report($e);
+            }
+        });
     }
 
     /**

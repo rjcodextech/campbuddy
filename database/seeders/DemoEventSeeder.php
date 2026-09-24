@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\Services\AttendeeRosterScraper;
 use App\Services\WordCampNormalizer;
 use App\Services\WordCampRestClient;
+use App\Support\EventData;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -73,11 +74,11 @@ class DemoEventSeeder extends Seeder
         $categories = [21 => 'Beginner friendly', 22 => 'Development', 23 => 'Design', 24 => 'Business', 25 => 'Community'];
         $levels = [31 => 'Gold', 32 => 'Silver', 33 => 'Bronze'];
 
-        $ttl = now()->addDays(14);
-        Cache::put("event:{$event->id}:sessions", $normalizer->normalizeSessions($this->sessions(), $tracks, $categories), $ttl);
-        Cache::put("event:{$event->id}:speakers", $normalizer->normalizeSpeakers($this->speakers()), $ttl);
-        Cache::put("event:{$event->id}:sponsors", $normalizer->normalizeSponsors($this->sponsors(), $levels), $ttl);
-        Cache::put("event:{$event->id}:organizers", $normalizer->normalizeOrganizers([]), $ttl);
+        EventData::put($event->id, 'sessions', $normalizer->normalizeSessions($this->sessions(), $tracks, $categories));
+        EventData::put($event->id, 'speakers', $normalizer->normalizeSpeakers($this->speakers()));
+        EventData::put($event->id, 'sponsors', $normalizer->normalizeSponsors($this->sponsors(), $levels));
+        EventData::put($event->id, 'organizers', $normalizer->normalizeOrganizers([]));
+        Cache::put("event:{$event->id}:fetched-at", now(), now()->addDays(14));
 
         $this->roster($event);
         $this->discovery($event);

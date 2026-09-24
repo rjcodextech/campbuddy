@@ -8,8 +8,15 @@
     <p style="margin:0">You're offline. The attendee list will refresh when you're connected again.</p>
 </template>
 
+<template id="tpl-roster-error">
+    <div>
+        <p style="margin:0 0 10px">Couldn't load the attendee list just now.</p>
+        <button type="button" class="btn btn--outline btn--compact" data-roster-retry>Try again</button>
+    </div>
+</template>
+
 <template id="tpl-roster-empty">
-    <p style="margin:0">No public attendee listing yet.</p>
+    <p style="margin:0">No public attendee list yet — it appears here once people register and choose to be listed on the WordCamp site.</p>
 </template>
 
 <template id="tpl-roster-no-match">

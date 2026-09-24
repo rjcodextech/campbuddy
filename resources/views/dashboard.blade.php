@@ -4,6 +4,23 @@
         <x-button :href="route('admin.events.create')" icon="plus">Add event</x-button>
     </x-slot:actions>
 
+    {{-- What's silently broken on this install (App\Support\SystemHealth):
+    the cron, pending migrations, stuck or failed jobs, live events with no data.
+    `php artisan campbuddy:doctor` fixes most of it in one go. --}}
+    @if ($problems !== [])
+        <div class="mb-6 space-y-3">
+            @foreach ($problems as $problem)
+                <x-alert :type="$problem['level'] === 'error' ? 'error' : 'warning'" :title="$problem['title']">
+                    <p>{{ $problem['detail'] }}</p>
+                    @if ($problem['fix'])
+                        <p class="mt-2 text-xs"><span class="font-semibold">Fix:</span> <code class="break-all rounded bg-white/70 px-1.5 py-0.5">{{ $problem['fix'] }}</code></p>
+                    @endif
+                </x-alert>
+            @endforeach
+            <p class="text-xs text-muted">After a deploy, <code class="rounded bg-paper-soft px-1.5 py-0.5">php artisan campbuddy:doctor</code> runs the migrations, fetches every live event's data and re-checks all of this.</p>
+        </div>
+    @endif
+
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <x-stat label="Events" :value="$eventCount" icon="calendar" :href="route('admin.events.index')"
                 :hint="($eventsByStatus['active'] ?? 0).' active · '.($eventsByStatus['archived'] ?? 0).' archived'" />

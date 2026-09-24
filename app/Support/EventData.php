@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Support;
+
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Throwable;
+
+/**
+ * An event's fetched lists (sessions, speakers, sponsors, organizers): kept
+ * for good in the event_feeds table, with the cache in front as the fast
+ * path. Reads fall back to the database when the cache has expired or been
+ * flushed, and put the value back in the cache — so a stopped cron or a
+ * cache purge never blanks a live event's schedule and sponsors.
+ */
+class EventData
+{
+    public const KINDS = ['sessions', 'speakers', 'sponsors', 'organizers'];
+
+    private const CACHE_DAYS = 14;
+
+    /** @return array<int, mixed>|null null = never fetched */
+    public static function get(int $eventId, string $kind): ?array
+    {
+        $cached = Cache::get(self::key($eventId, $kind));
+
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        try {
+            $row = DB::table('event_feeds')->where('event_id', $eventId)->where('kind', $kind)->first(['payload', 'fetched_at']);
+        } catch (Throwable) {
+            // The table isn't there yet (migrations not run) — cache only, as before.
+            return null;
+        }
+
+        $value = $row ? json_decode($row->payload, true) : null;
+
+        if (! is_array($value)) {
+            return null;
+        }
+
+        Cache::put(self::key($eventId, $kind), $value, now()->addDays(self::CACHE_DAYS));
+        Cache::add("event:{$eventId}:fetched-at", Carbon::parse($row->fetched_at), now()->addDays(self::CACHE_DAYS));
+
+        return $value;
+    }
+
+    /** @param array<int, mixed> $items */
+    public static function put(int $eventId, string $kind, array $items): void
+    {
+        Cache::put(self::key($eventId, $kind), $items, now()->addDays(self::CACHE_DAYS));
+
+        try {
+            DB::table('event_feeds')->upsert([[
+                'event_id' => $eventId,
+                'kind' => $kind,
+                'payload' => json_encode($items, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'item_count' => count($items),
+                'fetched_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]], ['event_id', 'kind'], ['payload', 'item_count', 'fetched_at', 'updated_at']);
+        } catch (Throwable $e) {
+            // Not migrated yet: the cache still has it. Worth knowing about, not failing over.
+            report($e);
+        }
+    }
+
+    public static function count(int $eventId, string $kind): ?int
+    {
+        $value = self::get($eventId, $kind);
+
+        return $value === null ? null : count($value);
+    }
+
+    private static function key(int $eventId, string $kind): string
+    {
+        return "event:{$eventId}:{$kind}";
+    }
+}

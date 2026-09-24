@@ -48,7 +48,9 @@ export async function renderHome(root) {
 
   const bookmarkedIds = new Set(bookmarks.map((b) => b.sessionId));
   const completedQuestIds = new Set(questProgress.map((q) => q.questId));
-  const ctx = { ...data, sessions, nowMs, bookmarkedIds, onboarding };
+  // Talks already announced but not yet given a time on the WordCamp site.
+  const untimedCount = (data.sessions ?? []).filter((s) => s && !s.starts_at).length;
+  const ctx = { ...data, sessions, untimedCount, nowMs, bookmarkedIds, onboarding };
 
   renderStartHere(eventId, onboarding, startHereDismissed);
   renderEventStatus(ctx);
@@ -254,7 +256,11 @@ function renderUpNext(ctx) {
   const upcoming = sessions.filter((s) => s.startMs > nowMs);
 
   if (upcoming.length === 0) {
-    el.replaceChildren(render('tpl-home-up-next-none'));
+    el.replaceChildren(
+      ctx.untimedCount > 0
+        ? render('tpl-home-up-next-tba', { count: ctx.untimedCount, link: { attrs: { href: ctx.urls.myDay } } })
+        : render('tpl-home-up-next-none')
+    );
     return;
   }
 

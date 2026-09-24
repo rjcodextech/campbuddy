@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,12 +23,21 @@ class RosterController extends Controller
     {
         Gate::authorize('viewAny', Event::class);
 
-        $roster = $event->attendeeRoster()
+        $query = fn (bool $withDiscovery) => $event->attendeeRoster()
             ->when($request->string('q')->isNotEmpty(), fn ($q) => $q->where('name', 'like', '%'.$request->string('q').'%'))
-            ->withExists('discoveryProfile as in_discovery')
+            ->when($withDiscovery, fn ($q) => $q->withExists('discoveryProfile as in_discovery'))
             ->orderBy('name')
             ->paginate(50)
             ->withQueryString();
+
+        try {
+            $roster = $query(true);
+        } catch (QueryException $e) {
+            // Migrations not run yet: the list still works, without the
+            // "In discovery" marks (the dashboard says what to run).
+            report($e);
+            $roster = $query(false);
+        }
 
         return view('admin.roster.index', ['event' => $event, 'roster' => $roster, 'q' => $request->string('q')->toString()]);
     }

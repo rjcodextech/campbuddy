@@ -28,10 +28,17 @@ export async function renderMyDay(root) {
   let bookmarkedIds = new Set((await getBookmarks(eventId)).map((b) => b.sessionId));
   let expandedSessionId = null;
 
+  // Every session is listed — including ones the WordCamp site hasn't given
+  // a time yet (common weeks before the event, when talks are announced
+  // before the timetable). Those sort last, in a "Time to be announced"
+  // group, instead of the whole schedule looking empty.
   const timed = sessions
-    .filter((s) => s.starts_at)
-    .map((s) => ({ ...s, startMs: new Date(s.starts_at).getTime(), dayKey: dayKeyOf(new Date(s.starts_at).getTime()) }))
-    .sort((a, b) => a.startMs - b.startMs);
+    .map((s) => {
+      const ms = s.starts_at ? new Date(s.starts_at).getTime() : NaN;
+      const known = Number.isFinite(ms);
+      return { ...s, startMs: known ? ms : Number.POSITIVE_INFINITY, dayKey: known ? dayKeyOf(ms) : TBA };
+    })
+    .sort((a, b) => (a.startMs === b.startMs ? (a.title ?? '').localeCompare(b.title ?? '') : a.startMs < b.startMs ? -1 : 1));
 
   setupTabs();
   setupDayFilters(timed);
@@ -61,6 +68,7 @@ export async function renderMyDay(root) {
   }
 
   function rangesOverlap(a, b) {
+    if (!Number.isFinite(a.startMs) || !Number.isFinite(b.startMs)) return false;
     const aEnd = a.startMs + (a.duration_seconds ?? 0) * 1000;
     const bEnd = b.startMs + (b.duration_seconds ?? 0) * 1000;
     return a.startMs < bEnd && b.startMs < aEnd;
@@ -117,7 +125,7 @@ export async function renderMyDay(root) {
       return matchesDay && matchesTrack && matchesType && matchesTopic && matchesQuery;
     });
 
-    renderGroupedByDay(fullListEl, filtered, timed.length === 0 ? 'tpl-my-day-no-schedule' : 'tpl-my-day-empty-full');
+    renderGroupedByDay(fullListEl, filtered, sessions.length === 0 ? 'tpl-my-day-no-schedule' : 'tpl-my-day-empty-full');
     updateMoreFiltersCount([activeTrack, activeType, activeTopic].filter(Boolean).length);
     wireItemInteractions(fullListEl, timed, toggleBookmark, toggleExpand);
     return filtered.length;
@@ -141,13 +149,15 @@ export async function renderMyDay(root) {
     }
 
     const days = [...new Set(list.map((s) => s.dayKey))];
-    const showHeadings = days.length > 1;
+    // A "Time to be announced" group always gets its heading — it explains
+    // why those sessions have no time.
+    const showHeadings = days.length > 1 || days.includes(TBA);
 
     container.replaceChildren(
       ...days.map((day) => {
         const dayItems = list.filter((s) => s.dayKey === day);
         return render('tpl-schedule-day', {
-          heading: showHeadings ? dayLabelOf(dayItems[0].startMs) : null,
+          heading: showHeadings ? (day === TBA ? 'Time to be announced' : dayLabelOf(dayItems[0].startMs)) : null,
           items: dayItems.map((s) => sessionItem(s, speakersById, bookmarkedIds, overlapFn?.(s), expandedSessionId)),
         });
       })
@@ -243,6 +253,9 @@ function setPressed(chip, on) {
   chip.setAttribute('aria-pressed', String(on));
 }
 
+// The day key of sessions with no time yet.
+const TBA = 'tba';
+
 function dayKeyOf(ms) {
   const d = new Date(ms);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -272,11 +285,8 @@ function setupTabs() {
 // day — a single-day WordCamp has nothing to filter by.
 function setupDayFilters(sessions) {
   const el = document.getElementById('day-filters');
-  const days = [...new Set(sessions.map((s) => s.dayKey))].sort((a, b) => {
-    const sa = sessions.find((s) => s.dayKey === a).startMs;
-    const sb = sessions.find((s) => s.dayKey === b).startMs;
-    return sa - sb;
-  });
+  const firstStart = (day) => sessions.find((s) => s.dayKey === day).startMs;
+  const days = [...new Set(sessions.map((s) => s.dayKey))].sort((a, b) => (firstStart(a) < firstStart(b) ? -1 : 1));
 
   if (days.length < 2) {
     el.hidden = true;
@@ -288,7 +298,9 @@ function setupDayFilters(sessions) {
     chip: { text: 'All days', attrs: { 'data-day': '__all', 'aria-pressed': 'true' }, class: { 'chip--selected': true } },
   });
   const dayChips = days.map((day) => {
-    const label = new Date(sessions.find((s) => s.dayKey === day).startMs).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+    const label = day === TBA
+      ? 'Time TBA'
+      : new Date(firstStart(day)).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
     return render('tpl-my-day-filter-chip', { chip: { text: label, attrs: { 'data-day': day } } });
   });
 
@@ -314,12 +326,14 @@ function setupChipFilter(elId, sessions, valuesOf, labelOf = (name) => name) {
 
 function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
-  const time = new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const time = Number.isFinite(session.startMs)
+    ? new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : 'TBA';
   const metaLine = [session.track_names?.[0], typeLabel(session.session_type)].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);
   const isOpen = expandedSessionId === session.id;
   const nowMs = Date.now();
-  const endMs = session.startMs + (session.duration_seconds ?? 1800) * 1000;
+  const endMs = Number.isFinite(session.startMs) ? session.startMs + (session.duration_seconds ?? 1800) * 1000 : Number.POSITIVE_INFINITY;
   const isLive = session.startMs <= nowMs && nowMs < endMs;
   const isPast = endMs <= nowMs;
   const tags = isBeginnerFriendly(session) ? [render('tpl-schedule-tag', { tag: { text: 'Beginner friendly', class: { 'schedule-tag--beginner': true } } })] : [];

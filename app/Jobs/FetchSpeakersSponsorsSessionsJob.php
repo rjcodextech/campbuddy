@@ -6,6 +6,7 @@ use App\Models\Event;
 use App\Models\FetchLog;
 use App\Services\WordCampNormalizer;
 use App\Services\WordCampRestClient;
+use App\Support\EventData;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
@@ -90,6 +91,10 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             $counts['organizers']
         );
 
+        // When the data was last refreshed — pages use it to notice the
+        // scheduler has stopped and refresh on their own (EventPageController).
+        Cache::put("event:{$this->event->id}:fetched-at", now(), now()->addDays(14));
+
         $this->log(
             $problems === [] ? 'ok' : 'partial',
             substr($summary.($problems === [] ? '' : ' — '.implode('; ', $problems)), 0, 500)
@@ -152,7 +157,6 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
      */
     private function store(string $key, array $items, array &$problems): int
     {
-        $cacheKey = "event:{$this->event->id}:{$key}";
 
         if ($items === [] && $this->cachedCount($key) > 0) {
             $problems[] = "{$key}: the site returned none, kept the previous ".$this->cachedCount($key);
@@ -160,16 +164,14 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             return $this->cachedCount($key);
         }
 
-        Cache::put($cacheKey, $items, now()->addDays(14));
+        EventData::put($this->event->id, $key, $items);
 
         return count($items);
     }
 
     private function cachedCount(string $key): int
     {
-        $cached = Cache::get("event:{$this->event->id}:{$key}");
-
-        return is_array($cached) ? count($cached) : 0;
+        return EventData::count($this->event->id, $key) ?? 0;
     }
 
     /** A short, admin-readable reason — an HTTP status beats a stack of Guzzle text. */

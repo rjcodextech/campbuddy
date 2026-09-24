@@ -56,6 +56,14 @@
     <p style="margin:0">That's everything on the schedule for now.</p>
 </template>
 
+{{-- Talks are announced but the WordCamp site hasn't given them times yet. --}}
+<template id="tpl-home-up-next-tba">
+    <div>
+        <p style="margin:0;font-weight:700"><span data-slot="count"></span> sessions announced — times coming soon</p>
+        <p class="home-guidance">Browse them now and star the ones you'd enjoy: <a data-slot="link" data-track="home_link_click" data-track-target="tba_sessions">see the sessions</a>.</p>
+    </div>
+</template>
+
 <template id="tpl-home-up-next">
     <div>
         <p style="margin:0 0 2px;font-weight:700" data-slot="title"></p>

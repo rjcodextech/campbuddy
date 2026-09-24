@@ -5,10 +5,10 @@ namespace App\Jobs;
 use App\Models\Event;
 use App\Models\PushSubscription;
 use App\Models\SessionBookmark;
+use App\Support\EventData;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
@@ -31,7 +31,7 @@ class SendSessionRemindersJob implements ShouldQueue
 
     private function remindForEvent(Event $event): void
     {
-        $sessions = collect(Cache::get("event:{$event->id}:sessions", []))
+        $sessions = collect(EventData::get($event->id, 'sessions') ?? [])
             ->filter(fn ($s) => $s['starts_at'])
             ->keyBy('id');
 

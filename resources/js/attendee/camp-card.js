@@ -85,6 +85,8 @@ export async function renderCampCard() {
   const form = document.getElementById('camp-card-form');
   if (!form) return;
 
+  preloadExporter();
+
   const card = await kvGet('campCard');
   const visibleFields = new Set(card?.visibleFields ?? []);
 
@@ -145,11 +147,11 @@ export async function renderCampCard() {
     showToast('Camp Card saved.');
   });
   document.querySelectorAll('[data-download-card]').forEach((btn) => {
-    btn.addEventListener('click', () => downloadCard(btn.dataset.downloadCard));
+    btn.addEventListener('click', () => handleExport('download', btn.dataset.downloadCard, btn));
   });
 
   document.querySelectorAll('[data-share-card]').forEach((btn) => {
-    btn.addEventListener('click', () => shareCard(btn.dataset.shareCard));
+    btn.addEventListener('click', () => handleExport('share', btn.dataset.shareCard, btn));
   });
 }
 
@@ -214,17 +216,111 @@ function saveBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 }
 
-async function shareCard(layout) {
-  const btn = document.querySelector(`[data-share-card="${layout}"]`);
-  const original = btn.textContent;
-  btn.disabled = true;
+// ---- Share / Download -----------------------------------------------------
+//
+// Making a 600 DPI image takes a few seconds on a phone (more the first
+// time, while html2canvas downloads). Browsers only allow a download or the
+// share sheet for a short while after a tap, so an image that finishes too
+// late was silently refused — which is why these used to work only on a
+// second tap. Now:
+//   - html2canvas is fetched in the background as soon as the page is idle;
+//   - a tap shows "Preparing…" until the image exists, and the image is kept
+//     (per layout, until the card changes);
+//   - if the tap still counts when it's ready, it downloads/shares at once;
+//     otherwise the button turns into "Ready — tap to …", and that tap works
+//     instantly because the image is already made.
+
+// layout → Promise<Blob>, for what's currently shown. Cleared on any change.
+const exports = new Map();
+
+function exportFor(layout) {
+  if (!exports.has(layout)) {
+    const made = cardPngBlob(layout);
+    made.catch(() => exports.delete(layout));
+    exports.set(layout, made);
+  }
+  return exports.get(layout);
+}
+
+function forgetExports() {
+  exports.clear();
+  document.querySelectorAll('[data-share-card], [data-download-card]').forEach((btn) => resetButton(btn));
+}
+
+const LABELS = {
+  share: { idle: 'Share', ready: 'Ready — tap to share' },
+  download: { idle: 'Download', ready: 'Ready — tap to download' },
+};
+
+function resetButton(btn) {
+  const kind = btn.dataset.shareCard !== undefined ? 'share' : 'download';
+  btn.textContent = LABELS[kind].idle;
+  btn.removeAttribute('aria-busy');
+  btn.classList.remove('btn--primary', 'btn--busy');
+  btn.classList.add('btn--outline');
+  delete btn.dataset.state;
+}
+
+// Does the tap that started this still let us download / open the share sheet?
+function tapStillCounts() {
+  return navigator.userActivation ? navigator.userActivation.isActive : false;
+}
+
+async function handleExport(kind, layout, btn) {
+  if (btn.dataset.state === 'preparing') return;
+
+  const act = kind === 'share' ? shareBlob : downloadBlob;
+
+  // Already made (or a "Ready" tap): straight away, inside this tap.
+  if (btn.dataset.state === 'ready') {
+    const blob = await exportFor(layout);
+    resetButton(btn);
+    await act(blob, layout);
+    return;
+  }
+
+  btn.dataset.state = 'preparing';
+  btn.setAttribute('aria-busy', 'true');
+  btn.classList.add('btn--busy');
   btn.textContent = 'Preparing…';
 
+  let blob;
   try {
-    const blob = await cardPngBlob(layout);
-    const filename = `campbuddy-camp-card-${layout}.png`;
-    const file = new File([blob], filename, { type: 'image/png' });
+    blob = await exportFor(layout);
+  } catch {
+    resetButton(btn);
+    track('camp_card_export_error', { action: kind, layout });
+    showToast("Couldn't create the image — please try again.");
+    return;
+  }
 
+  if (tapStillCounts()) {
+    resetButton(btn);
+    await act(blob, layout);
+    return;
+  }
+
+  btn.dataset.state = 'ready';
+  btn.removeAttribute('aria-busy');
+  btn.classList.remove('btn--outline', 'btn--busy');
+  btn.classList.add('btn--primary');
+  btn.textContent = LABELS[kind].ready;
+}
+
+function filenameFor(layout) {
+  return `campbuddy-camp-card-${layout}.png`;
+}
+
+async function downloadBlob(blob, layout) {
+  saveBlob(blob, filenameFor(layout));
+  track('camp_card_download', { layout });
+  showToast('Saved — 600 DPI, ready to print.');
+}
+
+async function shareBlob(blob, layout) {
+  const file = new File([blob], filenameFor(layout), { type: 'image/png' });
+
+  try {
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: 'My Camp Card' });
       track('share', { method: 'web_share_file', content_type: 'camp_card', item_id: layout });
@@ -236,43 +332,26 @@ async function shareCard(layout) {
     } else {
       // No Web Share support at all (most desktop browsers) — fall back
       // to a download so the button still does something useful.
-      saveBlob(blob, filename);
+      saveBlob(blob, filenameFor(layout));
       track('share', { method: 'download_fallback', content_type: 'camp_card', item_id: layout });
+      showToast('Sharing isn\'t available here, so the image was downloaded instead.');
     }
   } catch (err) {
     if (err?.name !== 'AbortError') {
       track('camp_card_export_error', { action: 'share', layout });
-      alert("Couldn't share the card — try Download instead.");
+      showToast("Couldn't open sharing — try Download instead.");
     }
-  } finally {
-    btn.disabled = false;
-    btn.textContent = original;
   }
 }
 
-// html2canvas is dynamically imported (inside renderCardToCanvas) so its
-// ~50KB only ever loads for an attendee who actually taps Download or
-// Share — never on page load, and never on any other screen (app.js
-// only imports camp-card.js at all when #camp-card-form exists). A
-// rasterized screenshot is the only practical way to turn this card's
-// gradients/custom fonts/pseudo-element frames into a downloadable or
-// shareable file; there's no reasonable native alternative that doesn't
-// amount to reimplementing a renderer.
-async function downloadCard(layout) {
-  const btn = document.querySelector(`[data-download-card="${layout}"]`);
-  const original = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Preparing…';
-
-  try {
-    saveBlob(await cardPngBlob(layout), `campbuddy-camp-card-${layout}.png`);
-    track('camp_card_download', { layout });
-  } catch {
-    track('camp_card_export_error', { action: 'download', layout });
-    alert("Couldn't create the image — try again.");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = original;
+// Fetch the image library while the attendee is still reading their card,
+// so the first tap doesn't wait for a download too.
+function preloadExporter() {
+  const load = () => import('html2canvas').catch(() => {});
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(load, { timeout: 3000 });
+  } else {
+    setTimeout(load, 1500);
   }
 }
 
@@ -570,6 +649,9 @@ function setupRequiredFields(form) {
 }
 
 function renderAllPreviews(card) {
+  // Images made from the previous content are out of date now.
+  forgetExports();
+
   const sampleNoteEl = document.getElementById('camp-card-sample-note');
   const hasPrimaryLink = card && LINK_FIELDS.some((f) => resolveLink(f, card[f]));
   const isSample = !card?.name || !hasPrimaryLink;
