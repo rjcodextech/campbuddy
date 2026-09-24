@@ -48,7 +48,8 @@ return [
         'view' => 'Full or My schedule',
         'filter_type' => 'Schedule filter kind: day, track, type, topic',
         'filter_value' => 'Schedule filter value',
-        'session_id' => 'Session ID on the WordCamp site',
+        // Not "session_id": GA4 reserves that name for its own visit sessions.
+        'schedule_session_id' => 'Schedule session (talk) ID on the WordCamp site',
         'session_title' => 'Session title',
         'overlap' => 'Saved session overlaps another saved one',
         'link_type' => 'Kind of link: slides, video, wporg, linkedin…',

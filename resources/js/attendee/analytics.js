@@ -54,10 +54,10 @@ const EVENTS = {
   schedule_filter: ['filter_type', 'filter_value'], // day | track | type | topic
   schedule_filters_open: [],
   schedule_search: ['query_length', 'results_count'], // never the text
-  session_expand: ['session_id', 'session_title'],
-  session_save: ['session_id', 'session_title', 'overlap'],
-  session_unsave: ['session_id', 'session_title'],
-  session_link_click: ['session_id', 'link_type'], // slides | video
+  session_expand: ['schedule_session_id', 'session_title'],
+  session_save: ['schedule_session_id', 'session_title', 'overlap'],
+  session_unsave: ['schedule_session_id', 'session_title'],
+  session_link_click: ['schedule_session_id', 'link_type'], // slides | video
   reminder_offer: ['result'],
   reminder_cancel: [],
 

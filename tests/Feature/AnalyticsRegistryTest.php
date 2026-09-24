@@ -48,6 +48,31 @@ class AnalyticsRegistryTest extends TestCase
         $this->assertSame([], array_values(array_diff($registered, $sent)), 'params registered but never sent');
     }
 
+    public function test_no_event_or_parameter_uses_a_name_ga4_reserves(): void
+    {
+        // GA4 refuses these as custom dimensions ("session_id is a reserved
+        // parameter_name"), or treats them as its own — a param with one of
+        // these names is never reportable, and can corrupt GA's own data.
+        $reservedParams = [
+            'session_id', 'user_id', 'client_id', 'page_location', 'page_referrer', 'page_title',
+            'language', 'screen_resolution', 'engagement_time_msec', 'session_engaged', 'firebase_conversion',
+        ];
+        $reservedEvents = [
+            'ad_click', 'ad_exposure', 'ad_impression', 'ad_query', 'adunit_exposure', 'app_clear_data',
+            'app_install', 'app_remove', 'app_update', 'error', 'first_open', 'first_visit', 'in_app_purchase',
+            'notification_dismiss', 'notification_foreground', 'notification_open', 'notification_receive',
+            'os_update', 'screen_view', 'session_start', 'user_engagement',
+        ];
+        $reservedPrefixes = '/^(google_|ga_|firebase_)/';
+
+        $events = $this->allowlist();
+        $params = array_unique([...self::PAGE_LEVEL, ...array_merge(...array_values($events))]);
+
+        $this->assertSame([], array_values(array_intersect($params, $reservedParams)), 'reserved parameter names');
+        $this->assertSame([], array_values(array_intersect(array_keys($events), $reservedEvents)), 'reserved event names');
+        $this->assertSame([], array_values(preg_grep($reservedPrefixes, [...$params, ...array_keys($events)])), 'reserved prefixes');
+    }
+
     public function test_the_registry_fits_ga4_limits_and_key_events_exist(): void
     {
         $this->assertLessThanOrEqual(50, count(config('analytics.dimensions')));

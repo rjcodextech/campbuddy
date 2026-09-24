@@ -73,13 +73,13 @@ export async function renderMyDay(root) {
       await removeBookmark(eventId, session.id);
       cancelReminder(eventSlug, saved);
       starButton.classList.remove('schedule-item__star--saved');
-      track('session_unsave', { session_id: session.id, session_title: session.title });
+      track('session_unsave', { schedule_session_id: session.id, session_title: session.title });
     } else {
       const conflict = bookmarkedOverlap(session);
       await setBookmark(eventId, session.id, false);
       bookmarkedIds.add(session.id);
       starButton.classList.add('schedule-item__star--saved');
-      track('session_save', { session_id: session.id, session_title: session.title, overlap: Boolean(conflict) });
+      track('session_save', { schedule_session_id: session.id, session_title: session.title, overlap: Boolean(conflict) });
 
       if (conflict) {
         showToast(`Heads up — this overlaps with ${conflict.title ?? 'another saved session'}. Both are saved.`);
@@ -98,7 +98,7 @@ export async function renderMyDay(root) {
     expandedSessionId = expandedSessionId === sessionId ? null : sessionId;
 
     if (expandedSessionId !== null) {
-      track('session_expand', { session_id: sessionId, session_title: timed.find((s) => s.id === sessionId)?.title });
+      track('session_expand', { schedule_session_id: sessionId, session_title: timed.find((s) => s.id === sessionId)?.title });
     }
 
     renderFull();
@@ -373,7 +373,7 @@ function sessionDetail(session, speakersById, isSaved) {
 
 // Picked up by analytics.js's data-track handler.
 function linkTracking(session, linkType) {
-  return { 'data-track': 'session_link_click', 'data-track-session-id': session.id, 'data-track-link-type': linkType };
+  return { 'data-track': 'session_link_click', 'data-track-schedule-session-id': session.id, 'data-track-link-type': linkType };
 }
 
 function speakerBlock(sp) {
