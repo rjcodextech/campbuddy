@@ -27,7 +27,7 @@ class WordCampDiscoveryScraper
     private const TIMEOUT_SECONDS = 15;
 
     /**
-     * @return array<int, array{title: string, url: string, location: ?string, starts_on: string}>|null
+     * @return array<int, array{title: string, url: string, location: ?string, starts_on: string, ends_on: ?string}>|null
      *                                                                                                  null means the page's expected structure wasn't found at
      *                                                                                                  all — distinct from a page that parsed cleanly into zero
      *                                                                                                  upcoming events.
@@ -64,8 +64,19 @@ class WordCampDiscoveryScraper
                 'title' => $event['title'],
                 'url' => $event['url'],
                 'location' => $event['location'] ?? null,
-                'starts_on' => gmdate('Y-m-d', (int) $event['timestamp']),
+                'starts_on' => self::localDate($event['date'] ?? null) ?? gmdate('Y-m-d', (int) $event['timestamp']),
+                'ends_on' => self::localDate($event['end_date'] ?? null),
             ];
         }, $events)));
+    }
+
+    /**
+     * The event's own calendar date from its local date-time text
+     * ("2026-10-10 09:00:00"). Preferred over the UTC timestamp, whose UTC
+     * date is a day early for a morning event east of UTC (e.g. India).
+     */
+    private static function localDate(mixed $value): ?string
+    {
+        return is_string($value) && preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $m) ? $m[1] : null;
     }
 }

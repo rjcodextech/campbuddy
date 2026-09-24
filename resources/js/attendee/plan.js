@@ -7,6 +7,8 @@
 //   a person   — marked met, or marked "couldn't meet".
 // Everything else is still to do.
 
+import { eventDayKey } from './eventtime.js';
+
 const DEFAULT_SESSION_MS = 30 * 60 * 1000;
 
 /**
@@ -45,10 +47,9 @@ export function computePlan(bookmarks, meetings, sessionsById = new Map(), nowMs
   return { sessions, people, total: all.length, done, left: all.length - done };
 }
 
-/** Whether today (on this device) is one of the event's days. */
-export function isEventDay(facts, now = new Date()) {
+/** Whether today, at the venue, is one of the event's days. */
+export function isEventDay(facts, nowMs = Date.now()) {
   if (!facts.start) return false;
-  const pad = (n) => String(n).padStart(2, '0');
-  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const today = eventDayKey(nowMs);
   return today >= facts.start && today <= (facts.end ?? facts.start);
 }

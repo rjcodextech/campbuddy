@@ -7,11 +7,11 @@
 // people you haven't met".
 
 import { getBookmarks, getQuestProgress, kvGet, kvSet } from './db.js';
+import { daysBetween, eventDayKey, eventTimeNote, formatDayTime, formatTime } from './eventtime.js';
 import { momentMatches } from './moments.js';
 import { renderDiscoveryCard } from './people.js';
 import { render } from './template.js';
 
-const DAY_MS = 86400000;
 
 // Onboarding's "What are you into?" answers → words that suggest a session
 // is for them. Matched against title, categories and description.
@@ -55,6 +55,16 @@ export async function renderHome(root) {
   const ctx = { ...data, sessions, untimedCount, nowMs, bookmarkedIds, onboarding };
 
   renderStartHere(eventId, onboarding, startHereDismissed);
+
+  // Someone whose phone isn't on event time is told the times are the venue's.
+  const note = eventTimeNote();
+  if (note && !document.getElementById('event-time-note')) {
+    const p = document.createElement('p');
+    p.id = 'event-time-note';
+    p.className = 'notice';
+    p.textContent = `🕒 ${note}`;
+    document.querySelector('.home-hero')?.after(p);
+  }
   renderEventStatus(ctx);
   renderHappeningNow(ctx);
   renderUpNext(ctx);
@@ -103,49 +113,36 @@ function renderStartHere(eventId, onboarding, dismissed) {
 
 // --- Where the event is in time ----------------------------------------
 
-function localDate(isoDate) {
-  if (!isoDate) return null;
-  const [y, m, d] = isoDate.split('-').map(Number);
-  return new Date(y, m - 1, d).getTime();
-}
-
-function startOfToday(nowMs) {
-  const d = new Date(nowMs);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-}
-
+// Days are the event's own (its time zone), never the phone's: "Day 2" and
+// "starts tomorrow" must mean the same thing to everyone at the venue.
 function eventPhase({ sessions, nowMs, startsOn, endsOn }) {
   const first = sessions[0];
   const last = sessions.reduce((max, s) => Math.max(max, s.endMs), 0);
-  const startDay = localDate(startsOn) ?? (first ? startOfToday(first.startMs) : null);
-  const endDay = localDate(endsOn) ?? (last ? startOfToday(last) : startDay);
-  const today = startOfToday(nowMs);
+  const startDay = startsOn || (first ? eventDayKey(first.startMs) : null);
+  const endDay = endsOn || (last ? eventDayKey(last) : startDay);
+  const today = eventDayKey(nowMs);
 
-  if (startDay !== null && today < startDay) {
-    return { phase: 'before', daysAway: Math.round((startDay - today) / DAY_MS), first };
+  if (startDay && today < startDay) {
+    return { phase: 'before', daysAway: daysBetween(today, startDay), first };
   }
 
-  if (first && nowMs < first.startMs && today <= startOfToday(first.startMs)) {
+  if (first && nowMs < first.startMs && today <= eventDayKey(first.startMs)) {
     return { phase: 'before', daysAway: 0, first };
   }
 
-  if ((last && nowMs > last && !sessions.some((s) => s.startMs > nowMs)) || (endDay !== null && today > endDay)) {
+  if ((last && nowMs > last && !sessions.some((s) => s.startMs > nowMs)) || (endDay && today > endDay)) {
     return { phase: 'after' };
   }
 
-  if (startDay !== null && endDay !== null && endDay > startDay) {
+  if (startDay && endDay && endDay > startDay) {
     return {
       phase: 'during',
-      day: Math.round((today - startDay) / DAY_MS) + 1,
-      days: Math.round((endDay - startDay) / DAY_MS) + 1,
+      day: daysBetween(startDay, today) + 1,
+      days: daysBetween(startDay, endDay) + 1,
     };
   }
 
   return { phase: 'during', day: 1, days: 1 };
-}
-
-function formatTime(ms) {
-  return new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
 function countdownText(p) {
@@ -315,10 +312,8 @@ function whenText(startMs, nowMs) {
   const minutesAway = Math.round((startMs - nowMs) / 60000);
   if (minutesAway < 60) return `in ${Math.max(minutesAway, 1)} min`;
 
-  const sameDay = startOfToday(startMs) === startOfToday(nowMs);
-  return sameDay
-    ? `at ${formatTime(startMs)}`
-    : new Date(startMs).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+  const sameDay = eventDayKey(startMs) === eventDayKey(nowMs);
+  return sameDay ? `at ${formatTime(startMs)}` : formatDayTime(startMs);
 }
 
 // The guaranteed path, regardless of push support — a

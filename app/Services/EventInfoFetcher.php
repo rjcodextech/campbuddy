@@ -60,6 +60,12 @@ class EventInfoFetcher
     /** Human-readable summary of where the data came from, for the fetch log. */
     public string $sources = '';
 
+    /** From the central record, when it has them: the zone and the dates. */
+    public ?string $timezone = null;
+
+    /** @var array{starts_on: ?string, ends_on: ?string} */
+    public array $dates = ['starts_on' => null, 'ends_on' => null];
+
     /** True if at least one source answered — so a total outage isn't mistaken for "nothing to find". */
     public bool $reachable = false;
 
@@ -81,6 +87,11 @@ class EventInfoFetcher
     {
         $directory = $this->central ?? new WordCampCentralDirectory;
         $record = $directory->findRecord($this->siteUrl, $this->eventName);
+
+        if ($record) {
+            $this->timezone = $directory->timezone($record);
+            $this->dates = $directory->dates($record);
+        }
 
         $site = $this->pages ?? new WordCampSitePages($this->siteUrl);
         $index = $site->index();

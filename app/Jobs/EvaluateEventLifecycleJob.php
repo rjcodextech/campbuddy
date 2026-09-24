@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Event;
 use App\Models\FetchLog;
+use App\Support\EventTime;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Http;
@@ -44,9 +45,9 @@ class EvaluateEventLifecycleJob implements ShouldQueue
         Event::whereIn('status', ['active', 'approved'])
             ->get()
             ->each(function (Event $event) {
-                $endMarker = $event->ends_on ?? $event->starts_on;
-
-                if (! $endMarker || ! $endMarker->copy()->endOfDay()->isPast()) {
+                // Over once its last day has ended *at the venue* — an event in
+                // Los Angeles is still on at 01:00 UTC the next day.
+                if (! EventTime::isOver($event)) {
                     return;
                 }
 

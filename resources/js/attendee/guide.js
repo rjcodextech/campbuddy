@@ -5,6 +5,7 @@
 // timezone and locale — the server doesn't know either.
 
 import { momentMatches } from './moments.js';
+import { eventDayKey, formatInEventZone } from './eventtime.js';
 
 export function renderGuide() {
   const dataEl = document.getElementById('guide-data');
@@ -17,7 +18,7 @@ export function renderGuide() {
 
   if (sessions.length === 0) return;
 
-  const multiDay = new Set(sessions.map((s) => new Date(s.startMs).toDateString())).size > 1;
+  const multiDay = new Set(sessions.map((s) => eventDayKey(s.startMs))).size > 1;
 
   document.querySelectorAll('[data-guide-match]').forEach((step) => {
     const moment = { match: step.dataset.guideMatch.split('|').filter(Boolean), talk: step.dataset.guideTalk === '1' };
@@ -27,7 +28,7 @@ export function renderGuide() {
     const whenEl = step.querySelector('[data-guide-when]');
     if (!found || !whenEl) return;
 
-    const time = new Date(found.startMs).toLocaleString([], {
+    const time = formatInEventZone(found.startMs, {
       ...(multiDay ? { weekday: 'short' } : {}),
       hour: 'numeric',
       minute: '2-digit',

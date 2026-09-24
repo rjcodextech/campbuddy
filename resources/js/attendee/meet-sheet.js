@@ -8,6 +8,7 @@
 import { track } from './analytics.js';
 import { buildIcs, defaultMeetingDay, deliverIcs, eventFacts, googleCalendarUrl } from './calendar.js';
 import { removeMeeting, saveMeeting } from './db.js';
+import { eventDayKey, fromEventInput, toEventInput } from './eventtime.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
 
@@ -20,7 +21,8 @@ import { showToast } from './toast.js';
  */
 export function openMeetSheet({ eventId, person, existing = null, onChange = () => {} }) {
   const facts = eventFacts();
-  const atValue = existing?.at ? toLocalInput(new Date(existing.at)) : '';
+  // The time box shows and takes the venue's clock time (eventtime.js).
+  const atValue = existing?.at ? toEventInput(new Date(existing.at).getTime()) : '';
 
   const dialog = render('tpl-meet-sheet', {
     avatar: { attrs: { src: person.avatarUrl || '/media/illustrations/avatar.svg' } },
@@ -75,7 +77,7 @@ export function openMeetSheet({ eventId, person, existing = null, onChange = () 
 
   const current = () => {
     const timed = dialog.querySelector('input[name="meet-when"]:checked')?.value === 'time' && atEl.value;
-    const atMs = timed ? new Date(atEl.value).getTime() : NaN;
+    const atMs = timed ? fromEventInput(atEl.value) : NaN;
 
     return {
       name: person.name || null,
@@ -153,16 +155,10 @@ export function meetingCalendarItem(meeting, facts = eventFacts()) {
 
 // The next quarter hour today during the event, otherwise 11:00 on day one.
 function suggestedTime(facts) {
-  const now = new Date();
-  const today = toLocalInput(now).slice(0, 10);
+  const nowMs = Date.now();
+  const today = eventDayKey(nowMs);
   if (facts.start && (today < facts.start || today > (facts.end ?? facts.start))) {
     return `${facts.start}T11:00`;
   }
-  const next = new Date(Math.ceil(now.getTime() / (15 * 60 * 1000)) * 15 * 60 * 1000);
-  return toLocalInput(next);
-}
-
-function toLocalInput(d) {
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return toEventInput(Math.ceil(nowMs / (15 * 60 * 1000)) * 15 * 60 * 1000);
 }

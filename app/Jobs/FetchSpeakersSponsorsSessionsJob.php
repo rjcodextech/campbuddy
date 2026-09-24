@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Services\WordCampNormalizer;
+use App\Services\SchedulePageProbe;
 use App\Services\WordCampRestClient;
 use App\Support\DataVersion;
 use App\Support\EventData;
@@ -60,10 +61,29 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
         $categoryNames = $this->labels($client, 'session_category', 'session categories', $problems);
 
         $notes = [];
-        $zone = $this->resolveTimezone($client, $notes);
 
         try {
-            $sessions = $normalizer->normalizeSessions($client->fetchSessions(), $trackNames, $categoryNames, $zone);
+            $rawSessions = $client->fetchSessions();
+        } catch (Throwable $e) {
+            Log::warning('FetchSpeakersSponsorsSessionsJob failed', [
+                'event_id' => $this->event->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->log('error', substr('Sessions: '.$this->describe($e), 0, 500));
+
+            throw $e;
+        }
+
+        // What the site's own schedule page shows ("6:30 AM IST"): a fallback
+        // for the time zone, and a check on every session time below.
+        $page = $this->schedulePage();
+        $zone = $this->resolveTimezone($client, $notes, $page['zone_token'] ?? null);
+        $shown = $page ? SchedulePageProbe::timesFor($page, array_map(fn ($s) => (string) ($s['title']['rendered'] ?? ''), $rawSessions)) : [];
+
+        try {
+            $sessions = $normalizer->normalizeSessions($rawSessions, $trackNames, $categoryNames, $zone, $shown);
+            $this->verifyAgainstSchedulePage($sessions, $shown, $zone, $page['zone_token'] ?? null, $problems, $notes);
         } catch (Throwable $e) {
             Log::warning('FetchSpeakersSponsorsSessionsJob failed', [
                 'event_id' => $this->event->id,
@@ -115,7 +135,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
      *
      * @param  array<int, string>  $notes
      */
-    private function resolveTimezone(WordCampRestClient $client, array &$notes): \DateTimeZone
+    private function resolveTimezone(WordCampRestClient $client, array &$notes, ?string $pageZoneToken = null): \DateTimeZone
     {
         if (! $this->event->timezone_locked) {
             try {
@@ -130,11 +150,91 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             }
         }
 
+        // Last resort: the abbreviation the schedule page prints (IST, CEST…).
+        if (! $this->event->timezone_locked && ! EventTime::known($this->event) && ($fromPage = EventTime::fromAbbreviation($pageZoneToken))) {
+            $this->event->forceFill(['timezone' => $fromPage])->saveQuietly();
+            DataVersion::forget($this->event->id);
+            $notes[] = "time zone taken from the schedule page ({$pageZoneToken} → {$fromPage})";
+        }
+
         if (! EventTime::known($this->event)) {
             $notes[] = 'time zone unknown — set it on the event page so session times are right';
         }
 
         return EventTime::zone($this->event);
+    }
+
+    /**
+     * The site's schedule page, parsed (SchedulePageProbe) — read at most every
+     * six hours, since it changes far less often than this job runs.
+     *
+     * @return array{zone_token: ?string, tokens: array, text: string}|null
+     */
+    private function schedulePage(): ?array
+    {
+        try {
+            $page = Cache::remember("event:{$this->event->id}:schedule-page", now()->addHours(6), function () {
+                return (new SchedulePageProbe($this->event->source_site_url))->read() ?? false;
+            });
+        } catch (Throwable) {
+            return null;
+        }
+
+        return is_array($page) ? $page : null;
+    }
+
+    /**
+     * Every session time, checked against what the site's schedule page shows
+     * for the same title. A match is noted; a few differences are noted with
+     * an example; mostly different is a problem an admin must look at.
+     *
+     * @param  array<int, array<string, mixed>>  $sessions  normalized
+     * @param  array<string, array<int, int>>  $shown  normalized title => minutes on the page
+     * @param  array<int, string>  $problems
+     * @param  array<int, string>  $notes
+     */
+    private function verifyAgainstSchedulePage(array $sessions, array $shown, \DateTimeZone $zone, ?string $zoneToken, array &$problems, array &$notes): void
+    {
+        if ($shown === []) {
+            return;
+        }
+
+        $checked = 0;
+        $different = [];
+
+        foreach ($sessions as $session) {
+            $minutes = $shown[SchedulePageProbe::normalizeTitle((string) ($session['title'] ?? ''))] ?? null;
+            if (! $minutes || empty($session['starts_at'])) {
+                continue;
+            }
+
+            $local = (new \DateTimeImmutable($session['starts_at']))->setTimezone($zone);
+            $ours = (int) $local->format('G') * 60 + (int) $local->format('i');
+            $checked++;
+
+            if (! in_array($ours, $minutes, true)) {
+                $different[] = sprintf('“%s”: %s on the page, %s here', mb_strimwidth((string) $session['title'], 0, 40, '…'), self::clock($minutes[0]), $local->format('G:i'));
+            }
+        }
+
+        if ($checked === 0) {
+            return;
+        }
+
+        $label = $zoneToken ? " ({$zoneToken})" : '';
+
+        if ($different === []) {
+            $notes[] = "times match the schedule page{$label} for all {$checked} sessions checked";
+        } elseif (count($different) * 2 >= $checked) {
+            $problems[] = sprintf('session times differ from the schedule page%s for %d of %d — check the time zone. e.g. %s', $label, count($different), $checked, $different[0]);
+        } else {
+            $notes[] = sprintf('%d of %d session times match the schedule page%s; different: %s', $checked - count($different), $checked, $label, implode('; ', array_slice($different, 0, 2)));
+        }
+    }
+
+    private static function clock(int $minutes): string
+    {
+        return sprintf('%d:%02d', intdiv($minutes, 60), $minutes % 60);
     }
 
     /**

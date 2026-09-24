@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\EventTime;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
@@ -51,6 +52,66 @@ class WordCampCentralDirectory
         }
 
         return null;
+    }
+
+    /**
+     * The event's time zone from its central record (a field whose name
+     * mentions "timezone", e.g. "Event Timezone"), if it holds a usable zone.
+     *
+     * @param  array<string, mixed>  $record
+     */
+    public function timezone(array $record): ?string
+    {
+        foreach ($record as $key => $value) {
+            if (is_string($key) && preg_match('/time\s*_?zone/i', $key) && is_string($value)) {
+                if ($zone = EventTime::normalize($value)) {
+                    return $zone;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The event's dates from its central record ("Start Date (YYYY-mm-dd)" /
+     * "End Date (YYYY-mm-dd)"), which WordCamp stores as the date at midnight
+     * UTC — so the UTC date is the event's own calendar date.
+     *
+     * @param  array<string, mixed>  $record
+     * @return array{starts_on: ?string, ends_on: ?string}
+     */
+    public function dates(array $record): array
+    {
+        $date = function (mixed $value): ?string {
+            if (is_numeric($value) && (int) $value > 0) {
+                return gmdate('Y-m-d', (int) $value);
+            }
+            if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}/', $value, $m)) {
+                return $m[0];
+            }
+
+            return null;
+        };
+
+        $start = $end = null;
+        foreach ($record as $key => $value) {
+            if (! is_string($key)) {
+                continue;
+            }
+            if ($start === null && preg_match('/^start\s*date/i', $key)) {
+                $start = $date($value);
+            }
+            if ($end === null && preg_match('/^end\s*date/i', $key)) {
+                $end = $date($value);
+            }
+        }
+
+        if ($start !== null && $end !== null && $end < $start) {
+            $end = null;
+        }
+
+        return ['starts_on' => $start, 'ends_on' => $end];
     }
 
     /**

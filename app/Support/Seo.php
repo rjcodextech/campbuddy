@@ -285,7 +285,7 @@ class Seo
 
         foreach (self::publicEvents() as $event) {
             $lastmod = $event->updated_at?->toAtomString();
-            $upcoming = ! $event->starts_on || ($event->ends_on ?? $event->starts_on)->gte(today());
+            $upcoming = ! EventTime::isOver($event);
 
             foreach (self::EVENT_PAGES as $route => $freq) {
                 $urls[] = [

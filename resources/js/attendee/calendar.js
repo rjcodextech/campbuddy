@@ -12,6 +12,8 @@
 // The note someone writes about a person stays theirs: it only ever goes into
 // the file on their own device (and, on iOS, through that echo endpoint).
 
+import { eventDayKey } from './eventtime.js';
+
 const PRODID = '-//CampBuddy//Day planner//EN';
 
 /** Event facts the layout puts on #app. */
@@ -34,7 +36,7 @@ export function eventFacts() {
  * on, otherwise its first day (or today if the event has no dates).
  */
 export function defaultMeetingDay(facts = eventFacts()) {
-  const today = localDate(new Date());
+  const today = eventDayKey(Date.now());
   if (!facts.start) return today;
   if (today >= facts.start && today <= (facts.end ?? facts.start)) return today;
   return facts.start;

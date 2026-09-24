@@ -24,9 +24,9 @@ class WordCampNormalizer
      * @param  array<int, string>  $categoryNames
      * @return array<int, array<string, mixed>>
      */
-    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = [], ?\DateTimeZone $zone = null): array
+    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = [], ?\DateTimeZone $zone = null, array $shownOnSchedule = []): array
     {
-        $clock = $zone ? self::sessionClock($sessions, $zone) : null;
+        $clock = $zone ? self::sessionClock($sessions, $zone, $shownOnSchedule) : null;
 
         return array_map(function (array $session) use ($trackNames, $categoryNames, $zone, $clock) {
             $meta = is_array($session['meta'] ?? null) ? $session['meta'] : [];
@@ -219,23 +219,21 @@ class WordCampNormalizer
      * normal behaviour) or as a true UTC moment shown in the event's zone
      * ('instant')? 'wall' unless the site clearly says otherwise.
      *
+     * When the REST field is missing, the times printed on the site's own
+     * schedule page (SchedulePageProbe, $shownOnSchedule: title => minutes)
+     * cast the votes instead.
+     *
      * @param  array<int, array<string, mixed>>  $sessions  raw REST items
+     * @param  array<string, array<int, int>>  $shownOnSchedule
      */
-    public static function sessionClock(array $sessions, \DateTimeZone $zone): string
+    public static function sessionClock(array $sessions, \DateTimeZone $zone, array $shownOnSchedule = []): string
     {
-        $wall = 0;
-        $instant = 0;
+        $votes = ['rest' => ['wall' => 0, 'instant' => 0], 'page' => ['wall' => 0, 'instant' => 0]];
 
-        foreach (array_slice($sessions, 0, 40) as $session) {
+        foreach (array_slice($sessions, 0, 60) as $session) {
             $timestamp = $session['meta']['_wcpt_session_time'] ?? null;
-            $shown = $session['session_date_time']['time'] ?? null;
 
-            if (! is_numeric($timestamp) || (int) $timestamp <= 0 || ! is_string($shown)) {
-                continue;
-            }
-
-            $minutes = self::minutesOfDay($shown);
-            if ($minutes === null) {
+            if (! is_numeric($timestamp) || (int) $timestamp <= 0) {
                 continue;
             }
 
@@ -247,11 +245,28 @@ class WordCampNormalizer
                 continue; // a UTC event: both readings agree
             }
 
-            $wall += (int) ($minutes === $asWall);
-            $instant += (int) ($minutes === $asInstant);
+            $shown = $session['session_date_time']['time'] ?? null;
+            $minutes = is_string($shown) ? self::minutesOfDay($shown) : null;
+            if ($minutes !== null) {
+                $votes['rest']['wall'] += (int) ($minutes === $asWall);
+                $votes['rest']['instant'] += (int) ($minutes === $asInstant);
+            }
+
+            $title = SchedulePageProbe::normalizeTitle((string) ($session['title']['rendered'] ?? ''));
+            foreach ($shownOnSchedule[$title] ?? [] as $pageMinutes) {
+                $votes['page']['wall'] += (int) ($pageMinutes === $asWall);
+                $votes['page']['instant'] += (int) ($pageMinutes === $asInstant);
+            }
         }
 
-        return $instant > $wall ? 'instant' : 'wall';
+        // The REST field decides when it spoke; otherwise the schedule page.
+        foreach (['rest', 'page'] as $source) {
+            if ($votes[$source]['wall'] + $votes[$source]['instant'] > 0) {
+                return $votes[$source]['instant'] > $votes[$source]['wall'] ? 'instant' : 'wall';
+            }
+        }
+
+        return 'wall';
     }
 
     /** "10:00 am", "10:00 AM", "10.00", "22:00", "10h00" → minutes after midnight. */

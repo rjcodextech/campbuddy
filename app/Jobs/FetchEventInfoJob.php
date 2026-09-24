@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Event;
 use App\Models\FetchLog;
+use App\Support\EventTime;
 use App\Support\SafeSync;
 use App\Services\EventInfoFetcher;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -103,6 +104,24 @@ class FetchEventInfoJob implements ShouldQueue
             'info_fetched_at' => now(),
         ]);
 
+        // Facts the central record has and the event lacks: its time zone
+        // (unless an admin set one) and missing dates. Never overwrites.
+        $filled = [];
+        if (! $this->event->timezone_locked && ! EventTime::known($this->event) && $fetcher->timezone) {
+            $filled['timezone'] = $fetcher->timezone;
+        }
+        foreach (['starts_on', 'ends_on'] as $date) {
+            if ($this->event->{$date} === null && ($fetcher->dates[$date] ?? null)) {
+                $filled[$date] = $fetcher->dates[$date];
+            }
+        }
+        if (isset($filled['ends_on']) && ($filled['starts_on'] ?? $this->event->starts_on?->toDateString()) > $filled['ends_on']) {
+            unset($filled['ends_on']);
+        }
+        if ($filled !== []) {
+            $this->event->update($filled);
+        }
+
         $found = count(array_filter($fetched, fn ($v) => $v !== null));
 
         $this->log('ok', sprintf(
@@ -110,7 +129,8 @@ class FetchEventInfoJob implements ShouldQueue
             $found,
             count(EventInfoFetcher::FIELDS),
             ($kept === [] ? '' : '; kept your edits to: '.implode(', ', $kept))
-                .($held === [] ? '' : '; not found this time, kept until the next run: '.implode(', ', $held)),
+                .($held === [] ? '' : '; not found this time, kept until the next run: '.implode(', ', $held))
+                .($filled === [] ? '' : '; also set from central.wordcamp.org: '.implode(', ', array_keys($filled))),
             $fetcher->sources
         ));
     }

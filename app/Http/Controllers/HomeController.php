@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Support\EventTime;
 use Illuminate\View\View;
 
 /**
@@ -27,15 +28,20 @@ class HomeController extends Controller
 
         $events = Event::where('status', 'active')
             ->where('is_visible', true)
-            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->toDateString()]))
+            // A day of slack in SQL (the earliest time zone is a day behind UTC)…
+            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->subDay()->toDateString()]))
             // Soonest first; events with no start date go after the dated ones
             // (MySQL sorts NULLs first in ascending order), then by id so the
             // order never shuffles between page loads.
             ->orderByRaw('starts_on IS NULL')
             ->orderBy('starts_on')
             ->orderBy('id')
+            ->take(self::LIMIT * 3)
+            ->get()
+            // …then exact: shown until its last day has ended at the venue.
+            ->reject(fn (Event $event) => EventTime::isOver($event))
             ->take(self::LIMIT)
-            ->get();
+            ->values();
 
         return view('welcome', ['events' => $events]);
     }

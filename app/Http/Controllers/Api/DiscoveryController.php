@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateDiscoveryRequest;
 use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
+use App\Support\EventTime;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,8 @@ class DiscoveryController extends Controller
                 'event_id' => $event->id,
                 'attendee_roster_id' => $entry?->id,
                 'fields' => $this->fields($request, $entry),
-                'expires_at' => $event->ends_on?->endOfDay(),
+                // The end of the event's last day at the venue, not on the server's clock.
+                'expires_at' => EventTime::endOfLastDay($event),
             ]);
         } catch (UniqueConstraintViolationException) {
             // Two people picked the same name at the same moment.

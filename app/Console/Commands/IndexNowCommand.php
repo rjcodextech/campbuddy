@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\EventTime;
 use App\Support\Seo;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -95,7 +96,7 @@ class IndexNowCommand extends Command
         foreach (Seo::publicEvents() as $event) {
             $fetchedAt = Cache::get("event:{$event->id}:fetched-at");
             $fetched = $fetchedAt ? strtotime((string) $fetchedAt) : 0;
-            $upcoming = ! $event->starts_on || ($event->ends_on ?? $event->starts_on)->gte(today()->subDay());
+            $upcoming = ! EventTime::isOver($event, now()->subDay());
 
             // Details edited, or (for an event still to come) its schedule refreshed.
             if ($event->updated_at?->getTimestamp() > $since || ($upcoming && $fetched > $since)) {

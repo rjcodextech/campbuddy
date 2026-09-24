@@ -53,6 +53,7 @@ class DiscoverWordCampsJob implements ShouldQueue
                 'display_name' => $wordcamp['title'],
                 'source_site_url' => $url,
                 'starts_on' => $wordcamp['starts_on'],
+                'ends_on' => $wordcamp['ends_on'] ?? null,
                 'status' => 'draft',
                 'is_visible' => true,
                 'info' => $info,

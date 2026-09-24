@@ -17,11 +17,12 @@
     // For analytics (page_context): which screen, and where the event is in
     // time — so reports can split "used during the event" from "before it".
     $pageType = str_replace(['event.', '-', '.show'], ['', '_', ''], (string) request()->route()?->getName()) ?: 'event_page';
-    $today = today();
+    // Today at the venue, not on the server's clock.
+    $today = \App\Support\EventTime::today($event);
     $eventPhase = match (true) {
         $event->starts_on === null => 'unknown',
-        $today->lt($event->starts_on) => 'before',
-        $today->gt($event->ends_on ?? $event->starts_on) => 'after',
+        $today < $event->starts_on->toDateString() => 'before',
+        $today > ($event->ends_on ?? $event->starts_on)->toDateString() => 'after',
         default => 'during',
     };
 @endphp
@@ -69,6 +70,7 @@
              data-event-start="{{ $event->starts_on?->toDateString() }}"
              data-event-end="{{ ($event->ends_on ?? $event->starts_on)?->toDateString() }}"
              data-event-venue="{{ $event->info['venue'] ?? '' }}"
+             data-event-timezone="{{ \App\Support\EventTime::known($event) ? \App\Support\EventTime::normalize($event->timezone) : '' }}"
              data-my-day-url="{{ route('event.my-day', $event) }}">
             {{ $slot }}
         </div>

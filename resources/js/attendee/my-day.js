@@ -11,6 +11,7 @@
 
 import { track } from './analytics.js';
 import { buildIcs, deliverIcs, eventFacts } from './calendar.js';
+import { eventDayKey, eventTimeNote, formatDayKey, formatDayTime, formatTime } from './eventtime.js';
 import { getBookmarks, getMeetings, removeBookmark, saveMeeting, setBookmark, updateBookmark } from './db.js';
 import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
 import { computePlan } from './plan.js';
@@ -55,6 +56,16 @@ export async function renderMyDay(root) {
     if (s && Number.isFinite(s.startMs) && (b.startMs !== s.startMs || b.title !== s.title)) {
       updateBookmark(eventId, b.sessionId, sessionMeta(s)).catch(() => {});
     }
+  }
+
+  // Someone whose phone isn't on event time is told the times are the venue's.
+  const note = eventTimeNote();
+  if (note && !document.getElementById('event-time-note')) {
+    const p = document.createElement('p');
+    p.id = 'event-time-note';
+    p.className = 'notice';
+    p.textContent = `🕒 ${note}`;
+    document.querySelector('#main-content .section-head')?.after(p);
   }
 
   setupTabs();
@@ -403,7 +414,7 @@ function writePref(key, value) {
 
 function personCard(m) {
   const when = m.at
-    ? new Date(m.at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+    ? formatDayTime(new Date(m.at).getTime())
     : 'Any time';
   const state = { met: '✓ Met', missed: 'Couldn\'t meet' }[m.status] ?? null;
 
@@ -457,13 +468,13 @@ function setPressed(chip, on) {
 // The day key of sessions with no time yet.
 const TBA = 'tba';
 
+// Days and times are the event's own (eventtime.js), not the phone's.
 function dayKeyOf(ms) {
-  const d = new Date(ms);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  return eventDayKey(ms);
 }
 
 function dayLabelOf(ms) {
-  return new Date(ms).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+  return formatDayKey(eventDayKey(ms));
 }
 
 function setupTabs() {
@@ -501,7 +512,7 @@ function setupDayFilters(sessions) {
   const dayChips = days.map((day) => {
     const label = day === TBA
       ? 'Time TBA'
-      : new Date(firstStart(day)).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+      : formatDayKey(day, { weekday: 'short', day: 'numeric', month: 'short' });
     return render('tpl-my-day-filter-chip', { chip: { text: label, attrs: { 'data-day': day } } });
   });
 
@@ -528,7 +539,7 @@ function setupChipFilter(elId, sessions, valuesOf, labelOf = (name) => name) {
 function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId, statusById = null) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
   const time = Number.isFinite(session.startMs)
-    ? new Date(session.startMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    ? formatTime(session.startMs)
     : 'TBA';
   const metaLine = [session.track_names?.[0], typeLabel(session.session_type)].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);
@@ -576,7 +587,7 @@ function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expan
 function sessionDetail(session, speakersById, isSaved) {
   const speakerList = (session.speaker_ids ?? []).map((id) => speakersById.get(id)).filter(Boolean);
   const time = session.starts_at
-    ? new Date(session.starts_at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' })
+    ? formatDayTime(new Date(session.starts_at).getTime())
     : 'Time TBA';
 
   const topics = (session.category_names ?? []).join(' · ');
