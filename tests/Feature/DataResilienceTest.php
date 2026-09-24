@@ -93,7 +93,7 @@ class DataResilienceTest extends TestCase
 
         $this->assertCount(2, Cache::get("event:{$event->id}:sessions"));
         $this->assertSame('ok', $this->lastLog()->status);
-        $this->assertSame('2 sessions, 1 speakers, 1 sponsors, 0 organizers', $this->lastLog()->message);
+        $this->assertSame('2 sessions, 1 speakers, 1 sponsors, 0 organizers (sessions: +2 new; speakers: +1 new; sponsors: +1 new)', $this->lastLog()->message);
     }
 
     public function test_every_request_identifies_itself(): void

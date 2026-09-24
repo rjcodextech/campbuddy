@@ -31,6 +31,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
+    {{-- What this page's data looked like when it was built — data-freshness.js
+    compares it with the server's and refreshes the app when it changes. --}}
+    <meta name="campbuddy-data-version" content="{{ \App\Support\DataVersion::for($event) }}">
 
     <title>{{ $documentTitle }}</title>
     @include('attendee.partials.seo', [

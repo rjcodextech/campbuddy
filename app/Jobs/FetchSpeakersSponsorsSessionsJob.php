@@ -70,7 +70,8 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             throw $e;
         }
 
-        $counts['sessions'] = $this->store('sessions', $sessions, $problems);
+        $changes = [];
+        $counts['sessions'] = $this->store('sessions', $sessions, $problems, $changes);
 
         $lists = [
             'speakers' => fn () => $normalizer->normalizeSpeakers($client->fetchSpeakers()),
@@ -80,7 +81,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
 
         foreach ($lists as $key => $fetch) {
             $items = $this->optional($fetch, $key, $problems);
-            $counts[$key] = $items === null ? $this->cachedCount($key) : $this->store($key, $items, $problems);
+            $counts[$key] = $items === null ? $this->cachedCount($key) : $this->store($key, $items, $problems, $changes);
         }
 
         $summary = sprintf(
@@ -89,7 +90,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             $counts['speakers'],
             $counts['sponsors'],
             $counts['organizers']
-        );
+        ).($changes === [] ? ' (no changes)' : ' ('.implode('; ', $changes).')');
 
         // When the data was last refreshed — pages use it to notice the
         // scheduler has stopped and refresh on their own (EventPageController).
@@ -141,32 +142,36 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
     }
 
     /**
-     * Caches a freshly fetched list — unless it's empty where the last good
-     * copy wasn't. A live schedule dropping to nothing between two runs 15
-     * minutes apart is far more likely a site mid-edit or a plugin hiccup
-     * than every session being cancelled, and attendees would lose the
-     * schedule mid-event. An admin's "Refresh now" still shows the note.
-     *
-     * Long TTL: this is "last known good" data served under a
-     * stale-while-revalidate posture — reads never block on the upstream
-     * site. Two weeks, not two days: a missed weekend of runs (host outage,
-     * a stopped cron) must not wipe a live schedule.
+     * Merges a freshly fetched list into the stored one (EventData::sync):
+     * adds what's new, updates what changed, removes what the site no longer
+     * lists — never clearing first. An empty answer or a sudden big drop is
+     * held back (SafeSync) and noted here, so a site mid-edit can't blank a
+     * live event.
      *
      * @param  array<int, mixed>  $items
      * @param  array<int, string>  $problems
+     * @param  array<int, string>  $changes
      */
-    private function store(string $key, array $items, array &$problems): int
+    private function store(string $key, array $items, array &$problems, array &$changes = []): int
     {
+        $result = EventData::sync($this->event->id, $key, $items);
 
-        if ($items === [] && $this->cachedCount($key) > 0) {
-            $problems[] = "{$key}: the site returned none, kept the previous ".$this->cachedCount($key);
-
-            return $this->cachedCount($key);
+        $delta = array_filter([
+            $result['added'] ? "+{$result['added']} new" : null,
+            $result['updated'] ? "{$result['updated']} updated" : null,
+            $result['removed'] ? "{$result['removed']} removed" : null,
+        ]);
+        if ($delta !== []) {
+            $changes[] = "{$key}: ".implode(', ', $delta);
         }
 
-        EventData::put($this->event->id, $key, $items);
+        if ($result['held'] > 0) {
+            $problems[] = $items === []
+                ? "{$key}: the site returned none, kept the previous {$result['held']}"
+                : "{$key}: {$result['held']} no longer listed — kept until the next refresh confirms it";
+        }
 
-        return count($items);
+        return $result['total'];
     }
 
     private function cachedCount(string $key): int

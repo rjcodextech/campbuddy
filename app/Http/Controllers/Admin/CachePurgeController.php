@@ -11,11 +11,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * "Purge cache & refresh data" — one button that makes the website and every
- * installed PWA show fresh data. All the work is in CachePurger.
+ * "Clear cache" — one button that makes the website and every installed PWA
+ * drop saved copies. It fetches no event data (that's "Refresh event data",
+ * DataRefreshController). All the work is in CachePurger.
  *
- * It fetches from the WordCamp sites (and Cloudflare's API) on every press, so
- * it must not be hammered — but not with the `throttle` middleware: that keeps
+ * It calls Cloudflare's API and makes every open app reload, so it must not
+ * be hammered — but not with the `throttle` middleware: that keeps
  * its counters in the application cache, which is exactly what a purge empties,
  * so each purge would reset its own throttle. The cooldown below reads the
  * timestamp of the last purge from CacheVersion's file, which survives it.
@@ -30,7 +31,7 @@ class CachePurgeController extends Controller
 
         if ($last && Carbon::parse($last['purged_at'])->gt(now()->subSeconds(self::COOLDOWN_SECONDS))) {
             return redirect()->route('dashboard')->withErrors([
-                'purge' => 'The cache was purged a few seconds ago — give it a moment before purging again.',
+                'purge' => 'The cache was cleared a few seconds ago — give it a moment before clearing again.',
             ]);
         }
 
@@ -39,7 +40,7 @@ class CachePurgeController extends Controller
 
         if (! $lock->get()) {
             return redirect()->route('dashboard')->withErrors([
-                'purge' => 'A purge is already running — it will finish in a moment.',
+                'purge' => 'The cache is already being cleared — it will finish in a moment.',
             ]);
         }
 

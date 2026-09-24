@@ -6,7 +6,7 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\User;
-use App\Services\CachePurger;
+use App\Services\DataRefresher;
 use App\Support\CacheVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -19,10 +19,11 @@ use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
- * The admin "Purge cache & refresh data" button: it clears server caches,
- * re-fetches live events' data, optionally purges Cloudflare, and bumps the
- * version that tells installed apps to drop their saved copies — without ever
- * blanking a live event.
+ * The admin's two separate buttons. "Clear cache" clears server caches,
+ * optionally purges Cloudflare, and bumps the version that tells installed
+ * apps to drop saved copies — fetching nothing. "Refresh event data" fetches
+ * every live event's data now — clearing nothing, and never blanking a live
+ * event.
  */
 class CachePurgeTest extends TestCase
 {
@@ -84,29 +85,40 @@ class CachePurgeTest extends TestCase
         return $this->actingAs($admin)->post(route('admin.cache.purge'));
     }
 
+    private function refresh(): TestResponse
+    {
+        $admin = User::firstWhere('email', 'admin@campbuddy.test') ?? User::factory()->create(['email' => 'admin@campbuddy.test']);
+
+        return $this->actingAs($admin)->post(route('admin.data.refresh'));
+    }
+
     // ---- Access -------------------------------------------------------------
 
-    public function test_guests_cannot_purge(): void
+    public function test_guests_cannot_purge_or_refresh(): void
     {
         $this->post(route('admin.cache.purge'))->assertRedirect(route('login'));
+        $this->post(route('admin.data.refresh'))->assertRedirect(route('login'));
 
         $this->assertSame('0', CacheVersion::current());
     }
 
-    public function test_the_dashboard_offers_the_button_and_says_when_it_was_last_used(): void
+    public function test_the_dashboard_offers_both_buttons_and_says_when_they_were_last_used(): void
     {
         $this->actingAs(User::factory()->create())
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('Purge cache &amp; refresh data', false)
+            ->assertSee('Clear cache')
             ->assertSee(route('admin.cache.purge'), false)
-            ->assertSee('Not purged yet.');
+            ->assertSee('Refresh event data now')
+            ->assertSee(route('admin.data.refresh'), false)
+            ->assertSee('Not cleared yet.')
+            ->assertSee('Not fetched yet.');
 
         CacheVersion::bump('someone@example.com', 'Server caches cleared.');
 
         $this->actingAs(User::factory()->create())
             ->get(route('dashboard'))
-            ->assertSee('Last purged')
+            ->assertSee('Last cleared')
             ->assertSee('by someone@example.com')
             ->assertSee('Server caches cleared.');
     }
@@ -144,17 +156,50 @@ class CachePurgeTest extends TestCase
         $this->assertGreaterThan($first, (int) CacheVersion::current());
     }
 
-    public function test_a_purge_re_fetches_live_events_and_replaces_their_cached_data(): void
+    public function test_clearing_the_cache_fetches_nothing(): void
+    {
+        $this->event();
+        Http::fake(['*' => Http::response('', 404)]);
+
+        $this->purge()->assertSessionHas('status', fn ($s) => str_contains($s, 'Server caches cleared'));
+
+        Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'wordcamp.org'));
+    }
+
+    public function test_refreshing_data_clears_no_cache_and_leaves_the_version_alone(): void
+    {
+        $this->event();
+        $this->fakeWordCampSite();
+        Cache::put('some:other:thing', 'kept', 3600);
+
+        $this->refresh()->assertSessionHas('status', fn ($s) => str_contains($s, 'Fresh data fetched for 1 event'));
+
+        $this->assertSame('kept', Cache::get('some:other:thing'));
+        $this->assertSame('0', CacheVersion::current());
+    }
+
+    public function test_a_refresh_merges_fresh_data_into_what_is_stored(): void
     {
         $event = $this->event();
-        Cache::put("event:{$event->id}:sessions", [['id' => 1, 'title' => 'Stale session']], 3600);
+        Cache::put("event:{$event->id}:sessions", [['id' => 1, 'title' => 'Dropped session'], ['id' => 7, 'title' => 'Old title']], 3600);
         $this->fakeWordCampSite();
 
-        $this->purge()->assertSessionHas('status', fn ($s) => str_contains($s, 'fresh data fetched for 1 event'));
+        $this->refresh()->assertSessionHas('status', fn ($s) => str_contains($s, 'Fresh data fetched for 1 event'));
 
         $sessions = Cache::get("event:{$event->id}:sessions");
         $this->assertCount(1, $sessions);
         $this->assertSame('Fresh keynote', $sessions[0]['title']);
+    }
+
+    public function test_a_second_refresh_straight_after_the_first_is_refused(): void
+    {
+        $this->fakeWordCampSite();
+
+        $this->refresh()->assertSessionHas('status');
+        $this->refresh()->assertSessionHasErrors('refresh');
+
+        $this->travel(31)->seconds();
+        $this->refresh()->assertSessionHas('status');
     }
 
     public function test_a_live_event_is_never_blanked_when_its_site_is_down(): void
@@ -164,9 +209,10 @@ class CachePurgeTest extends TestCase
         Cache::put("event:{$event->id}:sponsors", [['id' => 2, 'name' => 'Last good sponsor']], 3600);
         Http::fake(['*' => fn () => throw new ConnectionException('site down')]);
 
-        $this->purge()->assertSessionHas('status', fn ($s) => str_contains($s, 'couldn\'t fully refresh WordCamp Test 2026'));
+        $this->purge();
+        $this->refresh()->assertSessionHas('status', fn ($s) => str_contains($s, 'couldn\'t fully refresh WordCamp Test 2026'));
 
-        // The flush didn't take the last good data with it.
+        // Neither the flush nor the failed fetch took the last good data with it.
         $this->assertSame('Last good session', Cache::get("event:{$event->id}:sessions")[0]['title']);
         $this->assertSame('Last good sponsor', Cache::get("event:{$event->id}:sponsors")[0]['name']);
     }
@@ -177,17 +223,17 @@ class CachePurgeTest extends TestCase
         $this->event(['slug' => 'old', 'status' => 'archived']);
         Http::fake(); // any request at all would be a failure below
 
-        $this->purge()->assertSessionHas('status', fn ($s) => str_contains($s, 'no live events to refresh'));
+        $this->refresh()->assertSessionHas('status', fn ($s) => str_contains($s, 'No live events to refresh'));
 
         Http::assertNothingSent();
     }
 
-    public function test_the_attendee_roster_is_not_scraped_by_a_purge(): void
+    public function test_the_attendee_roster_is_not_scraped_by_a_refresh(): void
     {
         $this->event();
         $this->fakeWordCampSite();
 
-        $this->purge();
+        $this->refresh();
 
         Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/attendees'));
     }
@@ -199,10 +245,9 @@ class CachePurgeTest extends TestCase
         Queue::fake();
 
         // A budget of zero: everything is over it before it starts.
-        $purger = new class extends CachePurger {};
-        $reflection = new \ReflectionClass($purger);
-        $method = $reflection->getMethod('refreshEvents');
-        $result = $method->invoke($purger, microtime(true) - 3600, now());
+        $refresher = new DataRefresher;
+        $method = (new \ReflectionClass($refresher))->getMethod('refreshEvents');
+        $result = $method->invoke($refresher, microtime(true) - 3600, now());
 
         $this->assertSame(['A', 'B'], $result['queued']);
         $this->assertSame([], $result['refreshed']);
@@ -325,7 +370,7 @@ class CachePurgeTest extends TestCase
         ]);
         $this->fakeWordCampSite();
 
-        $this->purge()->assertSessionHas('status', fn ($s) => str_contains($s, 'fresh data fetched for 1 event')
+        $this->refresh()->assertSessionHas('status', fn ($s) => str_contains($s, 'Fresh data fetched for 1 event')
             && ! str_contains($s, 'couldn\'t fully refresh'));
     }
 }

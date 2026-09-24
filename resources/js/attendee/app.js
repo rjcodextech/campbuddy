@@ -4,6 +4,7 @@
 
 import { initAnalytics } from './analytics.js';
 import { initCacheVersion } from './cache-version.js';
+import { initDataFreshness } from './data-freshness.js';
 import { initDesktopNotice } from './desktop-notice.js';
 import { initImageFallbacks } from './image-fallback.js';
 import { initInstallPrompt } from './install.js';
@@ -27,6 +28,10 @@ initImageFallbacks();
 // An admin's "Purge cache" reaches this device: saved page copies are dropped
 // and, if the app was left open, it reloads with fresh data.
 initCacheVersion();
+
+// New schedule, sponsors or event details reach an open or installed app by
+// themselves — no manual refresh needed.
+initDataFreshness();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

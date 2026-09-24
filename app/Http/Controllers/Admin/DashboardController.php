@@ -37,11 +37,18 @@ class DashboardController extends Controller
             'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
             'lastPurge' => CacheVersion::last(),
             'cloudflareConfigured' => filled(config('services.cloudflare.zone_id')) && filled(config('services.cloudflare.api_token')),
+            'lastDataFetch' => FetchLog::with('event:id,display_name')->where('job_type', 'sessions_speakers_sponsors')->latest('fetched_at')->first(),
+            // The same failure repeating every run is one problem, not five rows.
             'failedFetches' => FetchLog::with('event:id,display_name')
                 ->where('status', '!=', 'ok')
+                ->where('fetched_at', '>=', now()->subDays(7))
                 ->latest('fetched_at')
-                ->limit(5)
-                ->get(),
+                ->limit(50)
+                ->get()
+                ->groupBy(fn ($log) => $log->event_id.'|'.$log->job_type.'|'.$log->message)
+                ->map(fn ($logs) => ['log' => $logs->first(), 'times' => $logs->count()])
+                ->take(5)
+                ->values(),
         ]);
     }
 }

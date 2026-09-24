@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\MediaController;
@@ -133,9 +134,12 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/deal-leads', [DealLeadController::class, 'index'])->name('admin.events.deal-leads.index');
         Route::get('events/{event}/deal-leads/export', [DealLeadController::class, 'export'])->name('admin.events.deal-leads.export');
 
-        // Clears every cache, re-fetches live events' data, and tells open apps to reload.
-        // Rate-limited inside the controller (a cooldown + lock), not with `throttle` — a purge empties the cache that throttle counts in.
+        // Two separate jobs. "Clear cache": server caches + Cloudflare, and tells open
+        // apps to drop saved copies — fetches nothing. Rate-limited inside the controller
+        // (a cooldown + lock), not with `throttle` — a purge empties the cache that throttle counts in.
         Route::post('cache/purge', CachePurgeController::class)->name('admin.cache.purge');
+        // "Refresh event data": fetch every live event's data now — clears nothing.
+        Route::post('data/refresh', DataRefreshController::class)->name('admin.data.refresh');
 
         Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
         Route::post('media', [MediaController::class, 'store'])->name('admin.media.store');

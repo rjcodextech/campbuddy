@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
+use App\Http\Controllers\Api\DataVersionController;
 use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
@@ -25,6 +26,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
 
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');
+        Route::get('/data-version', DataVersionController::class)->name('api.events.data-version');
 
         Route::get('/discovery', [DiscoveryController::class, 'index'])->name('api.discovery.index');
 

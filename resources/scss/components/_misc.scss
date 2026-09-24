@@ -117,3 +117,38 @@
         white-space: nowrap;
     }
 }
+
+// "Updated info — tap to refresh" (data-freshness.js): new data arrived while
+// the person was busy on the page. Sits at the top, clear of the tab bar and
+// of toasts, and refreshes by itself once they're idle anyway.
+.data-updated-pill {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + #{v.$space-3});
+    left: 50%;
+    z-index: 45;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 90vw;
+    padding: v.$space-2 v.$space-4;
+    border: 0;
+    border-radius: v.$radius-full;
+    background: var(--brand-primary);
+    color: #fff;
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    box-shadow: v.$shadow-raised;
+    cursor: pointer;
+    animation: data-pill-in 0.3s ease;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+@keyframes data-pill-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -8px);
+    }
+}

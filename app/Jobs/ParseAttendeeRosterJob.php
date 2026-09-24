@@ -6,6 +6,7 @@ use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Services\AttendeeRosterScraper;
+use App\Support\SafeSync;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
@@ -97,12 +98,15 @@ class ParseAttendeeRosterJob implements ShouldQueue
                 AttendeeRoster::upsert($chunk, ['event_id', 'content_hash'], ['name', 'gravatar_url', 'links', 'updated_at']);
             }
 
-            $removed = $this->pruneDepartedAttendees($seenHashes);
+            $new = collect($seenHashes)->reject(fn ($hash) => $existing->has($hash))->count();
+            $pruned = $this->pruneDepartedAttendees($seenHashes);
 
-            $this->log('ok', sprintf(
-                '%d attendees parsed%s',
+            $this->log($pruned['held'] > 0 ? 'partial' : 'ok', sprintf(
+                '%d attendees parsed%s%s%s',
                 count($rows),
-                $removed > 0 ? ", {$removed} no longer listed and removed" : ''
+                $new > 0 ? ", {$new} new" : '',
+                $pruned['removed'] > 0 ? ", {$pruned['removed']} no longer listed and removed" : '',
+                $pruned['held'] > 0 ? ", {$pruned['held']} no longer listed — kept until the next run confirms it" : ''
             ));
         } catch (Throwable $e) {
             Log::warning('ParseAttendeeRosterJob failed', ['event_id' => $this->event->id, 'error' => $e->getMessage()]);
@@ -115,33 +119,30 @@ class ParseAttendeeRosterJob implements ShouldQueue
     /**
      * Keeps CampBuddy's roster a true mirror of the event's Attendees page:
      * someone who has left that page (opted out at the source, or removed by
-     * the organizers) must not linger here. Two safeguards:
-     *   - an empty scrape never prunes — that's more likely a page hiccup
-     *     than every attendee vanishing at once, and the next run recovers;
+     * the organizers) must not linger here. New and changed attendees were
+     * already upserted above — nothing is deleted first. Safeguards:
+     *   - an empty scrape never prunes, and a sudden big drop waits one run
+     *     for confirmation (SafeSync) — a half-loaded page can't empty it;
      *   - suppressed rows are never deleted — the suppression list is what
      *     stops a removed attendee from being re-added (IN5).
      *
      * @param  array<int, string>  $seenHashes
+     * @return array{removed: int, held: int}
      */
-    private function pruneDepartedAttendees(array $seenHashes): int
+    private function pruneDepartedAttendees(array $seenHashes): array
     {
-        if ($seenHashes === []) {
-            return 0;
-        }
-
-        $seen = array_flip($seenHashes);
-
-        $staleIds = AttendeeRoster::where('event_id', $this->event->id)
+        $stored = AttendeeRoster::where('event_id', $this->event->id)
             ->where('is_suppressed', false)
-            ->get(['id', 'content_hash'])
-            ->reject(fn ($row) => isset($seen[$row->content_hash]))
-            ->pluck('id');
+            ->pluck('id', 'content_hash');
+
+        $decision = SafeSync::removals("roster:{$this->event->id}", $stored->keys()->all(), $seenHashes);
+        $staleIds = collect($decision['remove'])->map(fn ($hash) => $stored[$hash]);
 
         foreach ($staleIds->chunk(500) as $chunk) {
             AttendeeRoster::whereIn('id', $chunk->all())->delete();
         }
 
-        return $staleIds->count();
+        return ['removed' => $staleIds->count(), 'held' => count($decision['held'])];
     }
 
     private function log(string $status, string $message): void

@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Event;
+use App\Support\DataVersion;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
@@ -59,6 +60,7 @@ class EventObserver
     {
         Cache::forget('seo:sitemap');
         Cache::forget('seo:llms');
+        DataVersion::forget($event->id);
     }
 
     public function deleted(Event $event): void

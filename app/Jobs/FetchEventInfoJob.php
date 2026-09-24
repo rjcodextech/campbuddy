@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Event;
 use App\Models\FetchLog;
+use App\Support\SafeSync;
 use App\Services\EventInfoFetcher;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -67,6 +68,19 @@ class FetchEventInfoJob implements ShouldQueue
         $info = [];
         $kept = [];
 
+        // A field the site listed before but didn't return this time is kept
+        // until a second run confirms it's gone (SafeSync) — one flaky page
+        // must not wipe the venue or wifi details.
+        $held = SafeSync::removals(
+            "event-info:{$this->event->id}",
+            array_keys(array_filter($previous, fn ($v) => filled($v))),
+            array_keys(array_filter($fetched, fn ($v) => $v !== null)),
+            confirmAll: true,
+        )['held'];
+        foreach ($held as $field) {
+            $fetched[$field] = $previous[$field];
+        }
+
         foreach (EventInfoFetcher::FIELDS as $field) {
             $value = $this->normalize($current[$field] ?? null);
 
@@ -95,7 +109,8 @@ class FetchEventInfoJob implements ShouldQueue
             '%d of %d fields found%s (%s)',
             $found,
             count(EventInfoFetcher::FIELDS),
-            $kept === [] ? '' : '; kept your edits to: '.implode(', ', $kept),
+            ($kept === [] ? '' : '; kept your edits to: '.implode(', ', $kept))
+                .($held === [] ? '' : '; not found this time, kept until the next run: '.implode(', ', $held)),
             $fetcher->sources
         ));
     }

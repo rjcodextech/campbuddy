@@ -299,7 +299,7 @@ class EventInfoFetchTest extends TestCase
         $this->assertStringContainsString('kept your edits to: venue, wifi', $message);
     }
 
-    public function test_an_auto_filled_value_is_refreshed_and_then_blanked_when_the_source_drops_it(): void
+    public function test_an_auto_filled_value_is_kept_once_then_blanked_when_the_source_really_drops_it(): void
     {
         $event = $this->event();
 
@@ -309,6 +309,13 @@ class EventInfoFetchTest extends TestCase
 
         // The contact page loses its email; central still answers, so the site is "reachable".
         $this->fakeSite(content: array_diff_key($this->pageContent(), [3 => 1]));
+        FetchEventInfoJob::dispatchSync($event->fresh());
+
+        // One missing answer could be a hiccup: kept, and the log says so.
+        $this->assertSame('hello@test.example', $event->fresh()->info['emergency_contact']);
+        $this->assertStringContainsString('kept until the next run: emergency_contact', $event->fetchLogs()->latest('id')->value('message'));
+
+        // Still missing next time: now it goes.
         FetchEventInfoJob::dispatchSync($event->fresh());
 
         $event->refresh();
