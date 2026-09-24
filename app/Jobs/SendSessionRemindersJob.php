@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Models\Event;
 use App\Models\PushSubscription;
 use App\Models\SessionBookmark;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
@@ -39,7 +40,7 @@ class SendSessionRemindersJob implements ShouldQueue
 
         $upcomingIds = $sessions
             ->filter(function ($s) use ($windowStart, $windowEnd) {
-                $startsAt = \Carbon\Carbon::parse($s['starts_at']);
+                $startsAt = Carbon::parse($s['starts_at']);
 
                 return $startsAt->between($windowStart, $windowEnd);
             })

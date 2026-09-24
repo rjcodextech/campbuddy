@@ -234,6 +234,7 @@ class EventInfoFetcher
      * Who to reach: a phone number the page itself labels as an emergency /
      * medical line, else the organizers' contact email — taken from the
      * Contact page (whatever domain they publish there), or failing that an
+     *
      * @wordcamp.org address (the event's own alias) found on another page.
      *
      * Deliberately not used: the shared safety-reporting address
@@ -328,6 +329,7 @@ class EventInfoFetcher
 
         return null;
     }
+
     /** Whole sentences up to $max characters; a lone over-long sentence is cut at a word with "…". */
     private function summarize(string $text, int $max): string
     {

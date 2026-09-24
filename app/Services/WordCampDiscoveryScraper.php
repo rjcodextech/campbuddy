@@ -28,9 +28,9 @@ class WordCampDiscoveryScraper
 
     /**
      * @return array<int, array{title: string, url: string, location: ?string, starts_on: string}>|null
-     *         null means the page's expected structure wasn't found at
-     *         all — distinct from a page that parsed cleanly into zero
-     *         upcoming events.
+     *                                                                                                  null means the page's expected structure wasn't found at
+     *                                                                                                  all — distinct from a page that parsed cleanly into zero
+     *                                                                                                  upcoming events.
      */
     public function discoverUpcomingWordCamps(): ?array
     {

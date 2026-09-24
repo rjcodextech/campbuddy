@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\User;
 use App\Support\SvgGuard;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
@@ -289,7 +290,7 @@ class EventBrandingTest extends TestCase
         Http::fake([
             self::SITE.'/wp-json/' => Http::response(['site_icon_url' => self::SITE.'/files/icon.png']),
             self::SITE.'/files/icon.png' => Http::response('FAVICON', 200, ['Content-Type' => 'image/png']),
-            self::SITE.'/files/logo.png' => fn () => throw new \Illuminate\Http\Client\ConnectionException('timed out'),
+            self::SITE.'/files/logo.png' => fn () => throw new ConnectionException('timed out'),
             self::SITE.'/' => Http::response('<img class="custom-logo" src="'.self::SITE.'/files/logo.png">'),
         ]);
 

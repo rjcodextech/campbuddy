@@ -6,6 +6,7 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\Quest;
 use App\Support\HtmlText;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 use Throwable;
@@ -204,7 +205,7 @@ class EventPageController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, Quest>
+     * @return Collection<int, Quest>
      */
     private function questsFor(Event $event)
     {

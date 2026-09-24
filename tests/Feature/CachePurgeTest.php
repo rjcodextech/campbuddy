@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\User;
+use App\Services\CachePurger;
 use App\Support\CacheVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 /**
@@ -74,7 +77,7 @@ class CachePurgeTest extends TestCase
         ]);
     }
 
-    private function purge(): \Illuminate\Testing\TestResponse
+    private function purge(): TestResponse
     {
         $admin = User::firstWhere('email', 'admin@campbuddy.test') ?? User::factory()->create(['email' => 'admin@campbuddy.test']);
 
@@ -196,14 +199,14 @@ class CachePurgeTest extends TestCase
         Queue::fake();
 
         // A budget of zero: everything is over it before it starts.
-        $purger = new class extends \App\Services\CachePurger {};
+        $purger = new class extends CachePurger {};
         $reflection = new \ReflectionClass($purger);
         $method = $reflection->getMethod('refreshEvents');
         $result = $method->invoke($purger, microtime(true) - 3600, now());
 
         $this->assertSame(['A', 'B'], $result['queued']);
         $this->assertSame([], $result['refreshed']);
-        Queue::assertPushed(\App\Jobs\FetchSpeakersSponsorsSessionsJob::class, 2);
+        Queue::assertPushed(FetchSpeakersSponsorsSessionsJob::class, 2);
     }
 
     // ---- Cloudflare -----------------------------------------------------------------
@@ -311,6 +314,7 @@ class CachePurgeTest extends TestCase
         $this->assertSame('0', CacheVersion::current());
         $lock->release();
     }
+
     public function test_fetch_failures_are_only_counted_from_this_run(): void
     {
         $event = $this->event();

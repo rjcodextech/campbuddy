@@ -15,9 +15,9 @@ class AttendeeRosterScraper
 {
     /**
      * @return array<int, array{name: string, gravatar_url: ?string, links: array<int, array{type: string, url: string}>}>|null
-     *         null means the page's expected structure wasn't found at
-     *         all — distinct from a structure that parsed
-     *         cleanly into zero entries (nobody's opted in yet).
+     *                                                                                                                          null means the page's expected structure wasn't found at
+     *                                                                                                                          all — distinct from a structure that parsed
+     *                                                                                                                          cleanly into zero entries (nobody's opted in yet).
      */
     public function parse(string $html): ?array
     {

@@ -10,11 +10,13 @@ use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\User;
+use App\Services\AttendeeRosterScraper;
 use Illuminate\Console\Scheduling\Event as ScheduledEvent;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -145,7 +147,7 @@ class EventIngestionTest extends TestCase
     {
         $event = $this->event();
         Queue::shouldReceive('push', 'later', 'pushOn')->andThrow(new \RuntimeException('queue backend down'));
-        \Illuminate\Support\Facades\Bus::shouldReceive('dispatch')->andThrow(new \RuntimeException('queue backend down'));
+        Bus::shouldReceive('dispatch')->andThrow(new \RuntimeException('queue backend down'));
 
         $event->update(['status' => 'active']);
 
@@ -244,7 +246,7 @@ class EventIngestionTest extends TestCase
     {
         return AttendeeRoster::create([
             'event_id' => $event->id, 'name' => $name, 'links' => [], 'is_suppressed' => $suppressed,
-            'content_hash' => (new \App\Services\AttendeeRosterScraper)->contentHash($name, []),
+            'content_hash' => (new AttendeeRosterScraper)->contentHash($name, []),
         ]);
     }
 

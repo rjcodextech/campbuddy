@@ -227,6 +227,7 @@ class EventInfoFetchTest extends TestCase
         $this->assertStringNotContainsString('evening-programme', $info['important_links']);
         $this->assertSame("St. Joseph's Boys' High School — 27 Museum Rd, Bengaluru", $info['venue']);
     }
+
     public function test_it_falls_back_to_scraping_when_the_rest_api_is_unavailable(): void
     {
         Http::fake(function (Request $request) {

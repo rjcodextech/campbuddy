@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnsureEventIsPublic;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'event.public' => \App\Http\Middleware\EnsureEventIsPublic::class,
+            'event.public' => EnsureEventIsPublic::class,
         ]);
 
         // Production sits behind Cloudflare (docs: deployment). Without this
@@ -24,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*');
 
         // Every response — pages, the API, the admin panel, /up.
-        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
