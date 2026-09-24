@@ -10,6 +10,31 @@
 
 html {
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+// Taps stay taps: no double-tap-to-zoom (and the delay that comes with
+// waiting to see if one is coming) on anything you press. Panning and
+// pinch-zoom still work, so the swipeable Camp Card row is unaffected.
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary,
+[role='button'],
+[role='tab'] {
+    touch-action: manipulation;
+}
+
+// `hidden` has to mean hidden. A component rule that sets `display` (flex,
+// inline-flex, grid…) would otherwise override the browser's own
+// `[hidden] { display: none }`, leaving the element on screen — the header
+// "Install app" button did exactly that, showing on every device whether or not
+// the app could be installed there.
+[hidden] {
+    display: none !important;
 }
 
 img,

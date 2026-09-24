@@ -24,6 +24,8 @@
     display: flex;
     align-items: center;
     min-width: 0;
+    // Fills the bar's content height (56px minus padding), like the pills.
+    min-height: 40px;
 }
 
 // The wordmark (public/media/logo-wordmark-sm.png) is a wide lockup, not a square
@@ -55,6 +57,7 @@
     display: inline-flex;
     align-items: center;
     gap: v.$space-1;
+    min-height: 40px;
     padding: v.$space-2 v.$space-3;
     border-radius: v.$radius-full;
     background: var(--peach);
@@ -70,7 +73,7 @@
         flex-shrink: 0;
     }
 
-    &:hover {
+    @include m.hover {
         background: var(--brand-primary);
         color: #fff;
     }
@@ -94,12 +97,36 @@
         height: 20px;
     }
 
-    &:hover {
+    @include m.hover {
         background: var(--peach);
     }
 
     &--active {
         color: var(--brand-primary);
         background: var(--peach);
+    }
+}
+
+// 320px-wide phones (iPhone SE 1st gen and similar): the wordmark plus the
+// "WordCamp's" and "Install app" pills is ~30px too wide for one row, so the
+// pills wrapped onto a second line and the sticky bar ate ~85px of a 568px
+// screen. Tightened so it stays a single 56px row.
+@media (max-width: 359px) {
+    .topbar {
+        padding-right: v.$space-3;
+        padding-left: v.$space-3;
+        gap: v.$space-2;
+    }
+
+    .brand__logo--wordmark {
+        height: 22px;
+    }
+
+    .topbar__actions {
+        gap: v.$space-1;
+    }
+
+    .topbar__text-btn {
+        padding: 6px v.$space-2;
     }
 }

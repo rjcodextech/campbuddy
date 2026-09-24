@@ -94,6 +94,7 @@ export async function renderCampCard() {
 
   setupQrTargetPicker(card?.primaryLink ?? DEFAULT_QR_TARGET, form);
   setupLinkFields(form);
+  setupRequiredFields(form);
   renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
 
   form.addEventListener('submit', async (e) => {
@@ -101,7 +102,20 @@ export async function renderCampCard() {
 
     // Links are tidied (and checked) first: a malformed one stops the save
     // with a message beside it, rather than becoming a QR that goes nowhere.
-    if (!tidyLinkFields(form)) return;
+    const badLink = tidyLinkFields(form);
+
+    // Then what a card can't be generated without: a name, and a link for
+    // its QR code. Whatever is missing is highlighted (not just blocked
+    // silently — iOS Safari shows no native "please fill in" bubble at all),
+    // and the first problem, top to bottom, gets the focus.
+    const missing = validateRequired(form);
+    const firstProblem = missing?.name === 'name' ? missing : badLink ?? missing;
+
+    if (firstProblem) {
+      firstProblem.focus();
+      showToast('Fill in the highlighted fields to generate your Camp Card.');
+      return;
+    }
 
     const data = Object.fromEntries(new FormData(form).entries());
     data.interests = getInterests();
@@ -487,7 +501,8 @@ function setupLinkFields(form) {
   });
 }
 
-// All of them, so every bad one gets its message; focuses the first bad one.
+// All of them, so every bad one gets its message. Returns the first bad
+// field (for the caller to focus), or null when every link is fine.
 function tidyLinkFields(form) {
   let firstBad = null;
 
@@ -495,9 +510,43 @@ function tidyLinkFields(form) {
     if (!tidyField(input) && !firstBad) firstBad = input;
   });
 
-  firstBad?.focus();
+  return firstBad;
+}
 
-  return firstBad === null;
+// ---- Required fields -----------------------------------------------------
+
+const NAME_MESSAGE = 'Enter your name — it shows on your card.';
+
+function setLinksMissing(missing) {
+  document.getElementById('cc-links-group').classList.toggle('form-group--invalid', missing);
+  document.getElementById('cc-links-error').hidden = !missing;
+}
+
+// What a card can't be generated without (see renderAllPreviews, which shows
+// the sample card until both exist): a name, and at least one link for the QR
+// code to point at. Highlights whichever is missing and returns the field to
+// focus (the name, else the first link), or null when nothing is missing.
+function validateRequired(form) {
+  const nameInput = form.elements.namedItem('name');
+  const nameMissing = nameInput.value.trim() === '';
+  const linksMissing = !LINK_FIELDS.some((field) => form.elements.namedItem(field)?.value.trim());
+
+  showFieldError(nameInput, nameMissing ? NAME_MESSAGE : null);
+  setLinksMissing(linksMissing);
+
+  if (nameMissing) return nameInput;
+
+  return linksMissing ? form.elements.namedItem(LINK_FIELDS[0]) : null;
+}
+
+// The highlight goes away as soon as the person starts fixing it.
+function setupRequiredFields(form) {
+  const nameInput = form.elements.namedItem('name');
+  nameInput.addEventListener('input', () => showFieldError(nameInput, null));
+
+  LINK_FIELDS.forEach((field) => {
+    form.elements.namedItem(field)?.addEventListener('input', () => setLinksMissing(false));
+  });
 }
 
 function renderAllPreviews(card) {

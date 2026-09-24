@@ -2,17 +2,23 @@
 @use '../abstracts/mixins' as m;
 
 .bottom-nav {
-    // Sticky, not fixed: it's a normal-flow sibling of #app inside
-    // .app-frame, so it's confined to the frame's width for free and
-    // never needs to fight for viewport-relative centering.
-    position: sticky;
+    // Fixed to the bottom of the screen at every width, so the tabs are
+    // always reachable however far the page has scrolled. (Sticky was the
+    // wrong tool: it silently stops working when any ancestor gets an
+    // overflow value, and on phones an inner scroller hides the bar
+    // beneath the browser toolbar.) The page reserves the same space with
+    // .app-frame--with-nav (layout/_app-frame.scss).
+    position: fixed;
+    right: 0;
     bottom: 0;
+    left: 0;
     z-index: 20;
-    flex-shrink: 0;
     display: flex;
     justify-content: space-around;
-    height: v.$bottom-nav-height;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: var(--bottom-nav-space);
+    // The iPhone home indicator sits in this inset, below the tappable
+    // area — and in landscape the notch/rounded corners sit at the sides.
+    padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
     background: var(--paper);
     border-top: 1px solid var(--line);
 }
@@ -37,6 +43,14 @@
 
     &--active {
         color: var(--brand-primary);
+    }
+
+    // Very narrow phones (320px): "Camp Card" no longer fits on one line.
+    // Pin every icon to the same height and let the label wrap beneath it,
+    // instead of centring — which would push that one icon up out of line.
+    @media (max-width: 359px) {
+        justify-content: flex-start;
+        padding-top: v.$space-2;
     }
 }
 

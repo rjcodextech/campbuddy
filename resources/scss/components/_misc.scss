@@ -7,7 +7,7 @@
     text-align: center;
 }
 
-.ios-install-steps {
+.install-steps {
     display: flex;
     flex-direction: column;
     gap: v.$space-2;
@@ -21,12 +21,21 @@
 .toast {
     position: fixed;
     left: 50%;
-    bottom: calc(v.$bottom-nav-height + v.$space-4);
+    // Without an explicit width a `left: 50%` box is squeezed into the right
+    // half of the screen (its available width), so even a short message
+    // wrapped onto three lines on a phone.
+    width: max-content;
+    // Just above the fixed tab bar, home-indicator inset included.
+    bottom: calc(var(--bottom-nav-space) + #{v.$space-4});
     transform: translateX(-50%);
     z-index: 40;
-    max-width: 90vw;
+    max-width: min(90vw, 420px);
     padding: v.$space-3 v.$space-5;
-    border-radius: v.$radius-full;
+    // A pill for one line, a soft rectangle if a longer message wraps.
+    border-radius: 24px;
+    // It's a passing message — it must never swallow a tap meant for the
+    // field or button underneath it.
+    pointer-events: none;
     background: var(--ink);
     color: #fff;
     font-size: v.$font-size-sm;

@@ -45,7 +45,7 @@
 
 .roster-row__links {
     display: flex;
-    gap: v.$space-2;
+    gap: v.$space-3;
     flex-shrink: 0;
 }
 
@@ -53,6 +53,7 @@
 // "twitter" / "linkedin" link chips.
 .social-icon {
     @include m.pressable;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -64,7 +65,14 @@
     flex-shrink: 0;
     transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
 
-    &:hover {
+    // The badge is 30px; this invisible margin makes the tappable area 44px.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -7px;
+    }
+
+    @include m.hover {
         background: var(--brand-primary);
         color: #fff;
     }

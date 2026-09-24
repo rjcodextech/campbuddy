@@ -24,7 +24,7 @@ const EVENTS = {
   switch_event_click: [], // topbar "WordCamp's" link back to the picker
 
   // Install / PWA
-  install_prompt_open: ['platform'], // native | ios
+  install_prompt_open: ['platform'], // native | ios | android_firefox | in_app_browser
   install_prompt_result: ['outcome'], // accepted | dismissed
   install_complete: [],
   desktop_notice_dismiss: [],

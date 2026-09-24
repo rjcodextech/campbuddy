@@ -1,9 +1,11 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
-html,
-body {
-    height: 100%;
+// Keep anything the page scrolls to (a focused field, an in-page jump)
+// clear of the sticky top bar and the fixed tab bar instead of tucking it
+// underneath them.
+html {
+    scroll-padding: v.$topbar-height 0 var(--bottom-nav-space);
 }
 
 body {
@@ -48,8 +50,15 @@ h3 {
 // white popup) so it reads as part of the app rather than a bolted-on
 // overlay.
 dialog {
+    // The reset's `* { margin: 0 }` beats the browser's own `margin: auto`
+    // for dialogs, which is what centres one — without this every dialog
+    // sat pinned to the top-left corner of the screen.
+    margin: auto;
     width: min(92vw, 420px);
     max-height: 85vh;
+    // dvh tracks the visible height as the mobile browser's toolbar and
+    // on-screen keyboard come and go; vh is the older-browser fallback.
+    max-height: 85dvh;
     overflow-y: auto;
     overscroll-behavior: contain;
     border: 1px solid var(--line);

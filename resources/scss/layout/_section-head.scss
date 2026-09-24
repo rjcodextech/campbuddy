@@ -4,7 +4,10 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: v.$space-3;
+    // A long description drops under the title on a narrow phone instead of
+    // squeezing the title into a two-line column beside it.
+    flex-wrap: wrap;
+    gap: v.$space-1 v.$space-3;
     margin-bottom: v.$space-3;
 }
 
@@ -17,5 +20,4 @@
 .section-head__desc {
     font-size: 0.82rem;
     color: var(--muted);
-    white-space: nowrap;
 }

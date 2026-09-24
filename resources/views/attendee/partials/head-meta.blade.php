@@ -17,7 +17,14 @@
 <meta name="application-name" content="{{ $pwa['short_name'] }}">
 <meta name="apple-mobile-web-app-title" content="{{ $pwa['short_name'] }}">
 <meta name="mobile-web-app-capable" content="yes">
+{{-- iOS's own name for the line above — older iOS versions launch a
+     home-screen install full-screen only when they see this one. --}}
+<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+{{-- Stops iOS Safari turning digit runs (dates, ids, times) into blue phone
+     links. Real phone numbers stay tappable — Event Info renders those as
+     explicit tel: links. --}}
+<meta name="format-detection" content="telephone=no">
 
 {{-- Bumped by the admin's "Purge cache": see cache-version.js. --}}
 <meta name="campbuddy-cache-version" content="{{ \App\Support\CacheVersion::current() }}">

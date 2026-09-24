@@ -79,7 +79,11 @@
     align-items: center;
     gap: v.$space-1;
     width: 100%;
-    padding: 0;
+    // A one-line title is only ~21px tall. Grow the tappable area to 44px
+    // into the row's own padding (the negative margin cancels it, so the
+    // layout doesn't move).
+    padding: 12px 0;
+    margin: -12px 0;
     border: 0;
     background: none;
     text-align: left;
@@ -93,8 +97,11 @@
     text-decoration-color: var(--line);
     transition: text-decoration-color 0.15s ease;
 
-    &:hover,
     &[aria-expanded='true'] {
+        text-decoration-color: var(--brand-primary);
+    }
+
+    @include m.hover {
         text-decoration-color: var(--brand-primary);
     }
 }
@@ -134,6 +141,11 @@
 
 .schedule-item__star {
     @include m.pressable;
+    // The glyph alone is ~29x22px — the single most-tapped control on My
+    // Day. Same trick as the title: pad out to a 44px target and pull the
+    // margin back so the star stays where it was.
+    padding: 11px 8px;
+    margin: -11px -8px;
     font-size: v.$font-size-lg;
     color: var(--line);
     line-height: 1;

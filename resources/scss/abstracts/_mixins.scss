@@ -47,6 +47,18 @@
     }
 }
 
+// `:hover` for devices that can really hover. On a touchscreen a tap leaves
+// the element in :hover until the next tap elsewhere, so a plain :hover
+// rule leaves a tapped pill/button stuck in its hover colours on iOS and
+// Android.
+@mixin hover {
+    @media (hover: hover) {
+        &:hover {
+            @content;
+        }
+    }
+}
+
 // Same idea as pressable, but for large tap surfaces (grid cards, full
 // rows) — a 5% scale-down looks natural on a small chip/button but
 // jarring on something card-sized, so these get a gentler settle

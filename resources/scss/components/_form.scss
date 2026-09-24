@@ -67,6 +67,7 @@ dialog {
 
         &[aria-invalid='true'] {
             border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.14);
         }
     }
 
@@ -165,6 +166,19 @@ dialog {
     &[hidden] {
         display: none;
     }
+}
+
+// "Fill in at least one of these": no single field is the culprit, so the
+// whole group is outlined (with its message just under the description).
+.form-group--invalid {
+    border-color: var(--danger);
+    background-image: linear-gradient(rgba(179, 38, 30, 0.05), rgba(179, 38, 30, 0.05));
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.14);
+}
+
+.form-group__error {
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-sm;
 }
 
 // An adornment fixed to the left of an input (the "@" of a handle).

@@ -9,7 +9,9 @@
     @include m.pressable;
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
+    // 44px is the minimum comfortable thumb target (Apple HIG; Android
+    // asks for 48dp) — matches the form controls in components/_form.scss.
+    min-height: 44px;
     padding: v.$space-2 14px;
     border-radius: v.$radius-full;
     border: 1px solid var(--line);

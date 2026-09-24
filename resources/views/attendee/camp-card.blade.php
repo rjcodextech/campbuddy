@@ -54,7 +54,9 @@
                 Saved on this device only. Nothing you type here is sent to CampBuddy.
             </p>
 
-            <form id="camp-card-form" class="cc-form">
+            {{-- novalidate: the required fields are checked and highlighted by camp-card.js
+                 (native validation bubbles don't show at all on iOS Safari). --}}
+            <form id="camp-card-form" class="cc-form" novalidate>
                 <fieldset class="form-group">
                     <legend class="form-group__title">About you</legend>
                     <p class="form-group__desc">This is what shows on your card.</p>
@@ -89,9 +91,10 @@
                     @include('attendee.partials.form-field', ['id' => 'cc-askMeAbout', 'name' => 'askMeAbout', 'label' => 'Ask me about', 'placeholder' => 'e.g. Block themes', 'maxlength' => 80, 'hint' => 'A conversation starter for people who see your card.'])
                 </fieldset>
 
-                <fieldset class="form-group">
-                    <legend class="form-group__title">Find me online</legend>
-                    <p class="form-group__desc">Add any you like — your QR code can point to one of them.</p>
+                <fieldset class="form-group" id="cc-links-group">
+                    <legend class="form-group__title">Find me online<abbr class="form-field__req" title="at least one is required">*</abbr></legend>
+                    <p class="form-group__desc">Add at least one — your QR code points to one of them.</p>
+                    <p class="form-field__error form-group__error" id="cc-links-error" role="alert" hidden>Add at least one link so your QR code has somewhere to go.</p>
 
                     @include('attendee.partials.form-field', ['id' => 'cc-linkedin', 'name' => 'linkedin', 'label' => 'LinkedIn', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'linkedin.com/in/your-name'])
                     @include('attendee.partials.form-field', ['id' => 'cc-website', 'name' => 'website', 'label' => 'Personal website', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'yoursite.com'])
@@ -124,6 +127,8 @@
                         <p class="form-field__hint">Your name and QR code always show.</p>
                     </div>
                 </fieldset>
+
+                <p class="form-field__hint"><abbr class="form-field__req" title="required">*</abbr> Needed to generate your card: your name and at least one link.</p>
 
                 <button type="submit" class="btn btn--primary btn--full cc-form__save" id="cc-save">Save Camp Card</button>
             </form>

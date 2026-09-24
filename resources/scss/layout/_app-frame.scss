@@ -6,10 +6,20 @@
 // their phone instead of getting a separate desktop layout (see
 // components/_desktop-notice.scss). Shared by the event pages
 // (layouts/attendee.blade.php) and the "/" WordCamp picker
-// (welcome.blade.php). The tab bar stays pinned to the bottom of the
-// frame (layout/_bottom-nav.scss).
+// (welcome.blade.php).
+//
+// The page scrolls as a normal document — the frame is NOT its own
+// scroll container. That matters on phones: a frame pinned to 100vh with
+// its own scrollbar hides the tab bar under Safari's bottom toolbar (100vh
+// is the height with the toolbar collapsed) and stops the browser chrome
+// from ever collapsing. The tab bar is `position: fixed` instead
+// (layout/_bottom-nav.scss), and .app-frame--with-nav reserves room for it.
+//
+// dvh (the visible height, tracking the browser toolbar) where supported;
+// the vh line above it is the fallback for older browsers.
 body.app-shell {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
 }
 
@@ -18,9 +28,20 @@ body.app-shell {
     flex-direction: column;
     width: 100%;
     min-height: 100vh;
+    min-height: 100dvh;
     background: var(--paper-soft);
     position: relative;
-    overflow-x: hidden;
+    // Keeps the app clear of the notch / rounded corners when an iPhone is
+    // turned sideways (viewport-fit=cover lets the page draw under them).
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    // `clip`, not `hidden`: hidden would make the frame a scroll container,
+    // which silently disables `position: sticky` on the top bar.
+    overflow-x: clip;
+
+    &--with-nav {
+        padding-bottom: var(--bottom-nav-space);
+    }
 }
 
 #app {

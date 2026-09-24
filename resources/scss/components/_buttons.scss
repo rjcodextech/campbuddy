@@ -28,7 +28,7 @@
         border-color: var(--brand-primary);
         color: #fff;
 
-        &:hover {
+        @include m.hover {
             background: var(--brand-accent);
             border-color: var(--brand-accent);
         }
@@ -38,7 +38,7 @@
         background: var(--peach);
         color: var(--ink);
 
-        &:hover {
+        @include m.hover {
             background: var(--gold);
         }
     }
@@ -48,13 +48,15 @@
         border-color: var(--line);
         color: var(--ink);
 
-        &:hover {
+        @include m.hover {
             background: var(--peach);
             border-color: var(--peach);
         }
     }
 
+    // Smaller type and padding, not a smaller target: still 44px tall.
     &--compact {
+        min-height: 44px;
         padding: v.$space-2 v.$space-3;
         font-size: v.$font-size-sm;
     }
@@ -69,7 +71,7 @@
         border-color: var(--danger);
         color: var(--danger);
 
-        &:hover {
+        @include m.hover {
             background: var(--danger);
             border-color: var(--danger);
             color: #fff;

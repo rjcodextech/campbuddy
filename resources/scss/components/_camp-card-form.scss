@@ -19,6 +19,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     align-items: center;
     justify-content: space-between;
     gap: v.$space-3;
+    min-height: 44px;
     padding: v.$space-1 0;
     cursor: pointer;
     list-style: none;
@@ -176,7 +177,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
         height: 12px;
     }
 
-    &:hover {
+    @include m.hover {
         background: rgba(35, 31, 32, 0.1);
         color: var(--danger);
     }
@@ -201,6 +202,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
 
 .cc-suggest__chip {
     @include m.pressable;
+    min-height: 44px;
     padding: 6px 12px;
     border: 1px dashed rgba(107, 98, 94, 0.5);
     border-radius: v.$radius-full;
@@ -217,7 +219,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
         font-weight: v.$font-weight-bold;
     }
 
-    &:hover {
+    @include m.hover {
         border-style: solid;
         background: var(--paper-soft);
     }

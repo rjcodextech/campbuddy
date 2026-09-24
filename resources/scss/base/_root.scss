@@ -19,4 +19,10 @@
 
     --brand-primary: #{v.$color-maroon};
     --brand-accent: #{v.$color-maroon-dark};
+
+    // The fixed tab bar's full height — the bar itself plus the iPhone
+    // home-indicator inset beneath it. One number shared by the bar, the
+    // page's bottom padding (layout/_app-frame.scss) and the toast, so the
+    // three can't drift apart.
+    --bottom-nav-space: calc(#{v.$bottom-nav-height} + env(safe-area-inset-bottom, 0px));
 }
