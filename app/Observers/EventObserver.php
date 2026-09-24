@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Event;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 class EventObserver
@@ -48,6 +49,21 @@ class EventObserver
         if ($event->status === 'active' && $previous === 'approved') {
             $this->queueIngest($event);
         }
+    }
+
+    /**
+     * The sitemap and llms.txt list live events — rebuild them on the next
+     * request after any change, so a new or renamed WordCamp shows up at once.
+     */
+    public function saved(Event $event): void
+    {
+        Cache::forget('seo:sitemap');
+        Cache::forget('seo:llms');
+    }
+
+    public function deleted(Event $event): void
+    {
+        $this->saved($event);
     }
 
     /**

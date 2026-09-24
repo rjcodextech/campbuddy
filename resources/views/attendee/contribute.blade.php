@@ -6,10 +6,9 @@
             <div class="badge">Contribute</div>
             <h1 class="u-page-title">Where could you help?</h1>
             <p class="footer-note" style="text-align:left">
-                Contributor Day is for developers, designers, writers, translators, testers, organizers and curious
-                newcomers — not only coders. A few quick questions (all skippable) point you to a team.
-                <strong>Students:</strong> what you contribute shows on your WordPress.org profile — real open-source
-                experience you can put on your résumé.
+                Not only for coders — writers, designers, translators and curious newcomers are welcome.
+                Answer a few quick questions to find your team.
+                <strong>Students:</strong> your contributions show on your WordPress.org profile — great for a résumé.
             </p>
         </section>
 

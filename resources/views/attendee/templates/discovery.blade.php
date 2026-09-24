@@ -11,8 +11,8 @@
         <div>
             <p style="font-weight:700;margin:0 0 4px">Find people who match your interests</p>
             <p class="footer-note" style="text-align:left;margin:0 0 12px">
-                Pick your name from the attendee list (or stay anonymous), choose a few interests, and see who else here
-                wants to meet — with their name and photo, so you can find them. Leave any time.
+                Pick a few interests and see who here shares them — with names and photos, so you can find each other.
+                Leave any time.
             </p>
             <button type="button" class="btn btn--primary" id="join-discovery-btn">Join attendee discovery</button>
         </div>

@@ -5,8 +5,21 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>WordCamp 101 | {{ config('campbuddy.name') }}</title>
-    <meta name="description" content="New to WordCamp? What happens during the day, the words people use, what to bring and how to meet people — a friendly guide for first-time attendees.">
+    @php
+        $guideTitle = 'First WordCamp? A Beginner\'s Guide to WordCamp | '.config('campbuddy.name');
+        $guideDescription = 'New to WordCamp? What happens during the day, the words people use, what to bring, tips for students and how to meet people — a friendly 5-minute guide for first-time attendees.';
+    @endphp
+    <title>{{ $guideTitle }}</title>
+    @include('attendee.partials.seo', [
+        'seoTitle' => $guideTitle,
+        'seoDescription' => $guideDescription,
+        'seoSchema' => [
+            \App\Support\Seo::guideArticle('Your first WordCamp? Start here.', $guideDescription),
+            \App\Support\Seo::faq(array_map(fn ($e) => [$e['q'], $e['a']], \App\Support\FirstTimerGuide::faq())),
+            \App\Support\Seo::glossary(),
+            \App\Support\Seo::breadcrumbs([['CampBuddy', route('home')], ['WordCamp guide', route('guide')]]),
+        ],
+    ])
 
     @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false)])
 

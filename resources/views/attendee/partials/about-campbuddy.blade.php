@@ -8,7 +8,6 @@
 @if ($part === 'steps')
     <section class="about-steps" aria-labelledby="about-steps-heading">
         <h2 id="about-steps-heading" class="about-steps__title">How CampBuddy helps you at WordCamp</h2>
-        <p class="about-steps__lead">Four things, one app — open it any time during the event.</p>
         <ol class="about-steps__list">
             @foreach ([
                 ['home', 'Know what\'s happening', 'See what\'s on now and next — with a tip on what to do.'],
@@ -31,7 +30,7 @@
     <section class="about-tour" aria-labelledby="about-tour-heading">
         <div class="section-head">
             <h2 id="about-tour-heading" class="section-head__title">See it in action</h2>
-            <span class="section-head__desc">Real screens from the app — swipe or tap the phone</span>
+            <span class="section-head__desc">Swipe or tap the phone</span>
         </div>
 
         {{-- A short, silent "video" made of the app's real screens (tour.js):
@@ -74,19 +73,19 @@
             <a class="about-who__card" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_who_first">
                 <span class="about-who__emoji" aria-hidden="true">🌱</span>
                 <span class="about-who__title">Your first WordCamp</span>
-                <span class="about-who__text">Not sure what a "track" is or who to talk to? A 5-minute guide and gentle tips walk you through the day.</span>
+                <span class="about-who__text">A 5-minute guide and gentle tips through the day.</span>
                 <span class="about-who__cta">Read the first-timer guide →</span>
             </a>
             <a class="about-who__card" href="{{ route('guide') }}#guide-students" data-track="guide_open" data-track-surface="picker_who_student">
                 <span class="about-who__emoji" aria-hidden="true">🎓</span>
                 <span class="about-who__title">College students</span>
-                <span class="about-who__text">Learn what the industry really uses, earn open-source experience for your résumé, and meet people who hire.</span>
+                <span class="about-who__text">Real-world skills, open-source experience and people who hire.</span>
                 <span class="about-who__cta">What's in it for students →</span>
             </a>
             <a class="about-who__card" href="#find-your-camp">
                 <span class="about-who__emoji" aria-hidden="true">🤝</span>
                 <span class="about-who__title">WordCamp regulars</span>
-                <span class="about-who__text">Plan your talks in a minute, get reminders, and meet new people who share your interests.</span>
+                <span class="about-who__text">Plan talks in a minute and meet people who share your interests.</span>
                 <span class="about-who__cta">Choose your WordCamp ↑</span>
             </a>
         </div>
@@ -97,14 +96,7 @@
             <h2 id="about-faq-heading" class="section-head__title">Quick questions</h2>
         </div>
         <div class="guide-accordion">
-            @foreach ([
-                ['Is it free?', 'Yes, completely — no ads, no paid features. It\'s made for WordCamp attendees.'],
-                ['Do I need to sign up or download an app?', 'No account, ever, and nothing to download from a store. It opens in your phone\'s browser — tap "Install app" if you\'d like it on your home screen.'],
-                ['Where does the schedule come from?', 'From each WordCamp\'s own website: sessions, speakers and sponsors are read from there and refreshed through the day. If anything differs, the WordCamp website and the organizers have the final word.'],
-                ['I\'m a student — is this for me?', 'Very much. WordCamp is an affordable way to learn real-world skills and meet people who hire. Pick "Student" when you set up, and read the student section of the first-timer guide.'],
-                ['What happens to what I type in?', 'Your answers, saved talks, Quest progress and Camp Card stay on your phone. Only what you choose to share in attendee discovery is shared with other attendees — and you can leave any time.'],
-                ['Does it work with bad wifi?', 'Yes. Pages you\'ve opened keep working offline — handy in a crowded venue. Open your event once at home and you\'re set.'],
-            ] as [$q, $a])
+            @foreach (\App\Support\FirstTimerGuide::quickQuestions() as ['q' => $q, 'a' => $a])
                 <details class="guide-accordion__item" data-track-open="faq_open" data-track-question="{{ $q }}">
                     <summary>{{ $q }}</summary>
                     <p>{{ $a }}</p>

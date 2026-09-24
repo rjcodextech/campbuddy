@@ -4,6 +4,15 @@
     // event, then the product. explore.js / my-day.js refine it further when
     // an in-page section is switched.
     $documentTitle = collect([$title, $event->display_name, config('campbuddy.name')])->filter()->implode(' | ');
+    // An event's front page leads with the event and says what's on it — the
+    // words people actually search for.
+    if (request()->routeIs('event.home')) {
+        $documentTitle = "{$event->display_name} — Schedule, People & First-Timer Guide | ".config('campbuddy.name');
+    }
+
+    // Search, social and answer-engine metadata (App\Support\Seo).
+    $routeName = request()->route()?->getName();
+    $seo = \App\Support\Seo::eventPage($event, $routeName);
 
     // For analytics (page_context): which screen, and where the event is in
     // time — so reports can split "used during the event" from "before it".
@@ -24,7 +33,12 @@
     <meta name="vapid-public-key" content="{{ config('services.vapid.public_key') }}">
 
     <title>{{ $documentTitle }}</title>
-    <meta name="description" content="Your guide to {{ $event->display_name }} — schedule, people, and what to do next.">
+    @include('attendee.partials.seo', [
+        'seoTitle' => $documentTitle,
+        'seoDescription' => $seo['description'],
+        'seoRobots' => $seo['robots'],
+        'seoSchema' => \App\Support\Seo::eventSchema($event, $routeName, $title ?? $event->display_name),
+    ])
 
     @include('attendee.partials.head-meta', ['manifestUrl' => route('event.manifest', $event, absolute: false), 'tabIcon' => $event->faviconUrl()])
 

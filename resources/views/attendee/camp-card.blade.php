@@ -49,8 +49,7 @@
         </div>
 
         <p class="cc-print-note">
-            <strong>Print quality:</strong> Download and Share give a 600&nbsp;DPI image, sized for a 3&nbsp;×&nbsp;5&nbsp;in card —
-            sharp enough for a print shop.
+            <strong>Print quality:</strong> 600&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
         </p>
 
         <details class="cc-editor" open id="cc-edit-details">

@@ -14,6 +14,7 @@ use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\RosterRemovalController;
+use App\Http\Controllers\SeoController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -43,6 +44,13 @@ Route::withoutMiddleware([
     ValidateCsrfToken::class,
 ])->group(function () {
     Route::get('/', HomeController::class)->name('home');
+
+    // For search engines and AI assistants (SeoController) — built from live
+    // data, so a new WordCamp is listed the moment it goes live.
+    Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
+    Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+    Route::get('/llms.txt', [SeoController::class, 'llms'])->name('llms');
+    Route::get('/indexnow-{key}.txt', [SeoController::class, 'indexNowKey'])->where('key', '[A-Za-z0-9-]{8,128}')->name('indexnow.key');
 
     // WordCamp 101 for first-timers, before any event is picked. Each event
     // has its own copy (event.guide) that adds that event's venue and times.

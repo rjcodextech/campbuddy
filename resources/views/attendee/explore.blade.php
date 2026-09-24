@@ -59,7 +59,7 @@
         </div>
 
         <div data-explore-panel="sponsors" hidden>
-            <p class="panel-intro">Sponsors help keep WordCamp tickets affordable. Visit their booths — you don't have to buy anything, and many have swag, demos and job openings.</p>
+            <p class="panel-intro">Sponsors keep tickets affordable. Visit their booths — no need to buy anything; many have swag, demos and jobs.</p>
             @forelse ($sponsorsByTier as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>

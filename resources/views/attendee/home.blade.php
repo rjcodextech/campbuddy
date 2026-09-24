@@ -35,7 +35,7 @@
                 <a class="start-here__link" href="{{ route('event.guide', $event) }}" data-track="guide_open" data-track-surface="home_start_here">
                     <span class="start-here__title">New to WordCamp? Start here</span>
                 </a>
-                <span class="start-here__desc">What happens during the day, the words people use, and how to meet people — in five minutes.</span>
+                <span class="start-here__desc">The day, the words people use, and how to meet people — in 5 minutes.</span>
                 <span class="start-here__cta" aria-hidden="true">Read the guide →</span>
             </div>
             <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss">×</button>

@@ -61,13 +61,21 @@ class PageTitleAndManifestTest extends TestCase
     public static function tabs(): array
     {
         return [
-            'home' => ['event.home', 'Home'],
             'my day' => ['event.my-day', 'My Day'],
             'quest' => ['event.quest', 'Quest'],
             'contribute' => ['event.contribute', 'Contribute'],
             'explore' => ['event.explore', 'Explore'],
             'camp card' => ['event.camp-card', 'Camp Card'],
         ];
+    }
+
+    public function test_an_event_home_title_leads_with_the_event_and_what_is_on_it(): void
+    {
+        $event = $this->event();
+
+        $this->get(route('event.home', $event))
+            ->assertOk()
+            ->assertSee('<title>WordCamp Test 2026 — Schedule, People &amp; First-Timer Guide | CampBuddy</title>', false);
     }
 
     public function test_the_takedown_page_has_its_own_title_too(): void

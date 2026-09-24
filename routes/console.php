@@ -95,6 +95,14 @@ Schedule::job(new DiscoverWordCampsJob)->cron('0 3 */2 * *')->name('discover-wor
 // midnight so it doesn't pile onto ingest-attendee-roster's own run.
 Schedule::job(new EvaluateEventLifecycleJob)->dailyAt('01:00')->name('evaluate-event-lifecycle');
 
+// Tell search engines about new and changed pages (IndexNow) once a day. Run
+// in-process (Artisan::call) like the queue drain below — hosts often disable
+// proc_open. The command itself does nothing outside production.
+Schedule::call(fn () => Artisan::call('campbuddy:indexnow'))
+    ->dailyAt('04:30')
+    ->name('indexnow')
+    ->withoutOverlapping(30);
+
 /*
 |--------------------------------------------------------------------------
 | Queue worker

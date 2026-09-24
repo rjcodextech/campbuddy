@@ -16,16 +16,10 @@
 }
 
 .about-steps__title {
-    margin: 0 0 v.$space-1;
+    margin: 0 0 v.$space-4;
     font-size: v.$font-size-md;
     font-weight: v.$font-weight-black;
     color: #fff;
-}
-
-.about-steps__lead {
-    margin: 0 0 v.$space-4;
-    font-size: v.$font-size-sm;
-    color: rgba(251, 239, 217, 0.8);
 }
 
 .about-steps__list {

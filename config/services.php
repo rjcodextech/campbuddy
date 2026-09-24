@@ -56,4 +56,18 @@ return [
         'measurement_id' => env('GA_MEASUREMENT_ID'),
     ],
 
+    // Search engines. Verification codes come from Google Search Console /
+    // Bing Webmaster Tools ("HTML tag" method — just the content="…" value).
+    // IndexNow tells Bing, Yandex, Seznam and Naver about new and changed
+    // pages right away; the key defaults to one derived from APP_KEY.
+    'search' => [
+        'google_verification' => env('GOOGLE_SITE_VERIFICATION'),
+        'bing_verification' => env('BING_SITE_VERIFICATION'),
+    ],
+
+    'indexnow' => [
+        'key' => env('INDEXNOW_KEY'),
+        'endpoint' => env('INDEXNOW_ENDPOINT', 'https://api.indexnow.org/indexnow'),
+    ],
+
 ];

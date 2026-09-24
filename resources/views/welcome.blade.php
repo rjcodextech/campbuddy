@@ -4,7 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ config('campbuddy.name') }} | {{ config('campbuddy.tagline') }}</title>
-    <meta name="description" content="CampBuddy is the mobile-first companion app for WordCamp attendees — guidance on what to do next, session planning, Contributor Day matching, and a digital Camp Card, all local-first and privacy-respecting.">
+    @include('attendee.partials.seo', [
+        'seoTitle' => config('campbuddy.name').' | '.config('campbuddy.tagline'),
+        'seoDescription' => 'CampBuddy is a free companion app for WordCamp attendees: see what\'s on now, plan the talks you want, meet people who share your interests and follow a friendly first-timer guide. No sign-up.',
+        'seoSchema' => [
+            ...\App\Support\Seo::site(),
+            \App\Support\Seo::faq(array_map(fn ($e) => [$e['q'], $e['a']], \App\Support\FirstTimerGuide::quickQuestions())),
+            ($events ?? collect())->isNotEmpty() ? [
+                '@type' => 'ItemList',
+                'name' => 'Upcoming WordCamps',
+                'itemListElement' => $events->values()->map(fn ($e, $i) => ['@type' => 'ListItem', 'position' => $i + 1, 'item' => \App\Support\Seo::event($e)])->all(),
+            ] : null,
+        ],
+    ])
 
     @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false)])
 
@@ -54,8 +66,7 @@
                     <p class="u-eyebrow">Your WordCamp companion</p>
                     <h1 id="landing-hero-title" class="landing-hero__title">Your friendly guide to WordCamp</h1>
                     <p class="landing-hero__lead">
-                        Know what's on, plan the talks you want and meet the right people — all from your phone.
-                        Made for first-timers, students and regulars.
+                        Know what's on, plan your talks and meet the right people — all from your phone.
                     </p>
                     <ul class="landing-hero__promises" aria-label="Good to know">
                         <li>Free</li>
@@ -80,7 +91,7 @@
                 <div class="onboarding-card">
                     <p class="onboarding-card__badge">Optional · 30 seconds</p>
                     <h2 class="form-group__title" id="onboarding-welcome-heading">Make CampBuddy yours</h2>
-                    <p class="form-group__desc">Your answers help us suggest talks and people for you. They stay on this device.</p>
+                    <p class="form-group__desc">Helps us suggest talks and people. Stays on this device.</p>
 
                     <div class="form-field">
                         <label class="form-field__label" for="ob-first">Is this your first WordCamp?</label>
@@ -105,7 +116,7 @@
 
                     <div class="form-field">
                         <label class="form-field__label" for="ob-contrib">Interested in Contributor Day?</label>
-                        <p class="form-field__hint" style="margin:0 0 6px">A hands-on day helping improve WordPress — beginners are welcome.</p>
+                        <p class="form-field__hint" style="margin:0 0 6px">A hands-on day improving WordPress. Beginners welcome.</p>
                         <select id="ob-contrib" data-field="attendingContributorDay">
                             <option value="">Not sure yet</option>
                             <option value="yes">Yes</option>

@@ -237,6 +237,25 @@ class FirstTimerGuide
     }
 
     /**
+     * "Quick questions" about CampBuddy itself, on the picker — also its
+     * FAQPage structured data, so answer engines quote the same words.
+     *
+     * @return array<int, array{q: string, a: string}>
+     */
+    public static function quickQuestions(): array
+    {
+        return [
+            ['q' => 'What is CampBuddy?', 'a' => 'A free web app that guides you through a WordCamp: what\'s on now, your schedule, people to meet, and a Camp Card to stay in touch.'],
+            ['q' => 'Is it free?', 'a' => 'Yes, completely — no ads and no paid features.'],
+            ['q' => 'Do I need to sign up or download an app?', 'a' => 'No. There\'s no account and nothing to download from an app store. It opens in your phone\'s browser — tap "Install app" to keep it on your home screen.'],
+            ['q' => 'Where does the schedule come from?', 'a' => 'From each WordCamp\'s own website, refreshed through the day. The WordCamp website always has the final word.'],
+            ['q' => 'I\'m a student — is this for me?', 'a' => 'Yes. Pick "Student" when you set up, and read the student tips in the first-timer guide.'],
+            ['q' => 'What happens to what I type in?', 'a' => 'It stays on your phone. Only what you choose to share in attendee discovery is shown to other attendees, and you can leave any time.'],
+            ['q' => 'Does it work with bad wifi?', 'a' => 'Yes. Pages you\'ve opened keep working offline.'],
+        ];
+    }
+
+    /**
      * @return array<int, array{q: string, a: string}>
      */
     public static function faq(): array
