@@ -1,0 +1,72 @@
+@use '../abstracts/variables' as v;
+
+// Faint line-icon backgrounds, each matching its section (public/media/
+// pattern-*.svg — the faintness is in the files' strokes). They sit on the
+// far side of a section and fade out behind the text, so they never cost
+// legibility. The picker hero has its own (components/_landing.scss).
+
+$paper: v.$color-paper;
+
+@function fade-over($color, $to: right) {
+    @return linear-gradient(to $to, $color 30%, rgba($color, 0.7) 60%, rgba($color, 0) 90%);
+}
+
+// Event Home: the event itself — talks, coffee, people, the venue.
+.home-hero {
+    background:
+        fade-over($paper),
+        url('/media/pattern-event.svg') right -30px top -40px / 200px 200px repeat,
+        $paper;
+}
+
+// The first-timer guide's dark hero: learning — a book, a bulb, questions.
+.guide-hero {
+    background:
+        url('/media/pattern-guide.svg') right -20px top -10px / 200px 200px repeat,
+        radial-gradient(circle at 92% 12%, rgba(244, 166, 41, 0.35), transparent 42%),
+        radial-gradient(circle at 0% 100%, rgba(195, 58, 25, 0.55), transparent 55%),
+        linear-gradient(150deg, #6d2021, #4a1415);
+}
+
+// My schedule: the plan — clocks, bells, stars.
+.plan-summary {
+    background:
+        fade-over(#fff),
+        url('/media/pattern-schedule.svg') right -40px center / 200px 200px repeat,
+        linear-gradient(135deg, #fff, var(--peach));
+}
+
+// "Find people who match your interests": people, chat, a wave.
+.discovery-prompt {
+    background:
+        fade-over($paper),
+        url('/media/pattern-people.svg') right -30px top -20px / 200px 200px repeat,
+        $paper;
+}
+
+// Two matches who both waved.
+.person-card--mutual {
+    background:
+        linear-gradient(to right, rgba(#fff, 0.95) 40%, rgba(#e8f7f6, 0.6)),
+        url('/media/pattern-people.svg') right -40px top -40px / 200px 200px repeat,
+        #e8f7f6;
+}
+
+// Quest, before anything's picked: an adventure — flags, a map, a trophy.
+#quest-empty {
+    background:
+        radial-gradient(ellipse at center, rgba($paper, 0.95) 35%, rgba($paper, 0.4) 75%),
+        url('/media/pattern-quest.svg') center / 200px 200px repeat,
+        $paper;
+}
+
+// Contribute's intro: code, translation, writing, helping.
+body[data-page-type='contribute'] .u-page-intro {
+    padding: v.$space-4;
+    border-radius: 14px;
+    background:
+        fade-over($paper),
+        url('/media/pattern-contribute.svg') right -30px top -30px / 200px 200px repeat,
+        $paper;
+    box-shadow: inset 0 0 0 1px var(--line);
+}

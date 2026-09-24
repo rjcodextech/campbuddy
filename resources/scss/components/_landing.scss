@@ -123,8 +123,8 @@
     position: relative;
     flex-shrink: 0;
     width: 100%;
-    max-width: 340px;
-    height: 176px;
+    max-width: 300px;
+    height: 184px;
     margin: 0 auto;
 
     @media (min-width: v.$bp-tablet) {
@@ -133,20 +133,21 @@
     }
 }
 
+// True circles: sized by height, square by aspect ratio — never an oval
+// stretched to the container's width.
 .hero-orbit__ring {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 74%;
-    height: 88%;
+    height: 92%;
+    aspect-ratio: 1;
     border: 1.5px dashed rgba(195, 58, 25, 0.28);
     border-radius: 50%;
     transform: translate(-50%, -50%);
 }
 
 .hero-orbit__ring--inner {
-    width: 42%;
-    height: 52%;
+    height: 58%;
     border-style: solid;
     border-color: rgba(244, 166, 41, 0.35);
 }
@@ -198,6 +199,7 @@
     animation: hero-float 5s ease-in-out infinite;
 
     svg {
+        flex: 0 0 26px;
         width: 26px;
         height: 26px;
         padding: 5px;
@@ -212,10 +214,10 @@
     }
 }
 
-.hero-orbit__item--1 { top: 4%; left: 4%; }
-.hero-orbit__item--2 { top: 10%; right: 0; animation-delay: -1.2s; }
-.hero-orbit__item--3 { bottom: 8%; left: 0; animation-delay: -2.4s; }
-.hero-orbit__item--4 { bottom: 2%; right: 6%; animation-delay: -3.6s; }
+.hero-orbit__item--1 { top: 6%; left: 0; }
+.hero-orbit__item--2 { top: 14%; right: 0; animation-delay: -1.2s; }
+.hero-orbit__item--3 { bottom: 12%; left: 0; animation-delay: -2.4s; }
+.hero-orbit__item--4 { bottom: 4%; right: 0; animation-delay: -3.6s; }
 
 .hero-orbit__dot {
     position: absolute;
@@ -235,8 +237,8 @@
     }
 }
 
-.hero-orbit__dot--1 { top: 42%; left: 12%; animation-delay: -2s; }
-.hero-orbit__dot--2 { top: 38%; right: 12%; color: var(--teal); animation-delay: -4s; }
+.hero-orbit__dot--1 { top: 44%; left: 14%; animation-delay: -2s; }
+.hero-orbit__dot--2 { top: 40%; right: 14%; color: var(--teal); animation-delay: -4s; }
 
 @keyframes hero-float {
     0%,

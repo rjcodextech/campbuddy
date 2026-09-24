@@ -24,6 +24,12 @@
 
 // A quiet "see all →" link on the right of a section heading.
 .section-head__link {
+    // A 44px-tall tap target that doesn't push the heading around.
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin: -12px -6px;
+    padding: 0 6px;
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--brand-primary);

@@ -144,8 +144,8 @@
     // The glyph alone is ~29x22px — the single most-tapped control on My
     // Day. Same trick as the title: pad out to a 44px target and pull the
     // margin back so the star stays where it was.
-    padding: 11px 8px;
-    margin: -11px -8px;
+    padding: 11px 12px;
+    margin: -11px -12px;
     font-size: v.$font-size-lg;
     // An unsaved star is the only cue that a session can be saved: it was the
     // page's border colour (1.2:1 against the card), now a 3:1 grey.
