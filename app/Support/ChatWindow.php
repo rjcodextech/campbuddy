@@ -179,6 +179,17 @@ class ChatWindow
         $start = $this->event->starts_on?->toDateString();
         $end = ($this->event->ends_on ?? $this->event->starts_on)?->toDateString();
 
+        // A session on a later day means the event runs that long, whatever
+        // its (often missing) end date says.
+        if ($start !== null && $end !== null) {
+            $limit = $this->event->starts_on->addDays(EventTime::MAX_EVENT_SPAN_DAYS)->toDateString();
+            $within = array_filter($sessionDays, fn ($day) => $day <= $limit);
+
+            if ($within !== []) {
+                $end = max($end, max($within));
+            }
+        }
+
         if ($start === null) {
             sort($sessionDays);
 

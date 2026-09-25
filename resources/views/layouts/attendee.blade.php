@@ -19,10 +19,12 @@
     $pageType = str_replace(['event.', '-', '.show'], ['', '_', ''], (string) request()->route()?->getName()) ?: 'event_page';
     // Today at the venue, not on the server's clock.
     $today = \App\Support\EventTime::today($event);
+    // The event's real last day (end date, start date or last session day).
+    $eventLastDay = \App\Support\EventTime::lastDay($event);
     $eventPhase = match (true) {
         $event->starts_on === null => 'unknown',
         $today < $event->starts_on->toDateString() => 'before',
-        $today > ($event->ends_on ?? $event->starts_on)->toDateString() => 'after',
+        $today > $eventLastDay => 'after',
         default => 'during',
     };
 @endphp
@@ -68,7 +70,7 @@
         <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}"
              data-event-name="{{ $event->display_name }}"
              data-event-start="{{ $event->starts_on?->toDateString() }}"
-             data-event-end="{{ ($event->ends_on ?? $event->starts_on)?->toDateString() }}"
+             data-event-end="{{ $eventLastDay }}"
              data-event-venue="{{ $event->info['venue'] ?? '' }}"
              data-event-timezone="{{ \App\Support\EventTime::known($event) ? \App\Support\EventTime::normalize($event->timezone) : '' }}"
              data-my-day-url="{{ route('event.my-day', $event) }}">

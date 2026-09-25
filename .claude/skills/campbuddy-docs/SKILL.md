@@ -48,6 +48,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 20 | [spec/20-engineering-principles.md](spec/20-engineering-principles.md) | Process discipline — read before making structural changes |
 | 21 | [spec/21-performance-hygiene.md](spec/21-performance-hygiene.md) | Laravel abstraction discipline, query discipline, security discipline |
 | 22 | [spec/22-analytics.md](spec/22-analytics.md) | GA4 wiring, the `track()` allowlist, the full event catalogue, one-time GA-console setup |
+| 23 | [spec/23-data-retention.md](spec/23-data-retention.md) | The "nothing of an attendee's disappears while the event is on" rule: the event's real last day, retention window, what uses it |
 
 ### §3 quick lookup (functional requirements, split by feature)
 

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\EventTime;
 use App\Support\SafeUrl;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +35,22 @@ class DiscoveryProfile extends Model
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
+    }
+
+    /**
+     * Profiles that haven't expired. While the event is inside its retention
+     * window (EventTime::retentionEnd) none has, whatever `expires_at` says:
+     * profiles made before the event's real last day was known carry an
+     * earlier stamp, and an attendee's profile must not vanish mid-event.
+     * Afterwards the stored stamp decides.
+     */
+    public function scopeAlive(Builder $query, Event $event): Builder
+    {
+        if (EventTime::retained($event)) {
+            return $query;
+        }
+
+        return $query->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
     }
 
     /** The attendee-list entry this profile's owner picked as themselves, if any. */

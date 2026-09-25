@@ -13,10 +13,11 @@ use Throwable;
 /**
  * Daily lifecycle sweep, independent of the discovery cadence:
  *
- * 1. Archive: an active/approved event whose dates have passed (ends_on,
- *    falling back to starts_on when no end date is known — see
- *    DiscoverWordCampsJob, which can't always supply one) is done, so it
- *    moves to archived automatically. A draft event that's already past
+ * 1. Archive: an active/approved event whose last day is over is done, so it
+ *    moves to archived automatically — but only RETENTION_DAYS after that
+ *    day (EventTime::retentionEnd). Its last day is its end date, start date
+ *    or last scheduled session day, whichever is latest (see EventTime::lastDay:
+ *    DiscoverWordCampsJob can't always supply an end date). A draft event that's already past
  *    and never got promoted just stays a draft — nothing to archive,
  *    it was never live.
  * 2. Auto-publish: a still-upcoming draft is trusted enough to go live
@@ -45,9 +46,12 @@ class EvaluateEventLifecycleJob implements ShouldQueue
         Event::whereIn('status', ['active', 'approved'])
             ->get()
             ->each(function (Event $event) {
-                // Over once its last day has ended *at the venue* — an event in
-                // Los Angeles is still on at 01:00 UTC the next day.
-                if (! EventTime::isOver($event)) {
+                // Archived (its pages stop being public) only once its last day
+                // has ended at the venue *and* the retention days after it have
+                // passed (EventTime::retentionEnd): a scraped event may have no
+                // end date, or a wrong one, and attendees must never lose the
+                // app — or their plans — while it might still be on.
+                if (EventTime::retained($event)) {
                     return;
                 }
 

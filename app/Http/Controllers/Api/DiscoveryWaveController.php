@@ -326,8 +326,7 @@ class DiscoveryWaveController extends Controller
 
     private function active(Event $event): Builder
     {
-        return DiscoveryProfile::where('event_id', $event->id)
-            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+        return DiscoveryProfile::where('event_id', $event->id)->alive($event);
     }
 
     private function me(Event $event, string $discoveryId, Request $request): DiscoveryProfile

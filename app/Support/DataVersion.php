@@ -41,6 +41,8 @@ class DataVersion
     public static function forget(int $eventId): void
     {
         Cache::forget(self::key($eventId));
+        // The event's last day is worked out from its schedule (EventTime::lastDay).
+        EventTime::forgetSessionDay($eventId);
     }
 
     private static function key(int $eventId): string

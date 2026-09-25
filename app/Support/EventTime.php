@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use DateTimeZone;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -25,20 +26,152 @@ class EventTime
         return \Carbon\CarbonImmutable::instance($now ?? now())->setTimezone(self::zone($event))->toDateString();
     }
 
-    /** Whether the event's last day (end date, or start date) is over at the venue. */
+    /**
+     * How long after its last day an event stays live: nothing is archived and
+     * no attendee-entered data (discovery profiles, waves, messages) expires
+     * until this many days have passed. Scraped dates are sometimes missing or
+     * a day off, and an attendee's own plans and connections must never vanish
+     * while the event might still be on — or the morning after.
+     */
+    public const RETENTION_DAYS = 3;
+
+    /** No WordCamp runs longer; a stray session date further out must not keep an event live. */
+    public const MAX_EVENT_SPAN_DAYS = 7;
+
+    /**
+     * The event's last day at the venue ("Y-m-d"): the latest of its end date,
+     * its start date and the day its last scheduled session ends. Scraped
+     * events often have no end date at all (or one that is wrong), while the
+     * schedule shows the real days.
+     */
+    public static function lastDay(Event $event): ?string
+    {
+        $dates = array_filter([
+            $event->ends_on?->toDateString(),
+            $event->starts_on?->toDateString(),
+            self::lastSessionDay($event),
+        ]);
+
+        return $dates === [] ? null : max($dates);
+    }
+
+    /** Whether the event's last day is over at the venue. */
     public static function isOver(Event $event, ?\DateTimeInterface $now = null): bool
     {
-        $last = ($event->ends_on ?? $event->starts_on)?->toDateString();
+        $last = self::lastDay($event);
 
         return $last !== null && $last < self::today($event, $now);
     }
 
-    /** The last moment of the event's final day at the venue (for expiring discovery profiles). */
-    public static function endOfLastDay(Event $event): ?\Carbon\CarbonImmutable
+    /**
+     * The moment nothing of the event needs to be kept any more: the end of its
+     * last day plus RETENTION_DAYS. While the venue's zone is unknown it is
+     * measured in the latest zone on Earth (UTC−12), so no event is ever cut
+     * short by a guess. Null when the event has no dates at all.
+     */
+    public static function retentionEnd(Event $event): ?\Carbon\CarbonImmutable
     {
-        $last = ($event->ends_on ?? $event->starts_on)?->toDateString();
+        $last = self::lastDay($event);
 
-        return $last === null ? null : \Carbon\CarbonImmutable::parse($last.' 23:59:59', self::zone($event))->utc();
+        if ($last === null) {
+            return null;
+        }
+
+        $zone = self::parse($event->timezone) ?? new DateTimeZone('Etc/GMT+12');
+
+        return \Carbon\CarbonImmutable::parse($last.' 23:59:59', $zone)->addDays(self::RETENTION_DAYS)->utc();
+    }
+
+    /** Whether the event is still inside its retention window (an event with no dates always is). */
+    public static function retained(Event $event, ?\DateTimeInterface $now = null): bool
+    {
+        $end = self::retentionEnd($event);
+
+        return $end === null || \Carbon\CarbonImmutable::instance($now ?? now())->lte($end);
+    }
+
+    /**
+     * Reads the last-session day of many events in one cache round trip, for
+     * lists (the WordCamp picker) that would otherwise ask once per event.
+     *
+     * @param  iterable<Event>  $events
+     */
+    public static function primeSessionDays(iterable $events): void
+    {
+        $keys = [];
+
+        foreach ($events as $event) {
+            $keys[] = self::sessionDayKey($event->id);
+        }
+
+        $request = Cache::store('array');
+
+        foreach (Cache::many($keys) as $key => $value) {
+            if ($value !== null) {
+                $request->put($key, $value, 60);
+            }
+        }
+    }
+
+    /** Called whenever an event or its data is written (see DataVersion::forget). */
+    public static function forgetSessionDay(int $eventId): void
+    {
+        Cache::store('array')->forget(self::sessionDayKey($eventId));
+        Cache::forget(self::sessionDayKey($eventId));
+    }
+
+    private static function sessionDayKey(int $eventId): string
+    {
+        return "event:{$eventId}:last-session-day";
+    }
+
+    private static function lastSessionDay(Event $event): ?string
+    {
+        $key = self::sessionDayKey($event->id);
+        // The array store lives only as long as this request: repeat questions
+        // in one request (a list of events) don't go back to the database.
+        $request = Cache::store('array');
+        $day = $request->get($key);
+
+        if ($day === null) {
+            // '' stands for "no sessions" — Cache::remember doesn't keep a null.
+            $day = Cache::remember($key, 900, fn () => self::sessionDayFromSchedule($event) ?? '');
+            $request->put($key, $day, 60);
+        }
+
+        return $day === '' ? null : $day;
+    }
+
+    private static function sessionDayFromSchedule(Event $event): ?string
+    {
+        $zone = self::zone($event);
+        $latest = null;
+        $limit = $event->starts_on?->addDays(self::MAX_EVENT_SPAN_DAYS)->toDateString();
+
+        foreach (EventData::get($event->id, 'sessions') ?? [] as $session) {
+            if (! is_array($session) || empty($session['starts_at'])) {
+                continue;
+            }
+
+            try {
+                $start = \Carbon\CarbonImmutable::parse($session['starts_at']);
+            } catch (Throwable) {
+                continue;
+            }
+
+            $seconds = is_numeric($session['duration_seconds'] ?? null) && $session['duration_seconds'] > 0
+                ? (int) $session['duration_seconds']
+                : 30 * 60;
+            $day = $start->addSeconds($seconds)->setTimezone($zone)->toDateString();
+
+            if ($limit !== null && $day > $limit) {
+                continue;
+            }
+
+            $latest = $latest === null ? $day : max($latest, $day);
+        }
+
+        return $latest;
     }
 
     public static function known(Event $event): bool

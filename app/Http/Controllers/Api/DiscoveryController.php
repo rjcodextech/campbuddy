@@ -32,9 +32,7 @@ class DiscoveryController extends Controller
     public function index(Event $event): JsonResponse
     {
         $profiles = DiscoveryProfile::where('event_id', $event->id)
-            ->where(function ($q) {
-                $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
-            })
+            ->alive($event)
             ->with('rosterEntry:id,name,gravatar_url,links,is_suppressed')
             // Bounded, so one response can't grow without limit. Far above any
             // WordCamp's opted-in attendee count; newest first if ever reached.
@@ -62,8 +60,9 @@ class DiscoveryController extends Controller
                 'event_id' => $event->id,
                 'attendee_roster_id' => $entry?->id,
                 'fields' => $this->fields($request, $entry),
-                // The end of the event's last day at the venue, not on the server's clock.
-                'expires_at' => EventTime::endOfLastDay($event),
+                // Kept through the event's last day at the venue and a few days
+                // after (EventTime::retentionEnd) — never on the server's clock.
+                'expires_at' => EventTime::retentionEnd($event),
             ]);
         } catch (UniqueConstraintViolationException) {
             // Two people picked the same name at the same moment.

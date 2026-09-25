@@ -41,9 +41,7 @@ class RosterController extends Controller
             ->where('is_suppressed', false)
             // "Open to meet": they picked this entry as themselves in attendee
             // discovery — their own choice to be found. One subquery, not one per row.
-            ->when($withOpenToMeet, fn ($q) => $q->withExists(['discoveryProfile as open_to_meet' => fn ($q) => $q->where(
-                fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now())
-            )]))
+            ->when($withOpenToMeet, fn ($q) => $q->withExists(['discoveryProfile as open_to_meet' => fn ($q) => $q->alive($event)]))
             ->orderBy('name')
             ->paginate(200)
             ->through(fn ($entry) => [

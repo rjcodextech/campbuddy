@@ -1,6 +1,6 @@
 # 22. Analytics (GA4)
 
-[← Back to index](../SKILL.md) · Previous: [21. Performance & code hygiene](21-performance-hygiene.md)
+[← Back to index](../SKILL.md) · Previous: [21. Performance & code hygiene](21-performance-hygiene.md) · Next: [23. Data retention →](23-data-retention.md)
 
 How the attendee app reports usage to Google Analytics 4, and the rules that keep it inside the privacy posture in [8.5](08-security-privacy.md#85-analytics-guardrail) and [17](17-privacy.md). **The admin panel is deliberately not tracked** — organizers' own clicks would drown the attendee numbers.
 
