@@ -16,6 +16,11 @@
     </div>
 </template>
 
+{{-- Shown above the list when it is the copy saved on the phone (no connection). --}}
+<template id="tpl-roster-note">
+    <p class="roster-note" role="status" data-slot="text"></p>
+</template>
+
 <template id="tpl-roster-empty">
     <p style="margin:0">No public attendee list yet — it appears here once people register and choose to be listed on the WordCamp site.</p>
 </template>

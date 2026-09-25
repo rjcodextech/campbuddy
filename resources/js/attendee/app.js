@@ -38,13 +38,28 @@ initCacheVersion();
 // themselves — no manual refresh needed.
 initDataFreshness();
 
+// Quiet upkeep, only in idle moments and never asking the person anything:
+//  - the rest of the event's screens are saved for offline use (offline-warmup.js);
+//  - reminder requests made offline are sent, and a replaced push subscription
+//    is told to the server again (push-sync.js).
+const whenIdle = (fn) => ('requestIdleCallback' in window ? window.requestIdleCallback(fn, { timeout: 8000 }) : setTimeout(fn, 4000));
+const keepUp = () => {
+  import('./offline-warmup.js').then(({ warmOfflineCache }) => warmOfflineCache()).catch(() => {});
+  import('./push-sync.js').then(({ runPushSync }) => runPushSync()).catch(() => {});
+};
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {
       // Offline-first degrades gracefully without it — a failed
       // registration just means no offline caching or push this visit.
     });
+
+    whenIdle(keepUp);
   });
+
+  // Back online after a spell without a connection: catch up.
+  window.addEventListener('online', () => whenIdle(keepUp));
 }
 
 async function init() {

@@ -66,6 +66,17 @@
     }
 }
 
+// "Showing the attendee list saved on your phone…" — above the list, when there's no connection.
+.roster-note {
+    margin: 0 0 v.$space-2;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-sm;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
+}
+
 // With rows in it the card gives the sides back to the rows (the middle
 // column is the tight one on a phone); the messages keep the normal padding.
 #people-roster:has(> .roster-row) {

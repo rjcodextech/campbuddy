@@ -50,4 +50,10 @@
     <If "%{REQUEST_URI} == '/sw.js'">
         Header set Cache-Control "no-cache"
     </If>
+
+    # sw-flags.json is the service worker's on/off switch (see sw.js): a change
+    # must be seen at once, everywhere.
+    <If "%{REQUEST_URI} == '/sw-flags.json'">
+        Header set Cache-Control "no-store"
+    </If>
 </IfModule>

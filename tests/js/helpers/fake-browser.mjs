@@ -78,6 +78,9 @@ export function installFakeBrowser({
   online = true,
   origin = 'https://campbuddy.test',
   caches = fakeCaches(),
+  cacheVersion = '0',
+  anchors = [],
+  html = '',
 } = {}) {
   const saved = {};
   const set = (name, value) => {
@@ -90,6 +93,7 @@ export function installFakeBrowser({
   const fire = (bucket, type, ...args) => (listeners[bucket][type] ?? []).forEach((fn) => fn(...args));
 
   const meta = { content: version };
+  const cacheMeta = { content: cacheVersion };
   const app = { dataset: { eventSlug: slug, eventStart: start, eventEnd: end, eventTimezone: timezone } };
   const body = { children: [], appendChild(el) { this.children.push(el); } };
   const doc = {
@@ -97,7 +101,9 @@ export function installFakeBrowser({
     activeElement: null,
     body,
     getElementById: (id) => (id === 'app' ? app : body.children.find((c) => c.id === id) ?? null),
-    querySelector: (sel) => (sel.includes('campbuddy-data-version') ? meta : null),
+    querySelector: (sel) => (sel.includes('campbuddy-data-version') ? meta : sel.includes('campbuddy-cache-version') ? cacheMeta : null),
+    querySelectorAll: (sel) => (sel === 'a[href]' ? anchors.map((href) => ({ getAttribute: () => href })) : []),
+    documentElement: { innerHTML: html },
     createElement: (tag) => ({ tag, addEventListener() {}, remove() {} }),
     addEventListener: add('document'),
   };
@@ -128,7 +134,7 @@ export function installFakeBrowser({
   win.fetch = fetchSpy;
 
   return {
-    doc, win, meta, app, store, location, caches, fetches, responses,
+    doc, win, meta, cacheMeta, app, store, location, caches, fetches, responses,
     fire: (type, ...args) => fire('window', type, ...args),
     fireDocument: (type, ...args) => fire('document', type, ...args),
     setVisible(v) { doc.visibilityState = v ? 'visible' : 'hidden'; },

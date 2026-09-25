@@ -64,3 +64,5 @@ Names are `snake_case`; `share`, `generate_lead` and `exception` are GA4 recomme
 Add it to `EVENTS` in `analytics.js` with only the params it needs, then call `track('name', { … })` or put `data-track` on the markup. In `npm run dev`, a call to an unlisted event or param logs a console warning instead of failing silently. Document it in the table above and register any new param in GA.
 
 Tests: `tests/Feature/AnalyticsTagTest.php` covers the tag partial (off without an ID, URL scrubbing, opt-out handling, slug escaping, admin layouts excluded).
+
+> **Note (Sept 2026):** `reminder_offer.result` can now also be `queued` — the person said yes but the phone had no connection (or the server was down), so the request was kept and is sent when it can be (`outbox.js`).

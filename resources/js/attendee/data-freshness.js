@@ -14,13 +14,15 @@
 //   - otherwise a small "Updated — tap to refresh" pill appears, and the
 //     refresh happens by itself as soon as they're idle.
 //
-// Before reloading, the saved copies of this event's pages are dropped, so
-// the service worker fetches fresh ones rather than serving a saved copy.
-// The attendee's own data (saved sessions, Quest progress, Camp Card) lives
-// in IndexedDB and is never touched.
+// Before reloading, the saved copies of this event's pages are REPLACED by
+// fresh ones (saved-copies.js) — never deleted first — so a phone whose
+// connection drops half-way still has every page to open offline. The
+// attendee's own data (saved sessions, Quest progress, Camp Card) lives in
+// IndexedDB and is never touched.
 
 import { apiHeaders } from './api.js';
 import { inEventWindow, nextDelay, retryAfterMs } from './polling.js';
+import { refreshCopies } from './saved-copies.js';
 
 const MIN_GAP_MS = 45 * 1000;
 const IDLE_MS = 30 * 1000;
@@ -56,25 +58,13 @@ function busy() {
   return typing || dialogOpen || Date.now() - lastInteraction < IDLE_MS;
 }
 
-async function dropSavedPages(slug) {
-  if (!('caches' in window)) return;
-
-  try {
-    for (const name of await caches.keys()) {
-      const cache = await caches.open(name);
-      for (const request of await cache.keys()) {
-        if (new URL(request.url).pathname.startsWith(`/event/${slug}`)) {
-          await cache.delete(request);
-        }
-      }
-    }
-  } catch (err) {
-    // Blocked or unavailable — the network-first worker still tries the network first.
-  }
+/** This event's saved pages, each swapped for a fresh copy in place. Nothing is deleted, whatever the network does. */
+async function refreshSavedPages(slug) {
+  await refreshCopies((url) => url.pathname === `/event/${slug}` || url.pathname.startsWith(`/event/${slug}/`));
 }
 
 async function refresh(slug) {
-  await dropSavedPages(slug);
+  await refreshSavedPages(slug);
 
   try {
     sessionStorage.setItem(SCROLL_KEY, JSON.stringify({ path: location.pathname, y: window.scrollY }));

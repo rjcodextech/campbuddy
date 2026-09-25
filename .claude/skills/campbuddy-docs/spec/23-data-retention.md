@@ -23,3 +23,16 @@ Scraped events often arrive with **no end date** (in the reference data 20 of 21
 Deliberately unchanged: the nightly roster prune removes people who left the source Attendees page — that is a privacy opt-out and wins over retention. Server rows are never bulk-deleted by a job; "expired" only means hidden after the retention window.
 
 Tests: `tests/Feature/RetentionTest.php` (the "Sylhet" case: no end date, sessions on day 3) and the retention cases in `TimeAccuracyTest`.
+
+## 23.3 On the phone
+
+| What | Rule |
+|---|---|
+| **The attendee's own data** (IndexedDB: saved sessions, quest progress, Camp Card, meetings and notes, discovery token; localStorage flags) | Our code never deletes it. Only "Delete my data" (`db.js clearAll`, user-initiated) or the browser's own site-data clearing does. IndexedDB schema changes must be **additive only** (never drop or rewrite a store). |
+| **Saved pages and files** (Cache Storage, the service worker's `campbuddy-v3`) | Never deleted by us — not on data changes, not on the admin purge, not when a new worker version activates. They are only **replaced** by a fresh copy that arrived whole (`saved-copies.js`: a plain 200 only; on any failure the old copy stays). The one deliberate removal is a signed-in `/admin` page an older worker may have stored. There is no automatic cleanup of finished events: a few hundred KB per event is cheaper than ever taking an offline page away. |
+| **The saved attendee list** | Kept until replaced or cleared by "Delete my data". A person who asked to be removed disappears from a phone's copy the next time that phone is online (the list refreshes on every Explore visit). |
+| **Queued requests** (`outbox:<slug>`) | Kept until sent; dropped only when they can no longer mean anything (session left the day, notifications revoked, permanent refusal, 8 failed tries). Bounded to 100 per event. |
+
+**What can still remove it — outside our code:** the person clearing site data / uninstalling, or the browser evicting storage when the phone runs low on space. Mitigations: an installed app is exempt from Safari's 7-day script-storage cap; `navigator.storage.persist()` is requested once (`offline-warmup.js`) and installed apps normally get a yes. If it *is* lost the app behaves as before this feature: pages are saved again as they are opened (and the warm-up runs again).
+
+Tests: `tests/js/` (`saved-copies`, `data-freshness`, `cache-version`, `sw`, `offline-warmup`) assert that no `caches.delete` / entry delete happens on any refresh path, and `tests/browser/offline.e2e.mjs` watches the real Cache Storage during a data change and a failing server.

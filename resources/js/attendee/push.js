@@ -5,9 +5,17 @@
 import { apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { kvGet, kvSet, setBookmark } from './db.js';
+import { createOutbox, isPermanentFailure } from './outbox.js';
 import { isIos, isStandalone } from './platform.js';
 import { render } from './template.js';
 import { getDeviceId } from './device.js';
+
+/**
+ * Reminder requests made with no connection (or while the server was down),
+ * kept on the phone and sent by push-sync.js when it's back — a tap on
+ * "remind me" is never silently lost.
+ */
+export const outbox = createOutbox({ kvGet, kvSet });
 
 
 /**
@@ -76,41 +84,67 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
   }
 
   try {
-    const registration = await navigator.serviceWorker.ready;
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (!subscription) {
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(document.querySelector('meta[name="vapid-public-key"]').content),
-      });
-    }
-
-    await apiMutate(eventSlug, '/push/subscribe', 'POST', {
-      device_id: getDeviceId(),
-      endpoint: subscription.endpoint,
-      keys: {
-        p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
-        auth: arrayBufferToBase64(subscription.getKey('auth')),
-      },
-    });
-
-    await apiMutate(eventSlug, '/bookmarks', 'POST', {
-      device_id: getDeviceId(),
-      session_id: sessionId,
-      reminder_enabled: true,
-    });
-
-    // Remembered locally, so un-saving the session knows to cancel it.
-    await setBookmark(eventId, sessionId, true);
-    await kvSet('notificationState', { ...((await kvGet('notificationState')) ?? {}), enabled: true });
+    await syncReminder(eventSlug, eventId, sessionId);
 
     if (!alreadyOn) track('reminder_offer', { result: 'enabled' });
     return true;
-  } catch {
-    track('reminder_offer', { result: 'error' });
+  } catch (error) {
+    // They said yes and the browser allowed it, so this is the connection or
+    // the server, not a "no": keep the wish and send it once the phone can.
+    if (isPermanentFailure(error)) {
+      track('reminder_offer', { result: 'error' });
+    } else {
+      await outbox.add(eventSlug, { kind: 'reminder-on', sessionId, eventId });
+      track('reminder_offer', { result: 'queued' });
+    }
+
     return false;
   }
+}
+
+/**
+ * This phone's push subscription — made again if the browser dropped it — and
+ * told to the server. Also remembered locally, so push-sync.js can tell when
+ * the browser later replaces it.
+ */
+export async function registerSubscription(eventSlug) {
+  const registration = await navigator.serviceWorker.ready;
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(document.querySelector('meta[name="vapid-public-key"]').content),
+    });
+  }
+
+  await apiMutate(eventSlug, '/push/subscribe', 'POST', {
+    device_id: getDeviceId(),
+    endpoint: subscription.endpoint,
+    keys: {
+      p256dh: arrayBufferToBase64(subscription.getKey('p256dh')),
+      auth: arrayBufferToBase64(subscription.getKey('auth')),
+    },
+  });
+
+  await kvSet(`pushEndpoint:${eventSlug}`, { endpoint: subscription.endpoint, at: Date.now() });
+
+  return subscription;
+}
+
+/** The server side of a reminder: the subscription, then the bookmark that asks for it. */
+export async function syncReminder(eventSlug, eventId, sessionId) {
+  await registerSubscription(eventSlug);
+
+  await apiMutate(eventSlug, '/bookmarks', 'POST', {
+    device_id: getDeviceId(),
+    session_id: sessionId,
+    reminder_enabled: true,
+  });
+
+  // Remembered locally, so un-saving the session knows to cancel it.
+  await setBookmark(eventId, sessionId, true);
+  await kvSet('notificationState', { ...((await kvGet('notificationState')) ?? {}), enabled: true });
 }
 
 /**
@@ -119,6 +153,9 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
  * would still get a push for a session they took off their day.
  */
 export async function cancelReminder(eventSlug, bookmark) {
+  // Whatever was still waiting to be sent for this session no longer means anything.
+  if (bookmark?.sessionId != null) await outbox.drop(eventSlug, bookmark.sessionId);
+
   if (!bookmark?.reminderEnabled) return;
 
   try {
@@ -127,9 +164,11 @@ export async function cancelReminder(eventSlug, bookmark) {
       session_id: bookmark.sessionId,
     });
     track('reminder_cancel');
-  } catch {
-    // Offline or refused: the reminder may still arrive. Nothing else to do
-    // from here — the local bookmark is already gone.
+  } catch (error) {
+    // Offline or refused: the local bookmark is already gone, so keep the
+    // cancellation and send it once the phone can — otherwise the reminder
+    // for a session they dropped would still arrive.
+    if (!isPermanentFailure(error)) await outbox.add(eventSlug, { kind: 'reminder-off', sessionId: bookmark.sessionId });
   }
 }
 

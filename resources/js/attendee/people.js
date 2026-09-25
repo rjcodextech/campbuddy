@@ -11,6 +11,7 @@ import { apiGet, apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { getMeetings, getMetHistory, kvGet, kvSet, markMet } from './db.js';
 import { openMeetSheet } from './meet-sheet.js';
+import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
 
@@ -81,25 +82,35 @@ function wireMeetButton(btn, eventId, person) {
   });
 }
 
+// The list is kept on the phone too (roster-store.js): it opens at once from
+// what was saved, the fresh list is swapped in when it arrives, and with no
+// connection the saved one still works.
+const rosterStore = createRosterStore({ kvGet, kvSet });
+
 async function renderRoster(eventSlug, eventId) {
   const el = document.getElementById('people-roster');
   const searchEl = document.getElementById('roster-search');
-  let entries = [];
+  const saved = await rosterStore.read(eventSlug);
+  let entries = saved?.entries ?? [];
+  let noteEl = null;
 
-  try {
-    entries = await fetchFullRoster(eventSlug);
-  } catch {
-    // Offline is one thing; the server having a problem is another — say
-    // which, and let them try again rather than leaving an empty list.
-    el.replaceChildren(render(navigator.onLine === false ? 'tpl-roster-offline' : 'tpl-roster-error'));
-    el.querySelector('[data-roster-retry]')?.addEventListener('click', () => {
-      el.replaceChildren(document.createTextNode('Loading…'));
-      renderRoster(eventSlug, eventId);
-    });
-    return;
-  }
+  const showNote = (text) => {
+    if (!noteEl) {
+      noteEl = render('tpl-roster-note', { text });
+      el.before(noteEl);
+    } else {
+      noteEl.textContent = text;
+    }
+  };
+  const hideNote = () => {
+    noteEl?.remove();
+    noteEl = null;
+  };
 
-  const draw = (list) => {
+  const draw = () => {
+    const q = searchEl.value.trim().toLowerCase();
+    const list = q ? entries.filter((a) => a.name.toLowerCase().includes(q)) : entries;
+
     if (list.length === 0) {
       el.replaceChildren(render(entries.length === 0 ? 'tpl-roster-empty' : 'tpl-roster-no-match'));
       return;
@@ -110,21 +121,62 @@ async function renderRoster(eventSlug, eventId) {
     el.replaceChildren(rows);
   };
 
-  draw(entries);
-
   // Roster data is other people's data (§8.4) — only "the search was used"
   // is reported, once, never what was typed.
   let searchReported = false;
+  const wireSearch = () => {
+    searchEl.addEventListener('input', () => {
+      if (!searchReported) {
+        searchReported = true;
+        track('roster_search_use');
+      }
 
-  searchEl.addEventListener('input', () => {
-    if (!searchReported) {
-      searchReported = true;
-      track('roster_search_use');
+      draw();
+    });
+  };
+
+  let drawn = false;
+
+  // The fresh list from the server, swapped in when it differs from what is showing.
+  const applyFresh = async () => {
+    const fresh = await fetchFullRoster(eventSlug);
+
+    hideNote();
+
+    if (!drawn || !sameRoster(fresh, entries)) {
+      entries = fresh;
+      draw();
+      drawn = true;
+    }
+  };
+
+  if (saved) {
+    // What the phone already has, straight away — no waiting on the network.
+    draw();
+    drawn = true;
+    wireSearch();
+  }
+
+  try {
+    await applyFresh();
+  } catch {
+    if (saved) {
+      showNote(`Showing the attendee list saved on your phone (${savedWhen(saved.savedAt) || 'earlier'}). It updates when you're back online.`);
+      window.addEventListener('online', () => applyFresh().catch(() => {}), { once: true });
+      return;
     }
 
-    const q = searchEl.value.trim().toLowerCase();
-    draw(q ? entries.filter((a) => a.name.toLowerCase().includes(q)) : entries);
-  });
+    // Offline is one thing; the server having a problem is another — say
+    // which, and let them try again rather than leaving an empty list.
+    el.replaceChildren(render(navigator.onLine === false ? 'tpl-roster-offline' : 'tpl-roster-error'));
+    el.querySelector('[data-roster-retry]')?.addEventListener('click', () => {
+      el.replaceChildren(document.createTextNode('Loading…'));
+      renderRoster(eventSlug, eventId);
+    });
+    return;
+  }
+
+  if (!saved) wireSearch();
 }
 
 // The roster API paginates (200/request) to keep any single response
@@ -158,7 +210,22 @@ async function loadFullRoster(eventSlug) {
     rest.forEach((page) => entries.push(...(page.data ?? [])));
   }
 
+  // Kept on the phone for the next visit, and for when there is no connection.
+  rosterStore.write(eventSlug, entries);
+
   return entries;
+}
+
+/** The list for the "pick my name" search: fresh when the network allows, else the one saved on the phone. */
+async function rosterForPicker(eventSlug) {
+  try {
+    return await fetchFullRoster(eventSlug);
+  } catch (error) {
+    const saved = await rosterStore.read(eventSlug);
+
+    if (saved) return saved.entries;
+    throw error;
+  }
 }
 
 function rosterRow(a, eventId) {
@@ -439,7 +506,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
 
   showPicked();
   draw();
-  fetchFullRoster(eventSlug)
+  rosterForPicker(eventSlug)
     .then((list) => { entries = list; draw(); })
     .catch(() => {
       results.replaceChildren(render('tpl-roster-picker-empty', { text: 'You\'re offline, so the attendee list can\'t load — choose "Type my name" for now.' }));

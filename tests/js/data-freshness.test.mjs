@@ -147,3 +147,59 @@ test('coming back to the app after a while checks straight away, not at the next
 
   assert.equal(asks().length, 1, 'asked at once (the regular ask is still 3 minutes away)');
 });
+
+// ------------------------------------------------------------------ when the event's data changes: replace, never delete
+
+import { fakeCaches } from './helpers/fake-browser.mjs';
+
+const O = 'https://campbuddy.test';
+const savedPages = () => fakeCaches({
+  'campbuddy-v3': {
+    [`${O}/event/wc-test`]: reply('old home'),
+    [`${O}/event/wc-test/my-day`]: reply('old my day'),
+    [`${O}/event/other-camp`]: reply('another event'),
+    [`${O}/build/assets/app-abc.js`]: reply('js'),
+  },
+});
+const bodyIn = async (url) => (await browser.caches.match(url))?.body;
+
+test('when the data changes, this event saved pages are swapped for fresh ones and only then the page reloads; nothing is deleted', async () => {
+  await start({ caches: savedPages() });
+  browser.responses.push((url) => (url.includes('/data-version') ? reply({ version: 'v2' }) : reply(`fresh ${new URL(url).pathname}`)));
+
+  await pass(5.5);
+
+  assert.equal(await bodyIn(`${O}/event/wc-test`), 'fresh /event/wc-test');
+  assert.equal(await bodyIn(`${O}/event/wc-test/my-day`), 'fresh /event/wc-test/my-day');
+  assert.equal(await bodyIn(`${O}/event/other-camp`), 'another event', 'another event is left alone');
+  assert.equal(await bodyIn(`${O}/build/assets/app-abc.js`), 'js');
+  assert.deepEqual(browser.caches.deleted, [], 'no saved copy was ever deleted');
+  assert.equal(browser.location.reloads, 1);
+
+  const pageFetches = browser.fetches.filter((f) => f.url.includes('/event/wc-test'));
+  assert.ok(pageFetches.length >= 2 && pageFetches.every((f) => f.options.cache === 'reload'), 'fresh from the server, not the browser cache');
+});
+
+test('if the connection drops while refreshing, the saved pages are all still there', async () => {
+  await start({ caches: savedPages() });
+  browser.responses.push((url) => {
+    if (url.includes('/data-version')) return reply({ version: 'v2' });
+    throw new TypeError('connection dropped');
+  });
+
+  await pass(5.5);
+
+  assert.equal(await bodyIn(`${O}/event/wc-test`), 'old home');
+  assert.equal(await bodyIn(`${O}/event/wc-test/my-day`), 'old my day');
+  assert.deepEqual(browser.caches.deleted, []);
+});
+
+test('an unchanged version leaves the saved pages and the page alone', async () => {
+  await start({ caches: savedPages() });
+
+  await pass(11);
+
+  assert.equal(browser.location.reloads, 0);
+  assert.equal(await bodyIn(`${O}/event/wc-test`), 'old home');
+  assert.ok(!browser.fetches.some((f) => f.url.includes('/event/wc-test')), 'no page was fetched');
+});

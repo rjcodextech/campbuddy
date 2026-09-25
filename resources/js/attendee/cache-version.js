@@ -2,15 +2,19 @@
 //
 // Every page carries the current cache version in a <meta> tag (a number the
 // server bumps on each purge). This device remembers the newest version it has
-// seen; when it meets a newer one it drops the browser's saved copies of pages
-// and assets (the service worker's Cache Storage), so the next visit is
-// fetched fresh. An app left open in the background can't see a new page, so
-// when it returns to the foreground it also asks the server for the version
-// and reloads if a purge happened meanwhile.
+// seen; when it meets a newer one it REPLACES the browser's saved copies of
+// pages with fresh ones (the service worker's Cache Storage — saved-copies.js),
+// so nothing stale lingers. It never deletes them first: if the connection is
+// poor the old copy stays and the app keeps working offline (docs
+// spec/23-data-retention.md). Files with a hash in their name (/build/) never
+// go stale, so they are left alone. An app left open in the background can't
+// see a new page, so when it returns to the foreground it also asks the server
+// for the version and reloads if a purge happened meanwhile.
 //
 // What is never touched: the attendee's own data (saved sessions, quest
-// progress, Camp Card) lives in IndexedDB / localStorage under other keys —
-// only Cache Storage is cleared.
+// progress, Camp Card) lives in IndexedDB / localStorage under other keys.
+
+import { refreshCopies } from './saved-copies.js';
 
 const STORAGE_KEY = 'campbuddy:cache-version';
 
@@ -36,15 +40,9 @@ function rememberVersion(version) {
   }
 }
 
-async function dropSavedCopies() {
-  if (!('caches' in window)) return;
-
-  try {
-    const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
-  } catch (err) {
-    // Nothing to clear, or blocked — the network-first worker still fetches fresh pages.
-  }
+/** Every saved page (not the hashed /build/ files) swapped for a fresh copy in place. Nothing is deleted. */
+async function refreshSavedCopies() {
+  await refreshCopies((url) => !url.pathname.startsWith('/build/'), { timeoutMs: 10000 });
 }
 
 async function checkForPurge() {
@@ -62,7 +60,7 @@ async function checkForPurge() {
     if (latest > (storedVersion() ?? 0)) {
       // Remember first, so the reload can't trigger this again.
       rememberVersion(latest);
-      await dropSavedCopies();
+      await refreshSavedCopies();
       location.reload();
     }
   } catch (err) {
@@ -80,8 +78,8 @@ export function initCacheVersion() {
   } else if (served > known) {
     // This page came from the server already carrying a newer version than the
     // device last saw: a purge has happened. The page in front of us is fresh;
-    // clear the saved copies of every other page.
-    dropSavedCopies();
+    // refresh the saved copies of every other page (in place — never deleted).
+    refreshSavedCopies();
     rememberVersion(served);
   }
 

@@ -13,3 +13,8 @@
 - **Roster takedown is open by design** — anyone can hide any roster entry (throttled; reversible in admin). See [8.2a](08-security-privacy.md#82a-hardening-pass-full-review).
 - **Purge-cache is bounded, not exhaustive.** It refreshes events synchronously for ~30 s and queues the rest (ready within a minute or two once the cron runs); it doesn't re-scrape the attendee roster (once-a-day rule) and can't reach a device that is offline until it next opens the app.
 - **The scheduler is the single point of failure for ingestion** — if the one cPanel cron entry stops, no data is refreshed (the last good data keeps showing for up to 14 days). Check *Dashboard → Ingestion problems* and the last-fetched times after any hosting change.
+
+- **Offline copies can still be lost outside our control** ([23](23-data-retention.md)): clearing site data, or the browser evicting storage on a nearly full phone (mitigated by `storage.persist()` and, on iPhone, by installing the app). The app then falls back to saving pages as they are opened.
+- **Offline attendee-list photos don't show** (Gravatar is another origin and isn't saved); the placeholder avatar does. A person removed from the list disappears from a phone's saved copy only when that phone is next online.
+- **iPhone has no background sync.** Offline requests (reminders) are sent when the app is opened or the connection returns while it is open; nothing runs while the app is closed. Web Push on iPhone works only for the app installed to the Home Screen.
+- **Stale-while-revalidate is shipped switched off** (`public/sw-flags.json`); until it is turned on, page opens still ask the network first (4 s timeout when a saved copy exists).
