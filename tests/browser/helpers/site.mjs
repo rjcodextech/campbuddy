@@ -29,6 +29,21 @@ export async function startSite() {
   const state = { version: 'v1', down: false, pagesFail: false, hits: {}, flags: '{\n    "swrPages": false\n}\n' };
   const count = (key) => { state.hits[key] = (state.hits[key] ?? 0) + 1; };
 
+  // A second server on another port plays Gravatar: another origin, photos with
+  // an open CORS header. It drops connections when the site is "down" too.
+  const avatarServer = http.createServer((req, res) => {
+    if (state.down) {
+      req.socket.destroy();
+      return;
+    }
+    count('avatar');
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'max-age=300' });
+    res.end(PNG);
+  });
+  await new Promise((resolve) => avatarServer.listen(0, '127.0.0.1', resolve));
+  const avatarHost = `127.0.0.1:${avatarServer.address().port}`;
+  const avatarBase = `http://${avatarHost}`;
+
   const page = (screen) => `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="campbuddy-data-version" content="${state.version}">
 <title>${screen || 'home'} ${state.version}</title></head>
@@ -37,6 +52,8 @@ export async function startSite() {
 <h1 id="marker">PAGE ${screen || 'home'} ${state.version}</h1>
 <nav>${SCREENS.map((s) => `<a href="/event/${SLUG}${s}">${s || 'home'}</a>`).join(' ')} <a href="/">picker</a> <a href="/event/${SLUG}/roster-removal">remove me</a></nav>
 <img id="logo" src="/media/logo.png" alt="">
+<img id="face1" src="${avatarBase}/avatar/one?s=192" alt="">
+<img id="face2" src="${avatarBase}/avatar/two?s=192" alt="">
 <script type="module" src="/build/assets/boot.js"></script>
 </body></html>`;
 
@@ -85,7 +102,8 @@ window.addEventListener('load', async () => {
       res.end(body);
     };
 
-    if (route === '/sw.js') return send(200, 'text/javascript', fs.readFileSync(path.join(ROOT, 'public/sw.js')), { 'Cache-Control': 'no-cache' });
+    // The real worker, with the photo host pointed at the fake one (the real one is secure.gravatar.com).
+    if (route === '/sw.js') return send(200, 'text/javascript', fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8').replace("['secure.gravatar.com']", `['${avatarHost}']`), { 'Cache-Control': 'no-cache' });
     if (route === '/sw-flags.json') return send(200, 'application/json', state.flags, { 'Cache-Control': 'no-store' });
     if (route === '/build/manifest.json') return send(200, 'application/json', JSON.stringify(manifest()));
     if (route === '/build/assets/boot.js') return send(200, 'text/javascript', BOOT, { 'Cache-Control': 'public, max-age=31536000, immutable' });
@@ -128,5 +146,8 @@ window.addEventListener('load', async () => {
   const base = `http://127.0.0.1:${port}`;
   const control = async (params) => (await fetch(`${base}/control?${new URLSearchParams(params)}`)).json();
 
-  return { base, port, control, state, close: () => new Promise((resolve) => { server.closeAllConnections?.(); server.close(resolve); }) };
+  return {
+    base, port, avatarBase, control, state,
+    close: () => Promise.all([server, avatarServer].map((s) => new Promise((resolve) => { s.closeAllConnections?.(); s.close(resolve); }))),
+  };
 }

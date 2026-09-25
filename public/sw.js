@@ -47,6 +47,17 @@ const FLAGS_TIMEOUT_MS = 3000;
 // pages the moment the event's data changes).
 const SWR_FRESH_MS = 5 * 60 * 1000;
 
+// Attendee-list photos come from Gravatar, another origin, which everything
+// above leaves alone. They are public, tiny (about 2 KB each) and change rarely,
+// so a copy is kept and shown when there is no connection. Its own cache; never
+// deleted (a copy is only replaced, after a week, by a fresh one); at most
+// AVATAR_MAX are kept so a phone can't fill up. If anything about it fails the
+// photo simply loads (or doesn't) exactly as it would without this worker.
+const AVATAR_HOSTS = ['secure.gravatar.com'];
+const AVATAR_CACHE = 'campbuddy-avatars';
+const AVATAR_MAX = 3000;
+const AVATAR_REFRESH_MS = 7 * 24 * 60 * 60 * 1000;
+
 // With a cached copy to fall back on, don't make someone on flaky conference
 // wifi wait for a stalled request — give the network this long, then serve it.
 const NETWORK_TIMEOUT_MS = 4000;
@@ -97,6 +108,11 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
+  if (request.method === 'GET' && request.destination === 'image' && AVATAR_HOSTS.includes(url.host)) {
+    event.respondWith(avatarFirst(request, event));
+    return;
+  }
+
   if (request.method !== 'GET' || url.origin !== self.location.origin) {
     return;
   }
@@ -122,6 +138,68 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(request, event));
   }
 });
+
+// ---- attendee-list photos ---------------------------------------------------
+
+/** A saved photo when there is one; otherwise the network, keeping a copy for next time. */
+async function avatarFirst(request, event) {
+  let cache;
+
+  try {
+    cache = await caches.open(AVATAR_CACHE);
+  } catch (err) {
+    // Storage unavailable: the network, as if this worker did not exist.
+    return fetch(request);
+  }
+
+  const cached = await cache.match(request.url);
+
+  if (cached) {
+    const age = ageOf(cached);
+
+    // Old enough to be worth refreshing: show this one now, replace it in the background.
+    if (Number.isFinite(age) && age > AVATAR_REFRESH_MS) event.waitUntil(saveAvatar(cache, request.url, true));
+
+    return cached;
+  }
+
+  try {
+    // Gravatar answers with Access-Control-Allow-Origin: *, so a normal (not
+    // opaque) copy can be kept — and still shown in a plain <img>.
+    const response = await fetch(request.url, { mode: 'cors', credentials: 'omit' });
+
+    if (response.ok && response.type === 'cors') event.waitUntil(keepAvatar(cache, request.url, response.clone()));
+
+    return response;
+  } catch (err) {
+    // The CORS attempt failed (offline, or no CORS header): try the photo the way the page asked for it.
+  }
+
+  try {
+    return await fetch(request);
+  } catch (err) {
+    // Not saved and no connection: the photo fails and the page's own placeholder avatar shows.
+    return Response.error();
+  }
+}
+
+async function keepAvatar(cache, url, response) {
+  try {
+    if ((await cache.keys()).length < AVATAR_MAX) await cache.put(url, response);
+  } catch (err) {
+    // Full or blocked: the photo was shown, keeping it was a bonus.
+  }
+}
+
+async function saveAvatar(cache, url, replace) {
+  try {
+    const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
+
+    if (response.ok && response.type === 'cors' && (replace || (await cache.keys()).length < AVATAR_MAX)) await cache.put(url, response);
+  } catch (err) {
+    // Keep the copy we have.
+  }
+}
 
 // ---- the switch ------------------------------------------------------------
 

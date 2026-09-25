@@ -99,13 +99,13 @@ export function loadServiceWorker({ network = () => { throw new TypeError('offli
   vm.runInContext(SW_SOURCE, sandbox);
 
   /** Sends a request through the worker: returns { handled, response, waits } (handled=false when the worker ignores it). */
-  async function request(url, { method = 'GET', mode = 'cors' } = {}) {
+  async function request(url, { method = 'GET', mode = 'cors', destination = '' } = {}) {
     const absolute = new URL(url, ORIGIN).href;
     const waits = [];
     let responded;
 
     handlers.fetch({
-      request: { url: absolute, method, mode, headers: new Headers() },
+      request: { url: absolute, method, mode, destination, headers: new Headers() },
       respondWith: (promise) => { responded = promise; },
       waitUntil: (promise) => { waits.push(promise); },
     });
@@ -125,7 +125,7 @@ export function loadServiceWorker({ network = () => { throw new TypeError('offli
     await Promise.all(waits);
   }
 
-  return { handlers, fetches, state, caches, request, lifecycle, navigate: (url) => request(url, { mode: 'navigate' }) };
+  return { handlers, fetches, state, caches, request, lifecycle, navigate: (url) => request(url, { mode: 'navigate' }), image: (url) => request(url, { mode: 'no-cors', destination: 'image' }) };
 }
 
 /** Lets pending promise callbacks run. */

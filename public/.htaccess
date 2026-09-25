@@ -44,16 +44,34 @@
         Header set Cache-Control "public, max-age=86400"
     </If>
 
+    # The rules below use <Files>/<FilesMatch>, not <If>: the live host runs
+    # LiteSpeed, which quietly ignores <If> blocks (the two rules above never
+    # apply there) but honours <Files> and <FilesMatch> — as Apache does too.
+
     # The service worker keeps its name when it changes, and a new version must
     # reach every phone (and a CDN's edge) as soon as it is deployed — never
     # held back by an old copy. no-cache = always ask the server first.
-    <If "%{REQUEST_URI} == '/sw.js'">
+    <Files "sw.js">
         Header set Cache-Control "no-cache"
-    </If>
+    </Files>
 
     # sw-flags.json is the service worker's on/off switch (see sw.js): a change
     # must be seen at once, everywhere.
-    <If "%{REQUEST_URI} == '/sw-flags.json'">
+    <Files "sw-flags.json">
         Header set Cache-Control "no-store"
-    </If>
+    </Files>
+
+    # The list of build files (public/build/manifest.json) changes with every
+    # build while keeping its name; the offline warm-up reads it, so a CDN must
+    # not keep serving an old one.
+    <Files "manifest.json">
+        Header set Cache-Control "no-cache"
+    </Files>
+
+    # Build files carry a content hash in their name (app-QTB9up0X.js): safe to
+    # keep for good. Same intent as the /build/assets rule above, in a form
+    # LiteSpeed applies. Only .js/.css — other files (/media) keep their names.
+    <FilesMatch "-[A-Za-z0-9_-]{8,}\.(js|css)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
 </IfModule>

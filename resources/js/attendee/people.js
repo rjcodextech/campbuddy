@@ -159,6 +159,11 @@ async function renderRoster(eventSlug, eventId) {
 
   try {
     await applyFresh();
+
+    // The photos too, in idle time, so the list looks right with no connection (avatar-cache.js).
+    const saveThem = () => import('./avatar-cache.js').then(({ warmAvatars }) => warmAvatars(entries)).catch(() => {});
+    if ('requestIdleCallback' in window) window.requestIdleCallback(saveThem, { timeout: 8000 });
+    else setTimeout(saveThem, 2000);
   } catch {
     if (saved) {
       showNote(`Showing the attendee list saved on your phone (${savedWhen(saved.savedAt) || 'earlier'}). It updates when you're back online.`);

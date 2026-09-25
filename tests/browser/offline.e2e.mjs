@@ -14,6 +14,9 @@
 //   E. Offline again afterwards: still browsable.
 //   F. The (off-by-default) switch: with it on, page opens inside the freshness
 //      window don't reach the server at all.
+//   G. Attendee-list photos (another origin, like Gravatar): shown online, saved by
+//      the worker, still shown with no connection; a photo never seen fails, so the
+//      placeholder avatar would show.
 //
 // Takes about two minutes (the app waits 45 s between freshness checks).
 
@@ -179,6 +182,26 @@ try {
 
     assert.equal(hits, 0, 'saved copy is fresh: opened instantly, the server was not asked');
     assert.match(await marker(), /v3$/);
+  });
+
+  // ------------------------------------------------------------------- G
+  await step('G. attendee photos from another origin: saved by the worker, still shown with no connection', async () => {
+    await site.control({ down: '0', pagesFail: '0', reset: '1' });
+    await chrome.goto(page('/quest')); // the worker is in control now: the photos go through it
+    const shown = `(() => ['face1', 'face2'].every((id) => { const i = document.getElementById(id); return i.complete && i.naturalWidth > 0; }))()`;
+    await chrome.waitFor(shown);
+    await sleep(800); // the worker saves them just after showing them
+
+    const saved = await chrome.evaluate(`(async () => (await (await caches.open('campbuddy-avatars')).keys()).map((r) => new URL(r.url).pathname))()`);
+    assert.deepEqual([...saved].sort(), ['/avatar/one', '/avatar/two']);
+
+    await site.control({ down: '1' });
+    await chrome.goto(page('/quest'));
+    assert.equal(await chrome.evaluate(shown), true, 'the saved photos show with no connection');
+
+    const unseen = await chrome.evaluate(`new Promise((resolve) => { const i = new Image(); i.onload = () => resolve('loaded'); i.onerror = () => resolve('failed'); i.src = '${site.avatarBase}/avatar/never-seen'; })`);
+    assert.equal(unseen, 'failed', 'a photo never saved fails, so the placeholder avatar shows');
+    await site.control({ down: '0' });
   });
 } finally {
   await chrome.close();

@@ -36,3 +36,5 @@ Tests: `tests/Feature/RetentionTest.php` (the "Sylhet" case: no end date, sessio
 **What can still remove it — outside our code:** the person clearing site data / uninstalling, or the browser evicting storage when the phone runs low on space. Mitigations: an installed app is exempt from Safari's 7-day script-storage cap; `navigator.storage.persist()` is requested once (`offline-warmup.js`) and installed apps normally get a yes. If it *is* lost the app behaves as before this feature: pages are saved again as they are opened (and the warm-up runs again).
 
 Tests: `tests/js/` (`saved-copies`, `data-freshness`, `cache-version`, `sw`, `offline-warmup`) assert that no `caches.delete` / entry delete happens on any refresh path, and `tests/browser/offline.e2e.mjs` watches the real Cache Storage during a data change and a failing server.
+
+Also kept the same way: the **saved attendee-list photos** (`campbuddy-avatars`, at most 3000, replaced not deleted) — [4.4](04-non-functional-requirements.md#44-offline-first) note 6.

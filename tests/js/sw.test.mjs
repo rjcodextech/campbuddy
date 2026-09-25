@@ -144,13 +144,14 @@ test('activating deletes no cache and no saved page of the event', async () => {
     [CACHE]: { [HOME]: page('home'), [MY_DAY]: page('my day') },
     'campbuddy-v2': { [`${ORIGIN}/event/wc-old`]: page('an older worker saved this') },
     'some-other-cache': { [`${ORIGIN}/x`]: page('x') },
+    'campbuddy-avatars': { 'https://secure.gravatar.com/avatar/a?s=192': page('photo') },
   });
   const sw = loadServiceWorker({ caches });
 
   await sw.lifecycle('activate');
 
   assert.deepEqual(caches.log.deleted, [], 'no cache is dropped');
-  assert.deepEqual([...caches.stores.keys()].sort(), [CACHE, 'campbuddy-v2', 'some-other-cache'].sort());
+  assert.deepEqual([...caches.stores.keys()].sort(), [CACHE, 'campbuddy-avatars', 'campbuddy-v2', 'some-other-cache'].sort());
   assert.equal((await caches.match(HOME)).status, 200);
   assert.equal((await caches.match(`${ORIGIN}/event/wc-old`)).status, 200);
 });
