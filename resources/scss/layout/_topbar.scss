@@ -24,7 +24,8 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    // Fills the bar's content height (56px minus padding), like the pills.
+    // Fills the bar's content height (56px minus padding), a comfortable
+    // tap area around the logo.
     min-height: 40px;
 }
 
@@ -34,7 +35,7 @@
 // forced into a 1:1 frame). object-fit:contain is a safety net, not
 // the primary fix.
 .brand__logo--wordmark {
-    height: 26px;
+    height: 32px;
     width: auto;
     border-radius: 0;
     object-fit: contain;
@@ -54,22 +55,34 @@
 // actions, not just be inferred from a glyph.
 .topbar__text-btn {
     @include m.pressable;
+    position: relative;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: v.$space-1;
-    min-height: 40px;
-    padding: v.$space-2 v.$space-3;
+    // 32px to look at (the same height as the roster's Meet button), 44px to
+    // tap: the invisible margin is top and bottom only, since the pills sit
+    // 8px apart and would otherwise overlap each other's tap area.
+    min-height: 32px;
+    padding: 0 10px;
     border-radius: v.$radius-full;
     background: var(--peach);
     color: var(--ink);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
+    line-height: 1;
     white-space: nowrap;
     transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
 
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -6px 0;
+    }
+
     svg {
-        width: 13px;
-        height: 13px;
+        width: 14px;
+        height: 14px;
         flex-shrink: 0;
     }
 
@@ -116,10 +129,35 @@
     }
 }
 
-// 320px-wide phones (iPhone SE 1st gen and similar): the wordmark plus the
-// "WordCamp's" and "Install app" pills is ~30px too wide for one row, so the
-// pills wrapped onto a second line and the sticky bar ate ~85px of a 568px
-// screen. Tightened so it stays a single 56px row.
+// Phones. Two labelled pills (Guide, WordCamps) fit beside the logo, but when
+// "Install app" shows up as a third, all three labelled pills are wider than
+// the bar and the row used to wrap — the pills dropped under the logo and the
+// sticky bar went from 56px to ~105px. So while Install is showing, Guide and
+// WordCamps shrink to icon-only circles (their names stay for screen readers)
+// and Install keeps its label, which keeps the bar one row at every phone
+// width. `:has()` follows the button's `hidden` attribute, so the bar
+// adjusts the moment the browser offers the install.
+@media (max-width: 479px) {
+    .topbar__actions:has(#install-app-btn:not([hidden])) .topbar__text-btn:not(#install-app-btn) {
+        width: 32px;
+        padding: 0;
+
+        > span {
+            @include m.visually-hidden;
+        }
+
+        // Narrower than the label was, so the tap area also grows sideways
+        // (to 40px wide, 44px tall) — by 4px a side, which the 8px gaps between
+        // the circles leave room for without the areas touching.
+        &::after {
+            inset: -6px -4px;
+        }
+    }
+}
+
+// 320px-wide phones (iPhone SE 1st gen and similar): a smaller logo and
+// tighter pills so the row still fits. Without Install it's one 56px row of
+// logo + two labelled pills; with Install, logo + two circles + Install.
 @media (max-width: 359px) {
     .topbar {
         padding-right: v.$space-3;
@@ -128,14 +166,10 @@
     }
 
     .brand__logo--wordmark {
-        height: 22px;
-    }
-
-    .topbar__actions {
-        gap: v.$space-1;
+        height: 26px;
     }
 
     .topbar__text-btn {
-        padding: 6px v.$space-2;
+        padding: 0 v.$space-2;
     }
 }
