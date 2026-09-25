@@ -4,6 +4,7 @@
 
 import { initAnalytics } from './analytics.js';
 import { initCacheVersion } from './cache-version.js';
+import { installPreloadRecovery } from './preload-recovery.js';
 import { initDataFreshness } from './data-freshness.js';
 import { initDesktopNotice } from './desktop-notice.js';
 import { initImageFallbacks } from './image-fallback.js';
@@ -12,6 +13,10 @@ import { initInstallPrompt } from './install.js';
 // First, so data-track markup and error reporting are live before any
 // other module wires itself up.
 initAnalytics();
+
+// A page left open across a deploy that asks for a script chunk the new build
+// no longer has reloads itself once, instead of the feature just failing.
+installPreloadRecovery();
 
 // Registered as early as possible — the browser can fire
 // beforeinstallprompt at any point after this listens for it, and

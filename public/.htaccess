@@ -43,4 +43,11 @@
     <If "%{REQUEST_URI} =~ m#^/media/#">
         Header set Cache-Control "public, max-age=86400"
     </If>
+
+    # The service worker keeps its name when it changes, and a new version must
+    # reach every phone (and a CDN's edge) as soon as it is deployed — never
+    # held back by an old copy. no-cache = always ask the server first.
+    <If "%{REQUEST_URI} == '/sw.js'">
+        Header set Cache-Control "no-cache"
+    </If>
 </IfModule>

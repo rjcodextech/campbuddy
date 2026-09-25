@@ -8,10 +8,13 @@ use App\Http\Requests\UpdateDiscoveryRequest;
 use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
+use App\Support\ConditionalJson;
 use App\Support\EventTime;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -28,19 +31,31 @@ class DiscoveryController extends Controller
      * GET — every active profile's public card (DiscoveryProfile::publicCard):
      * what each attendee chose to share. Never owner_token_hash. Client-side
      * tag-overlap matching runs on this list.
+     *
+     * The same for everyone (it can be up to 2000 cards), so it is built once
+     * every 20 seconds — or the moment someone joins, edits or leaves — and
+     * served to every phone from that (ConditionalJson).
      */
-    public function index(Event $event): JsonResponse
+    public function index(Request $request, Event $event): Response
     {
-        $profiles = DiscoveryProfile::where('event_id', $event->id)
-            ->alive($event)
-            ->with('rosterEntry:id,name,gravatar_url,links,is_suppressed')
-            // Bounded, so one response can't grow without limit. Far above any
-            // WordCamp's opted-in attendee count; newest first if ever reached.
-            ->latest('id')
-            ->limit(2000)
-            ->get();
+        return ConditionalJson::cached($request, self::listKey($event), 20, 15, function () use ($event) {
+            $profiles = DiscoveryProfile::where('event_id', $event->id)
+                ->alive($event)
+                ->with('rosterEntry:id,name,gravatar_url,links,is_suppressed')
+                // Bounded, so one response can't grow without limit. Far above any
+                // WordCamp's opted-in attendee count; newest first if ever reached.
+                ->latest('id')
+                ->limit(2000)
+                ->get();
 
-        return response()->json(['data' => $profiles->map->publicCard()->values()]);
+            return ['data' => $profiles->map->publicCard()->values()];
+        });
+    }
+
+    /** Where the built list is kept; forgotten whenever a profile changes. */
+    public static function listKey(Event $event): string
+    {
+        return "event:{$event->id}:discovery-list";
     }
 
     /**
@@ -69,6 +84,8 @@ class DiscoveryController extends Controller
             throw ValidationException::withMessages(['attendee_roster_id' => self::CLAIMED]);
         }
 
+        Cache::forget(self::listKey($event));
+
         return response()->json([
             ...$profile->load('rosterEntry')->publicCard(),
             'owner_token' => $credentials['owner_token'],
@@ -93,6 +110,8 @@ class DiscoveryController extends Controller
             throw ValidationException::withMessages(['attendee_roster_id' => self::CLAIMED]);
         }
 
+        Cache::forget(self::listKey($event));
+
         return response()->json($profile->load('rosterEntry')->publicCard());
     }
 
@@ -104,6 +123,7 @@ class DiscoveryController extends Controller
     {
         $profile = $this->authorizedProfile($event, $discoveryId, $request);
         $profile->delete();
+        Cache::forget(self::listKey($event));
 
         return response()->json(null, 204);
     }

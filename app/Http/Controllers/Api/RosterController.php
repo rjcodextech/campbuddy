@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Support\ConditionalJson;
 use App\Support\SafeUrl;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * GET /api/v1/events/{slug}/roster — the ingested Attendees-page
@@ -16,23 +17,38 @@ use Illuminate\Http\Request;
  * the full roster in one flowing list — see people.js — pagination
  * here just keeps any single response bounded) and never includes
  * suppressed entries.
+ *
+ * The same list for everyone, so each page is built once a minute and served
+ * to every phone from that (ConditionalJson): a roster of hundreds is one
+ * query per minute however many phones open Explore, and a phone that already
+ * has the current page gets an empty 304. A change (someone joins discovery,
+ * asks to be removed) shows within a minute.
  */
 class RosterController extends Controller
 {
-    public function __invoke(Event $event, Request $request): JsonResponse
-    {
-        try {
-            $roster = $this->page($event, withOpenToMeet: true);
-        } catch (QueryException $e) {
-            // The discovery link column isn't there yet (a deploy that hasn't
-            // run `php artisan migrate`). The attendee list must still load —
-            // just without the "open to meet" marks. The admin dashboard flags
-            // the pending migration.
-            report($e);
-            $roster = $this->page($event, withOpenToMeet: false);
-        }
+    /** Longest a built page is reused. */
+    private const TTL_SECONDS = 60;
 
-        return response()->json($roster);
+    /** Bounds how many different pages a caller can make us keep. */
+    private const MAX_PAGE = 500;
+
+    public function __invoke(Event $event, Request $request): Response
+    {
+        $page = max(1, min(self::MAX_PAGE, (int) $request->query('page', 1)));
+
+        return ConditionalJson::cached($request, "event:{$event->id}:roster:page:{$page}", self::TTL_SECONDS, 30, function () use ($event) {
+            try {
+                return $this->page($event, withOpenToMeet: true);
+            } catch (QueryException $e) {
+                // The discovery link column isn't there yet (a deploy that hasn't
+                // run `php artisan migrate`). The attendee list must still load —
+                // just without the "open to meet" marks. The admin dashboard flags
+                // the pending migration.
+                report($e);
+
+                return $this->page($event, withOpenToMeet: false);
+            }
+        });
     }
 
     private function page(Event $event, bool $withOpenToMeet): LengthAwarePaginator

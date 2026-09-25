@@ -133,7 +133,9 @@ class SafeSyncTest extends TestCase
         $this->getJson(route('api.events.data-version', $event))
             ->assertOk()
             ->assertExactJson(['version' => $v2])
-            ->assertHeader('Cache-Control', 'max-age=0, no-store, private');
+            // Revalidated on every ask (an ETag — see ApiCachingTest); a CDN may hold it for seconds only.
+            ->assertHeader('ETag', 'W/"'.$v2.'"')
+            ->assertHeader('Cache-Control', 'max-age=0, public, s-maxage=20, stale-while-revalidate=40');
 
         $this->withoutVite()->get(route('event.home', $event))
             ->assertSee('<meta name="campbuddy-data-version" content="'.$v2.'">', false);

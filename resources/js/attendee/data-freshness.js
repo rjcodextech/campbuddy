@@ -2,7 +2,9 @@
 //
 // Every event page carries a fingerprint of its data (<meta
 // name="campbuddy-data-version">). While the app is open this asks the server
-// for the current fingerprint every few minutes, when the app comes back to
+// for the current fingerprint every few minutes (about 5 around the event's
+// days, about 15 otherwise, spread so phones never ask in step, backing off
+// when the server is struggling — see polling.js), when the app comes back to
 // the foreground, and when the phone gets its connection back. If it has
 // changed — a schedule update, a new sponsor, a room change — the page is
 // refreshed:
@@ -18,8 +20,8 @@
 // in IndexedDB and is never touched.
 
 import { apiHeaders } from './api.js';
+import { inEventWindow, nextDelay, retryAfterMs } from './polling.js';
 
-const CHECK_EVERY_MS = 5 * 60 * 1000;
 const MIN_GAP_MS = 45 * 1000;
 const IDLE_MS = 30 * 1000;
 const SCROLL_KEY = 'campbuddy:restore-scroll';
@@ -27,6 +29,20 @@ const SCROLL_KEY = 'campbuddy:restore-scroll';
 let lastCheck = 0;
 let lastInteraction = Date.now();
 let pendingReload = false;
+// When the next regular check is due, and how many asks in a row have failed.
+let nextCheckAt = 0;
+let failures = 0;
+
+/** The event's dates and zone as the page states them (see layouts/attendee.blade.php). */
+function eventFacts() {
+  const d = document.getElementById('app')?.dataset ?? {};
+
+  return { start: d.eventStart || null, end: d.eventEnd || null, timezone: d.eventTimezone || null };
+}
+
+function scheduleNext(retryAfter = 0) {
+  nextCheckAt = Date.now() + nextDelay({ inWindow: inEventWindow(eventFacts()), failures, retryAfter });
+}
 
 function pageVersion() {
   return document.querySelector('meta[name="campbuddy-data-version"]')?.content ?? null;
@@ -88,15 +104,32 @@ async function check(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
 
   let latest;
   try {
-    const response = await fetch(`/api/v1/events/${encodeURIComponent(slug)}/data-version?t=${Date.now()}`, {
-      cache: 'no-store',
+    // No cache-busting query string: the server answers with an ETag (an empty
+    // 304 when nothing has changed) and a CDN may hold the answer for a few
+    // seconds, which is what keeps a crowd of phones cheap. `no-cache` = always
+    // check with the server, never trust a stored copy.
+    const response = await fetch(`/api/v1/events/${encodeURIComponent(slug)}/data-version`, {
+      cache: 'no-cache',
       headers: apiHeaders(),
     });
-    if (!response.ok) return;
+
+    if (!response.ok) {
+      // A busy or struggling server (429, 5xx): give it room.
+      failures++;
+      scheduleNext(retryAfterMs(response.headers.get('Retry-After')));
+      return;
+    }
+
     latest = (await response.json()).version;
   } catch (err) {
-    return; // Offline or flaky wifi — try again next time.
+    // Offline or flaky wifi — back off, and try again later.
+    failures++;
+    scheduleNext();
+    return;
   }
+
+  failures = 0;
+  scheduleNext();
 
   if (!latest || latest === pageVersion()) return;
 
@@ -153,14 +186,15 @@ export function initDataFreshness() {
 
   window.addEventListener('online', () => check(slug));
 
-  // The page was just built, so the first regular check is CHECK_EVERY_MS away.
+  // The page was just built, so the first regular check is a while away.
   lastCheck = Date.now();
+  scheduleNext();
 
   setInterval(() => {
     if (pendingReload && !busy()) {
       refresh(slug);
       return;
     }
-    check(slug, { minGap: CHECK_EVERY_MS });
+    if (Date.now() >= nextCheckAt) check(slug, { minGap: 0 });
   }, 30 * 1000);
 }
