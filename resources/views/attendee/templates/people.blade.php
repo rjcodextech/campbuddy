@@ -1,7 +1,8 @@
 {{--
     Explore → People roster (people.js): one row per ingested attendee,
-    plus the empty/offline messages. Slot conventions:
-    resources/js/attendee/template.js.
+    plus the empty/offline messages. A row reads photo | name over its
+    social icons | Meet button (scss/components/_people.scss). Slot
+    conventions: resources/js/attendee/template.js.
 --}}
 
 <template id="tpl-roster-offline">
@@ -25,10 +26,13 @@
 
 <template id="tpl-roster-row">
     <div class="roster-row">
-        <img class="roster-row__avatar" alt="" width="40" height="40" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
+        <img class="roster-row__avatar" alt="" width="44" height="44" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
-        <span class="roster-row__name"><span data-slot="name"></span> <span class="roster-row__open" data-slot="open-badge">👋 Open to meet</span></span>
-        <div class="roster-row__links" data-slot="links"></div>
+        <div class="roster-row__body">
+            <span class="roster-row__name" data-slot="name"></span>
+            <span class="roster-row__open" data-slot="open-badge">👋 Open to meet</span>
+            <div class="roster-row__links" data-slot="links"></div>
+        </div>
         <button type="button" class="meet-btn" data-slot="meet"></button>
     </div>
 </template>

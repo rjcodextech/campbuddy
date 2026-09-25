@@ -2,17 +2,74 @@
 @use '../abstracts/mixins' as m;
 
 // Explore → People's "Who's attending" roster row — one entry per
-// ingested attendee (name, gravatar/initial, social icons).
+// ingested attendee, laid out as three columns on every screen:
+//
+//   [photo]  Name               [ + Meet ]
+//            👋 Open to meet
+//            (x) (in) (www)
+//
+// The middle column takes whatever the photo and the button leave, so a name
+// wraps between words instead of being squeezed into a sliver — the social
+// icons sit under it rather than beside it, where they used to eat the width.
 .roster-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
     align-items: center;
-    gap: v.$space-3;
+    column-gap: v.$space-3;
     padding: v.$space-3 0;
     border-bottom: 1px solid var(--line);
 
     &:last-child {
         border-bottom: none;
     }
+
+    // The same photo class is reused (smaller) by the "pick your name" list.
+    > .roster-row__avatar {
+        width: 44px;
+        height: 44px;
+        border: 2px solid var(--peach);
+    }
+
+    // Same width whether it says "+ Meet" or "✓ To meet", so the buttons
+    // line up down the list and every name gets the same room. Small to look
+    // at (32px tall) but the invisible margin keeps the tap area 44px tall.
+    // Top and bottom only: it's already 80px wide, and sideways margin would
+    // poke out past the row's edge.
+    .meet-btn {
+        position: relative;
+        min-width: 80px;
+        min-height: 32px;
+        padding: 0 v.$space-2;
+        font-size: 0.8125rem; // 13px — a step under the 14px name
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -6px 0;
+        }
+    }
+
+    // The row's icons are a size down from the match cards' (28px, not 30px),
+    // in step with the 14px name; same 44px tap area.
+    .social-icon {
+        width: 28px;
+        height: 28px;
+
+        &::after {
+            inset: -8px -6px;
+        }
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+}
+
+// With rows in it the card gives the sides back to the rows (the middle
+// column is the tight one on a phone); the messages keep the normal padding.
+#people-roster:has(> .roster-row) {
+    padding: v.$space-1 v.$space-3;
 }
 
 .roster-row__avatar {
@@ -33,18 +90,31 @@
     font-size: v.$font-size-md;
 }
 
-.roster-row__name {
-    flex: 1;
+.roster-row__body {
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-1;
+}
+
+// The full name always shows: it wraps at word breaks, and only a single
+// endless word may break mid-word (overflow-wrap: break-word, not anywhere).
+.roster-row__name {
+    max-width: 100%;
+    font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
     color: var(--ink);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    text-wrap: balance;
 }
 
 .roster-row__links {
     display: flex;
-    gap: v.$space-3;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+    margin-top: v.$space-1;
 }
 
 // Icon badges for twitter/linkedin/website — replaces the old plain-text
@@ -104,10 +174,20 @@
 // "👋 Open to meet" under a roster name: they picked themselves in discovery.
 .roster-row__open {
     display: block;
-    margin-top: 2px;
+    // One line, and never wider than the name column — on a very narrow
+    // screen or with a large system font it's trimmed rather than running
+    // over the Meet button.
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 2px v.$space-2;
+    border-radius: v.$radius-full;
+    background: rgba(4, 147, 149, 0.1);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
-    color: var(--teal);
+    line-height: v.$line-height-snug;
+    color: #03676a;
 }
 
 .match-tag {
