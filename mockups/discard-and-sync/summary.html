@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>CampBuddy — sync, ✕ Hide aur status filter (summary)</title>
+<style>
+  :root{--ink:#2a1f1a;--muted:#6d5e52;--line:#e7d5bd;--bg:#fff6ea;--bad:#b3261e;--good:#1b7a4b;--mock:#8a5a00}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,Segoe UI,Arial,sans-serif;padding:32px 36px 40px;width:1500px}
+  h1{margin:0 0 4px;font-size:28px}
+  .lead{margin:0 0 26px;color:var(--muted);max-width:1100px}
+  section{margin:0 0 34px}
+  h2{font-size:20px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  .tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  .real{background:#fde7e5;color:var(--bad)} .mock{background:#fff0cc;color:var(--mock)}
+  .why{margin:0 0 14px;color:var(--muted);max-width:1200px}
+  .row{display:flex;gap:26px;align-items:flex-start;flex-wrap:nowrap}
+  figure{margin:0;width:340px;flex:none}
+  figure img{width:340px;display:block;border-radius:14px;border:1px solid var(--line);background:#fff}
+  figure.tall img{width:300px}
+  figcaption{margin-top:10px;font-size:14.5px}
+  figcaption>b:first-child{display:block;margin-bottom:2px}
+  .bad{color:var(--bad)} .good{color:var(--good)}
+  .foot{margin-top:8px;padding:14px 18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);max-width:1300px}
+</style></head><body>
+<h1>Sync, ✕ Hide aur status filter — ek nazar me</h1>
+<p class="lead">Upar wali panti <b>abhi ka asli app</b> hai (isolated test copy, fake naam). Neeche ki panti <b>mock-up</b> hai: asli app me abhi ye nahi hai. Mock-up bhi asli page par hi banaye gaye hain (wahi rang, wahi font), bas naye tukde upar se jode gaye hain.</p>
+
+<section>
+  <h2><span class="tag real">Abhi</span> Sync ki kami (asli screenshots)</h2>
+  <p class="why">Ek insaan ko My Day me “Met” kiya aur ek ko Explore me “I met them”. Dono jagah alag haal dikhta hai.</p>
+  <div class="row">
+    <figure><img src="explore-before.png"><figcaption><b class="bad">Explore</b>Aditya Rao par ab bhi “✓ To meet” aur “I met them”, jabki My Day me wo <b>Met</b> hai.</figcaption></figure>
+    <figure><img src="myday-before.png"><figcaption><b class="bad">My Day</b>Aditya ✓ Met hai. Dev Malhotra (jise Explore me “I met them” kiya) yahan <b>hai hi nahi</b>.</figcaption></figure>
+    <figure><img src="explore-met-section.png"><figcaption><b class="bad">Explore → People you've met</b>Dev Malhotra ✓ Met yahan hai, My Day ko iski khabar nahi.</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag mock">Baad me</span> 1. Discovery ↔ My Day sync</h2>
+  <p class="why">Ek jagah dabao, doosri jagah wahi. Ek hi record, dono screens usi se padhti hain. Kuch delete nahi hota.</p>
+  <div class="row">
+    <figure><img src="explore-after-sync-matches.png"><figcaption><b class="good">Explore, Best matches</b>Aditya (My Day me Met) ab yahan se hat gaya.</figcaption></figure>
+    <figure><img src="explore-after-sync-met.png"><figcaption><b class="good">Explore, People you've met</b>Dev aur Aditya, dono ✓ Met (galti ho to “Undo”).</figcaption></figure>
+    <figure><img src="myday-after-sync.png"><figcaption><b class="good">My Day</b>Dev Malhotra bhi “Met” me, Explore se aaya. Progress “1 of 4” waisa hi: bina plan wale ko nahi ginte (ye aapka faisla baaki hai).</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag mock">Baad me</span> 2. ✕ Hide (kuch delete nahi)</h2>
+  <p class="why">Card ke corner me halka ✕. Insaan “Hidden” me chala jata hai, note aur time bache rehte hain, “Show again” se wapas.</p>
+  <div class="row">
+    <figure><img src="explore-after-x.png"><figcaption><b class="good">Card par ✕</b>Chhota, halka, corner me. Jinse chat chal rahi hai unke liye ek confirm.</figcaption></figure>
+    <figure><img src="explore-after-folds.png"><figcaption><b class="good">List ke neeche</b>Band sections: “Couldn't meet (N)” aur “Hidden (N)”, “Try again” / “Show again” ke saath.</figcaption></figure>
+    <figure class="tall"><img src="meet-sheet-after.png"><figcaption><b class="good">Edit sheet</b>“Remove” ki jagah <b>“Hide from plan”</b>: note aur time delete nahi hote.</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2><span class="tag mock">Baad me</span> 3. My schedule ke status filter</h2>
+  <p class="why">“Hide done” ki jagah chips, sessions aur logon dono par. Chip par jo number, wahi cards (dono hamesha barabar). Jis chip me kuch nahi, wo chhupa rahega (aapka faisla baaki).</p>
+  <div class="row">
+    <figure><img src="myday-after-all.png"><figcaption><b class="good">All / To do / Done / Couldn't / Hidden</b>Yahan paanchon dikh rahe hain: khali chips chhupane par sirf jinme kuch ho.</figcaption></figure>
+    <figure><img src="myday-after-hidden.png"><figcaption><b class="good">“Hidden” chip</b>Sirf hataye hue log, note bacha hua, “Show again” se wapas.</figcaption></figure>
+  </div>
+</section>
+
+<div class="foot"><b>Jo nahi badlega:</b> Wave, server, database, Blade, API. Kuch bhi delete nahi hota (sirf “Clear my data”). Sab kuch sirf aapke phone me. Naya analytics me sirf gine hue events, koi naam nahi.</div>
+</body></html>

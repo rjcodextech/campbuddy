@@ -152,3 +152,23 @@ My Day → My schedule ke upar chips (sessions **aur** people dono par lagte hai
 4. Session un-save reversible ho ya waisa hi?
 5. ✕ mutual wave wale par confirm chahiye?
 6. Karan ke chaar shabd aur "Stay in touch" theek hain?
+
+## 13. Screenshots (27 Sep)
+
+Ek page me sab: `mockups/discard-and-sync/summary.png` (asli screens ki ek panti, uske neeche mock-up). Alag alag tasveerein isi folder me. Asli screens ek alag test copy (fake naam) se li gayi hain, mock-up wahi asli page hain jisme naye tukde upar se jode gaye.
+
+## 14. App ke usoolon se milaan (27 Sep, implement se pehle)
+
+| Usool (spec) | Nateeja |
+| --- | --- |
+| Local by default (1.0, 8.3) | Theek: sab sirf phone me, server/API nahi |
+| Analytics me personal data nahi (8.5) | Theek: naye events me sirf gine hue, koi naam/ID nahi |
+| Kuch delete nahi (23), Export/Clear sab le (DP1, DP2) | Theek: Hide sirf status, Export/Clear naya status apne aap le lete hain |
+| Purana feature na toote (20 #6) | Theek: `metHistory` bana rehta hai; sirf do cheezein badalti hain jo aapne maanzoor ki: Remove → Hide, Hide done → chips |
+| "Guidance over information" (1.0 test) | **Shak**: paanch chips first-timer ko bhaari lag sakte hain → khali chips chhupana (faisla baaki) |
+| Reconnect par scroll na khoye (4.6) | Explore ko lautne par refresh sirf tab jab kuch badla ho |
+
+**Teen faisle baaki (aapse):**
+1. "I met them" wala insaan jise plan nahi kiya tha, My Day me "Met" dikhega. Kya wo "N of M done" me ginna chahiye? (Meri salah: nahi.)
+2. Hidden list me "Delete for good" (user ke click par) chahiye? (Meri salah: nahi, aapka "koi delete nahi" niyam.)
+3. Khali status chips chhupa dun? (Meri salah: haan.)
