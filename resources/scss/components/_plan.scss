@@ -583,3 +583,8 @@ dialog.meet-sheet {
     font-weight: v.$font-weight-bold;
     color: var(--muted);
 }
+
+// "All 5 · To do 2 · Done 2" — the status chips of My schedule (built in my-day.js).
+.plan-filters {
+    margin: v.$space-3 0 v.$space-2;
+}

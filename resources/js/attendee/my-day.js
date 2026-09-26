@@ -15,7 +15,7 @@ import { eventDayKey, eventTimeNote, formatDayKey, formatDayTime, formatTime } f
 import { getBookmarks, getMeetings, removeBookmark, setBookmark, updateBookmark } from './db.js';
 import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
 import { computePlan } from './plan.js';
-import { isPlanned } from './people-state.js';
+import { effectiveFilter, filterCounts, isPlanned, matchesFilter, startingFilter, visibleFilters } from './people-state.js';
 import { peopleStatus } from './people-status.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
@@ -35,7 +35,7 @@ export async function renderMyDay(root) {
   let bookmarkedIds = new Set(bookmarks.map((b) => b.sessionId));
   let meetings = await safeMeetings(eventId);
   let expandedSessionId = null;
-  let hideDone = readPref('campbuddy:plan-hide-done') === '1';
+  let planFilter = startingFilter(readPref('campbuddy:plan-filter'), readPref('campbuddy:plan-hide-done') === '1');
 
   // Every session is listed — including ones the WordCamp site hasn't given
   // a time yet (common weeks before the event, when talks are announced
@@ -164,20 +164,28 @@ export async function renderMyDay(root) {
 
   function renderMine() {
     const plan = computePlan(bookmarks, meetings, sessionsById);
-    const doneIds = new Set(plan.sessions.filter((i) => i.done).map((i) => i.id));
     const statusById = new Map(bookmarks.map((b) => [b.sessionId, b.status ?? null]));
 
-    renderPlanSummary(plan);
+    // The chips count exactly the cards each one shows (people-state.js). A chip
+    // that has just been emptied is no longer shown, so the page falls back to "All".
+    const counts = filterCounts([...plan.sessions, ...plan.people, ...plan.hidden]);
+    planFilter = effectiveFilter(planFilter, counts);
+
+    renderPlanSummary(plan, counts);
     renderPeople(plan);
 
-    const mine = timed.filter((s) => bookmarkedIds.has(s.id) && !(hideDone && doneIds.has(s.id)));
-    renderGroupedByDay(
-      mineListEl,
-      mine,
-      mine.length === 0 && bookmarkedIds.size > 0 ? 'tpl-plan-sessions-done' : 'tpl-my-day-empty-mine',
-      (s) => bookmarkedOverlap(s, null),
-      statusById
-    );
+    const itemOf = new Map(plan.sessions.map((i) => [i.id, i]));
+    const mine = planFilter === 'hidden'
+      ? []
+      : timed.filter((s) => bookmarkedIds.has(s.id) && matchesFilter(itemOf.get(s.id), planFilter));
+
+    if (planFilter === 'hidden') {
+      mineListEl.replaceChildren();
+    } else if (mine.length === 0 && bookmarkedIds.size > 0) {
+      mineListEl.replaceChildren(filterEmptyNote(planFilter === 'todo' ? 'Nothing left to do here: all your saved sessions are done ✓' : 'No saved sessions in this filter.'));
+    } else {
+      renderGroupedByDay(mineListEl, mine, 'tpl-my-day-empty-mine', (s) => bookmarkedOverlap(s, null), statusById);
+    }
     wireItemInteractions(mineListEl, timed, toggleBookmark, toggleExpand);
 
     mineListEl.querySelectorAll('[data-status]').forEach((btn) => {
@@ -192,12 +200,45 @@ export async function renderMyDay(root) {
     });
   }
 
-  function renderPlanSummary(plan) {
+  // "All 5 · To do 2 · Done 2 · Couldn't 1": only chips that have something, the chosen one ticked.
+  function filterChips(counts) {
+    const group = document.createElement('div');
+    group.className = 'chip-group plan-filters';
+    group.setAttribute('role', 'group');
+    group.setAttribute('aria-label', 'Show in My schedule');
+
+    visibleFilters(counts).forEach((f) => {
+      const on = f.id === planFilter;
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = `chip${on ? ' chip--selected' : ''}`;
+      chip.setAttribute('aria-pressed', String(on));
+      chip.dataset.planFilter = f.id;
+      chip.textContent = `${f.label} ${counts[f.id]}`;
+      chip.addEventListener('click', () => {
+        planFilter = f.id;
+        writePref('campbuddy:plan-filter', f.id);
+        track('schedule_filter', { filter_type: 'status', filter_value: f.id });
+        renderMine();
+      });
+      group.append(chip);
+    });
+
+    return group;
+  }
+
+  function renderPlanSummary(plan, counts) {
     const el = document.getElementById('plan-summary');
     if (!el) return;
 
-    if (plan.total === 0) {
+    if (counts.all + counts.hidden === 0) {
       el.replaceChildren();
+      return;
+    }
+
+    // Only people (met on Explore, or hidden) and nothing planned: no progress to show, just the chips.
+    if (plan.total === 0) {
+      el.replaceChildren(filterChips(counts));
       return;
     }
 
@@ -209,14 +250,11 @@ export async function renderMyDay(root) {
       ring: `${pct}%`,
       bar: { attrs: { 'aria-valuemax': String(plan.total), 'aria-valuenow': String(plan.done), 'aria-label': 'Plan progress' } },
       fill: { attrs: { style: `width:${pct}%` } },
-      'hide-done': { attrs: { 'aria-pressed': String(hideDone) }, class: { 'chip--selected': hideDone } },
     });
 
-    card.querySelector('[data-plan-hide-done]').addEventListener('click', () => {
-      hideDone = !hideDone;
-      writePref('campbuddy:plan-hide-done', hideDone ? '1' : '0');
-      renderMine();
-    });
+    // The chips take the place of the old "Hide done" chip ("To do" does what it did).
+    card.querySelector('[data-plan-hide-done]')?.remove();
+    card.querySelector('.plan-summary__actions')?.before(filterChips(counts));
 
     card.querySelector('[data-plan-calendar]').addEventListener('click', () => {
       const facts = eventFacts();
@@ -255,14 +293,34 @@ export async function renderMyDay(root) {
     const byTime = (a, b) => Number(a.done) - Number(b.done)
       || (Number.isFinite(a.startMs) ? a.startMs : Infinity) - (Number.isFinite(b.startMs) ? b.startMs : Infinity)
       || a.title.localeCompare(b.title);
-    const people = plan.people.filter((p) => !(hideDone && p.done)).sort(byTime);
+    const hiddenView = planFilter === 'hidden';
+    const people = hiddenView
+      ? [...plan.hidden].sort((a, b) => a.title.localeCompare(b.title))
+      : plan.people.filter((p) => matchesFilter(p, planFilter)).sort(byTime);
 
     const section = render('tpl-plan-people', {
-      items: people.map((p) => personCard(p.meeting)),
-      empty: plan.people.length === 0,
+      items: people.map((p) => (hiddenView ? hiddenPersonCard(p.meeting) : personCard(p.meeting))),
+      empty: plan.people.length === 0 && plan.hidden.length === 0,
       explore: { attrs: { href: `/event/${eventSlug}/explore` } },
     });
+    if (hiddenView) section.querySelector('#plan-people-heading').textContent = 'Hidden people';
+    if (people.length === 0 && (plan.people.length > 0 || plan.hidden.length > 0)) {
+      section.append(filterEmptyNote('No one in this filter.'));
+    }
     el.replaceChildren(section);
+
+    // "Show again": back to what it was, with the note and time it had.
+    el.querySelectorAll('[data-person-show]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const meeting = meetings.find((m) => m.personKey === btn.closest('[data-hidden-key]').dataset.hiddenKey);
+        if (!meeting) return;
+
+        await peopleStatus.unhide(eventId, meeting);
+        track('meet_unhide', { source: meeting.source ?? 'roster' });
+        meetings = await safeMeetings(eventId);
+        renderMine();
+      });
+    });
 
     el.querySelectorAll('[data-person-key]').forEach((card) => {
       const meeting = meetings.find((m) => m.personKey === card.dataset.personKey);
@@ -413,6 +471,62 @@ function writePref(key, value) {
   } catch {
     // Just not remembered.
   }
+}
+
+/** One line saying why a list is empty under the chosen chip. */
+function filterEmptyNote(text) {
+  const p = document.createElement('p');
+  p.className = 'plan-empty';
+  p.textContent = text;
+
+  return p;
+}
+
+/** A person hidden with ✕: name, their note is kept, and one button to bring them back. */
+function hiddenPersonCard(m) {
+  const card = document.createElement('article');
+  card.className = 'plan-person';
+  // Not data-person-key: the Met / Couldn't / Edit wiring of the normal cards must not pick this one up.
+  card.dataset.hiddenKey = m.personKey;
+
+  const avatar = document.createElement('img');
+  avatar.className = 'plan-person__avatar';
+  avatar.alt = '';
+  avatar.width = 44;
+  avatar.height = 44;
+  avatar.loading = 'lazy';
+  avatar.dataset.fallback = '/media/illustrations/avatar.svg';
+  avatar.src = /^https?:\/\//i.test(m.avatarUrl ?? '') ? m.avatarUrl : '/media/illustrations/avatar.svg';
+
+  const body = document.createElement('div');
+  body.className = 'plan-person__body';
+
+  const name = document.createElement('p');
+  name.className = 'plan-person__name';
+  name.textContent = m.name || 'Anonymous attendee';
+  body.append(name);
+
+  if (m.note) {
+    const note = document.createElement('p');
+    note.className = 'plan-person__note';
+    note.textContent = m.note;
+    body.append(note);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'plan-person__actions';
+  const show = document.createElement('button');
+  show.type = 'button';
+  show.className = 'btn btn--compact btn--outline';
+  show.dataset.personShow = '';
+  show.textContent = 'Show again';
+  show.setAttribute('aria-label', `Show again: ${m.name || 'this person'}`);
+  actions.append(show);
+  body.append(actions);
+
+  card.append(avatar, body);
+
+  return card;
 }
 
 function personCard(m) {

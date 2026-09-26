@@ -53,7 +53,7 @@ const EVENTS = {
 
   // My Day
   schedule_view_switch: ['view'], // full | mine
-  schedule_filter: ['filter_type', 'filter_value'], // day | track | type | topic
+  schedule_filter: ['filter_type', 'filter_value'], // day | track | type | topic | status (My schedule's All / To do / Done / Couldn't / Hidden)
   schedule_filters_open: [],
   schedule_search: ['query_length', 'results_count'], // never the text
   session_expand: ['schedule_session_id', 'session_title'],
@@ -104,6 +104,8 @@ const EVENTS = {
   meet_add: ['source', 'timed'], // source: roster | discovery — never who or the note
   meet_update: ['source', 'timed'],
   meet_remove: ['source'],
+  meet_hide: ['source'], // hidden from the plan (kept, never deleted)
+  meet_unhide: ['source'], // shown again
   meet_status: ['plan_status'], // met | missed | cleared
   session_status: ['plan_status'], // attended | missed | cleared
   calendar_export: ['scope', 'method'], // scope: meeting | plan; method: ics | google
