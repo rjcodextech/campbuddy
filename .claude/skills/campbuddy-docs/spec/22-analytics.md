@@ -66,3 +66,5 @@ Add it to `EVENTS` in `analytics.js` with only the params it needs, then call `t
 Tests: `tests/Feature/AnalyticsTagTest.php` covers the tag partial (off without an ID, URL scrubbing, opt-out handling, slug escaping, admin layouts excluded).
 
 > **Note (Sept 2026):** `reminder_offer.result` can now also be `queued` — the person said yes but the phone had no connection (or the server was down), so the request was kept and is sent when it can be (`outbox.js`).
+
+> **Current implementation note — people status events (Sept 2026):** new events with existing parameters only (nothing to register in GA): `discovery_hide` / `discovery_unhide` (`surface`: home | explore), `meet_hide` / `meet_unhide` (`source`: roster | discovery), and `schedule_filter` now also sends `filter_type: status` with `filter_value` all | todo | done | missed | hidden. `meet_status` (`plan_status`) is reused for Try again / Undo (`cleared`). Never who, never a note.

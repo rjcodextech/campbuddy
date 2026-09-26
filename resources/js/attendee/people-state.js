@@ -108,9 +108,13 @@ export function effectiveFilter(selected, counts) {
   return visibleFilters(counts).some((f) => f.id === selected) ? selected : DEFAULT_FILTER;
 }
 
-/** The filter to start on: the saved one, or "To do" for someone who used the old "Hide done" chip. */
+/**
+ * The filter to start on: the saved one, or "To do" for someone who used the old
+ * "Hide done" chip. "Hidden" is a place to look, not a way to see the schedule,
+ * so it is never remembered: My schedule always opens on what is on the plan.
+ */
 export function startingFilter(savedFilter, oldHideDone = false) {
-  if (PLAN_FILTERS.some((f) => f.id === savedFilter)) return savedFilter;
+  if (savedFilter !== 'hidden' && PLAN_FILTERS.some((f) => f.id === savedFilter)) return savedFilter;
 
   return oldHideDone ? 'todo' : DEFAULT_FILTER;
 }

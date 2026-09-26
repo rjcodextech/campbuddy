@@ -92,6 +92,8 @@ test('the starting chip is the saved one; the old "Hide done" becomes "To do"', 
   assert.equal(startingFilter(null, true), 'todo');
   assert.equal(startingFilter('nonsense', true), 'todo');
   assert.equal(startingFilter('done', true), 'done', 'a saved choice wins over the old flag');
+  assert.equal(startingFilter('hidden'), 'all', 'the Hidden view is never the starting page');
+  assert.equal(startingFilter('hidden', true), 'todo');
 });
 
 test('the signature changes when any record changes, and not otherwise', () => {

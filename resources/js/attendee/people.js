@@ -98,6 +98,9 @@ function wireMeetButton(btn, eventId, person) {
         if (row) meetingsByKey.set(person.personKey, row);
         else meetingsByKey.delete(person.personKey);
         paint();
+
+        // "Hide from plan" on a match: it leaves the lists now, not on the next visit.
+        if (row?.status === 'skipped') watching?.rerender();
       },
     });
   });
@@ -561,9 +564,9 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     el.querySelector('#leave-discovery-btn').addEventListener('click', () => leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, options));
 
     // Home: say so when matches have waved and are waiting for a wave back.
-    apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken)
-      .then((state) => {
-        const n = (state?.received ?? []).length;
+    Promise.all([apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken), peopleStatus.load(eventId).catch(() => null)])
+      .then(([state, loaded]) => {
+        const n = (state?.received ?? []).filter((id) => !loaded || stateOfMatch(loaded, id) !== 'skipped').length;
         const link = el.querySelector('[data-track="home_discovery_explore_click"]');
         if (n > 0 && link) link.textContent = `👋 ${n} ${n === 1 ? 'match wants' : 'matches want'} to meet you →`;
       })
@@ -632,6 +635,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const rest = notMet.filter((p) => p.wave !== 'mutual' && p.common.length === 0 && p.wave !== 'received').sort(byStrength);
   const met = others.filter((p) => stateOf(p) === 'met');
   const missed = others.filter((p) => stateOf(p) === 'missed');
+  const hidden = others.filter((p) => stateOf(p) === 'skipped');
 
   if (mutual.length > 0) track('discovery_mutual_view');
 
@@ -641,7 +645,22 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     track('meet_status', { plan_status: 'cleared' });
     rerender();
   };
+  const showAgain = async (p) => {
+    await peopleStatus.unhide(eventId, cardPerson(p));
+    track('discovery_unhide', { surface: surfaceOf(options) });
+    rerender();
+  };
+  // ✕: out of the lists, everything kept (note, time, what they were) — "Show again" brings them back.
+  const hideCard = async (p) => {
+    if (p.wave === 'mutual' && !confirm("Hide? You'll stop seeing your chat with them.")) return;
+
+    await peopleStatus.hide(eventId, cardPerson(p));
+    track('discovery_hide', { surface: surfaceOf(options) });
+    showToast("Hidden. You'll find them under Hidden below.");
+    rerender();
+  };
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
+    onHide: () => hideCard(p),
     onUndoMet: () => tryAgain(p),
     onWave: () => waveAt(p, mine, eventSlug, rerender, chat),
     convo: p.convo
@@ -680,6 +699,10 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     el.append(foldSection('missed', "Couldn't meet", missed.map((p) => personRow(p, 'Try again', () => tryAgain(p)))));
   }
 
+  if (hidden.length > 0) {
+    el.append(foldSection('hidden', 'Hidden', hidden.map((p) => personRow(p, 'Show again', () => showAgain(p)))));
+  }
+
   scheduleChatFlip(chat, rerender);
   watchForChanges(eventId, rerender, peopleSignature(loaded.meetings, loaded.metIds));
 
@@ -712,7 +735,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, convo = null } = {}) {
+function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, onHide = null, convo = null } = {}) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -777,6 +800,18 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, c
     }
   } else {
     wireMeetButton(meetBtn, eventId, cardPerson(profile));
+  }
+
+  if (onHide && !isMet) {
+    const hide = document.createElement('button');
+    hide.type = 'button';
+    hide.className = 'person-card__hide';
+    hide.textContent = '✕';
+    hide.title = 'Hide';
+    hide.setAttribute('aria-label', `Hide ${profile.revealed_name || profile.name || 'this person'}`);
+    hide.addEventListener('click', onHide);
+    card.classList.add('person-card--hideable');
+    card.append(hide);
   }
 
   return card;

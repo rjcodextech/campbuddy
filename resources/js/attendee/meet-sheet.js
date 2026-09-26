@@ -7,7 +7,8 @@
 
 import { track } from './analytics.js';
 import { buildIcs, defaultMeetingDay, deliverIcs, eventFacts, googleCalendarUrl } from './calendar.js';
-import { removeMeeting, saveMeeting } from './db.js';
+import { saveMeeting } from './db.js';
+import { peopleStatus } from './people-status.js';
 import { eventDayKey, fromEventInput, toEventInput } from './eventtime.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
@@ -99,13 +100,19 @@ export function openMeetSheet({ eventId, person, existing = null, onChange = () 
     onChange(row);
   });
 
-  dialog.querySelector('[data-meet-remove]')?.addEventListener('click', async () => {
-    await removeMeeting(eventId, person.personKey);
-    track('meet_remove', { source: person.source });
-    showToast('Removed from My schedule.');
-    close();
-    onChange(null);
-  });
+  // Nothing is deleted: "Hide from plan" only sets the person aside, note and time kept,
+  // and "Show again" (My Day → Hidden, or Explore → Hidden) brings them back.
+  const hideBtn = dialog.querySelector('[data-meet-remove]');
+  if (hideBtn) {
+    hideBtn.textContent = 'Hide from plan';
+    hideBtn.addEventListener('click', async () => {
+      const row = await peopleStatus.hide(eventId, person);
+      track('meet_hide', { source: person.source });
+      showToast('Hidden from your plan. Find them under Hidden.');
+      close();
+      onChange(row);
+    });
+  }
 
   dialog.querySelector('[data-meet-ics]')?.addEventListener('click', () => {
     const item = meetingCalendarItem({ ...existing, ...current(), personKey: person.personKey }, facts);

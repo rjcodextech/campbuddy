@@ -387,6 +387,7 @@
 // A person in discovery: who they are first, then why you'd talk.
 .person-card {
     @include m.card-surface;
+    position: relative;
     padding: v.$space-4;
     margin-bottom: v.$space-3;
 }
@@ -584,4 +585,34 @@
     color: var(--muted);
     text-decoration: underline;
     cursor: pointer;
+}
+
+// ✕ in the corner of a match: hides them (kept, "Show again" under Hidden). Built by people.js.
+.person-card--hideable .person-card__head {
+    padding-right: v.$space-8;
+}
+
+.person-card__hide {
+    position: absolute;
+    top: v.$space-3;
+    right: v.$space-3;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    background: var(--surface, #fff);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    font: inherit;
+    font-size: v.$font-size-sm;
+    line-height: 1;
+    color: var(--muted);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--ink);
+        border-color: var(--muted);
+    }
 }
