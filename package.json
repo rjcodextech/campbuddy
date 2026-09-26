@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "vite build && node tools/remove-hot.mjs",
         "dev": "vite",
         "test:js": "node --experimental-test-module-mocks --test \"tests/js/*.test.mjs\"",
         "test:browser": "node tests/browser/offline.e2e.mjs"
