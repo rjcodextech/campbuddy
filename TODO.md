@@ -28,7 +28,7 @@
 | Session reminder | Session se 5–10 min pehle push notification, app ke andar "starting soon" banner | Ho gaya, **asli test baaki** |
 | Quest | 8 "Things to do" quests, 9-item pre-trip checklist, admin ke apne quests, progress phone me | Ho gaya |
 | Contribute | Contributor Day samjhana, sawalon se team ki salah | Ho gaya |
-| Explore → People | Event ki attendee list (search, photos), "Join attendee discovery" (interest match, naam kaise dikhe ye apna faisla), waves/messages, kabhi bhi leave | Ho gaya, **bheed par asli test baaki** |
+| Explore → People | Event ki attendee list (search, photos), "Join attendee discovery" (interest match, naam kaise dikhe ye apna faisla), waves/messages, kabhi bhi leave. Lambi match list pehle 3 cards dikhati hai, baaki "Show 10 more" par (27 Sep) | Ho gaya, **bheed par asli test baaki** |
 | Explore → Sponsors, Deals, Event Info | Sponsors, discount deals (kuch me naam/email form), venue/links/emergency contact (apne aap bhare jate hain, guess nahi) | Ho gaya |
 | Camp Card | Kai design, apne chune hue fields, LinkedIn/website QR, fullscreen, save/print | Ho gaya |
 | Guide | General first-timer guide aur event ka guide | Ho gaya |
@@ -107,6 +107,7 @@ Retention (event ka asli aakhri din + 3 din tak kuch delete nahi), shared lists 
 - [ ] Behtar server kab aur kaun sa (event ke asli numbers dekhkar).
 - [ ] Android background sync (agar late reminders ki shikayat aaye). iPhone par ye possible hi nahi.
 - [ ] Explore → People ki pehli load ~4–5 s ko kam karna.
+- [ ] Match card ki safai (event ke baad, asli data dekhkar): Wave ko ek bada button rakhna aur "+ Meet" / "I met them" ko "⋯" menu me daalna; **"Not for me"** (list se hatana, sirf phone me save); "Show all" ka full-screen panel search ke saath; roster (`r:`) aur discovery (`d:`) ki key ek karna taaki ek insaan My schedule me do baar na aaye; asli block (server ka kaam).
 - [ ] Event ke baad ka data: retention khatam hone ke baad kya hoga (section 5, #9).
 
 ## 5. Plan me nahi hai (meri nazar se kamiyan)

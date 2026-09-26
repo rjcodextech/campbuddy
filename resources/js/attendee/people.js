@@ -10,6 +10,7 @@
 import { apiGet, apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { getMeetings, getMetHistory, kvGet, kvSet, markMet } from './db.js';
+import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
@@ -633,9 +634,10 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
       'mutual-section': mutual.length > 0,
       mutual: mutual.map((p) => card(p, false)),
       'matches-section': matches.length > 0,
-      matches: matches.map((p) => card(p, false)),
+      // Long lists start short (list-window.js); anyone waiting for a wave back always shows.
+      matches: windowCards('matches', matches.map((p) => card(p, false)), { min: matches.filter((p) => p.wave === 'received').length }),
       'others-section': rest.length > 0,
-      others: rest.map((p) => card(p, false)),
+      others: windowCards('others', rest.map((p) => card(p, false))),
       'met-section': met.length > 0,
       met: met.map((p) => card(p, true)),
     })
