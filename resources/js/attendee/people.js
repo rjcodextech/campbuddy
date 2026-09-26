@@ -14,6 +14,7 @@ import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
 import { LABELS, hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
 import { peopleStatus, stateOfMatch } from './people-status.js';
+import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
@@ -557,6 +558,9 @@ function statusCard(mine) {
   });
 }
 
+// Home's compact card listens for the other windows once per page.
+let compactWatchBound = false;
+
 async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options = {}) {
   if (options.compact) {
     el.replaceChildren(
@@ -567,6 +571,13 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     el.querySelector('#leave-discovery-btn').addEventListener('click', () => leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, options));
 
     // Home: say so when matches have waved and are waiting for a wave back.
+    if (!compactWatchBound) {
+      compactWatchBound = true;
+      onPeopleChanged((changed) => {
+        if (changed === eventId) renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
+      });
+    }
+
     Promise.all([apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken), peopleStatus.load(eventId).catch(() => null)])
       .then(([state, loaded]) => {
         const hidden = loaded ? hiddenDiscoveryIds(loaded.meetings) : new Set();
@@ -929,8 +940,8 @@ function watchForChanges(eventId, rerender, signature) {
   if (watchBound) return;
   watchBound = true;
 
-  const check = async () => {
-    if (document.visibilityState !== 'visible' || !watching) return;
+  const refresh = async () => {
+    if (!watching) return;
 
     try {
       const loaded = await peopleStatus.load(watching.eventId);
@@ -939,10 +950,18 @@ function watchForChanges(eventId, rerender, signature) {
       // Storage blocked: nothing to compare, leave the page as it is.
     }
   };
+  const whenVisible = () => {
+    if (document.visibilityState === 'visible') refresh();
+  };
 
-  document.addEventListener('visibilitychange', check);
+  document.addEventListener('visibilitychange', whenVisible);
   window.addEventListener('pageshow', (e) => {
-    if (e.persisted) check();
+    if (e.persisted) whenVisible();
+  });
+
+  // Another window changed someone (its own tab, or the installed app): follow now, seen or not.
+  onPeopleChanged((eventId) => {
+    if (watching && eventId === watching.eventId) refresh();
   });
 }
 

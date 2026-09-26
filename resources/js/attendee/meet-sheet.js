@@ -9,6 +9,7 @@ import { track } from './analytics.js';
 import { buildIcs, defaultMeetingDay, deliverIcs, eventFacts, googleCalendarUrl } from './calendar.js';
 import { saveMeeting } from './db.js';
 import { LABELS } from './people-state.js';
+import { notifyPeopleChanged } from './people-sync.js';
 import { peopleStatus } from './people-status.js';
 import { eventDayKey, fromEventInput, toEventInput } from './eventtime.js';
 import { render } from './template.js';
@@ -96,6 +97,7 @@ export function openMeetSheet({ eventId, person, existing = null, onChange = () 
     // Saving here is planning them: someone made by "I met them" is on the plan from now on.
     const row = await saveMeeting(eventId, person.personKey, { ...current(), ...(person.discoveryId ? { discoveryId: person.discoveryId } : {}), unplanned: false });
     track(existing ? 'meet_update' : 'meet_add', { source: person.source, timed: Boolean(row.at) });
+    notifyPeopleChanged(eventId);
     showToast(existing ? 'Saved.' : 'Added to My schedule — see My Day.');
     close();
     onChange(row);

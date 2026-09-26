@@ -17,6 +17,7 @@ import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
 import { computePlan } from './plan.js';
 import { LABELS, effectiveFilter, filterCounts, isPlanned, matchesFilter, startingFilter, visibleFilters } from './people-state.js';
 import { peopleStatus } from './people-status.js';
+import { onPeopleChanged } from './people-sync.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
@@ -431,6 +432,13 @@ export async function renderMyDay(root) {
   document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState !== 'visible') return;
     bookmarks = await getBookmarks(eventId);
+    meetings = await safeMeetings(eventId);
+    renderMine();
+  });
+
+  // Someone marked met / hidden / planned in another window (a second tab, the installed app): follow now.
+  onPeopleChanged(async (changed) => {
+    if (changed !== eventId) return;
     meetings = await safeMeetings(eventId);
     renderMine();
   });

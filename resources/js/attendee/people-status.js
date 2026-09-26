@@ -7,6 +7,7 @@
 
 import { getMeetings, getMetHistory, markMet, saveMeeting } from './db.js';
 import { discoveryPersonKey, matchKeys, personState, recordFor } from './people-state.js';
+import { notifyPeopleChanged } from './people-sync.js';
 
 const DISCOVERY_PREFIX = 'd:';
 
@@ -26,8 +27,10 @@ const carried = (row) => Object.fromEntries(CARRIED.filter((k) => row[k] !== und
 
 /**
  * @param {object} db  { getMeetings, getMetHistory, markMet, saveMeeting } — the real ones by default
+ * @param {object} [options]
+ * @param {(eventId: number) => void} [options.notify]  told after a status changed, so other open windows follow
  */
-export function createPeopleStatus(db) {
+export function createPeopleStatus(db, { notify = () => {} } = {}) {
   /**
    * The person's record under their main key. If the only record is under an
    * older key (`d:<id>`, from before an attendee-list match was one person with
@@ -79,6 +82,7 @@ export function createPeopleStatus(db) {
 
       const legacyId = person.discoveryId ?? (person.personKey.startsWith(DISCOVERY_PREFIX) ? person.personKey.slice(DISCOVERY_PREFIX.length) : null);
       if (status === 'met' && legacyId) await db.markMet(eventId, legacyId);
+      notify(eventId);
 
       return row;
     },
@@ -91,9 +95,12 @@ export function createPeopleStatus(db) {
 
       const before = existing ? (existing.status ?? null) : (wasMet ? 'met' : null);
 
-      return db.saveMeeting(eventId, person.personKey, existing
+      const row = await db.saveMeeting(eventId, person.personKey, existing
         ? { status: 'skipped', statusBeforeSkip: before, ...linkOf(person) }
         : { ...identityOf(person), status: 'skipped', statusBeforeSkip: before, unplanned: true });
+      notify(eventId);
+
+      return row;
     },
 
     /** "Show again": back to what it was before it was hidden. */
@@ -102,12 +109,15 @@ export function createPeopleStatus(db) {
 
       if (!existing || existing.status !== 'skipped') return existing ?? null;
 
-      return db.saveMeeting(eventId, person.personKey, { status: existing.statusBeforeSkip ?? null, statusBeforeSkip: null, ...linkOf(person) });
+      const row = await db.saveMeeting(eventId, person.personKey, { status: existing.statusBeforeSkip ?? null, statusBeforeSkip: null, ...linkOf(person) });
+      notify(eventId);
+
+      return row;
     },
   };
 }
 
-export const peopleStatus = createPeopleStatus({ getMeetings, getMetHistory, markMet, saveMeeting });
+export const peopleStatus = createPeopleStatus({ getMeetings, getMetHistory, markMet, saveMeeting }, { notify: notifyPeopleChanged });
 
 /** The state of one discovery match, from what `load()` returned. */
 export function stateOfMatch(loaded, discoveryId, rosterId = null) {

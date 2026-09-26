@@ -229,3 +229,24 @@ test('hide and show again work on the same person through either key', async () 
   const back = await people.unhide(1, cara);
   assert.deepEqual([back.personKey, back.status, back.note], ['r:15', 'missed', 'Legacy']);
 });
+
+// ---- other open windows are told after a status changes
+
+test('after a status changes the other windows are told once; a no-op tells nobody', async () => {
+  const told = [];
+  const announcing = createPeopleStatus(db, { notify: (eventId) => told.push(eventId) });
+
+  await announcing.setStatus(4, ann, 'met');
+  assert.deepEqual(told, [4]);
+
+  await announcing.hide(4, ann);
+  await announcing.hide(4, ann); // already hidden: nothing changed
+  assert.deepEqual(told, [4, 4]);
+
+  await announcing.unhide(4, ann);
+  await announcing.unhide(4, ann); // not hidden any more: nothing changed
+  assert.deepEqual(told, [4, 4, 4]);
+
+  await announcing.adopt(4, ann);
+  assert.deepEqual(told, [4, 4, 4], 'looking a person up tells nobody');
+});
