@@ -1,140 +1,154 @@
-# Plan: ✕ Discard aur "Kin logon se nahi mil paye" list
+# Plan: ✕ Discard, "nahi mil paye" list, schedule ka status filter, aur har jagah sync
 
-*27 Sep 2026. Sirf plan hai, kuch implement nahi hua.* Ye do kaam ek saath isliye soche gaye hain ki dono ek hi sawal ka jawab hain: **"is insaan ka mere liye abhi kya haal hai?"**. Kuch bhi badalne se pehle aapse do baar popup se poochha jayega (freeze niyam), har phase ke liye alag.
+*27 Sep 2026 (v2, aapki teen shartein jodkar).* Sirf plan hai, kuch implement nahi hua. Kuch bhi badalne se pehle aapse do baar popup se poochha jayega (freeze niyam), har phase ke liye alag.
 
-## 1. Kya chahiye (aapki baat)
+## Aapki teen shartein (ye plan inhi par tika hai)
 
-1. **✕ Discard:** kisi match card ke corner me chhota ✕. Dabane par wo insaan discovery se hat jaye, aur schedule se bhi. (Swipe baad me, shortcut ki tarah.)
-2. **"Nahi mil paye" list:** jinse milna tay kiya tha par mil nahi paye, unki alag list, karan ke saath (optional). Aur ise behtar dikhana.
+1. **Koi data delete nahi.** Jo bhi user ne likha ya chuna (note, time, status), wo hamare code se kabhi nahi hatega. Hatana sirf ek jagah: user ka apna "Clear my CampBuddy data" button.
+2. **Schedule ko status ke hisaab se filter kar sakein.** Proper status ke saath: kya baaki hai, kya ho gaya, kya nahi ho paya, kya hataya.
+3. **"I met them" aur uske saare buttons har jagah sync me.** Ek jagah dabao, doosri jagah wahi dikhe.
 
-**Jaan-boojhkar nahi karenge:** server par kuch nahi (koi API, database ya migration nahi), saamne wale ko kuch pata nahi chalega, kuch delete nahi hoga (retention niyam), asli "block" (wo server ka kaam hai, baad me).
-
-## 2. Ab kya hai (code padhkar)
+## 1. Ab kya hai (code padhkar)
 
 | Cheez | Haal |
 | --- | --- |
-| My Day → My schedule → "People to meet" | Har insaan par pehle se **✓ Met** aur **✗ Couldn't** button (`meetings.status = 'met' / 'missed'`). Bas grouped list aur karan nahi hai. |
-| Explore ka **"I met them"** | Alag jagah save hota hai (`metHistory`). **My Day ke Met/Couldn't se juda hi nahi.** Ek me tick karo, doosre me nahi dikhta. |
-| Insaan ki pehchan (`personKey`) | Roster se `r:<id>`, match card se `d:<id>`. Ek hi insaan do baar add ho sakta hai. |
-| `meetings` record | `{personKey, name, avatarUrl, links, note, at, status, createdAt, updatedAt}`. `saveMeeting` koi bhi naya field bina schema badle jodne deta hai. |
-| Kaun `meetings` padhta hai | `my-day.js`, `people.js`, `plan.js`, `plan-reminder.js` (aur calendar export, `my-day.js:234`). |
-| Data controls (export/clear) | **Saare** IndexedDB stores apne aap shamil (`exportAll`/`clearAll`). Naya kuch nahi karna. |
-| Toast | Sirf message dikhata hai, "Undo" button nahi. |
-| Template me naya slot | Purana JS + naya HTML: slot khali reh jata hai. Naya JS + purana HTML: slot chupchap chhoot jata hai (error nahi). |
+| Insaan ke buttons | Explore me: roster row par **+ Meet**, match card par **Wave**, **+ Meet**, **I met them**. My Day me: **✓ Met**, **✗ Couldn't**, **Edit · Calendar**. |
+| Kahan save hota hai | "+ Meet", "✓ Met", "✗ Couldn't" → `meetings` (status `null/met/missed`). **"I met them" → `metHistory`, alag.** |
+| Insaan ki pehchan | Roster se `r:<id>`, match card se `d:<id>`. **Ek hi insaan do alag record.** |
+| Session ka status | `attended` / `missed` (`bookmarks.status`). Time nikal jaye to plan use "done" ginta hai chahe aapne kuch mark na kiya ho. |
+| Filter | Sirf ek chip **"Hide done"** (sessions aur people dono ke liye). Status ke hisaab se koi filter nahi. |
+| Jo data **delete** karta hai (aaj) | Meet sheet ka **Remove** (`removeMeeting`), session ko un-save karna (`removeBookmark` + server `DELETE /bookmarks`), Data controls ka Clear. |
+| Same page par sync | Explore par roster row aur match card alag DOM hain, ek doosre ko nahi jaante. |
+| Data controls | Saare IndexedDB stores apne aap export aur clear. Naya kuch nahi karna. |
+| Template | Missing slot par error nahi aata, khali reh jata hai. |
 
-## 3. Faisla: ek hi sach ka source, `meetings.status`
+## 2. Ek hi sach ka source: `meetings.status`
 
-Har insaan ke liye ek record, aur 4 haal:
+Har insaan ke liye ek record. Chaar haal:
 
-| Haal | `status` | Kahan dikhta hai |
+| Haal | `status` | Matlab |
 | --- | --- | --- |
-| Milna hai (planned) | `null` | Explore card ("✓ To meet"), My Day "To meet" |
-| **Mil liye** | `'met'` | Explore "People you've met", My Day "Met" |
-| **Nahi mil paye** | `'missed'` + `reason` | My Day "Couldn't meet", Explore me chhota section |
-| **Hataya (✕)** | `'skipped'` (**naya**) | Explore me sirf "Hidden (N)" me, My Day me kahin nahi |
+| Milna hai | `null` | Planned. Explore me "✓ To meet", My Day "To do" |
+| Mil liye | `met` | Explore "✓ Met", My Day "Done" |
+| Nahi mil paye | `missed` + `reason` (optional) | My Day "Couldn't meet" |
+| Hataya (✕) | `skipped` (**naya**) | Explore ke "Hidden (N)" me, My Day ke "Hidden" filter me |
 
-- Koi naya IndexedDB store nahi, koi version bump nahi. Purane records waise ke waise sahi rehte hain.
-- `metHistory` band nahi karte. "I met them" dono jagah likhega (purana + naya), aur padhte waqt "met" = `metHistory` ya `status == 'met'`. Isse purana data aur purana build dono theek rehte hain.
-- ✕ ke liye wo insaan jiske paas abhi `meetings` record nahi hai, uske liye ek record banta hai (`status: 'skipped'`, naam/photo/links card se). Note aur time jo pehle likha tha, wo **rehta hai**; sirf status badalta hai. "Show again" par `status` wapas `null`.
-- Karan (`reason`): sirf fixed chhoti list: `no-time`, `not-found`, `not-there`, `changed-mind`. Free text nahi (privacy aur simple).
+- Koi naya store nahi, koi IndexedDB version bump nahi. Purane records sahi rehte hain.
+- `metHistory` band nahi karte: "I met them" dono jagah likhta hai, aur padhte waqt "met" = `metHistory` **ya** `status == 'met'`. Purana data aur rollback dono safe.
+- `reason` sirf fixed list: `no-time`, `not-found`, `not-there`, `changed-mind`.
 
-## 4. Feature A: ✕ Discard
+## 3. Shart 1: koi data delete nahi
 
-**Kaise dikhega (Explore → People)**
-```
-[photo] Naam ✓ ...                  [✕]
-        Profession · You both: SEO
-[tag] [tag]
-[👋 Wave] [+ Meet] [I met them]
-```
-- ✕ card ke upar-daaye corner me, chhota, halka rang, `aria-label="Hide {naam}"`. Screen reader aur keyboard se chalta hai.
-- Dabane par: card turant gayab, toast "Hidden. They're under Hidden (N) below." Koi confirm nahi.
-- Neeche band section **"Hidden (N) ▸"**. Kholne par har insaan ek chhoti row me, aur **"Show again"** button.
-- **Mutual wave wale (jinse chat chal rahi hai)** ke ✕ par ek baar `confirm("Hide? You'll stop seeing your chat with them.")`. Baaki me nahi.
+- **✕ delete nahi karta.** Sirf `status = 'skipped'`. Note aur time bache rehte hain. "Show again" par status wapas `null` ya jo pehle tha.
+- **Meet sheet ka "Remove" badalta hai** "Hide from plan" me (wahi `skipped`, wapas laa sakte hain). Ye ek existing button ka behaviour badalna hai, isliye alag se popup se poochhenge.
+- Har status badalna **wapas** ho sakta hai (Met ↔ To do, Couldn't → "Try again").
+- Dono records (purana `d:` aur naya) me se koi delete nahi hota; padhte waqt mila lete hain (naya wala jeetega).
+- Sessions ko un-save karna abhi delete hai. **Aap batao**: isko bhi reversible karna hai (hide) ya waisa hi rakhein? Default: waisa hi, kyunki wo server ka bhi record hai.
+- Data controls ka "Clear my data" hi ekmatra delete raasta rahega.
 
-**Kya hota hai jab hatate ho**
-- Best matches, Also open to meet aur Mutual, teeno se gayab. `windowCards` (Show N more) hatane ke **baad** ki list par chalta hai, isliye count sahi rehta hai.
-- Agar schedule me wo insaan tha, wo My Day se gayab (status `skipped`, note/time bache rehte hain), aur progress bar ke "N of M done" me nahi ginta, aur calendar export me nahi jaata.
-- Home ka "👋 N matches want to meet you" count me hataye hue log **nahi** ginte.
-- Sabhi hata diye to "No one else has joined yet" nahi, balki "You've hidden everyone. Hidden (N) below." dikhega.
-- Wo agar aapko wave/message kare: aapko dikhega nahi (card chhupa hai). Unhe kuch pata nahi. Ye sirf aapko chhupata hai, rokta nahi.
-- Wo insaan discovery chhod kar wapas aaye to naya `discovery_id` milta hai aur dobara dikhega. Iska koi upaay bina server ke nahi (limit likhni hai).
+## 4. Shart 2: schedule ka status filter
 
-**Swipe:** Phase 3. ✕ ke upar shortcut ki tarah, sirf tab jab logon ko chahiye.
+My Day → My schedule ke upar chips (sessions **aur** people dono par lagte hain):
 
-## 5. Feature B: "Nahi mil paye" list
+| Chip | Kya dikhata hai |
+| --- | --- |
+| **All (N)** | Sab jo hataya nahi |
+| **To do (N)** | Baaki: koi status nahi aur time nahi nikla |
+| **Done (N)** | Attended (session) ya Met (insaan) |
+| **Couldn't (N)** | Missed (session) ya Couldn't meet (insaan) |
+| **Hidden (N)** | Sirf hataye hue (✕), "Show again" ke saath |
 
-**My Day → People to meet** me chips (gine hue):
-```
-To meet (3) · Met (5) · Couldn't meet (2)
-```
-- Ek waqt me ek group dikhta hai (default: To meet; agar sab ho gaya to Couldn't meet). "Hide done" chip jo abhi hai, uska kaam ye chips le lete hain (purana chip wahi rehta hai).
-- **✗ Couldn't dabane par:** turant status `missed`. Card ke neeche ek chhoti row: "Why? [Ran out of time] [Couldn't find them] [They weren't there] [Changed my mind]". Kuch na dabao to bhi theek. Ek tap me karan jud jata hai.
-- "Couldn't meet" card par: naam, jo note tha, karan, aur uske **links** (LinkedIn/X/website, jo record me pehle se hain) ke saath **"Stay in touch"**. Aur **"Try again"** (status wapas `null`).
-- Explore me jinka status `missed` hai wo "Your best matches" me nahi rahenge, ek band section **"Couldn't meet (N) ▸"** me, "Try again" ke saath.
-- **"I met them" ka jod:** Explore me dabao to My Day me "Met", aur My Day me Met dabao to Explore ke "People you've met" me. Ek hi insaan ek hi group me.
-- (Phase 3, optional) Event ke aakhri din ke baad My Day par naram banner: "4 logon se milna tha, 2 abhi baaki: Met / Couldn't tay karein."
+- Gine hue number bilkul card ki ginti ke barabar (aapki pehli wali shart).
+- Purana **"Hide done"** chip waisa hi kaam karta rahega (ya "To do" chip use le lega; ye aap chuno).
+- **Ek baarik baat:** abhi jis session ka time nikal gaya par aapne "attended/missed" mark nahi kiya, use plan "done" ginta hai. Proper status ke liye ye alag dikhna chahiye: **"Time over, not marked"**, taaki aap use Attended ya Missed kar sakein. Aap batao: alag chip chahiye ya "To do" me hi rahe?
+- "Couldn't" ke saath **karan** (optional chips: "Ran out of time", "Couldn't find them", "They weren't there", "Changed my mind") aur insaan par **"Stay in touch"** (unke links) aur **"Try again"**.
 
-## 6. Kaun si files badlengi
+## 5. Shart 3: sync ka nakshha (kis jagah kya, aaj aur baad me)
 
-| File | Kya | Naya/purana |
-| --- | --- | --- |
-| `resources/js/attendee/people-state.js` | Sirf logic: haal ka nakshha, gine hue groups, karan ki list, "met" ka jod. DOM nahi, isliye poora unit test | **Naya** |
-| `people.js` | ✕ button (JS se banta hai), filter, "Hidden" aur "Couldn't meet" sections, "I met them" jod, Meet button ka label (`skipped` par "✓ To meet" nahi) | Purana (chhote badlav) |
-| `my-day.js` | Chips, karan ki row, "Try again", calendar export se `skipped` bahar | Purana |
-| `plan.js` | `skipped` ko `people` aur totals se bahar | Purana (2 line) |
-| `plan-reminder.js` | Apne aap theek (`computePlan` se) | Koi badlav nahi |
-| `db.js`, `data-controls.js` | Koi badlav nahi (`saveMeeting` me naya field bina badlav) | Koi badlav nahi |
-| `resources/scss/components/_people.scss` (+ plan ka scss) | ✕ ka chhota style, chips | Purana |
-| `analytics.js` + `config/analytics.php` | Naye events: `discovery_hide`, `discovery_unhide`, `meet_missed_reason` (sirf `reason` ka naam, kisi ka naam nahi). Test dono ka mel dekhta hai | Purana |
-| Blade templates | **Koi badlav nahi**: naye tukde JS se banenge, taaki purani saved HTML aur nayi JS ke beech mel ki dikkat na ho. Deploy sirf `public/build` | Koi badlav nahi |
-| Docs | `spec/03-functional-requirements/04-matching.md`, `08-my-day.md`, `spec/15`, `TODO.md` | |
-
-## 7. Phase (har phase alag commit, alag popup)
-
-| Phase | Kya | Risk | Kimat |
+| Jagah | Button / label | Aaj | Baad me |
 | --- | --- | --- | --- |
-| **0** | `people-state.js` aur uske tests, koi UI nahi, kahin jura nahi | **Zero** | Chhota |
-| **1** | Explore me ✕, "Hidden (N)" aur "Show again", filter, Home count, `skipped` ka `plan.js` me hona | Madhyam | Madhyam |
-| **2** | My Day ke chips, "Couldn't meet" list, karan, "Try again", "I met them" ka jod, Explore me "Couldn't meet" section | Madhyam | Madhyam |
-| **3** | Swipe, roster row me ✕, `r:`/`d:` ek karna, aakhri din ka banner, server ka block | Baad me | Bada |
+| Explore → Who's attending (roster row) | + Meet / ✓ To meet | `meetings` (`r:<id>`) | Wahi record, canonical pehchan se |
+| Explore → match card | + Meet / ✓ To meet | `meetings` (`d:<id>`, **roster wale se alag**) | Wahi record (roster wale insaan ke liye) |
+| Explore → match card | I met them / ✓ Met | Sirf `metHistory` | `meetings.status='met'` **aur** `metHistory` |
+| Explore → "People you've met" | Section | Sirf `metHistory` | `metHistory` ∪ `status=='met'` |
+| Explore → naya "Couldn't meet (N)" | Section | Nahi hai | `status=='missed'` (Try again ke saath) |
+| Explore → naya "Hidden (N)" | Section | Nahi hai | `status=='skipped'` (Show again) |
+| My Day → People | ✓ Met / ✗ Couldn't | `meetings` | Wahi, aur Explore turant dikhata hai |
+| My Day → Meet sheet | Save / Remove | `meetings` / delete | Save / **Hide** |
+| My Day → progress ("N of M done") | | `computePlan` | `skipped` bahar |
+| "Kitna baaki" reminder banner | | `computePlan` | wahi |
+| Calendar export | | sab `meetings` | `skipped` bahar |
+| Home → "N matches want to meet you" | | server ki waves | hataye hue bahar |
 
-## 8. "Pura hua" ki kasauti (jo aapne pehle maangi thi wahi)
+**Kaise sync hoga (3 cheezein):**
+1. **Ek store, ek pehchan.** Sab screens `meetings` se padhti hain. Insaan ki pehchan: `r:<rosterId>` jab roster wala pata ho, warna `d:<discoveryId>`.
+2. **Same page par turant.** Explore par ek button dabate hi (jaise roster row par "+ Meet") usi insaan ka match card bhi badle. Ek chhoti in-page ghoshna (`campbuddy:people-changed`) jise saare buttons sunte hain.
+3. **Alag page par.** My Day kholte hi taaza `meetings` padhta hai (jaise abhi Explore karta hai). Do tab ek saath khule ho to `BroadcastChannel` se (optional, baad me).
 
-- **Koi card dohrata nahi.** Har insaan ek hi group me, kabhi do me nahi. Har badlav ke baad check (jaise "Show more" me kiya tha).
-- **Gine hue number sahi.** Chip me "Couldn't meet (2)" ho to card bhi theek 2 (Hidden (N), To meet (N), Met (N) bhi).
-- ✕ dabane par sirf wahi insaan gayab, baaki list waisi ki waisi, "Show N more" ka count sahi.
-- Page dobara kholne par bhi ✕ wala insaan hata hi rahe (IndexedDB me save).
-- "Show again" karo to wo insaan wapas usi jagah, note/time ke saath.
-- Progress bar ("N of M done") aur calendar export me `skipped` nahi.
-- Purane records (bina `skipped`/`reason` wale) bina kisi badlav ke wahi dikhte hain.
-- Export me naya data aata hai, "Clear my data" se sab hat jata hai.
+**Ek zaroori server badlav (chhota):** roster wala insaan aur uska discovery card ko jodne ke liye card ko roster ka `id` batana padega. Abhi discovery ka public card roster id nahi deta, isliye "Rahul Sharma" naam ke do log hon to sirf naam se milana galat sync kar dega. Plan: `DiscoveryProfile::publicCard()` me `roster_id` (sirf jab profile roster se juda ho) jodna, ek PHP test ke saath. Isse nayi jaankari public nahi hoti: card me roster wala naam/photo pehle se dikhta hai. Anonymous ya likhe hue naam wale profile ka roster jodidar hota hi nahi, unke liye sirf `d:`.
 
-## 9. Jaanch ka tareeka
+## 6. Kaun si files
 
-- **Unit tests (Phase 0):** har haal ka badlav (`null → met / missed / skipped → null`), groups ki ginti, "koi insaan do group me nahi", `metHistory` ka jod, purane record, khali list.
-- **Asli Chrome, 390 px, alag SQLite copy me 40 nakli profiles** (jaise "Show more" me kiya): ✕, Hidden, Show again, dobara kholna, mutual ka confirm, Home count, chips, karan, Try again, "I met them" ka jod, export/clear. Purane tarah ke records pehle se daalkar bhi.
-- Purani suites: JS (abhi 135), asli-Chrome offline (7), `npm run build`. PHP sirf `config/analytics.php` me badlega; wo test aapke Windows par OpenSSL ki wajah se pehle se fail hota hai (Linux par theek).
+| File | Kya |
+| --- | --- |
+| `people-state.js` (**naya**, sirf logic, DOM nahi) | Pehchan, status ka milan (agar do records ek hi insaan ke alag baat kahein to jiska `updatedAt` naya ho wahi jeetega, purana delete nahi hota), groups aur chips ki ginti, karan ki list |
+| `people.js` | ✕ (JS se banta), Hidden / Couldn't sections, "I met them" ka jod, roster row ke labels, in-page ghoshna |
+| `my-day.js` | Filter chips, karan, Try again, Hide, calendar export se `skipped` bahar |
+| `plan.js` | `skipped` totals se bahar (2 line) |
+| `app/Models/DiscoveryProfile.php` + ek PHP test | `roster_id` |
+| `analytics.js`, `config/analytics.php` | Naye events (`discovery_hide/unhide`, `meet_missed_reason`) |
+| SCSS | ✕, chips |
+| Blade | **Koi badlav nahi** (naye tukde JS se; deploy = `public/build` + ek PHP file) |
+| `db.js`, `data-controls.js`, `plan-reminder.js` | Koi badlav nahi |
 
-## 10. Jokhim aur upaay
+## 7. Phase (har ek alag commit aur alag popup)
+
+| Phase | Kya | Risk |
+| --- | --- | --- |
+| **0** | `people-state.js` + tests. Kahin juda nahi. | **Zero** |
+| **1** | `roster_id` (PHP, chhota) | Kam |
+| **2** | **Sync**: "I met them" ↔ Met, roster row ↔ match card, same-page ghoshna, ek pehchan | Madhyam (ye ek asli kami ka fix bhi hai) |
+| **3** | ✕ / Hidden / "Remove" → "Hide" | Madhyam |
+| **4** | My Day ke filter chips, Couldn't list, karan, Try again | Madhyam |
+| **5** | Swipe, aakhri din ka banner, server ka block | Baad me |
+
+## 8. "Pura hua" ki kasauti
+
+- **Sync:** ek jagah dabao, doosri jagah wahi. Har button jodi ke liye jaanch (roster ↔ card ↔ My Day, dono disha).
+- **Koi delete nahi:** Hide/Skip ke baad note aur time wahi. Har badlav wapas ho sakta hai.
+- **Gine hue number sahi:** chip par jo likha, card bhi utne hi. Koi insaan do group me nahi, koi card dohrata nahi.
+- Page dobara kholne par status wahi.
+- `skipped` progress bar, calendar aur reminder me nahi.
+- Purane records bina badlav ke wahi dikhte hain (purane `d:` aur `r:` dono).
+- Export me naya data aata hai, Clear se sab jata hai.
+
+## 9. Jaanch
+
+- **Unit tests (Phase 0):** pehchan ka mel, purane `d:`/`r:` ka milan, status ki har chaal (aage-peeche), chips ki ginti, "do group me nahi".
+- **PHP test:** `roster_id` sirf roster se jude profile me.
+- **Asli Chrome, 390 px, alag SQLite copy, 40 nakli profiles + roster:** har sync jodi dono disha me, ✕/Hide/Show again, filter chips, karan, Try again, dobara kholna, export/clear. Purane records daalkar bhi.
+- Purani suites: JS (abhi 135), asli-Chrome offline (7), `npm run build`.
+
+## 10. Jokhim
 
 | Jokhim | Upaay |
 | --- | --- |
-| Galti se ✕ dab gaya | "Hidden (N)" me "Show again", note/time bache rehte hain. Mutual me confirm. |
-| Purane code ke rasta (`plan.js`, calendar, reminder) `skipped` ko nahi jaante | Wahi 3 jagah badlengi aur unke tests; ye plan me pehle se likhe hain |
-| Purani saved HTML + nayi JS | Blade nahi badlega, naye tukde JS se |
-| IndexedDB me kuch bigde | Koi schema badlav nahi, koi record delete nahi |
-| Wapas jaana ho | Purana `public/build` wapas (sirf JS/CSS). Ek kami: rollback ke baad `skipped` wale records purane code me "done" dikh sakte hain (data safe rehta hai, bas dikhna galat). |
-| Ek insaan `r:` aur `d:` se do baar | Phase 3 me. Tab tak jo card se hataya wahi us card me hata |
+| "I met them" ab `meetings` bhi likhta hai: jo insaan pehle sirf card par tha, ab My Day ki list me bhi dikhega | Ye aapka sync hi hai; "Met" group me dikhega, "To do" me nahi |
+| Do records ek insaan ke, alag baat kahein | Naya wala jeetega, purana delete nahi hota |
+| Naya PHP field | Sirf ek key jodna, purana JS use ignore karta hai |
+| Rollback | Purana `public/build` (aur PHP file). `skipped` wale records purane code me "done" dikh sakte hain (data safe) |
+| Sabse zyada badlav Phase 2 me | Isliye alag, sabse pehle aur poori jaanch ke saath |
 
 ## 11. Samay ki salah
 
-- **Phase 0 abhi kar sakte hain** (kahin jura nahi, event par koi asar nahi).
-- **Phase 1 aur 2 event ke baad** (Sylhet 1 Oct, Rajasthan 3–4 Oct paas hain): asli feedback dekhkar, jaisa aapne khud kaha. Agar phir bhi event se pehle chahiye to sirf Phase 1, aur wo bhi 29 Sep tak upload, uske baad freeze.
+- **Phase 0 abhi** (koi asar nahi).
+- **Baaki event ke baad**, asli feedback dekhkar (Sylhet 1 Oct, Rajasthan 3–4 Oct paas hain). Agar sync ka bug event se pehle hi kharab lag raha ho to sirf Phase 1–2, 29 Sep tak, uske baad freeze.
 
 ## 12. Aapse tay karna hai
 
-1. Mutual wave wale par ✕: confirm (meri salah) ya seedha hat jaye?
-2. Karan ki list ke shabd theek hain? ("Ran out of time", "Couldn't find them", "They weren't there", "Changed my mind")
-3. "Couldn't meet" me "Stay in touch" (unke links) chahiye?
-4. Phase 0 abhi, baaki event ke baad: theek?
+1. "Remove" ko "Hide" banana theek hai? (Ye existing button ka badlav hai.)
+2. Time nikale hue par unmarked session ke liye alag "Time over, not marked" chahiye?
+3. "Hide done" chip rakhein ya "To do" chip use le le?
+4. Session un-save reversible ho ya waisa hi?
+5. ✕ mutual wave wale par confirm chahiye?
+6. Karan ke chaar shabd aur "Stay in touch" theek hain?
