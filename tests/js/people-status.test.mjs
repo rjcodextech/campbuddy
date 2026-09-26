@@ -159,3 +159,73 @@ test('nothing here ever calls anything but the four db functions, and no delete 
   assert.ok(calls.every((c) => c[0] === 'save' || c[0] === 'markMet'));
   assert.equal(rows.size, 2, 'both records are still there');
 });
+
+// ---- an attendee-list entry and its match are one person (r:<rosterId>); older d:<id> records are folded in
+
+const cara = { personKey: 'r:15', aliasKeys: ['d:cara'], discoveryId: 'cara', name: 'Cara', avatarUrl: null, sub: 'Designer', source: 'discovery', links: [] };
+
+test('a match that is a list entry writes under r:<id>, remembers its discovery id, and goes in the old list by that id', async () => {
+  const row = await people.setStatus(1, cara, 'met');
+
+  assert.equal(row.personKey, 'r:15');
+  assert.equal(row.discoveryId, 'cara');
+  assert.equal(rows.has('1:d:cara'), false, 'no d: record is made');
+  assert.deepEqual(met, ['cara']);
+});
+
+test('planned from the list first, then Met on the match: one record, note kept, not made unplanned', async () => {
+  await db.saveMeeting(1, 'r:15', { name: 'Cara', personKey: 'r:15', source: 'roster', note: 'Ask about Figma' });
+
+  const row = await people.setStatus(1, cara, 'met');
+
+  assert.equal(rows.size, 1);
+  assert.equal(row.status, 'met');
+  assert.equal(row.note, 'Ask about Figma');
+  assert.equal(row.unplanned, undefined);
+});
+
+test('an older d: record is folded into r: (copied, the old one marked, neither deleted) the first time the person is touched', async () => {
+  await db.saveMeeting(1, 'd:cara', { name: 'Cara', personKey: 'd:cara', source: 'discovery', note: 'Legacy note', at: '2026-10-03T10:00:00.000Z', status: 'missed' });
+
+  const row = await people.setStatus(1, cara, null);
+
+  assert.equal(rows.size, 2, 'both records are still there');
+  assert.equal(row.personKey, 'r:15');
+  assert.equal(row.note, 'Legacy note', 'what was known is carried over');
+  assert.equal(row.at, '2026-10-03T10:00:00.000Z');
+  assert.equal(row.status, null, 'and then the change was applied');
+  assert.equal(rows.get('1:d:cara').mergedInto, 'r:15');
+  assert.equal(rows.get('1:d:cara').note, 'Legacy note', 'the old record is untouched apart from the mark');
+});
+
+test('adopt: folds an older record in without changing anything else, and is a no-op when there is nothing', async () => {
+  assert.equal(await people.adopt(1, cara), null);
+
+  await db.saveMeeting(1, 'd:cara', { name: 'Cara', personKey: 'd:cara', source: 'discovery', note: 'Legacy', status: 'met' });
+  const row = await people.adopt(1, cara);
+
+  assert.deepEqual([row.personKey, row.status, row.note], ['r:15', 'met', 'Legacy']);
+
+  const again = await people.adopt(1, cara);
+  assert.equal(again.updatedAt, row.updatedAt, 'a second time changes nothing');
+});
+
+test('both keys exist: the one changed last wins, and the other is folded in', async () => {
+  await db.saveMeeting(1, 'r:15', { name: 'Cara', personKey: 'r:15', source: 'roster', note: 'From the list', status: null });
+  await db.saveMeeting(1, 'd:cara', { name: 'Cara', personKey: 'd:cara', source: 'discovery', note: 'From the card', status: 'met' });
+
+  const row = await people.adopt(1, cara);
+
+  assert.deepEqual([row.status, row.note], ['met', 'From the card']);
+  assert.equal(rows.get('1:d:cara').mergedInto, 'r:15');
+});
+
+test('hide and show again work on the same person through either key', async () => {
+  await db.saveMeeting(1, 'd:cara', { name: 'Cara', personKey: 'd:cara', source: 'discovery', note: 'Legacy', status: 'missed' });
+
+  const hidden = await people.hide(1, cara);
+  assert.deepEqual([hidden.personKey, hidden.status, hidden.statusBeforeSkip, hidden.note], ['r:15', 'skipped', 'missed', 'Legacy']);
+
+  const back = await people.unhide(1, cara);
+  assert.deepEqual([back.personKey, back.status, back.note], ['r:15', 'missed', 'Legacy']);
+});

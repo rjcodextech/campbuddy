@@ -45,8 +45,10 @@ export function computePlan(bookmarks, meetings, sessionsById = new Map(), nowMs
 
   // Hidden people are kept but not on the plan; someone who was never planned
   // (marked "I met them" on a match) is listed but not counted towards "N of M".
-  const people = meetings.filter((m) => m.status !== 'skipped' && !isBlank(m)).map(personItem);
-  const hidden = meetings.filter((m) => m.status === 'skipped').map(personItem);
+  // A record folded into another one (same person under two keys) is listed once, under the main key.
+  const records = meetings.filter((m) => !m.mergedInto);
+  const people = records.filter((m) => m.status !== 'skipped' && !isBlank(m)).map(personItem);
+  const hidden = records.filter((m) => m.status === 'skipped').map(personItem);
 
   const counted = [...sessions, ...people.filter((p) => !p.meeting.unplanned)];
   const done = counted.filter((i) => i.done).length;

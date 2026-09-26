@@ -74,6 +74,7 @@ class DiscoveryIdentityTest extends TestCase
 
         $this->assertSame('Ada Lovelace', $card['name']);
         $this->assertTrue($card['on_attendee_list']);
+        $this->assertSame($ada->id, $card['roster_id'], "the list's own id, so the app can tell the entry and the match are one person");
         $this->assertStringStartsWith('https://secure.gravatar.com/', $card['avatar_url']);
         $this->assertSame([['type' => 'linkedin', 'url' => 'https://www.linkedin.com/in/x']], $card['links'], 'only web links');
         $this->assertSame('https://profiles.wordpress.org/adal/', $card['wporg_url']);
@@ -98,6 +99,7 @@ class DiscoveryIdentityTest extends TestCase
         $card = $this->cards()[0];
         $this->assertSame('Marco from Lisbon', $card['name']);
         $this->assertFalse($card['on_attendee_list']);
+        $this->assertNull($card['roster_id']);
         $this->assertNull($card['avatar_url']);
     }
 
@@ -108,6 +110,7 @@ class DiscoveryIdentityTest extends TestCase
         $card = $this->cards()[0];
         $this->assertNull($card['name']);
         $this->assertFalse($card['on_attendee_list']);
+        $this->assertNull($card['roster_id']);
     }
 
     public function test_one_name_can_be_claimed_by_one_profile_only(): void

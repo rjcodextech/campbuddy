@@ -2,8 +2,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  PLAN_FILTERS, discoveryPersonKey, effectiveFilter, filterCounts, groupOf, isBlank, isPlanned,
-  matchesFilter, peopleSignature, personState, startingFilter, visibleFilters,
+  PLAN_FILTERS, discoveryPersonKey, effectiveFilter, filterCounts, groupOf, hiddenDiscoveryIds, isBlank, isPlanned,
+  matchKeys, matchesFilter, peopleSignature, personState, recordFor, startingFilter, visibleFilters,
 } from '../../resources/js/attendee/people-state.js';
 
 const person = (status = null, extra = {}) => ({ kind: 'person', id: `p${Math.random()}`, status, ...extra });
@@ -104,4 +104,38 @@ test('the signature changes when any record changes, and not otherwise', () => {
   assert.notEqual(peopleSignature(a, ['x']), peopleSignature([{ ...a[0], status: 'met', updatedAt: 3 }, a[1]], ['x']));
   assert.notEqual(peopleSignature(a, ['x']), peopleSignature(a, ['x', 'y']));
   assert.notEqual(peopleSignature(a, []), peopleSignature([a[0]], []));
+});
+
+test('a match that is an attendee-list entry is that entry: same key as "+ Meet" on the list; otherwise d:<id>', () => {
+  assert.deepEqual(matchKeys('abc', 15), { key: 'r:15', aliases: ['d:abc'] });
+  assert.deepEqual(matchKeys('abc', null), { key: 'd:abc', aliases: [] });
+  assert.deepEqual(matchKeys('abc'), { key: 'd:abc', aliases: [] });
+});
+
+test("a person's record: the main key, else an older one, else the one changed last; a folded-in one is ignored", () => {
+  const rec = (personKey, updatedAt, extra = {}) => ({ personKey, updatedAt, status: null, ...extra });
+  const person = { personKey: 'r:15', aliasKeys: ['d:abc'] };
+
+  assert.equal(recordFor(new Map(), person), undefined);
+  assert.equal(recordFor(new Map([['r:15', rec('r:15', 5)]]), person).personKey, 'r:15');
+  assert.equal(recordFor(new Map([['d:abc', rec('d:abc', 5)]]), person).personKey, 'd:abc', 'only an older record: still found');
+  assert.equal(recordFor(new Map([['r:15', rec('r:15', 5)], ['d:abc', rec('d:abc', 9)]]), person).personKey, 'd:abc', 'the one changed last');
+  assert.equal(recordFor(new Map([['r:15', rec('r:15', 5)], ['d:abc', rec('d:abc', 9)]]), { personKey: 'r:15' }).personKey, 'r:15', 'no older key given: only the main one');
+  assert.equal(recordFor(new Map([['r:15', rec('r:15', 5)], ['d:abc', rec('d:abc', 9, { mergedInto: 'r:15' })]]), person).personKey, 'r:15', 'already folded in');
+});
+
+test('a record folded into another is not part of the plan', () => {
+  assert.equal(isPlanned({ status: null, mergedInto: 'r:15' }), false);
+});
+
+test('everyone hidden, by discovery id: from the record, or from an old d: key; folded-in records are left out', () => {
+  const ids = hiddenDiscoveryIds([
+    { personKey: 'r:1', status: 'skipped', discoveryId: 'aaa' },
+    { personKey: 'd:bbb', status: 'skipped' },
+    { personKey: 'r:2', status: 'skipped' },
+    { personKey: 'd:ccc', status: 'skipped', mergedInto: 'r:3' },
+    { personKey: 'd:ddd', status: 'met' },
+  ]);
+
+  assert.deepEqual([...ids].sort(), ['aaa', 'bbb']);
 });

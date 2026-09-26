@@ -61,3 +61,11 @@ test('an empty plan is all zeros', () => {
 
   assert.deepEqual([plan.total, plan.done, plan.left, plan.people.length, plan.hidden.length], [0, 0, 0, 0, 0]);
 });
+
+test('a person kept under two keys is listed once: the record folded into the other is left out', () => {
+  const plan = computePlan([], [meeting('r:15', { status: 'met' }), meeting('d:cara', { mergedInto: 'r:15', status: 'missed' })], new Map(), NOW);
+
+  assert.deepEqual(plan.people.map((p) => p.id), ['r:15']);
+  assert.equal(plan.hidden.length, 0);
+  assert.equal(plan.total, 1);
+});

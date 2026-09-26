@@ -12,7 +12,7 @@ import { track } from './analytics.js';
 import { getMeetings, kvGet, kvSet } from './db.js';
 import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
-import { discoveryPersonKey, peopleSignature, personState } from './people-state.js';
+import { hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
 import { peopleStatus, stateOfMatch } from './people-status.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
@@ -78,7 +78,7 @@ function repaintMeetButtons() {
 /** Fills a Meet button for a person and opens the sheet on tap. */
 function wireMeetButton(btn, eventId, person) {
   const paint = () => {
-    const state = personState(meetingsByKey.get(person.personKey));
+    const state = personState(recordFor(meetingsByKey, person));
     const saved = state in MEET_LABEL;
     btn.textContent = MEET_LABEL[state] ?? '+ Meet';
     btn.classList.toggle('meet-btn--saved', saved);
@@ -87,8 +87,11 @@ function wireMeetButton(btn, eventId, person) {
   paint();
   meetPaints.set(btn, paint);
 
-  btn.addEventListener('click', () => {
-    const meeting = meetingsByKey.get(person.personKey);
+  btn.addEventListener('click', async () => {
+    // A record kept under an older key is folded into the main one first, so the sheet edits the one record.
+    const adopted = await peopleStatus.adopt(eventId, person).catch(() => null);
+    if (adopted) meetingsByKey.set(adopted.personKey, adopted);
+    const meeting = recordFor(meetingsByKey, person);
 
     openMeetSheet({
       eventId,
@@ -97,7 +100,7 @@ function wireMeetButton(btn, eventId, person) {
       onChange: (row) => {
         if (row) meetingsByKey.set(person.personKey, row);
         else meetingsByKey.delete(person.personKey);
-        paint();
+        repaintMeetButtons(); // the same person's other button (attendee list ↔ match) follows at once
 
         // "Hide from plan" on a match: it leaves the lists now, not on the next visit.
         if (row?.status === 'skipped') watching?.rerender();
@@ -566,7 +569,8 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     // Home: say so when matches have waved and are waiting for a wave back.
     Promise.all([apiGet(eventSlug, `/discovery/${mine.discoveryId}/waves`, mine.ownerToken), peopleStatus.load(eventId).catch(() => null)])
       .then(([state, loaded]) => {
-        const n = (state?.received ?? []).filter((id) => !loaded || stateOfMatch(loaded, id) !== 'skipped').length;
+        const hidden = loaded ? hiddenDiscoveryIds(loaded.meetings) : new Set();
+        const n = (state?.received ?? []).filter((id) => !hidden.has(id)).length;
         const link = el.querySelector('[data-track="home_discovery_explore_click"]');
         if (n > 0 && link) link.textContent = `👋 ${n} ${n === 1 ? 'match wants' : 'matches want'} to meet you →`;
       })
@@ -624,7 +628,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
               : null,
       };
     });
-  const stateOf = (p) => stateOfMatch(loaded, p.discovery_id);
+  const stateOf = (p) => stateOfMatch(loaded, p.discovery_id, p.roster_id);
   const notMet = others.filter((p) => ['none', 'planned'].includes(stateOf(p)));
   // Whoever waved at you first, then named people — they're the ones you can find.
   const byStrength = (a, b) => Number(b.wave === 'received') - Number(a.wave === 'received')
@@ -822,8 +826,12 @@ function cardPerson(profile) {
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
   const { tags, profession } = profile.fields;
 
+  const { key, aliases } = matchKeys(profile.discovery_id, profile.roster_id);
+
   return {
-    personKey: discoveryPersonKey(profile.discovery_id),
+    personKey: key,
+    aliasKeys: aliases,
+    discoveryId: profile.discovery_id,
     name: profile.revealed_name || profile.name || 'Anonymous attendee',
     avatarUrl: isWeb(profile.avatar_url) ? profile.avatar_url : null,
     sub: [profession, (tags ?? []).join(', ')].filter(Boolean).join(' · ') || null,

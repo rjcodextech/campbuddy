@@ -82,6 +82,9 @@ class DiscoveryProfile extends Model
             'discovery_id' => $this->discovery_id,
             'name' => $entry?->name ?? ($fields['display_name'] ?? null),
             'on_attendee_list' => $entry !== null,
+            // The list's own id for this entry (the same number the public roster shows), so
+            // the app can treat "this person on the list" and "this match" as one person.
+            'roster_id' => $entry?->id,
             'avatar_url' => SafeUrl::web($entry?->gravatar_url),
             'links' => collect($entry?->links ?? [])
                 ->filter(fn ($link) => SafeUrl::web($link['url'] ?? null) !== null)

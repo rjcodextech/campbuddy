@@ -36,8 +36,45 @@ export const DEFAULT_FILTER = 'all';
 /** The record key of a discovery match. */
 export const discoveryPersonKey = (discoveryId) => `d:${discoveryId}`;
 
+/**
+ * The key a match's record is kept under, and the older key it may also have
+ * one under. A match that is an attendee-list entry is the same person as that
+ * entry, so it uses the entry's key (`r:<rosterId>`, what "+ Meet" on the list
+ * makes); a match that isn't (anonymous, or a typed name) has only `d:<id>`.
+ * Records made before this used `d:<id>` for everyone: still read, never deleted.
+ */
+export function matchKeys(discoveryId, rosterId = null) {
+  return rosterId
+    ? { key: `r:${rosterId}`, aliases: [discoveryPersonKey(discoveryId)] }
+    : { key: discoveryPersonKey(discoveryId), aliases: [] };
+}
+
+/**
+ * A person's record: under the main key, else under an older one; if both
+ * exist, the one changed last. An older one already folded into the main key
+ * (`mergedInto`) is not looked at again.
+ *
+ * @param {Map} meetingsByKey
+ * @param {{ personKey: string, aliasKeys?: string[] }} person
+ */
+export function recordFor(meetingsByKey, person) {
+  const olds = (person.aliasKeys ?? []).map((k) => meetingsByKey.get(k)).filter((r) => r && r.mergedInto !== person.personKey);
+
+  return [meetingsByKey.get(person.personKey), ...olds]
+    .filter(Boolean)
+    .sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0))[0];
+}
+
+/** The discovery ids of everyone hidden — from the record itself, or from an old `d:` key. */
+export function hiddenDiscoveryIds(meetings) {
+  return new Set(meetings
+    .filter((m) => m.status === 'skipped' && !m.mergedInto)
+    .map((m) => m.discoveryId ?? (m.personKey.startsWith('d:') ? m.personKey.slice(2) : null))
+    .filter(Boolean));
+}
+
 /** Whether a record is part of the plan (planned, or planned and since met / missed), i.e. counts as "N of M". */
-export const isPlanned = (meeting) => !meeting.unplanned && meeting.status !== 'skipped';
+export const isPlanned = (meeting) => !meeting.unplanned && meeting.status !== 'skipped' && !meeting.mergedInto;
 
 /** A record that says nothing yet: made by an action on an unplanned person and since undone. */
 export const isBlank = (meeting) => Boolean(meeting.unplanned) && !meeting.status;

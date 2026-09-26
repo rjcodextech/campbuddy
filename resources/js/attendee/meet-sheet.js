@@ -93,7 +93,7 @@ export function openMeetSheet({ eventId, person, existing = null, onChange = () 
 
   dialog.querySelector('[data-meet-save]').addEventListener('click', async () => {
     // Saving here is planning them: someone made by "I met them" is on the plan from now on.
-    const row = await saveMeeting(eventId, person.personKey, { ...current(), unplanned: false });
+    const row = await saveMeeting(eventId, person.personKey, { ...current(), ...(person.discoveryId ? { discoveryId: person.discoveryId } : {}), unplanned: false });
     track(existing ? 'meet_update' : 'meet_add', { source: person.source, timed: Boolean(row.at) });
     showToast(existing ? 'Saved.' : 'Added to My schedule — see My Day.');
     close();
