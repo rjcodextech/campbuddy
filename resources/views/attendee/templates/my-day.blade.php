@@ -133,7 +133,7 @@
             <p class="plan-person__note" data-slot="note"></p>
             <div class="plan-person__actions">
                 <button type="button" class="plan-status__btn" data-person-status="met" data-slot="met">✓ Met</button>
-                <button type="button" class="plan-status__btn plan-status__btn--no" data-person-status="missed" data-slot="missed">✗ Couldn't</button>
+                <button type="button" class="plan-status__btn plan-status__btn--no" data-person-status="missed" data-slot="missed">✗ Couldn't meet</button>
                 <button type="button" class="plan-person__edit" data-person-edit>Edit · Calendar</button>
             </div>
         </div>

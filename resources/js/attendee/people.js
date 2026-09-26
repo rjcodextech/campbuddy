@@ -12,7 +12,7 @@ import { track } from './analytics.js';
 import { getMeetings, kvGet, kvSet } from './db.js';
 import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
-import { hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
+import { LABELS, hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
 import { peopleStatus, stateOfMatch } from './people-status.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
@@ -62,7 +62,7 @@ async function loadMeetings(eventId) {
 }
 
 // What the Meet button says for each state of the person (people-state.js).
-const MEET_LABEL = { planned: '✓ To meet', met: '✓ Met', missed: "Couldn't meet" };
+const MEET_LABEL = { planned: LABELS.planned, met: LABELS.met, missed: LABELS.missed };
 
 // Every Meet button on the page, so all of them can be repainted when the
 // people records change somewhere else (My Day, the other tab, a hide).
@@ -80,7 +80,7 @@ function wireMeetButton(btn, eventId, person) {
   const paint = () => {
     const state = personState(recordFor(meetingsByKey, person));
     const saved = state in MEET_LABEL;
-    btn.textContent = MEET_LABEL[state] ?? '+ Meet';
+    btn.textContent = MEET_LABEL[state] ?? LABELS.toMeet;
     btn.classList.toggle('meet-btn--saved', saved);
     btn.setAttribute('aria-label', saved ? `Edit your note about meeting ${person.name}` : `Plan to meet ${person.name}`);
   };
@@ -660,7 +660,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
 
     await peopleStatus.hide(eventId, cardPerson(p));
     track('discovery_hide', { surface: surfaceOf(options) });
-    showToast("Hidden. You'll find them under Hidden below.");
+    showToast(LABELS.hiddenToast);
     rerender();
   };
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
@@ -700,11 +700,11 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
 
   // People you planned and couldn't meet, folded away below the rest.
   if (missed.length > 0) {
-    el.append(foldSection('missed', "Couldn't meet", missed.map((p) => personRow(p, 'Try again', () => tryAgain(p)))));
+    el.append(foldSection('missed', LABELS.missed, missed.map((p) => personRow(p, LABELS.undo, () => tryAgain(p)))));
   }
 
   if (hidden.length > 0) {
-    el.append(foldSection('hidden', 'Hidden', hidden.map((p) => personRow(p, 'Show again', () => showAgain(p)))));
+    el.append(foldSection('hidden', LABELS.hidden, hidden.map((p) => personRow(p, LABELS.showAgain, () => showAgain(p)))));
   }
 
   scheduleChatFlip(chat, rerender);
@@ -782,8 +782,8 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
     who: whoToMeet,
     wporg: isWeb(profile.wporg_url) ? { attrs: { href: profile.wporg_url } } : null,
     links: links.length ? links : [],
-    'met-btn': isMet ? null : { attrs: { 'data-met-id': profile.discovery_id } },
-    'met-label': isMet,
+    'met-btn': isMet ? null : { text: LABELS.met, attrs: { 'data-met-id': profile.discovery_id } },
+    'met-label': isMet ? { text: LABELS.met } : false,
   });
 
   card.querySelector('.wave-btn')?.addEventListener('click', () => onWave?.());
@@ -798,7 +798,7 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
       const undo = document.createElement('button');
       undo.type = 'button';
       undo.className = 'person-card__undo';
-      undo.textContent = 'Undo';
+      undo.textContent = LABELS.undo;
       undo.addEventListener('click', onUndoMet);
       label.after(undo);
     }
@@ -811,8 +811,8 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
     hide.type = 'button';
     hide.className = 'person-card__hide';
     hide.textContent = '✕';
-    hide.title = 'Hide';
-    hide.setAttribute('aria-label', `Hide ${profile.revealed_name || profile.name || 'this person'}`);
+    hide.title = LABELS.hide;
+    hide.setAttribute('aria-label', `${LABELS.hide}: ${profile.revealed_name || profile.name || 'this person'}`);
     hide.addEventListener('click', onHide);
     card.classList.add('person-card--hideable');
     card.append(hide);

@@ -33,6 +33,24 @@ export const PLAN_FILTERS = [
 
 export const DEFAULT_FILTER = 'all';
 
+/**
+ * The words for the same actions, everywhere they appear (Explore's match cards
+ * and list rows, My schedule, the Meet sheet) — so one action has one name.
+ * `tests/js/wording.test.mjs` checks the templates agree with this list.
+ */
+export const LABELS = {
+  toMeet: '+ Meet', // not on the plan yet
+  planned: '✓ To meet', // on the plan
+  met: '✓ Met', // button, and how a met person is labelled
+  missed: "Couldn't meet", // how a person is labelled / the section
+  missedButton: "✗ Couldn't meet", // the button on My schedule
+  undo: 'Undo', // clears Met or Couldn't meet on Explore (My schedule: press the button again)
+  hide: 'Hide', // the ✕ and the Meet sheet's button
+  hidden: 'Hidden', // the section, the chip, the heading
+  showAgain: 'Show again',
+  hiddenToast: "Hidden. You'll find them under Hidden.",
+};
+
 /** The record key of a discovery match. */
 export const discoveryPersonKey = (discoveryId) => `d:${discoveryId}`;
 

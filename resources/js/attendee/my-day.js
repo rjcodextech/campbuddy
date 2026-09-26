@@ -15,7 +15,7 @@ import { eventDayKey, eventTimeNote, formatDayKey, formatDayTime, formatTime } f
 import { getBookmarks, getMeetings, removeBookmark, setBookmark, updateBookmark } from './db.js';
 import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
 import { computePlan } from './plan.js';
-import { effectiveFilter, filterCounts, isPlanned, matchesFilter, startingFilter, visibleFilters } from './people-state.js';
+import { LABELS, effectiveFilter, filterCounts, isPlanned, matchesFilter, startingFilter, visibleFilters } from './people-state.js';
 import { peopleStatus } from './people-status.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
@@ -303,7 +303,7 @@ export async function renderMyDay(root) {
       empty: plan.people.length === 0 && plan.hidden.length === 0,
       explore: { attrs: { href: `/event/${eventSlug}/explore` } },
     });
-    if (hiddenView) section.querySelector('#plan-people-heading').textContent = 'Hidden people';
+    if (hiddenView) section.querySelector('#plan-people-heading').textContent = `${LABELS.hidden} people`;
     if (people.length === 0 && (plan.people.length > 0 || plan.hidden.length > 0)) {
       section.append(filterEmptyNote('No one in this filter.'));
     }
@@ -519,8 +519,8 @@ function hiddenPersonCard(m) {
   show.type = 'button';
   show.className = 'btn btn--compact btn--outline';
   show.dataset.personShow = '';
-  show.textContent = 'Show again';
-  show.setAttribute('aria-label', `Show again: ${m.name || 'this person'}`);
+  show.textContent = LABELS.showAgain;
+  show.setAttribute('aria-label', `${LABELS.showAgain}: ${m.name || 'this person'}`);
   actions.append(show);
   body.append(actions);
 
@@ -534,7 +534,7 @@ function personCard(m) {
   const when = m.at
     ? formatDayTime(new Date(m.at).getTime())
     : (m.unplanned ? 'Met at the event' : 'Any time');
-  const state = { met: '✓ Met', missed: 'Couldn\'t meet' }[m.status] ?? null;
+  const state = { met: LABELS.met, missed: LABELS.missed }[m.status] ?? null;
 
   return render('tpl-plan-person', {
     card: { attrs: { 'data-person-key': m.personKey }, class: { 'plan-person--done': Boolean(m.status) } },
@@ -543,8 +543,8 @@ function personCard(m) {
     state,
     when: m.unplanned && !m.at ? when : `🕒 ${when}`,
     note: m.note || null,
-    met: { attrs: { 'aria-pressed': String(m.status === 'met') }, class: { 'plan-status__btn--on': m.status === 'met' } },
-    missed: { attrs: { 'aria-pressed': String(m.status === 'missed') }, class: { 'plan-status__btn--on': m.status === 'missed' } },
+    met: { text: LABELS.met, attrs: { 'aria-pressed': String(m.status === 'met') }, class: { 'plan-status__btn--on': m.status === 'met' } },
+    missed: { text: LABELS.missedButton, attrs: { 'aria-pressed': String(m.status === 'missed') }, class: { 'plan-status__btn--on': m.status === 'missed' } },
   });
 }
 
