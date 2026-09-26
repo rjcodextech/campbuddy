@@ -239,7 +239,7 @@ Isme **code nahi badalta**, sirf Cloudflare ka ek rule, jo ek click me band ho j
     ```
 
     Phir load test dobara (300, phir 500 users): HIT ka hissa 33% se bahut upar aur origin par p95 kam hona chahiye.
-5. Kuch ajeeb dikhe (purana schedule, galat page) to rule **Disable** karke Purge Everything. Admin ka "Purge cache & refresh data" button (Cloudflare token `.env` me ho to) ek hi baar me sab naya kar deta hai.
+6. Kuch ajeeb dikhe (purana schedule, galat page) to rule **Disable** karke Purge Everything. Admin ka "Purge cache & refresh data" button (Cloudflare token `.env` me ho to) ek hi baar me sab naya kar deta hai.
 
 Kimat: schedule/phase me badlav sabko max ~60 sekand late dikh sakta hai (data-version polling aur purge button isko pehle bhi theek kar dete hain).
 
