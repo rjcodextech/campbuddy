@@ -4,21 +4,33 @@
         <x-button :href="route('admin.events.create')" icon="plus">Add event</x-button>
     </x-slot:actions>
 
-    {{-- What's silently broken on this install (App\Support\SystemHealth):
-    the cron, pending migrations, stuck or failed jobs, live events with no data.
-    `php artisan campbuddy:doctor` fixes most of it in one go. --}}
-    @if ($problems !== [])
-        <div class="mb-6 space-y-3">
-            @foreach ($problems as $problem)
-                <x-alert :type="$problem['level'] === 'error' ? 'error' : 'warning'" :title="$problem['title']">
-                    <p>{{ $problem['detail'] }}</p>
-                    @if ($problem['fix'])
-                        <p class="mt-2 text-xs"><span class="font-semibold">Fix:</span> <code class="break-all rounded bg-white/70 px-1.5 py-0.5">{{ $problem['fix'] }}</code></p>
-                    @endif
-                </x-alert>
-            @endforeach
-            <p class="text-xs text-muted">After a deploy, <code class="rounded bg-paper-soft px-1.5 py-0.5">php artisan campbuddy:doctor</code> runs the migrations, fetches every live event's data and re-checks all of this.</p>
-        </div>
+    {{-- What's silently broken on this install (system checks + failed fetches) is
+    on its own page — Errors — so the dashboard stays a glance. One line says
+    whether it's worth a look; it turns red when a system check is failing. --}}
+    @if ($errorSummary['total'] > 0)
+        <a href="{{ route('admin.errors.index') }}"
+           @class([
+               'mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+               'border-danger/30 bg-danger-soft hover:border-danger/50' => $errorSummary['critical'] > 0,
+               'border-gold/40 bg-gold/10 hover:border-gold' => $errorSummary['critical'] === 0,
+           ])>
+            <x-icon :name="$errorSummary['critical'] > 0 ? 'exclamation-circle' : 'exclamation-triangle'"
+                    class="h-5 w-5 shrink-0 {{ $errorSummary['critical'] > 0 ? 'text-danger' : 'text-gold' }}" />
+            <span class="min-w-0 flex-1">
+                <span class="font-semibold">{{ $errorSummary['total'] }} {{ \Illuminate\Support\Str::plural('problem', $errorSummary['total']) }} need attention</span>
+                <span class="text-muted">
+                    — {{ $errorSummary['system'] }} system {{ \Illuminate\Support\Str::plural('check', $errorSummary['system']) }}@if ($errorSummary['critical'] > 0) ({{ $errorSummary['critical'] }} critical)@endif,
+                    {{ $errorSummary['fetch'] }} {{ \Illuminate\Support\Str::plural('fetch problem', $errorSummary['fetch']) }} in the last 7 days
+                </span>
+            </span>
+            <span class="inline-flex items-center gap-1 font-medium text-maroon">View errors <x-icon name="chevron-right" class="h-4 w-4" /></span>
+        </a>
+    @else
+        <p class="mb-6 flex items-center gap-2 text-sm text-muted">
+            <x-icon name="check-circle" class="h-5 w-5 text-teal" />
+            No problems — every check passes and every fetch finished cleanly.
+            <a href="{{ route('admin.errors.index') }}" class="font-medium text-maroon hover:underline">Errors</a>
+        </p>
     @endif
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -67,30 +79,6 @@
                 </x-table>
             </x-card>
 
-            <x-card title="Fetch problems" description="The last 7 days. Attendees keep seeing the last good data meanwhile.">
-                @forelse ($failedFetches as ['log' => $log, 'times' => $times])
-                    <div class="border-t border-line py-2.5 first:border-t-0 first:pt-0 last:pb-0">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="truncate text-sm font-medium">
-                                @if ($log->event)
-                                    <a href="{{ route('admin.events.edit', $log->event) }}" class="hover:text-maroon hover:underline">{{ $log->event->display_name }}</a>
-                                @else
-                                    All events
-                                @endif
-                            </span>
-                            <span class="flex shrink-0 items-center gap-2">
-                                @if ($times > 1)<span class="text-xs text-muted">×{{ $times }}</span>@endif
-                                <x-fetch-status :status="$log->status" />
-                            </span>
-                        </div>
-                        <p class="mt-0.5 line-clamp-2 text-xs text-muted">{{ $log->message ?: $log->job_type }} · {{ $log->fetched_at->diffForHumans() }}</p>
-                    </div>
-                @empty
-                    <p class="flex items-center gap-2 text-sm text-muted">
-                        <x-icon name="check-circle" class="h-5 w-5 text-teal" /> No problems — every fetch finished cleanly.
-                    </p>
-                @endforelse
-            </x-card>
         </div>
 
         <div class="space-y-6">

@@ -9,12 +9,12 @@ use App\Models\FetchLog;
 use App\Models\Offer;
 use App\Models\OfferLead;
 use App\Support\CacheVersion;
-use App\Support\SystemHealth;
+use App\Support\ErrorReport;
 use Illuminate\View\View;
 
 /**
  * The admin landing page: a glance at what needs attention (events waiting
- * for approval, ingestion that's failing) plus headline numbers.
+ * for approval, a one-line count of what's failing) plus headline numbers.
  */
 class DashboardController extends Controller
 {
@@ -26,7 +26,8 @@ class DashboardController extends Controller
             ->pluck('total', 'status');
 
         return view('dashboard', [
-            'problems' => SystemHealth::problems(),
+            // What's wrong lives on the Errors page; the dashboard shows one line.
+            'errorSummary' => ErrorReport::summary(),
             'eventsByStatus' => $eventsByStatus,
             'eventCount' => $eventsByStatus->sum(),
             'rosterCount' => AttendeeRoster::where('is_suppressed', false)->count(),
@@ -38,17 +39,6 @@ class DashboardController extends Controller
             'lastPurge' => CacheVersion::last(),
             'cloudflareConfigured' => filled(config('services.cloudflare.zone_id')) && filled(config('services.cloudflare.api_token')),
             'lastDataFetch' => FetchLog::with('event:id,display_name')->where('job_type', 'sessions_speakers_sponsors')->latest('fetched_at')->first(),
-            // The same failure repeating every run is one problem, not five rows.
-            'failedFetches' => FetchLog::with('event:id,display_name')
-                ->where('status', '!=', 'ok')
-                ->where('fetched_at', '>=', now()->subDays(7))
-                ->latest('fetched_at')
-                ->limit(50)
-                ->get()
-                ->groupBy(fn ($log) => $log->event_id.'|'.$log->job_type.'|'.$log->message)
-                ->map(fn ($logs) => ['log' => $logs->first(), 'times' => $logs->count()])
-                ->take(5)
-                ->values(),
         ]);
     }
 }

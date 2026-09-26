@@ -112,7 +112,8 @@ class AdminPanelTest extends TestCase
         FetchLog::create(['event_id' => $event->id, 'source' => 'wordcamp', 'job_type' => 'sessions_speakers_sponsors', 'status' => 'error', 'message' => 'Upstream timed out', 'fetched_at' => now()]);
 
         $pages = [
-            route('dashboard') => ['Dashboard', 'Recently updated events', 'Upstream timed out'],
+            route('dashboard') => ['Dashboard', 'Recently updated events', 'View errors'],
+            route('admin.errors.index') => ['Errors', 'System checks', 'Fetch problems', 'Upstream timed out'],
             route('admin.events.index') => ['Events', 'WordCamp Test', 'Manage'],
             route('admin.events.create') => ['Add event', 'Create event'],
             route('admin.events.edit', $event) => ['WordCamp Test', 'Event information', 'Branding', 'Event data', 'View in app'],

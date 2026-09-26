@@ -13,23 +13,36 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Support\EventData;
+use App\Support\EventListing;
 use App\Support\EventTime;
 use App\Support\SvgGuard;
 use Closure;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Throwable;
 
 class EventController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         Gate::authorize('viewAny', Event::class);
 
-        $events = Event::withCount('attendeeRoster')
-            ->latest()
-            ->paginate(20);
+        // By event day — the one that starts soonest first — narrowed by the
+        // filters in the query string (EventListing).
+        $filters = EventListing::filters($request);
+        $today = EventListing::today();
+
+        $events = EventListing::ordered(
+            EventListing::filtered(Event::withCount('attendeeRoster'), $filters, $today),
+            $today
+        )->paginate(20)->withQueryString();
+
+        // The nearest upcoming events stand out on every page and under any filter.
+        $highlighted = EventListing::highlighted($today);
+        $highlightedIds = $highlighted->pluck('id')->all();
+        $nextUpId = $highlighted->first(fn (Event $e) => $e->starts_on->toDateString() > $today)?->id;
 
         // Each event's latest schedule fetch, for the "Data" column — one query.
         $lastFetches = FetchLog::whereIn('id', FetchLog::selectRaw('max(id)')
@@ -39,7 +52,7 @@ class EventController extends Controller
             ->get()
             ->keyBy('event_id');
 
-        return view('admin.events.index', compact('events', 'lastFetches'));
+        return view('admin.events.index', compact('events', 'lastFetches', 'filters', 'today', 'highlightedIds', 'nextUpId'));
     }
 
     /**

@@ -108,4 +108,18 @@
     .cb-table tbody td {
         @apply px-4 py-3 align-middle text-ink;
     }
+
+    /* A row that deserves a second look — the events list marks the nearest
+       upcoming ones. The bar sits on the first cell so columns stay aligned. */
+    .cb-table tbody tr.cb-row-soon {
+        @apply bg-maroon/5;
+    }
+
+    .cb-table tbody tr.cb-row-soon:hover {
+        @apply bg-maroon/10;
+    }
+
+    .cb-table tbody tr.cb-row-soon > td:first-child {
+        @apply border-l-4 border-maroon;
+    }
 }

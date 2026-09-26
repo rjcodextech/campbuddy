@@ -2,6 +2,7 @@
     $navItems = [
         ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
         ['label' => 'Events', 'icon' => 'calendar', 'href' => route('admin.events.index'), 'active' => request()->routeIs('admin.events.*')],
+        ['label' => 'Errors', 'icon' => 'exclamation-triangle', 'href' => route('admin.errors.index'), 'active' => request()->routeIs('admin.errors.*')],
         ['label' => 'Media Library', 'icon' => 'photo', 'href' => route('admin.media.index'), 'active' => request()->routeIs('admin.media.*')],
     ];
 

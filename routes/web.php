@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
+use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
@@ -105,6 +106,9 @@ Route::middleware('event.public')->group(function () {
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+
+        // Everything that is failing, in one place (the dashboard only summarises it).
+        Route::get('errors', ErrorsController::class)->name('admin.errors.index');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
