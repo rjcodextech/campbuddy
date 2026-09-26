@@ -243,6 +243,15 @@ Isme **code nahi badalta**, sirf Cloudflare ka ek rule, jo ek click me band ho j
 
 Kimat: schedule/phase me badlav sabko max ~60 sekand late dikh sakta hai (data-version polling aur purge button isko pehle bhi theek kar dete hain).
 
+**Lagne ke baad nateeja (26 Sep 2026, rule deploy hone ke ~1 minute baad asar dikha):** `/event/<slug>` ke saare pages pehli baar MISS, phir HIT. `roster-removal` (aur `/search`) BYPASS rahe aur cookies aati rahi. Galat slug ka 404 kabhi HIT nahi hua. `/`, `/guide`, `/admin`, `/api/v1/cache-version` waise ke waise BYPASS. Load test (wahi settings):
+
+| Users | Total req/s | Cloudflare HIT | Origin tak | p95 | Errors | Nateeja |
+| --- | --- | --- | --- | --- | --- | --- |
+| 300 | 47 (peak ~59) | 99.3% | ~28 requests | 55 ms | 0 | PASS (rule se pehle FAIL) |
+| 500 | 75 (peak ~92) | 99.5% | ~30 requests | 48 ms | 0 | PASS |
+
+Dhyan: ye test ek computer (ek Cloudflare shehar) se hua, isliye HIT ka hissa asli duniya se zyada dikhta hai. Alag alag shehron ke log alag Cloudflare server se aate hain aur har ek ko pehli baar origin se page lena padta hai. Isse bachne ke liye *Caching → Tiered Cache → Smart Tiered Cache* (free) ON karein. `/` (event chunne wala page) abhi bhi origin se banta hai aur sabse dheema hai (~0.65 s); wo aur `/guide` bhi sabke liye ek jaise hain aur cookie nahi dete, isliye chahein to expression me jod sakte hain: `((starts_with(http.request.uri.path, "/event/") and not http.request.uri.path contains "/roster-removal") or http.request.uri.path eq "/" or http.request.uri.path eq "/guide") and http.request.method eq "GET"`.
+
 ## Deploy ke baad test: kaise karein, kya dekhna hai
 
 Pehle headers (2 minute), phir load test (5 minute), phir phone par test (10 minute). Windows PowerShell me `curl` ki jagah `curl.exe` likhein.
