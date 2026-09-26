@@ -42,11 +42,11 @@ Cloudflare me jo caching aapne chalu ki hai wo abhi pages aur API ko cache **nah
 Deploy ka sahi samay: kam traffic ka waqt (raat), aur pehle event se kam se kam 2–3 din pehle (Sylhet 1 Oct se shuru hota hai, Rajasthan 3–4 Oct).
 
 - [ ] `dev` ki 4 commits deploy wali branch me daali hain: `346ac86`, `5e0537a`, `20f9e2b`, `856e71a`. **Koi naya database migration nahi hai**, isliye DB me kuch nahi badlega.
-- [ ] Server ka `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` bhare hue (reminders ke liye), `QUEUE_CONNECTION=database`.
-- [ ] Cloudflare purge button ke liye `.env` me `CLOUDFLARE_ZONE_ID` aur `CLOUDFLARE_API_TOKEN` (token sirf *Zone → Cache Purge → Purge* ki ijazat wala). Isse admin ka "Purge cache & refresh data" button Cloudflare bhi saaf karega.
+- [ ] Server ka `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` bhare hue (reminders ke liye), `QUEUE_CONNECTION=database`. (26 Sep ko server ki `.env` dekhi: ye sab theek hai. Poori list neeche "Server ka `.env`" section me.)
+- [ ] Cloudflare purge button ke liye `.env` me `CLOUDFLARE_ZONE_ID` aur `CLOUDFLARE_API_TOKEN` (token sirf *Zone → Cache Purge → Purge* ki ijazat wala). Isse admin ka "Purge cache & refresh data" button Cloudflare bhi saaf karega. **Abhi server ki `.env` me ye dono nahi hain.**
 - [ ] Cron chal raha hai (cPanel → Cron Jobs): `* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1`. Ye band ho to reminders, data refresh, kuch nahi chalta.
 - [ ] Server par `public/hot` naam ki file **nahi** honi chahiye (ye sirf aapke computer par `npm run dev` ke liye hai). Agar hai to delete karein, warna site bina CSS ke khulegi.
-- [ ] Bade venue (hazaaron log ek wifi par) ho to `.env` me `RATE_LIMIT_ADDRESS_READS=20000` daalein (default 3000 per minute per IP hai).
+- [ ] Bade venue (hazaaron log ek wifi par) ho to `.env` me `RATE_LIMIT_ADDRESS_READS=20000` daalein (default 3000 per minute per IP hai). Server par ye pehle se daala hua hai.
 - [ ] Database ka ek backup (cPanel → phpMyAdmin → Export), bas aadat ke liye.
 - [ ] (Apne computer par, optional par acha) tests ek baar chala lein:
 
@@ -57,6 +57,70 @@ php artisan test
 ```
 
 PHP me sirf `AnalyticsRegistryTest` ke 2 tests aapke Windows par fail honge (OpenSSL config ki wajah se, code ki galti nahi). Linux server par ye pass hote hain.
+
+## Server ka `.env`: kya rakhein, kya badlein
+
+*26 Sep 2026 ko server ki `.env` dekhi gayi (passwords/keys ke bina).* Production ke liye ye theek hai, aur **naye code ko koi naya `.env` key nahi chahiye** (5 commits me `config/` aur `.env.example` badle hi nahi). Neeche: jo sahi hai, jo badalna chahiye, jo kabhi nahi badalna, aur `.env` badalne ke baad kya karna hai.
+
+### Jo abhi sahi hai (aur kya karta hai)
+
+| Key | Kya karta hai |
+| --- | --- |
+| `APP_ENV=production`, `APP_DEBUG=false` | Error pages par visitors ko code, DB naam ya server ki details nahi dikhti. |
+| `APP_URL=https://campbuddy.club` | Sitemap aur absolute links banta hai. **Reminder push ka click-link bhi isi se banta hai**, kyunki scheduler me koi request nahi hoti. |
+| `QUEUE_CONNECTION=database` | Reminders aur data-fetch jobs `jobs` table me jaate hain; cron `schedule:run` har minute inhe chalata hai. |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Push notification ki pehchaan. Bhare hain. |
+| `RATE_LIMIT_DEVICE_READS=200` | Ek phone per minute 200 reads kar sakta hai (default 120). App ko is se bahut kam chahiye. |
+| `RATE_LIMIT_ADDRESS_READS=20000` | Ek IP se 20000 reads/minute (default 3000), taaki venue ka wifi sabko ek saath block na kare. Bots se bachav Cloudflare ka kaam hai. |
+| `CACHE_STORE=database` | ETag/304 wala micro-cache, rate-limit counters aur admin locks isi me rehte hain. **Abhi mat badlein** (neeche "Kabhi na badlein"). |
+| `SESSION_DRIVER=database` | Admin login ke liye. |
+| `MAIL_MAILER=log` | Email bheji nahi jaati, log me likhi jaati hai. Attendee ko koi email nahi jaati, isliye chalega. |
+| `GA_PROPERTY_ID`, `GA_CREDENTIALS_PATH` | Sirf ek baar `php artisan campbuddy:ga-setup` ke liye. Inse analytics ka tag **nahi** chalta. |
+| `REDIS_*`, `MEMCACHED_HOST`, `AWS_*`, `BROADCAST_CONNECTION` | Use nahi hote. Rehne dein, koi nuksan nahi. |
+
+### Jo badalna ya jodna chahiye (zaroori pehle)
+
+Ye 6 lines `.env` me daalein ya badlein:
+
+```ini
+LOG_LEVEL=warning
+LOG_STACK=daily
+GA_MEASUREMENT_ID=G-XXXXXXXXXX
+CLOUDFLARE_ZONE_ID=<domain ke Overview page se>
+CLOUDFLARE_API_TOKEN=<sirf Cache Purge wala token>
+SESSION_SECURE_COOKIE=true
+```
+
+| Badlaav | Kyon | Risk / kaise check karein |
+| --- | --- | --- |
+| `LOG_LEVEL` `debug` se `warning` | Bheed me ek `laravel.log` bahut bada ho sakta hai (har failed push par ek warning likhti hai). `warning` par sirf kaam ki cheezein aati hain. `LOG_STACK=daily` se har din ki alag file, 14 din tak. | Koi nahi. |
+| `GA_MEASUREMENT_ID=G-…` | Iske bina production par analytics **bilkul band** hai (tag hi nahi banta). ID: GA Admin → Data streams → web stream. Sirf attendee app me chalta hai, admin me nahi. | Lagane ke baad GA → Realtime me apni visit dekhein. Event ke numbers chahiye to zaroor. |
+| `CLOUDFLARE_ZONE_ID` + `CLOUDFLARE_API_TOKEN` | Admin ka "Purge cache & refresh data" button Cloudflare bhi saaf karega. Ab Cloudflare API lists cache karega, to bina iske har baar dashboard se purge karna padega. Token banane ka tareeka: neeche Cloudflare section, "C. Chhoti settings". | Token sirf *Zone → Cache Purge → Purge* aur sirf `campbuddy.club` zone. **Global API key kabhi nahi.** |
+| `SESSION_SECURE_COOKIE=true` | Admin session cookie sirf HTTPS par jaati hai (`.env.example` ke production checklist me hai). | `/admin` par login karke dekhein. Login na chale to ye line hata dein. |
+| GA credentials hatayein (jab `campbuddy:ga-setup` ek baar chal chuka ho) | `GA_CREDENTIALS_PATH` wali line aur `storage/app/analytics/ga-credentials.json` file dono hata dein. Ye service-account key GA property par Editor access wali hai, ab kaam ki nahi. | Least privilege. Dubara setup chalana ho to file wapas rakh dein. |
+
+Optional, event se sambandh nahi: `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`, `INDEXNOW_KEY` (SEO). IndexNow ki key `APP_KEY` se apne aap banti hai, alag se zaroori nahi.
+
+### Kabhi na badlein (live data ke saath)
+
+| Key | Kyon |
+| --- | --- |
+| `APP_KEY` | Badalne par sab login sessions toot jaate hain, aur IndexNow ki default key bhi isi se banti hai. |
+| `VAPID_*` keys | Badalne par har phone ki push subscription bekaar ho jaati hai; har attendee ko dobara permission deni padegi. Public key hamesha wahi rahe. |
+| `APP_TIMEZONE` | UTC hi rahne dein. Ab badla to DB me pehle se saved timestamps ka matlab khisak jaata hai. UTC ka asar sirf itna hai ki raat ka roster refresh 00:00 UTC (subah 5:30 IST) par chalta hai; wo harmless hai. Event ke samay ka hisaab venue ke apne timezone se hota hai, is se nahi. |
+| `CACHE_STORE`, `SESSION_DRIVER` | Database hi rehne dein. Cache store badalne par cached state (jaise pending sync) chali jaati hai. Event ke baad load test se compare karke soch sakte hain, abhi nahi. |
+
+### `.env` badalne ke baad (bhoolna mat)
+
+Production me config cached rehta hai (`campbuddy:doctor` `php artisan optimize` chalata hai). Isliye `.env` edit tab tak lagu nahi hota jab tak ye na chalayein:
+
+```bash
+php artisan optimize:clear && php artisan optimize
+```
+
+`campbuddy:doctor` bhi yahi karta hai, par wo default me `storage/logs` khali kar deta hai; logs bachane hon to `--keep-logs` lagayein.
+
+**Suraksha:** `.env` ka koi bhi hissa (khaas kar `VAPID_PRIVATE_KEY`, `APP_KEY`, DB password, API token) chat, email ya screenshot me na bhejein. Galti se chala jaye to `VAPID_*` ko rotate na karein (upar wajah), bas dobara share na karein; API token aur DB password badal lein.
 
 ## Deploy: server par step-by-step
 
@@ -235,4 +299,4 @@ Poocha gaya "jo possible ho wo kar do": Gravatar photos ho gayi; iPhone backgrou
 
 ---
 
-Yeh file Claude Docs wale "Deployment aur Launch Checklist" document ka copy hai. Technical detail ke liye `.claude/skills/campbuddy-docs/spec/` dekhein (khaas kar `12-deployment.md`, `23-data-retention.md`).
+Yeh file Claude Docs wale "Deployment aur Launch Checklist" document ka copy thi; "Server ka `.env`" section sirf isi file me hai. Technical detail ke liye `.claude/skills/campbuddy-docs/spec/` dekhein (khaas kar `12-deployment.md`, `23-data-retention.md`).
