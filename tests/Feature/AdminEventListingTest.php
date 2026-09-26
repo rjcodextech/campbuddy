@@ -129,7 +129,15 @@ class AdminEventListingTest extends TestCase
         // Page 2's link keeps the filter.
         $response->assertSee('status=draft&amp;page=2', false)->assertSee('Reset');
 
-        $this->assertCount(5, $this->get(route('admin.events.index', ['status' => 'draft', 'page' => 2]))->viewData('events'));
+        // Cards: 24 to a page.
+        $this->assertCount(24, $response->viewData('events'));
+        $this->assertCount(1, $this->get(route('admin.events.index', ['status' => 'draft', 'page' => 2]))->viewData('events'));
+
+        // Table: 20 to a page, and the view stays chosen.
+        $table = $this->get(route('admin.events.index', ['status' => 'draft', 'view' => 'table']))->assertOk();
+        $this->assertCount(20, $table->viewData('events'));
+        $table->assertSee('status=draft&amp;view=table&amp;page=2', false);
+        $this->assertCount(5, $this->get(route('admin.events.index', ['status' => 'draft', 'view' => 'table', 'page' => 2]))->viewData('events'));
     }
 
     public function test_the_ten_nearest_upcoming_events_are_highlighted(): void
@@ -140,11 +148,18 @@ class AdminEventListingTest extends TestCase
         $this->event('over', ['starts_on' => '2026-08-01']);
         $this->event('undated');
 
-        $html = $this->get(route('admin.events.index'))->assertOk()->getContent();
+        $cards = $this->get(route('admin.events.index'))->assertOk()->getContent();
 
-        $this->assertSame(10, substr_count($html, 'class="cb-row-soon"'));
-        $this->assertSame(1, substr_count($html, 'Next up'));
-        $this->assertStringContainsString('Highlighted: the next 10 by date', $html);
+        $this->assertSame(10, substr_count($cards, 'cb-event-card-soon'));
+        $this->assertSame(14, substr_count($cards, 'class="cb-event-card'), 'Every event is a card.');
+        $this->assertSame(1, substr_count($cards, 'Next up'));
+        $this->assertStringContainsString('Highlighted: the next 10 by date', $cards);
+
+        $table = $this->get(route('admin.events.index', ['view' => 'table']))->assertOk()->getContent();
+
+        $this->assertSame(10, substr_count($table, 'class="cb-row-soon"'));
+        $this->assertSame(1, substr_count($table, 'Next up'));
+        $this->assertStringNotContainsString('cb-event-card', $table);
     }
 
     public function test_an_event_that_is_on_now_is_marked_and_the_next_one_gets_the_next_up_badge(): void
@@ -165,17 +180,79 @@ class AdminEventListingTest extends TestCase
         $html = $this->get(route('admin.events.index', ['status' => 'draft']))->getContent();
 
         // Only the draft is listed, and it is still one of the nearest events.
-        $this->assertSame(1, substr_count($html, 'class="cb-row-soon"'));
+        $this->assertSame(1, substr_count($html, 'cb-event-card-soon'));
+        $this->assertSame(1, substr_count($this->get(route('admin.events.index', ['status' => 'draft', 'view' => 'table']))->getContent(), 'class="cb-row-soon"'));
         // "Next up" belongs to the nearest event overall, which the filter hides.
         $this->assertStringNotContainsString('Next up', $html);
     }
 
     public function test_the_empty_states_say_which_case_it_is(): void
     {
-        $this->get(route('admin.events.index'))->assertSee('No events yet');
+        foreach ([[], ['view' => 'table']] as $view) {
+            $this->get(route('admin.events.index', $view))->assertSee('No events yet');
+        }
 
         $this->event('one');
-        $this->get(route('admin.events.index', ['status' => 'archived']))->assertSee('No events match these filters');
+
+        foreach ([[], ['view' => 'table']] as $view) {
+            $this->get(route('admin.events.index', ['status' => 'archived'] + $view))->assertSee('No events match these filters');
+        }
+    }
+
+    public function test_events_are_cards_by_default_with_a_switch_to_the_table(): void
+    {
+        $this->event('one', ['starts_on' => '2026-10-01']);
+
+        $cards = $this->get(route('admin.events.index'))->assertOk();
+        $cards->assertSee('cb-event-card', false)
+            ->assertSee('aria-label="Show events as"', false)
+            ->assertSee(route('admin.events.index', ['view' => 'table']), false)
+            ->assertDontSee('<table', false);
+        $this->assertSame('cards', $cards->viewData('view'));
+
+        $table = $this->get(route('admin.events.index', ['view' => 'table']))->assertOk();
+        $table->assertSee('<table', false)->assertDontSee('cb-event-card', false);
+        $this->assertSame('table', $table->viewData('view'));
+
+        // Anything else is the default, not an error.
+        $this->assertSame('cards', $this->get(route('admin.events.index', ['view' => 'gallery']))->viewData('view'));
+    }
+
+    public function test_the_filter_form_keeps_the_table_view(): void
+    {
+        $this->event('one');
+
+        $this->get(route('admin.events.index', ['view' => 'table']))->assertSee('<input type="hidden" name="view" value="table">', false);
+        $this->get(route('admin.events.index'))->assertDontSee('name="view"', false);
+    }
+
+    public function test_a_card_shows_what_an_admin_needs_at_a_glance(): void
+    {
+        $live = $this->event('live-one', ['display_name' => 'WordCamp Live One', 'status' => 'active', 'starts_on' => '2026-10-01', 'ends_on' => '2026-10-02']);
+        $this->event('hidden-one', ['display_name' => 'WordCamp Hidden One', 'status' => 'draft', 'is_visible' => false]);
+        \App\Models\FetchLog::create(['event_id' => $live->id, 'source' => 'wordcamp', 'job_type' => 'sessions_speakers_sponsors', 'status' => 'ok', 'message' => 'Fetched', 'fetched_at' => now()->subHour()]);
+        \App\Models\AttendeeRoster::create(['event_id' => $live->id, 'name' => 'Jamie Rivera', 'links' => [], 'content_hash' => 'abc', 'is_suppressed' => false]);
+
+        $this->get(route('admin.events.index'))
+            ->assertOk()
+            ->assertSee('WordCamp Live One')
+            ->assertSee('1 Oct 2026 – 2 Oct 2026')
+            ->assertSee('In 5 days')
+            ->assertSee('Active')
+            ->assertSee('Visible')
+            ->assertSee('Hidden')
+            ->assertSee('Not fetched')                                   // the hidden draft
+            ->assertSee(route('admin.events.edit', $live), false)        // Manage / the name
+            ->assertSee(route('event.home', $live), false)               // View in app: active and visible only
+            ->assertSee('View in app');
+    }
+
+    public function test_view_in_app_is_offered_only_for_a_live_event(): void
+    {
+        $this->event('draft-one', ['status' => 'draft']);
+        $this->event('hidden-live', ['status' => 'active', 'is_visible' => false]);
+
+        $this->get(route('admin.events.index'))->assertDontSee('View in app');
     }
 
     public function test_timing_says_where_an_event_is_in_time(): void

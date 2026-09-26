@@ -122,4 +122,15 @@
     .cb-table tbody tr.cb-row-soon > td:first-child {
         @apply border-l-4 border-maroon;
     }
+
+    /* ---- Event cards ---------------------------------------------------
+       The Events list as a grid of cards. -soon marks the nearest upcoming
+       ones, the same ten the table view tints. */
+    .cb-event-card {
+        @apply flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition-shadow hover:shadow-md;
+    }
+
+    .cb-event-card-soon {
+        @apply border-maroon/30 border-t-4 border-t-maroon bg-maroon/5;
+    }
 }

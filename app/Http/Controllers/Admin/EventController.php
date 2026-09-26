@@ -34,10 +34,13 @@ class EventController extends Controller
         $filters = EventListing::filters($request);
         $today = EventListing::today();
 
+        // Cards by default; ?view=table is the compact table. Same filters and order in both.
+        $view = $request->query('view') === 'table' ? 'table' : 'cards';
+
         $events = EventListing::ordered(
             EventListing::filtered(Event::withCount('attendeeRoster'), $filters, $today),
             $today
-        )->paginate(20)->withQueryString();
+        )->paginate($view === 'table' ? 20 : 24)->withQueryString();
 
         // The nearest upcoming events stand out on every page and under any filter.
         $highlighted = EventListing::highlighted($today);
@@ -52,7 +55,7 @@ class EventController extends Controller
             ->get()
             ->keyBy('event_id');
 
-        return view('admin.events.index', compact('events', 'lastFetches', 'filters', 'today', 'highlightedIds', 'nextUpId'));
+        return view('admin.events.index', compact('events', 'lastFetches', 'filters', 'today', 'highlightedIds', 'nextUpId', 'view'));
     }
 
     /**
