@@ -45,7 +45,7 @@ Deploy ka sahi samay: kam traffic ka waqt (raat), aur pehle event se kam se kam 
 - [ ] Server ka `.env`: `APP_ENV=production`, `APP_DEBUG=false`, `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` bhare hue (reminders ke liye), `QUEUE_CONNECTION=database`. (26 Sep ko server ki `.env` dekhi: ye sab theek hai. Poori list neeche "Server ka `.env`" section me.)
 - [ ] Cloudflare purge button ke liye `.env` me `CLOUDFLARE_ZONE_ID` aur `CLOUDFLARE_API_TOKEN` (token sirf *Zone → Cache Purge → Purge* ki ijazat wala). Isse admin ka "Purge cache & refresh data" button Cloudflare bhi saaf karega. **Abhi server ki `.env` me ye dono nahi hain.**
 - [ ] Cron chal raha hai (cPanel → Cron Jobs): `* * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1`. Ye band ho to reminders, data refresh, kuch nahi chalta.
-- [ ] Server par `public/hot` naam ki file **nahi** honi chahiye (ye sirf aapke computer par `npm run dev` ke liye hai). Agar hai to delete karein, warna site bina CSS ke khulegi.
+- [ ] Server par `public/hot` naam ki file **nahi** honi chahiye (ye sirf aapke computer par `npm run dev` ke liye hai). Agar hai to delete karein, warna site bina CSS ke khulegi. **26 Sep 2026 ko yahi hua:** file upload ke saath `hot` bhi chali gayi, aur live site ka HTML `http://[::1]:5173/...` (visitor ka apna computer) se CSS/JS maangne laga, jo kisi ke paas nahi hota. Upload se pehle apne computer par `npm run dev` band karein (Ctrl+C se band karne par `hot` khud hat jaati hai) ya `public/hot` ko upload se bahar rakhein; `hot` git me nahi jaati, isliye `git pull` se ye galti nahi hoti.
 - [ ] Bade venue (hazaaron log ek wifi par) ho to `.env` me `RATE_LIMIT_ADDRESS_READS=20000` daalein (default 3000 per minute per IP hai). Server par ye pehle se daala hua hai.
 - [ ] Database ka ek backup (cPanel → phpMyAdmin → Export), bas aadat ke liye.
 - [ ] (Apne computer par, optional par acha) tests ek baar chala lein:
@@ -202,6 +202,8 @@ Pehle headers (2 minute), phir load test (5 minute), phir phone par test (10 min
 ```bash
 SITE=https://campbuddy.club
 EVENT=wordcamp-rajasthan-2026
+curl -sI $SITE/hot | head -1
+curl -s  $SITE/ | grep -c "5173"
 curl -sI $SITE/sw.js | grep -i "cache-control\|cf-cache-status"
 curl -sI $SITE/sw-flags.json | grep -i "HTTP/\|cache-control"
 curl -s  $SITE/sw-flags.json
@@ -214,6 +216,8 @@ for i in 1 2; do curl -sI $SITE/api/v1/events/$EVENT/roster | grep -i "etag\|cf-
 
 | Address | Sahi nateeja |
 | --- | --- |
+| `/hot` | **404**. Agar 200 aaye to site ka UI bigda hua hai: file delete karein (upar checklist dekhein). |
+| Home page me `5173` | `0`. Koi bhi ginti aaye to HTML abhi bhi dev server se assets maang raha hai. |
 | `/sw.js` | `Cache-Control: no-cache`; `cf-cache-status` **HIT nahi** (BYPASS ya DYNAMIC) |
 | `/sw-flags.json` | 200, `no-store`, body me `"swrPages": false` |
 | `/build/manifest.json` | `no-cache`, HIT nahi |
