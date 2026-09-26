@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -79,6 +80,50 @@ class EventManagerAdminTest extends TestCase
         $this->post(route('admin.event-managers.store'), $this->payload())->assertRedirect(route('login'));
     }
 
+    public function test_code_uploaded_before_its_migration_says_what_to_run_instead_of_a_500(): void
+    {
+        $this->actingAs($this->admin());
+        Schema::drop('event_event_manager');
+        Schema::drop('event_managers');
+
+        foreach ([route('admin.event-managers.index'), route('admin.event-managers.create')] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee("The database isn't ready for event managers yet")
+                ->assertSee('php artisan migrate --force')
+                ->assertSee(route('admin.errors.index'), false);
+        }
+
+        // The rest of the admin panel is untouched by it.
+        $this->get(route('admin.events.index'))->assertOk();
+    }
+
+    public function test_the_health_check_says_when_a_stale_cache_hides_the_manager_sign_in(): void
+    {
+        $this->actingAs($this->admin());
+        \Illuminate\Support\Facades\Cache::forever(\App\Support\SystemHealth::HEARTBEAT_KEY, now()->toIso8601String());
+
+        $titles = fn () => collect(\App\Support\SystemHealth::problems())->pluck('title');
+
+        // Set up properly: nothing to say.
+        $this->assertFalse($titles()->contains("Event manager sign-in isn't set up"));
+        $this->get(route('admin.errors.index'))->assertDontSee('Event manager sign-in');
+
+        // Code uploaded on top of a cached config from before the update: no guard.
+        config(['auth.guards.manager' => null]);
+
+        $problem = collect(\App\Support\SystemHealth::problems())->firstWhere('title', "Event manager sign-in isn't set up");
+        $this->assertNotNull($problem);
+        $this->assertSame('warning', $problem['level']);
+        $this->assertSame('php artisan optimize:clear && php artisan optimize', $problem['fix']);
+        $this->assertStringContainsString('cached config', $problem['detail']);
+
+        $this->get(route('admin.errors.index'))->assertSee('Event manager sign-in')->assertSee('php artisan optimize:clear');
+
+        // The public yes/no health endpoint is unchanged.
+        config(['auth.guards.manager' => ['driver' => 'session', 'provider' => 'event_managers']]);
+        $this->getJson(route('api.health'))->assertOk()->assertJsonMissingPath('problems')->assertJsonStructure(['status', 'checks' => ['migrations', 'scheduler', 'queue']]);
+    }
     public function test_the_sidebar_links_to_event_managers(): void
     {
         $this->actingAs($this->admin());

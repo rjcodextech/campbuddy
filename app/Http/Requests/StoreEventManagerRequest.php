@@ -35,7 +35,7 @@ class StoreEventManagerRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('event_managers', 'email')],
             'phone' => $this->phoneRules(),
-            'password' => ['required', 'string', Password::min(8)],
+            'password' => ['required', 'string', Password::min(8)->max(72)],
             'is_active' => ['boolean'],
             'events' => ['required', 'array', 'min:1'],
             'events.*' => ['integer', 'distinct', Rule::exists('events', 'id')],

@@ -47,7 +47,7 @@
 | Attendee list moderation (hide/unhide, claim chhodna) | Ho gaya |
 | Events list: event ke din ke hisaab se (sabse pehla upar), filters (search, status, visibility, kab), agle 10 events highlight | Ho gaya (local `dev`, upload baaki) |
 | Errors alag page (`/admin/errors`): system checks + fetch problems; dashboard par sirf ek line | Ho gaya (local `dev`, upload baaki) |
-| Event managers: admin banata hai (naam, email, phone, WordCamps, password); alag login `/manager/login`; sirf apne events ka Event details, Event information, Quests & checklist badal sakta hai, status nahi | Ho gaya (local `dev`, upload baaki; server par migration + `campbuddy:doctor` chahiye) |
+| Event managers: admin banata hai (naam, email, phone, WordCamps, password); alag login `/manager/login`; sirf apne events ka Event details, Event information, Quests & checklist badal sakta hai, status nahi. Source URL sirf `*.wordcamp.org`; har badlav ka Activity log (90 din); deep security + performance testing ho chuki | Ho gaya (local `dev`, upload baaki; server par sirf `campbuddy:doctor` chahiye) |
 | "Purge cache & refresh data" (server + Cloudflare, `.env` me token ho to) | Ho gaya, **Cloudflare token wala hissa jaancha nahi** |
 
 ### Peeche ka kaam (apne aap chalta hai, cron har minute)
@@ -148,6 +148,10 @@ Ye spec ya `DEPLOYMENT.md` me nahi thi. Order: pehle sabse zyada jokhim wali.
 | 18 | **Version tag, changelog, `main` ka process** | Kis deploy me kya gaya, ye git log se hi | `main` merge ke saath tag |
 | 19 | Claude Docs wala "Deployment" document purana hai (`.env`, Cache Rule, FileZilla wale hisse sirf `DEPLOYMENT.md` me) | Do jagah alag baatein | Ek hi jagah rakhna |
 | 20 | Sirf English (Hindi/anya bhasha nahi) | Bharat ke events me kuch log Hindi chahenge | Baad ka faisla |
+| 21 | **`fetch_log` kabhi saaf nahi hota.** Naapa: 3 lakh rows par Errors page ~0.2–0.8 s aur Dashboard ~0.4 s (index sirf `event_id`/`source` par hai). Live par 9 active events × har 15 min ≈ 26,000 rows/mahina, yaani ~1 saal me wahi 3 lakh | Dheere-dheere admin pages sust hote jayenge | 60 din se purani rows roz delete (scheduler me 1 job, `routes/console.php`); ye existing file badlega, isliye do baar poochhunga |
+| 22 | **Checklist item *hataane* par khule apps ko khabar nahi jaati.** `DataVersion` "last updated" par bani hai; hataane se wo nahi badalta (admin ke hataane par bhi yahi). Jodne/badalne par turant jaati hai | Hataya hua item kuch der phone par dikhta rahega (reload par gayab) | `DataVersion` me quests ki ginti jodna (1 line, existing file, do baar poochhunga) |
+| 23 | **Dashboard/Errors ke system checks har active event ke liye 1 query lagate hain** (500 events par 109 queries ≈ 0.5 s; 21 events par kuch nahi) | Sirf bahut bade install par | Abhi kuch nahi; events sau se upar jaayein to ek query me karna |
+| 24 | **Manager ka password sirf admin badal sakta hai** (mail abhi log-only) | Manager bhool gaya to admin ko batana padega | SMTP lagne ke baad forgot-password/change-password page (alag package) |
 
 ## 6. Kya jaan-boojhkar nahi hoga (spec ka hissa)
 

@@ -166,8 +166,11 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
 
     Options: `--skip-fetch` (data fetch chhod do), `--no-build` (agar build ho chuka hai), `--keep-logs` (logs mat mitao). Ant me report me kuch laal (problem) nahi dikhna chahiye: "cron not running", "failed jobs", "APP_DEBUG on" jaisi lines aayein to unka fix wahin likha hota hai.
 
-    > **Event managers wala deploy (Oct 2026):** naya migration `create_event_managers_table` aur `config/auth.php` me naya `manager` guard aaya hai. `campbuddy:doctor` dono sambhal leta hai (migrate + config cache). Agar files upload karke doctor nahi chalaya, to sirf `/manager/*` aur Admin → Event managers par error aayegi (admin login aur attendee app par koi asar nahi); tab `php artisan migrate --force && php artisan optimize:clear && php artisan optimize` chalayein. Naye pages ke liye `public/build` bhi naya upload karna zaroori hai, warna unka styling adhura dikhega.
-
+    > **Event managers wala deploy (Oct 2026): ek hi command kaafi hai — `php artisan campbuddy:doctor`.** Isme naye 3 migrations (`event_managers`, `event_event_manager`, `event_manager_changes`) chalte hain aur `config/auth.php` ka naya `manager` guard config cache me aa jata hai. Doctor ke health report me ab ek naya check hai: agar server abhi bhi purana cached config/route list use kar raha ho to "Event manager sign-in isn't set up" dikhega, fix ke saath (`php artisan optimize:clear && php artisan optimize`). Doctor chalane se pehle file upload me **`routes/manager.php`**, `config/auth.php`, `app/`, `database/migrations/` aur naya **`public/build`** hona chahiye. Agar doctor nahi chalaya: sirf `/manager/*` aur Admin → Event managers par message/error aayega (admin login aur attendee app par koi asar nahi).
+    >
+    > **Cloudflare:** Cache Rule sirf `/event/*` ke liye hai — use `/manager` ya `/admin` tak kabhi na badhayein (un pages par login ka session hai). Ye pages `Cache-Control: no-store` bhejte hain, phir bhi rule wahi rakhein.
+    >
+    > **`.env`:** `SESSION_SECURE_COOKIE=true` zaroor rakhein (manager/admin ka session cookie sirf https par jaye). Koi naya `.env` key nahi hai.
 4. **Turant Cloudflare purge karein** (agla section, kadam A). Ye chhoot gaya to naya `sw.js` phones tak ghanton late pahunchega.
 
 Sab hone ke baad site khol kar dekh lein ki home, ek event, My Day aur Explore theek khul rahe hain, phir "Deploy ke baad test" section chalayein.

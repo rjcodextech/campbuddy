@@ -6,6 +6,7 @@ use App\Models\Event;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -31,6 +32,7 @@ class SystemHealth
             self::scheduler(),
             self::queueBacklog(),
             self::failedJobs(),
+            self::eventManagerSetup(),
             ...self::eventsWithoutData(),
             ...self::eventsWithoutTimezone(),
         ]));
@@ -134,6 +136,32 @@ class SystemHealth
             'title' => "{$recent} background job(s) failed in the last 24 hours",
             'detail' => 'Usually a WordCamp site that was down or slow. The event\'s "Data health" card shows which fetch failed and why.',
             'fix' => 'php artisan queue:failed   (to list them)   ·   php artisan queue:retry all',
+        ];
+    }
+
+    /**
+     * Event managers sign in through a guard and routes that came with the
+     * Sept 2026 update. Code uploaded on top of an old *cached* config or route
+     * list has neither, so /manager fails or 404s while everything else works —
+     * easy to miss, and `optimize:clear && optimize` fixes it. (The tables are
+     * the migration check's business.)
+     *
+     * @return array{level: string, title: string, detail: string, fix: ?string}|null
+     */
+    private static function eventManagerSetup(): ?array
+    {
+        $guard = config('auth.guards.manager') !== null && config('auth.providers.event_managers') !== null;
+        $routes = Route::has('manager.login');
+
+        if ($guard && $routes) {
+            return null;
+        }
+
+        return [
+            'level' => 'warning',
+            'title' => 'Event manager sign-in isn\'t set up',
+            'detail' => 'The code has it, but this server is still using a cached '.($guard ? 'route list' : 'config').' from before the update, so /manager can\'t work yet. Nothing else is affected.',
+            'fix' => 'php artisan optimize:clear && php artisan optimize',
         ];
     }
 

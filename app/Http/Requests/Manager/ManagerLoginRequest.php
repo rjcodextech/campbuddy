@@ -3,9 +3,11 @@
 namespace App\Http\Requests\Manager;
 
 use App\Http\Middleware\EnsureEventManager;
+use App\Models\EventManager;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +15,9 @@ use Illuminate\Validation\ValidationException;
 /**
  * The event manager sign-in form. Same protections as the admin's: a limit on
  * wrong guesses per email + address, and one deliberately vague message for
- * "no such account", "wrong password" and "switched off" alike.
+ * "no such account", "wrong password" and "switched off" alike — and the same
+ * amount of work for all three, so the time the answer takes doesn't say which
+ * it was.
  */
 class ManagerLoginRequest extends FormRequest
 {
@@ -35,8 +39,8 @@ class ManagerLoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'max:255'],
         ];
     }
 
@@ -47,18 +51,30 @@ class ManagerLoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $signedIn = Auth::guard(EnsureEventManager::GUARD)->attempt(
-            $this->only('email', 'password') + ['is_active' => true],
-            $this->boolean('remember')
-        );
+        $manager = EventManager::where('email', $this->string('email')->toString())->first();
 
-        if (! $signedIn) {
-            RateLimiter::hit($this->throttleKey());
+        if ($manager === null || ! $manager->is_active) {
+            // No password to check — so hash one, which costs the same as checking would have.
+            Hash::make($this->string('password')->toString());
 
-            throw ValidationException::withMessages(['email' => trans('auth.failed')]);
+            $this->fail();
+        }
+
+        if (! Auth::guard(EnsureEventManager::GUARD)->attempt($this->only('email', 'password') + ['is_active' => true], $this->boolean('remember'))) {
+            $this->fail();
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    private function fail(): never
+    {
+        RateLimiter::hit($this->throttleKey());
+
+        throw ValidationException::withMessages(['email' => trans('auth.failed')]);
     }
 
     /**

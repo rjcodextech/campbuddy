@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\EventManagerActivityController;
 use App\Http\Controllers\Admin\EventManagerController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
@@ -119,6 +120,7 @@ Route::prefix('admin')->group(function () {
         // Delete is policy-gated to draft events only (EventPolicy::delete).
         // Event managers: people given a few events to edit (their own area is
         // routes/manager.php). Created here, never by sign-up.
+        Route::get('event-managers/activity', EventManagerActivityController::class)->name('admin.event-managers.activity');
         Route::resource('event-managers', EventManagerController::class)->except('show')->names('admin.event-managers');
 
         Route::resource('events', EventController::class)->except('show')->names('admin.events');

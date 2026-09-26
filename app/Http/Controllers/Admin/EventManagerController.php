@@ -7,9 +7,11 @@ use App\Http\Requests\StoreEventManagerRequest;
 use App\Http\Requests\UpdateEventManagerRequest;
 use App\Models\Event;
 use App\Models\EventManager;
+use App\Models\EventManagerChange;
 use App\Support\EventListing;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -24,6 +26,10 @@ class EventManagerController extends Controller
     {
         Gate::authorize('viewAny', EventManager::class);
 
+        if ($notReady = $this->unlessMigrated()) {
+            return $notReady;
+        }
+
         $managers = EventManager::with(['events' => fn ($q) => $q->select('events.id', 'events.display_name')->orderBy('events.display_name')])
             ->orderBy('name')
             ->paginate(25);
@@ -34,6 +40,10 @@ class EventManagerController extends Controller
     public function create(): View
     {
         Gate::authorize('create', EventManager::class);
+
+        if ($notReady = $this->unlessMigrated()) {
+            return $notReady;
+        }
 
         return view('admin.event-managers.create', $this->formData(new EventManager));
     }
@@ -60,7 +70,12 @@ class EventManagerController extends Controller
     {
         Gate::authorize('update', $eventManager);
 
-        return view('admin.event-managers.edit', $this->formData($eventManager));
+        return view('admin.event-managers.edit', $this->formData($eventManager) + [
+            // What they changed lately — empty (not an error) until the activity migration has run.
+            'activity' => Schema::hasTable('event_manager_changes')
+                ? EventManagerChange::with('event:id,display_name')->where('event_manager_id', $eventManager->id)->orderByDesc('created_at')->orderByDesc('id')->limit(15)->get()
+                : collect(),
+        ]);
     }
 
     public function update(UpdateEventManagerRequest $request, EventManager $eventManager): RedirectResponse
@@ -98,6 +113,17 @@ class EventManagerController extends Controller
         return redirect()
             ->route('admin.event-managers.index')
             ->with('status', "Event manager “{$eventManager->name}” deleted.");
+    }
+
+    /**
+     * Code uploaded before the migration was run (a deploy that skipped
+     * `campbuddy:doctor`) is a fact of life: say what to run instead of a 500.
+     */
+    private function unlessMigrated(): ?View
+    {
+        return Schema::hasTable('event_managers') && Schema::hasTable('event_event_manager')
+            ? null
+            : view('admin.event-managers.not-ready');
     }
 
     /**

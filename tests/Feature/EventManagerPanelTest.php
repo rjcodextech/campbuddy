@@ -147,10 +147,11 @@ class EventManagerPanelTest extends TestCase
             $this->post(route('manager.login.store'), ['email' => $manager->email, 'password' => 'wrong-'.$i]);
         }
 
-        // Even the right password is refused now (the route's own limit answers "429 Too Many Requests").
+        // Even the right password is refused now — by the per-email limiter, with its own message.
         $this->post(route('manager.login.store'), ['email' => $manager->email, 'password' => 'a-strong-password'])
-            ->assertStatus(429);
+            ->assertSessionHasErrors('email');
 
+        $this->assertStringContainsString('Too many login attempts', session('errors')->first('email'));
         $this->assertGuest('manager');
     }
 

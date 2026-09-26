@@ -26,7 +26,7 @@ class UpdateEventManagerRequest extends StoreEventManagerRequest
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('event_managers', 'email')->ignore($this->route('event_manager'))],
             'phone' => $this->phoneRules(),
-            'password' => ['nullable', 'string', Password::min(8)],
+            'password' => ['nullable', 'string', Password::min(8)->max(72)],
             'is_active' => ['boolean'],
             'events' => ['nullable', 'array'],
             'events.*' => ['integer', 'distinct', Rule::exists('events', 'id')],

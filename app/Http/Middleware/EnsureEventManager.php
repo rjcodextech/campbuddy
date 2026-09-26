@@ -46,7 +46,12 @@ class EnsureEventManager
             $request->session()->put('manager.password', $fingerprint);
         }
 
-        return $next($request);
+        // Pages with someone's session in them are never kept by the browser or a proxy: after signing
+        // out, the Back button shows the sign-in page, not the last screen.
+        $response = $next($request);
+        $response->headers->set('Cache-Control', 'no-store, private');
+
+        return $response;
     }
 
     private function toLogin(Request $request, ?string $message = null): Response

@@ -1,6 +1,7 @@
 <x-app-layout title="Event managers" subtitle="People who can edit the events you give them — and nothing else."
               :breadcrumbs="[['Event managers']]">
     <x-slot:actions>
+        <x-button :href="route('admin.event-managers.activity')" variant="secondary" icon="pencil">Activity</x-button>
         <x-button :href="route('admin.event-managers.create')" icon="plus">Add event manager</x-button>
     </x-slot:actions>
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
 use App\Http\Controllers\Manager\QuestController;
 use App\Http\Middleware\EnsureEventManager;
+use App\Http\Middleware\ThrottleManagerWrites;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,9 +23,11 @@ use Illuminate\Support\Facades\Route;
 */
 Route::prefix('manager')->group(function () {
     Route::get('login', [AuthController::class, 'create'])->name('manager.login');
-    Route::post('login', [AuthController::class, 'store'])->middleware('throttle:5,1')->name('manager.login.store');
+    // The real brake on guessing is the per-email + address limiter inside ManagerLoginRequest (5 wrong tries).
+    // This one only stops floods; it is per address, and a venue's wifi puts a dozen organizers behind one.
+    Route::post('login', [AuthController::class, 'store'])->middleware('throttle:30,1')->name('manager.login.store');
 
-    Route::middleware(EnsureEventManager::class)->whereNumber(['eventId', 'questId'])->group(function () {
+    Route::middleware([EnsureEventManager::class, ThrottleManagerWrites::class])->whereNumber(['eventId', 'questId'])->group(function () {
         Route::post('logout', [AuthController::class, 'destroy'])->name('manager.logout');
 
         Route::get('/', DashboardController::class)->name('manager.dashboard');
