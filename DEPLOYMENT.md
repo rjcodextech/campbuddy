@@ -133,7 +133,25 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
     git pull origin main
     ```
 
-    Agar git nahi hai to naye/badle hue files upload karein (khaas kar `app/`, `resources/`, `public/sw.js`, `public/sw-flags.json`, `public/.htaccess`, `tests/`, `tools/`, `package.json`).
+    Agar git nahi hai (aapka tareeka: FileZilla) to sirf ye upload karein:
+
+    | Bhejein | Kyon |
+    | --- | --- |
+    | `app/`, `routes/`, `config/`, `resources/views/` | PHP aur pages |
+    | `database/` (sirf naye migration ho to) | DB ke badlav |
+    | `public/build/` **poora** (server ka purana `public/build` pehle hata dein) | Naya CSS/JS |
+    | `public/sw.js`, `public/sw-flags.json`, `public/.htaccess` | Service Worker aur header rules |
+    | `vendor/` sirf tab jab `composer.lock` badla ho | PHP libraries |
+
+    **Kabhi upload na karein:** `public/hot`, `.env` (server ki apni `.env` hai), `storage/`, `bootstrap/cache/` (aapke computer ka cache server ko tod sakta hai), `node_modules/`, `.git/`, `tests/`, `tools/`, `.claude/`.
+
+    **FileZilla settings (ek baar):**
+
+    - Menu **Server → Force showing hidden files** ON karein, warna server par `.htaccess` dikhti hi nahi aur pata nahi chalta ki upload hui ya nahi.
+    - Menu **Transfer → Transfer type → Binary**. "Auto" kuch files ko text mode me bhejta hai jo unki line endings badal sakta hai.
+    - Agar aapka domain ka docroot `public/` nahi balki `public_html` jaisa alag folder hai, to `public/` ke andar ki cheezein (`build/`, `sw.js`, `sw-flags.json`, `.htaccess`, `index.php`) **us docroot folder me** jaati hain. Pata karne ke liye server Terminal me: `find /home/mzpjfuem/domains/campbuddy.club -maxdepth 3 \( -name sw.js -o -name .htaccess -o -name hot \)`. Jis folder me `sw.js` dikhe wahi docroot hai, aur wahin ki `.htaccess` web server padhta hai.
+
+    Upload ke baad turant "Deploy ke baad test" ka headers check chalayein (`/hot` par 404 aur home page me `5173` ki ginti 0 dekhna sabse pehle).
 
 2. **Front-end build.** `public/build` folder git me nahi hota, isliye ye zaroori hai. Do raaste, koi ek:
 
