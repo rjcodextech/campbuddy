@@ -67,18 +67,25 @@ class StabilityTest extends TestCase
         $this->get(route('event.my-day', $event))->assertOk()->assertSee('Building Block Themes');
     }
 
-    public function test_the_dashboard_says_when_the_scheduler_is_not_running(): void
+    public function test_the_errors_page_says_when_the_scheduler_is_not_running(): void
     {
-        $this->actingAs(User::factory()->create())
-            ->get(route('dashboard'))
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('admin.errors.index'))
             ->assertOk()
             ->assertSee('The scheduler has never run')
             ->assertSee('schedule:run');
 
+        // The dashboard doesn't repeat it: one line that points there.
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('need attention')
+            ->assertSee('View errors')
+            ->assertDontSee('The scheduler has never run');
+
         Cache::forever(SystemHealth::HEARTBEAT_KEY, now()->toIso8601String());
 
-        $this->actingAs(User::factory()->create())
-            ->get(route('dashboard'))
+        $this->get(route('admin.errors.index'))
             ->assertDontSee('The scheduler has never run');
     }
 
