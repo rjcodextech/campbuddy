@@ -42,15 +42,17 @@ export function windowCards(key, cards, { min = FIRST, doc = globalThis.document
   button.type = 'button';
   button.className = 'btn btn--outline btn--full';
 
+  // The one number on the button is exactly how many cards a tap opens.
+  const nextCount = () => Math.min(STEP, cards.length - shown);
   const label = () => {
-    const left = cards.length - shown;
-    const next = Math.min(STEP, left);
-    button.textContent = left > next ? `Show ${next} more (${left} left)` : `Show ${next} more`;
+    button.textContent = `Show ${nextCount()} more`;
   };
   label();
 
   button.addEventListener('click', () => {
-    const upTo = Math.min(cards.length, shown + STEP);
+    // Reveals the next `nextCount()` cards that are still hidden: each card is
+    // opened once, none is added or repeated, so the label and the result agree.
+    const upTo = shown + nextCount();
     for (let i = shown; i < upTo; i++) cards[i].hidden = false;
     shown = upTo;
     opened.set(key, shown - first);

@@ -28,7 +28,7 @@
 | Session reminder | Session se 5–10 min pehle push notification, app ke andar "starting soon" banner | Ho gaya, **asli test baaki** |
 | Quest | 8 "Things to do" quests, 9-item pre-trip checklist, admin ke apne quests, progress phone me | Ho gaya |
 | Contribute | Contributor Day samjhana, sawalon se team ki salah | Ho gaya |
-| Explore → People | Event ki attendee list (search, photos), "Join attendee discovery" (interest match, naam kaise dikhe ye apna faisla), waves/messages, kabhi bhi leave. Lambi match list pehle 3 cards dikhati hai, baaki "Show 10 more" par (27 Sep) | Ho gaya, **bheed par asli test baaki** |
+| Explore → People | Event ki attendee list (search, photos), "Join attendee discovery" (interest match, naam kaise dikhe ye apna faisla), waves/messages, kabhi bhi leave. Lambi match list pehle 3 cards dikhati hai, baaki "Show N more" par (button par jo number, utne hi card khulte hain, koi card dohrata nahi) (27 Sep) | Ho gaya, **bheed par asli test baaki** |
 | Explore → Sponsors, Deals, Event Info | Sponsors, discount deals (kuch me naam/email form), venue/links/emergency contact (apne aap bhare jate hain, guess nahi) | Ho gaya |
 | Camp Card | Kai design, apne chune hue fields, LinkedIn/website QR, fullscreen, save/print | Ho gaya |
 | Guide | General first-timer guide aur event ka guide | Ho gaya |

@@ -14,9 +14,29 @@ const doc = {
     return button;
   },
 };
-const cards = (n) => Array.from({ length: n }, (_, i) => ({ id: i, hidden: false }));
+
+// Each card counts how many times it is switched from hidden to shown.
+const cards = (n) => Array.from({ length: n }, (_, i) => {
+  let hidden = false;
+  const card = { id: i, reveals: 0 };
+  Object.defineProperty(card, 'hidden', {
+    get: () => hidden,
+    set: (value) => {
+      if (hidden && !value) card.reveals++;
+      hidden = value;
+    },
+  });
+
+  return card;
+});
 const visible = (list) => list.filter((c) => c.id !== undefined && !c.hidden).length;
 const split = (out) => ({ shown: out.filter((c) => c.id !== undefined), button: out.find((c) => c.id === undefined) });
+const promised = (button) => {
+  const match = /^Show (\d+) more$/.exec(button.textContent);
+  assert.ok(match, `the button says only "Show N more", got "${button.textContent}"`);
+
+  return Number(match[1]);
+};
 
 beforeEach(() => resetWindows());
 
@@ -42,23 +62,52 @@ test('a longer list shows the first three cards and a button for the rest', () =
   assert.match(button.className, /btn--outline/);
 });
 
-test('each tap opens ten more, and the button goes when nothing is left', () => {
-  const { shown, button } = split(windowCards('matches', cards(30), { doc }));
-  assert.equal(button.textContent, 'Show 10 more (27 left)');
+test('every tap opens exactly the number on the button — no more, no fewer — right to the last card', () => {
+  for (const total of [5, 6, 12, 13, 14, 23, 24, 30, 47, 200]) {
+    resetWindows();
+    const out = windowCards('matches', cards(total), { doc });
+    const { shown, button } = split(out);
+    let expected = FIRST;
 
-  button.click();
-  assert.equal(visible(shown), 13);
-  assert.equal(button.textContent, 'Show 10 more (17 left)');
+    assert.equal(visible(shown), FIRST);
 
-  button.click();
-  button.click();
-  assert.equal(visible(shown), 30);
-  assert.equal(button.removed, true);
+    while (!button.removed) {
+      const says = promised(button);
+      const before = visible(shown);
+      button.click();
+
+      assert.equal(visible(shown) - before, says, `${total} cards: the button said ${says}, ${visible(shown) - before} opened`);
+      expected += says;
+      assert.equal(visible(shown), expected);
+      assert.ok(says >= 1 && says <= STEP);
+      assert.equal(out.length, total + 1, 'no card was added or dropped by a tap');
+    }
+
+    assert.equal(visible(shown), total, `${total} cards: everything ends up shown`);
+  }
 });
 
-test('the last tap says how many it opens, not ten', () => {
+test('a card is opened once, never twice, and never closed again', () => {
+  const { shown, button } = split(windowCards('matches', cards(47), { doc }));
+  const seen = new Set(shown.filter((c) => !c.hidden).map((c) => c.id));
+
+  while (!button.removed) {
+    button.click();
+    const now = shown.filter((c) => !c.hidden).map((c) => c.id);
+
+    assert.ok([...seen].every((id) => now.includes(id)), 'nothing that was open closed again');
+    seen.clear();
+    now.forEach((id) => seen.add(id));
+  }
+
+  assert.ok(shown.every((c) => c.reveals <= 1), 'no card was switched on more than once');
+  assert.equal(new Set(shown.map((c) => c.id)).size, 47, 'no card appears twice in the list');
+  assert.equal(shown.filter((c) => c.reveals === 1).length, 44, 'exactly the 44 that started hidden were opened');
+});
+
+test('the last tap says how many it opens (not ten) and opens exactly that many', () => {
   const { shown, button } = split(windowCards('others', cards(8), { doc }));
-  assert.equal(button.textContent, 'Show 5 more');
+  assert.equal(promised(button), 5);
 
   button.click();
   assert.equal(visible(shown), 8);
@@ -76,10 +125,12 @@ test('people waiting for a wave back always show, even past the first three', ()
   const { shown, button } = split(windowCards('matches', cards(20), { min: 6, doc }));
 
   assert.equal(visible(shown), 6);
-  assert.equal(button.textContent, 'Show 10 more (14 left)');
+  assert.equal(promised(button), 10);
+  button.click();
+  assert.equal(visible(shown), 16);
 });
 
-test('after a re-render (a wave was sent) an opened list stays open', () => {
+test('after a re-render (a wave was sent) an opened list stays open, and the button still tells the truth', () => {
   const first = split(windowCards('matches', cards(30), { doc }));
   first.button.click();
   first.button.click();
@@ -87,7 +138,26 @@ test('after a re-render (a wave was sent) an opened list stays open', () => {
 
   const again = split(windowCards('matches', cards(30), { doc }));
   assert.equal(visible(again.shown), 23, 'not shut again');
-  assert.equal(again.button.textContent, 'Show 7 more');
+  assert.equal(promised(again.button), 7);
+
+  again.button.click();
+  assert.equal(visible(again.shown), 30);
+  assert.equal(again.button.removed, true);
+});
+
+test('if the list changes size between renders (someone joined or left) the button still matches what a tap opens', () => {
+  const first = split(windowCards('matches', cards(30), { doc }));
+  first.button.click();
+
+  for (const total of [40, 13, 26]) {
+    const next = split(windowCards('matches', cards(total), { doc }));
+    const says = next.button ? promised(next.button) : 0;
+    const before = visible(next.shown);
+    next.button?.click();
+
+    assert.equal(visible(next.shown) - before, says, `${total} cards`);
+    assert.ok(visible(next.shown) <= total);
+  }
 });
 
 test('the two lists open independently', () => {
@@ -98,4 +168,16 @@ test('the two lists open independently', () => {
   assert.equal(visible(matches.shown), 13);
   assert.equal(visible(others.shown), 3);
   assert.equal(STEP, 10);
+});
+
+test('the example: five cards say "Show 2 more" and a tap opens exactly two, not three', () => {
+  const { shown, button } = split(windowCards('matches', cards(5), { doc }));
+
+  assert.equal(button.textContent, 'Show 2 more');
+  assert.equal(visible(shown), 3);
+
+  button.click();
+  assert.equal(visible(shown), 5);
+  assert.equal(shown.filter((c) => c.reveals === 1).length, 2, 'exactly two cards were opened');
+  assert.equal(button.removed, true);
 });
