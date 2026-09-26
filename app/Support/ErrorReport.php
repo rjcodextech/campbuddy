@@ -13,8 +13,11 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
  */
 class ErrorReport
 {
-    /** Look-back choices for fetch problems: label => days. */
-    public const PERIODS = ['1' => 'Last 24 hours', '7' => 'Last 7 days', '30' => 'Last 30 days'];
+    /**
+     * Look-back choices for fetch problems: label => days. The log is kept for
+     * FetchLogRetention::KEEP_DAYS (7), so nothing longer is offered.
+     */
+    public const PERIODS = ['1' => 'Last 24 hours', '3' => 'Last 3 days', '7' => 'Last 7 days'];
 
     public const DEFAULT_PERIOD = '7';
 

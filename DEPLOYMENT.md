@@ -171,6 +171,8 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
     > **Cloudflare:** Cache Rule sirf `/event/*` ke liye hai — use `/manager` ya `/admin` tak kabhi na badhayein (un pages par login ka session hai). Ye pages `Cache-Control: no-store` bhejte hain, phir bhi rule wahi rakhein.
     >
     > **`.env`:** `SESSION_SECURE_COOKIE=true` zaroor rakhein (manager/admin ka session cookie sirf https par jaye). Koi naya `.env` key nahi hai.
+    > **Fetch log ki safai + DataVersion (Oct 2026):** koi naya migration ya `.env` key nahi. Scheduler roz 03:20 par 7 din se purani `fetch_log` rows hata deta hai (har event/job ki sabse nayi row bachti hai). Abhi ek baar haath se chalana ho: `php artisan campbuddy:prune-fetch-log` (pehle `--dry-run` se ginti dekh sakte hain). `DataVersion` ka fingerprint badla hai, isliye **deploy ke baad har khula app ek baar reload hoga** — event ke beech peak par deploy na karein, event se pehle ya raat ko karein.
+
 4. **Turant Cloudflare purge karein** (agla section, kadam A). Ye chhoot gaya to naya `sw.js` phones tak ghanton late pahunchega.
 
 Sab hone ke baad site khol kar dekh lein ki home, ek event, My Day aur Explore theek khul rahe hain, phir "Deploy ke baad test" section chalayein.

@@ -98,18 +98,24 @@ class AdminErrorsPageTest extends TestCase
         $this->get(route('admin.errors.index'))->assertOk()->assertDontSee('Fetched 40 sessions')->assertSee('No fetch problems');
     }
 
-    public function test_the_period_defaults_to_seven_days_and_can_be_widened(): void
+    public function test_the_period_defaults_to_seven_days_and_can_be_narrowed(): void
     {
         $this->signIn();
         $event = $this->event();
+        $this->log($event, 'error', 'Five days ago problem', '-5 days');
         $this->log($event, 'error', 'Yesterday problem', '-1 day');
-        $this->log($event, 'error', 'Two weeks ago problem', '-14 days');
+        $this->log($event, 'error', 'This morning problem', '-2 hours');
+        $this->log($event, 'error', 'Two weeks ago problem', '-14 days'); // longer than the log is kept (7 days)
 
-        $this->get(route('admin.errors.index'))->assertSee('Yesterday problem')->assertDontSee('Two weeks ago problem');
-        $this->get(route('admin.errors.index', ['period' => 30]))->assertSee('Two weeks ago problem');
-        $this->get(route('admin.errors.index', ['period' => 1]))->assertSee('Yesterday problem');
-        // A made-up period falls back to the default.
-        $this->get(route('admin.errors.index', ['period' => 9999]))->assertDontSee('Two weeks ago problem');
+        $everything = $this->get(route('admin.errors.index'))->assertOk();
+        $everything->assertSee('This morning problem')->assertSee('Yesterday problem')->assertSee('Five days ago problem')->assertDontSee('Two weeks ago problem');
+
+        $this->get(route('admin.errors.index', ['period' => 3]))->assertSee('Yesterday problem')->assertDontSee('Five days ago problem');
+        $this->get(route('admin.errors.index', ['period' => 1]))->assertSee('This morning problem')->assertSee('Yesterday problem')->assertDontSee('Five days ago problem');
+
+        // Nothing longer than the log is kept is offered; an old bookmark or a made-up period gets the default.
+        $this->get(route('admin.errors.index', ['period' => 30]))->assertSee('Five days ago problem')->assertDontSee('Two weeks ago problem')->assertDontSee('Last 30 days');
+        $this->get(route('admin.errors.index', ['period' => 9999]))->assertSee('Five days ago problem');
     }
 
     public function test_fetch_problems_can_be_filtered_by_event_job_and_result(): void

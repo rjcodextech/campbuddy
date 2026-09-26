@@ -52,7 +52,7 @@
         </div>
     </form>
 
-    <x-card title="Fetch problems" description="Fetches that failed or only partly worked. The same failure repeating is one row with a count." flush>
+    <x-card title="Fetch problems" description="Fetches that failed or only partly worked. The same failure repeating is one row with a count. The log is kept for {{ \App\Support\FetchLogRetention::KEEP_DAYS }} days." flush>
         <x-table>
             <x-slot:head>
                 <th>Event</th>

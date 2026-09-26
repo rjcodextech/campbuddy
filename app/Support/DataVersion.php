@@ -16,7 +16,9 @@ class DataVersion
     public static function for(Event $event): string
     {
         // Forgotten on every data write; the short expiry also picks up admin
-        // edits (deals, quests) that don't go through EventData.
+        // edits (deals, quests) that don't go through EventData. The counts are there
+        // because "last updated" can't see a removal: taking away one of ten
+        // leaves the newest timestamp as it was.
         return Cache::remember(self::key($event->id), 120, function () use ($event) {
             $parts = [
                 $event->display_name,
@@ -26,7 +28,9 @@ class DataVersion
                 $event->logo_path,
                 $event->timezone,
                 (string) $event->offers()->max('updated_at'),
+                (string) $event->offers()->count(),
                 (string) $event->quests()->max('updated_at'),
+                (string) $event->quests()->count(),
             ];
 
             foreach (EventData::KINDS as $kind) {

@@ -8,6 +8,7 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
 use App\Models\Event;
+use App\Support\FetchLogRetention;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -95,6 +96,14 @@ Schedule::job(new DiscoverWordCampsJob)->cron('0 3 */2 * *')->name('discover-wor
 // midnight so it doesn't pile onto ingest-attendee-roster's own run.
 Schedule::job(new EvaluateEventLifecycleJob)->dailyAt('01:00')->name('evaluate-event-lifecycle');
 
+// The fetch log gets a row every 15 minutes for every active event (about 26,000 a month
+// live) and nothing reads it for more than the last few days — except "the last fetch of each
+// kind", which stays. Keeps 7 days plus the newest row of each (event, kind of fetch); deletes in
+// chunks so it never holds a lock for long. `php artisan campbuddy:prune-fetch-log` does it by hand.
+Schedule::call(fn () => FetchLogRetention::prune())
+    ->dailyAt('03:20')
+    ->name('prune-fetch-log')
+    ->withoutOverlapping(30);
 // Tell search engines about new and changed pages (IndexNow) once a day. Run
 // in-process (Artisan::call) like the queue drain below — hosts often disable
 // proc_open. The command itself does nothing outside production.

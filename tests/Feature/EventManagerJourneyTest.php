@@ -323,6 +323,22 @@ class EventManagerJourneyTest extends TestCase
         $this->put(route('manager.events.quests.update', [$event, $quest->id]), ['title' => 'A renamed item', 'sort_order' => $quest->sort_order, 'is_active' => '1']);
         $this->assertNotSame($afterAdd, $version(), 'Editing an item is news.');
     }
+    public function test_removing_a_checklist_item_tells_open_apps_at_once(): void
+    {
+        $event = $this->event('wc-removal');
+        $manager = EventManager::factory()->create(['password' => 'a-strong-password']);
+        $manager->events()->attach([$event->id, $this->event('wc-extra')->id]);
+        $this->post(route('manager.login.store'), ['email' => $manager->email, 'password' => 'a-strong-password']);
+
+        $version = fn () => DataVersion::for($event->fresh());
+        $before = $version();
+
+        // Not the newest item, so the newest "updated at" stays exactly as it was: only the count can tell.
+        $quest = $event->quests()->orderBy('sort_order')->firstOrFail();
+        $this->delete(route('manager.events.quests.destroy', [$event, $quest->id]))->assertRedirect();
+
+        $this->assertNotSame($before, $version(), 'Removing an item is news.');
+    }
     public function test_saving_without_changing_anything_leaves_no_entry_and_no_new_version(): void
     {
         $event = $this->event('wc-quiet', ['display_name' => 'WordCamp Quiet', 'info' => ['venue' => 'Hall']]);
