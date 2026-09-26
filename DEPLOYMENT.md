@@ -209,7 +209,22 @@ Naye headers (`public, s-maxage=30`) tabhi kaam aayenge jab Cloudflare in 3 addr
 
 **D. Ye kabhi na karein**
 
-- HTML pages, `/admin`, `/api/v1/cache-version`, `/api/.../waves`, `/api/.../messages` par *Cache Everything* ya *Ignore cache-control (override TTL)* na lagayein. Isse ek user ka data doosre ko dikh sakta hai aur purani info atak jayegi. Ye sab origin ke `no-cache, private` ki wajah se abhi bilkul theek BYPASS ho rahe hain.
+- `/admin`, `/api/v1/cache-version`, `/api/.../waves`, `/api/.../messages` par *Cache Everything* ya *Ignore cache-control (override TTL)* kabhi na lagayein. Isse ek user ka data doosre ko dikh sakta hai aur purani info atak jayegi. Ye sab origin ke `no-cache, private` ki wajah se abhi bilkul theek BYPASS ho rahe hain.
+- Event ke HTML pages (`/event/...`) par bhi koi "override" sirf neeche wale **kadam E** ke tareeke se, warna nahi.
+
+**E. Sabse bada fayda (abhi lagaya nahi, pehle test ke saath): event pages ko 60 sekand ke liye edge par**
+
+Load test ne dikhaya (neeche "Bade load ka nateeja") ki host ko ab API nahi, **page HTML** thakata hai: har page origin par PHP se banta hai (~200 ms) aur Cloudflare use BYPASS karta hai. 26 Sep ko maine jaancha: alag alag device-id, browser aur cookie bhejne par bhi ek page ka HTML har visitor ke liye **ek jaisa** aata hai (size barabar 128,488 bytes; sirf Cloudflare Fonts ke `@font-face` blocks ka kram badalta hai) aur pages koi cookie set nahi karte. Yaani unhe kuch second ke liye sabme baantna surakshit hai. Attendee ka apna data phone me hai, HTML me nahi.
+
+Isme **code nahi badalta**, sirf Cloudflare ka ek rule, jo ek click me band ho jata hai:
+
+1. Cloudflare → Caching → Cache Rules → Create rule. Naam: `CampBuddy event pages 60s`.
+2. Expression: `(starts_with(http.request.uri.path, "/event/")) and (http.request.method eq "GET")`
+3. *Cache eligibility* = **Eligible for cache**. *Edge TTL* = **Ignore cache-control header and use this TTL** = **1 minute**. *Status code TTL* me sirf `200` ko 1 minute; `400–599` ko **No store** (taaki 404/500 na atken; ye option na dikhe to mujhe batayein). *Browser TTL* = **Respect origin TTL** (origin `no-cache` bolta hai, isliye browser/Service Worker har baar edge se poochhte rahenge, jo sasta hai).
+4. Save karke test: `curl -sI https://campbuddy.club/event/wordcamp-rajasthan-2026/my-day | grep -i cf-cache-status` do baar chalayein: pehli MISS, doosri **HIT**. Phir load test dobara (300, phir 500 users): HIT ka hissa 33% se bahut upar aur origin par p95 kam hona chahiye.
+5. Kuch ajeeb dikhe (purana schedule, galat page) to rule **Disable** karke Purge Everything. Admin ka "Purge cache & refresh data" button (Cloudflare token `.env` me ho to) ek hi baar me sab naya kar deta hai.
+
+Kimat: schedule/phase me badlav sabko max ~60 sekand late dikh sakta hai (data-version polling aur purge button isko pehle bhi theek kar dete hain).
 
 ## Deploy ke baad test: kaise karein, kya dekhna hai
 
@@ -260,7 +275,15 @@ node tools/loadtest.mjs --url https://campbuddy.club --event wordcamp-rajasthan-
 | Cloudflare HIT | 0 | roster/discovery/data-version ke liye dikhna chahiye (kul ka ~30–40%) |
 | Errors | 0 | 0 |
 
-**Asli nateeja (26 Sep 2026, deploy ke baad, wahi settings):** 150 users, 23.2 req/s → p95 **245 ms** (pehle 2.1–2.3 s), p99 746 ms tak (pehle ~10 s), errors 0, Cloudflare HIT **569 / 1746 (33%)**. 20-user test bhi PASS (p95 264 ms). Host ki asli seema (ceiling) abhi nahi mili: is test me sirf ~15 req/s origin tak pahunche (baaki HIT); ceiling dhoondhne ke liye 150 se upar ka test chahiye.
+**Asli nateeja (26 Sep 2026, deploy ke baad, wahi settings):** 150 users, 23.2 req/s → p95 **245 ms** (pehle 2.1–2.3 s), p99 746 ms tak (pehle ~10 s), errors 0, Cloudflare HIT **569 / 1746 (33%)**. 20-user test bhi PASS (p95 264 ms). Ceiling ke liye aage bade test kiye (ye bhi 26 Sep, wahi settings):
+
+| Users | Total req/s | Origin tak (BYPASS) | p95 | Errors | Nateeja |
+| --- | --- | --- | --- | --- | --- |
+| 150 | 23 | ~16/s | 245 ms | 0 | PASS |
+| 200 | 29 | ~19/s | 226 ms (ek 10-sekand ke daur me 1.1 s, max 4.3 s) | 0 | PASS |
+| 300 | 30–40 | ~22/s | 8.2 s (30 s timeouts) | 1.07% | **FAIL**, tool ne khud ruk kar band kiya |
+
+**Bade load ka nateeja:** host aaj ~**20 page/s** (origin tak pahunchi requests) tak theek chalta hai; uske upar pages line me lagne lagte hain. API ab lagbhag muft hai (HIT par p50 ~34 ms); asli bhaar uncached **page HTML** ka hai (~67% requests, ~200 ms har ek). Test ka virtual user asli attendee se ~2.2 guna zyada kaam karta hai (har 10 s me page, 30 s me poll; app khud ~5 min me poll karti hai), isliye 200 virtual users ~400–450 asli ek-saath-active logon ke barabar hain. Ek jagah, ek computer se test hua hai, aur ye andaza hai, garantee nahi. 10,000 logon ke liye kadam E (upar, Cloudflare settings me) sabse zaroori hai.
 
 HIT bilkul 0 aaye to kadam B (Cache Rule) lagana baaki hai. Isse zyada users (300+) sirf raat ko aur dhire-dhire badhakar chalayein, aur host ke cPanel → *Resource Usage* graph (CPU / Entry Processes) saath me dekhte rahein.
 
