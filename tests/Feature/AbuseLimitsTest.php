@@ -66,6 +66,19 @@ class AbuseLimitsTest extends TestCase
         $this->assertSame(0, SessionBookmark::count());
     }
 
+    public function test_a_session_can_be_saved_again_after_it_was_un_saved(): void
+    {
+        $event = $this->event();
+        $phone = ['device_id' => 'd1', 'session_id' => 7];
+
+        $this->postJson(route('api.bookmarks.store', $event), $phone + ['reminder_enabled' => true])->assertCreated();
+        $this->deleteJson(route('api.bookmarks.destroy', $event), $phone)->assertNoContent();
+        $this->postJson(route('api.bookmarks.store', $event), $phone + ['reminder_enabled' => true])->assertCreated();
+
+        $this->assertSame(1, SessionBookmark::count());
+        $this->assertTrue(SessionBookmark::first()->reminder_enabled);
+    }
+
     public function test_a_switched_off_deal_takes_no_leads(): void
     {
         $event = $this->event();

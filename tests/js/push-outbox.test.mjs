@@ -148,6 +148,16 @@ test('taking a session off the day forgets a reminder that was still waiting for
   assert.deepEqual(apiCalls, [], 'and nothing was sent about it');
 });
 
+test('un-saving offline and then saving the same session again: only the last wish is kept', async () => {
+  apiFails = () => offline();
+  await push.cancelReminder('wc-test', { sessionId: 7, reminderEnabled: true });
+  assert.deepEqual((await queued()).map((i) => [i.kind, i.sessionId]), [['reminder-off', 7]]);
+
+  await push.offerReminder('wc-test', 1, 7);
+
+  assert.deepEqual((await queued()).map((i) => [i.kind, i.sessionId]), [['reminder-on', 7]], 'the earlier "off" must not linger and cancel the new "on"');
+});
+
 // ---- sending what was kept ----------------------------------------------------------------
 
 test('back online, waiting requests are sent; the reminder is confirmed locally', async () => {
