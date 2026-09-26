@@ -102,7 +102,7 @@ To meet (3) · Met (5) · Couldn't meet (2)
 ## 8. "Pura hua" ki kasauti (jo aapne pehle maangi thi wahi)
 
 - **Koi card dohrata nahi.** Har insaan ek hi group me, kabhi do me nahi. Har badlav ke baad check (jaise "Show more" me kiya tha).
-- **Gine hue number sahi.** Chip me "Couldn't meet (2)" ho to card bhi ठीक 2 (Hidden (N), To meet (N), Met (N) bhi).
+- **Gine hue number sahi.** Chip me "Couldn't meet (2)" ho to card bhi theek 2 (Hidden (N), To meet (N), Met (N) bhi).
 - ✕ dabane par sirf wahi insaan gayab, baaki list waisi ki waisi, "Show N more" ka count sahi.
 - Page dobara kholne par bhi ✕ wala insaan hata hi rahe (IndexedDB me save).
 - "Show again" karo to wo insaan wapas usi jagah, note/time ke saath.
@@ -124,7 +124,7 @@ To meet (3) · Met (5) · Couldn't meet (2)
 | Purane code ke rasta (`plan.js`, calendar, reminder) `skipped` ko nahi jaante | Wahi 3 jagah badlengi aur unke tests; ye plan me pehle se likhe hain |
 | Purani saved HTML + nayi JS | Blade nahi badlega, naye tukde JS se |
 | IndexedDB me kuch bigde | Koi schema badlav nahi, koi record delete nahi |
-| Wapas jaana ho | Purana `public/build` wapas (sirf JS/CSS) |
+| Wapas jaana ho | Purana `public/build` wapas (sirf JS/CSS). Ek kami: rollback ke baad `skipped` wale records purane code me "done" dikh sakte hain (data safe rehta hai, bas dikhna galat). |
 | Ek insaan `r:` aur `d:` se do baar | Phase 3 me. Tab tak jo card se hataya wahi us card me hata |
 
 ## 11. Samay ki salah
