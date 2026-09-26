@@ -260,6 +260,8 @@ node tools/loadtest.mjs --url https://campbuddy.club --event wordcamp-rajasthan-
 | Cloudflare HIT | 0 | roster/discovery/data-version ke liye dikhna chahiye (kul ka ~30–40%) |
 | Errors | 0 | 0 |
 
+**Asli nateeja (26 Sep 2026, deploy ke baad, wahi settings):** 150 users, 23.2 req/s → p95 **245 ms** (pehle 2.1–2.3 s), p99 746 ms tak (pehle ~10 s), errors 0, Cloudflare HIT **569 / 1746 (33%)**. 20-user test bhi PASS (p95 264 ms). Host ki asli seema (ceiling) abhi nahi mili: is test me sirf ~15 req/s origin tak pahunche (baaki HIT); ceiling dhoondhne ke liye 150 se upar ka test chahiye.
+
 HIT bilkul 0 aaye to kadam B (Cache Rule) lagana baaki hai. Isse zyada users (300+) sirf raat ko aur dhire-dhire badhakar chalayein, aur host ke cPanel → *Resource Usage* graph (CPU / Entry Processes) saath me dekhte rahein.
 
 **3. Phone par test** (Android Chrome par sabse aasan)
