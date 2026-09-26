@@ -219,9 +219,26 @@ Load test ne dikhaya (neeche "Bade load ka nateeja") ki host ko ab API nahi, **p
 Isme **code nahi badalta**, sirf Cloudflare ka ek rule, jo ek click me band ho jata hai:
 
 1. Cloudflare → Caching → Cache Rules → Create rule. Naam: `CampBuddy event pages 60s`.
-2. Expression: `(starts_with(http.request.uri.path, "/event/")) and (http.request.method eq "GET")`
+2. Expression (**`roster-removal` ko bahar rakhna zaroori hai**: uska page CSRF token aur session cookie banata hai, cache hua to sabko ek hi token milega aur form toot jayega; baaki saare `/event/...` pages par koi cookie nahi, 26 Sep ko jaancha):
+
+    ```text
+    (starts_with(http.request.uri.path, "/event/")) and (http.request.method eq "GET") and (not http.request.uri.path contains "/roster-removal")
+    ```
+
+    Aage koi naya `/event/...` page bane jo form/session use kare to use bhi is expression se bahar karna hoga.
 3. *Cache eligibility* = **Eligible for cache**. *Edge TTL* = **Ignore cache-control header and use this TTL** = **1 minute**. *Status code TTL* me sirf `200` ko 1 minute; `400–599` ko **No store** (taaki 404/500 na atken; ye option na dikhe to mujhe batayein). *Browser TTL* = **Respect origin TTL** (origin `no-cache` bolta hai, isliye browser/Service Worker har baar edge se poochhte rahenge, jo sasta hai).
-4. Save karke test: `curl -sI https://campbuddy.club/event/wordcamp-rajasthan-2026/my-day | grep -i cf-cache-status` do baar chalayein: pehli MISS, doosri **HIT**. Phir load test dobara (300, phir 500 users): HIT ka hissa 33% se bahut upar aur origin par p95 kam hona chahiye.
+4. *Place at* = **Last**. Ek aur setting jodna faydemand hai: *Serve stale content while revalidating* → Add setting → On (1 minute khatam hote hi sabko ek saath origin nahi jana padta). Baaki (Browser TTL, Cache key, Vary...) khali chhodein. **Deploy** dabayein (Save as Draft nahi).
+5. Test:
+
+    ```bash
+    S=https://campbuddy.club/event/wordcamp-rajasthan-2026
+    for i in 1 2; do curl -sI $S/my-day | grep -iE "cf-cache-status|^age"; done       # MISS, phir HIT
+    curl -sI $S/roster-removal | grep -icE "set-cookie"                              # 2 (cookie ab bhi aati hai)
+    curl -sI $S/roster-removal | grep -i "cf-cache-status"                            # BYPASS ya DYNAMIC, HIT nahi
+    for i in 1 2; do curl -sI ${S}-nahi-hai/my-day | grep -iE "^HTTP|cf-cache-status"; done   # 404, HIT nahi
+    ```
+
+    Phir load test dobara (300, phir 500 users): HIT ka hissa 33% se bahut upar aur origin par p95 kam hona chahiye.
 5. Kuch ajeeb dikhe (purana schedule, galat page) to rule **Disable** karke Purge Everything. Admin ka "Purge cache & refresh data" button (Cloudflare token `.env` me ho to) ek hi baar me sab naya kar deta hai.
 
 Kimat: schedule/phase me badlav sabko max ~60 sekand late dikh sakta hai (data-version polling aur purge button isko pehle bhi theek kar dete hain).
