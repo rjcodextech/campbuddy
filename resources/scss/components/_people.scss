@@ -516,3 +516,72 @@
         background-position: -200% 0;
     }
 }
+
+// Sections folded away under the match lists — "Couldn't meet (2) ▸" — and
+// the compact one-button rows inside them (people-fold / people-row are built
+// by people.js, not a template).
+.people-fold {
+    margin-top: v.$space-5;
+    border-top: 1px solid var(--line);
+}
+
+.people-fold__head {
+    width: 100%;
+    padding: v.$space-4 v.$space-1;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+}
+
+.people-row {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-3 v.$space-1;
+    border-top: 1px solid var(--line);
+}
+
+.people-row__avatar {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.people-row__text {
+    flex: 1;
+    min-width: 0;
+}
+
+.people-row__name,
+.people-row__sub {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.people-row__name {
+    font-weight: v.$font-weight-bold;
+}
+
+.people-row__sub {
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+// "Undo" beside a "✓ Met" on a match.
+.person-card__undo {
+    margin-left: v.$space-3;
+    padding: 0;
+    background: none;
+    border: 0;
+    font: inherit;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    text-decoration: underline;
+    cursor: pointer;
+}

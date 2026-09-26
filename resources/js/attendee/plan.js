@@ -5,9 +5,11 @@
 // Done means:
 //   a session  — marked attended or missed, or its time is over;
 //   a person   — marked met, or marked "couldn't meet".
-// Everything else is still to do.
+// Everything else is still to do. Hidden people (kept, but out of sight) and
+// people who were never planned don't count in the totals (see people-state.js).
 
 import { eventDayKey } from './eventtime.js';
+import { isBlank } from './people-state.js';
 
 const DEFAULT_SESSION_MS = 30 * 60 * 1000;
 
@@ -31,7 +33,7 @@ export function computePlan(bookmarks, meetings, sessionsById = new Map(), nowMs
     return { kind: 'session', id: b.sessionId, title: s?.title ?? b.title ?? '', startMs, endMs, status: b.status ?? null, over, started, done };
   });
 
-  const people = meetings.map((m) => ({
+  const personItem = (m) => ({
     kind: 'person',
     id: m.personKey,
     title: m.name ?? '',
@@ -39,12 +41,17 @@ export function computePlan(bookmarks, meetings, sessionsById = new Map(), nowMs
     status: m.status ?? null,
     done: Boolean(m.status),
     meeting: m,
-  }));
+  });
 
-  const all = [...sessions, ...people];
-  const done = all.filter((i) => i.done).length;
+  // Hidden people are kept but not on the plan; someone who was never planned
+  // (marked "I met them" on a match) is listed but not counted towards "N of M".
+  const people = meetings.filter((m) => m.status !== 'skipped' && !isBlank(m)).map(personItem);
+  const hidden = meetings.filter((m) => m.status === 'skipped').map(personItem);
 
-  return { sessions, people, total: all.length, done, left: all.length - done };
+  const counted = [...sessions, ...people.filter((p) => !p.meeting.unplanned)];
+  const done = counted.filter((i) => i.done).length;
+
+  return { sessions, people, hidden, total: counted.length, done, left: counted.length - done };
 }
 
 /** Whether today, at the venue, is one of the event's days. */

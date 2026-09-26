@@ -9,9 +9,11 @@
 
 import { apiGet, apiMutate } from './api.js';
 import { track } from './analytics.js';
-import { getMeetings, getMetHistory, kvGet, kvSet, markMet } from './db.js';
+import { getMeetings, kvGet, kvSet } from './db.js';
 import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
+import { discoveryPersonKey, peopleSignature, personState } from './people-state.js';
+import { peopleStatus, stateOfMatch } from './people-status.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
@@ -59,21 +61,39 @@ async function loadMeetings(eventId) {
   }
 }
 
+// What the Meet button says for each state of the person (people-state.js).
+const MEET_LABEL = { planned: '✓ To meet', met: '✓ Met', missed: "Couldn't meet" };
+
+// Every Meet button on the page, so all of them can be repainted when the
+// people records change somewhere else (My Day, the other tab, a hide).
+const meetPaints = new Map();
+
+function repaintMeetButtons() {
+  meetPaints.forEach((paint, btn) => {
+    if (btn.isConnected) paint();
+    else meetPaints.delete(btn);
+  });
+}
+
 /** Fills a Meet button for a person and opens the sheet on tap. */
 function wireMeetButton(btn, eventId, person) {
   const paint = () => {
-    const saved = meetingsByKey.has(person.personKey);
-    btn.textContent = saved ? '✓ To meet' : '+ Meet';
+    const state = personState(meetingsByKey.get(person.personKey));
+    const saved = state in MEET_LABEL;
+    btn.textContent = MEET_LABEL[state] ?? '+ Meet';
     btn.classList.toggle('meet-btn--saved', saved);
     btn.setAttribute('aria-label', saved ? `Edit your note about meeting ${person.name}` : `Plan to meet ${person.name}`);
   };
   paint();
+  meetPaints.set(btn, paint);
 
   btn.addEventListener('click', () => {
+    const meeting = meetingsByKey.get(person.personKey);
+
     openMeetSheet({
       eventId,
       person,
-      existing: meetingsByKey.get(person.personKey) ?? null,
+      existing: personState(meeting) === 'none' ? null : meeting,
       onChange: (row) => {
         if (row) meetingsByKey.set(person.personKey, row);
         else meetingsByKey.delete(person.personKey);
@@ -566,8 +586,12 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     offline = true;
   }
 
-  const metHistory = await getMetHistory(eventId);
-  const metIds = new Set(metHistory.map((m) => m.discoveryId));
+  // Everyone's state comes from the one record My Day reads too (people-state.js),
+  // so "I met them" here and Met there are the same thing.
+  const loaded = await peopleStatus.load(eventId);
+  meetingsByKey.clear();
+  loaded.meetings.forEach((m) => meetingsByKey.set(m.personKey, m));
+  repaintMeetButtons();
   const myTags = new Set(mine.fields.tags);
   const sent = new Set(waves.sent ?? []);
   const received = new Set(waves.received ?? []);
@@ -597,7 +621,8 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
               : null,
       };
     });
-  const notMet = others.filter((p) => !metIds.has(p.discovery_id));
+  const stateOf = (p) => stateOfMatch(loaded, p.discovery_id);
+  const notMet = others.filter((p) => ['none', 'planned'].includes(stateOf(p)));
   // Whoever waved at you first, then named people — they're the ones you can find.
   const byStrength = (a, b) => Number(b.wave === 'received') - Number(a.wave === 'received')
     || b.common.length - a.common.length
@@ -605,12 +630,19 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const mutual = notMet.filter((p) => p.wave === 'mutual');
   const matches = notMet.filter((p) => p.wave !== 'mutual' && (p.common.length > 0 || p.wave === 'received')).sort(byStrength);
   const rest = notMet.filter((p) => p.wave !== 'mutual' && p.common.length === 0 && p.wave !== 'received').sort(byStrength);
-  const met = others.filter((p) => metIds.has(p.discovery_id));
+  const met = others.filter((p) => stateOf(p) === 'met');
+  const missed = others.filter((p) => stateOf(p) === 'missed');
 
   if (mutual.length > 0) track('discovery_mutual_view');
 
   const rerender = () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
+  const tryAgain = async (p) => {
+    await peopleStatus.setStatus(eventId, cardPerson(p), null);
+    track('meet_status', { plan_status: 'cleared' });
+    rerender();
+  };
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
+    onUndoMet: () => tryAgain(p),
     onWave: () => waveAt(p, mine, eventSlug, rerender, chat),
     convo: p.convo
       ? buildConvo(p.convo, {
@@ -643,13 +675,22 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     })
   );
 
+  // People you planned and couldn't meet, folded away below the rest.
+  if (missed.length > 0) {
+    el.append(foldSection('missed', "Couldn't meet", missed.map((p) => personRow(p, 'Try again', () => tryAgain(p)))));
+  }
+
   scheduleChatFlip(chat, rerender);
+  watchForChanges(eventId, rerender, peopleSignature(loaded.meetings, loaded.metIds));
 
   el.querySelectorAll('[data-met-id]').forEach((btn) => {
     btn.addEventListener('click', async () => {
-      await markMet(eventId, btn.dataset.metId);
+      const profile = others.find((p) => p.discovery_id === btn.dataset.metId);
+      if (!profile) return;
+
+      await peopleStatus.setStatus(eventId, cardPerson(profile), 'met');
       track('discovery_met_mark');
-      renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
+      rerender();
     });
   });
 
@@ -671,7 +712,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet, eventId, { onWave = null, convo = null } = {}) {
+function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, convo = null } = {}) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -723,18 +764,143 @@ function matchCard(profile, isMet, eventId, { onWave = null, convo = null } = {}
   const meetBtn = card.querySelector('.meet-btn');
   if (isMet) {
     meetBtn.remove();
+
+    // Marked by mistake, or met after all? One tap back — same as My Day's Met button.
+    const label = card.querySelector('.person-card__met-label');
+    if (label && onUndoMet) {
+      const undo = document.createElement('button');
+      undo.type = 'button';
+      undo.className = 'person-card__undo';
+      undo.textContent = 'Undo';
+      undo.addEventListener('click', onUndoMet);
+      label.after(undo);
+    }
   } else {
-    wireMeetButton(meetBtn, eventId, {
-      personKey: `d:${profile.discovery_id}`,
-      name: profile.revealed_name || profile.name || 'Anonymous attendee',
-      avatarUrl: isWeb(profile.avatar_url) ? profile.avatar_url : null,
-      sub: [profession, (tags ?? []).join(', ')].filter(Boolean).join(' · ') || null,
-      source: 'discovery',
-      links: [...(profile.links ?? []), ...(isWeb(profile.wporg_url) ? [{ type: 'wporg', url: profile.wporg_url }] : [])].filter((l) => isWeb(l.url)),
-    });
+    wireMeetButton(meetBtn, eventId, cardPerson(profile));
   }
 
   return card;
+}
+
+/** A discovery match as the record that My Day and the Meet sheet keep about a person. */
+function cardPerson(profile) {
+  const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
+  const { tags, profession } = profile.fields;
+
+  return {
+    personKey: discoveryPersonKey(profile.discovery_id),
+    name: profile.revealed_name || profile.name || 'Anonymous attendee',
+    avatarUrl: isWeb(profile.avatar_url) ? profile.avatar_url : null,
+    sub: [profession, (tags ?? []).join(', ')].filter(Boolean).join(' · ') || null,
+    source: 'discovery',
+    links: [...(profile.links ?? []), ...(isWeb(profile.wporg_url) ? [{ type: 'wporg', url: profile.wporg_url }] : [])].filter((l) => isWeb(l.url)),
+  };
+}
+
+// Which folded sections are open, kept for this page visit so a re-render
+// (after "Try again", say) doesn't shut them.
+const foldOpen = {};
+
+/** A section that starts closed: "Couldn't meet (2) ▸". Built here, not in a template. */
+function foldSection(key, title, rows) {
+  const wrap = document.createElement('div');
+  wrap.className = 'people-fold';
+
+  const head = document.createElement('button');
+  head.type = 'button';
+  head.className = 'people-fold__head';
+
+  const body = document.createElement('div');
+  body.className = 'people-fold__body';
+  body.append(...rows);
+
+  const paint = () => {
+    const open = Boolean(foldOpen[key]);
+    head.textContent = `${title} (${rows.length}) ${open ? '▾' : '▸'}`;
+    head.setAttribute('aria-expanded', String(open));
+    body.hidden = !open;
+  };
+  head.addEventListener('click', () => {
+    foldOpen[key] = !foldOpen[key];
+    paint();
+  });
+  paint();
+
+  wrap.append(head, body);
+
+  return wrap;
+}
+
+/** One person as a compact row with a single button ("Try again", "Show again"). */
+function personRow(profile, buttonLabel, onClick) {
+  const person = cardPerson(profile);
+  const row = document.createElement('div');
+  row.className = 'people-row';
+
+  const avatar = document.createElement('img');
+  avatar.className = 'people-row__avatar';
+  avatar.alt = '';
+  avatar.width = 40;
+  avatar.height = 40;
+  avatar.loading = 'lazy';
+  avatar.dataset.fallback = '/media/illustrations/avatar.svg';
+  avatar.src = person.avatarUrl ?? '/media/illustrations/avatar.svg';
+
+  const text = document.createElement('div');
+  text.className = 'people-row__text';
+  const name = document.createElement('p');
+  name.className = 'people-row__name';
+  name.textContent = person.name;
+  text.append(name);
+  if (profile.fields.profession) {
+    const sub = document.createElement('p');
+    sub.className = 'people-row__sub';
+    sub.textContent = profile.fields.profession;
+    text.append(sub);
+  }
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn btn--compact btn--outline';
+  button.textContent = buttonLabel;
+  button.setAttribute('aria-label', `${buttonLabel}: ${person.name}`);
+  button.addEventListener('click', onClick);
+
+  row.append(avatar, text, button);
+
+  return row;
+}
+
+// The lists are drawn once when the page opens. If the people records change
+// somewhere else (My Day, another tab) while this page is in the background,
+// coming back redraws them, only when something really changed, so nothing
+// jumps for no reason.
+let watching = null;
+let lastSignature = '';
+let watchBound = false;
+
+function watchForChanges(eventId, rerender, signature) {
+  watching = { eventId, rerender };
+  lastSignature = signature;
+
+  if (watchBound) return;
+  watchBound = true;
+
+  const check = async () => {
+    if (document.visibilityState !== 'visible' || !watching) return;
+
+    try {
+      const loaded = await peopleStatus.load(watching.eventId);
+      if (peopleSignature(loaded.meetings, loaded.metIds) !== lastSignature) watching.rerender();
+    } catch {
+      // Storage blocked: nothing to compare, leave the page as it is.
+    }
+  };
+
+  document.addEventListener('visibilitychange', check);
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) check();
+  });
 }
 
 /**

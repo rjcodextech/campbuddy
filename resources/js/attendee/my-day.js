@@ -12,9 +12,11 @@
 import { track } from './analytics.js';
 import { buildIcs, deliverIcs, eventFacts } from './calendar.js';
 import { eventDayKey, eventTimeNote, formatDayKey, formatDayTime, formatTime } from './eventtime.js';
-import { getBookmarks, getMeetings, removeBookmark, saveMeeting, setBookmark, updateBookmark } from './db.js';
+import { getBookmarks, getMeetings, removeBookmark, setBookmark, updateBookmark } from './db.js';
 import { meetingCalendarItem, openMeetSheet } from './meet-sheet.js';
 import { computePlan } from './plan.js';
+import { isPlanned } from './people-state.js';
+import { peopleStatus } from './people-status.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
@@ -231,7 +233,7 @@ export async function renderMyDay(root) {
             url: s.link || undefined,
             alarmMinutes: 10,
           })),
-        ...meetings.map((m) => meetingCalendarItem(m, facts)),
+        ...meetings.filter(isPlanned).map((m) => meetingCalendarItem(m, facts)),
       ];
 
       if (items.length === 0) {
@@ -269,7 +271,8 @@ export async function renderMyDay(root) {
       card.querySelectorAll('[data-person-status]').forEach((btn) => {
         btn.addEventListener('click', async () => {
           const next = meeting.status === btn.dataset.personStatus ? null : btn.dataset.personStatus;
-          await saveMeeting(eventId, meeting.personKey, { status: next });
+          // The same record Explore reads, so the match card there says the same.
+          await peopleStatus.setStatus(eventId, meeting, next);
           meetings = await safeMeetings(eventId);
           track('meet_status', { plan_status: next ?? 'cleared' });
           renderMine();
@@ -413,9 +416,10 @@ function writePref(key, value) {
 }
 
 function personCard(m) {
+  // Someone marked "I met them" on a match was never planned: no time to show.
   const when = m.at
     ? formatDayTime(new Date(m.at).getTime())
-    : 'Any time';
+    : (m.unplanned ? 'Met at the event' : 'Any time');
   const state = { met: '✓ Met', missed: 'Couldn\'t meet' }[m.status] ?? null;
 
   return render('tpl-plan-person', {
@@ -423,7 +427,7 @@ function personCard(m) {
     avatar: { attrs: { src: /^https?:\/\//i.test(m.avatarUrl ?? '') ? m.avatarUrl : '/media/illustrations/avatar.svg' } },
     name: m.name || 'Anonymous attendee',
     state,
-    when: `🕒 ${when}`,
+    when: m.unplanned && !m.at ? when : `🕒 ${when}`,
     note: m.note || null,
     met: { attrs: { 'aria-pressed': String(m.status === 'met') }, class: { 'plan-status__btn--on': m.status === 'met' } },
     missed: { attrs: { 'aria-pressed': String(m.status === 'missed') }, class: { 'plan-status__btn--on': m.status === 'missed' } },
