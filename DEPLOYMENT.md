@@ -166,6 +166,8 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
 
     Options: `--skip-fetch` (data fetch chhod do), `--no-build` (agar build ho chuka hai), `--keep-logs` (logs mat mitao). Ant me report me kuch laal (problem) nahi dikhna chahiye: "cron not running", "failed jobs", "APP_DEBUG on" jaisi lines aayein to unka fix wahin likha hota hai.
 
+    > **Event managers wala deploy (Oct 2026):** naya migration `create_event_managers_table` aur `config/auth.php` me naya `manager` guard aaya hai. `campbuddy:doctor` dono sambhal leta hai (migrate + config cache). Agar files upload karke doctor nahi chalaya, to sirf `/manager/*` aur Admin → Event managers par error aayegi (admin login aur attendee app par koi asar nahi); tab `php artisan migrate --force && php artisan optimize:clear && php artisan optimize` chalayein. Naye pages ke liye `public/build` bhi naya upload karna zaroori hai, warna unka styling adhura dikhega.
+
 4. **Turant Cloudflare purge karein** (agla section, kadam A). Ye chhoot gaya to naya `sw.js` phones tak ghanton late pahunchega.
 
 Sab hone ke baad site khol kar dekh lein ki home, ek event, My Day aur Explore theek khul rahe hain, phir "Deploy ke baad test" section chalayein.

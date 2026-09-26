@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Event;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -78,10 +79,10 @@ class EventListing
     }
 
     /**
-     * @param  Builder<Event>  $query
-     * @return Builder<Event>
+     * @param  Builder<Event>|Relation<Event>  $query  all events, or one manager's events
+     * @return Builder<Event>|Relation<Event>
      */
-    public static function ordered(Builder $query, ?string $today = null): Builder
+    public static function ordered(Builder|Relation $query, ?string $today = null): Builder|Relation
     {
         $today ??= self::today();
         $last = self::LAST_DAY;

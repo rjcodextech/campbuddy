@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\EventManager;
 use App\Models\User;
 
 return [
@@ -42,6 +43,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Event managers (an admin gives them a few events to edit). A guard of
+        // their own, so nothing that checks the default guard — every admin
+        // route and policy — can ever see one as an admin.
+        'manager' => [
+            'driver' => 'session',
+            'provider' => 'event_managers',
+        ],
     ],
 
     /*
@@ -65,6 +74,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'event_managers' => [
+            'driver' => 'eloquent',
+            'model' => EventManager::class,
         ],
 
         // 'users' => [

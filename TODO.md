@@ -45,6 +45,9 @@
 | Events: khoj, publish/archive, data refresh, branding (logo/favicon) fetch aur upload, event info edit | Ho gaya |
 | Quests, Offers (Deals), Deal leads (dekhna + CSV export), Media library | Ho gaya |
 | Attendee list moderation (hide/unhide, claim chhodna) | Ho gaya |
+| Events list: event ke din ke hisaab se (sabse pehla upar), filters (search, status, visibility, kab), agle 10 events highlight | Ho gaya (local `dev`, upload baaki) |
+| Errors alag page (`/admin/errors`): system checks + fetch problems; dashboard par sirf ek line | Ho gaya (local `dev`, upload baaki) |
+| Event managers: admin banata hai (naam, email, phone, WordCamps, password); alag login `/manager/login`; sirf apne events ka Event details, Event information, Quests & checklist badal sakta hai, status nahi | Ho gaya (local `dev`, upload baaki; server par migration + `campbuddy:doctor` chahiye) |
 | "Purge cache & refresh data" (server + Cloudflare, `.env` me token ho to) | Ho gaya, **Cloudflare token wala hissa jaancha nahi** |
 
 ### Peeche ka kaam (apne aap chalta hai, cron har minute)

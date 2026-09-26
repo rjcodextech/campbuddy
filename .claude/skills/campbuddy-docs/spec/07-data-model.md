@@ -12,6 +12,8 @@ Builds on V1's 8 tables, adding:
 | `session_bookmarks` | Locally-synced bookmark list per device profile, `event_id`-scoped. |
 | `push_subscriptions` | Web Push subscription endpoints, tied to bookmarked sessions, pruned on unsubscribe/expiry. |
 | `quests` | Per-event admin-editable quest text ([3.6](03-functional-requirements/06-quest.md) C1, C3) — `event_id` nullable for default/cross-event quests. |
+| `event_managers` *(added Sept 2026)* | Accounts an admin creates for people who may edit a few sections of specific events: `name`, unique lower-cased `email`, `phone`, hashed `password`, `is_active`, `last_login_at`, remember token. **Not** in `users` — see [9](09-admin-panel.md). |
+| `event_event_manager` *(pivot)* | Which events a manager may edit: `event_id` + `event_manager_id` (composite primary key), both `cascadeOnDelete` — deleting an event or a manager only removes the link. |
 | `offer_leads` *(added post-launch)* | Name/Email/Mobile submissions captured before an attendee opens a deal with `capture_leads` enabled — `event_id` + `offer_id`, no owner-token/edit lifecycle (a one-shot public write, not user-editable after submission). See [3.7](03-functional-requirements/07-deals.md). |
 
 `offers` gains an `event_id` foreign key (was implicitly single-event in V1) and, post-launch, a `capture_leads` boolean (see [3.7](03-functional-requirements/07-deals.md)). `fetch_log` gains a `job_type` column to distinguish ingestion jobs from the existing event/media refresh, and (post-launch) a `lifecycle` job type for `EvaluateEventLifecycleJob` (see [5.2](05-system-architecture.md#52-ingestion-flow)).

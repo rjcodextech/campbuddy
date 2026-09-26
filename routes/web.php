@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
 use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\EventManagerController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
@@ -116,6 +117,10 @@ Route::prefix('admin')->group(function () {
 
         // Full CRUD on events — Create/Read/Update always available;
         // Delete is policy-gated to draft events only (EventPolicy::delete).
+        // Event managers: people given a few events to edit (their own area is
+        // routes/manager.php). Created here, never by sign-up.
+        Route::resource('event-managers', EventManagerController::class)->except('show')->names('admin.event-managers');
+
         Route::resource('events', EventController::class)->except('show')->names('admin.events');
         Route::post('events/discover', [EventController::class, 'discover'])->name('admin.events.discover');
         Route::post('events/{event}/refresh', [EventController::class, 'refresh'])->name('admin.events.refresh');
@@ -155,3 +160,10 @@ Route::prefix('admin')->group(function () {
 
     require __DIR__.'/auth.php';
 });
+
+/*
+|--------------------------------------------------------------------------
+| Event manager area — sign-in and the three sections a manager may edit
+|--------------------------------------------------------------------------
+*/
+require __DIR__.'/manager.php';

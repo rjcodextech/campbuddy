@@ -55,3 +55,12 @@ An earlier draft had a genuine flaw: `discovery_id` is necessarily public — ev
 **Implementation note:** store only a hash of the owner token server-side (`owner_token_hash`) — never the raw token — same principle as password storage.
 
 > **Current implementation note (8.3, names in discovery):** a discovery profile may now carry a name — but only by the attendee's explicit choice when joining: either the public attendee-list entry they pick as themselves (whose name, Gravatar and links are already public on the WordCamp's own Attendees page) or a name they type. Anonymous stays available. Owner tokens, IDs and profile contents are still never sent to analytics. Impersonation is limited by one-claim-per-entry, suppression unlinking, and the admin **Unlink** action — see [3.4](03-functional-requirements/04-matching.md).
+
+## 8.7 Event manager accounts *(added Sept 2026)*
+A second kind of signed-in person: someone an admin lets edit three sections of specific events ([9](09-admin-panel.md)). The risks and how each is closed:
+
+- **Privilege:** every admin route and policy treats any `User` as an admin, so managers are a separate model and a separate session guard (`manager`) — never rows in `users`. No policy or `auth` middleware can see one as an admin; tests sign a manager in and walk every admin URL.
+- **Other people's events:** no route-model binding on `/manager/*`; every lookup goes through the manager's own events (404 otherwise, even before validation), and a quest is only reachable through its own event.
+- **Event status:** not an input anywhere in the manager area (no validation rule, no form field); a forged field is ignored.
+- **Accounts:** created only by an admin (no registration route); passwords hashed; sign-in throttled (route limit + per-email/IP limiter) with one vague failure message; switching a manager off, or changing their password, takes effect on their next request (session fingerprint), and rotates the remember-me token.
+- **Not covered / deliberate:** no manager self-service password reset (mail is log-only on the live host); no audit trail of who changed what (an idea for later); a manager may change the slug and source URL of their own events (owner's decision) — the form warns about the slug.
