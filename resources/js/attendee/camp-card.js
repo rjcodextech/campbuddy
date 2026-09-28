@@ -14,6 +14,7 @@
 import QRCode from 'qrcode-generator';
 import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
+import { campCardPrefill } from './profile-sync.js';
 import { withPngDpi } from './png-dpi.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
@@ -95,6 +96,20 @@ export async function renderCampCard() {
       const input = form.elements.namedItem(key);
       if (input && typeof value === 'string') input.value = value;
     });
+  } else {
+    // No card yet: start from what this event's discovery profile already
+    // says (name, role, WordPress.org), via profile-sync.js. Saved only when
+    // they press Save.
+    try {
+      const eventId = document.getElementById('app')?.dataset.eventId;
+      const discovery = eventId ? await kvGet(`discovery:${eventId}`) : null;
+      Object.entries(campCardPrefill(null, discovery)).forEach(([key, value]) => {
+        const input = form.elements.namedItem(key);
+        if (input && !input.value) input.value = value;
+      });
+    } catch {
+      // Storage unavailable: an empty form, as before.
+    }
   }
 
   const getInterests = setupTagInput(normalizeInterests(card?.interests));

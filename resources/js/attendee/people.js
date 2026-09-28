@@ -14,6 +14,7 @@ import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
 import { LABELS, hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
 import { peopleStatus, stateOfMatch } from './people-status.js';
+import { discoveryPrefill, onboardingAfterDiscovery } from './profile-sync.js';
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
@@ -324,16 +325,28 @@ const surfaceOf = (options) => (options.compact ? 'home' : 'explore');
 
 function showJoinPrompt(el, eventSlug, eventId, discoveryKey, options) {
   el.replaceChildren(render('tpl-discovery-join-prompt'));
-  el.querySelector('#join-discovery-btn').addEventListener('click', () => {
+  el.querySelector('#join-discovery-btn').addEventListener('click', async () => {
     track('discovery_join_start', { surface: surfaceOf(options) });
-    showJoinForm(el, eventSlug, eventId, discoveryKey, null, options);
+
+    // What they already told the onboarding card and their Camp Card fills
+    // the empty form (profile-sync.js). Nothing is sent until they press Join.
+    let prefill = null;
+    try {
+      const [onboarding, campCard] = await Promise.all([kvGet('onboarding'), kvGet('campCard')]);
+      prefill = discoveryPrefill({ onboarding, campCard, tags: TAGS, maxTags: MAX_DISCOVERY_TAGS });
+    } catch {
+      // Storage unavailable: an empty form, as before.
+    }
+
+    showJoinForm(el, eventSlug, eventId, discoveryKey, null, options, prefill);
   });
 }
 
-function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, options = {}) {
-  const fields = existing?.fields ?? {};
+function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, options = {}, prefill = null) {
+  const fields = existing?.fields ?? prefill ?? {};
   const selected = new Set(fields.tags ?? []);
-  let identity = fields.attendee_roster_id ? 'roster' : fields.display_name ? 'typed' : existing ? 'anonymous' : 'roster';
+  // A new profile starts on "Pick my name" even when a typed name was pre-filled.
+  let identity = !existing ? 'roster' : fields.attendee_roster_id ? 'roster' : fields.display_name ? 'typed' : 'anonymous';
   let picked = fields.attendee_roster_id
     ? { id: fields.attendee_roster_id, name: existing.card?.name, gravatar_url: existing.card?.avatar_url }
     : null;
@@ -440,6 +453,14 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
         identity: { roster: 'attendee_list', typed: 'typed_name', anonymous: 'anonymous' }[identity],
         tag_count: body.tags.length,
       });
+
+      // Their latest "what describes you" and "who to meet" become the
+      // onboarding answers too, so Home's suggestions follow them.
+      try {
+        await kvSet('onboarding', onboardingAfterDiscovery(await kvGet('onboarding'), body));
+      } catch {
+        // Only a convenience: the profile itself is saved.
+      }
 
       const mine = await kvGet(discoveryKey);
       await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
