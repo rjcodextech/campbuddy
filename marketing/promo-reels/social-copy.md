@@ -205,3 +205,53 @@ Attendees ke liye free, sign-up nahi.
 Apna WordCamp laana hai? DM karo 📩 Link bio mein 👉 campbuddy.club
 
 #WordCamp #WordCampOrganizer #WordPressCommunity #WordPress #EventManagement #CommunityEvents #CampBuddy #WordCampRajasthan #TechCommunity #Volunteers
+
+---
+
+## Poora video · CampBuddy ke saare features (`campbuddy-full-features.mp4`, 60s)
+
+**YouTube title**
+CampBuddy: WordCamp ke liye free app, saare features 1 minute mein | WordCamp Rajasthan 2026
+
+**YouTube description**
+Pehli WordCamp? Kisi ko nahi jaante, aur "Contributor Day" ka matlab bhi nahi pata? CampBuddy tumhara WordCamp saathi hai. 1 minute mein poora app dekho:
+
+00:00 Pehli WordCamp ki dikkat
+00:13 CampBuddy mein kya milta hai
+00:15 Home: abhi kya chal raha hai, aur kya karna hai
+00:19 My Day: sessions save karo, reminder pao
+00:22 Quest: chhoti checklist, poora din ek game
+00:29 Matching: apne jaise attendees se milo
+00:32 Camp Card: naam, kaam, QR code, seedha LinkedIn
+00:44 Contribute: Contributor Day pe apni team dhoondo
+00:47 Sponsors aur deals, ek jagah
+00:51 Bina account, bina sign-up, bilkul free
+
+Phone ke browser mein chalta hai, install karne ki zaroorat nahi (chaho to home screen pe rakh lo). Kharab wifi mein bhi kaam karta hai.
+WordCamp Rajasthan 2026 (3–4 Oct, Jaipur) ke liye ready.
+
+👉 https://campbuddy.club
+
+#WordCamp #WordPress #CampBuddy
+
+**Hashtags**
+#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #CampBuddy #EventApp #Networking #FirstWordCamp
+
+**YouTube tags**
+CampBuddy, WordCamp app, WordCamp Rajasthan 2026, WordCamp Jaipur, first WordCamp, WordCamp tips, WordCamp features, WordPress community, WordPress India, Contributor Day, digital business card, conference networking, free event app, event companion app, WordPress Hindi
+
+**Instagram caption**
+Poori WordCamp, ek app mein 📱 (1 minute ka tour)
+
+🏠 Abhi kya chal raha hai, aur kya karna hai
+🗓️ Sessions save + reminder
+✅ Quest checklist, jisse logon se milna aasaan
+🤝 Apne jaise attendees
+🪪 Digital Camp Card: QR se seedha LinkedIn
+🙋 Contributor Day ke liye sahi team
+🎁 Sponsors aur deals
+
+Free hai, sign-up nahi, phone ke browser mein chalta hai.
+WordCamp Rajasthan 2026 ja rahe ho? Link bio mein 👉 campbuddy.club
+
+#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #CampBuddy #Jaipur #EventApp #Networking #TechCommunity
