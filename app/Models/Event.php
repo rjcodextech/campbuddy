@@ -28,6 +28,7 @@ class Event extends Model
         'dates_locked',
         'timezone',
         'timezone_locked',
+        'country_code',
         'logo_path',
         'favicon_path',
         'info',

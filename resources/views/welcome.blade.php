@@ -160,7 +160,18 @@
                         <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}">first-timer guide</a> is a good place to start.</p>
                     </div>
                 @else
-                    <div class="card-grid">
+                    {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
+                    script runs, so without it every event simply shows, as before. --}}
+                    <div class="picker-filter" data-picker-filter hidden>
+                        <label class="picker-filter__label" for="picker-country">Country</label>
+                        <select id="picker-country" data-picker-country></select>
+                        <p class="picker-filter__status" aria-live="polite">
+                            <span data-picker-status></span>
+                            <button type="button" class="btn btn--link picker-filter__toggle" data-picker-toggle hidden></button>
+                        </p>
+                    </div>
+
+                    <div class="card-grid" data-picker-list>
                         @foreach ($events as $event)
                             @php
                                 $dateLabel = null;
@@ -180,6 +191,8 @@
                                 :media-url="$event->markUrl() ?? '/media/icons/icon-192.png'"
                                 media-fallback="/media/icons/icon-192.png"
                                 media-shape="avatar"
+                                data-picker-card
+                                :data-country="$eventCountries[$event->id] ?? ''"
                                 :date="$dateLabel"
                                 :location="$event->info['venue'] ?? null"
                             >
@@ -189,6 +202,12 @@
                             </x-attendee.event-card>
                         @endforeach
                     </div>
+
+                    <button type="button" class="btn btn--outline btn--full picker-more" data-picker-more hidden></button>
+
+                    {{-- Country names, and each listed country's time zones: the browser
+                    matches its own zone against these to find the visitor's country. --}}
+                    <script type="application/json" id="picker-countries">{!! json_encode(['names' => (object) ($countryNames ?? []), 'zones' => (object) ($countryZones ?? [])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
                 @endif
             </section>
 

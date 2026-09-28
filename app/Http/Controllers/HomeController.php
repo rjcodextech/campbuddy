@@ -3,20 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Support\EventCountry;
 use App\Support\EventTime;
 use Illuminate\View\View;
 
 /**
- * Root route: always shows the WordCamp picker — the next 10 upcoming or
- * current events, soonest first — rather than silently skipping it whenever
+ * Root route: always shows the WordCamp picker — every upcoming or current
+ * event (up to LIMIT), soonest first — rather than silently skipping it whenever
  * there's only one visible event. Multi-event browsing (§2.2) lands here
  * as more events go live; this is the always-reachable entry point,
  * including as a "WordCamp's" destination from inside an event
  * (see attendee.partials.topbar).
+ *
+ * The page lists them all; picker-filter.js then shows the first few with a
+ * "Load more" button and a country filter, in the browser only — so the
+ * HTML stays the same for every visitor (safe to cache at the edge).
  */
 class HomeController extends Controller
 {
-    private const LIMIT = 10;
+    private const LIMIT = 100;
 
     public function __invoke(): View
     {
@@ -47,6 +52,16 @@ class HomeController extends Controller
             ->take(self::LIMIT)
             ->values();
 
-        return view('welcome', ['events' => $events]);
+        // Each card's country, and the time zones of those countries so the
+        // browser can pick the visitor's own (EventCountry).
+        $countries = $events->mapWithKeys(fn (Event $event) => [$event->id => EventCountry::code($event)]);
+        $codes = $countries->filter()->unique()->sort()->values();
+
+        return view('welcome', [
+            'events' => $events,
+            'eventCountries' => $countries->all(),
+            'countryNames' => $codes->mapWithKeys(fn ($code) => [$code => EventCountry::name($code)])->all(),
+            'countryZones' => EventCountry::timezones($codes),
+        ]);
     }
 }

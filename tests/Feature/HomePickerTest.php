@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 /**
- * The homepage WordCamp picker: the next 10 upcoming events, soonest first.
+ * The homepage WordCamp picker: every upcoming event (up to 100), soonest first.
  */
 class HomePickerTest extends TestCase
 {
@@ -57,18 +57,56 @@ class HomePickerTest extends TestCase
         $this->assertSame(['First', 'Second', 'Third'], $this->listed());
     }
 
-    public function test_only_the_next_ten_are_shown(): void
+    public function test_every_upcoming_event_is_on_the_page_up_to_a_hundred(): void
     {
+        // The browser shows the first 5 and opens the rest with "Load more"
+        // (picker-filter.js); the page itself carries them all, each once.
         foreach (range(1, 12) as $i) {
             $this->event("Event {$i}", now()->addDays($i)->toDateString());
         }
 
         $listed = $this->listed();
 
-        $this->assertCount(10, $listed);
+        $this->assertCount(12, $listed);
         $this->assertSame('Event 1', $listed[0]);
-        $this->assertSame('Event 10', $listed[9]);
-        $this->assertNotContains('Event 11', $listed, 'the 11th and 12th soonest are cut, not the earliest');
+        $this->assertSame('Event 12', $listed[11]);
+        $this->assertSame($listed, array_values(array_unique($listed)), 'no event twice');
+    }
+
+    public function test_the_list_is_capped_at_a_hundred_soonest_first(): void
+    {
+        foreach (range(1, 102) as $i) {
+            $this->event("Event {$i}", now()->addDays($i)->toDateString());
+        }
+
+        $listed = $this->listed();
+
+        $this->assertCount(100, $listed);
+        $this->assertNotContains('Event 101', $listed, 'the latest are cut, not the earliest');
+    }
+
+    public function test_each_card_carries_its_country_and_the_page_its_countries_time_zones(): void
+    {
+        $soon = now()->addDays(3)->toDateString();
+        $this->event('Jaipur', $soon, null, ['timezone' => 'Asia/Kolkata']);
+        $this->event('Sofia', $soon, null, ['info' => ['venue' => 'NDK — 1 Bulgaria Square, 1463 Sofia, Bulgaria']]);
+        $this->event('Stored', $soon, null, ['timezone' => 'Asia/Kolkata', 'country_code' => 'gb']);
+        $this->event('Nowhere', $soon, null, ['timezone' => '+05:30']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+
+        preg_match_all('#data-country="([^"]*)"#', $html, $m);
+        $this->assertSame(['IN', 'BG', 'GB', ''], $m[1]);
+
+        preg_match('#<script type="application/json" id="picker-countries">(.*?)</script>#s', $html, $json);
+        $data = json_decode($json[1], true);
+        $this->assertSame('India', $data['names']['IN']);
+        $this->assertSame('IN', $data['zones']['Asia/Kolkata']);
+        $this->assertSame('GB', $data['zones']['Europe/London']);
+        $this->assertSame('BG', $data['zones']['Europe/Sofia']);
+        $this->assertArrayNotHasKey('America/New_York', $data['zones'], 'only listed countries');
+
+        $this->assertStringContainsString('data-picker-filter hidden', $html, 'the filter stays hidden without the script');
     }
 
     public function test_an_event_with_no_date_goes_after_the_dated_ones(): void

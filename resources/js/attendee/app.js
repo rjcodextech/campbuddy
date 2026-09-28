@@ -63,6 +63,12 @@ if ('serviceWorker' in navigator) {
 }
 
 async function init() {
+  // The picker page ("/"): the country filter and "Load more" on the event
+  // list. First and not awaited, so nothing below can hold it up.
+  if (document.querySelector('[data-picker-list]')) {
+    import('./picker-filter.js').then(({ initPickerFilter }) => initPickerFilter()).catch(() => {});
+  }
+
   // Lives on the WordCamp picker page ("/"), which has no #app shell —
   // checked before the early-return below so it still runs there.
   if (document.getElementById('onboarding-welcome')) {

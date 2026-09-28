@@ -256,6 +256,38 @@
 // The event list itself now renders via .card-grid + <x-attendee.event-card>
 // (components/_event-card.scss) rather than a bespoke list/card pair.
 
+// Country filter above the event list and "Load more" below it
+// (attendee/picker-filter.js). Both stay hidden without the script.
+.picker-filter {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: v.$space-2 v.$space-3;
+    margin-bottom: v.$space-4;
+}
+
+.picker-filter__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.picker-filter__status {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.picker-filter__toggle {
+    margin-left: v.$space-1;
+    font-size: inherit;
+}
+
+.picker-more {
+    margin-top: v.$space-4;
+}
+
 .landing-footer {
     padding: v.$space-4;
     border-top: 1px solid var(--line);
