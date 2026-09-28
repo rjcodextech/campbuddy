@@ -18,7 +18,7 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, 9:16). Reel ki tarah upload karo; a
 
 ## Caption
 
-Pehli WordCamp? Kisi ko nahi jaante? Ye 60 second dekh lo 👀
+Pehla WordCamp? Kisi ko nahi jaante? Ye 60 second dekh lo 👀
 
 CampBuddy ek free app hai jo WordCamp ke poore din saath chalta hai:
 
@@ -43,7 +43,7 @@ Kisko tag karoge jo pehli baar WordCamp ja raha hai? 👇
 
 ## Cover text (thumbnail pe)
 
-Pehli WordCamp?
+Pehla WordCamp?
 Ye app saath le jao 📱
 
 ## Alt text (accessibility ke liye)
@@ -52,6 +52,6 @@ CampBuddy app ke screens: WordCamp Rajasthan 2026 ka Home, My Day schedule, Ques
 
 ## Story ke liye (reel share karte waqt)
 
-Sticker text: "Pehli WordCamp? 👀"
+Sticker text: "Pehla WordCamp? 👀"
 Link sticker: campbuddy.club
 Poll: "WordCamp Rajasthan aa rahe ho?" Haan 🙌 / Next time

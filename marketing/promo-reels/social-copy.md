@@ -6,10 +6,10 @@ Common facts (sab mein same rakhe hain): CampBuddy free hai, sign-up nahi chahiy
 
 ---
 
-## Reel 1 · "Pehli WordCamp?" (`reel-1-pehli-wordcamp.mp4`, 33s)
+## Reel 1 · "Pehla WordCamp?" (`reel-1-pehli-wordcamp.mp4`, 33s)
 
 **YouTube title**
-Pehli WordCamp hai? Jaane se pehle ye dekh lo 👀 | CampBuddy #shorts
+Pehla WordCamp hai? Jaane se pehle ye dekh lo 👀 | CampBuddy #shorts
 
 **YouTube description**
 Pehli baar WordCamp ja rahe ho aur kisi ko nahi jaante? Samajh nahi aata baat kaise shuru karein, aur "Contributor Day" hota kya hai?
@@ -33,7 +33,7 @@ WordCamp Rajasthan 2026 (3–4 Oct, Jaipur) ke liye ready hai.
 WordCamp, WordCamp Rajasthan 2026, WordCamp Jaipur, first WordCamp, WordCamp tips, WordPress community, WordPress India, WordPress event, Contributor Day, CampBuddy, WordCamp app, tech conference tips, networking tips, WordPress Hindi
 
 **Instagram caption**
-Pehli WordCamp? Tension mat lo 🙌
+Pehla WordCamp? Tension mat lo 🙌
 
 Kisi ko nahi jaante, baat kaise shuru karein pata nahi, aur "Contributor Day" ka matlab bhi nahi pata? Hum sab wahan se shuru hue the.
 
@@ -214,9 +214,9 @@ Apna WordCamp laana hai? DM karo 📩 Link bio mein 👉 campbuddy.club
 CampBuddy: WordCamp ke liye free app, saare features 1 minute mein | WordCamp Rajasthan 2026
 
 **YouTube description**
-Pehli WordCamp? Kisi ko nahi jaante, aur "Contributor Day" ka matlab bhi nahi pata? CampBuddy tumhara WordCamp saathi hai. 1 minute mein poora app dekho:
+Pehla WordCamp? Kisi ko nahi jaante, aur "Contributor Day" ka matlab bhi nahi pata? CampBuddy tumhara WordCamp saathi hai. 1 minute mein poora app dekho:
 
-00:00 Pehli WordCamp ki dikkat
+00:00 Pehle WordCamp ki dikkat
 00:13 CampBuddy mein kya milta hai
 00:15 Home: abhi kya chal raha hai, aur kya karna hai
 00:19 My Day: sessions save karo, reminder pao

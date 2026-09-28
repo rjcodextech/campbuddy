@@ -17,7 +17,7 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, vertical). Seedha LinkedIn pe uploa
 
 ## Main post
 
-Pehli WordCamp mein sabse mushkil kya hota hai?
+Pehle WordCamp mein sabse mushkil kya hota hai?
 
 Talks nahi. Sabse mushkil hai ek aise hall mein khade hona jahan aap kisi ko nahi jaante. 😅
 
@@ -58,7 +58,7 @@ Apna WordCamp chuno aur shuru. Koi account nahi chahiye. Feedback yahin comment 
 
 ## Chhota version (repost / doosre profile ke liye)
 
-Pehli WordCamp ja rahe ho aur kisi ko nahi jaante? 👀
+Pehli baar WordCamp ja rahe ho aur kisi ko nahi jaante? 👀
 
 CampBuddy ek free app hai jo poore din saath chalta hai: kya chal raha hai, kisse milna hai, kaunse talks save karne hain, aur digital Camp Card jo scan karte hi LinkedIn khol deta hai.
 

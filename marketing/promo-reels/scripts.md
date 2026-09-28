@@ -4,11 +4,11 @@ Scene timings follow the recorded voice-over in `MP3/`: each scene changes in th
 
 Final videos (1080×1920, 30 fps, voice-over included): `mp4/`. Animated preview: `campbuddy-reels.html`. Subtitles: `srt/`.
 
-## Reel 1 · "Pehli WordCamp?"  (33.2s total — `mp4/reel-1-pehli-wordcamp.mp4`, `srt/reel-1-pehli-wordcamp.srt`)
+## Reel 1 · "Pehla WordCamp?"  (33.2s total — `mp4/reel-1-pehli-wordcamp.mp4`, `srt/reel-1-pehli-wordcamp.srt`)
 
 | # | Start | End | On-screen caption | Voice-over |
 |---|---|---|---|---|
-| 1 | 00:00.00 | 00:03.41 | पहली WordCamp? / अकेले जाने से पहले ये देखो | Agar tumhari pehli WordCamp hai, toh yeh video dekh lo. |
+| 1 | 00:00.00 | 00:03.41 | पहला WordCamp? / अकेले जाने से पहले ये देखो | Agar tumhara pehla WordCamp hai, toh yeh video dekh lo. |
 | 2 | 00:03.41 | 00:07.34 | किसी को नहीं जानते… / बात कैसे शुरू करें, समझ नहीं आता | Kisi ko jaante nahi, samajh nahi aata baat kaise shuru karein. |
 | 3 | 00:07.34 | 00:09.80 | “Contributor Day”?? 😅 / वो होता क्या है, यार | Aur 'Contributor Day' ka matlab bhi pata nahi hota. |
 | 4 | 00:09.80 | 00:13.21 | मिलो CampBuddy से / तुम्हारा digital साथी | Isiliye hai CampBuddy — tumhara digital saathi. |
@@ -37,7 +37,7 @@ Final videos (1080×1920, 30 fps, voice-over included): `mp4/`. Animated preview
 | # | Start | End | On-screen caption | Voice-over |
 |---|---|---|---|---|
 | 1 | 00:00.00 | 00:02.57 | अनजान लोगों से भरा कमरा 😶 / अकेले खड़े हो? | Anjaan logo se bhare room mein akele khade ho? |
-| 2 | 00:02.57 | 00:04.97 | CampBuddy देता है एक Quest / छोटी-छोटी चीज़ें, रोज़़ नई | CampBuddy tumhe ek chhoti si checklist deta hai. |
+| 2 | 00:02.57 | 00:04.97 | CampBuddy देता है एक Quest / छोटी-छोटी चीज़ें, रोज़ नई | CampBuddy tumhe ek chhoti si checklist deta hai. |
 | 3 | 00:04.97 | 00:07.71 | ✅ किसी दूसरे शहर वाले से मिलो | 'Kisi doosre shehar wale se milo' — ek task. |
 | 4 | 00:07.71 | 00:10.01 | ✅ Sponsor area घूम आओ | 'Sponsor area ghoom aao' — ek aur task. |
 | 5 | 00:10.01 | 00:13.11 | ✅ किसी को अपनी राय बताओ | 'Kisi ko apni raay batao' — bas itna hi. |
@@ -72,7 +72,7 @@ Attendee features only. The voice is the reels' own lines, cut at their pauses a
 
 | # | Start | End | Screen | On-screen caption | Voice-over |
 |---|---|---|---|---|---|
-| 1 | 00:00.00 | 00:03.41 | picker | पहली WordCamp? / अकेले जाने से पहले ये देखो | Agar tumhari pehli WordCamp hai, toh yeh video dekh lo. |
+| 1 | 00:00.00 | 00:03.41 | picker | पहला WordCamp? / अकेले जाने से पहले ये देखो | Agar tumhara pehla WordCamp hai, toh yeh video dekh lo. |
 | 2 | 00:03.41 | 00:07.34 | explore | किसी को नहीं जानते… / बात कैसे शुरू करें, समझ नहीं आता | Kisi ko jaante nahi, samajh nahi aata baat kaise shuru karein. |
 | 3 | 00:07.34 | 00:09.80 | contribute | “Contributor Day”?? 😅 / वो होता क्या है, यार | Aur 'Contributor Day' ka matlab bhi pata nahi hota. |
 | 4 | 00:09.80 | 00:13.21 | home | मिलो CampBuddy से / तुम्हारा digital साथी | Isiliye hai CampBuddy — tumhara digital saathi. |
@@ -95,6 +95,7 @@ Attendee features only. The voice is the reels' own lines, cut at their pauses a
 ### How these were made
 
 - Screens: high-resolution (3×) captures of CampBuddy with WordCamp Rajasthan 2026's public schedule and sponsors.
+- Refreshed 29 Sep 2026: screens re-captured from the current app, frames re-rendered edge to edge (the earlier export left a thin dark strip on the left), and the text fixed to "पहला / pehla WordCamp" (WordCamp is masculine). The recorded voice still says "tumhari pehli WordCamp"; captions and subtitles use the correct form.
 - Timing: the pauses in each voice-over track were measured and every scene cut placed just after a line ends, so captions appear with their line.
 - Audio: reels 1–5 use the MP3s as recorded (voice with its background music). Reel 6 is voice only: the music was taken out (Demucs voice/music separation) before its lines were joined, so music can be added in any editor; that track is `voice-only/reel-6-voice.wav`.
 - Layout: captions sit in the Shorts/Reels safe zone (about 30% up from the bottom, clear of the right-hand buttons).

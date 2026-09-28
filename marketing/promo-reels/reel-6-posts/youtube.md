@@ -17,15 +17,15 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, vertical, isliye Shorts mein jaayeg
 
 ## Title (options)
 
-1. WordCamp app jo pehli WordCamp aasaan bana de | CampBuddy saare features #shorts
-2. Pehli WordCamp? Ye free app saath le jao | CampBuddy 60 second mein
+1. WordCamp app jo pehla WordCamp aasaan bana de | CampBuddy saare features #shorts
+2. Pehla WordCamp? Ye free app saath le jao | CampBuddy 60 second mein
 3. CampBuddy: WordCamp Rajasthan 2026 ke liye free companion app #shorts
 
 ## Description
 
-Pehli WordCamp ja rahe ho aur kisi ko nahi jaante? CampBuddy ek free app hai jo poore din saath chalta hai. 60 second mein poora app dekho. 👇
+Pehli baar WordCamp ja rahe ho aur kisi ko nahi jaante? CampBuddy ek free app hai jo poore din saath chalta hai. 60 second mein poora app dekho. 👇
 
-00:00 Pehli WordCamp ki dikkat
+00:00 Pehle WordCamp ki dikkat
 00:13 CampBuddy mein kya milta hai
 00:15 Home: abhi kya chal raha hai, aur kya karna hai
 00:19 My Day: sessions save karo, reminder pao
@@ -60,5 +60,5 @@ Aap WordCamp Rajasthan aa rahe ho? Sabse zyada kaunsa feature kaam aayega: Quest
 
 ## Thumbnail / cover text
 
-Pehli WordCamp?
+Pehla WordCamp?
 Ye app saath le jao 📱

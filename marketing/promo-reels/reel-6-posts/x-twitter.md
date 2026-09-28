@@ -15,7 +15,7 @@ Video: `mp4/reel-6-saare-features.mp4` (60s). Video ko tweet mein seedha upload 
 
 ## Single tweet (video ke saath) · option 1
 
-Pehli WordCamp? Kisi ko nahi jaante? 😅
+Pehla WordCamp? Kisi ko nahi jaante? 😅
 
 CampBuddy ek free app hai: abhi kya chal raha hai, kisse milna hai, sessions ka reminder, aur QR wala Camp Card.
 
@@ -52,7 +52,7 @@ campbuddy.club
 ## Thread (5 tweets)
 
 **1/5** (video ke saath)
-Pehli WordCamp mein talks mushkil nahi hote.
+Pehle WordCamp mein talks mushkil nahi hote.
 Mushkil hai aise hall mein khade rehna jahan aap kisi ko nahi jaante. 😅
 
 Isliye banaya CampBuddy: WordCamp attendees ke liye free companion app.
