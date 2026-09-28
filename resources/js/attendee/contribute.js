@@ -6,6 +6,7 @@
 import { track } from './analytics.js';
 import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
 import { kvGet, kvSet, setQuestComplete } from './db.js';
+import { lineIcon } from './line-icon.js';
 import { contributePrefill, onboardingWithContributorDay } from './profile-sync.js';
 import { fill, render } from './template.js';
 
@@ -133,7 +134,7 @@ function renderAllTeams(eventId, questId) {
 function teamCard(team) {
   return render('tpl-contribute-team-card', {
     card: { attrs: { 'data-team-id': team.id } },
-    emoji: team.emoji,
+    emoji: lineIcon(team.icon),
     name: team.name,
     desc: team.description,
   });
@@ -155,7 +156,7 @@ async function showTeamDetail(team, eventId, questId) {
   fill(dialog, {
     'badge-technical': { attrs: { hidden: !team.technical } },
     'badge-plain': { attrs: { hidden: team.technical } },
-    emoji: team.emoji,
+    emoji: lineIcon(team.icon),
     name: team.name,
     description: team.description,
     'who-it-suits': team.whoItSuits,

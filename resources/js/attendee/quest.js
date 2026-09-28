@@ -9,18 +9,19 @@
 
 import { track } from './analytics.js';
 import { getQuestProgress, setQuestComplete } from './db.js';
+import { lineIcon } from './line-icon.js';
 import { render } from './template.js';
 
 const THINGS_TO_DO_META = {
-  'First Hello': { icon: '👋' },
-  'Beyond My City': { icon: '🌍' },
-  'Speaker Hello': { icon: '🎤' },
-  'Contribution Curious': { icon: '🛠️', nav: 'contribute', navLabel: 'Go to Contribute' },
-  'Sponsor Explore': { icon: '🏷️', nav: 'explore-sponsors', navLabel: 'View sponsors' },
-  'Asked Something': { icon: '🙋' },
-  'Keep The Connection': { icon: '🤝', nav: 'explore-people', navLabel: 'Find people' },
-  'Share Camp Card': { icon: '📇', nav: 'camp-card', navLabel: 'Open Camp Card' },
-  'Career Chat': { icon: '💼', nav: 'explore-sponsors', navLabel: 'See who\'s here' },
+  'First Hello': { icon: 'hand' },
+  'Beyond My City': { icon: 'globe' },
+  'Speaker Hello': { icon: 'mic' },
+  'Contribution Curious': { icon: 'wrench', nav: 'contribute', navLabel: 'Go to Contribute' },
+  'Sponsor Explore': { icon: 'tag', nav: 'explore-sponsors', navLabel: 'View sponsors' },
+  'Asked Something': { icon: 'help-circle' },
+  'Keep The Connection': { icon: 'users', nav: 'explore-people', navLabel: 'Find people' },
+  'Share Camp Card': { icon: 'id-card', nav: 'camp-card', navLabel: 'Open Camp Card' },
+  'Career Chat': { icon: 'briefcase', nav: 'explore-sponsors', navLabel: 'See who\'s here' },
 };
 
 export async function renderQuest(root) {
@@ -126,7 +127,7 @@ function thingCard(quest, done, eventSlug) {
 
   return render('tpl-quest-thing', {
     card: { class: { 'quest-card--done': done } },
-    icon: meta.icon ?? '✨',
+    icon: lineIcon(meta.icon ?? 'sparkles'),
     title: quest.title,
     desc: quest.description || null,
     nav: meta.nav

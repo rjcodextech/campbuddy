@@ -5,6 +5,8 @@
     means: resources/js/attendee/template.js.
 --}}
 
+@include('attendee.partials.line-icons')
+
 {{-- toast.js --}}
 <template id="tpl-toast">
     <div class="toast" role="status" data-slot="toast"></div>

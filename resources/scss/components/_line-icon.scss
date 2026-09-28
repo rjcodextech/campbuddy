@@ -1,0 +1,34 @@
+// Line icons in place of emoji (App\Support\LineIcons, sprite in
+// attendee/partials/line-icons.blade.php). Sized by the surrounding font
+// size, like the emoji they replace, and drawn in the brand colour.
+.line-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: -0.15em;
+}
+
+// The boxes that held an emoji now colour their icon.
+.useful-link__icon,
+.guide-step__icon,
+.guide-tip__icon,
+.action-card__icon,
+.quest-card__icon,
+.about-who__emoji,
+.event-card__location-icon,
+.guide-section__icon {
+    color: var(--brand-primary);
+}
+
+.useful-link__icon,
+.guide-tip__icon,
+.action-card__icon {
+    display: inline-flex;
+    align-items: center;
+}

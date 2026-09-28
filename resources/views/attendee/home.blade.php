@@ -64,7 +64,7 @@
                 <a class="section-head__link" href="{{ route('event.quest', $event) }}" data-track="home_link_click" data-track-target="all_quests">All quests →</a>
             </div>
             <div id="suggested-action" class="action-card action-card--wide">
-                <span class="action-card__icon" aria-hidden="true">💡</span>
+                <span class="action-card__icon" aria-hidden="true"><x-attendee.line-icon name="lightbulb" /></span>
                 <div>
                     <p class="action-card__title" id="suggested-action-title"></p>
                     <p class="action-card__desc" id="suggested-action-desc"></p>

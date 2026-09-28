@@ -71,19 +71,19 @@
         </div>
         <div class="about-who__grid">
             <a class="about-who__card" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_who_first">
-                <span class="about-who__emoji" aria-hidden="true">🌱</span>
+                <span class="about-who__emoji" aria-hidden="true"><x-attendee.line-icon name="sprout" /></span>
                 <span class="about-who__title">Your first WordCamp</span>
                 <span class="about-who__text">A 5-minute guide and small tips through the day.</span>
                 <span class="about-who__cta">Read the first-timer guide →</span>
             </a>
             <a class="about-who__card" href="{{ route('guide') }}#guide-students" data-track="guide_open" data-track-surface="picker_who_student">
-                <span class="about-who__emoji" aria-hidden="true">🎓</span>
+                <span class="about-who__emoji" aria-hidden="true"><x-attendee.line-icon name="graduation-cap" /></span>
                 <span class="about-who__title">College students</span>
                 <span class="about-who__text">Learn from people who do this for a living, try open source, and meet companies that hire.</span>
                 <span class="about-who__cta">What's in it for students →</span>
             </a>
             <a class="about-who__card" href="#find-your-camp">
-                <span class="about-who__emoji" aria-hidden="true">🤝</span>
+                <span class="about-who__emoji" aria-hidden="true"><x-attendee.line-icon name="users" /></span>
                 <span class="about-who__title">WordCamp regulars</span>
                 <span class="about-who__text">Plan your talks quickly and meet people who are into the same things.</span>
                 <span class="about-who__cta">Choose your WordCamp ↑</span>

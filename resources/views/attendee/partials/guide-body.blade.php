@@ -20,12 +20,12 @@
         return strlen(preg_replace('/\D/', '', $digits)) >= 7 ? "tel:{$digits}" : null;
     };
     $practical = array_filter([
-        ['📍', 'Venue', $info['venue'] ?? null, null],
-        ['🎫', 'Registration', $info['registration_info'] ?? null, null],
-        ['📶', 'Wifi', $info['wifi'] ?? null, null],
-        ['🛠️', 'Contributor Day', $info['contributor_day_location'] ?? null, null],
-        ['🎉', 'Social event', $info['social_event_info'] ?? null, null],
-        ['🚨', 'Need help?', $info['emergency_contact'] ?? null, $contactHref($info['emergency_contact'] ?? null)],
+        ['map-pin', 'Venue', $info['venue'] ?? null, null],
+        ['ticket', 'Registration', $info['registration_info'] ?? null, null],
+        ['wifi', 'Wifi', $info['wifi'] ?? null, null],
+        ['wrench', 'Contributor Day', $info['contributor_day_location'] ?? null, null],
+        ['party', 'Social event', $info['social_event_info'] ?? null, null],
+        ['siren', 'Need help?', $info['emergency_contact'] ?? null, $contactHref($info['emergency_contact'] ?? null)],
     ], fn ($row) => filled($row[2]));
     $cocUrl = $webUrl($info['code_of_conduct_url'] ?? null);
 @endphp
@@ -44,11 +44,11 @@
             @endif
         </h1>
         <p class="guide-hero__lead">
-            How the day runs, the words people throw around, and how to start talking to strangers. Five minutes to read.
+            How the day runs, the words people throw around, and how to start talking to people you don't know yet.
         </p>
         <ul class="guide-hero__meta" aria-label="About this guide">
-            <li>⏱ 5-minute read</li>
-            <li>📶 Works offline</li>
+            <li><x-attendee.line-icon name="clock" class="guide-hero__meta-icon" /> 5-minute read</li>
+            <li><x-attendee.line-icon name="wifi" class="guide-hero__meta-icon" /> Works offline</li>
         </ul>
     </div>
     <img class="guide-hero__art" src="/media/illustrations/first-badge.svg" alt="" width="260" height="300">
@@ -74,19 +74,19 @@
             @foreach ($practical as [$icon, $label, $value, $href])
                 @if ($href)
                     <a class="useful-link" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency">
-                        <span class="useful-link__icon" aria-hidden="true">{{ $icon }}</span>
+                        <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
                         <span><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ $value }}</span></span>
                     </a>
                 @else
                     <div class="useful-link">
-                        <span class="useful-link__icon" aria-hidden="true">{{ $icon }}</span>
+                        <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
                         <span><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ $value }}</span></span>
                     </div>
                 @endif
             @endforeach
             @if ($cocUrl)
                 <a class="useful-link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct">
-                    <span class="useful-link__icon" aria-hidden="true">📋</span>
+                    <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span>
                     <span><span class="useful-link__title">Code of Conduct</span><span class="useful-link__desc">The rules that keep this event welcoming for everyone.</span></span>
                 </a>
             @endif
@@ -114,7 +114,7 @@
     <ol class="guide-timeline">
         @foreach (FirstTimerGuide::day() as $step)
             <li class="guide-step" data-guide-match="{{ implode('|', $step['match']) }}" data-guide-talk="{{ ($step['talk'] ?? false) ? '1' : '0' }}">
-                <span class="guide-step__icon" aria-hidden="true">{{ $step['icon'] }}</span>
+                <span class="guide-step__icon" aria-hidden="true"><x-attendee.line-icon :name="$step['icon']" /></span>
                 <div class="guide-step__body">
                     <h3 class="guide-step__title">{{ $step['title'] }}</h3>
                     <p class="guide-step__when" data-guide-when hidden></p>
@@ -144,7 +144,7 @@
     <div class="guide-tips">
         @foreach (FirstTimerGuide::tips() as $tip)
             <div class="guide-tip">
-                <span class="guide-tip__icon" aria-hidden="true">{{ $tip['icon'] }}</span>
+                <span class="guide-tip__icon" aria-hidden="true"><x-attendee.line-icon :name="$tip['icon']" /></span>
                 <div>
                     <h3 class="guide-tip__title">{{ $tip['title'] }}</h3>
                     <p class="guide-tip__text">{{ $tip['text'] }}</p>
@@ -155,12 +155,12 @@
 </section>
 
 <section id="guide-students" class="guide-section" data-track-section-view="students" aria-labelledby="guide-students-heading">
-    <h2 id="guide-students-heading" class="guide-section__title">🎓 For college students</h2>
+    <h2 id="guide-students-heading" class="guide-section__title"><x-attendee.line-icon name="graduation-cap" class="guide-section__icon" /> For college students</h2>
     <p class="guide-section__desc">For the price of a ticket you get a day of practical talks, a chance to work on real open-source code, and a room full of people who hire.</p>
     <div class="guide-tips">
         @foreach (FirstTimerGuide::students() as $tip)
             <div class="guide-tip">
-                <span class="guide-tip__icon" aria-hidden="true">{{ $tip['icon'] }}</span>
+                <span class="guide-tip__icon" aria-hidden="true"><x-attendee.line-icon :name="$tip['icon']" /></span>
                 <div>
                     <h3 class="guide-tip__title">{{ $tip['title'] }}</h3>
                     <p class="guide-tip__text">{{ $tip['text'] }}</p>
@@ -201,15 +201,15 @@
     @if ($event)
         <div class="guide-next__list">
             <a class="action-card action-card--wide" href="{{ route('event.my-day', $event) }}" data-track="guide_next_click" data-track-target="my_day">
-                <span class="action-card__icon" aria-hidden="true">⭐</span>
+                <span class="action-card__icon" aria-hidden="true"><x-attendee.line-icon name="star" /></span>
                 <span><span class="action-card__title">Save 3 sessions you'd enjoy</span><span class="action-card__desc">Tap the star on a session in My Day. Look for "Beginner friendly".</span></span>
             </a>
             <a class="action-card action-card--wide" href="{{ route('event.quest', $event) }}" data-track="guide_next_click" data-track-target="quest">
-                <span class="action-card__icon" aria-hidden="true">🧭</span>
+                <span class="action-card__icon" aria-hidden="true"><x-attendee.line-icon name="compass" /></span>
                 <span><span class="action-card__title">Start your Quest</span><span class="action-card__desc">Small, friendly challenges that make meeting people easy.</span></span>
             </a>
             <a class="action-card action-card--wide" href="{{ route('event.camp-card', $event) }}" data-track="guide_next_click" data-track-target="camp_card">
-                <span class="action-card__icon" aria-hidden="true">📇</span>
+                <span class="action-card__icon" aria-hidden="true"><x-attendee.line-icon name="id-card" /></span>
                 <span><span class="action-card__title">Make your Camp Card</span><span class="action-card__desc">A digital badge people can scan to stay in touch.</span></span>
             </a>
         </div>

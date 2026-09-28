@@ -46,7 +46,7 @@
             @endif
 
             @if ($location)
-                <p class="event-card__location"><span aria-hidden="true">📍</span> {{ $location }}</p>
+                <p class="event-card__location"><x-attendee.line-icon name="map-pin" class="event-card__location-icon" /> {{ $location }}</p>
             @endif
 
             @if (count($tags))

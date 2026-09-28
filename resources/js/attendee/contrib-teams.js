@@ -8,7 +8,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'core',
     name: 'Core',
-    emoji: '💻',
+    icon: 'laptop',
     technical: true,
     matches: ['code', 'development'],
     whoItSuits: 'Developers who enjoy fixing bugs or building features in WordPress itself.',
@@ -19,7 +19,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'test',
     name: 'Testing',
-    emoji: '🧪',
+    icon: 'flask',
     technical: false,
     matches: ['testing', 'code', 'curious'],
     whoItSuits: 'Careful people who enjoy breaking things on purpose. No coding needed.',
@@ -30,7 +30,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'docs',
     name: 'Documentation',
-    emoji: '📚',
+    icon: 'book-open',
     technical: false,
     matches: ['writing', 'documentation', 'curious'],
     whoItSuits: 'Clear writers who like explaining things simply.',
@@ -41,7 +41,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'support',
     name: 'Support',
-    emoji: '💬',
+    icon: 'message-circle',
     technical: false,
     matches: ['support', 'people', 'curious'],
     whoItSuits: 'Patient people who like helping someone solve a problem, one question at a time.',
@@ -52,7 +52,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'polyglots',
     name: 'Polyglots',
-    emoji: '🌍',
+    icon: 'globe',
     technical: false,
     matches: ['translation', 'people', 'curious'],
     whoItSuits: 'Anyone fluent in a language other than English (technical background not required).',
@@ -63,7 +63,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'design',
     name: 'Design',
-    emoji: '✦',
+    icon: 'pen-tool',
     technical: false,
     matches: ['design', 'curious'],
     whoItSuits: 'People who think about how something looks and feels to use.',
@@ -74,7 +74,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'training',
     name: 'Training',
-    emoji: '🎓',
+    icon: 'graduation-cap',
     technical: false,
     matches: ['organizing', 'people', 'writing'],
     whoItSuits: 'People who like teaching or building learning material.',
@@ -85,7 +85,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'community',
     name: 'Community',
-    emoji: '🤝',
+    icon: 'users',
     technical: false,
     matches: ['organizing', 'people'],
     whoItSuits: 'Organizers who enjoy making events and spaces feel welcoming.',
@@ -96,7 +96,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'accessibility',
     name: 'Accessibility',
-    emoji: '♿',
+    icon: 'accessibility',
     technical: false,
     matches: ['testing', 'design', 'curious'],
     whoItSuits: 'Anyone who cares that WordPress works for people using screen readers, keyboards, or other assistive tech.',
@@ -107,7 +107,7 @@ export const CONTRIB_TEAMS = [
   {
     id: 'photography',
     name: 'Photography',
-    emoji: '📷',
+    icon: 'camera',
     technical: false,
     matches: ['design', 'curious'],
     whoItSuits: 'Photographers, even casual ones, who enjoy shooting free-to-use images.',

@@ -36,6 +36,7 @@
 @use 'components/plan';
 @use 'components/patterns';
 @use 'components/misc';
+@use 'components/line-icon';
 
 // Last, so its wide-screen overrides win over the base component rules.
 @use 'layout/wide-screens';
