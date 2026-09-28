@@ -9,7 +9,7 @@ Common facts (sab mein same rakhe hain): CampBuddy free hai, sign-up nahi chahiy
 ## Reel 1 · "Pehli WordCamp?" (`reel-1-pehli-wordcamp.mp4`, 33s)
 
 **YouTube title**
-Pehli WordCamp hai? Jaane se pehle ye dekh lo 👀 | CampBuddy #Shorts
+Pehli WordCamp hai? Jaane se pehle ye dekh lo 👀 | CampBuddy #shorts
 
 **YouTube description**
 Pehli baar WordCamp ja rahe ho aur kisi ko nahi jaante? Samajh nahi aata baat kaise shuru karein, aur "Contributor Day" hota kya hai?
@@ -24,10 +24,10 @@ WordCamp Rajasthan 2026 (3–4 Oct, Jaipur) ke liye ready hai.
 
 👉 https://campbuddy.club (free)
 
-#WordCamp #WordPress #CampBuddy
+#wordcamp #wordpress #campbuddy
 
 **Hashtags**
-#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #FirstWordCamp #CampBuddy #Shorts
+#wordcamp #wordcamprajasthan #wcrajasthan #wordpress #wordpresscommunity #firstwordcamp #campbuddy #shorts
 
 **YouTube tags**
 WordCamp, WordCamp Rajasthan 2026, WordCamp Jaipur, first WordCamp, WordCamp tips, WordPress community, WordPress India, WordPress event, Contributor Day, CampBuddy, WordCamp app, tech conference tips, networking tips, WordPress Hindi
@@ -41,14 +41,14 @@ CampBuddy batata hai abhi kya chal raha hai, ek chhoti Quest checklist deta hai,
 
 WordCamp Rajasthan 2026 ja rahe ho? Link bio mein 👉 campbuddy.club
 
-#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #FirstWordCamp #Jaipur #TechEvents #Networking #CampBuddy
+#wordcamp #wordcamprajasthan #wcrajasthan #wordpress #wordpresscommunity #firstwordcamp #jaipur #techevents #networking #campbuddy
 
 ---
 
 ## Reel 2 · "CampBuddy mein kya milta hai" (`reel-2-kya-milta-hai.mp4`, 30s)
 
 **YouTube title**
-WordCamp ke liye ek free app: CampBuddy mein kya-kya milta hai? #Shorts
+WordCamp ke liye ek free app: CampBuddy mein kya-kya milta hai? #shorts
 
 **YouTube description**
 30 second mein dekho CampBuddy mein kya hai:
@@ -65,10 +65,10 @@ Sab free. Account nahi chahiye. Phone ke browser mein chalta hai.
 
 👉 https://campbuddy.club
 
-#WordCamp #WordPress #CampBuddy
+#wordcamp #wordpress #campbuddy
 
 **Hashtags**
-#WordCamp #WordPress #CampBuddy #WordCampRajasthan #WordPressCommunity #EventApp #Networking #Shorts
+#wordcamp #wordpress #campbuddy #wordcamprajasthan #wordpresscommunity #eventapp #networking #shorts
 
 **YouTube tags**
 CampBuddy, WordCamp app, WordCamp features, WordCamp schedule, WordCamp networking, WordPress community, WordPress India, WordCamp Rajasthan 2026, event companion app, conference app, free event app, digital business card, Contributor Day, WordPress Hindi
@@ -86,14 +86,14 @@ Ek app, poori WordCamp 📱
 
 Free hai, sign-up nahi. Link bio mein 👉 campbuddy.club
 
-#WordCamp #WordPress #CampBuddy #WordCampRajasthan #WCRajasthan #WordPressCommunity #EventApp #Networking #TechCommunity #Jaipur
+#wordcamp #wordpress #campbuddy #wordcamprajasthan #wcrajasthan #wordpresscommunity #eventapp #networking #techcommunity #jaipur
 
 ---
 
 ## Reel 3 · "Ek din, ek Quest" (`reel-3-ek-din-ek-quest.mp4`, 21s)
 
 **YouTube title**
-Anjaan logon se bhare room mein akele? Ye Quest try karo | CampBuddy #Shorts
+Anjaan logon se bhare room mein akele? Ye Quest try karo | CampBuddy #shorts
 
 **YouTube description**
 Conference mein akele khade rehna sabse awkward hota hai. CampBuddy ek chhoti Quest checklist deta hai:
@@ -106,10 +106,10 @@ Ek-ek tick karte jao, aur din kab nikal jaata hai pata bhi nahi chalta.
 
 👉 https://campbuddy.club (free, sign-up nahi)
 
-#WordCamp #Networking #CampBuddy
+#wordcamp #networking #campbuddy
 
 **Hashtags**
-#WordCamp #Networking #CampBuddy #WordPress #WordCampRajasthan #IntrovertTips #ConferenceTips #Shorts
+#wordcamp #networking #campbuddy #wordpress #wordcamprajasthan #introverttips #conferencetips #shorts
 
 **YouTube tags**
 WordCamp networking, how to network at a conference, introvert networking tips, conference tips, WordCamp Quest, CampBuddy, WordPress community, WordCamp Rajasthan 2026, meet people at events, icebreaker ideas, tech event tips, WordPress India
@@ -126,14 +126,14 @@ Chhote kaam, badi baatcheet. Poora din ek game ban jaata hai 🎯
 
 Link bio mein 👉 campbuddy.club
 
-#WordCamp #Networking #CampBuddy #WordPress #WordCampRajasthan #WCRajasthan #ConferenceTips #IntrovertLife #TechEvents #WordPressCommunity
+#wordcamp #networking #campbuddy #wordpress #wordcamprajasthan #wcrajasthan #conferencetips #introvertlife #techevents #wordpresscommunity
 
 ---
 
 ## Reel 4 · "Kaagaz ka card bhool jao" (`reel-4-card-bhool-jao.mp4`, 19s)
 
 **YouTube title**
-Visiting card jeb mein kho gaya? Digital Camp Card banao | CampBuddy #Shorts
+Visiting card jeb mein kho gaya? Digital Camp Card banao | CampBuddy #shorts
 
 **YouTube description**
 Kitni baar visiting card diya aur wo jeb mein hi kho gaya?
@@ -148,10 +148,10 @@ Ab koi naya contact nahi khoega.
 
 👉 https://campbuddy.club (free)
 
-#DigitalBusinessCard #WordCamp #CampBuddy
+#digitalbusinesscard #wordcamp #campbuddy
 
 **Hashtags**
-#DigitalBusinessCard #VisitingCard #WordCamp #CampBuddy #Networking #LinkedIn #WordPress #Shorts
+#digitalbusinesscard #visitingcard #wordcamp #campbuddy #networking #linkedin #wordpress #shorts
 
 **YouTube tags**
 digital business card, digital visiting card, QR code business card, LinkedIn QR code, free digital card, WordCamp, CampBuddy, Camp Card, networking tips, conference networking, WordPress community, WordCamp Rajasthan 2026
@@ -165,14 +165,14 @@ Ab koi contact nahi khoega 🤝
 
 Link bio mein 👉 campbuddy.club
 
-#DigitalBusinessCard #VisitingCard #QRCode #LinkedIn #Networking #WordCamp #WordCampRajasthan #WordPress #CampBuddy #TechEvents
+#digitalbusinesscard #visitingcard #qrcode #linkedin #networking #wordcamp #wordcamprajasthan #wordpress #campbuddy #techevents
 
 ---
 
 ## Reel 5 · "Organizers ke liye" (`reel-5-organizers-ke-liye.mp4`, 21s)
 
 **YouTube title**
-WordCamp organize kar rahe ho? Attendee app khud mat banao | CampBuddy #Shorts
+WordCamp organize kar rahe ho? Attendee app khud mat banao | CampBuddy #shorts
 
 **YouTube description**
 Apne WordCamp ke attendees ke liye app chahiye? Khud banane ki zaroorat nahi.
@@ -187,10 +187,10 @@ Apna WordCamp CampBuddy pe laana hai? Comment karo ya DM karo.
 
 👉 https://campbuddy.club
 
-#WordCamp #WordCampOrganizer #CampBuddy
+#wordcamp #wordcamporganizer #campbuddy
 
 **Hashtags**
-#WordCamp #WordCampOrganizer #WordPressCommunity #CampBuddy #EventManagement #WordPress #Shorts
+#wordcamp #wordcamporganizer #wordpresscommunity #campbuddy #eventmanagement #wordpress #shorts
 
 **YouTube tags**
 WordCamp organizer, organize a WordCamp, WordCamp app for organizers, event app for conferences, attendee app, WordPress community events, WordCamp schedule, CampBuddy, event management, WordPress India, WordCamp Rajasthan 2026, free event app
@@ -204,7 +204,7 @@ Attendees ke liye free, sign-up nahi.
 
 Apna WordCamp laana hai? DM karo 📩 Link bio mein 👉 campbuddy.club
 
-#WordCamp #WordCampOrganizer #WordPressCommunity #WordPress #EventManagement #CommunityEvents #CampBuddy #WordCampRajasthan #TechCommunity #Volunteers
+#wordcamp #wordcamporganizer #wordpresscommunity #wordpress #eventmanagement #communityevents #campbuddy #wordcamprajasthan #techcommunity #volunteers
 
 ---
 
@@ -232,10 +232,10 @@ WordCamp Rajasthan 2026 (3–4 Oct, Jaipur) ke liye ready.
 
 👉 https://campbuddy.club
 
-#WordCamp #WordPress #CampBuddy
+#wordcamp #wordpress #campbuddy
 
 **Hashtags**
-#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #CampBuddy #EventApp #Networking #FirstWordCamp
+#wordcamp #wordcamprajasthan #wcrajasthan #wordpress #wordpresscommunity #campbuddy #eventapp #networking #firstwordcamp
 
 **YouTube tags**
 CampBuddy, WordCamp app, WordCamp Rajasthan 2026, WordCamp Jaipur, first WordCamp, WordCamp tips, WordCamp features, WordPress community, WordPress India, Contributor Day, digital business card, conference networking, free event app, event companion app, WordPress Hindi
@@ -254,4 +254,4 @@ Poori WordCamp, ek app mein 📱 (1 minute ka tour)
 Free hai, sign-up nahi, phone ke browser mein chalta hai.
 WordCamp Rajasthan 2026 ja rahe ho? Link bio mein 👉 campbuddy.club
 
-#WordCamp #WordCampRajasthan #WCRajasthan #WordPress #WordPressCommunity #CampBuddy #Jaipur #EventApp #Networking #TechCommunity
+#wordcamp #wordcamprajasthan #wcrajasthan #wordpress #wordpresscommunity #campbuddy #jaipur #eventapp #networking #techcommunity
