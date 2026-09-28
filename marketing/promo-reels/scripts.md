@@ -1,6 +1,6 @@
 # CampBuddy — Promo Reel Scripts (voice-synced)
 
-Scene timings follow the recorded voice-over in `MP3/`: each scene changes in the pause after its line. Screens are WordCamp Rajasthan 2026 (Camp Card: Sunil Kumar, WordPress Engineer); the people on the matching screen are made up.
+Scene timings follow the recorded voice-over (`MP3/`, music-free copies in `voice-only/`): each scene changes in the pause after its line. Screens are WordCamp Rajasthan 2026 (Camp Card: Sunil Kumar, WordPress Engineer); the people on the matching screen are made up.
 
 Final videos (1080×1920, 30 fps, voice-over included): `mp4/`. Animated preview: `campbuddy-reels.html`. Subtitles: `srt/`.
 
@@ -66,9 +66,9 @@ Final videos (1080×1920, 30 fps, voice-over included): `mp4/`. Animated preview
 | 5 | 00:13.67 | 00:16.65 | Har change activity log mein / poori transparency | Har change ek activity log mein record hota hai. |
 | 6 | 00:16.65 | 00:20.81 | campbuddy.club / Free set up karo, aaj hi | campbuddy.club pe jaake free mein set up karo, aaj hi. |
 
-## Poora video · CampBuddy ke saare features  (60.0s — `mp4/campbuddy-full-features.mp4`, `srt/campbuddy-full-features.srt`)
+## Reel 6 · Saare features (poora video)  (60.0s — `mp4/reel-6-saare-features.mp4`, `srt/reel-6-saare-features.srt`)
 
-Attendee features only. The voice is the reels' own lines, cut at their pauses and joined in a new order (`full/campbuddy-full-features-voice.m4a`).
+Attendee features only. The voice is the reels' own lines, cut at their pauses and joined in a new order (`voice-only/reel-6-voice.wav`).
 
 | # | Start | End | Screen | On-screen caption | Voice-over |
 |---|---|---|---|---|---|
@@ -96,4 +96,6 @@ Attendee features only. The voice is the reels' own lines, cut at their pauses a
 
 - Screens: high-resolution (3×) captures of CampBuddy with WordCamp Rajasthan 2026's public schedule and sponsors.
 - Timing: the pauses in each voice-over track were measured and every scene cut placed just after a line ends, so captions appear with their line.
-- Video: each frame rendered from `campbuddy-reels.html?export=1` at 1080×1920, 30 fps, then joined with the MP3 (H.264 + AAC 192 kbps).
+- Voice: the background music was taken out of the MP3s (Demucs, voice/music separation). `voice-only/reel-N-voice.wav` are the music-free tracks (reel 6: the same lines joined), and the MP4s carry only these, so music can be added in any editor.
+- Layout: captions sit in the Shorts/Reels safe zone (about 30% up from the bottom, clear of the right-hand buttons).
+- Video: each frame rendered from `campbuddy-reels.html?export=1` at 1080×1920, 30 fps, then joined with the voice-only track (H.264 + AAC 192 kbps).

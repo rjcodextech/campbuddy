@@ -208,7 +208,7 @@ Apna WordCamp laana hai? DM karo 📩 Link bio mein 👉 campbuddy.club
 
 ---
 
-## Poora video · CampBuddy ke saare features (`campbuddy-full-features.mp4`, 60s)
+## Reel 6 · Saare features (poora video) (`reel-6-saare-features.mp4`, 60s)
 
 **YouTube title**
 CampBuddy: WordCamp ke liye free app, saare features 1 minute mein | WordCamp Rajasthan 2026
