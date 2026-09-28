@@ -4,7 +4,8 @@ import { test } from 'node:test';
 import { freshImport } from './helpers/fake-browser.mjs';
 
 const PATH = new URL('../../resources/js/attendee/people-sync.js', import.meta.url).href;
-const settle = () => new Promise((resolve) => setTimeout(resolve, 40));
+// BroadcastChannel delivers on a later turn; 40 ms was too tight on a busy machine.
+const settle = () => new Promise((resolve) => setTimeout(resolve, 250));
 
 // Each import is a separate copy of the module with its own channel: two windows.
 const windows = async () => ({ a: await freshImport(PATH), b: await freshImport(PATH) });
