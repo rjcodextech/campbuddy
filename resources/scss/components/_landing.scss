@@ -258,72 +258,105 @@
 
 // Country filter above the event list and "Load more" below it
 // (attendee/picker-filter.js). Both stay hidden without the script.
+// Row 1: the country pill (only as wide as its longest name) and, beside
+// it, one small chip that clears the filter or puts it back; row 2: the count.
 .picker-filter {
+    margin-bottom: v.$space-4;
+}
+
+.picker-filter__row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: v.$space-2;
-    margin-bottom: v.$space-4;
 }
 
-.picker-filter__label {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--ink);
-}
-
-.picker-filter__icon {
-    color: var(--brand-primary);
-}
-
-// Only as wide as the longest country name needs (the site-wide rule in
-// _form.scss makes every select full width), as a pill with its own chevron.
 .picker-filter__select {
     position: relative;
     display: inline-flex;
+    align-items: center;
     max-width: 100%;
 
+    // The chevron.
     &::after {
         content: '';
         position: absolute;
         right: 14px;
         top: 50%;
-        width: 7px;
-        height: 7px;
-        border-right: 2px solid var(--ink);
-        border-bottom: 2px solid var(--ink);
+        width: 6px;
+        height: 6px;
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
         transform: translateY(-70%) rotate(45deg);
         pointer-events: none;
     }
 }
 
+.picker-filter__icon {
+    position: absolute;
+    left: 12px;
+    color: var(--brand-primary);
+    pointer-events: none;
+}
+
+// Matches the site-wide select rule's #id weight (_form.scss) to undo its full width.
 #main-content .picker-filter__select select {
     width: auto;
     max-width: 100%;
-    min-height: 40px;
-    padding: 6px 36px 6px 14px;
+    min-height: 44px;
+    padding: 8px 34px 8px 34px;
     border-radius: v.$radius-full;
-    background: var(--paper);
-    font-size: 0.9rem;
-    font-weight: 600;
+    background: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--ink);
     cursor: pointer;
     appearance: none;
     -webkit-appearance: none;
 }
 
-.picker-filter__status {
-    flex-basis: 100%;
-    margin: 0;
-    font-size: 0.82rem;
-    color: var(--muted);
+// A country is chosen: the pill says so with the brand edge.
+#main-content .picker-filter.is-filtered .picker-filter__select select {
+    border-color: var(--brand-primary);
+    background: var(--paper);
 }
 
 .picker-filter__toggle {
-    margin-left: v.$space-1;
-    font-size: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: rgba(255, 255, 255, 0.55);
+    color: var(--brand-primary);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+
+    &:hover {
+        border-color: var(--brand-primary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--brand-primary);
+        outline-offset: 2px;
+    }
+
+    // "✕ Show all" when it clears the filter.
+    &[data-target='all']::before {
+        content: '✕';
+        font-size: 0.8em;
+    }
+}
+
+.picker-filter__status {
+    margin: v.$space-2 0 0;
+    font-size: 0.82rem;
+    color: var(--muted);
 }
 
 .picker-more {

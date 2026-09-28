@@ -6,8 +6,8 @@
 //     timezone-country.js: Intl time zone → country), and if any WordCamp is
 //     there the list starts filtered to it;
 //   - only the first FIRST matching cards show, "Load N more" opens STEP more;
-//   - "Show all countries" removes the filter, "Show only <country>" puts it
-//     back, and the dropdown picks any listed country.
+//   - "✕ Show all" beside the dropdown removes the filter, "Only <country>"
+//     puts it back, and the dropdown picks any listed country.
 // Cards are only shown or hidden (`hidden`), never built, moved or copied, so
 // a WordCamp can't appear twice and every count is a count of real cards. The
 // choice is remembered on this device and kept the same across open tabs.
@@ -233,15 +233,16 @@ export function initPickerFilter({
     });
 
     if (select) select.value = choice;
+    bar?.classList?.toggle('is-filtered', choice !== ALL);
     if (status) status.textContent = statusText(view, choice === ALL ? null : name(choice));
 
     if (toggle) {
       if (choice !== ALL) {
-        toggle.textContent = 'Show all countries';
+        toggle.textContent = 'Show all';
         toggle.dataset.target = ALL;
         toggle.hidden = false;
       } else if (detected && counts[detected] && filterable) {
-        toggle.textContent = `Show only ${name(detected)} (${counts[detected]})`;
+        toggle.textContent = `Only ${name(detected)}`;
         toggle.dataset.target = detected;
         toggle.hidden = false;
       } else {

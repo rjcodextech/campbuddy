@@ -65,6 +65,7 @@ function el(extra = {}) {
     replaceChildren(...kids) { this.children = kids; },
     focused: 0,
     focus() { this.focused++; },
+    classList: { on: new Set(), toggle(name, force) { force ? this.on.add(name) : this.on.delete(name); } },
     ...extra,
   };
 }
@@ -112,9 +113,10 @@ test('starts filtered to my country, "Show all" removes it, the toggle puts it b
   assert.equal(p.parts.bar.hidden, false);
   assert.deepEqual(shownIds(p.cards), [0, 2, 4, 7]);
   assert.equal(p.parts.status.textContent, 'Showing all 4 WordCamps in India');
-  assert.equal(p.parts.toggle.textContent, 'Show all countries');
+  assert.equal(p.parts.toggle.textContent, 'Show all');
   assert.equal(p.parts.more.hidden, true);
   assert.equal(p.parts.select.value, 'IN');
+  assert.ok(p.parts.bar.classList.on.has('is-filtered'));
   assert.deepEqual(p.parts.select.children.map((o) => o.textContent),
     ['All countries (8)', 'Bulgaria (2)', 'India (4)', 'United Kingdom (2)']);
 
@@ -122,9 +124,10 @@ test('starts filtered to my country, "Show all" removes it, the toggle puts it b
   assert.equal(f.choice, ALL);
   assert.deepEqual(shownIds(p.cards), [0, 1, 2, 3, 4], 'first 5 of all, in page order');
   assert.equal(p.parts.status.textContent, 'Showing 5 of 8 WordCamps');
-  assert.equal(p.parts.toggle.textContent, 'Show only India (4)');
+  assert.equal(p.parts.toggle.textContent, 'Only India');
   assert.equal(p.parts.more.textContent, 'Load 3 more');
   assert.equal(p.store.get(STORAGE_KEY), ALL, 'removal is remembered');
+  assert.ok(!p.parts.bar.classList.on.has('is-filtered'));
 
   p.parts.toggle.fire('click');
   assert.equal(f.choice, 'IN');
