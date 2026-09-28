@@ -4,66 +4,87 @@
 // "What is CampBuddy?" on the WordCamp picker
 // (attendee/partials/about-campbuddy.blade.php).
 
-// --- How it works -----------------------------------------------------------
+// --- Four steps -----------------------------------------------------------
 .about-steps {
-    margin: v.$space-8 0;
+    margin: 0 0 v.$space-6;
+    padding: v.$space-5 v.$space-4;
+    border-radius: 14px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(244, 166, 41, 0.28), transparent 45%),
+        linear-gradient(150deg, #6d2021, #4a1415);
+    color: #fbefd9;
 }
 
 .about-steps__title {
     margin: 0 0 v.$space-4;
     font-size: v.$font-size-md;
     font-weight: v.$font-weight-black;
+    color: #fff;
 }
 
 .about-steps__list {
     display: grid;
-    gap: v.$space-4;
+    grid-template-columns: 1fr 1fr;
+    gap: v.$space-4 v.$space-3;
     margin: 0;
     padding: 0;
     list-style: none;
 
     @include m.tablet {
-        grid-template-columns: repeat(2, 1fr);
-        gap: v.$space-5 v.$space-6;
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 .about-step {
-    display: grid;
-    grid-template-columns: 36px 1fr;
-    column-gap: v.$space-3;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
 }
 
 .about-step__icon {
-    grid-row: span 2;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    background: var(--peach);
+    width: 48px;
+    height: 48px;
+    margin-bottom: v.$space-1;
+    border-radius: 14px;
+    background: #fbefd9;
 
     img {
-        width: 22px;
-        height: 22px;
+        width: 28px;
+        height: 28px;
     }
 }
 
 .about-step__num {
-    color: var(--brand-primary);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #5c1a1b;
+    border-radius: v.$radius-full;
+    background: #d98a1c;
+    color: #4a1415;
+    font-size: 11px;
+    font-weight: v.$font-weight-black;
 }
 
 .about-step__title {
     font-weight: v.$font-weight-bold;
+    color: #fff;
     line-height: v.$line-height-snug;
 }
 
 .about-step__text {
-    font-size: v.$font-size-sm;
+    font-size: v.$font-size-xs;
     line-height: v.$line-height-body;
-    color: var(--muted);
+    color: rgba(251, 239, 217, 0.85);
 }
 
 // --- Tour: real screens in a phone frame -------------------------------------
@@ -260,6 +281,12 @@
     &:focus-visible {
         @include m.focus-ring;
     }
+}
+
+.about-who__emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-bottom: v.$space-1;
 }
 
 .about-who__title {

@@ -293,7 +293,7 @@ function renderUpNext(ctx) {
   const moment = momentFor(next, moments);
   const alternatives = upcoming.filter((s) => s.startMs === next.startMs && s.id !== next.id).length;
   const guidance = moment?.now
-    ?? (alternatives > 0 ? `${alternatives === 1 ? 'Another session runs' : `${alternatives} other sessions run`} at the same time. Compare them in My Day.` : null);
+    ?? (alternatives > 0 ? `${alternatives === 1 ? 'Another session runs' : `${alternatives} other sessions run`} at the same time — compare them in My Day.` : null);
 
   const track = next.track_names?.[0];
   el.replaceChildren(
@@ -344,7 +344,7 @@ function renderStartingSoonBanner({ sessions, nowMs, bookmarkedIds }) {
 }
 
 const DEFAULT_SUGGESTIONS = [
-  { title: 'Visit the sponsor area', description: 'Sponsors pay for a big part of WordCamp. Say hello and ask what they make.' },
+  { title: 'Visit the sponsor area', description: 'Sponsors make WordCamp free — say hello and see what they build.' },
   { title: 'Introduce yourself to someone new', description: 'Ask what brought them to this WordCamp.' },
   { title: 'Add a link to your Camp Card', description: 'So people you meet have a way to stay in touch.' },
 ];

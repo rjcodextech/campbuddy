@@ -39,7 +39,7 @@ export async function fetchWithRetry(url, options = {}) {
   }
 }
 
-const BUSY_MESSAGE = 'Lots of people are online right now. Please try again in a few seconds.';
+const BUSY_MESSAGE = 'Lots of people are online right now — please try again in a few seconds.';
 
 export async function apiGet(eventSlug, path, ownerToken = null) {
   const headers = apiHeaders();

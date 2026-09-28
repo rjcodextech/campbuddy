@@ -12,15 +12,44 @@
     padding: v.$space-5 v.$space-4 v.$space-8;
 }
 
-// The first screen: what CampBuddy is, in plain words, and two ways in. On
-// wider screens a real Home screenshot sits beside the text; on a phone it's
-// left out so the event list is one short scroll away.
+// The first screen: what CampBuddy is, three promises, and two ways in.
 .landing-hero {
+    position: relative;
+    isolation: isolate;
     display: flex;
-    align-items: center;
-    gap: v.$space-6;
-    margin: 0 0 v.$space-8;
-    padding: v.$space-2 0 0;
+    flex-direction: column-reverse;
+    gap: v.$space-2;
+    margin: 0 (-(v.$space-4)) v.$space-6;
+    padding: v.$space-4 v.$space-4 v.$space-5;
+    overflow: hidden;
+
+    // A faint tile of WordCamp-day line icons, fading out towards the text.
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: url('/media/pattern-icons.svg') repeat 0 0 / 220px 220px;
+        opacity: 0.09;
+        mask-image: radial-gradient(ellipse 90% 70% at 70% 20%, #000 20%, transparent 75%);
+        -webkit-mask-image: radial-gradient(ellipse 90% 70% at 70% 20%, #000 20%, transparent 75%);
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        flex-direction: row;
+        align-items: center;
+        gap: v.$space-6;
+        margin: 0 0 v.$space-6;
+        padding: v.$space-6;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 236, 214, 0.6));
+        box-shadow: inset 0 0 0 1px rgba(195, 58, 25, 0.08);
+
+        &::before {
+            mask-image: radial-gradient(ellipse 60% 90% at 85% 50%, #000 25%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 60% 90% at 85% 50%, #000 25%, transparent 80%);
+        }
+    }
 }
 
 .landing-hero__text {
@@ -33,7 +62,7 @@
     font-weight: v.$font-weight-black;
     line-height: 1.15;
     letter-spacing: -0.01em;
-    margin: 0 0 v.$space-3;
+    margin: v.$space-1 0 v.$space-2;
 
     @media (min-width: v.$bp-tablet) {
         font-size: 2.1rem;
@@ -41,16 +70,37 @@
 }
 
 .landing-hero__lead {
-    margin: 0 0 v.$space-2;
+    margin: 0 0 v.$space-3;
     font-size: v.$font-size-base;
     line-height: v.$line-height-body;
-    color: var(--ink);
+    color: var(--muted);
 }
 
-.landing-hero__note {
+.landing-hero__promises {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
     margin: 0 0 v.$space-4;
-    font-size: v.$font-size-sm;
-    color: var(--muted);
+    padding: 0;
+    list-style: none;
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: v.$radius-full;
+        background: var(--peach);
+        font-size: v.$font-size-xs;
+        font-weight: v.$font-weight-bold;
+        color: var(--ink);
+
+        &::before {
+            content: '✓';
+            color: var(--brand-primary);
+            font-weight: v.$font-weight-black;
+        }
+    }
 }
 
 .landing-hero__actions {
@@ -68,41 +118,138 @@
     }
 }
 
-.landing-hero__shot {
-    display: none;
+// --- The line-icon "orbit" around the CampBuddy mark --------------------------------
+.hero-orbit {
+    position: relative;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 300px;
+    height: 184px;
+    margin: 0 auto;
 
     @media (min-width: v.$bp-tablet) {
-        display: block;
-        flex: 0 0 200px;
-        padding: 8px;
-        border-radius: 28px;
-        background: #231f20;
-        box-shadow: v.$shadow-raised;
+        flex: 0 0 300px;
+        height: 280px;
+    }
+}
+
+// True circles: sized by height, square by aspect ratio — never an oval
+// stretched to the container's width.
+.hero-orbit__ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 92%;
+    aspect-ratio: 1;
+    border: 1.5px dashed rgba(195, 58, 25, 0.28);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hero-orbit__ring--inner {
+    height: 58%;
+    border-style: solid;
+    border-color: rgba(244, 166, 41, 0.35);
+}
+
+.hero-orbit__core {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 14px 30px -14px rgba(92, 26, 27, 0.55), 0 0 0 6px rgba(255, 236, 214, 0.9);
+    transform: translate(-50%, -50%);
+
+    img {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        width: 96px;
+        height: 96px;
+        border-radius: 26px;
 
         img {
-            display: block;
-            width: 100%;
-            height: auto;
-            aspect-ratio: 1 / 2;
-            object-fit: cover;
-            object-position: top;
-            border-radius: 20px;
+            width: 72px;
+            height: 72px;
         }
     }
 }
 
-// The picker's event cards: the whole card is the link, so instead of an
-// "Open event" footer on every card there's just a chevron on the right.
-.card-grid--picker .event-card__main {
+.hero-orbit__item {
+    position: absolute;
+    display: inline-flex;
     align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: #fff;
+    box-shadow: v.$shadow-card;
+    font-size: v.$font-size-xs;
+    white-space: nowrap;
+    animation: hero-float 5s ease-in-out infinite;
 
-    &::after {
-        content: '›';
-        flex-shrink: 0;
-        margin-left: auto;
-        font-size: 1.5rem;
-        line-height: 1;
-        color: var(--muted);
+    svg {
+        flex: 0 0 26px;
+        width: 26px;
+        height: 26px;
+        padding: 5px;
+        border-radius: 50%;
+        background: var(--peach);
+        color: var(--brand-primary);
+    }
+
+    b {
+        font-weight: v.$font-weight-bold;
+        color: var(--ink);
+    }
+}
+
+.hero-orbit__item--1 { top: 6%; left: 0; }
+.hero-orbit__item--2 { top: 14%; right: 0; animation-delay: -1.2s; }
+.hero-orbit__item--3 { bottom: 12%; left: 0; animation-delay: -2.4s; }
+.hero-orbit__item--4 { bottom: 4%; right: 0; animation-delay: -3.6s; }
+
+.hero-orbit__dot {
+    position: absolute;
+    display: flex;
+    width: 30px;
+    height: 30px;
+    padding: 6px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: v.$shadow-card;
+    color: var(--gold);
+    animation: hero-float 6s ease-in-out infinite;
+
+    svg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.hero-orbit__dot--1 { top: 44%; left: 14%; animation-delay: -2s; }
+.hero-orbit__dot--2 { top: 40%; right: 14%; color: var(--teal); animation-delay: -4s; }
+
+@keyframes hero-float {
+    0%,
+    100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-orbit__item,
+    .hero-orbit__dot {
+        animation: none;
     }
 }
 

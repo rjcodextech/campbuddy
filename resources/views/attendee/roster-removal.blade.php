@@ -9,7 +9,7 @@
         <p class="footer-note" style="text-align:left">
             You're on {{ $event->display_name }}'s public Attendees page because you chose to be listed when you
             got your ticket, and CampBuddy shows the same list. If you'd rather not appear here, find your name
-            below and remove yourself. No login needed.
+            below and remove yourself — no login needed.
         </p>
 
         @if (session('status'))
@@ -27,7 +27,7 @@
             <div style="margin-top:16px">
                 @if ($matches->isEmpty())
                     <p class="footer-note" style="text-align:left">
-                        No public listing found for "{{ $searchedName }}" . It may already be removed, or the name
+                        No public listing found for "{{ $searchedName }}" — it may already be removed, or the name
                         may not match exactly.
                     </p>
                 @else
@@ -41,9 +41,9 @@
                             </div>
                             <form method="POST" action="{{ route('event.roster-removal.remove', [$event, $entry]) }}"
                                   data-track="roster_removal_confirm" data-track-on="submit"
-                                  onsubmit="return confirm('Remove this listing? You can\'t undo this yourself. Contact the organizers if you change your mind.');">
+                                  onsubmit="return confirm('Remove this listing? This can\'t be undone by you — contact the organizers if you change your mind.');">
                                 @csrf
-                                <button type="submit" class="btn btn--outline btn--danger btn--compact">This is me, remove it</button>
+                                <button type="submit" class="btn btn--outline btn--danger btn--compact">This is me — remove</button>
                             </form>
                         </div>
                     @endforeach

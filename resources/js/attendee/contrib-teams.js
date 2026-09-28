@@ -12,9 +12,9 @@ export const CONTRIB_TEAMS = [
     technical: true,
     matches: ['code', 'development'],
     whoItSuits: 'Developers who enjoy fixing bugs or building features in WordPress itself.',
-    description: 'Works on the WordPress software itself, the code that runs on millions of sites.',
+    description: 'Works on WordPress the software — the code that runs on millions of sites.',
     beginnerTask: 'Try reproducing a reported bug on a test site and confirm the steps in the ticket.',
-    atTheTable: 'Say you\'re new to Core and ask for a "good first bug" to try.',
+    atTheTable: 'Say you\'re new to Core — ask for a "good first bug" to try.',
   },
   {
     id: 'test',
@@ -22,10 +22,10 @@ export const CONTRIB_TEAMS = [
     emoji: '🧪',
     technical: false,
     matches: ['testing', 'code', 'curious'],
-    whoItSuits: 'Careful people who enjoy breaking things on purpose. No coding needed.',
+    whoItSuits: 'Detail-oriented people who like trying to break things on purpose — no coding required.',
     description: 'Tries out new features before release and reports what does and doesn\'t work.',
     beginnerTask: 'Follow a test scenario on the current beta and report your result.',
-    atTheTable: 'Ask "What needs testing today?" There\'s usually a list.',
+    atTheTable: 'Ask "what needs testing today?" — there\'s usually a live list.',
   },
   {
     id: 'docs',
@@ -36,7 +36,7 @@ export const CONTRIB_TEAMS = [
     whoItSuits: 'Clear writers who like explaining things simply.',
     description: 'Writes and maintains the guides that help people actually use WordPress.',
     beginnerTask: 'Read one existing doc page and flag a sentence that\'s confusing to a beginner.',
-    atTheTable: 'Ask which doc page confuses people the most. That\'s where they need help.',
+    atTheTable: 'Ask which doc page gets the most confused feedback — that\'s where help is wanted.',
   },
   {
     id: 'support',
@@ -47,7 +47,7 @@ export const CONTRIB_TEAMS = [
     whoItSuits: 'Patient people who like helping someone solve a problem, one question at a time.',
     description: 'Answers real user questions on the WordPress.org support forums.',
     beginnerTask: 'Read an open forum thread and see if you can spot what\'s actually being asked.',
-    atTheTable: 'Ask to watch someone write an answer. Most Support people are happy to show you how.',
+    atTheTable: 'Ask to shadow an answer being written — most Support contributors are happy to show the ropes.',
   },
   {
     id: 'polyglots',
@@ -58,7 +58,7 @@ export const CONTRIB_TEAMS = [
     whoItSuits: 'Anyone fluent in a language other than English (technical background not required).',
     description: 'Translates WordPress so it\'s usable in languages beyond English.',
     beginnerTask: 'Translate a handful of short strings into a language you speak well.',
-    atTheTable: 'Say which languages you speak. It\'s the first thing they\'ll ask.',
+    atTheTable: 'Mention which language(s) you speak — that\'s literally the first question they\'ll ask.',
   },
   {
     id: 'design',
@@ -69,7 +69,7 @@ export const CONTRIB_TEAMS = [
     whoItSuits: 'People who think about how something looks and feels to use.',
     description: 'Shapes the interface and experience of the WordPress admin and editor.',
     beginnerTask: 'Look at a current design discussion and share what\'s unclear to you as a user.',
-    atTheTable: 'Bring one WordPress screen you find confusing. It\'s an easy way to start talking.',
+    atTheTable: 'Bring a specific screen you find confusing in WordPress — it\'s a great conversation starter.',
   },
   {
     id: 'training',
@@ -80,7 +80,7 @@ export const CONTRIB_TEAMS = [
     whoItSuits: 'People who like teaching or building learning material.',
     description: 'Builds the lesson plans and workshops used to teach WordPress worldwide.',
     beginnerTask: 'Read one published lesson and suggest a clearer example.',
-    atTheTable: 'Ask which topic most needs a new lesson. There\'s usually a list waiting.',
+    atTheTable: 'Ask what topic most needs a fresh lesson written — there\'s usually a backlog.',
   },
   {
     id: 'community',
@@ -89,9 +89,9 @@ export const CONTRIB_TEAMS = [
     technical: false,
     matches: ['organizing', 'people'],
     whoItSuits: 'Organizers who enjoy making events and spaces feel welcoming.',
-    description: 'Runs the program behind meetups and WordCamps, including this one.',
+    description: 'Runs the program behind meetups and WordCamps — the reason this event exists.',
     beginnerTask: 'Ask what it takes to help organize a local WordPress meetup.',
-    atTheTable: 'Ask what was hardest about running this WordCamp. You\'ll learn a lot in five minutes.',
+    atTheTable: 'Ask what the biggest challenge running THIS WordCamp was — you\'ll learn a lot fast.',
   },
   {
     id: 'accessibility',
@@ -127,5 +127,5 @@ export const CONTRIB_QUESTION_TAGS = [
   { key: 'translation', label: 'Translation' },
   { key: 'organizing', label: 'Organizing events' },
   { key: 'people', label: 'Meeting people' },
-  { key: 'curious', label: "Not sure yet, just curious" },
+  { key: 'curious', label: "Not sure yet — I'm just curious" },
 ];

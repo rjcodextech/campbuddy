@@ -408,11 +408,11 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
     };
 
     if (identity === 'roster' && !picked) {
-      showError('Find and tap your name in the list, or choose "Type my name".');
+      showError('Find and tap your name in the list — or choose "Type my name".');
       return;
     }
     if (identity === 'typed' && displayName.length < 2) {
-      showError('Type the name people know you by, or choose "Stay anonymous".');
+      showError('Type the name people know you by — or choose "Stay anonymous".');
       return;
     }
     if (body.tags.length === 0) {
@@ -445,7 +445,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
       await renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
     } catch (error) {
       submitBtn.disabled = false;
-      showError(error.userMessage ?? "Couldn't save. Check your connection and try again.");
+      showError(error.userMessage ?? "Couldn't save — check your connection and try again.");
     }
   });
 }
@@ -490,7 +490,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
       return;
     }
     if (entries.length === 0) {
-      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'This event has no public attendee list yet. Choose "Type my name" instead.' }));
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'This event has no public attendee list yet — choose "Type my name" instead.' }));
       return;
     }
     if (q.length < 2) {
@@ -500,7 +500,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
 
     const found = entries.filter((a) => (a.name ?? '').toLowerCase().includes(q)).slice(0, 8);
     if (found.length === 0) {
-      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'Nobody by that name on the list. Check the spelling, or choose "Type my name".' }));
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'No one by that name on the list — check the spelling, or choose "Type my name".' }));
       return;
     }
 
@@ -542,7 +542,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
   rosterForPicker(eventSlug)
     .then((list) => { entries = list; draw(); })
     .catch(() => {
-      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'You\'re offline, so the attendee list can\'t load. Choose "Type my name" for now.' }));
+      results.replaceChildren(render('tpl-roster-picker-empty', { text: 'You\'re offline, so the attendee list can\'t load — choose "Type my name" for now.' }));
     });
 }
 
@@ -760,7 +760,7 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
       link: {
         attrs: {
           href: l.url,
-          'aria-label': `${SOCIAL_LABEL[l.type] ?? l.type}${profile.name ? `, ${profile.name}` : ''}`,
+          'aria-label': `${SOCIAL_LABEL[l.type] ?? l.type}${profile.name ? ` — ${profile.name}` : ''}`,
           // Only the kind of link is reported, never the address (someone's profile).
           'data-track': 'discovery_profile_link_click',
           'data-track-link-type': SOCIAL_LABEL[l.type] ? l.type : 'website',
@@ -978,7 +978,7 @@ async function waveAt(profile, mine, eventSlug, rerender, chat = { open: false }
       track('discovery_wave_undo');
       showToast('Wave taken back.');
     } catch {
-      showToast("Couldn't reach the server. Try again in a moment.");
+      showToast("Couldn't reach the server — try again in a moment.");
     }
     rerender();
     return;
@@ -1016,7 +1016,7 @@ async function waveAt(profile, mine, eventSlug, rerender, chat = { open: false }
   sendBtn.addEventListener('click', async () => {
     const name = nameEl?.value.trim() ?? '';
     if (!myName && name.length < 2) {
-      errorEl.textContent = 'Add your first name. They only see it if they wave back.';
+      errorEl.textContent = 'Add your first name — they only see it if they wave back.';
       errorEl.hidden = false;
       nameEl.focus();
       return;
@@ -1029,11 +1029,11 @@ async function waveAt(profile, mine, eventSlug, rerender, chat = { open: false }
       track('discovery_wave', { surface: 'explore' });
       close();
       const nowMutual = (state?.mutual ?? []).some((m) => m.discovery_id === profile.discovery_id);
-      showToast(nowMutual ? '🎉 You both waved. Now you can see each other\'s names.' : 'Wave sent. If they wave back, you\'ll both see names.');
+      showToast(nowMutual ? '🎉 You both waved — names revealed!' : 'Wave sent. If they wave back, you\'ll both see names.');
       rerender();
     } catch (error) {
       sendBtn.disabled = false;
-      errorEl.textContent = error.userMessage ?? "Couldn't send. Check your connection and try again.";
+      errorEl.textContent = error.userMessage ?? "Couldn't send — check your connection and try again.";
       errorEl.hidden = false;
     }
   });
@@ -1093,15 +1093,15 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
   const moreDaysLeft = chat.day_number && chat.days && chat.day_number < chat.days;
   let status = null;
   if (convo.kind === 'waiting') {
-    status = '💬 They sent you a message. Wave back to read it.';
+    status = '💬 They sent you a message — wave back to read it.';
   } else if (convo.kind === 'pending') {
-    status = 'Waiting for them to wave back. Then you both see names and can reply.';
+    status = 'Waiting for them to wave back — then you can both see names and reply.';
   } else if (!chat.open) {
     status = chatClosedText(chat);
   } else if (convo.reason === 'waiting') {
     status = `⏳ Sent. You can write again after they reply (${convo.mine} of ${max} used today).`;
   } else if (convo.reason === 'limit') {
-    status = `That's all ${max} of today's messages.${moreDaysLeft ? ' You get 3 more tomorrow.' : ''} To keep in touch, share your Camp Card or add them to your plan with + Meet.`;
+    status = `That's all ${max} of today's messages.${moreDaysLeft ? ' You get 3 more tomorrow.' : ''} To keep in touch, share your Camp Card — or add them to your plan with + Meet.`;
   }
 
   const canSend = convo.kind === 'mutual' && chat.open && convo.can_send;
@@ -1110,11 +1110,11 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
     open: convo.kind === 'mutual' && chat.open
       ? `🟢 Chat open until ${chat.closes_label} (event time)${chat.days > 1 ? ` · Day ${chat.day_number} of ${chat.days}` : ''} · ${max} messages each today`
       : null,
-    hint: convo.kind === 'mutual' && chat.open && messages.length === 0 ? 'Agree where to meet. Take turns and keep it short.' : null,
+    hint: convo.kind === 'mutual' && chat.open && messages.length === 0 ? 'Agree where to meet — take turns, short and sweet.' : null,
     list: bubbles.length ? bubbles : null,
     composer: canSend,
     label: canSend ? `Message ${next} of ${max} today` : null,
-    input: canSend ? { attrs: { placeholder: `Message ${next} of ${max}, e.g. Meet at the sponsor hall?` } } : null,
+    input: canSend ? { attrs: { placeholder: `Message ${next} of ${max} — e.g. Meet at the sponsor hall?` } } : null,
     status,
     'card-link': convo.kind === 'mutual' && (convo.reason === 'limit' || chat.ended) ? { attrs: { href: cardUrl } } : null,
   });
@@ -1141,7 +1141,7 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
       } catch (error) {
         button.disabled = false;
         input.disabled = false;
-        statusEl.textContent = error.userMessage ?? "Couldn't send. Check your connection and try again.";
+        statusEl.textContent = error.userMessage ?? "Couldn't send — check your connection and try again.";
       }
     });
   }
@@ -1151,7 +1151,7 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
 
 /** Why the chat is closed and when it opens — in the event's own time. */
 function chatClosedText(chat) {
-  if (chat.opens_label) return `🌙 Chat is closed now. It opens ${chat.opens_label} (event time), an hour before the first session.`;
+  if (chat.opens_label) return `🌙 Chat is closed now. It opens ${chat.opens_label} (event time) — an hour before the first session.`;
   if (chat.ended) return 'The event is over, so the chat is closed. Use Camp Cards to stay in touch.';
   return 'The chat opens during the event, once its schedule is published.';
 }

@@ -23,7 +23,7 @@ return [
     'pwa' => [
         'name' => 'CampBuddy | Your WordCamp Companion',
         'short_name' => 'CampBuddy',
-        'description' => 'A phone app for WordCamp attendees: what to do next, a plan for your talks, Contributor Day matching and a digital Camp Card.',
+        'description' => 'The mobile-first companion for WordCamp attendees — what to do next, session planning, Contributor Day matching and a digital Camp Card.',
         'theme_color' => '#c33a19',
         'background_color' => '#fffaf4',
     ],

@@ -68,7 +68,7 @@ class Seo
         $description = match ($route) {
             'event.my-day' => "Full schedule for {$name}{$at}: talks, workshops, tracks and speakers. Star the sessions you want and get a reminder before they start.",
             'event.explore' => "Sponsors, attendees and venue information for {$name}{$at}.",
-            'event.contribute' => "Contributor Day at {$name}: find the WordPress team that suits you (no coding needed) and what to say when you get there.",
+            'event.contribute' => "Contributor Day at {$name}: find the WordPress team that suits you — no coding needed — and what to say when you get there.",
             'event.guide' => "First time at {$name}? What happens during the day, the words people use, what to bring and how to meet people.",
             'event.quest' => "Small, friendly challenges that make meeting people at {$name} easy.",
             'event.camp-card' => "Make a digital name card with a QR code for {$name}.",

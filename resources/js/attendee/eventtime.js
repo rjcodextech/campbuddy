@@ -168,5 +168,5 @@ export function eventTimeNote(nowMs = Date.now()) {
     ? new Intl.DateTimeFormat('en-US', { timeZone: z.iana, timeZoneName: 'short' }).formatToParts(nowMs).find((p) => p.type === 'timeZoneName')?.value
     : `GMT${document.getElementById('app')?.dataset.eventTimezone ?? ''}`;
 
-  return `Times are event time${name ? ` (${name})` : ''}. Your phone is set to a different time zone.`;
+  return `Times are event time${name ? ` (${name})` : ''} — your phone is set to a different time zone.`;
 }

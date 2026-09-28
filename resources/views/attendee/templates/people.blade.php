@@ -22,7 +22,7 @@
 </template>
 
 <template id="tpl-roster-empty">
-    <p style="margin:0">No public attendee list yet. It shows up here once people register and choose to be listed on the WordCamp site.</p>
+    <p style="margin:0">No public attendee list yet — it appears here once people register and choose to be listed on the WordCamp site.</p>
 </template>
 
 <template id="tpl-roster-no-match">

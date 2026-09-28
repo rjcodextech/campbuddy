@@ -6,9 +6,9 @@
             <div class="badge">Contribute</div>
             <h1 class="u-page-title">Where could you help?</h1>
             <p class="footer-note" style="text-align:left">
-                You don't need to code. Writers, designers, translators and people who are just curious all have a table.
+                Not only for coders — writers, designers, translators and curious newcomers are welcome.
                 Answer a few quick questions to find your team.
-                <strong>Students:</strong> your contributions show on your WordPress.org profile, which you can put on your CV.
+                <strong>Students:</strong> your contributions show on your WordPress.org profile — great for a résumé.
             </p>
         </section>
 
@@ -21,7 +21,7 @@
 
         <div id="contrib-results" hidden>
             <div class="contributor-result">
-                <p class="footer-note" style="text-align:left;margin:0 0 8px">Your opening line. Really, this is enough:</p>
+                <p class="footer-note" style="text-align:left;margin:0 0 8px">Your opening line — seriously, this is enough:</p>
                 <p class="mission-big u-text-lg" style="margin:0">"Hi, this is my first Contributor Day. Can you help me get started?"</p>
             </div>
             <div id="contrib-team-list" style="margin-top:14px"></div>

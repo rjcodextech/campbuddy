@@ -1,60 +1,63 @@
-# CampBuddy: WordCamp ke liye ek chhota sa saathi app
+# CampBuddy — WordCamp attendees ka digital saathi
 
 Sep 27, 2026 · @WPSimplified
 
-## Kya hai
+## Yeh hai kya
 
-WordCamp WordPress ki community conferences hain. Shehar-shehar mein local volunteers inhe organize karte hain, aur ticket sasta rehta hai kyunki sponsors kharcha uthate hain.
+CampBuddy **WordCamp** mein aane waalon ka digital saathi hai. WordCamp duniya bhar mein hone waale free, community-run conferences hain jahan WordPress use karne aur banane waale log ek jagah milte hain.
 
-Pehli baar jaane waale ki dikkat ye hoti hai ki wahan koi jaan-pehchaan ka nahi hota. "Contributor Day" ya "hallway track" jaise shabd samajh nahi aate, aur kisi se baat shuru karna awkward lagta hai. Zyaadatar event apps bas schedule dikha dete hain, aage aap jaano.
+Pehli baar aaye kisi attendee ko sabse zyada dikkat yehi hoti hai — kisi ko jaanta nahi, pata nahi "Contributor Day" hota kya hai, kisi se baat kaise shuru kare. Aur zyaadatar event apps sirf ek schedule thama kar chhod dete hain.
 
-CampBuddy isi gap ke liye banaya hai. Schedule to dikhata hi hai, par saath mein ye bhi batata hai ki abhi, is waqt, kya karna theek rahega. Lunch chal raha hai to "kisi anjaan table pe baith jao", keynote hai to "kisi naye ke bagal mein baitho", is tarah.
+CampBuddy sirf schedule nahi dikhata — yeh batata hai ki *abhi* kya karna chahiye. Socho us dost ki tarah jo pehle kai WordCamps attend kar chuka hai, aur pehli baar aane waale ke saath hi chal raha hai.
 
-## Kaise use hota hai
+## Kaam kaise karta hai
 
-Phone ke browser mein campbuddy.club kholo aur apna WordCamp chuno. Account, login ya password kuch nahi chahiye. Chaho to "Install app" daba kar home screen pe rakh lo.
+1. **App kholo** — koi account nahi, koi signup nahi, koi password nahi. Seedha phone ke browser mein chal jaata hai; chaho to home screen pe bhi add kar lo, bilkul kisi aur app jaisa.
+2. **Thodi si apni baat batao (chaho to)** — kis mein interest hai, kis se milna hai. Har sawaal skip ho sakta hai, aur jab tak tum khud matching ya sharing use na karo, yeh sab private hi rehta hai.
+3. **Apna event chuno** — upcoming WordCamps ki list mein se ek pick karo. Uske baad schedule, log, sponsors — sab kuch usi event ka dikhta hai.
+4. **Yeh tumhe guide karta hai** — home screen hamesha batata hai abhi kya relevant hai, ek checklist milti hai, schedule plan karne ko milta hai, aur milne waale log bhi.
+5. **Event ke dauraan use karo** — progress check off karo, sessions bookmark karo, reminders paao, naye log se milte waqt apna Camp Card dikhao.
+6. **Jo chaho rakho, jo na chaho hata do** — sab kuch tumhare phone mein hi rehta hai. Jab chaho export karo ya poora clean wipe kar do.
 
-Shuru mein do-teen optional sawaal aate hain: pehli WordCamp hai ya nahi, kis cheez mein interest hai, kisse milna chahte ho. Skip kar sakte ho. Jo bhi bharoge wo phone pe hi save rehta hai. Bahar sirf wahi jaata hai jo aap khud attendee discovery mein share karo.
+## Kya-kya milta hai
 
-Event ke din app har thodi der mein naya schedule le aata hai. Venue ka wifi band ho jaaye tab bhi jo pages ek baar khul chuke hain wo chalte rehte hain.
+- **Din bhar guide karta hai** — abhi kya ho raha hai aur tumhe kya karna chahiye, khud se sab jodne ki zarurat nahi.
+- **Ek simple checklist (Quest)** — chhote-chhote kaam jaise "kisi doosre shehar ke attendee ko hi bolo" ya "sponsor area ghoom aao" — anjaan logon se bhare kamre ko ek jeetne waala game bana deta hai.
+- **Apne jaise log dhoondhta hai (Matching)** — batao kis mein interest hai aur kisse milna hai, yeh usi event ke doosre attendees se introduce karwa deta hai jo waisa hi connection chahte hain.
+- **Digital identity card (Camp Card)** — naam, kaam aur ek QR code jo seedha LinkedIn se judta hai — ab naya milna kisi kaagaz ke tukde mein kho nahi jaata. Kuch design options mein se apni pasand ka card chuno.
+- **Din plan karta hai (My Day)** — sessions browse karo, jo pasand aaye save karo, shuru hone se pehle reminder milega. Kai din ke WordCamp mein har din ki apni alag list hoti hai.
+- **Contribute karne ka rasta dikhata hai** — WordCamps sirf talks nahi hote, ek poora volunteer side bhi hai (likhna, testing, design, support aur bhi bahut kuch). CampBuddy kuch simple sawaal poochh kar batata hai kahaan tumhe maza aayega.
+- **Asli deals dikhata hai** — sponsors kabhi-kabhi attendees ko apne tools/services pe discount dete hain, CampBuddy sabko ek jagah dikha deta hai. Kuch deals ek chhota sa naam-email maangte hain (sponsor ki apni marzi, sabka nahi).
 
-## Andar kya-kya hai
+## Event organizers ke liye
 
-**Home.** Abhi kya chal raha hai, agla kya hai, aur us waqt kya karna chahiye.
+Ek organizer ke liye CampBuddy ek ready-made companion hai — apne WordCamp ke attendees ko de do, khud kuch banaye ki zaroorat nahi. Naya WordCamp CampBuddy khud dhoondh kar set up bhi kar sakta hai, jaise hi event ki site live ho aur pehle attendees register ho jaayein — organizer bas review karke approve kare.
 
-**My Day.** Poora schedule. Jo talks pasand aayein unhe star karo, shuru hone se pehle reminder aa jaayega. Jinse milna hai unhe bhi yahan add kar sakte ho aur baad mein "Met" ya "Couldn't meet" mark kar sakte ho.
+Ek poora **admin panel** hai jahan se:
 
-**Quest.** Chhote-chhote kaam ki list, jaise "kisi doosre shehar ke attendee se milo" ya "sponsor area ghoom aao". Sharmile logon ke liye baat shuru karne ka ek bahaana ban jaata hai.
+- Events banaye, edit kiye, ya archive kiye jaa sakte hain (status, logo, visibility sab kuch),
+- Roster, schedule aur sponsor data apne aap fetch hota hai — ya ek click mein turant refresh kiya ja sakta hai,
+- Har event ke liye Quest checklist aur Deals set kiye ja sakte hain,
+- Ek **Errors page** batata hai kuch bhi gadbad ho to turant,
+- Ek button se cache purge karke sabke phone pe fresh data bhej sakte hain.
 
-**Explore.** Kaun aa raha hai, sponsors kaun hain, aur venue ki jaankari. Attendee discovery mein apne interests chuno to milte-julte interests waale log dikhte hain. Aap wave karo, wo wave back karein, tab jaakar dono ko ek-doosre ka naam dikhta hai.
+Bade organizers ke liye **Event managers** bhi hain — admin kisi local organizer ko sirf unke event(s) ka limited access de sakta hai (Event details, Event information, Quests & checklist), status ya doosre events chhoo nahi sakte. Har change ek activity log mein record hota hai, taaki poori transparency rahe.
 
-**Contribute.** Contributor Day ke liye kuch sawaal poochh kar batata hai ki kaunsi team (Docs, Polyglots, Design, Support…) aapko suit karegi, aur table pe jaakar pehli line kya bolni hai.
+## Yeh alag kyun hai
 
-**Camp Card.** Digital visiting card. Naam, kaam aur ek QR code, jo scan karne pe seedha aapka LinkedIn khol deta hai. Kuch designs mein se chun sakte ho.
+- **Kabhi koi account nahi** — signup nahi, login nahi, koi tumhari personal detail collect nahi karta.
+- **Privacy ke baare mein saaf-saaf** — jo bhi personal cheez daali, wo tumhare device pe hi rehti hai, jab tak khud share na karo.
+- **Kharab wifi mein bhi chalta hai** — ek baar khul jaaye to app ka core offline bhi kaam karta rehta hai — bhare hue venue mein yeh sabse zyada kaam aata hai.
+- **Us event ka apna lagta hai** — har WordCamp ka apna naam-logo andar dikhta hai, isliye yeh kisi generic third-party tool jaisa nahi, event ka hi hissa lagta hai.
+- **Tumhe app ke andar hi rakhta hai** — sponsor ya deal pe tap karo to wahin khul jaata hai, bahar kisi doosre browser tab mein nahi bhejta.
+- **Bilkul free hai** — WordPress community ke logon ne, community ke logon ke liye banaya hai.
 
-**Deals.** Agar sponsors attendees ko discount dete hain to wo yahan dikhte hain. Kuch deals naam aur email maangti hain, ye sponsor ka apna faisla hota hai.
+## Kiske liye bana hai
 
-## Organizers ke liye
+- **Pehli baar aane waale** — jinhe sabse zyada guidance aur bharosa chahiye ki "main sahi kar raha hoon."
+- **Wapas aane waale attendees** — jo phir bhi apna din aasani se plan karna aur naye log se milna chahte hain.
+- **Event organizers** — jo apne attendees ko ek ready-made companion de sakte hain, khud kuch banaye bina.
 
-Organizer ko kuch banana nahi padta. CampBuddy events.wordpress.org se naye WordCamps khud dhoondh leta hai aur unhe draft ki tarah rakhta hai. Admin approve kare, uske baad schedule, speakers, sponsors aur public attendee list event ki apni site se apne aap aati rehti hai.
+## Abhi kahaan hai
 
-Admin panel mein:
-
-- events banana, edit karna, chhupana ya archive karna
-- data turant refresh karna, ya cache saaf karke sabke phone pe naya data bhejna
-- har event ki Quest list aur Deals set karna
-- ek Errors page, jahan dikhta hai ki kya fail hua
-
-Kisi local organizer ko **Event manager** banaya ja sakta hai. Unhe sirf apne event ki details, Event information aur Quests badalne ka access milta hai. Status ya doosre events wo nahi chhoo sakte, aur unka har badlav activity log mein likha jaata hai.
-
-## Kuch baatein jo hum jaan-boojh kar alag rakhte hain
-
-- Account nahi hai, isliye aapka email ya phone number humare paas nahi hota.
-- Aapka plan, notes aur Camp Card phone mein rehte hain. "Clear my data" dabane pe sab mit jaata hai.
-- Har event ke andar us WordCamp ka apna naam aur logo dikhta hai.
-- Sponsor ya deal ka link app ke andar hi khulta hai, alag tab mein nahi bhejta.
-- Poora app free hai. Ads nahi hain aur koi paid feature nahi hai.
-
-## Abhi kahan tak pahunche
-
-CampBuddy [campbuddy.club](https://campbuddy.club) pe live hai. Pehle do real events WordCamp Sylhet (1 Oct 2026) aur WordCamp Rajasthan (3–4 Oct 2026) hain. Wahan jo seekhenge usse agle events ke liye app ko behtar karenge.
+CampBuddy live hai [campbuddy.club](https://campbuddy.club) pe, WordPress community ke liye bilkul free. Pehle real events — Sylhet (1 Oct 2026) aur WordCamp Rajasthan (3–4 Oct 2026) — se shuruaat ho rahi hai, aur goal hai duniya bhar mein 10,000 users tak scale karna.

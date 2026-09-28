@@ -7,7 +7,7 @@
         </div>
 
         <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
-            This is a preview. Fill in the form below to make it yours.
+            This is a preview — fill in the form below to make it yours.
         </p>
 
         <div class="camp-card-scroll" id="camp-card-scroll">
@@ -102,13 +102,13 @@
 
                 <fieldset class="form-group" id="cc-links-group">
                     <legend class="form-group__title">Find me online<abbr class="form-field__req" title="at least one is required">*</abbr></legend>
-                    <p class="form-group__desc">Add at least one. Your QR code points to one of them.</p>
+                    <p class="form-group__desc">Add at least one — your QR code points to one of them.</p>
                     <p class="form-field__error form-group__error" id="cc-links-error" role="alert" hidden>Add at least one link so your QR code has somewhere to go.</p>
 
                     @include('attendee.partials.form-field', ['id' => 'cc-linkedin', 'name' => 'linkedin', 'label' => 'LinkedIn', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'linkedin.com/in/your-name'])
                     @include('attendee.partials.form-field', ['id' => 'cc-website', 'name' => 'website', 'label' => 'Personal website', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'yoursite.com'])
                     @include('attendee.partials.form-field', ['id' => 'cc-wordpressOrg', 'name' => 'wordpressOrg', 'label' => 'WordPress.org profile', 'link' => true, 'inputmode' => 'url', 'placeholder' => 'profiles.wordpress.org/username'])
-                    @include('attendee.partials.form-field', ['id' => 'cc-twitter', 'name' => 'twitter', 'label' => 'X / Twitter', 'handle' => true, 'prefix' => '@', 'placeholder' => 'yourhandle', 'autocomplete' => 'off', 'hint' => 'Just your handle. Pasting a profile link works too.'])
+                    @include('attendee.partials.form-field', ['id' => 'cc-twitter', 'name' => 'twitter', 'label' => 'X / Twitter', 'handle' => true, 'prefix' => '@', 'placeholder' => 'yourhandle', 'autocomplete' => 'off', 'hint' => 'Just your handle — pasting a profile link works too.'])
                 </fieldset>
 
                 <fieldset class="form-group">

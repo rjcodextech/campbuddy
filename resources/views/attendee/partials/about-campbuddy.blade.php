@@ -1,25 +1,26 @@
 {{--
-    "What is CampBuddy?" for the WordCamp picker ("/"), the answer to
+    "What is CampBuddy?" for the WordCamp picker ("/") — the answer to
     feedback that people didn't get the use case. Two parts, included in
     different places by welcome.blade.php:
-      $part = 'steps'  the four things it does, under the event list;
-      $part = 'more'   the moving tour of real screens, who it's for, FAQ.
+      $part = 'steps'  — the four-step infographic, right under the intro;
+      $part = 'more'   — the moving tour of real screens, who it's for, FAQ.
 --}}
 @if ($part === 'steps')
     <section class="about-steps" aria-labelledby="about-steps-heading">
-        <h2 id="about-steps-heading" class="about-steps__title">How it works</h2>
+        <h2 id="about-steps-heading" class="about-steps__title">How CampBuddy helps you at WordCamp</h2>
         <ol class="about-steps__list">
             @foreach ([
-                ['home', 'See what\'s on', 'What\'s on now and next, with a short tip for each part of the day.'],
-                ['my-day', 'Plan your day', 'Star the talks you want and add people you\'d like to meet.'],
-                ['explore', 'Find your people', 'See who shares your interests. Wave, and if they wave back you both see names.'],
-                ['camp-card', 'Swap contacts', 'Show the QR code on your Camp Card instead of handing out paper cards.'],
+                ['home', 'Know what\'s happening', 'See what\'s on now and next — with a tip on what to do.'],
+                ['my-day', 'Plan your day', 'Star talks, add people to meet, and tick them off as you go.'],
+                ['explore', 'Meet your people', 'Find attendees who share your interests — wave to swap names.'],
+                ['camp-card', 'Stay in touch', 'Share your Camp Card\'s QR code. No paper cards to lose.'],
             ] as $i => [$icon, $title, $text])
                 <li class="about-step">
                     <span class="about-step__icon" aria-hidden="true">
                         <img src="/media/{{ $icon }}.svg" alt="" width="28" height="28">
+                        <span class="about-step__num">{{ $i + 1 }}</span>
                     </span>
-                    <span class="about-step__title"><span class="about-step__num">{{ $i + 1 }}.</span> {{ $title }}</span>
+                    <span class="about-step__title">{{ $title }}</span>
                     <span class="about-step__text">{{ $text }}</span>
                 </li>
             @endforeach
@@ -28,7 +29,7 @@
 @else
     <section class="about-tour" aria-labelledby="about-tour-heading">
         <div class="section-head">
-            <h2 id="about-tour-heading" class="section-head__title">What it looks like</h2>
+            <h2 id="about-tour-heading" class="section-head__title">See it in action</h2>
             <span class="section-head__desc">Swipe or tap the phone</span>
         </div>
 
@@ -39,11 +40,11 @@
             <div class="tour__phone">
                 <div class="tour__screen" aria-live="off">
                     @foreach ([
-                        ['1-home', 'Home shows what\'s on now and what\'s next, with a tip for that part of the day.'],
-                        ['2-schedule', 'Go through the schedule and star the talks you want. Beginner-friendly ones are marked.'],
-                        ['3-people', 'Join attendee discovery to see who shares your interests, then go and say hi.'],
-                        ['4-guide', 'First WordCamp? The guide explains how the day runs and the words people use.'],
-                        ['5-camp-card', 'Your Camp Card. Someone scans the QR code and lands on your LinkedIn.'],
+                        ['1-home', 'Home tells you what\'s on now, what\'s next — and what to actually do about it.'],
+                        ['2-schedule', 'Browse the schedule and star the talks you want. Beginner-friendly ones are marked.'],
+                        ['3-people', 'Join attendee discovery to find people who share your interests — then go say hi.'],
+                        ['4-guide', 'First WordCamp? A 5-minute guide explains the day, the jargon and the etiquette.'],
+                        ['5-camp-card', 'Your Camp Card: show the QR code, and new contacts land straight on your LinkedIn.'],
                     ] as $i => [$image, $caption])
                         <figure class="tour__slide" data-tour-slide @if ($i > 0) hidden @endif>
                             <img src="/media/tour/{{ $image }}.jpg" alt="{{ $caption }}" width="360" height="720" @if ($i > 0) loading="lazy" @endif decoding="async">
@@ -66,22 +67,25 @@
 
     <section class="about-who" aria-labelledby="about-who-heading">
         <div class="section-head">
-            <h2 id="about-who-heading" class="section-head__title">Who it's for</h2>
+            <h2 id="about-who-heading" class="section-head__title">Made for you, whoever you are</h2>
         </div>
         <div class="about-who__grid">
             <a class="about-who__card" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_who_first">
-                <span class="about-who__title">First WordCamp</span>
-                <span class="about-who__text">Read the 5-minute guide, then follow the tips on Home during the day.</span>
-                <span class="about-who__cta">Read the guide →</span>
+                <span class="about-who__emoji" aria-hidden="true">🌱</span>
+                <span class="about-who__title">Your first WordCamp</span>
+                <span class="about-who__text">A 5-minute guide and gentle tips through the day.</span>
+                <span class="about-who__cta">Read the first-timer guide →</span>
             </a>
             <a class="about-who__card" href="{{ route('guide') }}#guide-students" data-track="guide_open" data-track-surface="picker_who_student">
-                <span class="about-who__title">Students</span>
-                <span class="about-who__text">Learn from people who do this for a living, work on open source, and meet companies that hire.</span>
-                <span class="about-who__cta">Tips for students →</span>
+                <span class="about-who__emoji" aria-hidden="true">🎓</span>
+                <span class="about-who__title">College students</span>
+                <span class="about-who__text">Real-world skills, open-source experience and people who hire.</span>
+                <span class="about-who__cta">What's in it for students →</span>
             </a>
             <a class="about-who__card" href="#find-your-camp">
-                <span class="about-who__title">Been before</span>
-                <span class="about-who__text">Plan your talks quickly and find people who are into the same things.</span>
+                <span class="about-who__emoji" aria-hidden="true">🤝</span>
+                <span class="about-who__title">WordCamp regulars</span>
+                <span class="about-who__text">Plan talks in a minute and meet people who share your interests.</span>
                 <span class="about-who__cta">Choose your WordCamp ↑</span>
             </a>
         </div>
@@ -89,7 +93,7 @@
 
     <section class="about-faq" aria-labelledby="about-faq-heading">
         <div class="section-head">
-            <h2 id="about-faq-heading" class="section-head__title">Questions</h2>
+            <h2 id="about-faq-heading" class="section-head__title">Quick questions</h2>
         </div>
         <div class="guide-accordion">
             @foreach (\App\Support\FirstTimerGuide::quickQuestions() as ['q' => $q, 'a' => $a])

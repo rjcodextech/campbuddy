@@ -22,7 +22,7 @@
             <div data-install-steps="ios">
                 <p class="footer-note" style="text-align:left">Add CampBuddy to your home screen for the full app experience:</p>
                 <ol class="install-steps">
-                    <li>Tap the Share icon, the square with an arrow pointing up (no icon? Tap the ••• menu first)</li>
+                    <li>Tap the Share icon — a square with an arrow pointing up (if you don't see it, tap the ••• menu first)</li>
                     <li>Scroll down and choose "Add to Home Screen"</li>
                     <li>Tap "Add", then open CampBuddy from your home screen</li>
                 </ol>
@@ -31,7 +31,7 @@
             <div data-install-steps="menu">
                 <p class="footer-note" style="text-align:left">Add CampBuddy to your home screen for the full app experience:</p>
                 <ol class="install-steps">
-                    <li>Open your browser's menu (the ⋮ button)</li>
+                    <li>Open your browser's menu — the ⋮ button</li>
                     <li>Choose "Install app" or "Add to Home screen"</li>
                     <li>Confirm, then open CampBuddy from your home screen or app list</li>
                 </ol>
@@ -92,7 +92,7 @@
                 <input type="datetime-local" id="meet-at" aria-label="Meeting time" data-slot="at">
             </fieldset>
 
-            <p class="meet-sheet__privacy">🔒 Saved on this phone only. They aren't told.</p>
+            <p class="meet-sheet__privacy">🔒 Saved on this phone only — they aren't told.</p>
 
             <div class="meet-sheet__calendar" data-slot="calendar">
                 <button type="button" class="btn btn--outline btn--compact" data-meet-ics>📅 Add to calendar</button>

@@ -7,7 +7,7 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     @php
         $guideTitle = 'First WordCamp? A Beginner\'s Guide to WordCamp | '.config('campbuddy.name');
-        $guideDescription = 'New to WordCamp? What happens during the day, the words people use, what to bring, tips for students and how to meet people. A 5-minute read for first-time attendees.';
+        $guideDescription = 'New to WordCamp? What happens during the day, the words people use, what to bring, tips for students and how to meet people — a friendly 5-minute guide for first-time attendees.';
     @endphp
     <title>{{ $guideTitle }}</title>
     @include('attendee.partials.seo', [
