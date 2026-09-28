@@ -58,41 +58,69 @@
         </header>
 
         <main id="main-content" class="landing-main" tabindex="-1">
-            {{-- The first screen answers "what is this, and what do I do?" before
-            anything else: one plain sentence, the three promises people ask
-            about most, and the two ways in. --}}
+            {{-- The first screen: what this is, in plain words, and the two ways in.
+            On wider screens a real Home screen sits beside the text. --}}
             <section class="landing-hero" aria-labelledby="landing-hero-title">
                 <div class="landing-hero__text">
-                    <p class="u-eyebrow">Your WordCamp companion</p>
-                    <h1 id="landing-hero-title" class="landing-hero__title">Your friendly guide to WordCamp</h1>
+                    <h1 id="landing-hero-title" class="landing-hero__title">Get more out of your WordCamp</h1>
                     <p class="landing-hero__lead">
-                        Know what's on, plan your talks and meet the right people — all from your phone.
+                        See what's on right now, save the talks you want and find people worth meeting. It opens in your phone's browser and keeps working when the venue wifi gives up.
                     </p>
-                    <ul class="landing-hero__promises" aria-label="Good to know">
-                        <li>Free</li>
-                        <li>No sign-up</li>
-                        <li>Works offline</li>
-                    </ul>
+                    <p class="landing-hero__note">Free, and no sign-up.</p>
                     <div class="landing-hero__actions">
                         <a class="btn btn--primary" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">Choose your WordCamp</a>
-                        {{-- WordCamp 101, before an event is even chosen — for someone
+                        {{-- WordCamp 101, before an event is even chosen, for someone
                         who isn't sure yet what a WordCamp is. --}}
-                        <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">First WordCamp? Read this first</a>
+                        <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">First WordCamp? Start with the guide</a>
                     </div>
                 </div>
-                {{-- Line icons around the CampBuddy mark: what it helps with, at a glance.
-                Decorative — the text beside it says the same in words. --}}
-                <div class="hero-orbit" aria-hidden="true">
-                    <span class="hero-orbit__ring"></span>
-                    <span class="hero-orbit__ring hero-orbit__ring--inner"></span>
-                    <span class="hero-orbit__core"><img src="/media/icons/icon-192.png" alt="" width="72" height="72"></span>
-                    <span class="hero-orbit__item hero-orbit__item--1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg><b>Talks</b></span>
-                    <span class="hero-orbit__item hero-orbit__item--2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg><b>People</b></span>
-                    <span class="hero-orbit__item hero-orbit__item--3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><b>Reminders</b></span>
-                    <span class="hero-orbit__item hero-orbit__item--4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 14v.01M14 21h.01M17 21h4v-4"/></svg><b>Camp Card</b></span>
-                    <span class="hero-orbit__dot hero-orbit__dot--1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2M10 2v2M14 2v2"/></svg></span>
-                    <span class="hero-orbit__dot hero-orbit__dot--2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span>
+                <div class="landing-hero__shot" aria-hidden="true">
+                    <img src="/media/tour/1-home.jpg" alt="" width="360" height="720" loading="lazy" decoding="async">
                 </div>
+            </section>
+
+            <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
+                <div class="section-head">
+                    <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
+                    <span class="section-head__desc">Tap an event for its schedule, people and guide</span>
+                </div>
+
+                @if (($events ?? collect())->isEmpty())
+                    <div class="card" style="text-align:center">
+                        <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, have a look at the <a href="{{ route('guide') }}">first-timer guide</a>.</p>
+                    </div>
+                @else
+                    <div class="card-grid card-grid--picker">
+                        @foreach ($events as $event)
+                            @php
+                                // "2–3 Oct 2026", "30 Oct – 1 Nov 2026": the year (and
+                                // month) only once when both days share it.
+                                $dateLabel = null;
+                                if ($start = $event->starts_on) {
+                                    $end = $event->ends_on;
+                                    $dateLabel = match (true) {
+                                        ! $end || $end->isSameDay($start) => $start->format('j M Y'),
+                                        $end->format('Y-m') === $start->format('Y-m') => $start->format('j').'–'.$end->format('j M Y'),
+                                        $end->year === $start->year => $start->format('j M').' – '.$end->format('j M Y'),
+                                        default => $start->format('j M Y').' – '.$end->format('j M Y'),
+                                    };
+                                }
+                            @endphp
+
+                            <x-attendee.event-card
+                                :href="route('event.home', $event)"
+                                data-track="select_event"
+                                :data-track-event-slug="$event->slug"
+                                :title="$event->display_name"
+                                :media-url="$event->markUrl() ?? '/media/icons/icon-192.png'"
+                                media-fallback="/media/icons/icon-192.png"
+                                media-shape="avatar"
+                                :date="$dateLabel"
+                                :location="$event->info['venue'] ?? null"
+                            />
+                        @endforeach
+                    </div>
+                @endif
             </section>
 
             @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
@@ -141,49 +169,6 @@
                         <button type="button" class="btn btn--primary" data-action="save">Save</button>
                     </div>
                 </div>
-            </section>
-
-            <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
-                <div class="section-head">
-                    <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
-                    <span class="section-head__desc">Tap your event to see its schedule, people and guide</span>
-                </div>
-
-                @if (($events ?? collect())->isEmpty())
-                    <div class="card" style="text-align:center">
-                        <p class="footer-note">No WordCamp is open yet — events appear here a few weeks before they start. Meanwhile, the <a href="{{ route('guide') }}">first-timer guide</a> is a great place to begin.</p>
-                    </div>
-                @else
-                    <div class="card-grid">
-                        @foreach ($events as $event)
-                            @php
-                                $dateLabel = null;
-                                if ($event->starts_on) {
-                                    $dateLabel = $event->starts_on->format('j M Y');
-                                    if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) {
-                                        $dateLabel .= ' – ' . $event->ends_on->format('j M Y');
-                                    }
-                                }
-                            @endphp
-
-                            <x-attendee.event-card
-                                :href="route('event.home', $event)"
-                                data-track="select_event"
-                                :data-track-event-slug="$event->slug"
-                                :title="$event->display_name"
-                                :media-url="$event->markUrl() ?? '/media/icons/icon-192.png'"
-                                media-fallback="/media/icons/icon-192.png"
-                                media-shape="avatar"
-                                :date="$dateLabel"
-                                :location="$event->info['venue'] ?? null"
-                            >
-                                <x-slot:footer>
-                                    <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
-                                </x-slot:footer>
-                            </x-attendee.event-card>
-                        @endforeach
-                    </div>
-                @endif
             </section>
 
             @include('attendee.partials.about-campbuddy', ['part' => 'more'])

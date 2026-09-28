@@ -45,8 +45,8 @@ export async function initPlanReminder() {
   };
 
   const banner = render('tpl-plan-reminder', {
-    count: `${plan.left} ${plan.left === 1 ? 'thing' : 'things'} left today`,
-    rest: '— tick off what\'s done.',
+    count: `${plan.left} ${plan.left === 1 ? 'thing' : 'things'} left today.`,
+    rest: 'Tick off what\'s done.',
     link: { attrs: { href: `${facts.myDayUrl}#mine` } },
   });
 

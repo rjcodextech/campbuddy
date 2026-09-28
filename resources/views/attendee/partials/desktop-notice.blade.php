@@ -16,7 +16,7 @@
         <p class="u-eyebrow">Best on your phone</p>
         <h2 id="desktop-notice-title" class="desktop-notice__title">CampBuddy is made to walk around WordCamp with you</h2>
         <p class="desktop-notice__text">
-            For the best experience — reminders, your Camp Card, finding people in the hallway — open it on your phone.
+            Reminders, your Camp Card and finding people in the hallway all work best on a phone. Open it there.
             Scan this code with your phone's camera:
         </p>
 

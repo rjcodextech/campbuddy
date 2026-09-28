@@ -98,7 +98,7 @@ export function openMeetSheet({ eventId, person, existing = null, onChange = () 
     const row = await saveMeeting(eventId, person.personKey, { ...current(), ...(person.discoveryId ? { discoveryId: person.discoveryId } : {}), unplanned: false });
     track(existing ? 'meet_update' : 'meet_add', { source: person.source, timed: Boolean(row.at) });
     notifyPeopleChanged(eventId);
-    showToast(existing ? 'Saved.' : 'Added to My schedule — see My Day.');
+    showToast(existing ? 'Saved.' : 'Added to My schedule in My Day.');
     close();
     onChange(row);
   });

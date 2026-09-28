@@ -11,7 +11,7 @@
         <div>
             <p style="font-weight:700;margin:0 0 4px">Find people who match your interests</p>
             <p class="footer-note" style="text-align:left;margin:0 0 12px">
-                Pick a few interests and see who here shares them — with names and photos, so you can find each other.
+                Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd.
                 Leave any time.
             </p>
             <button type="button" class="btn btn--primary" id="join-discovery-btn">Join attendee discovery</button>
@@ -28,8 +28,8 @@
             <legend class="form-field__label">How should people see you?</legend>
             <div class="identity-choice__options" role="radiogroup">
                 <label class="identity-option"><input type="radio" name="identity" value="roster" data-slot="opt-roster"><span><strong>Pick my name</strong> from the attendee list</span></label>
-                <label class="identity-option"><input type="radio" name="identity" value="typed"><span><strong>Type my name</strong> — I'm not on the list</span></label>
-                <label class="identity-option"><input type="radio" name="identity" value="anonymous"><span><strong>Stay anonymous</strong> — interests only</span></label>
+                <label class="identity-option"><input type="radio" name="identity" value="typed"><span><strong>Type my name</strong> (I'm not on the list)</span></label>
+                <label class="identity-option"><input type="radio" name="identity" value="anonymous"><span><strong>Stay anonymous</strong> (interests only)</span></label>
             </div>
 
             <div class="identity-panel" data-identity-panel="roster">
@@ -59,7 +59,7 @@
 
         @include('attendee.partials.form-field', ['id' => 'join-profession', 'label' => 'Profession', 'placeholder' => 'e.g. Plugin developer', 'hint' => 'Optional.', 'dataSlot' => 'profession', 'maxlength' => 100, 'errorLine' => false])
         @include('attendee.partials.form-field', ['id' => 'join-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other agency owners', 'hint' => 'Optional.', 'dataSlot' => 'who', 'maxlength' => 255, 'errorLine' => false])
-        @include('attendee.partials.form-field', ['id' => 'join-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional — links to your profiles.wordpress.org page. You can paste the whole profile link.', 'dataSlot' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
+        @include('attendee.partials.form-field', ['id' => 'join-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Links to your profiles.wordpress.org page. Pasting the full profile link works too.', 'dataSlot' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 
         <p class="form-error" data-join-error role="alert" hidden></p>
         <button type="button" class="btn btn--primary btn--full" id="join-submit" data-slot="submit">Join</button>
@@ -103,7 +103,7 @@
 
 {{-- Everything after the status card in the full (Explore) variant --}}
 <template id="tpl-discovery-matches">
-    <p class="notice" style="margin-top:10px" data-slot="offline">You're offline — matches will refresh when you're connected again.</p>
+    <p class="notice" style="margin-top:10px" data-slot="offline">You're offline. Matches will update when you're back online.</p>
 
     <div data-slot="mutual-section">
         <p class="u-eyebrow" style="margin-top:20px">🎉 You both want to meet</p>
@@ -113,11 +113,11 @@
 
     <div data-slot="matches-section">
         <p class="u-eyebrow" style="margin-top:20px">Your best matches</p>
-        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. <strong>👋 Wave</strong> at someone — if they wave back, you both see each other's names, even if you joined anonymously.</p>
+        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. <strong>👋 Wave</strong> at someone. If they wave back, you both see each other's names, even if you joined anonymously.</p>
         <slot data-slot="matches"></slot>
     </div>
 
-    <p class="footer-note" style="text-align:left;margin-top:16px" data-slot="empty">No one else has joined yet — check back later as more attendees sign up. Sharing your Camp Card helps too!</p>
+    <p class="footer-note" style="text-align:left;margin-top:16px" data-slot="empty">Nobody else has joined yet. More people usually sign up closer to the day, so check back.</p>
 
     <div data-slot="others-section">
         <p class="u-eyebrow" style="margin-top:20px">Also open to meet</p>
@@ -132,7 +132,7 @@
 
 <template id="tpl-discovery-match">
     <article class="person-card" data-slot="card">
-        <p class="person-card__waved-you" data-slot="waved-you">👋 Wants to meet you — wave back to swap names</p>
+        <p class="person-card__waved-you" data-slot="waved-you">👋 Wants to meet you. Wave back to swap names</p>
         <div class="person-card__head">
             <img class="person-card__avatar" alt="" width="52" height="52" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
             <div class="person-card__who">
@@ -190,7 +190,7 @@
             <div data-slot="message-field">
                 <label class="meet-sheet__label" for="wave-message">First message <span style="font-weight:400;color:var(--muted)">(optional · 1 of 3)</span></label>
                 <input type="text" id="wave-message" maxlength="140" placeholder="e.g. Coffee stand after the keynote?">
-                <p class="meet-sheet__privacy" style="margin-top:6px">You each get 3 short messages to agree where to meet — then swap Camp Cards.</p>
+                <p class="meet-sheet__privacy" style="margin-top:6px">You each get 3 short messages to agree where to meet. Then swap Camp Cards.</p>
             </div>
 
             <p class="meet-sheet__privacy" data-wave-error hidden style="color:var(--danger)"></p>

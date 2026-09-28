@@ -82,7 +82,7 @@ function showPill(slug) {
   pill.type = 'button';
   pill.id = 'data-updated-pill';
   pill.className = 'data-updated-pill';
-  pill.textContent = 'Updated info — tap to refresh';
+  pill.textContent = 'New info. Tap to refresh';
   pill.addEventListener('click', () => refresh(slug));
   document.body.appendChild(pill);
 }

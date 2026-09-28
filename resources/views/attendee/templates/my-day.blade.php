@@ -4,7 +4,7 @@
 --}}
 
 <template id="tpl-my-day-empty-full">
-    <p style="margin:0;padding:15px 0">No sessions match — try clearing a filter or the search.</p>
+    <p style="margin:0;padding:15px 0">No sessions match. Try clearing a filter or the search.</p>
 </template>
 
 {{-- The event has no schedule at all yet (not published, or not fetched). --}}
@@ -12,7 +12,7 @@
     <div class="empty-state">
         <img src="/media/illustrations/schedule.svg" alt="" width="160" height="120">
         <p class="empty-state__title">The schedule isn't published yet</p>
-        <p class="empty-state__text">Organizers usually share it a few weeks before the event. Check back soon — it will appear here automatically.</p>
+        <p class="empty-state__text">Organizers usually share it a few weeks before the event. It will show up here by itself once they do.</p>
     </div>
 </template>
 
@@ -141,5 +141,5 @@
 </template>
 
 <template id="tpl-plan-sessions-done">
-    <p class="plan-empty">All your saved sessions are done ✓ — tap <strong>Hide done</strong> to see them again.</p>
+    <p class="plan-empty">All your saved sessions are done ✓</p>
 </template>

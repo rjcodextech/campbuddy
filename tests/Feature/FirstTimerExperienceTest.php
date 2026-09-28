@@ -108,7 +108,7 @@ class FirstTimerExperienceTest extends TestCase
 
     public function test_the_picker_points_newcomers_to_the_guide(): void
     {
-        $this->get(route('home'))->assertOk()->assertSee(route('guide'), false)->assertSee('First WordCamp? Read this first');
+        $this->get(route('home'))->assertOk()->assertSee(route('guide'), false)->assertSee('First WordCamp? Start with the guide');
     }
 
     public function test_every_moment_the_guide_matches_on_is_a_real_key(): void
@@ -185,11 +185,11 @@ class FirstTimerExperienceTest extends TestCase
     {
         $response = $this->get(route('home'))->assertOk();
 
-        $response->assertSee('How CampBuddy helps you at WordCamp')
-            ->assertSee('See it in action')
+        $response->assertSee('How it works')
+            ->assertSee('What it looks like')
             ->assertSee('data-tour', false)
-            ->assertSee('Made for you, whoever you are')
-            ->assertSee('College students')
+            ->assertSee("Who it's for", false)
+            ->assertSee('Tips for students')
             ->assertSee('Is it free?')
             ->assertSee('data-tag="Student"', false);
 

@@ -27,58 +27,58 @@ class FirstTimerGuide
             [
                 'icon' => '🎫',
                 'title' => 'Registration & badge',
-                'what' => 'Show your ticket at the front desk and collect your name badge — often with a lanyard and some swag (free goodies).',
-                'tip' => 'Arrive 15–20 minutes early. The queue is shortest then, and the breakfast area is a relaxed place for a first hello.',
+                'what' => 'Show your ticket at the front desk and pick up your name badge. There is often a lanyard and some swag (free stickers, T-shirts and the like) too.',
+                'tip' => 'Get there 15 to 20 minutes early. The queue is short, and people standing around with a coffee are easy to talk to.',
                 'match' => ['registration', 'check-in', 'check in', 'breakfast'],
             ],
             [
                 'icon' => '📣',
                 'title' => 'Opening remarks',
                 'what' => 'The organizers welcome everyone and share housekeeping: where the rooms are, where lunch is, and who to ask for help.',
-                'tip' => 'Worth catching — this is where you learn the wifi, the hashtag and any schedule changes.',
+                'tip' => 'Don\'t skip it. This is where they announce the wifi password, the hashtag and any changes to the schedule.',
                 'match' => ['opening', 'welcome'],
             ],
             [
                 'icon' => '🎤',
                 'title' => 'Keynote',
                 'what' => 'A talk for everyone at once, in the biggest room, usually by a well-known community member.',
-                'tip' => 'Everyone is in one room, so it\'s the easiest moment to sit next to someone new.',
+                'tip' => 'The whole event is in one room, so just sit next to someone you don\'t know yet.',
                 'match' => ['keynote'],
                 'talk' => true,
             ],
             [
                 'icon' => '🗂️',
                 'title' => 'Sessions in tracks',
-                'what' => 'Talks and workshops run in parallel in different rooms — each room is a "track". You choose which one to attend.',
-                'tip' => 'Look for sessions marked beginner-friendly. It\'s completely fine to walk out and switch rooms if a talk isn\'t for you.',
+                'what' => 'Talks and workshops run at the same time in different rooms. Each room is called a "track", and you pick which one to go to.',
+                'tip' => 'Look for sessions marked beginner-friendly. If a talk isn\'t for you, it\'s fine to walk out and try another room.',
                 'match' => [],
             ],
             [
                 'icon' => '☕',
-                'title' => 'Breaks — the "hallway track"',
-                'what' => 'Short breaks between sessions. Many regulars say the conversations in the hallway are the best part of WordCamp.',
-                'tip' => 'Join a small group and ask "What\'s been your favourite session so far?" — it works every time.',
+                'title' => 'Breaks (the "hallway track")',
+                'what' => 'Short breaks between sessions. Ask a regular and they\'ll often say the hallway chats are the best part of the day.',
+                'tip' => 'Walk up to a small group and ask "Which session have you liked most so far?" People are happy to answer.',
                 'match' => ['break', 'coffee', 'tea', 'snack'],
             ],
             [
                 'icon' => '🍽️',
                 'title' => 'Lunch',
-                'what' => 'Lunch is usually included in your ticket. Seating is informal.',
-                'tip' => 'Sit at a table with people you don\'t know. "Mind if I join you?" is all it takes.',
+                'what' => 'Lunch is usually part of your ticket, and you can sit anywhere.',
+                'tip' => 'Pick a table with people you don\'t know and ask "Mind if I join you?" Nobody says no.',
                 'match' => ['lunch'],
             ],
             [
                 'icon' => '🏷️',
                 'title' => 'Sponsor booths',
-                'what' => 'Sponsors are the companies that keep tickets affordable. Their booths are open all day.',
-                'tip' => 'You don\'t have to buy anything. Ask what they build — many have swag, contests and job openings.',
+                'what' => 'Sponsors are the companies that pay for a big part of the event, which is why tickets are cheap. Their booths are open all day.',
+                'tip' => 'Nobody expects you to buy anything. Ask what they make. Many have swag, a contest or open jobs.',
                 'match' => ['sponsor', 'expo'],
             ],
             [
                 'icon' => '⚡',
                 'title' => 'Lightning talks',
                 'what' => 'A run of very short talks (often five minutes each), frequently by first-time speakers.',
-                'tip' => 'A great, low-stakes way to hear lots of ideas — and to spot people you\'d like to talk to afterwards.',
+                'tip' => 'You hear a lot of ideas in a short time, and you find out who you want to talk to afterwards.',
                 'match' => ['lightning'],
                 'talk' => true,
             ],
@@ -86,20 +86,20 @@ class FirstTimerGuide
                 'icon' => '📸',
                 'title' => 'Closing & group photo',
                 'what' => 'Thank-yous to volunteers, organizers and sponsors, then everyone squeezes into one big photo.',
-                'tip' => 'Stay for the photo! It\'s a WordCamp tradition, and you\'ll be glad you\'re in it.',
+                'tip' => 'Stay for the photo. It\'s a WordCamp tradition and it\'s nice to be in it.',
                 'match' => ['closing', 'group photo', 'wrap'],
             ],
             [
                 'icon' => '🎉',
                 'title' => 'After-party / social',
                 'what' => 'An informal evening get-together for attendees, speakers and organizers.',
-                'tip' => 'Wear your badge. Speakers are much easier to chat with here than straight after their talk.',
+                'tip' => 'Keep your badge on. Speakers have more time to chat here than right after their talk.',
                 'match' => ['party', 'social', 'networking', 'after party', 'after-party'],
             ],
             [
                 'icon' => '🛠️',
                 'title' => 'Contributor Day',
-                'what' => 'Often a separate day where attendees help build WordPress itself — code, docs, translation, design, support, marketing and more.',
+                'what' => 'Usually a separate day where attendees work on WordPress itself: code, docs, translation, design, support, marketing and more.',
                 'tip' => 'No coding needed. Many events ask you to register for it separately, and to bring a laptop.',
                 'match' => ['contributor'],
                 'talk' => true,
@@ -123,16 +123,16 @@ class FirstTimerGuide
     public static function moments(): array
     {
         return [
-            ['match' => ['registration', 'check-in', 'check in'], 'now' => 'Collect your badge at the front desk — then say hi to someone standing on their own.', 'key' => true, 'talk' => false],
-            ['match' => ['breakfast'], 'now' => 'Grab a coffee and join a small group — breakfast is the easiest time to meet people.', 'key' => false, 'talk' => false],
-            ['match' => ['opening', 'welcome'], 'now' => 'Find a seat in the main room — this is where you hear the wifi, the hashtag and any changes.', 'key' => true, 'talk' => false],
-            ['match' => ['keynote'], 'now' => "Everyone's in one room — sit next to someone new and say hello before it starts.", 'key' => true, 'talk' => true],
-            ['match' => ['lunch'], 'now' => "Sit at a table with people you haven't met. \"Mind if I join you?\" is all it takes.", 'key' => true, 'talk' => false],
+            ['match' => ['registration', 'check-in', 'check in'], 'now' => 'Pick up your badge at the front desk, then say hi to someone standing on their own.', 'key' => true, 'talk' => false],
+            ['match' => ['breakfast'], 'now' => 'Get a coffee and join a small group. Breakfast is the easiest time to meet people.', 'key' => false, 'talk' => false],
+            ['match' => ['opening', 'welcome'], 'now' => 'Find a seat in the main room. The wifi password, the hashtag and any changes get announced here.', 'key' => true, 'talk' => false],
+            ['match' => ['keynote'], 'now' => "Everyone's in one room. Sit next to someone new and say hello before it starts.", 'key' => true, 'talk' => true],
+            ['match' => ['lunch'], 'now' => "Sit at a table with people you haven't met. Just ask \"Mind if I join you?\"", 'key' => true, 'talk' => false],
             ['match' => ['break', 'coffee', 'tea', 'snack'], 'now' => 'Hallway-track time: join a conversation, refill your water, or visit a sponsor booth.', 'key' => false, 'talk' => false],
-            ['match' => ['lightning'], 'now' => 'Short talks, lots of ideas — easy to drop in, and a great way to spot people to chat with later.', 'key' => false, 'talk' => true],
-            ['match' => ['closing', 'group photo', 'wrap'], 'now' => "Head to the main room — and don't miss the group photo!", 'key' => true, 'talk' => false],
-            ['match' => ['party', 'social', 'networking'], 'now' => 'Bring your badge and your Camp Card — speakers are easiest to chat with here.', 'key' => true, 'talk' => false],
-            ['match' => ['contributor'], 'now' => 'Pick a team table and say "It\'s my first Contributor Day" — every table welcomes beginners.', 'key' => true, 'talk' => true],
+            ['match' => ['lightning'], 'now' => 'Short talks, one after another. Easy to drop in, and you\'ll spot people to talk to later.', 'key' => false, 'talk' => true],
+            ['match' => ['closing', 'group photo', 'wrap'], 'now' => "Head to the main room, and stay for the group photo.", 'key' => true, 'talk' => false],
+            ['match' => ['party', 'social', 'networking'], 'now' => 'Bring your badge and your Camp Card. Speakers have time to chat here.', 'key' => true, 'talk' => false],
+            ['match' => ['contributor'], 'now' => 'Pick a team table and say "It\'s my first Contributor Day". Every table takes beginners.', 'key' => true, 'talk' => true],
             ['match' => ['workshop', 'hands-on', 'hands on'], 'now' => "Bring your laptop and sit near the front so it's easy to ask for help.", 'key' => false, 'talk' => true],
         ];
     }
@@ -146,8 +146,8 @@ class FirstTimerGuide
     public static function sessionNow(): array
     {
         return [
-            'single' => "Slip in quietly if it's already started — there's usually room at the back.",
-            'several' => "Pick whichever sounds most useful. It's completely fine to switch rooms if it isn't for you.",
+            'single' => "If it has already started, slip in quietly. There's usually room at the back.",
+            'several' => "Pick the one that sounds most useful. If it isn't for you, it's fine to switch rooms.",
         ];
     }
 
@@ -163,19 +163,19 @@ class FirstTimerGuide
             ['term' => 'Workshop', 'meaning' => 'A hands-on session where you follow along, often on your own laptop.'],
             ['term' => 'Keynote', 'meaning' => 'The main talk that everyone attends together, usually at the start or end of the day.'],
             ['term' => 'Lightning talk', 'meaning' => 'A very short talk, typically five minutes, delivered back-to-back with others.'],
-            ['term' => 'Hallway track', 'meaning' => 'The conversations that happen outside the session rooms. Not on the schedule — but for many, the best part.'],
+            ['term' => 'Hallway track', 'meaning' => 'The conversations outside the session rooms. It isn\'t on the schedule, but plenty of people come for it.'],
             ['term' => 'Swag', 'meaning' => 'Free goodies: stickers, T-shirts, pins and more, from the event and its sponsors.'],
             ['term' => 'Sponsor', 'meaning' => 'A company that helps fund the event so tickets stay affordable. Sponsors usually have booths you can visit.'],
-            ['term' => 'Organizers & volunteers', 'meaning' => 'The community members who make the event happen — unpaid. Look for their special T-shirts or badges if you need help.'],
+            ['term' => 'Organizers & volunteers', 'meaning' => 'The community members who run the event, without pay. If you need help, look for their T-shirts or badges.'],
             ['term' => 'Contributor Day', 'meaning' => 'A day of helping improve WordPress with the "Make WordPress" teams. Beginners are welcome at every table.'],
             ['term' => 'Make teams', 'meaning' => 'The groups that build WordPress: Core, Design, Docs, Polyglots (translation), Support, Training, Marketing, Accessibility and more.'],
-            ['term' => 'WordPress.org account', 'meaning' => 'A free account on WordPress.org. You\'ll need one to contribute — create it before Contributor Day to save time.'],
+            ['term' => 'WordPress.org account', 'meaning' => 'A free account on WordPress.org. You need one to contribute, so make it before Contributor Day.'],
             ['term' => 'Make WordPress Slack', 'meaning' => 'The chat workspace where the contributor teams talk. Joining is free, via make.wordpress.org/chat.'],
             ['term' => 'Core', 'meaning' => 'The WordPress software itself, as opposed to plugins and themes built on top of it.'],
             ['term' => 'Block editor (Gutenberg)', 'meaning' => 'The editor you use to build pages and posts out of "blocks". Gutenberg is the name of the project behind it.'],
             ['term' => 'Meetup', 'meaning' => 'A smaller, regular local WordPress gathering. Great for staying in touch with people you meet at WordCamp.'],
-            ['term' => 'Wapuu', 'meaning' => 'The cute WordPress mascot. Many WordCamps make their own version — look for it on stickers and swag.'],
-            ['term' => 'Code of Conduct', 'meaning' => 'The rules everyone agrees to so the event is welcoming and safe for all. Organizers enforce it — reach out to them if anything feels wrong.'],
+            ['term' => 'Wapuu', 'meaning' => 'The WordPress mascot. Many WordCamps draw their own version, so look for it on stickers and swag.'],
+            ['term' => 'Code of Conduct', 'meaning' => 'The rules everyone agrees to so the event is safe and welcoming. If something feels wrong, tell an organizer.'],
             ['term' => 'WordPress.tv', 'meaning' => 'Where many WordCamp talks are published after the event, so you can catch sessions you missed.'],
         ];
     }
@@ -186,11 +186,11 @@ class FirstTimerGuide
     public static function tips(): array
     {
         return [
-            ['icon' => '🙋', 'title' => 'Everyone was new once', 'text' => 'At most WordCamps, lots of people are first-timers too. Saying "It\'s my first WordCamp" is a great conversation starter — people love to help.'],
-            ['icon' => '🗣️', 'title' => 'Have a 15-second intro ready', 'text' => 'Your name, what you do with WordPress (or want to), and one thing you\'re curious about today. That\'s it.'],
-            ['icon' => '🚶', 'title' => 'Use the "law of two feet"', 'text' => 'If a session isn\'t right for you, quietly leave and find one that is. Nobody minds — it\'s expected.'],
+            ['icon' => '🙋', 'title' => 'Everyone was new once', 'text' => 'At most WordCamps a big share of the room is new too. "It\'s my first WordCamp" is a perfectly good opening line, and people will help you out.'],
+            ['icon' => '🗣️', 'title' => 'Have a 15-second intro ready', 'text' => 'Your name, what you do with WordPress (or want to do), and one thing you want to learn today.'],
+            ['icon' => '🚶', 'title' => 'Use the "law of two feet"', 'text' => 'If a session isn\'t right for you, leave quietly and find one that is. Nobody minds.'],
             ['icon' => '⭐', 'title' => 'Don\'t try to see everything', 'text' => 'Save three or four sessions you really want, and leave room for conversations. Most talks go online later on WordPress.tv.'],
-            ['icon' => '❓', 'title' => 'Ask questions', 'text' => 'During Q&A or after the talk. Speakers are community members too, and most are delighted someone wants to know more.'],
+            ['icon' => '❓', 'title' => 'Ask questions', 'text' => 'During Q&A or after the talk. Speakers are community members like you, and most are glad someone wants to know more.'],
             ['icon' => '🔋', 'title' => 'Look after yourself', 'text' => 'Bring water and a charger, take breaks, and step out when you need a quiet moment. It\'s a long, busy day.'],
             ['icon' => '🤝', 'title' => 'Keep in touch', 'text' => 'Swap Camp Cards or LinkedIn with people you click with, and look up your local WordPress meetup to see them again.'],
         ];
@@ -205,11 +205,11 @@ class FirstTimerGuide
     public static function students(): array
     {
         return [
-            ['icon' => '🎟️', 'title' => 'Ask about student tickets', 'text' => 'WordCamp tickets are kept affordable, and many events have student pricing or free volunteer spots. Check the event\'s Tickets page — or just email the organizers and ask.'],
-            ['icon' => '🧠', 'title' => 'Learn what the industry actually uses', 'text' => 'Talks come from people building real sites, plugins and businesses every day. Look for "Beginner friendly" sessions in My Day, and don\'t worry if some go over your head — pick one idea to try at home.'],
-            ['icon' => '🛠️', 'title' => 'Get real open-source experience', 'text' => 'At Contributor Day you work on WordPress itself — code, design, docs, translation, testing. Your contributions show on your WordPress.org profile: a public, verifiable line for your résumé and LinkedIn.'],
+            ['icon' => '🎟️', 'title' => 'Ask about student tickets', 'text' => 'WordCamp tickets are cheap, and many events have a student price or free volunteer spots. Check the event\'s Tickets page, or email the organizers and ask.'],
+            ['icon' => '🧠', 'title' => 'Learn what the industry actually uses', 'text' => 'Talks come from people who build sites, plugins and businesses for a living. Look for "Beginner friendly" sessions in My Day. If some of it goes over your head, take one idea home and try it.'],
+            ['icon' => '🛠️', 'title' => 'Get real open-source experience', 'text' => 'At Contributor Day you work on WordPress itself: code, design, docs, translation, testing. Your contributions show on your WordPress.org profile, which you can link from your CV and LinkedIn.'],
             ['icon' => '💼', 'title' => 'Meet people who hire', 'text' => 'Sponsors and agencies are often looking for interns and juniors. At their booth, ask: "What do you look for in someone just starting out?" Then show your Camp Card so they can find you later.'],
-            ['icon' => '🙌', 'title' => 'Volunteer next time', 'text' => 'WordCamps are run by volunteers. Helping at the registration desk or in a session room is the fastest way to get to know the organizers — and it looks great on a CV.'],
+            ['icon' => '🙌', 'title' => 'Volunteer next time', 'text' => 'WordCamps are run by volunteers. Helping at the registration desk or in a session room is the quickest way to get to know the organizers, and it goes on your CV too.'],
             ['icon' => '📚', 'title' => 'Keep learning after', 'text' => 'Learn WordPress (learn.wordpress.org) has free courses and online workshops, and your local WordPress Meetup is where you\'ll see today\'s people again.'],
         ];
     }
@@ -217,7 +217,7 @@ class FirstTimerGuide
     /** A 15-second introduction a student can say out loud. */
     public static function studentIntro(): string
     {
-        return '"Hi, I\'m Priya — I\'m studying computer science at … and I\'m just getting into WordPress. What are you working on?"';
+        return '"Hi, I\'m Priya. I study computer science at … and I\'m just getting into WordPress. What are you working on?"';
     }
 
     /**
@@ -228,10 +228,10 @@ class FirstTimerGuide
         return [
             'Your ticket (the QR code on your phone is usually enough)',
             'Phone, charger and a power bank',
-            'A laptop and charger — if you\'re joining a workshop or Contributor Day',
+            'A laptop and charger, if you\'re doing a workshop or Contributor Day',
             'A refillable water bottle',
-            'Comfortable shoes — there\'s a lot of walking between rooms',
-            'A light jacket or sweater — session rooms can be cold',
+            'Comfortable shoes (you walk between rooms a lot)',
+            'A light jacket or sweater, because session rooms can be cold',
             'Your Camp Card instead of business cards',
         ];
     }
@@ -245,11 +245,11 @@ class FirstTimerGuide
     public static function quickQuestions(): array
     {
         return [
-            ['q' => 'What is CampBuddy?', 'a' => 'A free web app that guides you through a WordCamp: what\'s on now, your schedule, people to meet, and a Camp Card to stay in touch.'],
-            ['q' => 'Is it free?', 'a' => 'Yes, completely — no ads and no paid features.'],
-            ['q' => 'Do I need to sign up or download an app?', 'a' => 'No. There\'s no account and nothing to download from an app store. It opens in your phone\'s browser — tap "Install app" to keep it on your home screen.'],
+            ['q' => 'What is CampBuddy?', 'a' => 'A free web app for WordCamp attendees. It shows what\'s on right now, lets you plan your talks, helps you find people to meet, and gives you a Camp Card to swap contacts.'],
+            ['q' => 'Is it free?', 'a' => 'Yes. No ads, nothing to pay for.'],
+            ['q' => 'Do I need to sign up or download an app?', 'a' => 'No. There\'s no account and nothing to get from an app store. It opens in your phone\'s browser. Tap "Install app" if you want it on your home screen.'],
             ['q' => 'Where does the schedule come from?', 'a' => 'From each WordCamp\'s own website, refreshed through the day. The WordCamp website always has the final word.'],
-            ['q' => 'I\'m a student — is this for me?', 'a' => 'Yes. Pick "Student" when you set up, and read the student tips in the first-timer guide.'],
+            ['q' => 'I\'m a student. Is this for me?', 'a' => 'Yes. Pick "Student" when you set up, and read the student tips in the first-timer guide.'],
             ['q' => 'What happens to what I type in?', 'a' => 'It stays on your phone. Only what you choose to share in attendee discovery is shown to other attendees, and you can leave any time.'],
             ['q' => 'Does it work with bad wifi?', 'a' => 'Yes. Pages you\'ve opened keep working offline.'],
         ];
@@ -261,15 +261,15 @@ class FirstTimerGuide
     public static function faq(): array
     {
         return [
-            ['q' => 'I\'m a student with no WordPress experience. Will I fit in?', 'a' => 'Absolutely. Lots of attendees are students or career-switchers, and speakers love questions from people who are new. Start with "Beginner friendly" sessions, and see "For students" above.'],
+            ['q' => 'I\'m a student with no WordPress experience. Will I fit in?', 'a' => 'Yes. Plenty of attendees are students or changing careers, and speakers like questions from newcomers. Start with "Beginner friendly" sessions, and read "For students" above.'],
             ['q' => 'Do I need to be a developer?', 'a' => 'Not at all. WordCamps are for bloggers, business owners, designers, marketers, students, writers and anyone curious about WordPress. Most schedules include beginner-friendly sessions.'],
-            ['q' => 'Is it OK to leave a session halfway?', 'a' => 'Yes. Quietly slip out — use the aisle seats if you think you might. Switching rooms is normal at WordCamp.'],
+            ['q' => 'Is it OK to leave a session halfway?', 'a' => 'Yes. Slip out quietly, and sit near the aisle if you think you might. People switch rooms all the time at WordCamp.'],
             ['q' => 'What should I wear?', 'a' => 'Whatever you\'re comfortable in. WordCamps are very casual.'],
             ['q' => 'Is food included?', 'a' => 'Usually lunch, snacks and drinks are included in the ticket. Check Explore → Event Info or ask at registration.'],
-            ['q' => 'I\'m shy. How do I meet people?', 'a' => 'Try the Quest tab — small, friendly challenges like "Say hello to another first-timer". Lunch tables, coffee breaks and the sponsor area are the easiest places to start a chat.'],
-            ['q' => 'Do I need to sign up for Contributor Day separately?', 'a' => 'Often yes — it can have its own registration and a limited number of seats. Check the event\'s website or Explore → Event Info.'],
+            ['q' => 'I\'m shy. How do I meet people?', 'a' => 'Open the Quest tab. It has small tasks like "Say hello to another first-timer". Lunch tables, coffee breaks and the sponsor area are the easiest places to start talking.'],
+            ['q' => 'Do I need to sign up for Contributor Day separately?', 'a' => 'Often, yes. It can have its own registration and a limited number of seats. Check the event\'s website or Explore → Event Info.'],
             ['q' => 'Will the talks be recorded?', 'a' => 'Many are, and are published on WordPress.tv a few weeks later. Don\'t count on every one, though.'],
-            ['q' => 'Who do I ask for help at the venue?', 'a' => 'Look for volunteers and organizers — they usually wear special T-shirts or badges — or go to the registration desk. If anything makes you feel unsafe, tell an organizer; that\'s what the Code of Conduct is for.'],
+            ['q' => 'Who do I ask for help at the venue?', 'a' => 'Look for volunteers and organizers (they usually wear special T-shirts or badges), or go to the registration desk. If anything makes you feel unsafe, tell an organizer. That is what the Code of Conduct is for.'],
         ];
     }
 }
