@@ -1,23 +1,23 @@
 1
-00:00:00,000 --> 00:00:02,800
+00:00:00,000 --> 00:00:01,810
 Apna WordCamp organize kar rahe ho?
 
 2
-00:00:02,800 --> 00:00:05,600
+00:00:01,810 --> 00:00:05,720
 Attendee app khud banane ki zaroorat nahi, CampBuddy ready hai.
 
 3
-00:00:05,600 --> 00:00:08,600
+00:00:05,720 --> 00:00:09,190
 Roster, schedule aur sponsors apne aap fetch ho jaate hain.
 
 4
-00:00:08,600 --> 00:00:11,400
+00:00:09,190 --> 00:00:13,670
 Apne local organizers ko event managers bana do — sirf unke event tak access.
 
 5
-00:00:11,400 --> 00:00:14,000
+00:00:13,670 --> 00:00:16,650
 Har change ek activity log mein record hota hai.
 
 6
-00:00:14,000 --> 00:00:17,200
+00:00:16,650 --> 00:00:20,110
 campbuddy.club pe jaake free mein set up karo, aaj hi.
