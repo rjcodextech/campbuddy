@@ -13,6 +13,7 @@ use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Support\EventData;
+use App\Support\EventEdits;
 use App\Support\EventListing;
 use App\Support\EventTime;
 use App\Support\SvgGuard;
@@ -90,7 +91,7 @@ class EventController extends Controller
 
     public function store(StoreEventRequest $request): RedirectResponse
     {
-        $event = Event::create($this->withTimezone($request->validated(), null));
+        $event = Event::create($this->withTimezone(EventEdits::dates($request->validated(), null), null));
 
         return redirect()
             ->route('admin.events.edit', $event)
@@ -135,7 +136,7 @@ class EventController extends Controller
     public function update(UpdateEventRequest $request, Event $event): RedirectResponse
     {
         $zoneBefore = $event->timezone;
-        $event->update($this->withTimezone($request->validated(), $event));
+        $event->update($this->withTimezone(EventEdits::dates($request->validated(), $event), $event));
 
         // Session times depend on the zone: re-read them in the new one.
         if ($event->timezone !== $zoneBefore && $event->status === 'active') {

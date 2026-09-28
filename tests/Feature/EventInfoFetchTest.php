@@ -228,6 +228,38 @@ class EventInfoFetchTest extends TestCase
         $this->assertSame("St. Joseph's Boys' High School — 27 Museum Rd, Bengaluru", $info['venue']);
     }
 
+    public function test_an_address_with_two_lines_run_together_is_split_again(): void
+    {
+        // Seen on central for WordCamp Canada 2026: "800 Robson StVancouver, BC V6E 1A7, Canada".
+        $central = $this->centralRecords();
+        $central[1]['Venue Name'] = 'UBC Robson Square';
+        $central[1]['Physical Address'] = '800 Robson StVancouver, BC V6E 1A7, Canada';
+
+        $this->fakeSite(central: $central);
+
+        $info = (new EventInfoFetcher(self::SITE, 'X'))->fetch();
+
+        $this->assertSame('UBC Robson Square — 800 Robson St, Vancouver, BC V6E 1A7, Canada', $info['venue']);
+    }
+
+    public function test_the_daily_fetch_corrects_a_venue_it_wrote_before_but_keeps_an_admins(): void
+    {
+        $central = $this->centralRecords();
+        $central[1]['Venue Name'] = 'UBC Robson Square';
+        $central[1]['Physical Address'] = '800 Robson StVancouver, BC V6E 1A7, Canada';
+        $this->fakeSite(central: $central);
+
+        $glued = 'UBC Robson Square — 800 Robson StVancouver, BC V6E 1A7, Canada';
+        $auto = $this->event(['info' => ['venue' => $glued], 'info_fetched' => ['venue' => $glued]]);
+        $typed = $this->event(['slug' => 'wc-typed', 'info' => ['venue' => 'Robson Square, Vancouver'], 'info_fetched' => ['venue' => $glued]]);
+
+        FetchEventInfoJob::dispatchSync($auto);
+        FetchEventInfoJob::dispatchSync($typed);
+
+        $this->assertSame('UBC Robson Square — 800 Robson St, Vancouver, BC V6E 1A7, Canada', $auto->refresh()->info['venue']);
+        $this->assertSame('Robson Square, Vancouver', $typed->refresh()->info['venue']);
+    }
+
     public function test_it_falls_back_to_scraping_when_the_rest_api_is_unavailable(): void
     {
         Http::fake(function (Request $request) {

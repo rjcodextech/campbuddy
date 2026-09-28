@@ -101,7 +101,8 @@
         'quests' => $quests->map(fn ($q) => ['id' => $q->id, 'title' => $q->title, 'description' => $q->description]),
         'moments' => \App\Support\FirstTimerGuide::moments(),
         'sessionNow' => \App\Support\FirstTimerGuide::sessionNow(),
-        'startsOn' => $event->starts_on?->toDateString(),
+        // The real first day, so a Contributor Day before the registered dates counts as the event.
+        'startsOn' => \App\Support\EventTime::firstDay($event),
         'endsOn' => ($event->ends_on ?? $event->starts_on)?->toDateString(),
         'urls' => [
             'myDay' => route('event.my-day', $event),

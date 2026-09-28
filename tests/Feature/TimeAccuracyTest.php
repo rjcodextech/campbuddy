@@ -213,7 +213,7 @@ class TimeAccuracyTest extends TestCase
 
     // ---- Dates and the zone from central.wordcamp.org --------------------------------
 
-    public function test_central_fills_a_missing_zone_and_dates_but_never_overwrites(): void
+    public function test_central_fills_a_missing_zone_and_dates_but_never_overwrites_what_was_typed(): void
     {
         Http::fake([
             'central.wordcamp.org/*' => Http::response([[
@@ -231,10 +231,93 @@ class TimeAccuracyTest extends TestCase
         $bare->refresh();
         $this->assertSame(['Asia/Kolkata', '2026-10-10', '2026-10-11'], [$bare->timezone, $bare->starts_on->toDateString(), $bare->ends_on->toDateString()]);
 
-        $set = $this->event(['timezone' => 'Europe/London', 'timezone_locked' => true, 'starts_on' => '2026-10-09']);
+        $set = $this->event(['timezone' => 'Europe/London', 'timezone_locked' => true, 'starts_on' => '2026-10-09', 'dates_locked' => true]);
         FetchEventInfoJob::dispatchSync($set);
         $set->refresh();
-        $this->assertSame(['Europe/London', '2026-10-09'], [$set->timezone, $set->starts_on->toDateString()]);
+        $this->assertSame(['Europe/London', '2026-10-09', '2026-10-11'], [$set->timezone, $set->starts_on->toDateString(), $set->ends_on?->toDateString()], 'a typed start is kept; the blank end is filled');
+    }
+
+    public function test_dates_nobody_typed_follow_central_when_it_changes(): void
+    {
+        // Discovery said 11–13 Nov; the organizers registered 12–13 Nov (WordCamp Netherlands 2026).
+        Http::fake([
+            'central.wordcamp.org/*' => Http::response([[
+                'URL' => self::SITE.'/',
+                'Start Date (YYYY-mm-dd)' => gmmktime(0, 0, 0, 11, 12, 2026),
+                'End Date (YYYY-mm-dd)' => gmmktime(0, 0, 0, 11, 13, 2026),
+            ]]),
+            '*' => Http::response('', 404),
+        ]);
+
+        $event = $this->event(['starts_on' => '2026-11-11', 'ends_on' => '2026-11-13']);
+        FetchEventInfoJob::dispatchSync($event);
+        $event->refresh();
+
+        $this->assertSame(['2026-11-12', '2026-11-13'], [$event->starts_on->toDateString(), $event->ends_on->toDateString()]);
+        $this->assertStringContainsString('starts_on', $event->fetchLogs()->latest('id')->value('message'));
+    }
+
+    public function test_central_without_an_end_date_never_clears_ours(): void
+    {
+        Http::fake([
+            'central.wordcamp.org/*' => Http::response([['URL' => self::SITE.'/', 'Start Date (YYYY-mm-dd)' => gmmktime(0, 0, 0, 10, 3, 2026), 'End Date (YYYY-mm-dd)' => '']]),
+            '*' => Http::response('', 404),
+        ]);
+
+        $event = $this->event(['starts_on' => '2026-10-03', 'ends_on' => '2026-10-04']);
+        FetchEventInfoJob::dispatchSync($event);
+
+        $this->assertSame('2026-10-04', $event->refresh()->ends_on->toDateString());
+    }
+
+    public function test_no_central_record_changes_no_dates(): void
+    {
+        Http::fake(['central.wordcamp.org/*' => Http::response([]), '*' => Http::response('<html><body><p>Hello</p></body></html>')]);
+
+        $event = $this->event(['starts_on' => '2026-11-11', 'ends_on' => '2026-11-13']);
+        FetchEventInfoJob::dispatchSync($event);
+        $event->refresh();
+
+        $this->assertSame(['2026-11-11', '2026-11-13'], [$event->starts_on->toDateString(), $event->ends_on->toDateString()]);
+    }
+
+    public function test_typing_dates_locks_them_and_clearing_them_unlocks(): void
+    {
+        $event = $this->event(['starts_on' => '2026-11-11', 'ends_on' => '2026-11-13']);
+
+        $untouched = \App\Support\EventEdits::dates(['starts_on' => '2026-11-11', 'ends_on' => '2026-11-13'], $event);
+        $this->assertArrayNotHasKey('dates_locked', $untouched, 'saving the form without touching the dates locks nothing');
+
+        $this->assertTrue(\App\Support\EventEdits::dates(['starts_on' => '2026-11-12', 'ends_on' => '2026-11-13'], $event)['dates_locked']);
+        $this->assertFalse(\App\Support\EventEdits::dates(['starts_on' => null, 'ends_on' => null], $event)['dates_locked']);
+        $this->assertTrue(\App\Support\EventEdits::dates(['starts_on' => '2026-11-12', 'ends_on' => null], null)['dates_locked'], 'typed on the create form');
+    }
+
+    public function test_a_contributor_day_before_the_registered_dates_is_part_of_the_event(): void
+    {
+        // WordCamp Canada 2026: registered 5–6 Nov, Contributor Day on the 4th.
+        $event = $this->event(['starts_on' => '2026-11-05', 'ends_on' => '2026-11-06', 'timezone' => 'America/Vancouver']);
+        EventData::put($event->id, 'sessions', [
+            ['id' => 1, 'title' => 'Contributor Day', 'starts_at' => '2026-11-04T10:00:00-08:00', 'duration_seconds' => 21600],
+            ['id' => 2, 'title' => 'Opening', 'starts_at' => '2026-11-05T09:00:00-08:00', 'duration_seconds' => 1800],
+        ]);
+        \App\Support\DataVersion::forget($event->id);
+
+        $this->assertSame('2026-11-04', EventTime::firstDay($event));
+
+        $this->travelTo(CarbonImmutable::parse('2026-11-04 11:00', 'America/Vancouver'));
+        $this->withoutVite()->get(route('event.home', $event))
+            ->assertSee('data-event-phase="during"', false)
+            ->assertSee('data-event-start="2026-11-04"', false);
+    }
+
+    public function test_a_stray_session_long_before_the_start_does_not_move_it(): void
+    {
+        $event = $this->event(['starts_on' => '2026-11-05', 'ends_on' => '2026-11-06', 'timezone' => 'UTC']);
+        EventData::put($event->id, 'sessions', [['id' => 1, 'title' => 'Typo', 'starts_at' => '2026-10-01T10:00:00+00:00']]);
+        \App\Support\DataVersion::forget($event->id);
+
+        $this->assertSame('2026-11-05', EventTime::firstDay($event));
     }
 
     public function test_discovery_takes_the_events_own_date_not_the_utc_one(): void

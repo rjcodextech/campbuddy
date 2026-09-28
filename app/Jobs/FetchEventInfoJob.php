@@ -104,20 +104,13 @@ class FetchEventInfoJob implements ShouldQueue
             'info_fetched_at' => now(),
         ]);
 
-        // Facts the central record has and the event lacks: its time zone
-        // (unless an admin set one) and missing dates. Never overwrites.
+        // Facts from the central record: the time zone when the event lacks one
+        // (unless an admin set one), and the dates.
         $filled = [];
         if (! $this->event->timezone_locked && ! EventTime::known($this->event) && $fetcher->timezone) {
             $filled['timezone'] = $fetcher->timezone;
         }
-        foreach (['starts_on', 'ends_on'] as $date) {
-            if ($this->event->{$date} === null && ($fetcher->dates[$date] ?? null)) {
-                $filled[$date] = $fetcher->dates[$date];
-            }
-        }
-        if (isset($filled['ends_on']) && ($filled['starts_on'] ?? $this->event->starts_on?->toDateString()) > $filled['ends_on']) {
-            unset($filled['ends_on']);
-        }
+        $filled += $this->datesFrom($fetcher->dates);
         if ($filled !== []) {
             $this->event->update($filled);
         }
@@ -133,6 +126,40 @@ class FetchEventInfoJob implements ShouldQueue
                 .($filled === [] ? '' : '; also set from central.wordcamp.org: '.implode(', ', array_keys($filled))),
             $fetcher->sources
         ));
+    }
+
+    /**
+     * The date changes to make, from the dates organizers registered on
+     * central.wordcamp.org. Dates nobody typed by hand follow central, so a
+     * discovered date that was a day off, or a date the organizers moved, is
+     * put right by the next daily run. Dates typed by an admin or manager
+     * (dates_locked) are only ever filled in where they are blank.
+     *
+     * Central's end date may simply not be filled in yet, so a missing one
+     * never clears ours, unless ours would now fall before the start.
+     *
+     * @param  array{starts_on: ?string, ends_on: ?string}  $central
+     * @return array<string, ?string>
+     */
+    private function datesFrom(array $central): array
+    {
+        $current = ['starts_on' => $this->event->starts_on?->toDateString(), 'ends_on' => $this->event->ends_on?->toDateString()];
+        $wanted = $current;
+
+        if ($this->event->dates_locked) {
+            foreach ($wanted as $date => $value) {
+                $wanted[$date] = $value ?? $central[$date] ?? null;
+            }
+        } elseif ($central['starts_on'] !== null) {
+            $wanted['starts_on'] = $central['starts_on'];
+            $wanted['ends_on'] = $central['ends_on'] ?? $current['ends_on'];
+        }
+
+        if ($wanted['ends_on'] !== null && $wanted['starts_on'] !== null && $wanted['ends_on'] < $wanted['starts_on']) {
+            $wanted['ends_on'] = null;
+        }
+
+        return array_filter($wanted, fn (?string $value, string $date) => $value !== $current[$date], ARRAY_FILTER_USE_BOTH);
     }
 
     private function normalize(?string $value): ?string

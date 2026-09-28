@@ -16,7 +16,8 @@
                   hint="The event's own WordCamp.org site. Schedule and sponsors are read from here." />
 
     <x-form.input name="starts_on" type="date" label="Starts on"
-                  :value="optional($event->starts_on)->toDateString()" />
+                  :value="optional($event->starts_on)->toDateString()"
+                  :hint="$event->dates_locked ? 'You set these dates, so they stay as they are. Clear both to follow central.wordcamp.org again.' : 'Kept in step with the dates on central.wordcamp.org. Type a date to set it yourself.'" />
 
     <x-form.input name="ends_on" type="date" label="Ends on"
                   :value="optional($event->ends_on)->toDateString()"

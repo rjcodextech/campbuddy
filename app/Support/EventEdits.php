@@ -22,6 +22,8 @@ class EventEdits
      */
     public static function details(array $data, Event $event): array
     {
+        $data = self::dates($data, $event);
+
         if (! array_key_exists('timezone', $data)) {
             return $data;
         }
@@ -35,6 +37,33 @@ class EventEdits
         } else {
             $data['timezone'] = $zone;
             $data['timezone_locked'] = true;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Dates typed by someone are theirs to keep (dates_locked): the daily fetch
+     * from central.wordcamp.org no longer changes them. Both left blank, the
+     * dates are read from central again. Saving the form without touching the
+     * dates changes nothing, so an untouched form never locks them.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public static function dates(array $data, ?Event $event): array
+    {
+        if (! array_key_exists('starts_on', $data) && ! array_key_exists('ends_on', $data)) {
+            return $data;
+        }
+
+        $day = fn (mixed $value): ?string => blank($value) ? null : \Carbon\CarbonImmutable::parse($value)->toDateString();
+        $typed = [$day($data['starts_on'] ?? null), $day($data['ends_on'] ?? null)];
+
+        if ($typed === [null, null]) {
+            $data['dates_locked'] = false;
+        } elseif ($event === null || $typed !== [$event->starts_on?->toDateString(), $event->ends_on?->toDateString()]) {
+            $data['dates_locked'] = true;
         }
 
         return $data;

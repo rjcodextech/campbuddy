@@ -35,6 +35,9 @@ class EventTime
      */
     public const RETENTION_DAYS = 3;
 
+    /** How many days before its start date a scheduled session still counts as the event (Contributor Day). */
+    public const LEAD_DAYS = 3;
+
     /** No WordCamp runs longer; a stray session date further out must not keep an event live. */
     public const MAX_EVENT_SPAN_DAYS = 7;
 
@@ -53,6 +56,28 @@ class EventTime
         ]);
 
         return $dates === [] ? null : max($dates);
+    }
+
+    /**
+     * The event's first day at the venue ("Y-m-d"): its start date, or the day
+     * of its first scheduled session when that comes earlier. Contributor Day
+     * is often the day before the dates organizers register (WordCamp Canada
+     * 2026: registered 5–6 Nov, Contributor Day on the 4th), and on that day
+     * the app must treat the event as on, not "starts tomorrow". Only up to
+     * LEAD_DAYS early, so a stray session date can't drag the start far back.
+     */
+    public static function firstDay(Event $event): ?string
+    {
+        $start = $event->starts_on?->toDateString();
+        $session = self::firstSessionDay($event);
+
+        if ($start === null || $session === null) {
+            return $start ?? $session;
+        }
+
+        $earliest = $event->starts_on->subDays(self::LEAD_DAYS)->toDateString();
+
+        return $session < $start && $session >= $earliest ? $session : $start;
     }
 
     /** Whether the event's last day is over at the venue. */
@@ -116,8 +141,49 @@ class EventTime
     /** Called whenever an event or its data is written (see DataVersion::forget). */
     public static function forgetSessionDay(int $eventId): void
     {
-        Cache::store('array')->forget(self::sessionDayKey($eventId));
-        Cache::forget(self::sessionDayKey($eventId));
+        foreach ([self::sessionDayKey($eventId), self::firstSessionDayKey($eventId)] as $key) {
+            Cache::store('array')->forget($key);
+            Cache::forget($key);
+        }
+    }
+
+    private static function firstSessionDayKey(int $eventId): string
+    {
+        return "event:{$eventId}:first-session-day";
+    }
+
+    /** The day (at the venue) the event's first scheduled session starts, cached like the last one. */
+    private static function firstSessionDay(Event $event): ?string
+    {
+        $key = self::firstSessionDayKey($event->id);
+        $request = Cache::store('array');
+        $day = $request->get($key);
+
+        if ($day === null) {
+            $day = Cache::remember($key, 900, function () use ($event) {
+                $zone = self::zone($event);
+                $earliest = null;
+
+                foreach (EventData::get($event->id, 'sessions') ?? [] as $session) {
+                    if (! is_array($session) || empty($session['starts_at'])) {
+                        continue;
+                    }
+
+                    try {
+                        $day = \Carbon\CarbonImmutable::parse($session['starts_at'])->setTimezone($zone)->toDateString();
+                    } catch (Throwable) {
+                        continue;
+                    }
+
+                    $earliest = $earliest === null ? $day : min($earliest, $day);
+                }
+
+                return $earliest ?? '';
+            });
+            $request->put($key, $day, 60);
+        }
+
+        return $day === '' ? null : $day;
     }
 
     private static function sessionDayKey(int $eventId): string

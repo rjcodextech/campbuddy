@@ -25,6 +25,7 @@ class Event extends Model
         'source_site_url',
         'starts_on',
         'ends_on',
+        'dates_locked',
         'timezone',
         'timezone_locked',
         'logo_path',
@@ -39,6 +40,7 @@ class Event extends Model
     protected $casts = [
         'is_visible' => 'boolean',
         'timezone_locked' => 'boolean',
+        'dates_locked' => 'boolean',
         'info' => 'array',
         'info_fetched' => 'array',
         'info_fetched_at' => 'datetime',

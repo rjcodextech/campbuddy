@@ -21,9 +21,11 @@
     $today = \App\Support\EventTime::today($event);
     // The event's real last day (end date, start date or last session day).
     $eventLastDay = \App\Support\EventTime::lastDay($event);
+    // …and its real first day (start date, or an earlier Contributor Day on the schedule).
+    $eventFirstDay = \App\Support\EventTime::firstDay($event);
     $eventPhase = match (true) {
-        $event->starts_on === null => 'unknown',
-        $today < $event->starts_on->toDateString() => 'before',
+        $eventFirstDay === null => 'unknown',
+        $today < $eventFirstDay => 'before',
         $today > $eventLastDay => 'after',
         default => 'during',
     };
@@ -69,7 +71,7 @@
         {{-- Event facts the planner and calendar exports need (plan.js, calendar.js). --}}
         <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}"
              data-event-name="{{ $event->display_name }}"
-             data-event-start="{{ $event->starts_on?->toDateString() }}"
+             data-event-start="{{ $eventFirstDay }}"
              data-event-end="{{ $eventLastDay }}"
              data-event-venue="{{ $event->info['venue'] ?? '' }}"
              data-event-timezone="{{ \App\Support\EventTime::known($event) ? \App\Support\EventTime::normalize($event->timezone) : '' }}"

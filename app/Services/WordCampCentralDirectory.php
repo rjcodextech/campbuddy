@@ -126,7 +126,7 @@ class WordCampCentralDirectory
         // Organizers often type the venue name into the address box too, so
         // the same part can appear on two lines — keep the first of each, and
         // drop any part that is just the venue name (it leads the line instead).
-        $address = collect(preg_split('/\R+/u', (string) ($record['Physical Address'] ?? '')) ?: [])
+        $address = collect(preg_split('/\R+/u', self::unglue((string) ($record['Physical Address'] ?? ''))) ?: [])
             ->flatMap(fn ($line) => explode(',', $line))
             ->map(fn ($part) => $this->clean($part))
             ->filter()
@@ -143,6 +143,18 @@ class WordCampCentralDirectory
         };
 
         return $line === '' ? null : $line;
+    }
+
+    /**
+     * Puts back a break that got lost between two lines of an address, so
+     * "800 Robson StVancouver" reads "800 Robson St, Vancouver". Only after a
+     * street word (St, Rd, Ave, Street, Road…) run straight into a capitalised
+     * word: that never happens in a real name, while names like "McDonald" or
+     * "WordCamp" are left alone.
+     */
+    public static function unglue(string $address): string
+    {
+        return preg_replace('/\b(St|Rd|Ave|Blvd|Dr|Ln|Hwy|Pkwy|Sq|Street|Road|Avenue|Boulevard|Drive|Lane|Square|Marg)(?=\p{Lu}\p{Ll})/u', '$1, ', $address) ?? $address;
     }
 
     /**
