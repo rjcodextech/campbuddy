@@ -198,6 +198,7 @@
                                 :data-country="$eventCountries[$event->id] ?? ''"
                                 :date="$dateLabel"
                                 :location="$event->info['venue'] ?? null"
+                                location-layout="row"
                             >
                                 <x-slot:footer>
                                     <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>

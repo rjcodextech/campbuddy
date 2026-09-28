@@ -131,6 +131,26 @@
     color: var(--muted);
 }
 
+// Location on its own full-width row, under the media + date/title row
+// (the home page's picker: locationLayout="row"). Starts at the card's
+// left edge, icon and text top-aligned so a long address wraps neatly.
+.event-card--location-row .event-card__main {
+    align-items: center;
+}
+
+.event-card__location--row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 0 v.$space-4 v.$space-4;
+    margin-top: calc(-1 * #{v.$space-1});
+
+    .event-card__location-icon {
+        flex-shrink: 0;
+        margin-top: 0.2em;
+    }
+}
+
 .event-card__tags {
     display: flex;
     flex-wrap: wrap;

@@ -19,10 +19,13 @@
     'category' => null,
     'date' => null,
     'location' => null,
+    // 'inline' (under the title, beside the media) or 'row' (its own
+    // full-width row under media + title — the home page's picker uses this).
+    'locationLayout' => 'inline',
     'tags' => [],
 ])
 
-<a href="{{ $href }}" {{ $attributes->class(['event-card']) }}>
+<a href="{{ $href }}" {{ $attributes->class(['event-card', 'event-card--location-row' => $location && $locationLayout === 'row']) }}>
     <div class="event-card__main">
         @if ($mediaUrl)
             <div class="event-card__media event-card__media--{{ $mediaShape }}">
@@ -45,7 +48,7 @@
                 <p class="event-card__subtitle">{{ $subtitle }}</p>
             @endif
 
-            @if ($location)
+            @if ($location && $locationLayout !== 'row')
                 <p class="event-card__location"><x-attendee.line-icon name="map-pin" class="event-card__location-icon" /> {{ $location }}</p>
             @endif
 
@@ -58,6 +61,10 @@
             @endif
         </div>
     </div>
+
+    @if ($location && $locationLayout === 'row')
+        <p class="event-card__location event-card__location--row"><x-attendee.line-icon name="map-pin" class="event-card__location-icon" /> {{ $location }}</p>
+    @endif
 
     @if (isset($qrCode) || isset($footer))
         <div class="event-card__footer">
