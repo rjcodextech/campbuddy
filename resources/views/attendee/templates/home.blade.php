@@ -8,7 +8,7 @@
 <template id="tpl-home-happening-none">
     <div>
         <p style="margin:0;font-weight:700">Nothing's on stage right this minute.</p>
-        <p class="home-guidance">Good moment for the hallway track — chat with someone nearby, or visit a sponsor booth. <span data-slot="next-part">Next up: <strong data-slot="next"></strong> <span data-slot="next-when"></span>.</span></p>
+        <p class="home-guidance">Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth. <span data-slot="next-part">Next up: <strong data-slot="next"></strong> <span data-slot="next-when"></span>.</span></p>
     </div>
 </template>
 
@@ -28,7 +28,7 @@
 {{-- #happening-now: the event is over --}}
 <template id="tpl-home-happening-after">
     <div>
-        <p style="margin:0;font-weight:700">That's a wrap — thanks for coming!</p>
+        <p style="margin:0;font-weight:700">That's a wrap. Thanks for coming!</p>
         <p class="home-guidance">Connect with the people you met while it's fresh, look up your local WordPress meetup, and watch for talk recordings on WordPress.tv.</p>
     </div>
 </template>
@@ -59,7 +59,7 @@
 {{-- Talks are announced but the WordCamp site hasn't given them times yet. --}}
 <template id="tpl-home-up-next-tba">
     <div>
-        <p style="margin:0;font-weight:700"><span data-slot="count"></span> sessions announced — times coming soon</p>
+        <p style="margin:0;font-weight:700"><span data-slot="count"></span> sessions announced, times still to come</p>
         <p class="home-guidance">Browse them now and star the ones you'd enjoy: <a data-slot="link" data-track="home_link_click" data-track-target="tba_sessions">see the sessions</a>.</p>
     </div>
 </template>
@@ -67,7 +67,7 @@
 <template id="tpl-home-up-next">
     <div>
         <p style="margin:0 0 2px;font-weight:700" data-slot="title"></p>
-        <p class="footer-note" style="margin:0;text-align:left"><span data-slot="reason"></span> — starts <span data-slot="when"></span><span data-slot="track-part"> · <span data-slot="track"></span></span>.</p>
+        <p class="footer-note" style="margin:0;text-align:left"><span data-slot="reason"></span>, starts <span data-slot="when"></span><span data-slot="track-part"> · <span data-slot="track"></span></span>.</p>
         <p class="home-guidance" data-slot="guidance"></p>
     </div>
 </template>
@@ -75,6 +75,6 @@
 {{-- #starting-soon-banner --}}
 <template id="tpl-home-starting-soon">
     <div class="notice" style="margin-bottom:16px">
-        <strong data-slot="title"></strong> starts in <span data-slot="minutes"></span> min<span data-slot="track-part"> — <span data-slot="track"></span></span>. You saved this one.
+        <strong data-slot="title"></strong> starts in <span data-slot="minutes"></span> min<span data-slot="track-part"> in <span data-slot="track"></span></span>. You saved this one.
     </div>
 </template>

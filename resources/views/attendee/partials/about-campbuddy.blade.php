@@ -10,9 +10,9 @@
         <h2 id="about-steps-heading" class="about-steps__title">How CampBuddy helps you at WordCamp</h2>
         <ol class="about-steps__list">
             @foreach ([
-                ['home', 'Know what\'s happening', 'See what\'s on now and next — with a tip on what to do.'],
+                ['home', 'Know what\'s happening', 'See what\'s on now and next, plus a tip on what to do.'],
                 ['my-day', 'Plan your day', 'Star talks, add people to meet, and tick them off as you go.'],
-                ['explore', 'Meet your people', 'Find attendees who share your interests — wave to swap names.'],
+                ['explore', 'Meet your people', 'Find attendees who share your interests, then wave to swap names.'],
                 ['camp-card', 'Stay in touch', 'Share your Camp Card\'s QR code. No paper cards to lose.'],
             ] as $i => [$icon, $title, $text])
                 <li class="about-step">
@@ -40,11 +40,11 @@
             <div class="tour__phone">
                 <div class="tour__screen" aria-live="off">
                     @foreach ([
-                        ['1-home', 'Home tells you what\'s on now, what\'s next — and what to actually do about it.'],
+                        ['1-home', 'Home shows what\'s on now and next, with a tip for that part of the day.'],
                         ['2-schedule', 'Browse the schedule and star the talks you want. Beginner-friendly ones are marked.'],
-                        ['3-people', 'Join attendee discovery to find people who share your interests — then go say hi.'],
-                        ['4-guide', 'First WordCamp? A 5-minute guide explains the day, the jargon and the etiquette.'],
-                        ['5-camp-card', 'Your Camp Card: show the QR code, and new contacts land straight on your LinkedIn.'],
+                        ['3-people', 'Join attendee discovery to find people who share your interests, then go and say hi.'],
+                        ['4-guide', 'First WordCamp? A 5-minute guide explains how the day runs and the words people use.'],
+                        ['5-camp-card', 'Your Camp Card: people scan the QR code and land on your LinkedIn.'],
                     ] as $i => [$image, $caption])
                         <figure class="tour__slide" data-tour-slide @if ($i > 0) hidden @endif>
                             <img src="/media/tour/{{ $image }}.jpg" alt="{{ $caption }}" width="360" height="720" @if ($i > 0) loading="lazy" @endif decoding="async">
@@ -67,25 +67,25 @@
 
     <section class="about-who" aria-labelledby="about-who-heading">
         <div class="section-head">
-            <h2 id="about-who-heading" class="section-head__title">Made for you, whoever you are</h2>
+            <h2 id="about-who-heading" class="section-head__title">Who it's for</h2>
         </div>
         <div class="about-who__grid">
             <a class="about-who__card" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_who_first">
                 <span class="about-who__emoji" aria-hidden="true">🌱</span>
                 <span class="about-who__title">Your first WordCamp</span>
-                <span class="about-who__text">A 5-minute guide and gentle tips through the day.</span>
+                <span class="about-who__text">A 5-minute guide and small tips through the day.</span>
                 <span class="about-who__cta">Read the first-timer guide →</span>
             </a>
             <a class="about-who__card" href="{{ route('guide') }}#guide-students" data-track="guide_open" data-track-surface="picker_who_student">
                 <span class="about-who__emoji" aria-hidden="true">🎓</span>
                 <span class="about-who__title">College students</span>
-                <span class="about-who__text">Real-world skills, open-source experience and people who hire.</span>
+                <span class="about-who__text">Learn from people who do this for a living, try open source, and meet companies that hire.</span>
                 <span class="about-who__cta">What's in it for students →</span>
             </a>
             <a class="about-who__card" href="#find-your-camp">
                 <span class="about-who__emoji" aria-hidden="true">🤝</span>
                 <span class="about-who__title">WordCamp regulars</span>
-                <span class="about-who__text">Plan talks in a minute and meet people who share your interests.</span>
+                <span class="about-who__text">Plan your talks quickly and meet people who are into the same things.</span>
                 <span class="about-who__cta">Choose your WordCamp ↑</span>
             </a>
         </div>

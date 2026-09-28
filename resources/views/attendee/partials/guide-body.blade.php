@@ -44,7 +44,7 @@
             @endif
         </h1>
         <p class="guide-hero__lead">
-            What happens when, the words people use, and how to make friends — everything regulars wish they'd known on day one.
+            How the day runs, the words people throw around, and how to start talking to strangers. Five minutes to read.
         </p>
         <ul class="guide-hero__meta" aria-label="About this guide">
             <li>⏱ 5-minute read</li>
@@ -97,9 +97,9 @@
 <section id="guide-what" class="guide-section" data-track-section-view="what" aria-labelledby="guide-what-heading">
     <h2 id="guide-what-heading" class="guide-section__title">What is a WordCamp?</h2>
     <div class="card guide-prose">
-        <p>A <strong>WordCamp</strong> is a conference about WordPress — the free software behind a huge share of the world's websites. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
+        <p>A <strong>WordCamp</strong> is a conference about WordPress, the free software that runs a large part of the web. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
         <p>It's for <strong>everyone who uses WordPress</strong> or is curious about it: bloggers, small-business owners, designers, developers, marketers, students and writers. You don't need to be an expert, and nobody will quiz you.</p>
-        <p>Tickets are kept affordable thanks to <strong>sponsors</strong>, and everyone — speakers and organizers included — is there because they love the community. That's why the atmosphere is famously friendly.</p>
+        <p><strong>Sponsors</strong> pay for much of it, so tickets stay cheap. Speakers and organizers are volunteers, not paid staff, which is a big part of why people are so easy to talk to.</p>
     </div>
 </section>
 
@@ -156,7 +156,7 @@
 
 <section id="guide-students" class="guide-section" data-track-section-view="students" aria-labelledby="guide-students-heading">
     <h2 id="guide-students-heading" class="guide-section__title">🎓 For college students</h2>
-    <p class="guide-section__desc">WordCamp is one of the best-value things a student can do: skills, real experience, and people who hire — in one day.</p>
+    <p class="guide-section__desc">For the price of a ticket you get a day of practical talks, a chance to work on real open-source code, and a room full of people who hire.</p>
     <div class="guide-tips">
         @foreach (FirstTimerGuide::students() as $tip)
             <div class="guide-tip">
@@ -171,7 +171,7 @@
     <div class="card guide-student-intro">
         <p class="u-eyebrow">Your 15-second intro</p>
         <p class="guide-student-intro__line">{{ FirstTimerGuide::studentIntro() }}</p>
-        <p class="footer-note" style="text-align:left;margin:0">Ending with a question hands the conversation to them — the easiest way to keep it going.</p>
+        <p class="footer-note" style="text-align:left;margin:0">End with a question. Then it's their turn to talk, and the conversation keeps going.</p>
     </div>
 </section>
 

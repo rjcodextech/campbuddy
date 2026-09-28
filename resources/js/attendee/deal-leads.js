@@ -52,7 +52,7 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle }) 
       close();
       openInAppBrowser(leadOfferUrl, leadOfferTitle);
     } catch {
-      errorEl.textContent = "Couldn't submit that — check your details and try again.";
+      errorEl.textContent = "Couldn't send that. Check your details and try again.";
       errorEl.hidden = false;
       submitBtn.disabled = false;
     }

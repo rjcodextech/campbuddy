@@ -248,8 +248,8 @@ function forgetExports() {
 }
 
 const LABELS = {
-  share: { idle: 'Share', ready: 'Ready — tap to share' },
-  download: { idle: 'Download', ready: 'Ready — tap to download' },
+  share: { idle: 'Share', ready: 'Ready, tap to share' },
+  download: { idle: 'Download', ready: 'Ready, tap to download' },
 };
 
 function resetButton(btn) {
@@ -290,7 +290,7 @@ async function handleExport(kind, layout, btn) {
   } catch {
     resetButton(btn);
     track('camp_card_export_error', { action: kind, layout });
-    showToast("Couldn't create the image — please try again.");
+    showToast("Couldn't create the image. Please try again.");
     return;
   }
 
@@ -314,7 +314,7 @@ function filenameFor(layout) {
 async function downloadBlob(blob, layout) {
   saveBlob(blob, filenameFor(layout));
   track('camp_card_download', { layout });
-  showToast('Saved — 600 DPI, ready to print.');
+  showToast('Saved at 600 DPI, ready to print.');
 }
 
 async function shareBlob(blob, layout) {
@@ -339,7 +339,7 @@ async function shareBlob(blob, layout) {
   } catch (err) {
     if (err?.name !== 'AbortError') {
       track('camp_card_export_error', { action: 'share', layout });
-      showToast("Couldn't open sharing — try Download instead.");
+      showToast("Couldn't open sharing. Try Download instead.");
     }
   }
 }
@@ -614,7 +614,7 @@ function tidyLinkFields(form) {
 
 // ---- Required fields -----------------------------------------------------
 
-const NAME_MESSAGE = 'Enter your name — it shows on your card.';
+const NAME_MESSAGE = 'Enter your name. It goes on your card.';
 
 function setLinksMissing(missing) {
   document.getElementById('cc-links-group').classList.toggle('form-group--invalid', missing);

@@ -2,5 +2,5 @@
 @section('title', 'Slow down')
 @section('code', 'Too many requests')
 @section('art', 'wait')
-@section('heading', 'Whoa — lots of taps at once')
-@section('message', 'Conference wifi means many people share one connection, so we limit how fast requests can come in. Wait a minute and try again.')
+@section('heading', 'Too many taps at once')
+@section('message', 'At a conference lots of people share one wifi connection, so we slow things down a little. Wait a minute and try again.')

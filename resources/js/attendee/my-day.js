@@ -121,7 +121,7 @@ export async function renderMyDay(root) {
       track('session_save', { schedule_session_id: session.id, session_title: session.title, overlap: Boolean(conflict) });
 
       if (conflict) {
-        showToast(`Heads up — this overlaps with ${conflict.title ?? 'another saved session'}. Both are saved.`);
+        showToast(`This overlaps with ${conflict.title ?? 'another saved session'}. Both are saved.`);
       }
 
       // N1: ask right after the bookmark, at the moment the benefit is
@@ -246,7 +246,7 @@ export async function renderMyDay(root) {
     const pct = Math.round((plan.done / plan.total) * 100);
     const card = render('tpl-plan-summary', {
       count: plan.left === 0
-        ? `All ${plan.total} done — nice work! 🎉`
+        ? `All ${plan.total} done 🎉`
         : `${plan.done} of ${plan.total} done · ${plan.left} left`,
       ring: `${pct}%`,
       bar: { attrs: { 'aria-valuemax': String(plan.total), 'aria-valuenow': String(plan.done), 'aria-label': 'Plan progress' } },
@@ -276,7 +276,7 @@ export async function renderMyDay(root) {
       ];
 
       if (items.length === 0) {
-        showToast('Nothing with a time yet — save a session or add someone to meet first.');
+        showToast('Nothing with a time yet. Save a session or add someone to meet first.');
         return;
       }
 

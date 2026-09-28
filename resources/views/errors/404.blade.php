@@ -3,4 +3,4 @@
 @section('code', 'Error 404')
 @section('art', 'lost')
 @section('heading', "We couldn't find that page")
-@section('message', "The link may be old, or this WordCamp isn't live in CampBuddy yet. Pick your event from the list and you'll be right back on track.")
+@section('message', "The link may be old, or this WordCamp isn't live in CampBuddy yet. Pick your event from the list to get back.")

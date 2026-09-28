@@ -64,9 +64,9 @@
             <section class="landing-hero" aria-labelledby="landing-hero-title">
                 <div class="landing-hero__text">
                     <p class="u-eyebrow">Your WordCamp companion</p>
-                    <h1 id="landing-hero-title" class="landing-hero__title">Your friendly guide to WordCamp</h1>
+                    <h1 id="landing-hero-title" class="landing-hero__title">Make the most of your WordCamp</h1>
                     <p class="landing-hero__lead">
-                        Know what's on, plan your talks and meet the right people — all from your phone.
+                        See what's on, plan your talks and meet people who share your interests. All on your phone.
                     </p>
                     <ul class="landing-hero__promises" aria-label="Good to know">
                         <li>Free</li>
@@ -151,7 +151,7 @@
 
                 @if (($events ?? collect())->isEmpty())
                     <div class="card" style="text-align:center">
-                        <p class="footer-note">No WordCamp is open yet — events appear here a few weeks before they start. Meanwhile, the <a href="{{ route('guide') }}">first-timer guide</a> is a great place to begin.</p>
+                        <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}">first-timer guide</a> is a good place to start.</p>
                     </div>
                 @else
                     <div class="card-grid">
