@@ -1,6 +1,6 @@
 1
 00:00:00,000 --> 00:00:03,410
-Agar tumhari pehli WordCamp hai, toh yeh video dekh lo.
+Agar tumhara pehla WordCamp hai, toh yeh video dekh lo.
 
 2
 00:00:03,410 --> 00:00:07,340
