@@ -14,7 +14,7 @@
 import QRCode from 'qrcode-generator';
 import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
-import { campCardPrefill } from './profile-sync.js';
+import { campCardPrefill, onboardingAfterCampCard } from './profile-sync.js';
 import { withPngDpi } from './png-dpi.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
@@ -97,13 +97,13 @@ export async function renderCampCard() {
       if (input && typeof value === 'string') input.value = value;
     });
   } else {
-    // No card yet: start from what this event's discovery profile already
-    // says (name, role, WordPress.org), via profile-sync.js. Saved only when
-    // they press Save.
+    // No card yet: start from what this event's discovery profile and the
+    // onboarding answers already say (name, role, WordPress.org), via
+    // profile-sync.js. Saved only when they press Save.
     try {
       const eventId = document.getElementById('app')?.dataset.eventId;
-      const discovery = eventId ? await kvGet(`discovery:${eventId}`) : null;
-      Object.entries(campCardPrefill(null, discovery)).forEach(([key, value]) => {
+      const [discovery, onboarding] = await Promise.all([eventId ? kvGet(`discovery:${eventId}`) : null, kvGet('onboarding')]);
+      Object.entries(campCardPrefill(null, discovery, onboarding)).forEach(([key, value]) => {
         const input = form.elements.namedItem(key);
         if (input && !input.value) input.value = value;
       });
@@ -155,6 +155,13 @@ export async function renderCampCard() {
     data.primaryLink = document.querySelector('[data-qr-target].chip--selected')?.dataset.qrTarget ?? DEFAULT_QR_TARGET;
 
     await kvSet('campCard', data);
+    // The role and WordPress.org link become the onboarding answers too, so
+    // the next discovery profile starts from them (local only).
+    try {
+      await kvSet('onboarding', onboardingAfterCampCard(await kvGet('onboarding'), data));
+    } catch {
+      // Only a convenience: the card itself is saved.
+    }
     // Camp Card content is local-only (CC5) — only "it was saved" is reported.
     track('camp_card_save');
     renderAllPreviews(data);

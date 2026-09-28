@@ -191,7 +191,7 @@ class FirstTimerExperienceTest extends TestCase
             ->assertSee("Who it's for", false)
             ->assertSee('College students')
             ->assertSee('Is it free?')
-            ->assertSee('data-tag="Student"', false);
+            ->assertSee('data-tag="student"', false);
 
         foreach (['1-home', '2-schedule', '3-people', '4-guide', '5-camp-card'] as $screen) {
             $response->assertSee("/media/tour/{$screen}.jpg", false);

@@ -25,6 +25,11 @@ const INTEREST_WORDS = {
   // Students: the sessions that assume nothing, and the ones about getting started in a career.
   student: ['beginner', 'introduct', 'getting started', '101', 'first', 'career', 'learn', 'student', 'freelanc', 'job'],
   'business owner': ['business', 'freelanc', 'agency', 'client', 'ecommerce', 'woocommerce', 'pricing', 'sales', 'career'],
+  // The rest of the "What describes you?" tags (the same list attendee discovery uses).
+  blogger: ['blog', 'writ', 'content', 'seo', 'story', 'newsletter', 'audience'],
+  translator: ['translat', 'polyglot', 'i18n', 'locali', 'language', 'multilingual'],
+  speaker: ['speak', 'talk', 'present', 'story', 'community'],
+  mentor: ['mentor', 'career', 'teach', 'learn', 'community', 'contribut', 'beginner'],
 };
 
 export async function renderHome(root) {

@@ -10,6 +10,8 @@
 
 import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
+import { MAX_DESCRIBE_TAGS, describeTags, wporgUsername } from './profile-sync.js';
+import { showToast } from './toast.js';
 
 export async function renderOnboardingSection() {
   const section = document.getElementById('onboarding-welcome');
@@ -30,6 +32,11 @@ export async function renderOnboardingSection() {
       const tag = btn.dataset.tag;
       const idx = answers.interests.indexOf(tag);
       if (idx === -1) {
+        // The same limit attendee discovery has, so these tags always fit there.
+        if (answers.interests.length >= MAX_DESCRIBE_TAGS) {
+          showToast(`Pick up to ${MAX_DESCRIBE_TAGS}.`);
+          return;
+        }
         answers.interests.push(tag);
       } else {
         answers.interests.splice(idx, 1);
@@ -52,13 +59,21 @@ export async function renderOnboardingSection() {
   const finish = async (outcome) => {
     track(outcome === 'skip' ? 'onboarding_skip' : 'onboarding_complete');
 
+    // Read the fields as they are now: a text field someone is still typing
+    // in hasn't fired "change" yet.
+    section.querySelectorAll('[data-field]').forEach((field) => {
+      answers[field.dataset.field] = field.value.trim() || null;
+    });
+
+    // Only what something reads: Home (first WordCamp, tags), the discovery
+    // form and Camp Card (tags, profession, who to meet, WordPress.org) and
+    // Contribute (Contributor Day). See profile-sync.js.
     const profile = {
       firstWordCamp: answers.firstWordCamp ?? null,
-      role: answers.role ?? null,
-      interests: answers.interests ?? [],
-      whyAttending: answers.whyAttending ?? null,
-      wantToLearn: answers.wantToLearn ?? null,
+      interests: describeTags(answers.interests),
+      profession: answers.profession ?? null,
       whoToMeet: answers.whoToMeet ?? null,
+      wporg: wporgUsername(answers.wporg),
       attendingContributorDay: answers.attendingContributorDay ?? null,
       completedAt: Date.now(),
     };

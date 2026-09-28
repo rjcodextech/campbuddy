@@ -14,21 +14,16 @@ import { windowCards } from './list-window.js';
 import { openMeetSheet } from './meet-sheet.js';
 import { LABELS, hiddenDiscoveryIds, matchKeys, peopleSignature, personState, recordFor } from './people-state.js';
 import { peopleStatus, stateOfMatch } from './people-status.js';
-import { discoveryPrefill, onboardingAfterDiscovery } from './profile-sync.js';
+import { DESCRIBE_TAGS, MAX_DESCRIBE_TAGS, discoveryPrefill, onboardingAfterDiscovery } from './profile-sync.js';
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
 import { showToast } from './toast.js';
 
-const TAGS = [
-  'developer', 'designer', 'content creator', 'site builder',
-  'community organizer', 'marketer', 'business owner', 'blogger',
-  'translator', 'speaker', 'student', 'mentor',
-];
-
-// The discovery API takes at most 5 tags (StoreDiscoveryRequest); the form
-// stops there instead of failing on save with a misleading network error.
-const MAX_DISCOVERY_TAGS = 5;
+// The same list and limit the picker's onboarding form offers (profile-sync.js);
+// the API takes at most 5 tags (StoreDiscoveryRequest), so the form stops there.
+const TAGS = DESCRIBE_TAGS;
+const MAX_DISCOVERY_TAGS = MAX_DESCRIBE_TAGS;
 
 // aria-labels for the roster's social icons; the glyphs themselves are
 // tpl-social-icon-{type} templates (types without one fall back to "website").
@@ -333,7 +328,7 @@ function showJoinPrompt(el, eventSlug, eventId, discoveryKey, options) {
     let prefill = null;
     try {
       const [onboarding, campCard] = await Promise.all([kvGet('onboarding'), kvGet('campCard')]);
-      prefill = discoveryPrefill({ onboarding, campCard, tags: TAGS, maxTags: MAX_DISCOVERY_TAGS });
+      prefill = discoveryPrefill({ onboarding, campCard });
     } catch {
       // Storage unavailable: an empty form, as before.
     }

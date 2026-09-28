@@ -5,7 +5,8 @@
 
 import { track } from './analytics.js';
 import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
-import { setQuestComplete } from './db.js';
+import { kvGet, kvSet, setQuestComplete } from './db.js';
+import { contributePrefill, onboardingWithContributorDay } from './profile-sync.js';
 import { fill, render } from './template.js';
 
 export async function renderContribute(root) {
@@ -22,16 +23,36 @@ export async function renderContribute(root) {
     )
   );
 
+  const setChip = (chip, on) => {
+    chip.classList.toggle('chip--selected', on);
+    chip.setAttribute('aria-pressed', String(on));
+  };
+
   tagsEl.querySelectorAll('[data-tag]').forEach((chip) => {
     chip.addEventListener('click', () => {
       const key = chip.dataset.tag;
       selected.has(key) ? selected.delete(key) : selected.add(key);
-
-      const on = selected.has(key);
-      chip.classList.toggle('chip--selected', on);
-      chip.setAttribute('aria-pressed', String(on));
+      setChip(chip, selected.has(key));
     });
   });
+
+  // What they told the picker's onboarding card: "What describes you?"
+  // answers the questions in advance (they can still change them), and the
+  // Contributor Day answer is shown here and can be changed (profile-sync.js).
+  let onboarding = null;
+  try {
+    onboarding = await kvGet('onboarding');
+  } catch {
+    // Storage unavailable: nothing pre-selected, as before.
+  }
+
+  contributePrefill(onboarding, CONTRIB_QUESTION_TAGS.map((t) => t.key)).forEach((key) => {
+    selected.add(key);
+    const chip = tagsEl.querySelector(`[data-tag="${key}"]`);
+    if (chip) setChip(chip, true);
+  });
+
+  setupContributorDay(onboarding?.attendingContributorDay ?? null, setChip);
 
   document.getElementById('contrib-see-teams').addEventListener('click', () => {
     showMatches([...selected], eventId, contributorDayQuestId);
@@ -47,6 +68,38 @@ export async function renderContribute(root) {
   dialog.querySelector('[data-action="close"]').addEventListener('click', () => dialog.close());
 
   renderAllTeams(eventId, contributorDayQuestId);
+}
+
+// What the note under "Going to Contributor Day?" says for each answer.
+const CONTRIBUTOR_DAY_NOTES = {
+  yes: 'Nice. Pick what you enjoy below to see which tables to head for. Many WordCamps ask you to register for Contributor Day separately, so check that you have.',
+  no: 'No problem. Have a look anyway: most teams also work online, any time you like.',
+  null: "It's a hands-on day improving WordPress. You don't need to code, and every table welcomes beginners.",
+};
+
+function setupContributorDay(answer, setChip) {
+  const box = document.getElementById('contrib-day');
+  if (!box) return;
+
+  const note = box.querySelector('[data-contrib-day-note]');
+  const show = (value) => {
+    box.querySelectorAll('[data-contrib-day]').forEach((chip) => setChip(chip, (chip.dataset.contribDay || null) === value));
+    note.textContent = CONTRIBUTOR_DAY_NOTES[value] ?? CONTRIBUTOR_DAY_NOTES.null;
+  };
+
+  show(answer);
+
+  box.querySelectorAll('[data-contrib-day]').forEach((chip) => {
+    chip.addEventListener('click', async () => {
+      const value = chip.dataset.contribDay || null;
+      show(value);
+      try {
+        await kvSet('onboarding', onboardingWithContributorDay(await kvGet('onboarding'), value));
+      } catch {
+        // Not remembered this time; the page still shows the choice.
+      }
+    });
+  });
 }
 
 function scoreTeam(team, answers) {

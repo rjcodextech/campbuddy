@@ -12,6 +12,18 @@
             </p>
         </section>
 
+        {{-- The picker's "Interested in Contributor Day?" answer, shown and changeable
+        here (contribute.js; saved back to the onboarding answers on this device). --}}
+        <div id="contrib-day" class="card" style="margin-bottom:14px">
+            <p class="form-group__title" id="contrib-day-label">Going to Contributor Day?</p>
+            <p class="form-group__desc" aria-live="polite" data-contrib-day-note>It's a hands-on day improving WordPress. You don't need to code, and every table welcomes beginners.</p>
+            <div class="chip-group" role="group" aria-labelledby="contrib-day-label" style="margin-bottom:0">
+                <button type="button" class="chip" aria-pressed="false" data-contrib-day="yes">Yes</button>
+                <button type="button" class="chip" aria-pressed="false" data-contrib-day="">Not sure yet</button>
+                <button type="button" class="chip" aria-pressed="false" data-contrib-day="no">Not this time</button>
+            </div>
+        </div>
+
         <div id="contrib-questions" class="card">
             <p class="form-group__title" id="contrib-tags-label">What kind of work do you enjoy?</p>
             <p class="form-group__desc">Pick as many as you like, or skip straight to the matches.</p>

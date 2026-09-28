@@ -114,17 +114,23 @@
                         </select>
                     </div>
 
+                    {{-- The same questions attendee discovery asks (same tags, same limit), so
+                    these answers fill in the discovery form and the Camp Card later
+                    (profile-sync.js). The tag list is DESCRIBE_TAGS there; a test keeps
+                    the two equal. --}}
                     <div class="form-field">
                         <span class="form-field__label" id="ob-interests-label">What describes you?</span>
                         <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
-                            @foreach (['Student', 'Developer', 'Designer', 'Content creator', 'Site builder', 'Community organizer', 'Marketer', 'Business owner'] as $tag)
-                                <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ $tag }}</button>
+                            @foreach (['developer', 'designer', 'content creator', 'site builder', 'community organizer', 'marketer', 'business owner', 'blogger', 'translator', 'speaker', 'student', 'mentor'] as $tag)
+                                <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ ucfirst($tag) }}</button>
                             @endforeach
                         </div>
-                        <p class="form-field__hint">Pick as many as you like.</p>
+                        <p class="form-field__hint">Pick up to 5. We use them to suggest talks and people.</p>
                     </div>
 
-                    @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other plugin developers', 'dataField' => 'whoToMeet', 'maxlength' => 120, 'errorLine' => false])
+                    @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Profession', 'placeholder' => 'e.g. Plugin developer', 'hint' => 'Optional.', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
+                    @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other plugin developers', 'hint' => 'Optional.', 'dataField' => 'whoToMeet', 'maxlength' => 255, 'errorLine' => false])
+                    @include('attendee.partials.form-field', ['id' => 'ob-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Pasting your profile link works too.', 'dataField' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 
                     <div class="form-field">
                         <label class="form-field__label" for="ob-contrib">Interested in Contributor Day?</label>
