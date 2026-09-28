@@ -163,8 +163,10 @@
                     {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
                     script runs, so without it every event simply shows, as before. --}}
                     <div class="picker-filter" data-picker-filter hidden>
-                        <label class="picker-filter__label" for="picker-country">Country</label>
-                        <select id="picker-country" data-picker-country></select>
+                        <label class="picker-filter__label" for="picker-country"><x-attendee.line-icon name="map-pin" class="picker-filter__icon" /> Country</label>
+                        <span class="picker-filter__select">
+                            <select id="picker-country" data-picker-country></select>
+                        </span>
                         <p class="picker-filter__status" aria-live="polite">
                             <span data-picker-status></span>
                             <button type="button" class="btn btn--link picker-filter__toggle" data-picker-toggle hidden></button>

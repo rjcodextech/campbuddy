@@ -259,21 +259,63 @@
 // Country filter above the event list and "Load more" below it
 // (attendee/picker-filter.js). Both stay hidden without the script.
 .picker-filter {
-    display: grid;
-    grid-template-columns: auto 1fr;
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: v.$space-2 v.$space-3;
+    gap: v.$space-2;
     margin-bottom: v.$space-4;
 }
 
 .picker-filter__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--ink);
 }
 
+.picker-filter__icon {
+    color: var(--brand-primary);
+}
+
+// Only as wide as the longest country name needs (the site-wide rule in
+// _form.scss makes every select full width), as a pill with its own chevron.
+.picker-filter__select {
+    position: relative;
+    display: inline-flex;
+    max-width: 100%;
+
+    &::after {
+        content: '';
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        width: 7px;
+        height: 7px;
+        border-right: 2px solid var(--ink);
+        border-bottom: 2px solid var(--ink);
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+    }
+}
+
+#main-content .picker-filter__select select {
+    width: auto;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 6px 36px 6px 14px;
+    border-radius: v.$radius-full;
+    background: var(--paper);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
 .picker-filter__status {
-    grid-column: 1 / -1;
+    flex-basis: 100%;
     margin: 0;
     font-size: 0.82rem;
     color: var(--muted);

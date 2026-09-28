@@ -173,6 +173,8 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
     > **`.env`:** `SESSION_SECURE_COOKIE=true` zaroor rakhein (manager/admin ka session cookie sirf https par jaye). Koi naya `.env` key nahi hai.
     > **Fetch log ki safai + DataVersion (Oct 2026):** koi naya migration ya `.env` key nahi. Scheduler roz 03:20 par 7 din se purani `fetch_log` rows hata deta hai (har event/job ki sabse nayi row bachti hai). Abhi ek baar haath se chalana ho: `php artisan campbuddy:prune-fetch-log` (pehle `--dry-run` se ginti dekh sakte hain). `DataVersion` ka fingerprint badla hai, isliye **deploy ke baad har khula app ek baar reload hoga** — event ke beech peak par deploy na karein, event se pehle ya raat ko karein.
 
+    > **Poora `dev` deploy (29 Sep 2026: 27–29 Sep ke saare packages ek saath).** Naye 5 migrations: `event_managers`, `event_manager_changes`, `make_offers_icon_nullable`, `add_dates_locked_to_events_table`, `add_country_code_to_events_table` — sab `campbuddy:doctor` chala deta hai. Upload me `public/media/tour/*.jpg` (5 nayi screens) bhi jodein; `public/sw.js`, `sw-flags.json`, `.htaccess`, `composer.lock` nahi badle. Koi naya `.env` key nahi. Doctor ke baad ek baar: `php artisan campbuddy:countries` (home page country filter ke liye central.wordcamp.org se country; na chalayein to bhi time zone se kaam chalta hai). Check: home par "Country" dropdown + "Load 5 more", `/api/v1/health` me teeno `true`.
+
 4. **Turant Cloudflare purge karein** (agla section, kadam A). Ye chhoot gaya to naya `sw.js` phones tak ghanton late pahunchega.
 
 Sab hone ke baad site khol kar dekh lein ki home, ek event, My Day aur Explore theek khul rahe hain, phir "Deploy ke baad test" section chalayein.
