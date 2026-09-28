@@ -95,8 +95,6 @@
                 </div>
             </section>
 
-            @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
-
             {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
             (the skip/continue buttons and the profile they save are wired there). --}}
             <section id="onboarding-welcome" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
@@ -148,6 +146,8 @@
                     </div>
                 </div>
             </section>
+
+            @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
 
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
