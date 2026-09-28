@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Support\EventCountry;
-use PHPUnit\Framework\TestCase;
+use Tests\TestCase;
 
 class EventCountryTest extends TestCase
 {

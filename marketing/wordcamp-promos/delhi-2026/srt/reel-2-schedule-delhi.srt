@@ -1,0 +1,31 @@
+1
+00:00:00,000 --> 00:00:02,010
+Dekho CampBuddy mein kya kya milta hai.
+
+2
+00:00:02,010 --> 00:00:06,010
+Home screen batata hai abhi kya karna chahiye.
+
+3
+00:00:06,010 --> 00:00:09,320
+Sessions save karo, time se pehle reminder mil jaata hai.
+
+4
+00:00:09,320 --> 00:00:11,570
+Ek chhoti checklist, poora din ek game jaisa lagta hai.
+
+5
+00:00:11,570 --> 00:00:14,570
+Apni pasand batao, waise hi log mil jaate hain.
+
+6
+00:00:14,570 --> 00:00:17,260
+Volunteer karna hai? apna rasta bhi mil jaata hai.
+
+7
+00:00:17,260 --> 00:00:21,250
+Sponsors ke offers aur unki jaankari ek hi jagah dikh jaate hain.
+
+8
+00:00:21,250 --> 00:00:25,180
+Sab kuch bilkul free — campbuddy.club pe try karo.

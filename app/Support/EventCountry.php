@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use DateTimeZone;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -75,8 +76,8 @@ class EventCountry
 
     /**
      * Every time zone of these countries → its country, so the browser can
-     * tell which listed country it is in from its own zone. Includes old
-     * names still in use ("Asia/Calcutta") where PHP knows them.
+     * tell which listed country it is in from its own zone. Old names still
+     * in use ("Asia/Calcutta") are covered by picker-filter.js's alias map.
      *
      * @param  iterable<string>  $codes
      * @return array<string, string>
@@ -87,15 +88,6 @@ class EventCountry
 
         foreach ($codes as $code) {
             foreach (DateTimeZone::listIdentifiers(DateTimeZone::PER_COUNTRY, $code) as $zone) {
-                $map[$zone] = $code;
-            }
-        }
-
-        $wanted = array_flip(array_values($map));
-        $current = array_flip(DateTimeZone::listIdentifiers());
-
-        foreach (DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC) as $zone) {
-            if (! isset($current[$zone]) && ($code = self::fromTimezone($zone)) && isset($wanted[$code])) {
                 $map[$zone] = $code;
             }
         }
@@ -115,10 +107,13 @@ class EventCountry
     /** @return array<string, string> */
     private static function names(): array
     {
-        if (self::$byName !== null) {
-            return self::$byName;
-        }
+        // Built from ~400 time zones, so kept for a day rather than per request.
+        return self::$byName ??= Cache::remember('event-country:names:v1', now()->addDay(), fn () => self::buildNames());
+    }
 
+    /** @return array<string, string> */
+    private static function buildNames(): array
+    {
         $names = [];
 
         // Every country that has a time zone, by its English name.
@@ -129,7 +124,7 @@ class EventCountry
         }
 
         // What organisers type that the standard name doesn't cover.
-        return self::$byName = $names + [
+        return $names + [
             'usa' => 'US', 'united states of america' => 'US', 'u.s.a.' => 'US',
             'uk' => 'GB', 'england' => 'GB', 'scotland' => 'GB', 'wales' => 'GB', 'northern ireland' => 'GB',
             'netherlands' => 'NL', 'holland' => 'NL', 'czech republic' => 'CZ', 'türkiye' => 'TR', 'turkey' => 'TR',
