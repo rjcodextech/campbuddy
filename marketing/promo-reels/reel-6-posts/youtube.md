@@ -9,6 +9,10 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, vertical, isliye Shorts mein jaayeg
 - Pinned comment mein link aur ek sawaal daalo, comments badhte hain.
 - Hashtags: description ke end wale pehle 3 title ke upar dikhte hain.
 
+**Featured images** (`images/`)
+- `youtube-shorts-cover-1080x1920.jpg`: Shorts cover
+- `youtube-thumbnail-1280x720.jpg`: agar video normal (non-Shorts) upload karo ya community post mein share karo
+
 ---
 
 ## Title (options)

@@ -9,6 +9,11 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, 9:16). Reel ki tarah upload karo; a
 - Cover (thumbnail) ke liye neeche wala text use karo.
 - Collab post: WordCamp Rajasthan ke page ko "Invite collaborator" karo, dono ke followers tak jaayegi.
 
+**Featured images** (`images/`)
+- `instagram-reel-cover-1080x1920.jpg`: Reel ka cover (grid mein beech ka 4:5 hissa dikhta hai, zaroori text usi mein hai)
+- `instagram-post-1080x1350.jpg`: feed post / carousel
+- `instagram-square-1080x1080.jpg`: square post
+
 ---
 
 ## Caption

@@ -8,6 +8,9 @@ Video: `mp4/reel-6-saare-features.mp4` (60s). Video ko tweet mein seedha upload 
 - Thread ka pehla tweet video ke saath post karo, baaki replies mein.
 - WordCamp Rajasthan ya WordPress ke official handles tabhi tag karo jab sahi handle confirm ho.
 
+**Featured image** (`images/`)
+- `x-1600x900.jpg`: tweet image (16:9, timeline mein bina crop ke dikhti hai). Video wale tweet ke saath nahi, alag image tweet ya thread ke end mein use karo
+
 ---
 
 ## Single tweet (video ke saath) · option 1

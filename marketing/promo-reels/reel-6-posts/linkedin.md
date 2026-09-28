@@ -8,6 +8,11 @@ Video: `mp4/reel-6-saare-features.mp4` (60s, vertical). Seedha LinkedIn pe uploa
 - WordCamp Rajasthan / Sylhet ke organizers aur speakers ko tag karo (unki permission ho to).
 - Best time: Tue–Thu, subah 9–11 baje.
 
+**Featured images** (`images/`)
+- `linkedin-1080x1350.jpg`: image post ya carousel ka pehla slide (4:5, feed mein sabse zyada jagah leta hai)
+- `linkedin-1200x627.jpg`: link share / article cover
+- Video post ke thumbnail ke liye bhi `linkedin-1200x627.jpg` upload kar sakte ho
+
 ---
 
 ## Main post
