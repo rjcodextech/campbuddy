@@ -384,9 +384,23 @@
     background: var(--paper);
     border-top: 1px solid var(--line);
 
+    transition: transform 0.25s ease, visibility 0s linear 0s;
+
     @media (min-width: v.$bp-desktop) {
         display: none;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+    }
+}
+
+// Off screen while the hero's own button is visible (attendee/landing-bar.js).
+// Hidden only after the slide, so it doesn't vanish mid-animation.
+.landing-bottom-bar.is-tucked {
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0s linear 0.25s;
 }
 
 // A long event name shortens with "…" instead of pushing the arrow onto a

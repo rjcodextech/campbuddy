@@ -220,7 +220,10 @@
         <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>
 
         @if (($events ?? collect())->isNotEmpty())
-            <nav class="landing-bottom-bar" aria-label="Continue">
+            {{-- Starts tucked away; landing-bar.js brings it up once the hero's own
+            "Choose your WordCamp" button has scrolled off screen. --}}
+            <noscript><style>.landing-bottom-bar.is-tucked { transform: none; visibility: visible; }</style></noscript>
+            <nav class="landing-bottom-bar is-tucked" aria-label="Continue">
                 @if ($events->count() === 1)
                     <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full landing-bottom-bar__btn" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}"><span class="landing-bottom-bar__label">Open {{ $events->first()->display_name }}</span> <span aria-hidden="true">→</span></a>
                 @else

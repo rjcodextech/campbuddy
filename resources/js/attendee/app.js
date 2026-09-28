@@ -69,6 +69,17 @@ async function init() {
     import('./picker-filter.js').then(({ initPickerFilter }) => initPickerFilter()).catch(() => {});
   }
 
+  // The picker's bottom bar waits until the hero's own button has scrolled away.
+  if (document.querySelector('.landing-bottom-bar')) {
+    import('./landing-bar.js')
+      .then(({ initLandingBar }) => initLandingBar())
+      .catch(() => {
+        const bar = document.querySelector('.landing-bottom-bar');
+        bar?.classList.remove('is-tucked');
+        if (bar) bar.inert = false;
+      });
+  }
+
   // Lives on the WordCamp picker page ("/"), which has no #app shell —
   // checked before the early-return below so it still runs there.
   if (document.getElementById('onboarding-welcome')) {
