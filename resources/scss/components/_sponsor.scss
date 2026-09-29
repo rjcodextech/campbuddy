@@ -146,6 +146,74 @@
     color: var(--ink);
 }
 
+// "Details" on a phone: the description and small print start closed. Only
+// once explore.js marks the card .is-collapsible, and only under the tablet
+// width, so a wide screen (or no JS) always shows everything.
+.deal-card__more {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+}
+
+.deal-card__toggle {
+    display: none;
+    align-items: center;
+    align-self: flex-start;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: var(--paper-soft);
+    color: var(--ink);
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+    @include m.pressable;
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+
+    .line-icon {
+        color: var(--brand-primary);
+        transition: transform 0.15s ease;
+    }
+
+    &[aria-expanded='true'] .line-icon {
+        transform: rotate(180deg);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .line-icon {
+            transition: none;
+        }
+    }
+}
+
+.deal-card__toggle-close,
+.deal-card__toggle[aria-expanded='true'] .deal-card__toggle-open {
+    display: none;
+}
+
+.deal-card__toggle[aria-expanded='true'] .deal-card__toggle-close {
+    display: inline;
+}
+
+@media (max-width: #{v.$bp-tablet - 1px}) {
+    .deal-card.is-collapsible {
+        .deal-card__toggle {
+            display: inline-flex;
+        }
+
+        &:not(.is-open) .deal-card__more {
+            display: none;
+        }
+    }
+}
+
 .deal-card__terms {
     margin: 0;
     font-size: v.$font-size-xs;

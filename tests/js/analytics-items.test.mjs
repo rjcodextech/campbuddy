@@ -52,3 +52,29 @@ test('session and meet status say which session and where from, never who', () =
     ['meet_status', { plan_status: 'met', source: 'roster' }],
   ]);
 });
+
+test('"Details" opens and closes a card\'s description, and marks the card collapsible', async () => {
+  const { setUpCardDetails } = await import('../../resources/js/attendee/explore.js');
+  const classes = new Set();
+  const card = { classList: { add: (c) => classes.add(c), toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
+  const attrs = { 'aria-expanded': 'false' };
+  let onClick;
+  const btn = {
+    closest: () => card,
+    getAttribute: (name) => attrs[name],
+    setAttribute: (name, value) => { attrs[name] = value; },
+    addEventListener: (_type, fn) => { onClick = fn; },
+  };
+
+  setUpCardDetails({ querySelectorAll: () => [btn] });
+  assert.ok(classes.has('is-collapsible'));
+  assert.ok(!classes.has('is-open'));
+
+  onClick();
+  assert.equal(attrs['aria-expanded'], 'true');
+  assert.ok(classes.has('is-open'));
+
+  onClick();
+  assert.equal(attrs['aria-expanded'], 'false');
+  assert.ok(!classes.has('is-open'));
+});

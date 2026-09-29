@@ -63,6 +63,7 @@ export function renderExplore() {
     });
   });
 
+  setUpCardDetails();
   reportCards();
 
   // Deep-link support (e.g. Quest's "View sponsors"/"Find people"
@@ -100,6 +101,20 @@ export function stealItem(card) {
     item_category: card.dataset.stealCategory,
     index: Number(card.dataset.position),
   };
+}
+
+// A deal's or Free Steal's "Details" (phones only, by CSS): the description
+// and small print open and close under it.
+export function setUpCardDetails(root = document) {
+  root.querySelectorAll('[data-card-details]').forEach((btn) => {
+    const card = btn.closest('.deal-card');
+    card.classList.add('is-collapsible');
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(open));
+      card.classList.toggle('is-open', open);
+    });
+  });
 }
 
 function reportCards() {

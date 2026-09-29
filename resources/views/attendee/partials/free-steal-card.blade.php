@@ -3,7 +3,7 @@
     picked by the CampBuddy team. Same card as a deal (components/_sponsor.scss,
     .deal-card): its logo (or a category icon without one), the name and its maker, a Featured tag, a
     "made by someone at this WordCamp" line when the maker is on this event's
-    Attendees page (FreeSteal::forEvent), what it does, then the category and
+    Attendees page (FreeSteal::forEvent), what it does (behind "Details" on a phone), then the category and
     one button. The link is plain and opens in a new tab: GitHub and
     WordPress.org refuse to be framed.
 --}}
@@ -33,7 +33,14 @@
         <p class="free-steal__here"><x-attendee.line-icon name="map-pin" /> Made by someone at this WordCamp</p>
     @endif
 
-    <p class="deal-card__desc">{{ $steal->description }}</p>
+    {{-- Phones: the description (and small print) start closed behind "Details" (explore.js adds .is-collapsible; wider screens and no-JS show all). --}}
+    <button type="button" class="deal-card__toggle" aria-expanded="false" aria-controls="steal-more-{{ $steal->id }}" data-card-details>
+        <span class="deal-card__toggle-open">Details</span><span class="deal-card__toggle-close">Hide details</span>
+        <x-attendee.line-icon name="chevron-down" />
+    </button>
+    <div class="deal-card__more" id="steal-more-{{ $steal->id }}">
+        <p class="deal-card__desc">{{ $steal->description }}</p>
+    </div>
 
     <div class="deal-card__foot">
         <span class="deal-card__note">{{ $steal->category }}</span>

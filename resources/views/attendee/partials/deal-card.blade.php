@@ -2,7 +2,7 @@
     One deal on Explore → Deals (styles: components/_sponsor.scss, .deal-card).
 
     Who it's from (logo, name, website) and a highlight tag, then the offer,
-    its details and small print, a coupon code with a Copy button, and one
+    its details and small print (behind "Details" on a phone), a coupon code with a Copy button, and one
     button that opens it:
       - with a contact form first → deal-leads.js (data-lead-offer-*);
       - inside the app → explore.js / in-app-browser.js (data-inapp-*);
@@ -43,11 +43,18 @@
     @if ($offer->brand)
         <p class="deal-card__title">{{ $offer->title }}</p>
     @endif
-    <p class="deal-card__desc">{{ $offer->description }}</p>
+    {{-- Phones: the description (and small print) start closed behind "Details" (explore.js adds .is-collapsible; wider screens and no-JS show all). --}}
+    <button type="button" class="deal-card__toggle" aria-expanded="false" aria-controls="deal-more-{{ $offer->id }}" data-card-details>
+        <span class="deal-card__toggle-open">Details</span><span class="deal-card__toggle-close">Hide details</span>
+        <x-attendee.line-icon name="chevron-down" />
+    </button>
+    <div class="deal-card__more" id="deal-more-{{ $offer->id }}">
+        <p class="deal-card__desc">{{ $offer->description }}</p>
 
-    @if ($offer->terms)
-        <p class="deal-card__terms">{{ $offer->terms }}</p>
-    @endif
+        @if ($offer->terms)
+            <p class="deal-card__terms">{{ $offer->terms }}</p>
+        @endif
+    </div>
 
     @if ($offer->coupon_code)
         <div class="deal-card__code">

@@ -24,3 +24,5 @@ A small, hand-picked shelf of WordPress plugins and tools that cost nothing: dev
 - **Freshness.** `DataVersion` includes the Free Steals (`max(updated_at)#count`), and every admin add/edit/remove forgets it for approved and active events, so open apps reload at their next check. The deploy that added this changed every event's fingerprint once.
 
 Tests: `tests/Feature/FreeStealsTest.php`, `tests/js/free-steal-suggest.test.mjs`.
+
+> **"Details" on phones (30 Sep 2026).** Under 640px a Deal's and a Free Steal's description (and a deal's small print) start closed behind a "Details ⌄" pill (`.deal-card__toggle`, `aria-expanded` + `aria-controls`); tapping it opens them and it reads "Hide details ⌃". Name, logo, a deal's offer line, the made-here badge, the coupon code and the button always show. `explore.js` `setUpCardDetails()` marks cards `.is-collapsible`, so a wide screen or no JS always shows everything. Owner confirmed twice; not tracked in GA.
