@@ -56,7 +56,7 @@
         </div>
 
         <p class="cc-print-note">
-            <strong>Print quality:</strong> 600&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
+            <strong>Print quality:</strong> 900&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
         </p>
 
         <details class="cc-editor" open id="cc-edit-details">

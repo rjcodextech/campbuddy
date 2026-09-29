@@ -23,21 +23,21 @@ const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
 const LAYOUTS = ['ticket', 'classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
 const DEFAULT_QR_TARGET = 'linkedin';
 
-// Share/Download export a 3 × 5 in card at 600 DPI (1800 × 3000 px) —
+// Share/Download export a 3 × 5 in card at 900 DPI (2700 × 4500 px) —
 // print-shop quality. The card is laid out at 300 DPI size (900 px wide)
-// and captured at 2×, so its design is identical to the on-screen one;
-// only the pixel density doubles. The height follows from the 3:5 shape.
+// and captured at 3×, so its design is identical to the on-screen one;
+// only the pixel density triples. The height follows from the 3:5 shape.
 const PRINT_WIDTH_IN = 3;
 const LAYOUT_DPI = 300;
-const EXPORT_SCALE = 2;
+const EXPORT_SCALE = 3;
 const PRINT_DPI = LAYOUT_DPI * EXPORT_SCALE;
 const EXPORT_WIDTH_PX = PRINT_WIDTH_IN * LAYOUT_DPI;
 
-// Pixel budget for the QR canvas: plenty for its ~104px on-screen size;
-// in the export it covers ~310 layout px, i.e. ~620 real pixels at 2× —
+// Pixel budget for the QR canvas: plenty for its ~80px on-screen size;
+// in the export it covers ~230 layout px, i.e. ~690 real pixels at 3× —
 // drawn at that size directly so it's never scaled (and blurred) up.
 const QR_PREVIEW_PX = 320;
-const QR_EXPORT_PX = 720 * EXPORT_SCALE;
+const QR_EXPORT_PX = 260 * EXPORT_SCALE;
 
 // What "Scan to …" says under the QR, by where the QR points.
 const SCAN_LABELS = {
@@ -221,7 +221,7 @@ function forExport(card) {
 }
 
 // The PNG itself, stamped with its real DPI: canvas.toBlob() records none,
-// so without this an editor or print dialog would treat the 1800 × 3000 px
+// so without this an editor or print dialog would treat the 2700 × 4500 px
 // image as 72 DPI (a 25 × 41.7 in print) instead of 3 × 5 in.
 async function cardPngBlob(layout) {
   const canvas = await renderCardToCanvas(layout);
@@ -240,7 +240,7 @@ function saveBlob(blob, filename) {
 
 // ---- Share / Download -----------------------------------------------------
 //
-// Making a 600 DPI image takes a few seconds on a phone (more the first
+// Making a 900 DPI image takes a few seconds on a phone (more the first
 // time, while html2canvas downloads). Browsers only allow a download or the
 // share sheet for a short while after a tap, so an image that finishes too
 // late was silently refused — which is why these used to work only on a
@@ -343,7 +343,7 @@ function filenameFor(layout) {
 async function downloadBlob(blob, layout) {
   saveBlob(blob, filenameFor(layout));
   track('camp_card_download', { layout });
-  showToast('Saved at 600 DPI, ready to print.');
+  showToast('Saved at 900 DPI, ready to print.');
 }
 
 async function shareBlob(blob, layout) {

@@ -160,7 +160,7 @@ class FirstTimerExperienceTest extends TestCase
         $this->assertSame(7, substr_count($response->getContent(), 'class="camp-card__scan"'));
         // Only Ticket puts "Ask me about" in its own bubble.
         $this->assertSame(1, substr_count($response->getContent(), 'data-ask-bubble'));
-        $response->assertSee('600&nbsp;DPI', false)->assertDontSee('data-print-card', false);
+        $response->assertSee('900&nbsp;DPI', false)->assertDontSee('data-print-card', false);
     }
 
     public function test_the_picker_explains_what_campbuddy_is_for(): void
