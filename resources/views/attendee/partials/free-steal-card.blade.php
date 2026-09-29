@@ -30,6 +30,6 @@
     <div class="deal-card__foot">
         <span class="deal-card__note">{{ $steal->category }}</span>
         <a href="{{ $steal->url }}" target="_blank" rel="noopener" class="btn btn--primary btn--compact deal-card__cta"
-           data-track="free_steal_open" data-track-offer-title="{{ $steal->name }}" data-track-link-domain="{{ $steal->linkHost() }}">{{ $steal->ctaLabel() }} ↗</a>
+           data-track="free_steal_open" data-track-offer-title="{{ $steal->name }}" data-track-link-domain="{{ $steal->linkHost() }}">{{ $steal->ctaLabel() }} <x-attendee.line-icon name="external" /></a>
     </div>
 </article>

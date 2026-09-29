@@ -92,7 +92,7 @@ class FreeStealsTest extends TestCase
 
         $this->get(route('event.explore', $this->event()))->assertOk()
             ->assertSee('href="https://wordpress.org/plugins/wp-avoid-slow/" target="_blank" rel="noopener"', false)
-            ->assertSee('Get it free ↗');
+            ->assertSee('Get it free <svg class="line-icon"', false)->assertSee('#li-external', false);
     }
 
     public function test_the_icon_comes_from_the_first_known_category_word(): void

@@ -106,14 +106,14 @@
     <p class="notice" style="margin-top:10px" data-slot="offline">You're offline. Matches will update when you're back online.</p>
 
     <div data-slot="mutual-section">
-        <p class="u-eyebrow" style="margin-top:20px">🎉 You both want to meet</p>
+        <p class="u-eyebrow" style="margin-top:20px"><x-attendee.line-icon name="party" /> You both want to meet</p>
         <p class="footer-note" style="text-align:left;margin:0 0 10px">You waved at each other, so you can see each other's names now. Nobody else can.</p>
         <slot data-slot="mutual"></slot>
     </div>
 
     <div data-slot="matches-section">
         <p class="u-eyebrow" style="margin-top:20px">Your best matches</p>
-        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. <strong>👋 Wave</strong> at someone. If they wave back, you both see each other's names, even if you joined anonymously.</p>
+        <p class="footer-note" style="text-align:left;margin:0 0 10px">They share at least one interest with you. <strong><x-attendee.line-icon name="hand" /> Wave</strong> at someone. If they wave back, you both see each other's names, even if you joined anonymously.</p>
         <slot data-slot="matches"></slot>
     </div>
 
@@ -132,7 +132,7 @@
 
 <template id="tpl-discovery-match">
     <article class="person-card" data-slot="card">
-        <p class="person-card__waved-you" data-slot="waved-you">👋 Wants to meet you. Wave back to swap names</p>
+        <p class="person-card__waved-you" data-slot="waved-you"><x-attendee.line-icon name="hand" /> Wants to meet you. Wave back to swap names</p>
         <div class="person-card__head">
             <img class="person-card__avatar" alt="" width="52" height="52" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
             <div class="person-card__who">
@@ -171,12 +171,12 @@
     <dialog class="meet-sheet" aria-labelledby="wave-sheet-title">
         <form class="meet-sheet__card" method="dialog">
             <div class="meet-sheet__head">
-                <span class="wave-sheet__emoji" aria-hidden="true">👋</span>
+                <span class="wave-sheet__emoji" aria-hidden="true"><x-attendee.line-icon name="hand" /></span>
                 <div class="meet-sheet__who">
                     <p class="meet-sheet__eyebrow">Wave at this match</p>
                     <h2 class="meet-sheet__name" id="wave-sheet-title" data-slot="title"></h2>
                 </div>
-                <button type="button" class="meet-sheet__close" data-wave-close aria-label="Close">×</button>
+                <button type="button" class="meet-sheet__close" data-wave-close aria-label="Close"><x-attendee.line-icon name="x" /></button>
             </div>
             <p class="meet-sheet__sub" style="font-size:.875rem">If they wave back, you'll both see each other's names and messages. If not, nothing is revealed.</p>
 
@@ -196,7 +196,7 @@
             <p class="meet-sheet__privacy" data-wave-error hidden style="color:var(--danger)"></p>
 
             <div class="meet-sheet__actions">
-                <button type="button" class="btn btn--primary" data-wave-send>👋 Send wave</button>
+                <button type="button" class="btn btn--primary" data-wave-send><x-attendee.line-icon name="hand" /> Send wave</button>
             </div>
         </form>
     </dialog>
@@ -215,7 +215,7 @@
             <button type="submit" class="btn btn--primary btn--compact" data-slot="send">Send</button>
         </form>
         <p class="convo__status" data-slot="status"></p>
-        <a class="btn btn--outline btn--compact convo__card" data-slot="card-link">📇 Share your Camp Card</a>
+        <a class="btn btn--outline btn--compact convo__card" data-slot="card-link"><x-attendee.line-icon name="id-card" /> Share your Camp Card</a>
     </div>
 </template>
 

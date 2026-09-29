@@ -7,3 +7,8 @@ import { render } from './template.js';
 export function lineIcon(name) {
   return render('tpl-line-icon', { use: { attrs: { href: `#li-${name || 'sparkles'}` } } });
 }
+
+/** A line icon, then text: for a template slot or replaceChildren(). */
+export function iconText(name, text) {
+  return [lineIcon(name), ` ${text}`];
+}

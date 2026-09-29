@@ -69,7 +69,7 @@
                             <span class="useful-link__title">Venue</span>
                             <span class="useful-link__desc">{{ $info['venue'] }}</span>
                             <a class="btn btn--outline btn--compact info-row__button" href="https://www.google.com/maps/search/?api=1&amp;query={{ rawurlencode($info['venue']) }}"
-                               target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="maps">Open in Maps ↗</a>
+                               target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="maps">Open in Maps <x-attendee.line-icon name="external" /></a>
                         </span>
                     </div>
                 @endif
@@ -102,7 +102,7 @@
                 @if (filled($info['emergency_contact'] ?? null))
                     @php($href = $contactHref($info['emergency_contact']))
                     @if ($href)
-                        <a class="useful-link info-row--alert" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="siren" /></span><span class="info-row__main"><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span><span class="info-row__chevron" aria-hidden="true">›</span></a>
+                        <a class="useful-link info-row--alert" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="siren" /></span><span class="info-row__main"><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span><span class="info-row__chevron" aria-hidden="true"><x-attendee.line-icon name="chevron-right" /></span></a>
                     @else
                         <div class="useful-link info-row--alert"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="siren" /></span><span class="info-row__main"><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></div>
                     @endif
@@ -111,7 +111,7 @@
                     <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="ticket" /></span><span class="info-row__main"><span class="useful-link__title">Registration</span><span class="useful-link__desc">{{ $info['registration_info'] }}</span></span></div>
                 @endif
                 @if ($cocUrl)
-                    <a class="useful-link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span><span class="info-row__main"><span class="useful-link__title">Code of Conduct</span></span><span class="info-row__chevron" aria-hidden="true">↗</span></a>
+                    <a class="useful-link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span><span class="info-row__main"><span class="useful-link__title">Code of Conduct</span></span><span class="info-row__chevron" aria-hidden="true"><x-attendee.line-icon name="external" /></span></a>
                 @endif
             </div>
         </section>
@@ -127,7 +127,7 @@
                     @if ($linkHref)
                         @php($bare = trim($link) === $linkHref)
                         @php($label = $bare ? $linkName($linkHref) : (trim(preg_replace('#\s*:?\s*https?://\S+#i', '', $link)) ?: $linkName($linkHref)))
-                        <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span><span class="info-row__main"><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ preg_replace('#^https?://(www\.)?#i', '', rtrim($linkHref, '/')) }}</span></span><span class="info-row__chevron" aria-hidden="true">↗</span></a>
+                        <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span><span class="info-row__main"><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ preg_replace('#^https?://(www\.)?#i', '', rtrim($linkHref, '/')) }}</span></span><span class="info-row__chevron" aria-hidden="true"><x-attendee.line-icon name="external" /></span></a>
                     @else
                         <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span><span class="info-row__main"><span class="useful-link__title">{{ trim($link) }}</span></span></div>
                     @endif

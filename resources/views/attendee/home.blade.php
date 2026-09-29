@@ -38,7 +38,7 @@
                 <span class="start-here__desc">How the day runs, the words you'll hear, and how to meet people. A 5-minute read.</span>
                 <span class="start-here__cta" aria-hidden="true">Read the guide →</span>
             </div>
-            <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss">×</button>
+            <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss"><x-attendee.line-icon name="x" /></button>
         </div>
 
         <section aria-labelledby="happening-now-heading">

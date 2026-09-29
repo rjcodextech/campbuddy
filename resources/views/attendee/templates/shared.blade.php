@@ -81,7 +81,7 @@
                     <h2 class="meet-sheet__name" id="meet-sheet-title" data-slot="name"></h2>
                     <p class="meet-sheet__sub" data-slot="sub"></p>
                 </div>
-                <button type="button" class="meet-sheet__close" data-meet-close aria-label="Close">×</button>
+                <button type="button" class="meet-sheet__close" data-meet-close aria-label="Close"><x-attendee.line-icon name="x" /></button>
             </div>
 
             <label class="meet-sheet__label" for="meet-note">Your note</label>
@@ -94,10 +94,10 @@
                 <input type="datetime-local" id="meet-at" aria-label="Meeting time" data-slot="at">
             </fieldset>
 
-            <p class="meet-sheet__privacy">🔒 Saved on this phone only. They aren't told.</p>
+            <p class="meet-sheet__privacy"><x-attendee.line-icon name="lock" /> Saved on this phone only. They aren't told.</p>
 
             <div class="meet-sheet__calendar" data-slot="calendar">
-                <button type="button" class="btn btn--outline btn--compact" data-meet-ics>📅 Add to calendar</button>
+                <button type="button" class="btn btn--outline btn--compact" data-meet-ics><x-attendee.line-icon name="calendar" /> Add to calendar</button>
                 <a class="btn btn--outline btn--compact" target="_blank" rel="noopener" data-meet-google>Google Calendar</a>
             </div>
 
@@ -112,9 +112,9 @@
 {{-- "Things left today" (plan-reminder.js): shown once per visit on event days. --}}
 <template id="tpl-plan-reminder">
     <div class="plan-reminder" role="status">
-        <span class="plan-reminder__icon" aria-hidden="true">📋</span>
+        <span class="plan-reminder__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span>
         <p class="plan-reminder__text"><strong data-slot="count"></strong> <span data-slot="rest"></span></p>
         <a class="btn btn--primary btn--compact" data-slot="link">Check</a>
-        <button type="button" class="plan-reminder__close" data-plan-dismiss aria-label="Dismiss">×</button>
+        <button type="button" class="plan-reminder__close" data-plan-dismiss aria-label="Dismiss"><x-attendee.line-icon name="x" /></button>
     </div>
 </template>

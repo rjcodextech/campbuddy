@@ -18,6 +18,7 @@ import { DESCRIBE_TAGS, MAX_DESCRIBE_TAGS, discoveryPrefill, onboardingAfterDisc
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { render, renderFragment } from './template.js';
+import { iconText, lineIcon } from './line-icon.js';
 import { showToast } from './toast.js';
 
 // The same list and limit the picker's onboarding form offers (profile-sync.js);
@@ -599,7 +600,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
         const hidden = loaded ? hiddenDiscoveryIds(loaded.meetings) : new Set();
         const n = (state?.received ?? []).filter((id) => !hidden.has(id)).length;
         const link = el.querySelector('[data-track="home_discovery_explore_click"]');
-        if (n > 0 && link) link.textContent = `👋 ${n} ${n === 1 ? 'match wants' : 'matches want'} to meet you →`;
+        if (n > 0 && link) link.replaceChildren(...iconText('hand', `${n} ${n === 1 ? 'match wants' : 'matches want'} to meet you →`));
       })
       .catch(() => {});
     return;
@@ -794,7 +795,7 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
     wave: isMet || wave === 'mutual' || !onWave
       ? null
       : {
-          text: { sent: '👋 Waved', received: '👋 Wave back' }[wave] ?? '👋 Wave',
+          children: iconText('hand', { sent: 'Waved', received: 'Wave back' }[wave] ?? 'Wave'),
           class: { 'wave-btn--sent': wave === 'sent', 'wave-btn--back': wave === 'received' },
           attrs: { 'aria-pressed': String(wave === 'sent'), title: wave === 'sent' ? 'Tap to take your wave back' : null },
         },
@@ -837,7 +838,7 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
     const hide = document.createElement('button');
     hide.type = 'button';
     hide.className = 'person-card__hide';
-    hide.textContent = '✕';
+    hide.replaceChildren(lineIcon('x'));
     hide.title = LABELS.hide;
     hide.setAttribute('aria-label', `${LABELS.hide}: ${profile.revealed_name || profile.name || 'this person'}`);
     hide.addEventListener('click', onHide);
@@ -886,7 +887,7 @@ function foldSection(key, title, rows) {
 
   const paint = () => {
     const open = Boolean(foldOpen[key]);
-    head.textContent = `${title} (${rows.length}) ${open ? '▾' : '▸'}`;
+    head.replaceChildren(`${title} (${rows.length}) `, lineIcon(open ? 'chevron-down' : 'chevron-right'));
     head.setAttribute('aria-expanded', String(open));
     body.hidden = !open;
   };
@@ -1045,7 +1046,7 @@ async function waveAt(profile, mine, eventSlug, rerender, chat = { open: false }
       track('discovery_wave', { surface: 'explore' });
       close();
       const nowMutual = (state?.mutual ?? []).some((m) => m.discovery_id === profile.discovery_id);
-      showToast(nowMutual ? '🎉 You both waved. Now you can see each other\'s names.' : 'Wave sent. If they wave back, you\'ll both see names.');
+      showToast(nowMutual ? 'You both waved. Now you can see each other\'s names.' : 'Wave sent. If they wave back, you\'ll both see names.');
       rerender();
     } catch (error) {
       sendBtn.disabled = false;
@@ -1109,13 +1110,13 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
   const moreDaysLeft = chat.day_number && chat.days && chat.day_number < chat.days;
   let status = null;
   if (convo.kind === 'waiting') {
-    status = '💬 They sent you a message. Wave back to read it.';
+    status = iconText('message-circle', 'They sent you a message. Wave back to read it.');
   } else if (convo.kind === 'pending') {
     status = 'Waiting for them to wave back. Then you both see names and can reply.';
   } else if (!chat.open) {
     status = chatClosedText(chat);
   } else if (convo.reason === 'waiting') {
-    status = `⏳ Sent. You can write again after they reply (${convo.mine} of ${max} used today).`;
+    status = iconText('clock', `Sent. You can write again after they reply (${convo.mine} of ${max} used today).`);
   } else if (convo.reason === 'limit') {
     status = `That's all ${max} of today's messages.${moreDaysLeft ? ' You get 3 more tomorrow.' : ''} To keep in touch, share your Camp Card or add them to your plan with + Meet.`;
   }
@@ -1124,7 +1125,7 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
   const next = (convo.mine ?? 0) + 1;
   const el = render('tpl-convo', {
     open: convo.kind === 'mutual' && chat.open
-      ? `🟢 Chat open until ${chat.closes_label} (event time)${chat.days > 1 ? ` · Day ${chat.day_number} of ${chat.days}` : ''} · ${max} messages each today`
+      ? iconText('message-circle', `Chat open until ${chat.closes_label} (event time)${chat.days > 1 ? ` · Day ${chat.day_number} of ${chat.days}` : ''} · ${max} messages each today`)
       : null,
     hint: convo.kind === 'mutual' && chat.open && messages.length === 0 ? 'Agree where to meet. Take turns and keep it short.' : null,
     list: bubbles.length ? bubbles : null,
@@ -1167,7 +1168,7 @@ function buildConvo(convo, { max, chat, cardUrl, onSend }) {
 
 /** Why the chat is closed and when it opens — in the event's own time. */
 function chatClosedText(chat) {
-  if (chat.opens_label) return `🌙 Chat is closed now. It opens ${chat.opens_label} (event time), an hour before the first session.`;
+  if (chat.opens_label) return iconText('moon', `Chat is closed now. It opens ${chat.opens_label} (event time), an hour before the first session.`);
   if (chat.ended) return 'The event is over, so the chat is closed. Use Camp Cards to stay in touch.';
   return 'The chat opens during the event, once its schedule is published.';
 }

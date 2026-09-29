@@ -92,7 +92,8 @@
     color: var(--ink);
 
     &::before {
-        content: '👉 ';
+        @include m.line-icon-mask("%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E", var(--brand-primary));
+        margin-right: 0.4em;
     }
 }
 
@@ -130,15 +131,24 @@
     padding-left: v.$space-5;
     list-style: disc;
 
+    // A little more room per line, and each link's tap area filling it
+    // (was a 17px-tall target).
     li {
-        padding: 3px 0;
+        padding: 7px 0;
         font-size: v.$font-size-sm;
     }
 
     a {
+        position: relative;
         color: var(--brand-primary);
         font-weight: v.$font-weight-bold;
         text-decoration: underline;
         text-underline-offset: 2px;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -7px 0;
+        }
     }
 }

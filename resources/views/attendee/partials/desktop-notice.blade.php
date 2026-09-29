@@ -32,5 +32,5 @@
         <button type="button" class="btn btn--primary btn--full" data-action="dismiss">Continue on this computer</button>
     </div>
 
-    <button type="button" class="desktop-notice__close" data-action="dismiss" aria-label="Close">×</button>
+    <button type="button" class="desktop-notice__close" data-action="dismiss" aria-label="Close"><x-attendee.line-icon name="x" /></button>
 </dialog>

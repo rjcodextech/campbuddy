@@ -53,7 +53,7 @@ export function initTour(root) {
   }
 
   function syncToggle() {
-    toggle.textContent = playing ? '❚❚' : '▶';
+    toggle.querySelector('use')?.setAttribute('href', playing ? '#li-pause' : '#li-play');
     toggle.setAttribute('aria-label', playing ? 'Pause' : 'Play');
   }
 

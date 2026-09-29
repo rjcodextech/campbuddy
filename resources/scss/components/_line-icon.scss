@@ -32,3 +32,67 @@
     display: inline-flex;
     align-items: center;
 }
+
+// Controls that used to be a text symbol (× ‹ › ❚❚ ★ ✕): the icon centred,
+// at a size that reads like the old glyph. Their tap areas are unchanged.
+.start-here__dismiss,
+.desktop-notice__close,
+.meet-sheet__close,
+.plan-reminder__close,
+.person-card__hide,
+.tour__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    .line-icon {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.plan-reminder__close .line-icon,
+.person-card__hide .line-icon,
+.tour__btn--play .line-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.schedule-item__star .line-icon {
+    width: 22px;
+    height: 22px;
+}
+
+// A saved session: the star filled in, as ★ was.
+.schedule-item__star--saved .line-icon {
+    fill: currentColor;
+}
+
+.wave-sheet__emoji,
+.plan-reminder__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--brand-primary);
+}
+
+.wave-sheet__emoji .line-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.people-fold__head .line-icon {
+    margin-left: 2px;
+    color: var(--muted);
+}
+
+// "Open in a new tab" after a button's words: a little smaller than the text.
+.btn .line-icon {
+    width: 0.95em;
+    height: 0.95em;
+}
+
+.info-row__chevron .line-icon {
+    width: 18px;
+    height: 18px;
+}

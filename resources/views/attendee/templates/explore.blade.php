@@ -79,7 +79,7 @@
                 <p class="footer-note" style="text-align:left;margin:0 0 14px">Thanks! Your details went to the sponsor. Open the deal to finish.</p>
                 <div style="display:flex;gap:8px">
                     <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Close</button>
-                    <a target="_blank" rel="noopener sponsored" class="btn btn--primary" style="flex:1" data-slot="done-link">Open the deal ↗</a>
+                    <a target="_blank" rel="noopener sponsored" class="btn btn--primary" style="flex:1" data-slot="done-link">Open the deal <x-attendee.line-icon name="external" /></a>
                 </div>
             </div>
         </div>

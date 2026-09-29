@@ -70,7 +70,7 @@
                     data-inapp-title="{{ $name }}">{{ $cta }} →</button>
         @else
             <a href="{{ $offer->url }}" target="_blank" rel="noopener sponsored" class="btn btn--primary btn--compact deal-card__cta"
-               data-deal-link data-deal-title="{{ $name }}">{{ $cta }} ↗</a>
+               data-deal-link data-deal-title="{{ $name }}">{{ $cta }} <x-attendee.line-icon name="external" /></a>
         @endif
     </div>
 </article>

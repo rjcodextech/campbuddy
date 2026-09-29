@@ -21,6 +21,7 @@ import { onPeopleChanged } from './people-sync.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
 import { render, renderFragment } from './template.js';
+import { iconText } from './line-icon.js';
 import { showToast } from './toast.js';
 
 export async function renderMyDay(root) {
@@ -67,7 +68,7 @@ export async function renderMyDay(root) {
     const p = document.createElement('p');
     p.id = 'event-time-note';
     p.className = 'notice';
-    p.textContent = `🕒 ${note}`;
+    p.replaceChildren(...iconText('clock', note));
     document.querySelector('#main-content .section-head')?.after(p);
   }
 
@@ -246,7 +247,7 @@ export async function renderMyDay(root) {
     const pct = Math.round((plan.done / plan.total) * 100);
     const card = render('tpl-plan-summary', {
       count: plan.left === 0
-        ? `All ${plan.total} done 🎉`
+        ? `All ${plan.total} done`
         : `${plan.done} of ${plan.total} done · ${plan.left} left`,
       ring: `${pct}%`,
       bar: { attrs: { 'aria-valuemax': String(plan.total), 'aria-valuenow': String(plan.done), 'aria-label': 'Plan progress' } },
@@ -549,7 +550,7 @@ function personCard(m) {
     avatar: { attrs: { src: /^https?:\/\//i.test(m.avatarUrl ?? '') ? m.avatarUrl : '/media/illustrations/avatar.svg' } },
     name: m.name || 'Anonymous attendee',
     state,
-    when: m.unplanned && !m.at ? when : `🕒 ${when}`,
+    when: m.unplanned && !m.at ? when : iconText('clock', when),
     note: m.note || null,
     met: { text: LABELS.met, attrs: { 'aria-pressed': String(m.status === 'met') }, class: { 'plan-status__btn--on': m.status === 'met' } },
     missed: { text: LABELS.missedButton, attrs: { 'aria-pressed': String(m.status === 'missed') }, class: { 'plan-status__btn--on': m.status === 'missed' } },

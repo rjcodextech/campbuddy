@@ -20,7 +20,7 @@
     <div class="empty-state">
         <img src="/media/illustrations/schedule.svg" alt="" width="160" height="120">
         <p class="empty-state__title">Your day is still empty</p>
-        <p class="empty-state__text">Tap the ☆ next to any session in Full schedule to save it here. Tip: pick three or four, and leave room for the hallway track.</p>
+        <p class="empty-state__text">Tap the <x-attendee.line-icon name="star" /> next to any session in Full schedule to save it here. Tip: pick three or four, and leave room for the hallway track.</p>
     </div>
 </template>
 
@@ -57,7 +57,7 @@
                     <button type="button" class="plan-status__btn plan-status__btn--no" data-status="missed" data-slot="missed">✗ Missed</button>
                 </div>
             </div>
-            <button type="button" class="schedule-item__star" data-slot="star">★</button>
+            <button type="button" class="schedule-item__star" data-slot="star"><x-attendee.line-icon name="star" /></button>
         </div>
         <div class="schedule-item-detail" data-slot="detail"></div>
     </div>
@@ -111,7 +111,7 @@
         <div class="plan-summary__bar" role="progressbar" aria-valuemin="0" data-slot="bar"><span data-slot="fill"></span></div>
         <div class="plan-summary__actions">
             <button type="button" class="chip" aria-pressed="false" data-plan-hide-done data-slot="hide-done">Hide done</button>
-            <button type="button" class="btn btn--outline btn--compact" data-plan-calendar data-slot="calendar">📅 Add all to calendar</button>
+            <button type="button" class="btn btn--outline btn--compact" data-plan-calendar data-slot="calendar"><x-attendee.line-icon name="calendar" /> Add all to calendar</button>
         </div>
     </div>
 </template>

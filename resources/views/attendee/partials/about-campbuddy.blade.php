@@ -56,10 +56,10 @@
             <div class="tour__side">
                 <p class="tour__caption" data-tour-caption aria-live="polite"></p>
                 <div class="tour__controls">
-                    <button type="button" class="tour__btn" data-tour-prev aria-label="Previous screen">‹</button>
+                    <button type="button" class="tour__btn" data-tour-prev aria-label="Previous screen"><x-attendee.line-icon name="chevron-left" /></button>
                     <div class="tour__dots" role="tablist" aria-label="Screens" data-tour-dots></div>
-                    <button type="button" class="tour__btn" data-tour-next aria-label="Next screen">›</button>
-                    <button type="button" class="tour__btn tour__btn--play" data-tour-toggle aria-label="Pause">❚❚</button>
+                    <button type="button" class="tour__btn" data-tour-next aria-label="Next screen"><x-attendee.line-icon name="chevron-right" /></button>
+                    <button type="button" class="tour__btn tour__btn--play" data-tour-toggle aria-label="Pause"><x-attendee.line-icon name="pause" /></button>
                 </div>
             </div>
         </div>

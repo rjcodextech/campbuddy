@@ -134,3 +134,34 @@
         @apply border-maroon/30 border-t-4 border-t-maroon bg-maroon/5;
     }
 }
+
+/*
+ * Phones: every admin and manager control is a comfortable 44px to tap, and
+ * text fields use 16px type — under 16px, iPhones zoom the whole page in when
+ * a field is focused. Tablets and desktops keep the compact sizes above.
+ */
+@media (max-width: 639px) {
+    .cb-input,
+    .cb-btn {
+        min-height: 44px;
+    }
+
+    .cb-btn-sm {
+        min-height: 40px;
+    }
+
+    .cb-input {
+        font-size: 16px;
+    }
+
+    .cb-check {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* The sidebar's links and buttons (layouts/app.blade.php), taller to tap. */
+    #admin-sidebar nav a,
+    #admin-sidebar button {
+        min-height: 44px;
+    }
+}

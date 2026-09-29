@@ -11,6 +11,7 @@ import { daysBetween, eventDayKey, eventTimeNote, formatDayTime, formatTime } fr
 import { momentMatches } from './moments.js';
 import { renderDiscoveryCard } from './people.js';
 import { render } from './template.js';
+import { iconText } from './line-icon.js';
 
 
 // Onboarding's "What are you into?" answers → words that suggest a session
@@ -67,7 +68,7 @@ export async function renderHome(root) {
     const p = document.createElement('p');
     p.id = 'event-time-note';
     p.className = 'notice';
-    p.textContent = `🕒 ${note}`;
+    p.replaceChildren(...iconText('clock', note));
     document.querySelector('.home-hero')?.after(p);
   }
   renderEventStatus(ctx);

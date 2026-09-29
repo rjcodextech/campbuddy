@@ -35,7 +35,7 @@
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
         <div class="roster-row__body">
             <span class="roster-row__name" data-slot="name"></span>
-            <span class="roster-row__open" data-slot="open-badge">👋 Open to meet</span>
+            <span class="roster-row__open" data-slot="open-badge"><x-attendee.line-icon name="hand" /> Open to meet</span>
             <div class="roster-row__links" data-slot="links"></div>
         </div>
         <button type="button" class="meet-btn" data-slot="meet"></button>
