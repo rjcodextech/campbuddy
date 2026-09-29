@@ -172,6 +172,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('media', [MediaController::class, 'index'])->name('admin.media.index');
         Route::post('media', [MediaController::class, 'store'])->name('admin.media.store');
+        Route::delete('media/{media}', [MediaController::class, 'destroy'])->name('admin.media.destroy');
     });
 
     require __DIR__.'/auth.php';

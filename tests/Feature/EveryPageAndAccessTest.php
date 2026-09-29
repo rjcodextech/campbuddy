@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventManager;
 use App\Models\FreeSteal;
 use App\Models\FreeStealSuggestion;
+use App\Models\MediaAsset;
 use App\Models\Offer;
 use App\Models\OfferLead;
 use App\Models\Quest;
@@ -67,6 +68,7 @@ class EveryPageAndAccessTest extends TestCase
             'offer' => $offer->id,
             'deal' => $deal->id,
             'free_steal' => $steal->id,
+            'media' => MediaAsset::create(['disk' => 'public', 'path' => 'media-library/2026/09/logo.png', 'filename' => 'logo.png', 'mime_type' => 'image/png', 'size' => 3])->id,
             'suggestion' => FreeStealSuggestion::value('id'),
             'event_manager' => $manager->id,
             'entry' => $entry->id,

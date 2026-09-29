@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
- * A shared, permanently-retained media library other models (Offers,
- * and future ones) pick images from. Deliberately has no delete path —
- * once uploaded, a file stays even if nothing currently references it,
- * so a picker never surfaces a broken link.
+ * The shared media library other models pick images from: deals (Offers)
+ * and Free Steals. Only an image nothing uses can be deleted (Admin →
+ * Media Library), so a picker never surfaces a broken link.
  */
 class MediaAsset extends Model
 {
@@ -32,6 +33,33 @@ class MediaAsset extends Model
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /** Deals using it as their logo: an event's own and the default ones. */
+    public function offers(): HasMany
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    /** Free Steals using it as their logo. */
+    public function freeSteals(): HasMany
+    {
+        return $this->hasMany(FreeSteal::class);
+    }
+
+    public function scopeUsed(Builder $query): Builder
+    {
+        return $query->where(fn (Builder $q) => $q->has('offers')->orWhereHas('freeSteals'));
+    }
+
+    public function scopeUnused(Builder $query): Builder
+    {
+        return $query->doesntHave('offers')->doesntHave('freeSteals');
+    }
+
+    public function isUsed(): bool
+    {
+        return $this->offers()->exists() || $this->freeSteals()->exists();
     }
 
     public function url(): string
