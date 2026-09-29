@@ -41,7 +41,12 @@
 <template id="tpl-deal-lead-dialog">
     <dialog>
         <div class="dialog-card">
-            <p style="font-weight:700;margin:0 0 4px" data-slot="title"></p>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin:-8px -8px 0 0">
+                <p style="font-weight:700;margin:8px 0 4px" data-slot="title"></p>
+                <button type="button" class="topbar__icon-btn" data-action="close" aria-label="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
             <form data-lead-form>
                 <p class="footer-note" style="text-align:left;margin:0 0 14px" data-slot="intro">Share a few details to get this deal. They go only to the sponsor, so they can sort it out for you.</p>
                 @foreach ([
