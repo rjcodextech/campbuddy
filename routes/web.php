@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
+use App\Http\Controllers\Admin\DefaultDealController;
 use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventManagerActivityController;
@@ -137,9 +138,17 @@ Route::prefix('admin')->group(function () {
         Route::delete('events/{event}/quests/{quest}', [QuestController::class, 'destroy'])->name('admin.events.quests.destroy');
 
         Route::get('events/{event}/offers', [OfferController::class, 'index'])->name('admin.events.offers.index');
+        Route::get('events/{event}/offers/create', [OfferController::class, 'create'])->name('admin.events.offers.create');
         Route::post('events/{event}/offers', [OfferController::class, 'store'])->name('admin.events.offers.store');
+        Route::get('events/{event}/offers/{offer}/edit', [OfferController::class, 'edit'])->name('admin.events.offers.edit');
         Route::put('events/{event}/offers/{offer}', [OfferController::class, 'update'])->name('admin.events.offers.update');
         Route::delete('events/{event}/offers/{offer}', [OfferController::class, 'destroy'])->name('admin.events.offers.destroy');
+        Route::post('events/{event}/offers/{offer}/visibility', [OfferController::class, 'visibility'])->name('admin.events.offers.visibility');
+
+        // Default deals: shown at every event in their countries (and every one found later).
+        Route::resource('deals', DefaultDealController::class)->except('show')->names('admin.deals');
+        Route::get('deals/{deal}/leads', [DefaultDealController::class, 'leads'])->name('admin.deals.leads');
+        Route::get('deals/{deal}/leads/export', [DefaultDealController::class, 'export'])->name('admin.deals.leads.export');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');

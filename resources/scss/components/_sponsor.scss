@@ -49,45 +49,158 @@
     width: auto;
 }
 
-.offer-grid {
+// Explore → Deals (attendee/partials/deal-card.blade.php): one card per
+// deal, full width, so a logo, the offer and its small print all have
+// room on a phone. Who it's from first (logo, name, website, a highlight
+// tag), then the offer, then one button.
+.deal-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: v.$space-3;
 }
 
-.offer-card {
-    @include m.pressable-subtle;
+.deal-card {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: v.$space-1;
+    gap: v.$space-2;
+    min-width: 0;
     padding: v.$space-4;
     border-radius: v.$radius-md;
     border: 1px solid var(--line);
     background: var(--paper);
-    transition: transform 0.12s ease;
-
-    // Deals with lead-capture enabled render as a <button> instead of an
-    // <a> (see attendee/explore.blade.php) — reset native button chrome
-    // so it looks identical to the anchor variant.
-    width: 100%;
-    text-align: left;
-    font: inherit;
-    cursor: pointer;
 }
 
-.offer-card__icon {
+.deal-card__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    margin-bottom: v.$space-1;
+}
+
+// A white tile so any logo (dark, light, transparent) reads the same.
+.deal-card__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+    border-radius: v.$radius-sm;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--brand-primary);
     font-size: 1.4rem;
+
+    img {
+        width: 100%;
+        height: 100%;
+        padding: 5px;
+        object-fit: contain;
+    }
 }
 
-.offer-card__title {
+.deal-card__who {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.deal-card__name {
     font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-tight;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.deal-card__site {
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.deal-card__tag {
+    flex-shrink: 0;
+    max-width: 40%;
+    padding: 4px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-tight;
+    text-align: center;
+}
+
+.deal-card__title {
+    margin: 0;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
     color: var(--ink);
 }
 
-.offer-card__desc {
+.deal-card__desc {
+    margin: 0;
     font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--ink);
+}
+
+.deal-card__terms {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
     color: var(--muted);
+}
+
+.deal-card__code {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    padding: v.$space-1 v.$space-1 v.$space-1 v.$space-3;
+    border: 1px dashed var(--line);
+    border-radius: v.$radius-sm;
+    background: var(--paper-soft);
+}
+
+.deal-card__code-label {
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.deal-card__code-value {
+    flex: 1;
+    min-width: 0;
+    font-family: v.$font-mono;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: v.$letter-spacing-wide;
+    overflow-wrap: anywhere;
+}
+
+.deal-card__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-2;
+    margin-top: auto;
+    padding-top: v.$space-2;
+}
+
+.deal-card__note {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+
+    .line-icon {
+        color: var(--brand-primary);
+    }
+}
+
+.deal-card__cta {
+    margin-left: auto;
 }
 
 .useful-link {

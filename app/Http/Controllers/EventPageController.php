@@ -85,7 +85,8 @@ class EventPageController extends Controller
         return view('attendee.explore', [
             'event' => $event,
             'sponsors' => $this->cached($event, 'sponsors'),
-            'offers' => $event->offers()->with('mediaAsset')->where('is_active', true)->orderBy('sort_order')->get(),
+            // The event's own deals, then the default deals for its country.
+            'offers' => \App\Models\Offer::shownAt($event),
         ]);
     }
 

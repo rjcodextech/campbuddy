@@ -39,6 +39,27 @@ export function renderExplore() {
     });
   });
 
+  // A deal that opens in a new tab is a plain link (so a referral or
+  // affiliate link keeps its credit); only report it.
+  document.querySelectorAll('[data-deal-link]').forEach((link) => {
+    link.addEventListener('click', () => {
+      track('deal_open', { offer_title: link.dataset.dealTitle, link_domain: linkDomain(link.href), lead_capture: false });
+    });
+  });
+
+  // A deal's coupon code: one tap copies it.
+  document.querySelectorAll('[data-copy-code]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copyCode);
+        btn.textContent = 'Copied';
+      } catch {
+        btn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+    });
+  });
+
   // Deep-link support (e.g. Quest's "View sponsors"/"Find people"
   // actions linking to /explore?tab=sponsors) — pre-selects the matching
   // sub-tab instead of always landing on People.

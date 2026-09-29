@@ -95,38 +95,13 @@
         </div>
 
         <div data-explore-panel="deals" hidden>
-            <p class="panel-intro">Special offers from this WordCamp's sponsors, just for attendees.</p>
+            <p class="panel-intro">Special offers for this WordCamp's attendees, from its sponsors and friends of the community.</p>
             @if ($offers->isEmpty())
                 <p class="footer-note" style="text-align:left">No deals right now. Check back during the event.</p>
             @else
-                <div class="offer-grid">
+                <div class="deal-list">
                     @foreach ($offers as $offer)
-                        @if ($offer->capture_leads)
-                            <button type="button" class="offer-card"
-                                    data-lead-offer-id="{{ $offer->id }}"
-                                    data-lead-offer-url="{{ $offer->url }}"
-                                    data-lead-offer-title="{{ $offer->title }}">
-                                @if ($offer->mediaAsset)
-                                    <img src="{{ $offer->mediaAsset->url() }}" alt="" style="height:32px;width:auto;max-width:80px;object-fit:contain">
-                                @else
-                                    <span class="offer-card__icon" aria-hidden="true">{{ $offer->icon }}</span>
-                                @endif
-                                <span class="offer-card__title">{{ $offer->title }}</span>
-                                <span class="offer-card__desc">{{ $offer->description }}</span>
-                            </button>
-                        @else
-                            <button type="button" class="offer-card"
-                                    data-inapp-url="{{ $offer->url }}"
-                                    data-inapp-title="{{ $offer->title }}">
-                                @if ($offer->mediaAsset)
-                                    <img src="{{ $offer->mediaAsset->url() }}" alt="" style="height:32px;width:auto;max-width:80px;object-fit:contain">
-                                @else
-                                    <span class="offer-card__icon" aria-hidden="true">{{ $offer->icon }}</span>
-                                @endif
-                                <span class="offer-card__title">{{ $offer->title }}</span>
-                                <span class="offer-card__desc">{{ $offer->description }}</span>
-                            </button>
-                        @endif
+                        @include('attendee.partials.deal-card', ['offer' => $offer])
                     @endforeach
                 </div>
             @endif

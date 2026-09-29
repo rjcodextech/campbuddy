@@ -30,21 +30,57 @@
     </dialog>
 </template>
 
+{{--
+    The contact form before a deal opens. Every field a deal may ask for is
+    here; deal-leads.js keeps the ones that deal's form uses (its labels,
+    hints and required marks come from the deal, DealForm) and adds one
+    chip per product to tick. After sending, a deal that opens in a new tab
+    shows the "done" step with a real link to tap, so no pop-up blocker can
+    swallow it.
+--}}
 <template id="tpl-deal-lead-dialog">
     <dialog>
         <div class="dialog-card">
             <p style="font-weight:700;margin:0 0 4px" data-slot="title"></p>
-            <p class="footer-note" style="text-align:left;margin:0 0 14px">Share a few details to get this deal. They go only to the sponsor, so they can sort it out for you.</p>
             <form data-lead-form>
-                @include('attendee.partials.form-field', ['id' => 'lead-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Priya Sharma', 'autocomplete' => 'name', 'maxlength' => 191, 'errorLine' => false])
-                @include('attendee.partials.form-field', ['id' => 'lead-email', 'name' => 'email', 'type' => 'email', 'label' => 'Email', 'required' => true, 'placeholder' => 'you@example.com', 'autocomplete' => 'email', 'inputmode' => 'email', 'maxlength' => 191, 'errorLine' => false])
-                @include('attendee.partials.form-field', ['id' => 'lead-mobile', 'name' => 'mobile', 'type' => 'tel', 'label' => 'Mobile', 'placeholder' => 'e.g. 98765 43210', 'autocomplete' => 'tel', 'inputmode' => 'tel', 'maxlength' => 32, 'hint' => 'Optional.', 'errorLine' => false])
+                <p class="footer-note" style="text-align:left;margin:0 0 14px" data-slot="intro">Share a few details to get this deal. They go only to the sponsor, so they can sort it out for you.</p>
+                @foreach ([
+                    ['name', 'text', 'e.g. Priya Sharma', 'name', null, 191],
+                    ['company', 'text', 'e.g. Ariham Technologies', 'organization', null, 191],
+                    ['email', 'email', 'you@example.com', 'email', 'email', 191],
+                    ['mobile', 'tel', 'e.g. 98765 43210', 'tel', 'tel', 32],
+                ] as [$field, $type, $placeholder, $autocomplete, $inputmode, $max])
+                    <div class="form-field" data-lead-field="{{ $field }}">
+                        <label class="form-field__label" for="lead-{{ $field }}"><span data-lead-label></span><abbr class="form-field__req" title="required" data-lead-req>*</abbr></label>
+                        <div class="form-input-wrap">
+                            <input id="lead-{{ $field }}" name="{{ $field }}" type="{{ $type }}" placeholder="{{ $placeholder }}" autocomplete="{{ $autocomplete }}"
+                                   @if ($inputmode) inputmode="{{ $inputmode }}" @endif maxlength="{{ $max }}" aria-describedby="lead-{{ $field }}-hint">
+                        </div>
+                        <p class="form-field__hint" id="lead-{{ $field }}-hint" data-lead-hint></p>
+                    </div>
+                @endforeach
+                <div class="form-field" data-lead-field="choices" role="group" aria-labelledby="lead-choices-label">
+                    <p class="form-field__label" id="lead-choices-label"><span data-lead-label></span><abbr class="form-field__req" title="required" data-lead-req>*</abbr></p>
+                    <div class="chip-group" data-lead-choices></div>
+                    <p class="form-field__hint" data-lead-hint></p>
+                </div>
                 <p class="form-field__error" role="alert" style="margin:0 0 12px" data-lead-error hidden></p>
                 <div style="display:flex;gap:8px;margin-top:4px">
                     <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Cancel</button>
                     <button type="submit" class="btn btn--primary" style="flex:1">Continue</button>
                 </div>
             </form>
+            <div data-lead-done hidden>
+                <p class="footer-note" style="text-align:left;margin:0 0 14px">Thanks! Your details went to the sponsor. Open the deal to finish.</p>
+                <div style="display:flex;gap:8px">
+                    <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Close</button>
+                    <a target="_blank" rel="noopener sponsored" class="btn btn--primary" style="flex:1" data-slot="done-link">Open the deal ↗</a>
+                </div>
+            </div>
         </div>
     </dialog>
+</template>
+
+<template id="tpl-deal-lead-choice">
+    <button type="button" class="chip" aria-pressed="false" data-slot="label"></button>
 </template>

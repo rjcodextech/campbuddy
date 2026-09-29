@@ -1,109 +1,85 @@
-@php
-    $assetOptions = $mediaAssets->pluck('filename', 'id')->all();
-@endphp
-
 <x-app-layout title="Deals" :subtitle="$event->display_name"
               :breadcrumbs="[['Events', route('admin.events.index')], [$event->display_name, route('admin.events.edit', $event)], ['Deals']]">
     <x-slot:actions>
         <x-button :href="route('admin.media.index')" variant="secondary" icon="photo">Media Library</x-button>
+        <x-button :href="route('admin.events.offers.create', $event)" icon="plus">Add a deal</x-button>
     </x-slot:actions>
 
     <x-admin.event-nav :event="$event" current="offers" />
 
     <div class="max-w-5xl space-y-6">
         <x-alert type="info">
-            <strong>Require contact info</strong> asks an attendee for their name, email and (optionally) mobile number
-            before that deal opens — useful when a sponsor wants to follow up. Leave it off for deals that should just
-            link straight out. Captured details appear under <a href="{{ route('admin.events.deal-leads.index', $event) }}" class="font-medium underline">Deal leads</a>.
+            A deal can ask for a short <strong>contact form</strong> before it opens — you choose which fields
+            (name, company, email, phone) and can add products to tick. Answers appear under
+            <a href="{{ route('admin.events.deal-leads.index', $event) }}" class="font-medium underline">Deal leads</a>.
+            Referral and affiliate links should open <strong>in a new tab</strong> so the sponsor gets the credit.
         </x-alert>
 
-        <x-card title="Sponsor deals" description="Shown on Explore → Deals while the event is active." flush>
+        <x-card title="This event's deals" description="Shown first on Explore → Deals while the event is active." flush>
             @if ($offers->isEmpty())
                 <div class="px-5 py-12 text-center sm:px-6">
                     <x-icon name="tag" class="mx-auto h-8 w-8 text-muted/50" />
-                    <p class="mt-2 text-sm font-medium">No deals yet</p>
-                    <p class="mx-auto mt-1 max-w-sm text-sm text-muted">Add a sponsor offer below and it will show up for attendees.</p>
+                    <p class="mt-2 text-sm font-medium">No deals of its own yet</p>
+                    <p class="mx-auto mt-1 max-w-sm text-sm text-muted">Add a sponsor offer and it will show up for attendees.</p>
+                    <div class="mt-4">
+                        <x-button :href="route('admin.events.offers.create', $event)" icon="plus" size="sm">Add a deal</x-button>
+                    </div>
                 </div>
             @else
                 <ul class="divide-y divide-line">
                     @foreach ($offers as $offer)
-                        <li @class(['px-5 py-4 sm:px-6', 'bg-paper/60' => ! $offer->is_active])>
-                            <div class="flex gap-4">
-                                <div class="hidden h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft sm:flex" aria-hidden="true">
-                                    @if ($offer->mediaAsset)
-                                        <img src="{{ $offer->mediaAsset->url() }}" alt="" class="max-h-full max-w-full object-contain">
-                                    @else
-                                        <span class="text-2xl">{{ $offer->icon }}</span>
+                        <li>
+                            <x-admin.deal-row :offer="$offer" :muted="! $offer->is_active">
+                                <x-slot:badges>
+                                    <x-badge>Order {{ $offer->sort_order }}</x-badge>
+                                    @if ($offer->leads_count)
+                                        <x-badge variant="success">{{ $offer->leads_count }} {{ \Illuminate\Support\Str::plural('lead', $offer->leads_count) }}</x-badge>
                                     @endif
-                                </div>
+                                </x-slot:badges>
 
-                                <div class="grid min-w-0 flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                                    <form method="POST" action="{{ route('admin.events.offers.update', [$event, $offer]) }}"
-                                          class="grid gap-3 md:grid-cols-12 md:items-end">
-                                        @csrf
-                                        @method('PUT')
-
-                                        <x-form.input name="sort_order" type="number" min="0" label="Order" class="md:col-span-2"
-                                                      :id="'offer-order-'.$offer->id" :value="$offer->sort_order" :use-old="false" :show-error="false" />
-                                        <x-form.input name="title" label="Title" required class="md:col-span-4"
-                                                      :id="'offer-title-'.$offer->id" :value="$offer->title" :use-old="false" :show-error="false" />
-                                        <x-form.select name="media_asset_id" label="Logo" placeholder="No logo (use emoji)" class="md:col-span-4"
-                                                       :id="'offer-logo-'.$offer->id" :options="$assetOptions" :value="$offer->media_asset_id" :use-old="false" :show-error="false" />
-                                        <x-form.input name="icon" label="Emoji" maxlength="10" class="md:col-span-2"
-                                                      :id="'offer-icon-'.$offer->id" :value="$offer->icon" :use-old="false" :show-error="false"
-                                                      title="Fallback shown when no logo is chosen" />
-
-                                        <x-form.input name="url" type="url" label="Link" required class="md:col-span-6"
-                                                      :id="'offer-url-'.$offer->id" :value="$offer->url" :use-old="false" :show-error="false" />
-                                        <x-form.input name="description" label="Description" required class="md:col-span-6"
-                                                      :id="'offer-desc-'.$offer->id" :value="$offer->description" :use-old="false" :show-error="false" />
-
-                                        <div class="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 md:col-span-12">
-                                            <div class="flex flex-wrap items-center gap-x-6 gap-y-2">
-                                                <x-form.checkbox name="is_active" label="Active" unchecked="0"
-                                                                 :id="'offer-active-'.$offer->id" :checked="$offer->is_active" :use-old="false" :show-error="false" />
-                                                <x-form.checkbox name="capture_leads" label="Require contact info" unchecked="0"
-                                                                 :id="'offer-leads-'.$offer->id" :checked="$offer->capture_leads" :use-old="false" :show-error="false" />
-                                            </div>
-                                            <x-button variant="secondary" size="sm">Save</x-button>
-                                        </div>
-                                    </form>
-
-                                    <x-action-form :action="route('admin.events.offers.destroy', [$event, $offer])" method="DELETE"
-                                                   variant="danger-outline" size="sm" icon="trash" class="md:pb-0.5"
-                                                   :confirm="'Remove “'.$offer->title.'”?'">Remove</x-action-form>
-                                </div>
-                            </div>
+                                <x-button :href="route('admin.events.offers.edit', [$event, $offer])" variant="secondary" size="sm" icon="pencil">Edit</x-button>
+                                <x-action-form :action="route('admin.events.offers.destroy', [$event, $offer])" method="DELETE"
+                                               variant="danger-outline" size="sm" icon="trash"
+                                               :confirm="'Remove “'.$offer->displayName().'”'.($offer->leads_count ? ' and its '.$offer->leads_count.' leads' : '').'?'">Remove</x-action-form>
+                            </x-admin.deal-row>
                         </li>
                     @endforeach
                 </ul>
             @endif
         </x-card>
 
-        <form method="POST" action="{{ route('admin.events.offers.store', $event) }}">
-            @csrf
-
-            <x-card title="Add a deal">
-                {{-- Ignores old()/inline errors: a failed *row* update shares these field names. The page-level summary reports it. --}}
-                <div class="grid gap-4 md:grid-cols-12">
-                    <x-form.input name="title" label="Sponsor / title" required class="md:col-span-5" id="new-offer-title" :use-old="false" :show-error="false" />
-                    <x-form.select name="media_asset_id" label="Logo" placeholder="No logo (use emoji)" class="md:col-span-5"
-                                   id="new-offer-logo" :options="$assetOptions" :use-old="false" :show-error="false" />
-                    <x-form.input name="icon" label="Emoji" maxlength="10" value="🏷" class="md:col-span-2" id="new-offer-icon" :use-old="false" :show-error="false" />
-
-                    <x-form.input name="url" type="url" label="Link" required placeholder="https://…" class="md:col-span-6" id="new-offer-url" :use-old="false" :show-error="false" />
-                    <x-form.input name="description" label="Description" required class="md:col-span-6" id="new-offer-desc" :use-old="false" :show-error="false" />
-
-                    <div class="md:col-span-12">
-                        <x-form.checkbox name="capture_leads" label="Require contact info before the deal opens" unchecked="0"
-                                         id="new-offer-leads" :use-old="false" :show-error="false" />
-                    </div>
+        <x-card title="Default deals" flush
+                description="Made once under Default deals and shown at every event in their countries, after this event's own. Hide one here if it clashes with a sponsor.">
+            @if ($defaults->isEmpty())
+                <div class="px-5 py-8 text-center text-sm text-muted sm:px-6">
+                    No default deal covers this event's country.
+                    <a href="{{ route('admin.deals.index') }}" class="font-medium text-maroon underline">Manage default deals</a>
                 </div>
+            @else
+                <ul class="divide-y divide-line">
+                    @foreach ($defaults as $offer)
+                        <li>
+                            <x-admin.deal-row :offer="$offer" :muted="$offer->hidden_here || ! $offer->is_active">
+                                <x-slot:badges>
+                                    <x-badge>{{ $offer->countriesLabel() }}</x-badge>
+                                    @if ($offer->hidden_here)
+                                        <x-badge variant="danger">Hidden at this event</x-badge>
+                                    @endif
+                                </x-slot:badges>
 
-                <x-slot:footer>
-                    <x-button icon="plus">Add deal</x-button>
-                </x-slot:footer>
-            </x-card>
-        </form>
+                                <x-button :href="route('admin.deals.edit', $offer)" variant="link" size="sm" class="px-2">Edit for all events</x-button>
+                                <form method="POST" action="{{ route('admin.events.offers.visibility', [$event, $offer]) }}">
+                                    @csrf
+                                    <input type="hidden" name="hidden" value="{{ $offer->hidden_here ? 0 : 1 }}">
+                                    <x-button variant="secondary" size="sm" :icon="$offer->hidden_here ? 'eye' : 'eye-off'">
+                                        {{ $offer->hidden_here ? 'Show here' : 'Hide here' }}
+                                    </x-button>
+                                </form>
+                            </x-admin.deal-row>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
     </div>
 </x-app-layout>

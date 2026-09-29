@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Offer;
 use App\Models\OfferLead;
+use App\Support\DealLeadCsv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -12,9 +14,10 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Leads captured via Offer::capture_leads (§7) — Name/Email/Mobile an
- * attendee submits before opening a deal with lead-capture enabled.
- * Event-scoped and filterable the same way Roster is, plus a CSV export.
+ * Leads captured via Offer::capture_leads (§7) — what an attendee filled in
+ * before opening a deal with a contact form (DealForm). Event-scoped and
+ * filterable the same way Roster is, plus a CSV export; the event's own
+ * deals and the default deals it shows are both listed.
  */
 class DealLeadController extends Controller
 {
@@ -22,7 +25,8 @@ class DealLeadController extends Controller
     {
         Gate::authorize('viewAny', OfferLead::class);
 
-        $offers = $event->offers()->orderBy('title')->get(['id', 'title']);
+        $offers = $event->offers()->get()->concat(Offer::defaultsFor($event))
+            ->sortBy(fn (Offer $offer) => mb_strtolower($offer->displayName()));
 
         $leads = $this->filteredQuery($request, $event)
             ->latest()
@@ -41,51 +45,16 @@ class DealLeadController extends Controller
     {
         Gate::authorize('viewAny', OfferLead::class);
 
-        $leads = $this->filteredQuery($request, $event)->latest()->get();
-
-        $filename = 'deal-leads-'.$event->slug.'-'.now()->format('Y-m-d').'.csv';
-
-        return response()->streamDownload(function () use ($leads) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Deal', 'Name', 'Email', 'Mobile', 'Submitted at']);
-
-            foreach ($leads as $lead) {
-                fputcsv($handle, [
-                    $this->csvSafe($lead->offer?->title),
-                    $this->csvSafe($lead->name),
-                    $this->csvSafe($lead->email),
-                    $this->csvSafe($lead->mobile),
-                    $lead->created_at->toDateTimeString(),
-                ]);
-            }
-
-            fclose($handle);
-        }, $filename, ['Content-Type' => 'text/csv']);
-    }
-
-    /**
-     * These cells hold whatever an anonymous visitor typed, and a spreadsheet
-     * runs a cell that starts with = + - @ (or a tab / carriage return) as a
-     * formula — so an admin opening the export could be running a stranger's
-     * formula. A leading apostrophe makes it plain text. Phone-style values
-     * ("+91 98765 43210") are just digits and are left alone.
-     */
-    private function csvSafe(?string $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return $value;
-        }
-
-        $looksLikeFormula = preg_match('/^[=+\-@\t\r]/', $value) === 1;
-        $isPlainNumber = preg_match('/^[+\-]?[0-9][0-9 ().\-]*$/', $value) === 1;
-
-        return $looksLikeFormula && ! $isPlainNumber ? "'".$value : $value;
+        return DealLeadCsv::download(
+            $this->filteredQuery($request, $event)->latest()->get(),
+            'deal-leads-'.$event->slug.'-'.now()->format('Y-m-d').'.csv'
+        );
     }
 
     private function filteredQuery(Request $request, Event $event): Builder
     {
         return OfferLead::where('event_id', $event->id)
-            ->with('offer:id,title')
+            ->with(['offer', 'event:id,display_name'])
             ->when($request->filled('offer_id'), fn ($q) => $q->where('offer_id', $request->integer('offer_id')))
             ->when($request->filled('from'), fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')));

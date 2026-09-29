@@ -16,7 +16,7 @@
         <x-card title="Filter" description="Narrow the list — the CSV export uses the same filters.">
             <form method="GET" action="{{ route('admin.events.deal-leads.index', $event) }}" class="flex flex-wrap items-end gap-4">
                 <x-form.select name="offer_id" label="Deal" placeholder="All deals" class="w-full sm:w-56"
-                               :options="$offers->pluck('title', 'id')->all()" :value="$filters['offer_id'] ?? ''" :use-old="false" :show-error="false" />
+                               :options="$offers->mapWithKeys(fn ($offer) => [$offer->id => $offer->displayName().($offer->isDefault() ? ' (default)' : '')])->all()" :value="$filters['offer_id'] ?? ''" :use-old="false" :show-error="false" />
                 <x-form.input name="from" type="date" label="From" class="w-full sm:w-44" :value="$filters['from'] ?? ''" :use-old="false" :show-error="false" />
                 <x-form.input name="to" type="date" label="To" class="w-full sm:w-44" :value="$filters['to'] ?? ''" :use-old="false" :show-error="false" />
 
@@ -29,39 +29,6 @@
             </form>
         </x-card>
 
-        <x-card flush>
-            <x-table>
-                <x-slot:head>
-                    <th>Deal</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Mobile</th>
-                    <th>Submitted</th>
-                </x-slot:head>
-
-                @forelse ($leads as $lead)
-                    <tr>
-                        <td>{{ $lead->offer?->title ?? '—' }}</td>
-                        <td class="font-medium">{{ $lead->name }}</td>
-                        <td><a href="mailto:{{ $lead->email }}" class="text-maroon hover:underline">{{ $lead->email }}</a></td>
-                        <td class="whitespace-nowrap">{{ $lead->mobile ?? '—' }}</td>
-                        <td class="whitespace-nowrap text-muted">{{ $lead->created_at->format('d M Y, g:ia') }}</td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="5" icon="inbox" :title="$hasFilters ? 'No leads match these filters' : 'No leads captured yet'">
-                        @unless ($hasFilters)
-                            Turn on “Require contact info” for a deal and attendee details will appear here.
-                        @endunless
-                    </x-table.empty>
-                @endforelse
-            </x-table>
-
-            @if ($leads->hasPages())
-                <x-slot:footer>
-                    <span class="mr-auto text-xs text-muted">Showing {{ $leads->firstItem() }}–{{ $leads->lastItem() }} of {{ number_format($leads->total()) }}</span>
-                    {{ $leads->links() }}
-                </x-slot:footer>
-            @endif
-        </x-card>
+        @include('admin.deal-leads._table', ['showEvent' => false])
     </div>
 </x-app-layout>

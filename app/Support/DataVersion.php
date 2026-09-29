@@ -27,8 +27,8 @@ class DataVersion
                 json_encode($event->info),
                 $event->logo_path,
                 $event->timezone,
-                (string) $event->offers()->max('updated_at'),
-                (string) $event->offers()->count(),
+                // Every deal shown here: its own and the default deals for its country.
+                md5(\App\Models\Offer::shownAt($event)->map(fn ($offer) => $offer->id.'@'.$offer->updated_at)->implode(',')),
                 (string) $event->quests()->max('updated_at'),
                 (string) $event->quests()->count(),
             ];
