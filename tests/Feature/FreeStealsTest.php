@@ -12,6 +12,7 @@ use App\Support\DataVersion;
 use App\Support\FreeSteals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -140,6 +141,48 @@ class FreeStealsTest extends TestCase
             'name' => 'Bad', 'description' => 'x', 'maker' => 'x', 'category' => 'x',
             'url' => 'https://example.com', 'media_asset_id' => 999,
         ])->assertSessionHasErrors('media_asset_id');
+    }
+
+    /** @return array<string, string> The shipped logos, link => file. */
+    private function shippedLogos(): array
+    {
+        return (require database_path('migrations/2026_10_05_090500_add_logo_to_free_steals.php'))->logos();
+    }
+
+    public function test_every_shipped_steal_but_wordpress_skills_has_a_square_logo_file(): void
+    {
+        $logos = $this->shippedLogos();
+
+        foreach ($this->shipped() as $steal) {
+            if ($steal['name'] === 'WordPress Skills') {
+                $this->assertArrayNotHasKey($steal['url'], $logos);
+
+                continue;
+            }
+            $this->assertArrayHasKey($steal['url'], $logos, $steal['name']);
+            $size = getimagesize(public_path('media/free-steals/'.$logos[$steal['url']]));
+            $this->assertSame([256, 256, IMAGETYPE_PNG], [$size[0], $size[1], $size[2]], $steal['name']);
+        }
+        $this->assertCount(16, $logos); // 15 shipped + AcrossAI Pro, added on the live site
+        $this->assertFileExists(public_path('media/free-steals/'.$logos['https://r.freemius.com/34763/10087717/']));
+    }
+
+    public function test_shipped_logos_go_on_steals_without_one_and_an_admin_pick_stays(): void
+    {
+        Storage::fake('public');
+        FreeSteals::install($this->shipped());
+        $own = MediaAsset::create(['disk' => 'public', 'path' => 'media-library/2026/09/mine.png', 'filename' => 'mine.png', 'mime_type' => 'image/png', 'size' => 1234]);
+        FreeSteal::where('name', 'GoDAM')->update(['media_asset_id' => $own->id]);
+
+        $this->assertSame(14, FreeSteals::logos($this->shippedLogos()));
+        $this->assertSame(0, FreeSteals::logos($this->shippedLogos()));
+
+        $this->assertSame($own->id, FreeSteal::where('name', 'GoDAM')->value('media_asset_id'));
+        $this->assertNull(FreeSteal::where('name', 'WordPress Skills')->value('media_asset_id'));
+        $studio = FreeSteal::where('name', 'WordPress Studio')->sole()->mediaAsset;
+        $this->assertSame('media-library/free-steals/wordpress-studio.png', $studio->path);
+        Storage::disk('public')->assertExists($studio->path);
+        $this->assertSame(15, MediaAsset::count());
     }
 
     public function test_category_suggestions_have_no_repeats(): void
