@@ -290,12 +290,12 @@ class DefaultDealsTest extends TestCase
         $this->assertSame(4, DefaultDeals::install());
         $this->assertSame(0, DefaultDeals::install(), 'never added twice');
 
-        $this->assertSame(['Knit Pay (ours)', 'Ariham Technologies', 'Hostinger', 'Automattic', 'Knit Pay'], Offer::shownAt($jaipur)->map->displayName()->all());
+        $this->assertSame(['Knit Pay (ours)', 'Ariham Technologies', 'Hostinger', 'Automattic', 'Knit Pay Pro'], Offer::shownAt($jaipur)->map->displayName()->all());
         $this->assertFalse($oldCopy->fresh()->is_active, 'the plain Hostinger copy is switched off, not deleted');
         $this->assertTrue($withLeads->fresh()->is_active, 'a deal with leads is left alone');
         $this->assertSame([], Offer::shownAt($sylhet)->all());
 
-        $knitPay = Offer::defaults()->where('brand', 'Knit Pay')->sole();
+        $knitPay = Offer::defaults()->where('brand', 'Knit Pay Pro')->sole();
         $this->assertTrue($knitPay->capture_leads);
         $this->assertSame(['Knit Pay - Pro', 'Knit Pay - UPI'], $knitPay->leadForm()['choices']['options']);
         $this->assertSame('Registered email at RapidAPI', $knitPay->leadForm()['fields']['email']['label']);

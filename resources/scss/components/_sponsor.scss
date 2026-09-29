@@ -137,8 +137,10 @@
     color: var(--ink);
 }
 
+// pre-line: a deal can list its points on their own lines (Knit Pay Pro).
 .deal-card__desc {
     margin: 0;
+    white-space: pre-line;
     font-size: v.$font-size-sm;
     line-height: v.$line-height-body;
     color: var(--ink);
@@ -276,6 +278,120 @@
     display: block;
     font-size: v.$font-size-sm;
     color: var(--muted);
+}
+
+// Explore → Info (attendee/partials/event-info.blade.php): the event's name
+// and dates, then its details in titled groups, each a card of rows. The rows
+// are .useful-link (shared with the WordCamp 101 guide, left as it is there);
+// everything Info-only is scoped under .info-group.
+.info-head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    margin-bottom: v.$space-4;
+}
+
+.info-head__logo {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-sm;
+    background: #fff;
+    object-fit: contain;
+}
+
+.info-head__text {
+    min-width: 0;
+}
+
+.info-head__name {
+    margin: 0;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-tight;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+}
+
+.info-head__dates {
+    margin: 2px 0 0;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.info-group {
+    margin-bottom: v.$space-4;
+}
+
+.info-group__title {
+    margin: 0 0 v.$space-2;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: v.$letter-spacing-caps;
+    color: var(--muted);
+}
+
+.info-group__body {
+    padding: 0 v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-md;
+    background: var(--paper);
+
+    > .useful-link {
+        align-items: flex-start;
+        min-height: 56px;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    > .useful-link:not(:last-child) {
+        border-bottom: 1px solid var(--line);
+    }
+
+    > .useful-link:last-child {
+        border-bottom: none;
+    }
+
+    .useful-link__icon {
+        margin-top: 2px;
+    }
+}
+
+.info-row__main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.info-row__mono {
+    font-family: v.$font-mono;
+    color: var(--ink);
+}
+
+.info-row__button {
+    margin-top: v.$space-2;
+}
+
+.info-row__side,
+.info-row__chevron {
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.info-row__chevron {
+    color: var(--muted);
+    font-size: 1.1rem;
+}
+
+// Emergency contact: the one row someone may need in a hurry.
+.info-row--alert .useful-link__icon {
+    color: var(--danger);
 }
 
 .social-chip {

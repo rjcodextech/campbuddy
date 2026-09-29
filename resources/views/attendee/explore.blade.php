@@ -114,59 +114,7 @@
         </div>
 
         <div data-explore-panel="info" hidden>
-            @if ($event->logoUrl())
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
-                    <img src="{{ $event->logoUrl() }}" alt="" data-fallback="/media/icons/icon-192.png" style="height:44px;width:44px;border-radius:5px;object-fit:contain;background:var(--paper);border:1px solid var(--line)">
-                    <span style="font-weight:700">{{ $event->display_name }}</span>
-                </div>
-            @endif
-            @if (empty($info))
-                <p class="footer-note" style="text-align:left">Event information hasn't been added yet.</p>
-            @else
-                @if (!empty($info['venue']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="map-pin" /></span><span><span class="useful-link__title">Venue</span><span class="useful-link__desc">{{ $info['venue'] }}</span></span></div>
-                @endif
-                @if (!empty($info['wifi']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="wifi" /></span><span><span class="useful-link__title">Wifi</span><span class="useful-link__desc">{{ $info['wifi'] }}</span></span></div>
-                @endif
-                @if (!empty($info['registration_info']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="ticket" /></span><span><span class="useful-link__title">Registration</span><span class="useful-link__desc">{{ $info['registration_info'] }}</span></span></div>
-                @endif
-                @if (!empty($info['contributor_day_location']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="wrench" /></span><span><span class="useful-link__title">Contributor Day</span><span class="useful-link__desc">{{ $info['contributor_day_location'] }}</span></span></div>
-                @endif
-                @if (!empty($info['social_event_info']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="party" /></span><span><span class="useful-link__title">Social event</span><span class="useful-link__desc">{{ $info['social_event_info'] }}</span></span></div>
-                @endif
-                @if (!empty($info['emergency_contact']))
-                    @php($href = $contactHref($info['emergency_contact']))
-                    @if ($href)
-                        <a class="useful-link" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="siren" /></span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></a>
-                    @else
-                        <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="siren" /></span><span><span class="useful-link__title">Emergency contact</span><span class="useful-link__desc">{{ $info['emergency_contact'] }}</span></span></div>
-                    @endif
-                @endif
-                @if ($webUrl($info['code_of_conduct_url'] ?? null))
-                    <a class="useful-link" href="{{ $webUrl($info['code_of_conduct_url']) }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span><span><span class="useful-link__title">Code of Conduct</span></span></a>
-                @endif
-                @if (!empty($info['nearby_venue_info']))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="map" /></span><span><span class="useful-link__title">Nearby</span><span class="useful-link__desc">{{ $info['nearby_venue_info'] }}</span></span></div>
-                @endif
-                @if (!empty($info['important_links']))
-                    @foreach (preg_split('/\r?\n/', trim($info['important_links'])) as $link)
-                        @continue(blank($link))
-                        {{-- A line may be "Label: https://…" — link the address, show the whole line. --}}
-                        @php($linkHref = preg_match('#https?://\S+#i', $link, $urlMatch) ? $urlMatch[0] : null)
-                        {{-- A bare address reads better without "https://" and the trailing slash. --}}
-                        @php($linkLabel = $linkHref && trim($link) === $linkHref ? preg_replace('#^https?://(www\.)?#i', '', rtrim($linkHref, '/')) : trim($link))
-                        @if ($linkHref)
-                            <a class="useful-link" href="{{ $linkHref }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="important"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span><span><span class="useful-link__title">{{ $linkLabel }}</span></span></a>
-                        @else
-                            <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span><span><span class="useful-link__title">{{ trim($link) }}</span></span></div>
-                        @endif
-                    @endforeach
-                @endif
-            @endif
+            @include('attendee.partials.event-info')
 
             <div id="data-controls" style="margin-top:20px">
                 @include('attendee.partials.data-controls')

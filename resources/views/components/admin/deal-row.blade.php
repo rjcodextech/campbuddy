@@ -32,7 +32,7 @@
         @if ($offer->brand)
             <p class="mt-0.5 text-sm font-medium">{{ $offer->title }}</p>
         @endif
-        <p class="mt-0.5 text-sm text-muted">{{ $offer->description }}</p>
+        <p class="mt-0.5 whitespace-pre-line text-sm text-muted">{{ $offer->description }}</p>
 
         <div class="mt-2 flex flex-wrap gap-1.5">
             @unless ($offer->is_active)

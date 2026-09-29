@@ -65,12 +65,16 @@ class DefaultDeals
             ],
             [
                 'logo' => 'knit-pay.png',
-                'brand' => 'Knit Pay',
+                'brand' => 'Knit Pay Pro',
                 'website' => 'knitpay.org',
-                'title' => '100 free transactions a month for 6 months',
+                'title' => '100 free transactions every month for 6 months',
                 'highlight' => '100 FREE / MONTH',
-                'description' => 'Take payments on your WordPress site through Indian payment gateways and UPI with Knit Pay. Fill in the short form and the Knit Pay team sets up your special plan.',
-                'terms' => '100 transactions free every month for the next 6 months. Use the email of your RapidAPI account.',
+                // Line breaks show on the card (.deal-card__desc is pre-line).
+                'description' => "Take payments on your WordPress site through 500+ payment gateways and UPI with Knit Pay Pro and Knit Pay UPI. Fill in the short form, and the Knit Pay team will invite you to the special plan.\n\n"
+                    ."1. Unlimited free transactions in the Knit Pay plugin for lifetime.\n"
+                    ."2. 100 free transactions every month in the Knit Pay Pro plugin for 6 months.\n"
+                    .'3. 200 free UPI payment requests every month in the Knit Pay UPI plugin for 6 months.',
+                'terms' => 'Use the email of your RapidAPI account.',
                 'url' => 'https://www.knitpay.org/',
                 'cta_label' => 'Claim the plan',
                 'opens_in_app' => true,
