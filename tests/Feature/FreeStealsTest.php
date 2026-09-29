@@ -108,7 +108,7 @@ class FreeStealsTest extends TestCase
         $this->assertSame(12, FreeSteal::where('is_active', true)->count());
         $this->assertSame(4, FreeSteal::where('is_featured', true)->count());
         $this->assertSame(
-            ['Visual Blueprint Builder', 'Multidots Passkey Login', 'WordPress Skills', 'The Off Switch'],
+            ['WordPress Skills', 'The Off Switch', 'Thank You Page for WooCommerce', 'Blocks Export Import'],
             FreeSteal::shown()->take(4)->pluck('name')->all()
         );
     }
