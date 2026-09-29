@@ -6,7 +6,8 @@
         "build": "vite build && node tools/remove-hot.mjs",
         "dev": "vite",
         "test:js": "node --experimental-test-module-mocks --test \"tests/js/*.test.mjs\"",
-        "test:browser": "node tests/browser/offline.e2e.mjs"
+        "test:browser": "node tests/browser/offline.e2e.mjs",
+        "test:ui": "node tests/browser/ui-audit.mjs"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

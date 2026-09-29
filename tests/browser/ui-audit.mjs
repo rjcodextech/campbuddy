@@ -87,7 +87,7 @@ const PROBE = `(() => {
     .filter((el) => el.getBoundingClientRect().right > vw + 1).map(name).slice(0, 8);
 
   // Emoji in visible text (line icons are SVG).
-  const emojiRe = /\\p{Extended_Pictographic}/u;
+  const emojiRe = /(?![\\u00a9\\u00ae\\u2122])\\p{Extended_Pictographic}/u; // © ® ™ are type, not emoji
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const emoji = [];
   while (walker.nextNode()) {
@@ -184,3 +184,11 @@ for (const r of results) {
   ].filter(Boolean);
   console.log(`${flags.length ? '!!' : 'ok'}  ${r.name.padEnd(26)} ${flags.join(' · ')}`);
 }
+
+// Fails the run (exit 1) on what must never ship: a page that doesn't open, sideways
+// scroll on a phone, an uncaught JS error, or an emoji where a line icon belongs.
+// Small tap targets are listed for a look, not failed: labels, inline links and
+// ::after-extended hit areas can't be judged from the box alone.
+const broken = results.filter((r) => r.status !== 200 || r.scrollWidth > r.width || r.errors?.length || r.emoji?.length);
+console.log(`\n${results.length} screens at ${WIDTH}px — ${broken.length ? `${broken.length} broken: ${broken.map((r) => r.name).join(', ')}` : 'none broken'}. Report + screenshots: ${OUT}`);
+process.exitCode = broken.length ? 1 : 0;
