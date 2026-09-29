@@ -28,7 +28,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 0 | [spec/00-findings.md](spec/00-findings.md) | Live-verified findings about WordCamp.org's data sources — read this first, it corrects assumptions made elsewhere |
 | 1 | [spec/01-project-overview.md](spec/01-project-overview.md) | Product philosophy, audience, nav/IA, what's new vs. V1, objectives |
 | 2 | [spec/02-scope.md](spec/02-scope.md) | Launch scope, fast-follow, explicitly out of scope |
-| 3 | [spec/03-functional-requirements/00-index.md](spec/03-functional-requirements/00-index.md) | **Split further** — one file per feature (Home, Branding, Roster, Matching, Notifications, Quest, Deals, My Day, Contribute, Camp Card, Onboarding, Sponsors/Event Info, Data controls) |
+| 3 | [spec/03-functional-requirements/00-index.md](spec/03-functional-requirements/00-index.md) | **Split further** — one file per feature (Home, Branding, Roster, Matching, Notifications, Quest, Deals, My Day, Contribute, Camp Card, Onboarding, Sponsors/Event Info, Data controls, Free Steals) |
 | 4 | [spec/04-non-functional-requirements.md](spec/04-non-functional-requirements.md) | Accessibility, performance, error handling, offline-first, UI/UX constraints, data sync |
 | 5 | [spec/05-system-architecture.md](spec/05-system-architecture.md) | Request flow, ingestion jobs, central discovery, CDN, asset build |
 | 6 | [spec/06-technology-stack.md](spec/06-technology-stack.md) | The full stack, layer by layer |
@@ -67,6 +67,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 3.11 Onboarding | [spec/03-functional-requirements/11-onboarding.md](spec/03-functional-requirements/11-onboarding.md) |
 | 3.12 Sponsors & Event Information | [spec/03-functional-requirements/12-sponsors-event-info.md](spec/03-functional-requirements/12-sponsors-event-info.md) |
 | 3.13 Data controls | [spec/03-functional-requirements/13-data-controls.md](spec/03-functional-requirements/13-data-controls.md) |
+| 3.14 Free Steals | [spec/03-functional-requirements/14-free-steals.md](spec/03-functional-requirements/14-free-steals.md) |
 
 ## Where this came from
 

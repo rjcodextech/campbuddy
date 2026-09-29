@@ -1,0 +1,17 @@
+﻿Product Name,Description,Maker / Company,Category,GitHub / Source Link,Initial 12,Featured
+Visual Blueprint Builder,"Build WordPress Playground blueprint.json files visually using blocks, then preview, copy or download the generated blueprint.",Lubus,Developer Tools / Playground,https://github.com/lubusIN/visual-blueprint-builder,Yes,Yes
+BlaBlaBlocks Tabs Block,"Add clean, responsive tabbed content to WordPress using the native Block Editor.",Lubus,Gutenberg / Blocks,https://github.com/lubusIN/blablablocks-tabs-block,Yes,No
+Multidots Passkey Login,"Add passwordless WordPress authentication using Face ID, Touch ID, security keys and passkeys.",Multidots,Security / Authentication,https://github.com/multidots/multidots-passkey-login,Yes,Yes
+Better By Default,"Improve a fresh WordPress installation with admin cleanup, security options, performance tweaks and useful defaults.",Multidots,Utilities / Performance,https://github.com/multidots/better-by-default,Yes,No
+GoDAM,"Organize the WordPress Media Library with folders and improved workflows for images, audio, video and other assets.",rtCamp,Media / Utilities,https://github.com/rtCamp/godam,Yes,No
+Login with Google,"Let users register and sign in to WordPress with their Google account, including domain-based access controls.",rtCamp,Security / Authentication,https://github.com/rtCamp/login-with-google,No,No
+Nginx Helper,Automatically purge Nginx or Redis-based page caches when WordPress content changes.,rtCamp,Performance / Developer Tools,https://github.com/rtCamp/nginx-helper,No,No
+WordPress Studio,"Free desktop app for creating and managing local WordPress sites, testing plugins and themes, and sharing previews.",Automattic,Local Development,https://github.com/Automattic/studio,Yes,No
+Co-Authors Plus,Assign multiple authors to content and create guest-author bylines without requiring separate WordPress accounts.,Automattic,Content / Publishing,https://github.com/Automattic/co-authors-plus,Yes,No
+ActivityPub,Connect a WordPress site to the Fediverse so people can follow and interact with its content through compatible platforms.,Automattic,Publishing / Social,https://github.com/Automattic/wordpress-activitypub,Yes,No
+WP Super Cache,Improve WordPress performance by generating static HTML pages instead of processing every visit through PHP.,Automattic,Performance,https://github.com/Automattic/wp-super-cache,No,No
+WP Job Manager,"Add searchable job listings, frontend submissions and employer-management functionality to WordPress.",Automattic,Utilities / Community,https://github.com/Automattic/WP-Job-Manager,No,No
+WordPress Skills,"A large collection of reusable AI-agent skills covering WordPress development, Gutenberg, plugins, themes, WP-CLI, SEO and more.",Gaurav Tiwari / Gatilab,AI / Developer Tools,https://github.com/wpgaurav/WordPress-skills,Yes,Yes
+Thank You Page for WooCommerce,Redirect customers to a custom Thank You page or URL after a successful WooCommerce order.,Nitin Prakash,WooCommerce,https://github.com/nitinprakash/wc-thanks-redirect,Yes,No
+The Off Switch,"Disable optional WordPress features, scripts and background behaviour that a site does not need.",Abhishek Deshpande,Performance / Utilities,https://wordpress.org/plugins/wp-avoid-slow/,Yes,Yes
+Blocks Export Import,Export Gutenberg blocks as JSON and import them into another WordPress site for reuse or backup.,Hardeep Asrani / ThemeIsle,Gutenberg / Utilities,https://github.com/Codeinwp/otter-blocks,Yes,No

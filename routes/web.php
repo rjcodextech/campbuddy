@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventManagerActivityController;
 use App\Http\Controllers\Admin\EventManagerController;
+use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
@@ -149,6 +150,9 @@ Route::prefix('admin')->group(function () {
         Route::resource('deals', DefaultDealController::class)->except('show')->names('admin.deals');
         Route::get('deals/{deal}/leads', [DefaultDealController::class, 'leads'])->name('admin.deals.leads');
         Route::get('deals/{deal}/leads/export', [DefaultDealController::class, 'export'])->name('admin.deals.leads.export');
+
+        // Free Steals: hand-picked free plugins and tools, one list for every event.
+        Route::resource('free-steals', FreeStealController::class)->except('show')->names('admin.free-steals');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');

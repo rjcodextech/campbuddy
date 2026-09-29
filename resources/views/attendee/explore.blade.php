@@ -42,6 +42,7 @@
             <button type="button" class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true">People</button>
             <button type="button" class="btn btn--compact btn--outline" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
             <button type="button" class="btn btn--compact btn--outline" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
+            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="free-steals" role="tab" aria-selected="false">Free Steals</button>
             <button type="button" class="btn btn--compact btn--outline" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
         </div>
 
@@ -89,6 +90,19 @@
                 <div class="deal-list">
                     @foreach ($offers as $offer)
                         @include('attendee.partials.deal-card', ['offer' => $offer])
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        <div data-explore-panel="free-steals" hidden>
+            <p class="panel-intro">Deals help you save on paid things. Free Steals are good WordPress plugins and tools that are already free, picked by the CampBuddy team, from big companies and from people in the community.</p>
+            @if ($steals->isEmpty())
+                <p class="footer-note" style="text-align:left">Nothing here yet. Check back soon.</p>
+            @else
+                <div class="deal-list">
+                    @foreach ($steals as $steal)
+                        @include('attendee.partials.free-steal-card', ['steal' => $steal])
                     @endforeach
                 </div>
             @endif

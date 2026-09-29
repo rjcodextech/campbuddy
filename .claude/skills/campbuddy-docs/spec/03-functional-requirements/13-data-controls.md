@@ -1,6 +1,6 @@
 # 3.13 Data controls (Export / Clear)
 
-[← Index](00-index.md) · Previous: [3.12 Sponsors & Event Information](12-sponsors-event-info.md) · Back to: [Spec index](../../SKILL.md)
+[← Index](00-index.md) · Previous: [3.12 Sponsors & Event Information](12-sponsors-event-info.md) · Next: [3.14 Free Steals →](14-free-steals.md)
 
 Reached contextually — from Camp Card or Explore's Event Information — not as a dedicated nav tab ([1.2](../01-project-overview.md#12-navigation--information-architecture)).
 

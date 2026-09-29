@@ -19,3 +19,4 @@ This section was split into one file per feature — each maps to a tab or conte
 | [3.11](11-onboarding.md) | Onboarding | 4-step first-run flow, under 2 minutes |
 | [3.12](12-sponsors-event-info.md) | Explore — Sponsors & Event Information | Sponsor listings, venue/wifi/registration/CoC info |
 | [3.13](13-data-controls.md) | Data controls | Export / Clear, reached contextually |
+| [3.14](14-free-steals.md) | Free Steals | Explore → Free Steals — hand-picked free WordPress plugins and tools, same list at every event |

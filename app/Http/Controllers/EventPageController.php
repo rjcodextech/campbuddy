@@ -87,6 +87,8 @@ class EventPageController extends Controller
             'sponsors' => $this->cached($event, 'sponsors'),
             // The event's own deals, then the default deals for its country.
             'offers' => \App\Models\Offer::shownAt($event),
+            // The same hand-picked list at every event.
+            'steals' => \App\Models\FreeSteal::shown(),
         ]);
     }
 
