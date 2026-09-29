@@ -8,7 +8,7 @@
 //   CampBuddy-ID-cards.pdf            every card, front then back, with bleed (for the printer)
 //   CampBuddy-ID-cards-cropmarks.pdf  the same, on a larger page with crop marks
 //   pdf/<name>.pdf                    one person: front + back
-//   png/<name>-front.png, png/back.png, png/blank-front.png   300 dpi, with bleed
+//   png/<name>-front.png, png/back.png, png/blank-front.png   900 dpi, with bleed
 // Needs Chrome (same finder as the browser tests) and internet for the Inter font.
 
 import fs from 'node:fs';
@@ -21,7 +21,7 @@ import { launchChrome, sleep } from '../../tests/browser/helpers/chrome.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const out = path.join(here, 'print');
 const QR_URL = 'https://campbuddy.club/?utm_source=id-card&utm_medium=print';
-const DPI = 300;
+const DPI = 900;
 
 const people = process.argv[2]
   ? [{ name: process.argv[2], role: process.argv[3] ?? '' }]
@@ -68,6 +68,18 @@ const front = ({ name, role }) => `
     </section>
   </div>`;
 
+// Six things the app does, as icons (line icons from the app, App\Support\LineIcons).
+const ICONS = {
+  Schedule: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  People: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  'Camp Card': '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2M15 12h2M7 16h6"/>',
+  Quests: '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>',
+  Guide: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+  Deals: '<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1"/>',
+};
+const features = Object.entries(ICONS).map(([label, paths]) => `
+          <div class="feat"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${paths}</svg></span>${label}</div>`).join('');
+
 const back = `
   <div class="page">${crops}
     <section class="card back" aria-label="Back">
@@ -76,18 +88,11 @@ const back = `
       <div class="text">
         <p class="kicker">Free for every attendee</p>
         <h1>Your whole WordCamp<br>in one app</h1>
-        <ul>
-          <li>Your schedule, with reminders</li>
-          <li>Find people worth meeting</li>
-          <li>A digital Camp Card to share</li>
-          <li>Quests, deals and event info</li>
-          <li>Works offline at the venue</li>
-        </ul>
-        <p class="url">campbuddy.club</p>
+        <div class="feats">${features}</div>
       </div>
       <div class="qrbox">
         <div class="qr">${qrSvg(QR_URL)}</div>
-        <p class="scan">Scan to open CampBuddy<span>No download, no sign-up</span></p>
+        <p class="scan">Scan to open CampBuddy<span class="site">campbuddy.club</span></p>
       </div>
     </section>
   </div>`;
@@ -103,7 +108,7 @@ function page(mode) {
     .replaceAll('{{PAGES}}', () => pages);
 }
 
-// Marks a PNG as 300 dpi (a pHYs chunk after IHDR), so a print shop's
+// Marks a PNG with its dpi (a pHYs chunk after IHDR), so a print shop's
 // software opens it at card size instead of guessing 72 or 96 dpi.
 function withDpi(png, dpi) {
   const perMetre = Math.round(dpi / 0.0254);
@@ -148,7 +153,7 @@ const open = async (mode) => {
 try {
   await open('plain');
 
-  // PNGs: each card on screen, at 300 dpi.
+  // PNGs: each card on screen, at DPI.
   const cards = await chrome.evaluate(`[...document.querySelectorAll('.card')].map((el) => { const r = el.getBoundingClientRect(); return { x: r.x + scrollX, y: r.y + scrollY, width: r.width, height: r.height }; })`);
   const shoot = async (i, file) => {
     const shot = await chrome.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { ...cards[i], scale: DPI / 96 } });

@@ -14,7 +14,7 @@ Agar printer crop marks maange to **`print/CampBuddy-ID-cards-cropmarks.pdf`** b
 | Bleed | har taraf **3 mm**, isliye file ka page **92 × 60 mm** hai |
 | Safe area | trim se 3 mm andar tak saara text hai |
 | Printing | dono taraf (front + back), colour, matt ya gloss lamination |
-| PNG | 300 dpi (1084 × 706 px), bleed ke saath |
+| PNG | **900 dpi** (3253 × 2119 px), bleed ke saath. Master file PDF hai (exact 92 × 60 mm). |
 
 Printer ko ye bhi bata dein: *"Colours RGB mein hain. Aapka software CMYK mein badlega; maroon aur orange ka match dekh lena."* Chahein to pehle ek card ka sample print karwa lein.
 
@@ -26,7 +26,7 @@ Printer ko ye bhi bata dein: *"Colours RGB mein hain. Aapka software CMYK mein b
 | `CampBuddy-ID-cards-cropmarks.pdf` | Wahi cards, crop marks ke saath |
 | `pdf/<naam>.pdf` | Ek person ka card (front + back) |
 | `pdf/blank-front.pdf`, `png/blank-front.png` | Bina naam ka front, naya naam khud likhne ke liye |
-| `png/<naam>-front.png`, `png/back.png` | PNG images, 300 dpi |
+| `png/<naam>-front.png`, `png/back.png` | PNG images, 900 dpi |
 
 **QR code:** `https://campbuddy.club/?utm_source=id-card&utm_medium=print`. Google Analytics mein source "id-card" dikhega. Check kiya: image 3 guna chhoti karne par bhi scan hota hai.
 
@@ -39,6 +39,8 @@ node marketing/id-card/render.mjs
 ```
 
 Saari files dobara ban jaati hain. Lamba naam apne aap chhota hokar do line mein fit ho jaata hai. Ek hi person ke liye: `node marketing/id-card/render.mjs "Naam"`. Chrome aur internet (Inter font ke liye) chahiye.
+
+Back: "Your whole WordCamp in one app", 6 icons (Schedule, People, Camp Card, Quests, Guide, Deals) do line mein, aur QR code ke neeche campbuddy.club.
 
 Canva/Photoshop mein banana ho to `png/blank-front.png` lein. Upar chhota "HELLO, I'M" (Inter ExtraBold, 5.4 pt, #d77b06, letter-spacing wide), phir naam **Inter ExtraBold (800), 17 pt**, colour **#721313**, logo ke neeche baayein taraf se shuru karein, aur uske neeche 9 mm ki orange line (#d77b06).
 
