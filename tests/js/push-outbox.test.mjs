@@ -127,6 +127,24 @@ test('a "no" is still a no: nothing is queued when notifications were never allo
   assert.deepEqual(apiCalls, []);
 });
 
+test('two stars in quick succession ask once: the second waits for the first answer', async () => {
+  kv.set('notificationState', {});
+  installBrowser({ permission: 'default' });
+  let asked = 0;
+  globalThis.confirm = () => { asked++; return true; };
+  globalThis.Notification.requestPermission = async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20)); // the browser's own prompt takes a moment
+    globalThis.Notification.permission = 'granted';
+    return 'granted';
+  };
+
+  const [first, second] = await Promise.all([push.offerReminder('wc-test', 1, 7), push.offerReminder('wc-test', 1, 8)]);
+
+  assert.equal(asked, 1);
+  assert.deepEqual([first, second], [true, true]);
+  assert.deepEqual(bookmarks.map((b) => b.sessionId), [7, 8]);
+});
+
 // ---- cancelling ------------------------------------------------------------------------
 
 test('cancelling offline is kept too, so a dropped session does not still buzz the phone', async () => {

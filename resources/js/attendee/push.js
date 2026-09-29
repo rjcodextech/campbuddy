@@ -18,12 +18,24 @@ import { getDeviceId } from './device.js';
 export const outbox = createOutbox({ kvGet, kvSet });
 
 
+// Offers run one after another: a second star tapped while the first one's
+// question or push setup is still going waits for it, then sees the answer
+// ("on" or "no thanks") instead of asking again.
+let offerChain = Promise.resolve();
+
 /**
  * Called right after a bookmark is saved. Returns true if a reminder was
  * successfully set up, false otherwise (declined, unsupported, or
  * already permanently denied).
  */
-export async function offerReminder(eventSlug, eventId, sessionId) {
+export function offerReminder(eventSlug, eventId, sessionId) {
+  const run = offerChain.then(() => offerReminderNow(eventSlug, eventId, sessionId));
+  offerChain = run.catch(() => {});
+
+  return run;
+}
+
+async function offerReminderNow(eventSlug, eventId, sessionId) {
   const state = (await kvGet('notificationState')) ?? {};
 
   // N4: a prior denial is permanent — never re-prompt automatically.
