@@ -7,6 +7,7 @@ use App\Http\Requests\StoreFreeStealRequest;
 use App\Models\Event;
 use App\Models\FreeSteal;
 use App\Models\FreeStealSuggestion;
+use App\Models\MediaAsset;
 use App\Support\DataVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,6 +93,8 @@ class FreeStealController extends Controller
         return view('admin.free-steals.form', [
             'steal' => $steal,
             'suggestion' => $suggestion,
+            'mediaAssets' => MediaAsset::latest()->get(),
+            'categories' => FreeSteal::categorySuggestions(),
             'action' => $steal->exists ? route('admin.free-steals.update', $steal) : route('admin.free-steals.store'),
         ]);
     }

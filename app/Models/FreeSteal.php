@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -43,6 +44,7 @@ class FreeSteal extends Model
         'maker',
         'maker_links',
         'category',
+        'media_asset_id',
         'url',
         'cta_label',
         'is_featured',
@@ -55,6 +57,12 @@ class FreeSteal extends Model
         'is_active' => 'boolean',
     ];
 
+    /** Its logo, from the Media Library. Without one the card shows icon(). */
+    public function mediaAsset(): BelongsTo
+    {
+        return $this->belongsTo(MediaAsset::class);
+    }
+
     public function scopeOrdered(Builder $query): Builder
     {
         return $query->orderBy('sort_order')->orderBy('id');
@@ -63,7 +71,7 @@ class FreeSteal extends Model
     /** @return Collection<int, self> What Explore shows right now. */
     public static function shown(): Collection
     {
-        return self::where('is_active', true)->ordered()->limit(self::SHOWN)->get();
+        return self::with('mediaAsset')->where('is_active', true)->ordered()->limit(self::SHOWN)->get();
     }
 
     /**
@@ -169,5 +177,23 @@ class FreeSteal extends Model
         }
 
         return 'sparkles';
+    }
+
+    /**
+     * What the admin's Category field suggests: the categories already in
+     * use, then the words that pick an icon.
+     *
+     * @return list<string>
+     */
+    public static function categorySuggestions(): array
+    {
+        return self::query()->distinct()->orderBy('category')->pluck('category')
+            ->merge(collect(array_keys(self::ICONS))->map(fn (string $word) => match ($word) {
+                'ai' => 'AI',
+                'woocommerce' => 'WooCommerce',
+                default => ucwords($word),
+            }))
+            ->unique(fn (string $category) => mb_strtolower($category))
+            ->values()->all();
     }
 }

@@ -1,7 +1,7 @@
 {{--
     One Free Steal on Explore → Free Steals: a free WordPress plugin or tool
     picked by the CampBuddy team. Same card as a deal (components/_sponsor.scss,
-    .deal-card): a category icon, the name and its maker, a Featured tag, a
+    .deal-card): its logo (or a category icon without one), the name and its maker, a Featured tag, a
     "made by someone at this WordCamp" line when the maker is on this event's
     Attendees page (FreeSteal::forEvent), what it does, then the category and
     one button. The link is plain and opens in a new tab: GitHub and
@@ -11,7 +11,13 @@
 <article class="deal-card" aria-label="{{ $steal->name }}"
          data-steal-id="{{ $steal->id }}" data-steal-name="{{ $steal->name }}" data-steal-maker="{{ $steal->maker }}" data-steal-category="{{ $steal->category }}" data-position="{{ $position ?? 0 }}">
     <div class="deal-card__head">
-        <span class="deal-card__logo" aria-hidden="true"><x-attendee.line-icon :name="$steal->icon()" /></span>
+        <span class="deal-card__logo" aria-hidden="true">
+            @if ($steal->mediaAsset)
+                <img src="{{ $steal->mediaAsset->url() }}" alt="" loading="lazy">
+            @else
+                <x-attendee.line-icon :name="$steal->icon()" />
+            @endif
+        </span>
 
         <div class="deal-card__who">
             <span class="deal-card__name">{{ $steal->name }}</span>

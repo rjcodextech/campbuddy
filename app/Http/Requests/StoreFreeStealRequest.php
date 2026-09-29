@@ -24,6 +24,7 @@ class StoreFreeStealRequest extends FormRequest
             'maker_links' => ['nullable', 'string', 'max:1000'],
             'suggestion_id' => ['nullable', 'integer'],
             'category' => ['required', 'string', 'max:80'],
+            'media_asset_id' => ['nullable', 'exists:media_assets,id'],
             'url' => ['required', 'url:http,https', 'max:500'],
             'cta_label' => ['nullable', 'string', 'max:40'],
             'is_featured' => ['boolean'],

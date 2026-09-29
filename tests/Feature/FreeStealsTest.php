@@ -6,6 +6,7 @@ use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FreeSteal;
 use App\Models\FreeStealSuggestion;
+use App\Models\MediaAsset;
 use App\Models\User;
 use App\Support\DataVersion;
 use App\Support\FreeSteals;
@@ -101,6 +102,57 @@ class FreeStealsTest extends TestCase
         $this->assertSame('columns', $this->steal(['category' => 'Gutenberg / Blocks'])->icon());
         $this->assertSame('zap', $this->steal(['category' => 'Performance / Utilities'])->icon());
         $this->assertSame('sparkles', $this->steal(['category' => 'Something new'])->icon());
+    }
+
+    public function test_a_steal_with_a_logo_shows_it_and_one_without_keeps_its_icon(): void
+    {
+        $logo = MediaAsset::create(['disk' => 'public', 'path' => 'media-library/2026/09/godam.png', 'filename' => 'godam.png', 'mime_type' => 'image/png', 'size' => 1234]);
+        $this->steal(['name' => 'GoDAM', 'media_asset_id' => $logo->id]);
+        $this->steal(['name' => 'No Logo Tool', 'category' => 'Performance']);
+
+        $html = $this->get(route('event.explore', $this->event()))->assertOk()->getContent();
+
+        $this->assertStringContainsString('<img src="'.$logo->url().'"', $html);
+        $this->assertSame(1, substr_count($html, 'media-library/2026/09/godam.png'));
+        $this->assertStringContainsString('No Logo Tool', $html);
+    }
+
+    public function test_admin_picks_a_logo_and_the_category_field_suggests(): void
+    {
+        $admin = User::factory()->create();
+        $logo = MediaAsset::create(['disk' => 'public', 'path' => 'media-library/2026/09/lubus.png', 'filename' => 'lubus.png', 'mime_type' => 'image/png', 'size' => 1234]);
+        $this->steal(['category' => 'Gutenberg / Blocks']);
+
+        $this->actingAs($admin)->get(route('admin.free-steals.create'))->assertOk()
+            ->assertSee('list="free-steal-categories"', false)
+            ->assertSee('<option value="Gutenberg / Blocks">', false)
+            ->assertSee('<option value="WooCommerce">', false)
+            ->assertSee('lubus.png');
+
+        $this->actingAs($admin)->post(route('admin.free-steals.store'), [
+            'name' => 'Blueprint', 'description' => 'Builds blueprints.', 'maker' => 'Lubus',
+            'category' => 'Gutenberg', 'url' => 'https://github.com/lubusIN/blueprint', 'media_asset_id' => $logo->id,
+            'is_active' => '1', 'is_featured' => '0',
+        ])->assertRedirect(route('admin.free-steals.index'));
+        $this->assertSame($logo->id, FreeSteal::where('name', 'Blueprint')->value('media_asset_id'));
+
+        $this->actingAs($admin)->post(route('admin.free-steals.store'), [
+            'name' => 'Bad', 'description' => 'x', 'maker' => 'x', 'category' => 'x',
+            'url' => 'https://example.com', 'media_asset_id' => 999,
+        ])->assertSessionHasErrors('media_asset_id');
+    }
+
+    public function test_category_suggestions_have_no_repeats(): void
+    {
+        $this->steal(['category' => 'AI']);
+        $this->steal(['category' => 'AI']);
+        $this->steal(['category' => 'security']);
+
+        $suggestions = FreeSteal::categorySuggestions();
+
+        $this->assertSame(1, count(array_filter($suggestions, fn ($c) => mb_strtolower($c) === 'ai')));
+        $this->assertSame(1, count(array_filter($suggestions, fn ($c) => mb_strtolower($c) === 'security')));
+        $this->assertContains('Developer Tools', $suggestions);
     }
 
     /** @return list<array<string, mixed>> The steals written out in the install migration. */
