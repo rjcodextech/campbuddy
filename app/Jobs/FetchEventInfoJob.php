@@ -68,6 +68,7 @@ class FetchEventInfoJob implements ShouldQueue
         $previous = $this->event->info_fetched ?? [];
         $info = [];
         $kept = [];
+        $differs = [];
 
         // A field the site listed before but didn't return this time is kept
         // until a second run confirms it's gone (SafeSync) — one flaky page
@@ -89,6 +90,11 @@ class FetchEventInfoJob implements ShouldQueue
             if ($value !== null && $value !== $this->normalize($previous[$field] ?? null)) {
                 $info[$field] = $value;
                 $kept[] = $field;
+                // An edit the site now disagrees with may have gone stale
+                // (the admin form shows what the site says under the field).
+                if ($fetched[$field] !== null && $this->normalize($fetched[$field]) !== $value) {
+                    $differs[] = $field;
+                }
 
                 continue;
             }
@@ -122,6 +128,7 @@ class FetchEventInfoJob implements ShouldQueue
             $found,
             count(EventInfoFetcher::FIELDS),
             ($kept === [] ? '' : '; kept your edits to: '.implode(', ', $kept))
+                .($differs === [] ? '' : '; the site now says otherwise for: '.implode(', ', $differs))
                 .($held === [] ? '' : '; not found this time, kept until the next run: '.implode(', ', $held))
                 .($filled === [] ? '' : '; also set from central.wordcamp.org: '.implode(', ', array_keys($filled))),
             $fetcher->sources

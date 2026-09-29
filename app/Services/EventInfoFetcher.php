@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\VenueSpelling;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
@@ -117,7 +118,9 @@ class EventInfoFetcher
         }
 
         $found = [
-            'venue' => $record ? $directory->venueLine($record) : null,
+            // Central's venue name, spelled as the event's own pages spell it
+            // (central keeps whatever was typed into a form, typos included).
+            'venue' => $record ? VenueSpelling::fromSite($directory->venueLine($record), implode(' ', $texts)) : null,
             'important_links' => $this->importantLinks($picked),
             'wifi' => $this->wifi($texts),
             // Only the page's opening paragraphs, and only if they're about tickets —

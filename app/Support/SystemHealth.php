@@ -35,6 +35,7 @@ class SystemHealth
             self::eventManagerSetup(),
             ...self::eventsWithoutData(),
             ...self::eventsWithoutTimezone(),
+            ...self::eventsWithDatesOffSchedule(),
         ]));
     }
 
@@ -212,6 +213,77 @@ class SystemHealth
             ])
             ->values()
             ->all();
+    }
+
+    /**
+     * Live events whose schedule doesn't fit their dates: a session more than
+     * a day after the last day, or earlier than a Contributor Day could be
+     * (EventTime::LEAD_DAYS before the start). Usually the dates on
+     * central.wordcamp.org (which the app follows) or the site's schedule is
+     * out of date — worth a look before attendees rely on either.
+     *
+     * @return array<int, array>
+     */
+    private static function eventsWithDatesOffSchedule(): array
+    {
+        try {
+            $events = Event::whereIn('status', ['approved', 'active'])->where('is_visible', true)->whereNotNull('starts_on')->get();
+        } catch (Throwable) {
+            return [];
+        }
+
+        return $events
+            ->map(function (Event $event) {
+                $days = self::sessionDays($event);
+                if ($days === []) {
+                    return null;
+                }
+
+                $start = $event->starts_on;
+                $end = $event->ends_on ?? $event->starts_on;
+                $first = min($days);
+                $last = max($days);
+
+                if ($first >= $start->copy()->subDays(EventTime::LEAD_DAYS)->toDateString() && $last <= $end->copy()->addDay()->toDateString()) {
+                    return null;
+                }
+
+                $range = fn (string $a, string $b) => Carbon::parse($a)->format('j M').($a === $b ? '' : ' – '.Carbon::parse($b)->format('j M'));
+
+                return [
+                    'level' => 'warning',
+                    'title' => "{$event->display_name}: the schedule doesn't match the dates",
+                    'detail' => 'The app says '.$range($start->toDateString(), $end->toDateString()).', but the sessions run '.$range($first, $last).'. '
+                        .($event->dates_locked
+                            ? 'The dates were typed on the event page; check them there.'
+                            : 'The dates follow central.wordcamp.org; if the schedule is right, type the dates on the event page to keep them.'),
+                    'fix' => null,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /** @return list<string> each day ("Y-m-d", at the venue) a scheduled session starts */
+    private static function sessionDays(Event $event): array
+    {
+        $zone = EventTime::known($event) ? $event->timezone : config('app.timezone');
+        $days = [];
+
+        foreach (EventData::get($event->id, 'sessions') ?? [] as $session) {
+            if (! is_array($session) || empty($session['starts_at'])) {
+                continue;
+            }
+
+            try {
+                $days[] = Carbon::parse($session['starts_at'])->setTimezone($zone)->toDateString();
+            } catch (Throwable) {
+                continue;
+            }
+        }
+
+        return array_values(array_unique($days));
     }
 
     /**

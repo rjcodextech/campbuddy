@@ -10,6 +10,9 @@
         $note = match (true) {
             blank($value) => $event->info_fetched_at ? 'Not found on the WordCamp site.' : null,
             $value === $fetched => 'From the WordCamp site.',
+            // Say what the site says now, so an edit that has gone stale
+            // (the site was corrected since) is easy to spot.
+            filled($fetched) => 'Your edit — kept on refresh. The WordCamp site now says: “'.\Illuminate\Support\Str::limit($fetched, 120).'” Clear the field and the next fetch puts it back.',
             default => 'Your edit — kept on refresh.',
         };
 
