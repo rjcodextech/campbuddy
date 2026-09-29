@@ -20,6 +20,9 @@ class AnalyticsRegistryTest extends TestCase
     /** Parameters set on every hit by the tag itself (analytics.blade.php), not by track(). */
     private const PAGE_LEVEL = ['event_slug', 'display_mode'];
 
+    /** GA4's own ecommerce params (items and the list they came from): reported without a custom dimension. */
+    private const GA_BUILT_IN = ['items', 'item_list_id', 'item_list_name'];
+
     /** @return array<string, array<int, string>> event => params, read from analytics.js's EVENTS */
     private function allowlist(): array
     {
@@ -41,7 +44,7 @@ class AnalyticsRegistryTest extends TestCase
         $events = $this->allowlist();
         $this->assertGreaterThan(60, count($events), 'the allowlist was read');
 
-        $sent = array_unique([...self::PAGE_LEVEL, ...array_merge(...array_values($events))]);
+        $sent = array_values(array_diff(array_unique([...self::PAGE_LEVEL, ...array_merge(...array_values($events))]), self::GA_BUILT_IN));
         $registered = [...array_keys(config('analytics.dimensions')), ...array_keys(config('analytics.metrics'))];
 
         $this->assertSame([], array_values(array_diff($sent, $registered)), 'params sent but not registered in config/analytics.php');

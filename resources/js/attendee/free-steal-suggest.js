@@ -31,11 +31,14 @@ function openSuggestForm(eventSlug) {
   const formEl = dialog.querySelector('[data-suggest-form]');
   const errorEl = dialog.querySelector('[data-suggest-error]');
 
+  let sent = false;
   const close = () => {
+    if (!sent) track('free_steal_suggest_cancel');
     dialog.close();
     dialog.remove();
   };
   dialog.querySelectorAll('[data-action="close"]').forEach((btn) => btn.addEventListener('click', close));
+  track('free_steal_suggest_open');
 
   const fail = (message, field) => {
     errorEl.textContent = message;
@@ -63,6 +66,7 @@ function openSuggestForm(eventSlug) {
         email: email.value.trim() || null,
         website: website.value || null,
       });
+      sent = true;
       track('free_steal_suggest', {});
       formEl.hidden = true;
       const done = dialog.querySelector('[data-suggest-done]');

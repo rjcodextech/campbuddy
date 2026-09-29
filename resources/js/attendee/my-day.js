@@ -196,7 +196,7 @@ export async function renderMyDay(root) {
         const next = statusById.get(id) === btn.dataset.status ? null : btn.dataset.status;
         await updateBookmark(eventId, id, { status: next });
         bookmarks = await getBookmarks(eventId);
-        track('session_status', { plan_status: next ?? 'cleared' });
+        track('session_status', { plan_status: next ?? 'cleared', schedule_session_id: id, session_title: timed.find((s) => s.id === id)?.title });
         renderMine();
       });
     });
@@ -334,7 +334,7 @@ export async function renderMyDay(root) {
           // The same record Explore reads, so the match card there says the same.
           await peopleStatus.setStatus(eventId, meeting, next);
           meetings = await safeMeetings(eventId);
-          track('meet_status', { plan_status: next ?? 'cleared' });
+          track('meet_status', { plan_status: next ?? 'cleared', source: meeting.source ?? 'roster' });
           renderMine();
         });
       });

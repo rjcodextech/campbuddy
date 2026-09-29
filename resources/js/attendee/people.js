@@ -674,7 +674,7 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
   const rerender = () => renderMatches(el, eventSlug, eventId, discoveryKey, mine, options);
   const tryAgain = async (p) => {
     await peopleStatus.setStatus(eventId, cardPerson(p), null);
-    track('meet_status', { plan_status: 'cleared' });
+    track('meet_status', { plan_status: 'cleared', source: 'discovery' });
     rerender();
   };
   const showAgain = async (p) => {

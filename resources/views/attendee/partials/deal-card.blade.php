@@ -14,7 +14,9 @@
     $cta = $offer->cta_label ?: 'Get the deal';
 @endphp
 
-<article class="deal-card" aria-label="{{ $name }}">
+{{-- data-promo-*: what explore.js reports as a GA4 promotion (view / select), with its place in the list. --}}
+<article class="deal-card" aria-label="{{ $name }}"
+         data-promo-id="{{ $offer->id }}" data-promo-name="{{ $offer->title }}" data-promo-creative="{{ $name }}" data-position="{{ $position ?? 0 }}">
     <div class="deal-card__head">
         <span class="deal-card__logo" aria-hidden="true">
             @if ($offer->mediaAsset)

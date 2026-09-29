@@ -47,11 +47,14 @@ export function renderExplore() {
     });
   });
 
-  // A deal's coupon code: one tap copies it.
+  // A deal's coupon code (or Info's wifi details): one tap copies it.
   document.querySelectorAll('[data-copy-code]').forEach((btn) => {
     btn.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(btn.dataset.copyCode);
+        const deal = btn.closest('[data-promo-id]');
+        if (deal) track('deal_code_copy', { offer_id: deal.dataset.promoId, offer_title: deal.dataset.promoName });
+        else track('useful_link_click', { link_type: 'wifi_copy' });
         btn.textContent = 'Copied';
       } catch {
         btn.textContent = 'Copy failed';
@@ -60,10 +63,61 @@ export function renderExplore() {
     });
   });
 
+  reportCards();
+
   // Deep-link support (e.g. Quest's "View sponsors"/"Find people"
   // actions linking to /explore?tab=sponsors) — pre-selects the matching
   // sub-tab instead of always landing on People.
   const requestedTab = new URLSearchParams(location.search).get('tab');
   const requestedBtn = requestedTab && document.querySelector(`[data-explore-tab="${requestedTab}"]`);
   if (requestedBtn) requestedBtn.click();
+}
+
+// Deals as GA4 promotions, Free Steals as a GA4 item list (analytics.js):
+// each card counts as viewed once per page load when half of it is on
+// screen (a card on a hidden tab isn't), and as selected when its button is
+// tapped. All of it is the card's own public content and its position.
+const STEAL_LIST = { item_list_id: 'free_steals', item_list_name: 'Free Steals' };
+
+export function promoItem(card) {
+  return {
+    promotion_id: `deal-${card.dataset.promoId}`,
+    promotion_name: card.dataset.promoName,
+    creative_name: card.dataset.promoCreative,
+    creative_slot: `deals_${card.dataset.position}`,
+    item_id: `deal-${card.dataset.promoId}`,
+    item_name: card.dataset.promoCreative,
+    index: Number(card.dataset.position),
+  };
+}
+
+export function stealItem(card) {
+  return {
+    ...STEAL_LIST,
+    item_id: `steal-${card.dataset.stealId}`,
+    item_name: card.dataset.stealName,
+    item_brand: card.dataset.stealMaker,
+    item_category: card.dataset.stealCategory,
+    index: Number(card.dataset.position),
+  };
+}
+
+function reportCards() {
+  const cards = [...document.querySelectorAll('[data-promo-id], [data-steal-id]')];
+  const viewed = (card) => (card.dataset.promoId
+    ? track('view_promotion', { items: [promoItem(card)] })
+    : track('view_item_list', { ...STEAL_LIST, items: [stealItem(card)] }));
+
+  if (typeof IntersectionObserver === 'function') {
+    const seen = new IntersectionObserver((entries) => entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      seen.unobserve(entry.target);
+      viewed(entry.target);
+    }), { threshold: 0.5 });
+    cards.forEach((card) => seen.observe(card));
+  }
+
+  cards.forEach((card) => card.querySelector('.deal-card__cta')?.addEventListener('click', () => (card.dataset.promoId
+    ? track('select_promotion', { items: [promoItem(card)] })
+    : track('select_item', { ...STEAL_LIST, items: [stealItem(card)] }))));
 }

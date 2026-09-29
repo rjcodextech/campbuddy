@@ -248,7 +248,8 @@ class FreeStealsTest extends TestCase
         $this->steal(['name' => 'GoDAM', 'url' => 'https://github.com/rtCamp/godam']);
 
         $this->get(route('event.explore', $this->event()))->assertOk()
-            ->assertSee('data-track="free_steal_open" data-track-offer-title="GoDAM" data-track-link-domain="github.com"', false);
+            ->assertSee('data-track="free_steal_open" data-track-offer-title="GoDAM" data-track-link-domain="github.com"', false)
+            ->assertSee('data-steal-id="', false)->assertSee('data-steal-name="GoDAM" data-steal-maker="Lubus" data-steal-category="Developer Tools" data-position="1"', false);
     }
 
     // ---- Suggest a Free Steal ------------------------------------------------

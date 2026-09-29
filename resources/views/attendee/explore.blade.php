@@ -88,7 +88,7 @@
             @else
                 <div class="deal-list">
                     @foreach ($offers as $offer)
-                        @include('attendee.partials.deal-card', ['offer' => $offer])
+                        @include('attendee.partials.deal-card', ['offer' => $offer, 'position' => $loop->iteration])
                     @endforeach
                 </div>
             @endif
@@ -101,7 +101,7 @@
             @else
                 <div class="deal-list">
                     @foreach ($steals as $steal)
-                        @include('attendee.partials.free-steal-card', ['steal' => $steal])
+                        @include('attendee.partials.free-steal-card', ['steal' => $steal, 'position' => $loop->iteration])
                     @endforeach
                 </div>
             @endif

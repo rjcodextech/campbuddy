@@ -86,6 +86,18 @@ const EVENTS = {
   // GA4's 50 custom dimensions are all used: offer_title carries the Free Steal's name here.
   free_steal_open: ['offer_title', 'link_domain'], // "Get it free" on a Free Steal (new tab)
   free_steal_suggest: [], // a suggestion was sent — never what was typed
+  free_steal_suggest_open: [],
+  free_steal_suggest_cancel: [],
+  deal_code_copy: ['offer_id', 'offer_title'], // a deal's coupon code copied
+  // GA4's own ecommerce events, whose fields GA reports without any custom
+  // dimension (ITEM_KEYS): Deals as promotions, Free Steals as an item list.
+  // A card is "viewed" once per page load when half of it is on screen, and
+  // "selected" when its button is tapped — so views, clicks, click-through
+  // and position per card. Only the event's own public content.
+  view_promotion: ['items'],
+  select_promotion: ['items'],
+  view_item_list: ['item_list_id', 'item_list_name', 'items'],
+  select_item: ['item_list_id', 'item_list_name', 'items'],
 
   // People / discovery — actions only, no profile or match data
   discovery_join_start: ['surface'], // home | explore
@@ -109,8 +121,8 @@ const EVENTS = {
   meet_remove: ['source'],
   meet_hide: ['source'], // hidden from the plan (kept, never deleted)
   meet_unhide: ['source'], // shown again
-  meet_status: ['plan_status'], // met | missed | cleared
-  session_status: ['plan_status'], // attended | missed | cleared
+  meet_status: ['plan_status', 'source'], // met | missed | cleared; source: roster | discovery — never who
+  session_status: ['plan_status', 'schedule_session_id', 'session_title'], // attended | missed | cleared — which session (public), never who
   calendar_export: ['scope', 'method'], // scope: meeting | plan; method: ics | google
   plan_reminder_view: ['left_count'],
   plan_reminder_click: ['left_count'],
@@ -144,6 +156,23 @@ function normalize(value) {
   return undefined;
 }
 
+// The fields an `items` entry may carry: GA4's built-in, item-scoped ones.
+// Anything else in an item is dropped, like any unlisted param.
+export const ITEM_KEYS = ['item_id', 'item_name', 'item_brand', 'item_category', 'item_list_id', 'item_list_name', 'index', 'promotion_id', 'promotion_name', 'creative_name', 'creative_slot'];
+
+export function normalizeItems(value) {
+  if (!Array.isArray(value)) return undefined;
+
+  const items = value.slice(0, 25)
+    .map((item) => Object.fromEntries(Object.entries(item ?? {})
+      .filter(([key]) => ITEM_KEYS.includes(key))
+      .map(([key, raw]) => [key, normalize(raw)])
+      .filter(([, clean]) => clean !== undefined)))
+    .filter((item) => Object.keys(item).length > 0);
+
+  return items.length > 0 ? items : undefined;
+}
+
 export function track(name, params = {}) {
   const allowed = EVENTS[name];
 
@@ -160,7 +189,7 @@ export function track(name, params = {}) {
       continue;
     }
 
-    const value = normalize(raw);
+    const value = key === 'items' ? normalizeItems(raw) : normalize(raw);
     if (value !== undefined) clean[key] = value;
   }
 

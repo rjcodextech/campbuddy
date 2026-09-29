@@ -7,7 +7,9 @@
     one button. The link is plain and opens in a new tab: GitHub and
     WordPress.org refuse to be framed.
 --}}
-<article class="deal-card" aria-label="{{ $steal->name }}">
+{{-- data-steal-*: what explore.js reports as a GA4 item-list item (view / select), with its place in the list. --}}
+<article class="deal-card" aria-label="{{ $steal->name }}"
+         data-steal-id="{{ $steal->id }}" data-steal-name="{{ $steal->name }}" data-steal-maker="{{ $steal->maker }}" data-steal-category="{{ $steal->category }}" data-position="{{ $position ?? 0 }}">
     <div class="deal-card__head">
         <span class="deal-card__logo" aria-hidden="true"><x-attendee.line-icon :name="$steal->icon()" /></span>
 
