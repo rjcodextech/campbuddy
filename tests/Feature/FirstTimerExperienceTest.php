@@ -151,13 +151,15 @@ class FirstTimerExperienceTest extends TestCase
 
         $response = $this->get(route('event.camp-card', $event))->assertOk();
 
-        foreach (['classic', 'minimal', 'bold', 'split', 'badge', 'pass'] as $layout) {
+        foreach (['ticket', 'classic', 'minimal', 'bold', 'split', 'badge', 'pass'] as $layout) {
             $response->assertSee('data-share-card="'.$layout.'"', false)
                 ->assertSee('data-download-card="'.$layout.'"', false);
         }
 
-        $this->assertSame(6, substr_count($response->getContent(), '<span class="camp-card__event-name">WordCamp Test 2026</span>'));
-        $this->assertSame(6, substr_count($response->getContent(), 'class="camp-card__scan"'));
+        $this->assertSame(7, substr_count($response->getContent(), '<span class="camp-card__event-name">WordCamp Test 2026</span>'));
+        $this->assertSame(7, substr_count($response->getContent(), 'class="camp-card__scan"'));
+        // Only Ticket puts "Ask me about" in its own bubble.
+        $this->assertSame(1, substr_count($response->getContent(), 'data-ask-bubble'));
         $response->assertSee('600&nbsp;DPI', false)->assertDontSee('data-print-card', false);
     }
 

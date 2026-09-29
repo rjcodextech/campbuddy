@@ -11,12 +11,17 @@
         </p>
 
         <div class="camp-card-scroll" id="camp-card-scroll">
-            @foreach (['classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
+            @foreach (['ticket' => 'Ticket', 'classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
                 <div class="camp-card-scroll__item" data-layout-card="{{ $key }}">
                     <p class="camp-card-scroll__label">{{ $label }}</p>
 
-                    <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}">
+                    {{-- data-ask-bubble: Ticket shows "Ask me about" in its own speech bubble instead of as a tag (camp-card.js). --}}
+                    <div class="camp-card camp-card--{{ $key }}" data-event-icon="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" @if ($key === 'ticket') data-ask-bubble @endif>
                         <span class="camp-card__lanyard-hole" aria-hidden="true"></span>
+                        {{-- Ticket only (hidden on the others): rings behind the event mark, and the tear line's two notches. --}}
+                        <span class="camp-card__rings" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span class="camp-card__notch camp-card__notch--left" aria-hidden="true"></span>
+                        <span class="camp-card__notch camp-card__notch--right" aria-hidden="true"></span>
                         <div class="camp-card__body">
                             <div class="camp-card__event">
                                 <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png">
@@ -27,6 +32,7 @@
                             <p class="camp-card__name"></p>
                             <p class="camp-card__role"></p>
                             <div class="camp-card__tags"></div>
+                            <p class="camp-card__ask"></p>
                         </div>
                         <div class="camp-card__footer" hidden>
                             <div class="camp-card__qr-frame">

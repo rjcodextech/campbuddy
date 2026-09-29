@@ -15,7 +15,7 @@
 }
 
 // --- Gallery ---------------------------------------------------------
-// All 6 layouts render at once (camp-card.blade.php's #camp-card-scroll).
+// All 7 layouts render at once (camp-card.blade.php's #camp-card-scroll).
 // Phones: one swipeable row that bleeds to the viewport edges by
 // canceling #main-content's side padding, then re-adds it as padding so
 // the first/last card don't sit flush against the edge. Tablets and up:
@@ -113,7 +113,7 @@ body > div > img[width='1'][height='1'] {
 // Camp Card is the one place in the app deliberately styled as its own
 // designed object rather than more app UI — its own accent palette
 // ($cc-*) and typography (serif for the name, mono for handle-style
-// text) live only here. Structure is shared across all 6 layouts (the
+// text) live only here. Structure is shared across all 7 layouts (the
 // same markup: event-mark/name/role/tags/footer), each --modifier below
 // supplies the visual treatment.
 .camp-card {
@@ -144,6 +144,14 @@ body > div > img[width='1'][height='1'] {
     background: v.$color-paper-soft;
     border: cc(1.5) solid rgba(0, 0, 0, 0.22);
     z-index: 2;
+}
+
+// Ticket's rings, tear-line notches and "Ask me about" bubble: hidden on
+// every other layout (see Layout 7).
+.camp-card__rings,
+.camp-card__notch,
+.camp-card__ask {
+    display: none;
 }
 
 // Takes whatever height the footer leaves and never grows past it — the
@@ -696,6 +704,300 @@ body > div > img[width='1'][height='1'] {
     .camp-card__tier-band {
         display: flex;
     }
+}
+
+// --- Layout 7: Ticket — the CampBuddy print ID card (marketing/id-card) as
+// a Camp Card: a wine band with the line-icon pattern, rings and the
+// event's mark in an ochre-rimmed tile; a tear line with a notch at each
+// edge; then the cream half: "HELLO, I'M", the name in wine with an ochre
+// rule, role, interests, "Ask me about …" in a speech bubble; and the QR
+// beside "Scan to …" and the CampBuddy logo. Everything is drawn with what
+// the PNG export can paint: no clip-path, no repeating gradients, no inset
+// shadows.
+$ticket-band: 150; // design px: the wine band's height, where the tear line sits
+
+.camp-card--ticket {
+    border: 0;
+    border-radius: cc(10);
+    // Longhand, as in Classic: Sass would read a shorthand's slash as division.
+    background-color: v.$color-paper;
+    background-image: linear-gradient(to bottom, v.$cc-dark-wine cc($ticket-band), transparent cc($ticket-band));
+    color: v.$cc-dark-wine;
+    text-align: center;
+
+    // The line-icon pattern, over the band only.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: cc($ticket-band);
+        background-image: url('/media/pattern-icons.svg');
+        background-size: cc(66) cc(66);
+        opacity: 0.28;
+    }
+
+    // The tear line.
+    &::after {
+        content: '';
+        position: absolute;
+        top: cc($ticket-band - 1);
+        left: cc(14);
+        right: cc(14);
+        border-top: cc(2) dashed rgba(251, 236, 216, 0.75);
+        z-index: 2;
+    }
+
+    // Rings behind the event mark, like a signal going out.
+    .camp-card__rings {
+        display: block;
+        position: absolute;
+        top: cc(60);
+        left: 50%;
+        width: 0;
+        height: 0;
+
+        i {
+            position: absolute;
+            border-radius: 50%;
+            border: cc(1.2) solid rgba(251, 236, 216, 0.16);
+            transform: translate(-50%, -50%);
+
+            &:nth-child(1) {
+                width: cc(104);
+                height: cc(104);
+            }
+
+            &:nth-child(2) {
+                width: cc(144);
+                height: cc(144);
+                border-color: rgba(251, 236, 216, 0.1);
+            }
+
+            &:nth-child(3) {
+                width: cc(184);
+                height: cc(184);
+                border-color: rgba(251, 236, 216, 0.06);
+            }
+        }
+    }
+
+    // Half-round bites where the tear line meets the edges: a full circle,
+    // half of it outside the card (which clips it), in the page's colour.
+    .camp-card__notch {
+        display: block;
+        position: absolute;
+        top: cc($ticket-band - 10);
+        width: cc(20);
+        height: cc(20);
+        border-radius: 50%;
+        background: v.$color-paper-soft;
+        z-index: 3;
+
+        &--left {
+            left: cc(-10);
+        }
+
+        &--right {
+            right: cc(-10);
+        }
+    }
+
+    .camp-card__body {
+        position: relative;
+        z-index: 1;
+        align-items: center;
+        padding: 0 cc(20) cc(10);
+    }
+
+    // No QR yet (the sample): keep the band's content in the band.
+    &:has(.camp-card__footer[hidden]) .camp-card__body {
+        &::before,
+        &::after {
+            display: none;
+        }
+    }
+
+    .camp-card__event {
+        flex-direction: column;
+        justify-content: center;
+        gap: cc(8);
+        height: cc($ticket-band);
+        margin-bottom: 0;
+    }
+
+    .camp-card__event-mark {
+        width: cc(64);
+        height: cc(64);
+        padding: cc(6);
+        border-radius: cc(15);
+        border: cc(4) solid v.$cc-ochre;
+        background: v.$color-paper;
+        box-shadow: 0 cc(4) cc(12) rgba(0, 0, 0, 0.3);
+    }
+
+    .camp-card__event-name {
+        max-width: 92%;
+        font-size: cc(9.5);
+        letter-spacing: 0.16em;
+        color: v.$cc-antique-white;
+        opacity: 0.9;
+    }
+
+    .camp-card__hello {
+        padding-top: cc(12);
+        margin-bottom: cc(4);
+        font-size: cc(10);
+        font-weight: 800;
+        letter-spacing: 0.26em;
+        color: v.$cc-ochre;
+        opacity: 1;
+    }
+
+    .camp-card__name {
+        font-family: v.$font-sans;
+        font-size: calc(#{cc(27)} * var(--name-scale, 1));
+        font-weight: 800;
+        line-height: 1.06;
+        letter-spacing: -0.015em;
+        color: v.$cc-dark-wine;
+
+        // The ochre rule under the name.
+        &::after {
+            content: '';
+            display: block;
+            width: cc(34);
+            height: cc(4);
+            margin: cc(8) auto 0;
+            border-radius: cc(2);
+            background: v.$cc-ochre;
+        }
+    }
+
+    .camp-card__role {
+        margin-top: cc(8);
+        font-size: cc(13);
+        font-weight: v.$font-weight-medium;
+        color: v.$cc-charcoal;
+        opacity: 0.72;
+    }
+
+    .camp-card__tags {
+        align-self: stretch;
+        justify-content: center;
+        gap: cc(6);
+        margin-top: cc(12);
+        margin-bottom: 0;
+    }
+
+    .camp-card__tag {
+        padding: cc(3) cc(10);
+        border: cc(1) solid rgba(114, 19, 19, 0.15);
+        background: v.$cc-antique-white;
+        color: v.$cc-dark-wine;
+        font-size: cc(12);
+        line-height: cc(18);
+        font-weight: v.$font-weight-medium;
+    }
+
+    // "Ask me about Block themes": a wine speech bubble, as on the print card.
+    // margin-bottom: auto takes over from the tags, keeping the block centred.
+    .camp-card__ask {
+        display: block;
+        position: relative;
+        max-width: 100%;
+        margin: cc(14) 0 auto;
+        padding: cc(7) cc(14);
+        border-radius: cc(14);
+        background: v.$cc-dark-wine;
+        color: v.$cc-antique-white;
+        font-size: cc(12);
+        font-weight: v.$font-weight-bold;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+        box-shadow: 0 cc(3) cc(8) rgba(114, 19, 19, 0.25);
+
+        strong {
+            color: #ffc15e;
+            font-weight: 900;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            bottom: cc(-6);
+            margin-left: cc(-6);
+            border-left: cc(6) solid transparent;
+            border-right: cc(6) solid transparent;
+            border-top: cc(7) solid v.$cc-dark-wine;
+        }
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    // Without a bubble the tags keep the block centred.
+    &:has(.camp-card__ask:empty) .camp-card__tags {
+        margin-bottom: auto;
+    }
+
+    // The QR on the left, "Scan to …" and the CampBuddy logo beside it.
+    .camp-card__footer {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: 1fr auto;
+        column-gap: cc(12);
+        row-gap: cc(6);
+        align-items: center;
+        margin: 0 cc(16) cc(16);
+        padding: cc(8) cc(10);
+        border-radius: cc(10);
+        border: cc(1) dashed rgba(114, 19, 19, 0.25);
+        background: #fff;
+        text-align: left;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    .camp-card__qr-frame {
+        grid-row: 1 / span 2;
+        padding: cc(4);
+        border: 0;
+
+        canvas {
+            width: cc(80);
+            height: cc(80);
+        }
+    }
+
+    .camp-card__scan {
+        align-self: end;
+        font-size: cc(12);
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        line-height: 1.25;
+        text-align: left;
+        color: v.$cc-dark-wine;
+    }
+
+    .camp-card__brand-mark {
+        align-self: start;
+        justify-self: start;
+        height: cc(18);
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+}
+
+// The exported PNG is printed on white card stock: bite the notches out in white.
+.camp-card-export .camp-card--ticket .camp-card__notch {
+    background: #fff;
 }
 
 .qr__actions {

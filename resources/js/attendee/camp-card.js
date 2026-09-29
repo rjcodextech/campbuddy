@@ -1,6 +1,6 @@
 // Camp Card: local-only (CC5), attendee chooses which filled
 // fields actually show (CC2), QR points at whichever link they designate
-// primary (CC3). All 6 layouts render at once in a gallery
+// primary (CC3). All 7 layouts render at once in a gallery
 // (resources/views/attendee/camp-card.blade.php's #camp-card-scroll)
 // rather than one preview behind a layout picker — each card is its own
 // self-contained subtree (data-layout-card="…"), with its own
@@ -20,7 +20,7 @@ import { render } from './template.js';
 import { showToast } from './toast.js';
 
 const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
-const LAYOUTS = ['classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
+const LAYOUTS = ['ticket', 'classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
 const DEFAULT_QR_TARGET = 'linkedin';
 
 // Share/Download export a 3 × 5 in card at 600 DPI (1800 × 3000 px) —
@@ -686,7 +686,7 @@ function renderAllPreviews(card) {
   const primaryUrl = qrField ? resolveLink(qrField, card[qrField]) : null;
 
   // Same QR (same primary link) shared across every layout's canvas — no
-  // need to regenerate the module grid per card, just redraw it 6 times.
+  // need to regenerate the module grid per card, just redraw it per layout.
   const qr = primaryUrl ? QRCode(0, 'H') : null;
   if (qr) {
     qr.addData(primaryUrl);
@@ -727,15 +727,21 @@ function cardContent(display) {
   // combined blob — the rest of visibleFields (excluding role/company,
   // already on their own line above) render as one pill each.
   const tags = [];
+  const tagsBesideAsk = [];
   visibleFields.forEach((f) => {
     if (f === 'interests') {
-      (display.interests ?? []).forEach((tag) => tags.push(tag));
+      (display.interests ?? []).forEach((tag) => { tags.push(tag); tagsBesideAsk.push(tag); });
     } else if (f !== 'role' && f !== 'company' && display[f]) {
       tags.push(display[f]);
+      if (f !== 'askMeAbout') tagsBesideAsk.push(display[f]);
     }
   });
 
-  return { name: display.name, roleLine, tags };
+  // Ticket shows "Ask me about" in its own bubble (data-ask-bubble), so
+  // there it is left out of the pills; every other layout keeps it a pill.
+  const askMe = visibleFields.includes('askMeAbout') ? (display.askMeAbout ?? '') : '';
+
+  return { name: display.name, roleLine, tags, askMe, tagsBesideAsk };
 }
 
 // Fills one .camp-card element (an on-screen card, or the clone being
@@ -750,17 +756,33 @@ async function paintCard(card, content, qr, qrPixels = QR_PREVIEW_PX) {
   card.classList.toggle('camp-card--name-only', !content.roleLine && content.tags.length === 0 && (content.name ?? '').length <= 20);
   card.querySelector('.camp-card__footer').hidden = !qr;
 
-  paintTags(card, content.tags);
+  const bubble = card.hasAttribute('data-ask-bubble') && content.askMe ? content.askMe : '';
+  const tags = card.hasAttribute('data-ask-bubble') ? (content.tagsBesideAsk ?? content.tags) : content.tags;
+  paintAsk(card, bubble);
+  paintTags(card, tags, !bubble);
 
   // The logos above the tags change how much room they have once they
   // load (Pass's is sized by its own aspect ratio), so trim again then —
   // otherwise a card can end up with pills spilling past its footer.
   await imagesLoaded(card);
-  paintTags(card, content.tags);
+  paintTags(card, tags, !bubble);
 
   if (qr) {
     await drawQrToCanvas(qr, card.querySelector('.camp-card__qr-frame canvas'), card.dataset.eventIcon, qrPixels);
   }
+}
+
+// "Ask me about Block themes" in Ticket's speech bubble; empty (and hidden) elsewhere.
+function paintAsk(card, askMe) {
+  const ask = card.querySelector('.camp-card__ask');
+  if (!ask) return;
+  if (!askMe) {
+    ask.replaceChildren();
+    return;
+  }
+  const topic = document.createElement('strong');
+  topic.textContent = askMe;
+  ask.replaceChildren('Ask me about ', topic);
 }
 
 function imagesLoaded(root) {
@@ -778,13 +800,15 @@ function imagesLoaded(root) {
 
 // The card is a fixed size, so a long tag list can't be allowed to grow
 // it: show as many pills as fit and fold the rest into a "+N" pill.
-function paintTags(card, tags) {
+// withPlaceholder: false when the card has something else to show instead
+// (Ticket's "Ask me about" bubble), so no "Nothing chosen" pill sits beside it.
+function paintTags(card, tags, withPlaceholder = true) {
   const body = card.querySelector('.camp-card__body');
   const tagsEl = card.querySelector('.camp-card__tags');
   const pill = (text) => render('tpl-camp-card-tag', { tag: text });
 
   if (tags.length === 0) {
-    tagsEl.replaceChildren(render('tpl-camp-card-tag-empty'));
+    tagsEl.replaceChildren(...(withPlaceholder ? [render('tpl-camp-card-tag-empty')] : []));
     return;
   }
 
