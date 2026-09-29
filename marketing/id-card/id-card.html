@@ -188,6 +188,64 @@
   .back .scan { margin-top: 2.6mm; font-size: 6.4pt; font-weight: 800; color: #fff; }
   .back .scan span { display: block; margin-top: .6mm; font-size: 7.6pt; font-weight: 800; color: var(--ochre); letter-spacing: .01em; }
 
+  /* ================= 3 × 5 in portrait (76.2 × 127 mm): body.size-3x5 =================
+     Same pieces, stacked: the wine "stub" is a band across the top (tear line
+     along its bottom), the name below it; the back stacks headline, QR, icons.
+     The top 10 mm stay clear for a lanyard slot. */
+  .size-3x5 .front .side { right: 0; bottom: auto; width: auto; height: calc(var(--bleed) + 50mm); }
+  .size-3x5 .front .perf {
+    left: 0; right: 0; bottom: auto; width: auto;
+    top: calc(var(--bleed) + 50mm - .25mm); height: .5mm;
+    background: repeating-linear-gradient(to right, var(--cream) 0 1.8mm, transparent 1.8mm 3.2mm);
+  }
+  .size-3x5 .front .bite { width: 6.4mm; height: 6.4mm; top: calc(var(--bleed) + 50mm - 3.2mm); bottom: auto; }
+  .size-3x5 .front .bite.t { left: calc(var(--bleed) - 3.2mm); }
+  .size-3x5 .front .bite.b { left: auto; right: calc(var(--bleed) - 3.2mm); }
+  .size-3x5 .front .rings { left: 50%; top: calc(var(--bleed) + 30mm); }
+  .size-3x5 .front .rings i:nth-child(1) { width: 40mm; height: 40mm; }
+  .size-3x5 .front .rings i:nth-child(2) { width: 56mm; height: 56mm; }
+  .size-3x5 .front .rings i:nth-child(3) { width: 72mm; height: 72mm; }
+  .size-3x5 .front .mark {
+    left: calc(50% - 14mm); top: calc(var(--bleed) + 16mm);
+    width: 28mm; height: 28mm; border-radius: 6.4mm; padding: 1.5mm;
+    box-shadow: 0 0 0 1.1mm var(--ochre), 0 1.6mm 4.5mm rgba(0, 0, 0, .3);
+  }
+  .size-3x5 .front .watermark { right: -13mm; bottom: -15mm; width: 58mm; }
+  .size-3x5 .front .main {
+    left: calc(var(--bleed) + 7mm); right: calc(var(--bleed) + 7mm);
+    top: calc(var(--bleed) + 58mm); bottom: calc(var(--bleed) + 7mm);
+    align-items: center; text-align: center;
+  }
+  .size-3x5 .front .logo { width: 42mm; }
+  .size-3x5 .front .who { align-items: center; }
+  .size-3x5 .front .hello { margin-bottom: 2mm; font-size: 7.4pt; }
+  .size-3x5 .front .name { font-size: 25pt; }
+  .size-3x5 .front .rule { width: 12mm; height: 1mm; margin-top: 3.2mm; }
+  .size-3x5 .front .role { margin-top: 2.2mm; font-size: 9pt; }
+  .size-3x5 .front .ask {
+    align-self: stretch; flex-direction: column; gap: 1mm;
+    padding-top: 3.4mm; font-size: 8pt;
+  }
+  .size-3x5 .front .ask .site { font-size: 9.4pt; }
+
+  .size-3x5 .back {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    padding: calc(var(--bleed) + 11mm) calc(var(--bleed) + 7mm) calc(var(--bleed) + 8mm);
+  }
+  .size-3x5 .back .glow { background: radial-gradient(70% 45% at 50% 47%, rgba(215, 123, 6, .28), transparent 70%); }
+  .size-3x5 .back .text { display: contents; }
+  .size-3x5 .back .kicker { order: 1; position: relative; font-size: 7pt; }
+  .size-3x5 .back h1 { order: 2; position: relative; margin-top: 2mm; font-size: 13pt; }
+  .size-3x5 .back .qrbox { order: 3; margin-top: 6mm; position: relative; right: auto; top: auto; transform: none; width: 40mm; }
+  .size-3x5 .back .qr { width: 40mm; height: 40mm; padding: 3mm; border-radius: 4mm; box-shadow: 0 0 0 1mm var(--ochre); }
+  .size-3x5 .back .scan { margin-top: 3.2mm; font-size: 8.8pt; }
+  .size-3x5 .back .scan span { font-size: 10.5pt; }
+  .size-3x5 .back .feats { order: 4; position: relative; margin-top: auto; width: 100%; gap: 2.6mm 2mm; }
+  .size-3x5 .back .feat { gap: 1.2mm; font-size: 6.8pt; }
+  .size-3x5 .back .ico { width: 8.2mm; height: 8.2mm; border-width: .4mm; }
+  .size-3x5 .back .ico svg { width: 4.4mm; height: 4.4mm; }
+
   /* Guides (browser only, ?guides). */
   .guides .card::before, .guides .card::after { content: ''; position: absolute; z-index: 9; pointer-events: none; }
   .guides .card::before { inset: var(--bleed); outline: .2mm solid #00b3ff; border-radius: 3.2mm; }
@@ -205,7 +263,7 @@
     for (const name of document.querySelectorAll('.name')) {
       const box = name.parentElement;
       const lines = () => Math.round(name.getBoundingClientRect().height / parseFloat(getComputedStyle(name).lineHeight));
-      let size = 17;
+      let size = parseFloat(getComputedStyle(name).fontSize) * 0.75;
       while ((lines() > 2 || box.scrollHeight > box.clientHeight || name.scrollWidth > name.clientWidth) && size > 10) {
         size -= 0.5;
         name.style.fontSize = size + 'pt';

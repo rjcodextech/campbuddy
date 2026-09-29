@@ -49,3 +49,15 @@ Canva/Photoshop mein banana ho to `png/blank-front.png` lein. Upar chhota "HELLO
 Wine `#721313` · Ochre `#d77b06` · Cream `#fbecd8` · Paper `#fffaf4`
 
 Design ka source `id-card.html` aur `render.mjs` hai.
+
+## 3 × 5 inch version (khada card)
+
+Folder **`print-3x5/`**: same design, 3 × 5 in (76.2 × 127 mm) portrait, har taraf 3 mm bleed (file 82.2 × 133 mm), PNG 900 dpi.
+
+| File | Kya hai |
+|---|---|
+| `print-3x5/CampBuddy-ID-cards-3x5.pdf` | Saare 8 cards, front aur back (printer ko ye bhejein) |
+| `print-3x5/CampBuddy-ID-cards-3x5-cropmarks.pdf` | Crop marks ke saath |
+| `print-3x5/pdf/`, `print-3x5/png/` | Har person ki PDF aur PNG |
+
+Upar 10 mm lanyard slot ke liye khali hai. Banane ke liye: `node marketing/id-card/render.mjs --size=3x5`.

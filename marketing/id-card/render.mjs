@@ -2,6 +2,7 @@
 //
 //   node marketing/id-card/render.mjs                        # every name in names.txt
 //   node marketing/id-card/render.mjs "Name" ["Role"]         # just one person
+//   add --size=3x5 for the 3 × 5 in (76.2 × 127 mm) portrait version → print-3x5/
 //
 // names.txt: one person per line, "Name" or "Name | Role".
 // Card 86 × 54 mm, landscape, 3 mm bleed (92 × 60 mm). Writes to print/:
@@ -19,12 +20,22 @@ import qrcode from 'qrcode-generator';
 import { launchChrome, sleep } from '../../tests/browser/helpers/chrome.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const out = path.join(here, 'print');
+// Card sizes, with 3 mm bleed on every side (w × h in mm).
+const SIZES = {
+  cr80: { w: 92, h: 60, dir: 'print', css: '' },
+  '3x5': { w: 82.2, h: 133, dir: 'print-3x5', css: 'size-3x5' },
+};
+const sizeArg = process.argv.find((arg) => arg.startsWith('--size='));
+const SIZE = SIZES[sizeArg ? sizeArg.slice(7) : 'cr80'];
+if (!SIZE) throw new Error(`Unknown size. Use one of: ${Object.keys(SIZES).join(', ')}`);
+const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+const out = path.join(here, SIZE.dir);
+const tag = SIZE.dir === 'print' ? '' : '-3x5';
 const QR_URL = 'https://campbuddy.club/?utm_source=id-card&utm_medium=print';
 const DPI = 900;
 
-const people = process.argv[2]
-  ? [{ name: process.argv[2], role: process.argv[3] ?? '' }]
+const people = args[0]
+  ? [{ name: args[0], role: args[1] ?? '' }]
   : fs.readFileSync(path.join(here, 'names.txt'), 'utf8').split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
     .map((line) => { const [name, role = ''] = line.split('|').map((part) => part.trim()); return { name, role }; });
 
@@ -101,10 +112,11 @@ const back = `
 const pages = [...people.flatMap((person) => [front(person), back]), front({ name: '', role: '' })].join('\n');
 
 function page(mode) {
-  const size = mode === 'marks' ? '@page { size: 104mm 72mm; margin: 0; }' : '@page { size: 92mm 60mm; margin: 0; }';
+  const pad = mode === 'marks' ? 12 : 0;
+  const size = `@page { size: ${SIZE.w + pad}mm ${SIZE.h + pad}mm; margin: 0; } :root { --w: ${SIZE.w}mm; --h: ${SIZE.h}mm; }`;
   return fs.readFileSync(path.join(here, 'id-card.html'), 'utf8')
     .replaceAll('{{PAGE}}', size)
-    .replaceAll('{{MODE}}', mode)
+    .replaceAll('{{MODE}}', `${mode} ${SIZE.css}`)
     .replaceAll('{{PAGES}}', () => pages);
 }
 
@@ -165,16 +177,16 @@ try {
 
   // PDFs: all cards, and one per person (its front and back pages).
   const last = people.length * 2;
-  await save(path.join(out, 'CampBuddy-ID-cards.pdf'), await pdf(`1-${last}`));
+  await save(path.join(out, `CampBuddy-ID-cards${tag}.pdf`), await pdf(`1-${last}`));
   for (const [i, person] of people.entries()) {
     await save(path.join(out, 'pdf', `${slug(person.name)}.pdf`), await pdf(`${i * 2 + 1}-${i * 2 + 2}`));
   }
   await save(path.join(out, 'pdf', 'blank-front.pdf'), await pdf(`${last + 1}`));
 
   await open('marks');
-  await save(path.join(out, 'CampBuddy-ID-cards-cropmarks.pdf'), await pdf(`1-${last}`));
+  await save(path.join(out, `CampBuddy-ID-cards${tag}-cropmarks.pdf`), await pdf(`1-${last}`));
 
-  console.log(`${people.length} cards: print/CampBuddy-ID-cards.pdf, print/CampBuddy-ID-cards-cropmarks.pdf, print/pdf/, print/png/`);
+  console.log(`${people.length} cards → ${SIZE.dir}/ (CampBuddy-ID-cards${tag}.pdf, …-cropmarks.pdf, pdf/, png/)`);
 } finally {
   clearTimeout(watchdog);
   await chrome.close();
