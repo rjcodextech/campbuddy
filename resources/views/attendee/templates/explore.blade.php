@@ -45,8 +45,8 @@
             <form data-lead-form>
                 <p class="footer-note" style="text-align:left;margin:0 0 14px" data-slot="intro">Share a few details to get this deal. They go only to the sponsor, so they can sort it out for you.</p>
                 @foreach ([
-                    ['name', 'text', 'e.g. Priya Sharma', 'name', null, 191],
-                    ['company', 'text', 'e.g. Ariham Technologies', 'organization', null, 191],
+                    ['name', 'text', 'e.g. Sunil Kumar Sharma', 'name', null, 191],
+                    ['company', 'text', 'e.g. WPSimplified', 'organization', null, 191],
                     ['email', 'email', 'you@example.com', 'email', 'email', 191],
                     ['mobile', 'tel', 'e.g. 98765 43210', 'tel', 'tel', 32],
                 ] as [$field, $type, $placeholder, $autocomplete, $inputmode, $max])

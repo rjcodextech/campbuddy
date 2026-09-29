@@ -126,7 +126,7 @@
                         <p class="form-field__hint">Pick up to 5. We use them to suggest talks and people.</p>
                     </div>
 
-                    @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Profession', 'placeholder' => 'e.g. Plugin developer', 'hint' => 'Optional.', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
+                    @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Profession', 'placeholder' => 'e.g. WordPress Engineer', 'hint' => 'Optional.', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
                     @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other plugin developers', 'hint' => 'Optional.', 'dataField' => 'whoToMeet', 'maxlength' => 255, 'errorLine' => false])
                     @include('attendee.partials.form-field', ['id' => 'ob-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Pasting your profile link works too.', 'dataField' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 

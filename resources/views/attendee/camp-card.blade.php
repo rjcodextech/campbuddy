@@ -70,9 +70,9 @@
                     <legend class="form-group__title">About you</legend>
                     <p class="form-group__desc">This is what shows on your card.</p>
 
-                    @include('attendee.partials.form-field', ['id' => 'cc-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Priya Sharma', 'autocomplete' => 'name', 'maxlength' => 60, 'hint' => 'Shown large at the top of your card.'])
-                    @include('attendee.partials.form-field', ['id' => 'cc-role', 'name' => 'role', 'label' => 'Role or title', 'placeholder' => 'e.g. WordPress Developer', 'autocomplete' => 'organization-title', 'maxlength' => 60])
-                    @include('attendee.partials.form-field', ['id' => 'cc-company', 'name' => 'company', 'label' => 'Company or community', 'placeholder' => 'e.g. Acme Studio', 'autocomplete' => 'organization', 'maxlength' => 60])
+                    @include('attendee.partials.form-field', ['id' => 'cc-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Sunil Kumar Sharma', 'autocomplete' => 'name', 'maxlength' => 60, 'hint' => 'Shown large at the top of your card.'])
+                    @include('attendee.partials.form-field', ['id' => 'cc-role', 'name' => 'role', 'label' => 'Role or title', 'placeholder' => 'e.g. WordPress Engineer', 'autocomplete' => 'organization-title', 'maxlength' => 60])
+                    @include('attendee.partials.form-field', ['id' => 'cc-company', 'name' => 'company', 'label' => 'Company or community', 'placeholder' => 'e.g. WPSimplified', 'autocomplete' => 'organization', 'maxlength' => 60])
                     @include('attendee.partials.form-field', ['id' => 'cc-city', 'name' => 'city', 'label' => 'City', 'placeholder' => 'e.g. Jaipur', 'autocomplete' => 'address-level2', 'maxlength' => 40])
                 </fieldset>
 

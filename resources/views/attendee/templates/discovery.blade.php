@@ -57,7 +57,7 @@
             <p class="form-field__hint">Pick at least one, up to 5. People who share them show up first.</p>
         </div>
 
-        @include('attendee.partials.form-field', ['id' => 'join-profession', 'label' => 'Profession', 'placeholder' => 'e.g. Plugin developer', 'hint' => 'Optional.', 'dataSlot' => 'profession', 'maxlength' => 100, 'errorLine' => false])
+        @include('attendee.partials.form-field', ['id' => 'join-profession', 'label' => 'Profession', 'placeholder' => 'e.g. WordPress Engineer', 'hint' => 'Optional.', 'dataSlot' => 'profession', 'maxlength' => 100, 'errorLine' => false])
         @include('attendee.partials.form-field', ['id' => 'join-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other agency owners', 'hint' => 'Optional.', 'dataSlot' => 'who', 'maxlength' => 255, 'errorLine' => false])
         @include('attendee.partials.form-field', ['id' => 'join-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Links to your profiles.wordpress.org page. Pasting the full profile link works too.', 'dataSlot' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 

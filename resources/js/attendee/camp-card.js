@@ -52,9 +52,9 @@ const SCAN_LABELS = {
 let shown = null;
 
 const SAMPLE_CARD = {
-  name: 'Jamie Rivera',
-  role: 'WordPress Developer',
-  company: 'Acme Studio',
+  name: 'Sunil Kumar Sharma',
+  role: 'WordPress Engineer',
+  company: 'WPSimplified',
   interests: ['Gutenberg', 'WooCommerce'],
   visibleFields: ['role', 'interests'],
 };
