@@ -114,7 +114,7 @@ class FreeStealsTest extends TestCase
         $html = $this->get(route('event.explore', $this->event()))->assertOk()->getContent();
 
         $this->assertStringContainsString('<img src="'.$logo->url().'"', $html);
-        $this->assertSame(1, substr_count($html, 'media-library/2026/09/godam.png'));
+        $this->assertSame(2, substr_count($html, 'media-library/2026/09/godam.png')); // the row and its sheet
         $this->assertStringContainsString('No Logo Tool', $html);
     }
 

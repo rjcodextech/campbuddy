@@ -78,3 +78,37 @@ test('"Details" opens and closes a card\'s description, and marks the card colla
   assert.equal(attrs['aria-expanded'], 'false');
   assert.ok(!classes.has('is-open'));
 });
+
+test('a Free Steal row opens its sheet; the backdrop, close and the link shut it', async () => {
+  const { setUpStealSheets } = await import('../../resources/js/attendee/explore.js');
+  const on = {};
+  const listen = (key) => (_type, fn) => { on[key] = fn; };
+  let open = false;
+  const closeBtn = { addEventListener: listen('close') };
+  const link = { addEventListener: listen('link') };
+  const dialog = {
+    showModal: () => { open = true; },
+    close: () => { open = false; },
+    addEventListener: listen('backdrop'),
+    querySelector: (sel) => (sel === '[data-steal-close]' ? closeBtn : link),
+  };
+  const btn = { closest: () => ({ querySelector: () => dialog }), addEventListener: listen('row') };
+
+  setUpStealSheets({ querySelectorAll: () => [btn] });
+
+  on.row();
+  assert.ok(open);
+  on.backdrop({ target: {} });
+  assert.ok(open, 'a tap inside the sheet keeps it open');
+  on.backdrop({ target: dialog });
+  assert.ok(!open);
+
+  on.row();
+  on.close();
+  assert.ok(!open);
+
+  on.row();
+  on.link();
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.ok(!open);
+});

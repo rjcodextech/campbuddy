@@ -47,21 +47,20 @@
     width: auto;
 }
 
-// Explore → Deals (attendee/partials/deal-card.blade.php): one card per
-// deal, full width, so a logo, the offer and its small print all have
-// room on a phone. Who it's from first (logo, name, website, a highlight
-// tag), then the offer, then one button.
+// Explore → Deals (attendee/partials/deal-card.blade.php): one ticket per
+// deal, full width. The top half is who it's from (logo, name, website, the
+// highlight as a stamp) and the offer; a perforated line with a "Details"
+// tab; then the stub with the code and one full-width button.
 .deal-list {
     display: grid;
     gap: v.$space-3;
 }
 
 .deal-card {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: v.$space-2;
     min-width: 0;
-    padding: v.$space-4;
     border-radius: v.$radius-md;
     border: 1px solid var(--line);
     background: var(--paper);
@@ -71,10 +70,11 @@
     display: flex;
     align-items: center;
     gap: v.$space-3;
-    margin-bottom: v.$space-1;
+    padding: v.$space-4 v.$space-4 0;
 }
 
 // A white tile so any logo (dark, light, transparent) reads the same.
+// Free Steals use it too (.steal-row, .steal-sheet).
 .deal-card__logo {
     display: flex;
     align-items: center;
@@ -117,6 +117,7 @@
     overflow-wrap: anywhere;
 }
 
+// A gold pill ("Featured" on a Free Steal) …
 .deal-card__tag {
     flex-shrink: 0;
     max-width: 40%;
@@ -130,9 +131,25 @@
     text-align: center;
 }
 
+// … and on a deal's ticket, a rubber stamp ("20% OFF").
+.deal-card .deal-card__tag {
+    align-self: flex-start;
+    padding: 3px 7px;
+    border: 2px solid var(--brand-primary);
+    border-radius: 6px;
+    background: var(--paper);
+    color: var(--brand-primary);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transform: rotate(-4deg);
+}
+
 .deal-card__title {
     margin: 0;
-    font-weight: v.$font-weight-bold;
+    padding: v.$space-3 v.$space-4 0;
+    font-size: v.$font-size-md;
+    font-weight: 800;
     line-height: v.$line-height-snug;
     color: var(--ink);
 }
@@ -146,40 +163,76 @@
     color: var(--ink);
 }
 
-// "Details" on a phone: the description and small print start closed. Only
-// once explore.js marks the card .is-collapsible, and only under the tablet
-// width, so a wide screen (or no JS) always shows everything.
-.deal-card__more {
+.deal-card__terms {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
+    color: var(--muted);
+}
+
+// The perforation: a dashed line between the notches cut into each edge.
+// Its "Details" tab only shows on a phone (below).
+.deal-card__perf {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: v.$space-2;
+    align-items: center;
+    justify-content: center;
+    min-height: v.$space-6;
+    margin: v.$space-2 0;
+    padding: 0 v.$space-4;
+    background: linear-gradient(to right, var(--line) 60%, transparent 0) center / 10px 2px repeat-x content-box;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: var(--paper-soft);
+    }
+
+    &::before {
+        left: -11px;
+        clip-path: inset(0 0 0 50%);
+    }
+
+    &::after {
+        right: -11px;
+        clip-path: inset(0 50% 0 0);
+    }
 }
 
 .deal-card__toggle {
     display: none;
     align-items: center;
-    align-self: flex-start;
     gap: 6px;
     min-height: 40px;
-    padding: 0 v.$space-3;
+    padding: 0 v.$space-4;
     border: 1px solid var(--line);
     border-radius: v.$radius-full;
-    background: var(--paper-soft);
-    color: var(--ink);
+    background: var(--paper);
+    color: var(--brand-primary);
     font: inherit;
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
     cursor: pointer;
-    transition: transform 0.1s ease;
+    transition: transform 0.1s ease, background-color 0.15s ease;
     @include m.pressable;
+
+    &:hover {
+        background: var(--paper-soft);
+    }
 
     &:focus-visible {
         @include m.focus-ring;
     }
 
     .line-icon {
-        color: var(--brand-primary);
-        transition: transform 0.15s ease;
+        transition: transform 0.25s ease;
     }
 
     &[aria-expanded='true'] .line-icon {
@@ -202,23 +255,64 @@
     display: inline;
 }
 
+// The description and small print, under the perforation.
+.deal-card__more {
+    display: grid;
+    padding: 0 v.$space-4;
+}
+
+.deal-card__more-in {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    min-height: 0;
+    overflow: hidden;
+
+    > :last-child {
+        margin-bottom: v.$space-2;
+    }
+}
+
+// Phones: they start closed under "Details" and slide open. Only once
+// explore.js marks the card .is-collapsible, so no JS shows everything.
 @media (max-width: #{v.$bp-tablet - 1px}) {
     .deal-card.is-collapsible {
+        .deal-card__perf {
+            min-height: 48px;
+            margin: v.$space-1 0 0;
+        }
+
         .deal-card__toggle {
             display: inline-flex;
         }
 
-        &:not(.is-open) .deal-card__more {
-            display: none;
+        .deal-card__more {
+            grid-template-rows: 0fr;
+            visibility: hidden;
+            transition: grid-template-rows 0.28s ease, visibility 0s linear 0.28s;
+        }
+
+        &.is-open .deal-card__more {
+            grid-template-rows: 1fr;
+            visibility: visible;
+            transition: grid-template-rows 0.28s ease;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .deal-card.is-collapsible .deal-card__more,
+        .deal-card.is-collapsible.is-open .deal-card__more {
+            transition: none;
         }
     }
 }
 
-.deal-card__terms {
-    margin: 0;
-    font-size: v.$font-size-xs;
-    line-height: v.$line-height-snug;
-    color: var(--muted);
+// The stub: the code, then one full-width button.
+.deal-card__stub {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    padding: v.$space-2 v.$space-4 v.$space-4;
 }
 
 .deal-card__code {
@@ -247,17 +341,15 @@
 
 .deal-card__foot {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: stretch;
     gap: v.$space-2;
-    margin-top: auto;
-    padding-top: v.$space-2;
 }
 
 .deal-card__note {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     font-size: v.$font-size-xs;
     color: var(--muted);
@@ -267,13 +359,181 @@
     }
 }
 
-.deal-card__cta {
-    margin-left: auto;
+// Explore → Free Steals (attendee/partials/free-steal-card.blade.php): a
+// shelf of one-line rows; tapping one opens its sheet (explore.js).
+.steal-row {
+    min-width: 0;
 }
 
-// Explore → Free Steals (attendee/partials/free-steal-card.blade.php) sits on
-// the deal card; these are its own bits: the "made by someone at this
-// WordCamp" line, and the "Suggest a Free Steal" box under the list.
+.steal-row__open {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    width: 100%;
+    min-height: 72px;
+    padding: v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-md;
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+    @include m.pressable;
+
+    &:hover {
+        border-color: var(--brand-primary);
+    }
+
+    &:focus-visible {
+        @include m.focus-ring;
+    }
+}
+
+.steal-row__who {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.steal-row__name {
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-tight;
+    overflow-wrap: anywhere;
+}
+
+.steal-row__maker {
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.steal-row__here {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}
+
+.steal-row__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+    max-width: 40%;
+
+    .deal-card__tag {
+        max-width: none;
+    }
+}
+
+.steal-row__chev {
+    color: var(--muted);
+}
+
+// The sheet: a bottom sheet on phones, a centred card on wide screens (as the meet sheet).
+dialog.steal-sheet {
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    margin: auto auto 0;
+    padding: 0;
+    border: 0;
+    border-radius: 16px 16px 0 0;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: v.$shadow-raised;
+
+    &::backdrop {
+        background: rgba(35, 31, 32, 0.45);
+    }
+
+    &[open] {
+        animation: meet-sheet-up 0.22s ease-out;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        margin: auto;
+        border-radius: 14px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &[open] {
+            animation: none;
+        }
+    }
+}
+
+.steal-sheet__card {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-2 v.$space-4 calc(#{v.$space-5} + env(safe-area-inset-bottom, 0px));
+
+    @include m.tablet {
+        padding-top: v.$space-5;
+    }
+}
+
+.steal-sheet__grab {
+    align-self: center;
+    width: 40px;
+    height: 5px;
+    border-radius: 3px;
+    background: var(--line);
+
+    @include m.tablet {
+        display: none;
+    }
+}
+
+.steal-sheet__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+}
+
+.steal-sheet__logo {
+    width: 60px;
+    height: 60px;
+    border-radius: v.$radius-md;
+}
+
+.steal-sheet__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: v.$space-2;
+}
+
+.steal-sheet__category {
+    align-self: flex-start;
+    margin: 0;
+    padding: 3px v.$space-2;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: var(--paper-soft);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: var(--muted);
+}
+
+.steal-sheet__host {
+    margin: -4px 0 0;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+    text-align: center;
+}
+
+// The "made by someone at this WordCamp" pill (in the sheet), and the
+// "Suggest a Free Steal" box under the list.
 .free-steal__here {
     display: inline-flex;
     align-items: center;

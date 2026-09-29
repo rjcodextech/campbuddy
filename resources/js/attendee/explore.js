@@ -64,6 +64,7 @@ export function renderExplore() {
   });
 
   setUpCardDetails();
+  setUpStealSheets();
   reportCards();
 
   // Deep-link support (e.g. Quest's "View sponsors"/"Find people"
@@ -114,6 +115,24 @@ export function setUpCardDetails(root = document) {
       btn.setAttribute('aria-expanded', String(open));
       card.classList.toggle('is-open', open);
     });
+  });
+}
+
+// A Free Steal's row opens its sheet (a <dialog> inside the row, so the
+// card's GA reporting still finds its button). The backdrop, Esc and the
+// close button shut it; so does opening the link, which leaves for a new tab.
+export function setUpStealSheets(root = document) {
+  root.querySelectorAll('[data-steal-open]').forEach((btn) => {
+    const dialog = btn.closest('.steal-row')?.querySelector('dialog');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+
+    const close = () => dialog.close();
+    btn.addEventListener('click', () => dialog.showModal());
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) close();
+    });
+    dialog.querySelector('[data-steal-close]')?.addEventListener('click', close);
+    dialog.querySelector('.deal-card__cta')?.addEventListener('click', () => setTimeout(close, 0));
   });
 }
 
