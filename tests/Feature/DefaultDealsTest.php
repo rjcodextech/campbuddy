@@ -287,8 +287,9 @@ class DefaultDealsTest extends TestCase
         $withLeads = $jaipur->offers()->create(['title' => 'Knit Pay (ours)', 'description' => 'd', 'url' => 'https://knitpay.org/x', 'capture_leads' => true]);
         OfferLead::create(['event_id' => $jaipur->id, 'offer_id' => $withLeads->id, 'name' => 'A', 'email' => 'a@example.com']);
 
-        $this->assertSame(4, DefaultDeals::install());
-        $this->assertSame(0, DefaultDeals::install(), 'never added twice');
+        $deals = (require database_path('migrations/2026_10_04_090100_install_default_india_deals.php'))->deals();
+        $this->assertSame(4, DefaultDeals::install($deals));
+        $this->assertSame(0, DefaultDeals::install($deals), 'never added twice');
 
         $this->assertSame(['Knit Pay (ours)', 'Ariham Technologies', 'Hostinger', 'Automattic', 'Knit Pay Pro'], Offer::shownAt($jaipur)->map->displayName()->all());
         $this->assertFalse($oldCopy->fresh()->is_active, 'the plain Hostinger copy is switched off, not deleted');

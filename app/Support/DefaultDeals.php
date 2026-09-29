@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * The default deals CampBuddy ships with: shown at every WordCamp in India
- * (Admin → Default deals). Installed once by a migration, so a deploy's
+ * Installs the default deals CampBuddy ships with (Admin → Default deals).
+ * The deals themselves — every field — are written out in the migration that
+ * installs them (2026_10_04_090100_install_default_india_deals), so a deploy's
  * `migrate` (or `campbuddy:doctor`) puts them in place; after that they are
  * the admin's to edit, switch off or remove — installing again never
  * overwrites or re-creates one (it is matched on its link).
@@ -20,95 +21,19 @@ use Illuminate\Support\Facades\Storage;
  */
 class DefaultDeals
 {
-    /** @return list<array<string, mixed>> */
-    public static function catalogue(): array
-    {
-        return [
-            [
-                'logo' => 'ariham.png',
-                'brand' => 'Ariham Technologies',
-                'website' => 'ariham.com',
-                'title' => 'Free website health report',
-                'highlight' => 'FREE',
-                'description' => 'Scan your website for performance, SEO, security, mobile, accessibility and more, and get a report with what to fix. Results in about 60 seconds.',
-                'terms' => 'No signup needed.',
-                'url' => 'https://ariham.com/site-scan/',
-                'cta_label' => 'Scan my website',
-                'opens_in_app' => false,
-                'icon' => '🩺',
-            ],
-            [
-                'logo' => 'hostinger.png',
-                'brand' => 'Hostinger',
-                'website' => 'hostinger.com',
-                'title' => '20% off your first plan',
-                'highlight' => '20% OFF',
-                'description' => 'Web hosting, WordPress hosting and domains. Open the deal through this link and the discount is already applied when you pick a plan.',
-                'terms' => 'On your first plan bought through this link. Prices are shown without GST.',
-                'url' => 'https://www.hostinger.com/in?REFERRALCODE=1RJCODEX35',
-                'cta_label' => 'Claim 20% off',
-                'opens_in_app' => false,
-                'icon' => '🌐',
-            ],
-            [
-                'logo' => 'wordpress-com.png',
-                'brand' => 'Automattic',
-                'website' => 'wordpress.com',
-                'title' => '69% off select WordPress.com plans',
-                'highlight' => '69% OFF',
-                'description' => 'Fast, secure WordPress.com hosting with free expert site migration. From Automattic, the company behind WordPress.com, Pressable, WooCommerce and Jetpack.',
-                'terms' => 'On select plans. The current offer and prices are shown on the next page.',
-                'url' => 'https://automattic.pxf.io/gOzQ4B',
-                'cta_label' => 'See the offer',
-                'opens_in_app' => false,
-                'icon' => '🏷',
-            ],
-            [
-                'logo' => 'knit-pay.png',
-                'brand' => 'Knit Pay Pro',
-                'website' => 'knitpay.org',
-                'title' => '100 free transactions every month for 6 months',
-                'highlight' => '100 FREE / MONTH',
-                // Line breaks show on the card (.deal-card__desc is pre-line).
-                'description' => "Take payments on your WordPress site through 500+ payment gateways and UPI with Knit Pay Pro and Knit Pay UPI. Fill in the short form, and the Knit Pay team will invite you to the special plan.\n\n"
-                    ."1. Unlimited free transactions in the Knit Pay plugin for lifetime.\n"
-                    ."2. 100 free transactions every month in the Knit Pay Pro plugin for 6 months.\n"
-                    .'3. 200 free UPI payment requests every month in the Knit Pay UPI plugin for 6 months.',
-                'terms' => 'Use the email of your RapidAPI account.',
-                'url' => 'https://www.knitpay.org/',
-                'cta_label' => 'Claim the plan',
-                'opens_in_app' => true,
-                'icon' => '💳',
-                'capture_leads' => true,
-                'lead_form' => [
-                    'intro' => 'A few details so Knit Pay can set up your plan. They go only to Knit Pay.',
-                    'fields' => [
-                        'name' => ['mode' => 'optional', 'label' => 'Name'],
-                        'company' => ['mode' => 'optional', 'label' => 'Company name'],
-                        'email' => ['mode' => 'required', 'label' => 'Registered email at RapidAPI', 'hint' => 'The email of your RapidAPI account, so the plan reaches the right account.'],
-                        'mobile' => ['mode' => 'optional', 'label' => 'Phone number', 'hint' => 'Recommended, so the Knit Pay team can reach you quickly.'],
-                    ],
-                    'choices' => [
-                        'mode' => 'required',
-                        'label' => 'Need a special plan for',
-                        'multiple' => true,
-                        'options' => ['Knit Pay - Pro', 'Knit Pay - UPI'],
-                    ],
-                ],
-            ],
-        ];
-    }
-
     /**
-     * Adds the catalogue's deals that aren't there yet, as default deals for
-     * India. Returns how many were added.
+     * Adds the given deals that aren't there yet, as default deals. Each is an
+     * offers row plus `logo` (a file in public/media/deals/). Returns how many
+     * were added.
+     *
+     * @param  list<array<string, mixed>>  $deals
      */
-    public static function install(): int
+    public static function install(array $deals): int
     {
         $added = 0;
         $order = (int) (Offer::defaults()->max('sort_order') ?? 0);
 
-        foreach (self::catalogue() as $deal) {
+        foreach ($deals as $deal) {
             if (Offer::defaults()->where('url', $deal['url'])->exists()) {
                 continue;
             }
@@ -130,7 +55,7 @@ class DefaultDeals
             $added++;
         }
 
-        self::switchOffOlderCopies();
+        self::switchOffOlderCopies(array_column($deals, 'url'));
 
         return $added;
     }
@@ -141,11 +66,12 @@ class DefaultDeals
      * would now show it twice. Its own copy is switched off, not deleted, and
      * only while it has no leads — an admin can switch it back on.
      */
-    private static function switchOffOlderCopies(): int
+    /** @param  list<string>  $urls  the installed deals' links */
+    private static function switchOffOlderCopies(array $urls): int
     {
         $host = fn (?string $url) => preg_replace('/^www\./', '', strtolower((string) parse_url((string) $url, PHP_URL_HOST)));
         $defaults = Offer::defaults()->where('is_active', true)->get()
-            ->filter(fn (Offer $deal) => in_array($deal->url, array_column(self::catalogue(), 'url'), true));
+            ->filter(fn (Offer $deal) => in_array($deal->url, $urls, true));
         $switched = 0;
 
         foreach (Offer::whereNotNull('event_id')->where('is_active', true)->doesntHave('leads')->with('event')->get() as $own) {

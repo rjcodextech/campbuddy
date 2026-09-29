@@ -86,10 +86,12 @@
     color: var(--muted);
 }
 
-// "Open in a new tab" after a button's words: a little smaller than the text.
+// An icon inside a button (new-tab arrow, calendar, wave…): a touch bigger
+// than the words and a firmer stroke, so it reads at a glance on a phone.
 .btn .line-icon {
-    width: 0.95em;
-    height: 0.95em;
+    width: 1.25em;
+    height: 1.25em;
+    stroke-width: 2;
 }
 
 .info-row__chevron .line-icon {

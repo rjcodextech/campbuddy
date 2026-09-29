@@ -3,13 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Offer;
-use App\Support\DefaultDeals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
  * The Knit Pay default deal's new wording (migration 2026_10_05_090300 and
- * the DefaultDeals catalogue): updated only while it still has the first
+ * the install migration's own data): updated only while it still has the first
  * wording, and fits the deal form's limits.
  */
 class KnitPayDealUpdateTest extends TestCase
@@ -60,9 +59,9 @@ class KnitPayDealUpdateTest extends TestCase
         $this->assertSame('Knit Pay', $own->fresh()->brand);
     }
 
-    public function test_the_catalogue_and_the_migration_say_the_same_and_fit_the_form(): void
+    public function test_the_install_and_the_update_migration_say_the_same_and_fit_the_form(): void
     {
-        $catalogue = collect(DefaultDeals::catalogue())->firstWhere('url', 'https://www.knitpay.org/');
+        $catalogue = collect((require database_path('migrations/2026_10_04_090100_install_default_india_deals.php'))->deals())->firstWhere('url', 'https://www.knitpay.org/');
         $deal = $this->deal();
         $this->runMigration();
         $deal->refresh();

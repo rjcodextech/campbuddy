@@ -103,10 +103,16 @@ class FreeStealsTest extends TestCase
         $this->assertSame('sparkles', $this->steal(['category' => 'Something new'])->icon());
     }
 
-    public function test_install_adds_the_catalogue_once(): void
+    /** @return list<array<string, mixed>> The steals written out in the install migration. */
+    private function shipped(): array
     {
-        $this->assertSame(16, FreeSteals::install());
-        $this->assertSame(0, FreeSteals::install());
+        return (require database_path('migrations/2026_10_05_090100_install_free_steals.php'))->steals();
+    }
+
+    public function test_install_adds_the_shipped_steals_once(): void
+    {
+        $this->assertSame(16, FreeSteals::install($this->shipped()));
+        $this->assertSame(0, FreeSteals::install($this->shipped()));
 
         $this->assertSame(12, FreeSteal::where('is_active', true)->count());
         $this->assertSame(4, FreeSteal::where('is_featured', true)->count());
@@ -118,11 +124,11 @@ class FreeStealsTest extends TestCase
 
     public function test_install_leaves_an_edited_steal_alone(): void
     {
-        FreeSteals::install();
+        FreeSteals::install($this->shipped());
         FreeSteal::where('name', 'GoDAM')->update(['description' => 'Edited by the admin.']);
         FreeSteal::where('name', 'WP Super Cache')->delete();
 
-        $this->assertSame(1, FreeSteals::install());
+        $this->assertSame(1, FreeSteals::install($this->shipped()));
         $this->assertSame('Edited by the admin.', FreeSteal::where('name', 'GoDAM')->value('description'));
     }
 
@@ -339,5 +345,53 @@ class FreeStealsTest extends TestCase
         ])->assertRedirect();
 
         $this->assertNotSame($before, DataVersion::for($event));
+    }
+
+    // ---- The shipped data ----------------------------------------------------
+
+    public function test_every_shipped_steal_is_complete_and_fits_the_admin_form(): void
+    {
+        $rules = (new \App\Http\Requests\StoreFreeStealRequest)->rules();
+
+        foreach ($this->shipped() as $steal) {
+            $validator = \Illuminate\Support\Facades\Validator::make($steal, $rules);
+            $this->assertFalse($validator->fails(), $steal['name'].': '.$validator->errors()->first());
+            $this->assertNotSame([], (new FreeSteal($steal))->makerLinks(), $steal['name'].' has maker links');
+        }
+
+        $urls = array_column($this->shipped(), 'url');
+        $this->assertSame($urls, array_unique($urls), 'no link twice');
+        $this->assertNotContains('https://github.com/Codeinwp/otter-blocks', $urls, 'Blocks Export Import links to its own plugin page');
+    }
+
+    public function test_an_install_from_before_the_data_was_finished_is_completed_once_and_admin_edits_are_kept(): void
+    {
+        // As 090100 left it on 29 Sep: the Otter repo link, no maker links.
+        foreach ($this->shipped() as $steal) {
+            FreeSteal::create(['maker_links' => null, 'url' => $steal['name'] === 'Blocks Export Import' ? 'https://github.com/Codeinwp/otter-blocks' : $steal['url']] + $steal);
+        }
+        FreeSteal::where('name', 'GoDAM')->update(['maker_links' => 'https://example.org/admin-typed']);
+
+        $complete = fn () => (require database_path('migrations/2026_10_05_090400_complete_installed_free_steals.php'))->up();
+        $complete();
+        $complete();
+
+        $this->assertSame('https://wordpress.org/plugins/blocks-export-import/', FreeSteal::where('name', 'Blocks Export Import')->value('url'));
+        $this->assertStringContainsString('https://github.com/HardeepAsrani', FreeSteal::where('name', 'Blocks Export Import')->value('maker_links'));
+        $this->assertStringContainsString('https://profiles.wordpress.org/gauravtiwari/', FreeSteal::where('name', 'WordPress Skills')->value('maker_links'));
+        $this->assertSame('https://example.org/admin-typed', FreeSteal::where('name', 'GoDAM')->value('maker_links'));
+        $this->assertSame(16, FreeSteal::count());
+    }
+
+    public function test_a_shipped_maker_on_the_attendees_page_gets_the_badge(): void
+    {
+        FreeSteals::install($this->shipped());
+        $event = $this->event();
+        // Attendee lists write X as twitter.com and often drop the trailing slash.
+        $this->attendee($event, ['http://twitter.com/fitehal']);
+
+        $first = FreeSteal::forEvent($event)->first();
+        $this->assertSame('The Off Switch', $first->name);
+        $this->assertTrue($first->made_here);
     }
 }

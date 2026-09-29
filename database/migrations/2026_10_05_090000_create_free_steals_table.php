@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('name', 120);
             $table->string('description', 300);
             $table->string('maker', 120);
+            // The maker's own addresses, one per line (FreeSteal::forEvent).
+            $table->text('maker_links')->nullable();
             $table->string('category', 80);
             $table->string('url', 500);
             $table->string('cta_label', 40)->nullable();

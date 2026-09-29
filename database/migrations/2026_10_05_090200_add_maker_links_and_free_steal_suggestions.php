@@ -18,9 +18,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('free_steals', function (Blueprint $table) {
-            $table->text('maker_links')->nullable()->after('maker');
-        });
+        // New installs get the column from create_free_steals_table; this adds it
+        // where that migration ran before the column was part of it.
+        if (! Schema::hasColumn('free_steals', 'maker_links')) {
+            Schema::table('free_steals', function (Blueprint $table) {
+                $table->text('maker_links')->nullable()->after('maker');
+            });
+        }
 
         Schema::create('free_steal_suggestions', function (Blueprint $table) {
             $table->id();
@@ -38,8 +42,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('free_steal_suggestions');
 
-        Schema::table('free_steals', function (Blueprint $table) {
-            $table->dropColumn('maker_links');
-        });
+        // maker_links stays: create_free_steals_table's down() drops the table.
     }
 };
