@@ -187,6 +187,27 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
     > - **Apne computer par pura check (sab 29 Sep ko pass):** `npm run test:js` (226), `php artisan test` (620+, Windows par `OPENSSL_CONF` set karke), `npm run test:browser` (7/7), aur naya **`npm run test:ui`** (har attendee/admin/manager screen 390px phone size par: status, sideways scroll, JS errors, emoji; `AUDIT_ADMIN=email:password AUDIT_MANAGER=email:password` do to admin/manager bhi). Screenshots `storage/ui-audit/` me.
     > - **Rollback:** purana `public/build` + purani PHP files wapas. Naye tables rehne do (purana code unhe padhta hi nahi); Knit Pay ka naya text admin me haath se wapas likha ja sakta hai.
 
+    > **30 Sep 2026 wala release (`stable`): logos, Media Library, naye Deals/Free Steals cards, Camp Card.** Commits `4b5d3b2` … (aakhri commit "Final testing" wala). **Ek naya migration:** `2026_10_05_090500_add_logo_to_free_steals`. Ye `free_steals.media_asset_id` jodta hai aur 15 shipped steals + live par joda gaya **AcrossAI Pro** (link `r.freemius.com/34763/10087717/`) ko logo deta hai. Sirf unhi ko jinpar abhi koi logo nahi hai. `campbuddy:doctor` ya `php artisan migrate` ise chala dega.
+    >
+    > - **Upload:** `app/`, `routes/web.php`, `resources/views/`, `database/migrations/`, **`public/media/free-steals/`** (16 logos, naya folder) aur naya **`public/build`** (`npm run build` ke baad). `public/sw.js`, `sw-flags.json`, `.htaccess`, `composer.lock` nahi badle. Koi naya `.env` key nahi.
+    > - **Samay:** Free Steals ke logos se `DataVersion` badlega, isliye **deploy ke baad har khula app ek baar reload hoga**. Sylhet (1 Oct) ya Rajasthan (3–4 Oct) ke beech deploy na karein.
+    > - **Deploy ke baad dekhein:**
+    >   - Explore → Deals: ticket jaise cards, phone par "Details ⌄" tab.
+    >   - Explore → Free Steals: logo wali rows; tap karne par neeche se sheet khulti hai.
+    >   - Admin → Free Steals: form mein Logo aur Category suggestions.
+    >   - Admin → Media Library: "In use / Not used" aur Delete.
+    >   - Home: event logo double size.
+    >   - Camp Card: 7 layouts ek scroll mein, Ticket sabse pehle, koi "+N" nahi. Download 900 DPI (2700×4500).
+    >   - Picker: hero-orbit animation.
+    > - **30 Sep ko apne computer par check kiya:**
+    >   - `php artisan test`: 635 pass.
+    >   - `npm run test:js`: 228 pass.
+    >   - `npm run test:browser`: 7/7.
+    >   - `npm run test:ui`: 40 screens, koi tooti nahi, JS error 0.
+    >   - `composer audit` aur `npm audit`: 0 kamzoriyan.
+    >   - `route:cache` aur `view:cache` theek chale.
+    > - **Rollback:** purana `public/build` aur purani PHP/Blade files wapas daalein. `media_asset_id` column rehne dein, purana code use padhta hi nahi.
+
 4. **Turant Cloudflare purge karein** (agla section, kadam A). Ye chhoot gaya to naya `sw.js` phones tak ghanton late pahunchega.
 
 Sab hone ke baad site khol kar dekh lein ki home, ek event, My Day aur Explore theek khul rahe hain, phir "Deploy ke baad test" section chalayein.

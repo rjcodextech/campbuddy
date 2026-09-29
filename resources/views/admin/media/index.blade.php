@@ -20,7 +20,7 @@
                 @foreach (\App\Http\Controllers\Admin\MediaController::FILTERS as $key => $label)
                     <a href="{{ route('admin.media.index', $key === 'all' ? [] : ['show' => $key]) }}"
                        @if ($show === $key) aria-current="page" @endif
-                       @class(['inline-flex min-h-9 items-center rounded-full px-3 text-sm font-medium ring-1',
+                       @class(['inline-flex min-h-10 items-center rounded-full px-3 text-sm font-medium ring-1',
                                'bg-maroon text-white ring-maroon' => $show === $key,
                                'bg-white text-muted ring-line hover:text-ink' => $show !== $key])>{{ $label }} ({{ $counts[$key] }})</a>
                 @endforeach

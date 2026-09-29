@@ -120,7 +120,12 @@
 }
 
 // --- The line-icon "orbit" around the CampBuddy mark --------------------------------
+// Motion, all CSS: the dashed ring turns slowly, the mark breathes and sends
+// out a signal ripple, two small icons travel round the inner ring, and the
+// four labels pop in one after another and then float. All of it stops for
+// people who ask for less motion.
 .hero-orbit {
+    --orbit-r: 53px; // the inner ring's radius: 58% of the height, halved
     position: relative;
     flex-shrink: 0;
     width: 100%;
@@ -129,6 +134,7 @@
     margin: 0 auto;
 
     @media (min-width: v.$bp-tablet) {
+        --orbit-r: 81px;
         flex: 0 0 300px;
         height: 280px;
     }
@@ -145,18 +151,21 @@
     border: 1.5px dashed rgba(195, 58, 25, 0.28);
     border-radius: 50%;
     transform: translate(-50%, -50%);
+    animation: hero-orbit-turn 60s linear infinite;
 }
 
 .hero-orbit__ring--inner {
     height: 58%;
     border-style: solid;
     border-color: rgba(244, 166, 41, 0.35);
+    animation: none;
 }
 
 .hero-orbit__core {
     position: absolute;
     top: 50%;
     left: 50%;
+    z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -166,6 +175,23 @@
     background: #fff;
     box-shadow: 0 14px 30px -14px rgba(92, 26, 27, 0.55), 0 0 0 6px rgba(255, 236, 214, 0.9);
     transform: translate(-50%, -50%);
+    animation: hero-orbit-breathe 4s ease-in-out infinite;
+
+    // The signal: two rings leaving the mark, half a beat apart.
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: inherit;
+        border: 2px solid rgba(195, 58, 25, 0.35);
+        animation: hero-orbit-ripple 3.2s ease-out infinite;
+    }
+
+    &::after {
+        animation-delay: 1.6s;
+    }
 
     img {
         width: 58px;
@@ -187,6 +213,7 @@
 
 .hero-orbit__item {
     position: absolute;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -197,7 +224,11 @@
     box-shadow: v.$shadow-card;
     font-size: v.$font-size-xs;
     white-space: nowrap;
-    animation: hero-float 5s ease-in-out infinite;
+    // Pop in once, then float for good.
+    animation:
+        hero-orbit-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) backwards,
+        hero-float 5s ease-in-out 0.55s infinite;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
     svg {
         flex: 0 0 26px;
@@ -213,24 +244,38 @@
         font-weight: v.$font-weight-bold;
         color: var(--ink);
     }
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: rgba(195, 58, 25, 0.35);
+            box-shadow: 0 10px 24px -12px rgba(92, 26, 27, 0.45);
+        }
+    }
 }
 
-.hero-orbit__item--1 { top: 6%; left: 0; }
-.hero-orbit__item--2 { top: 14%; right: 0; animation-delay: -1.2s; }
-.hero-orbit__item--3 { bottom: 12%; left: 0; animation-delay: -2.4s; }
-.hero-orbit__item--4 { bottom: 4%; right: 0; animation-delay: -3.6s; }
+// Each pops in a beat after the last, and floats on its own rhythm.
+.hero-orbit__item--1 { top: 6%; left: 0; animation-delay: 0.1s, 0.65s; }
+.hero-orbit__item--2 { top: 14%; right: 0; animation-delay: 0.25s, -0.4s; }
+.hero-orbit__item--3 { bottom: 12%; left: 0; animation-delay: 0.4s, -1.6s; }
+.hero-orbit__item--4 { bottom: 4%; right: 0; animation-delay: 0.55s, -2.8s; }
 
+// The two small icons travel round the inner ring (from the centre, turned
+// out to the ring's radius, and turned back so the icon stays upright).
 .hero-orbit__dot {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
     display: flex;
     width: 30px;
     height: 30px;
+    margin: -15px 0 0 -15px;
     padding: 6px;
     border-radius: 50%;
     background: #fff;
     box-shadow: v.$shadow-card;
     color: var(--gold);
-    animation: hero-float 6s ease-in-out infinite;
+    animation: hero-orbit-travel 16s linear infinite;
 
     svg {
         width: 100%;
@@ -238,20 +283,64 @@
     }
 }
 
-.hero-orbit__dot--1 { top: 44%; left: 14%; animation-delay: -2s; }
-.hero-orbit__dot--2 { top: 40%; right: 14%; color: var(--teal); animation-delay: -4s; }
+.hero-orbit__dot--2 {
+    color: var(--teal);
+    animation-delay: -8s; // the opposite side of the ring
+}
+
+@keyframes hero-orbit-turn {
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes hero-orbit-breathe {
+    0%,
+    100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.045); }
+}
+
+@keyframes hero-orbit-ripple {
+    from {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(1.7);
+    }
+}
+
+@keyframes hero-orbit-travel {
+    from { transform: rotate(0deg) translateX(var(--orbit-r)) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(var(--orbit-r)) rotate(-360deg); }
+}
+
+@keyframes hero-orbit-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.6) translateY(8px);
+    }
+}
 
 @keyframes hero-float {
     0%,
-    100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(2px, -6px) rotate(-1.5deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .hero-orbit__ring,
+    .hero-orbit__core,
+    .hero-orbit__core::before,
+    .hero-orbit__core::after,
     .hero-orbit__item,
     .hero-orbit__dot {
         animation: none;
     }
+
+    // Still, the two dots sit on the ring rather than in the middle.
+    .hero-orbit__dot--1 { transform: rotate(200deg) translateX(var(--orbit-r)) rotate(-200deg); }
+    .hero-orbit__dot--2 { transform: rotate(-20deg) translateX(var(--orbit-r)) rotate(20deg); }
 }
 
 // The event list itself now renders via .card-grid + <x-attendee.event-card>
