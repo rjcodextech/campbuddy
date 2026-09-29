@@ -14,8 +14,9 @@
 }
 
 .home-hero__logo {
-    width: 52px;
-    height: 52px;
+    width: 104px;
+    height: 104px;
+    padding: 0 v.$space-3;
     flex-shrink: 0;
     border-radius: v.$radius-md;
     object-fit: contain;

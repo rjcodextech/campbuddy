@@ -6,7 +6,7 @@
         logo falls back to CampBuddy's own icon so this never looks broken
         for an event that hasn't uploaded one. --}}
         <section class="home-hero" aria-label="Event">
-            <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="52" height="52" data-fallback="/media/icons/icon-192.png">
+            <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104" data-fallback="/media/icons/icon-192.png">
             <div class="home-hero__body">
                 <p class="home-hero__eyebrow">{{ $event->short_name ?? 'WordCamp' }}</p>
                 <h1 class="home-hero__title">{{ $event->display_name }}</h1>
