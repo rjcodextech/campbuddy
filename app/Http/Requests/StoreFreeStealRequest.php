@@ -21,6 +21,8 @@ class StoreFreeStealRequest extends FormRequest
             'name' => ['required', 'string', 'max:120'],
             'description' => ['required', 'string', 'max:300'],
             'maker' => ['required', 'string', 'max:120'],
+            'maker_links' => ['nullable', 'string', 'max:1000'],
+            'suggestion_id' => ['nullable', 'integer'],
             'category' => ['required', 'string', 'max:80'],
             'url' => ['required', 'url:http,https', 'max:500'],
             'cta_label' => ['nullable', 'string', 'max:40'],

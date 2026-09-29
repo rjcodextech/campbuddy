@@ -153,6 +153,7 @@ Route::prefix('admin')->group(function () {
 
         // Free Steals: hand-picked free plugins and tools, one list for every event.
         Route::resource('free-steals', FreeStealController::class)->except('show')->names('admin.free-steals');
+        Route::delete('free-steal-suggestions/{suggestion}', [FreeStealController::class, 'dismiss'])->name('admin.free-steals.suggestions.dismiss');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');

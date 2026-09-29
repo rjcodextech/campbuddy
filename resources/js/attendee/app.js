@@ -149,6 +149,11 @@ async function init() {
     const { initDealLeadCapture } = await import('./deal-leads.js');
     initDealLeadCapture(root.dataset.eventSlug);
   }
+
+  if (document.querySelector('[data-suggest-steal]')) {
+    const { initFreeStealSuggest } = await import('./free-steal-suggest.js');
+    initFreeStealSuggest(root.dataset.eventSlug);
+  }
 }
 
 if (document.readyState === 'loading') {

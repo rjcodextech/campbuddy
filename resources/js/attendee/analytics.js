@@ -74,7 +74,7 @@ const EVENTS = {
   contribute_team_view: ['team_id', 'team_name', 'source'], // matches | all
 
   // Explore
-  explore_tab_view: ['tab'], // people | sponsors | deals | info
+  explore_tab_view: ['tab'], // people | sponsors | deals | free-steals | info
   sponsor_open: ['sponsor_name', 'link_domain'],
   deal_open: ['offer_title', 'link_domain', 'lead_capture'],
   deal_lead_form_open: ['offer_id', 'offer_title'],
@@ -83,6 +83,9 @@ const EVENTS = {
   in_app_browser_fallback: ['link_domain'], // the site refused to be framed
   in_app_browser_external_open: ['link_domain', 'via'], // header | fallback
   useful_link_click: ['link_type'], // Event Info: emergency | code_of_conduct | important
+  // GA4's 50 custom dimensions are all used: offer_title carries the Free Steal's name here.
+  free_steal_open: ['offer_title', 'link_domain'], // "Get it free" on a Free Steal (new tab)
+  free_steal_suggest: [], // a suggestion was sent — never what was typed
 
   // People / discovery — actions only, no profile or match data
   discovery_join_start: ['surface'], // home | explore

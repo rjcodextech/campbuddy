@@ -11,6 +11,13 @@
         @if ($steal->exists)
             @method('PUT')
         @endif
+        @if ($suggestion)
+            <input type="hidden" name="suggestion_id" value="{{ $suggestion->id }}">
+            <x-alert type="info">
+                Suggested from the app{{ $suggestion->event ? ' at '.$suggestion->event->display_name : '' }}{{ $suggestion->email ? ' by '.$suggestion->email : '' }}.
+                Check the link, write the description in your own words, and saving it removes the suggestion.
+            </x-alert>
+        @endif
 
         <x-card title="The card" description="Plain words: what it does, in a sentence someone new to it would get.">
             <div class="grid gap-4 md:grid-cols-12">
@@ -25,6 +32,10 @@
                 <x-form.input name="category" label="Category" required class="md:col-span-6" :value="$steal->category" maxlength="80"
                               placeholder="e.g. Developer Tools / Playground"
                               hint="Its first word picks the card's icon (AI, Gutenberg, Security, Performance, WooCommerce…)." />
+
+                <x-form.textarea name="maker_links" label="Maker's own links" rows="3" class="md:col-span-6" :value="$steal->maker_links" maxlength="1000"
+                                 placeholder="e.g. https://profiles.wordpress.org/lubus"
+                                 hint="One per line: WordPress.org profile, GitHub, X, LinkedIn, website. When one of these is on an event's Attendees page, that event shows “Made by someone at this WordCamp” and puts this card first." />
             </div>
         </x-card>
 

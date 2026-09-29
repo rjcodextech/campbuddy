@@ -1,9 +1,11 @@
 {{--
     One Free Steal on Explore → Free Steals: a free WordPress plugin or tool
     picked by the CampBuddy team. Same card as a deal (components/_sponsor.scss,
-    .deal-card): a category icon, the name and its maker, a Featured tag,
-    what it does, then the category and one button. The link is plain and
-    opens in a new tab: GitHub and WordPress.org refuse to be framed.
+    .deal-card): a category icon, the name and its maker, a Featured tag, a
+    "made by someone at this WordCamp" line when the maker is on this event's
+    Attendees page (FreeSteal::forEvent), what it does, then the category and
+    one button. The link is plain and opens in a new tab: GitHub and
+    WordPress.org refuse to be framed.
 --}}
 <article class="deal-card" aria-label="{{ $steal->name }}">
     <div class="deal-card__head">
@@ -19,10 +21,15 @@
         @endif
     </div>
 
+    @if ($steal->made_here)
+        <p class="free-steal__here"><x-attendee.line-icon name="map-pin" /> Made by someone at this WordCamp</p>
+    @endif
+
     <p class="deal-card__desc">{{ $steal->description }}</p>
 
     <div class="deal-card__foot">
         <span class="deal-card__note">{{ $steal->category }}</span>
-        <a href="{{ $steal->url }}" target="_blank" rel="noopener" class="btn btn--primary btn--compact deal-card__cta">{{ $steal->ctaLabel() }} ↗</a>
+        <a href="{{ $steal->url }}" target="_blank" rel="noopener" class="btn btn--primary btn--compact deal-card__cta"
+           data-track="free_steal_open" data-track-offer-title="{{ $steal->name }}" data-track-link-domain="{{ $steal->linkHost() }}">{{ $steal->ctaLabel() }} ↗</a>
     </div>
 </article>

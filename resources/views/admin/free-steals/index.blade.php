@@ -12,6 +12,44 @@
             Mix makers, so a small one sits beside a big one.
         </x-alert>
 
+        @if ($suggestions->isNotEmpty())
+            <x-card :title="'Suggestions from the app ('.$suggestions->count().')'" description="Never shown to attendees. Add one as a Free Steal (you can edit it first) or dismiss it." flush>
+                <ul class="divide-y divide-line">
+                    @foreach ($suggestions as $suggestion)
+                        <li class="flex flex-wrap gap-4 px-5 py-4 sm:flex-nowrap sm:px-6">
+                            <div class="min-w-0 flex-1 basis-52">
+                                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                    <span class="font-semibold">{{ $suggestion->name }}</span>
+                                    @if ($suggestion->maker)
+                                        <span class="text-xs text-muted">by {{ $suggestion->maker }}</span>
+                                    @endif
+                                </div>
+                                <a href="{{ $suggestion->url }}" target="_blank" rel="noopener noreferrer" class="break-all text-sm text-maroon underline">{{ $suggestion->url }}</a>
+                                @if ($suggestion->why)
+                                    <p class="mt-0.5 text-sm text-muted">{{ $suggestion->why }}</p>
+                                @endif
+                                <div class="mt-2 flex flex-wrap gap-1.5">
+                                    @if ($suggestion->event)
+                                        <x-badge>{{ $suggestion->event->display_name }}</x-badge>
+                                    @endif
+                                    @if ($suggestion->email)
+                                        <x-badge variant="info">{{ $suggestion->email }}</x-badge>
+                                    @endif
+                                    <x-badge>{{ $suggestion->created_at->diffForHumans() }}</x-badge>
+                                </div>
+                            </div>
+                            <div class="flex w-full shrink-0 flex-wrap items-start justify-end gap-2 sm:w-auto">
+                                <x-button :href="route('admin.free-steals.create', ['suggestion' => $suggestion->id])" size="sm" icon="plus">Add</x-button>
+                                <x-action-form :action="route('admin.free-steals.suggestions.dismiss', $suggestion)" method="DELETE"
+                                               variant="danger-outline" size="sm" icon="trash"
+                                               :confirm="'Dismiss the suggestion “'.$suggestion->name.'”?'">Dismiss</x-action-form>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endif
+
         <x-card :title="'Free Steals ('.$shownIds->count().' of '.\App\Models\FreeSteal::SHOWN.' showing)'" flush>
             @if ($steals->isEmpty())
                 <div class="px-5 py-12 text-center sm:px-6">
@@ -44,6 +82,9 @@
                                     @endif
                                     <x-badge variant="info">{{ $steal->category }}</x-badge>
                                     <x-badge>{{ $steal->linkHost() }}</x-badge>
+                                    @if ($steal->makerLinks() !== [])
+                                        <x-badge variant="brand">{{ count($steal->makerLinks()) }} maker {{ \Illuminate\Support\Str::plural('link', count($steal->makerLinks())) }}</x-badge>
+                                    @endif
                                     <x-badge>Order {{ $steal->sort_order }}</x-badge>
                                 </div>
                             </div>

@@ -201,6 +201,47 @@
     margin-left: auto;
 }
 
+// Explore → Free Steals (attendee/partials/free-steal-card.blade.php) sits on
+// the deal card; these are its own bits: the "made by someone at this
+// WordCamp" line, and the "Suggest a Free Steal" box under the list.
+.free-steal__here {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    margin: 0;
+    padding: 4px v.$space-2;
+    border-radius: v.$radius-full;
+    background: var(--peach);
+    color: var(--ink);
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+
+    .line-icon {
+        color: var(--brand-primary);
+    }
+}
+
+.free-steal-suggest {
+    margin-top: v.$space-4;
+    padding: v.$space-4;
+    border: 1px dashed var(--line);
+    border-radius: v.$radius-md;
+    text-align: center;
+}
+
+.free-steal-suggest__title {
+    margin: 0 0 v.$space-1;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+}
+
+.free-steal-suggest__text {
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
 .useful-link {
     display: flex;
     align-items: center;

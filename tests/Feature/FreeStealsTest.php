@@ -2,9 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FreeSteal;
+use App\Models\FreeStealSuggestion;
 use App\Models\User;
+use App\Support\DataVersion;
 use App\Support\FreeSteals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
@@ -172,5 +175,168 @@ class FreeStealsTest extends TestCase
     {
         $this->get(route('admin.free-steals.index'))->assertRedirect(route('login'));
         $this->post(route('admin.free-steals.store'), [])->assertRedirect(route('login'));
+    }
+
+    // ---- Tabs ---------------------------------------------------------------
+
+    public function test_the_tabs_are_five_icon_cells_and_people_starts_selected(): void
+    {
+        $html = $this->get(route('event.explore', $this->event()))->assertOk()->getContent();
+
+        $this->assertStringContainsString('class="tab-strip tab-strip--icons"', $html);
+        $this->assertMatchesRegularExpression('/class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true"/', $html);
+        foreach (['sponsors', 'deals', 'free-steals', 'info'] as $tab) {
+            $this->assertMatchesRegularExpression('/class="btn btn--compact btn--outline" data-explore-tab="'.$tab.'" role="tab" aria-selected="false"/', $html);
+        }
+        $this->assertStringContainsString('<span>Info</span>', $html);
+    }
+
+    // ---- Made by someone at this WordCamp ------------------------------------
+
+    private function attendee(Event $event, array $links, bool $suppressed = false): AttendeeRoster
+    {
+        static $i = 0;
+
+        return AttendeeRoster::create([
+            'event_id' => $event->id, 'name' => 'Person '.++$i, 'content_hash' => 'h'.$i, 'is_suppressed' => $suppressed,
+            'links' => array_map(fn ($url) => ['url' => $url, 'type' => 'website'], $links),
+        ]);
+    }
+
+    public function test_a_maker_on_the_attendees_page_gets_the_badge_and_goes_first_at_that_event_only(): void
+    {
+        $jaipur = $this->event('jaipur');
+        $delhi = $this->event('delhi');
+        $this->steal(['name' => 'Company Tool', 'maker' => 'Automattic']);
+        $this->steal(['name' => 'Off Switch', 'maker' => 'Abhishek', 'maker_links' => "https://x.com/Abhishek\nhttps://profiles.wordpress.org/abhishek/"]);
+        $this->attendee($jaipur, ['http://twitter.com/abhishek']);
+
+        $here = FreeSteal::forEvent($jaipur);
+        $this->assertSame(['Off Switch', 'Company Tool'], $here->pluck('name')->all());
+        $this->assertTrue($here->first()->made_here);
+
+        $this->get(route('event.explore', $jaipur))->assertOk()->assertSee('Made by someone at this WordCamp');
+        $this->get(route('event.explore', $delhi))->assertOk()->assertDontSee('Made by someone at this WordCamp');
+        $this->assertSame(['Company Tool', 'Off Switch'], FreeSteal::forEvent($delhi)->pluck('name')->all());
+    }
+
+    public function test_a_removed_attendee_does_not_count(): void
+    {
+        $event = $this->event();
+        $this->steal(['maker_links' => 'profiles.wordpress.org/abhishek']);
+        $this->attendee($event, ['https://profiles.wordpress.org/abhishek/'], suppressed: true);
+
+        $this->assertFalse(FreeSteal::forEvent($event)->first()->made_here);
+    }
+
+    public function test_links_are_matched_on_the_address_not_a_part_of_it(): void
+    {
+        $this->assertSame('twitter.com/gaurav', FreeSteal::normalizeLink('https://www.X.com/Gaurav/'));
+        $this->assertSame('gauravtiwari.org', FreeSteal::normalizeLink('gauravtiwari.org'));
+        $this->assertSame('github.com/wpgaurav', FreeSteal::normalizeLink('http://github.com/wpgaurav?tab=repos'));
+        $this->assertNull(FreeSteal::normalizeLink('not a link'));
+
+        $event = $this->event();
+        $this->steal(['maker_links' => 'https://github.com/wpgaurav']);
+        $this->attendee($event, ['https://github.com/wpgaurav-fan', 'https://github.com']);
+
+        $this->assertFalse(FreeSteal::forEvent($event)->first()->made_here);
+    }
+
+    public function test_the_card_reports_its_open_without_the_full_address(): void
+    {
+        $this->steal(['name' => 'GoDAM', 'url' => 'https://github.com/rtCamp/godam']);
+
+        $this->get(route('event.explore', $this->event()))->assertOk()
+            ->assertSee('data-track="free_steal_open" data-track-offer-title="GoDAM" data-track-link-domain="github.com"', false);
+    }
+
+    // ---- Suggest a Free Steal ------------------------------------------------
+
+    private function suggest(Event $event, array $data)
+    {
+        return $this->postJson(route('api.free-steal-suggestions.store', $event), $data);
+    }
+
+    public function test_a_suggestion_is_stored_for_review_and_not_shown(): void
+    {
+        $event = $this->event();
+
+        $this->get(route('event.explore', $event))->assertOk()->assertSee('Suggest a Free Steal')->assertSee('tpl-free-steal-suggest', false);
+
+        $this->suggest($event, ['name' => 'Cool Tool', 'url' => 'https://github.com/me/cool', 'maker' => 'Me', 'why' => 'It is cool.', 'email' => 'Me@Example.com'])
+            ->assertCreated();
+        // The same link again from the same event is one suggestion.
+        $this->suggest($event, ['name' => 'Cool Tool!', 'url' => 'https://github.com/me/cool'])->assertCreated();
+
+        $suggestion = FreeStealSuggestion::sole();
+        $this->assertSame($event->id, $suggestion->event_id);
+        $this->assertSame('me@example.com', $suggestion->email);
+        $this->assertSame(0, FreeSteal::count());
+        $this->get(route('event.explore', $event))->assertDontSee('Cool Tool');
+    }
+
+    public function test_a_suggestion_needs_a_name_and_a_web_link(): void
+    {
+        $event = $this->event();
+
+        $this->suggest($event, ['url' => 'https://a.example'])->assertJsonValidationErrors('name');
+        $this->suggest($event, ['name' => 'X', 'url' => 'javascript:alert(1)'])->assertJsonValidationErrors('url');
+        $this->suggest($event, ['name' => 'X', 'url' => 'https://a.example', 'email' => 'nope'])->assertJsonValidationErrors('email');
+        $this->assertSame(0, FreeStealSuggestion::count());
+    }
+
+    public function test_a_bot_and_a_flood_are_answered_but_not_stored(): void
+    {
+        $event = $this->event();
+
+        $this->suggest($event, ['name' => 'Spam', 'url' => 'https://spam.example', 'website' => 'https://spam.example'])->assertCreated();
+        $this->assertSame(0, FreeStealSuggestion::count());
+
+        foreach (range(1, FreeStealSuggestion::MAX_WAITING) as $i) {
+            FreeStealSuggestion::create(['event_id' => $event->id, 'name' => "S{$i}", 'url' => "https://s{$i}.example"]);
+        }
+        $this->suggest($event, ['name' => 'One more', 'url' => 'https://more.example'])->assertCreated();
+        $this->assertSame(FreeStealSuggestion::MAX_WAITING, FreeStealSuggestion::count());
+    }
+
+    public function test_admin_adds_a_suggestion_as_a_free_steal_or_dismisses_it(): void
+    {
+        $admin = User::factory()->create();
+        $event = $this->event();
+        $keep = FreeStealSuggestion::create(['event_id' => $event->id, 'name' => 'Cool Tool', 'url' => 'https://github.com/me/cool', 'maker' => 'Me', 'why' => 'Handy.', 'email' => 'me@example.com']);
+        $drop = FreeStealSuggestion::create(['event_id' => $event->id, 'name' => 'Meh Tool', 'url' => 'https://meh.example']);
+
+        $this->actingAs($admin)->get(route('admin.free-steals.index'))->assertOk()
+            ->assertSee('Suggestions from the app (2)')->assertSee('Cool Tool')->assertSee('me@example.com');
+        $this->actingAs($admin)->get(route('admin.free-steals.create', ['suggestion' => $keep->id]))->assertOk()
+            ->assertSee('value="Cool Tool"', false)->assertSee('name="suggestion_id" value="'.$keep->id.'"', false);
+
+        $this->actingAs($admin)->post(route('admin.free-steals.store'), [
+            'name' => 'Cool Tool', 'description' => 'Does a cool thing.', 'maker' => 'Me', 'maker_links' => 'https://profiles.wordpress.org/me',
+            'category' => 'Utilities', 'url' => 'https://github.com/me/cool', 'is_active' => '1', 'is_featured' => '0', 'suggestion_id' => $keep->id,
+        ])->assertRedirect(route('admin.free-steals.index'));
+
+        $this->assertSame('https://profiles.wordpress.org/me', FreeSteal::sole()->maker_links);
+        $this->assertModelMissing($keep);
+
+        $this->actingAs($admin)->delete(route('admin.free-steals.suggestions.dismiss', $drop))->assertRedirect(route('admin.free-steals.index'));
+        $this->assertSame(0, FreeStealSuggestion::count());
+    }
+
+    // ---- Open apps notice an edit --------------------------------------------
+
+    public function test_an_admin_edit_changes_every_live_events_data_version(): void
+    {
+        $event = $this->event();
+        $steal = $this->steal();
+        $before = DataVersion::for($event);
+
+        $this->travel(2)->seconds();
+        $this->actingAs(User::factory()->create())->put(route('admin.free-steals.update', $steal), [
+            'name' => 'Renamed', 'description' => 'd', 'maker' => 'm', 'category' => 'c', 'url' => $steal->url, 'is_active' => '1', 'is_featured' => '0',
+        ])->assertRedirect();
+
+        $this->assertNotSame($before, DataVersion::for($event));
     }
 }

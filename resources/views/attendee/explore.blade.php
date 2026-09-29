@@ -38,12 +38,11 @@
             <h1 class="section-head__title">Explore</h1>
         </div>
 
-        <div role="tablist" aria-label="Explore section" class="tab-strip">
-            <button type="button" class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true">People</button>
-            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="sponsors" role="tab" aria-selected="false">Sponsors</button>
-            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="deals" role="tab" aria-selected="false">Deals</button>
-            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="free-steals" role="tab" aria-selected="false">Free Steals</button>
-            <button type="button" class="btn btn--compact btn--outline" data-explore-tab="info" role="tab" aria-selected="false">Event Info</button>
+        {{-- Five equal cells, an icon over a short label, so all five fit a phone (.tab-strip--icons). --}}
+        <div role="tablist" aria-label="Explore section" class="tab-strip tab-strip--icons">
+            @foreach ([['people', 'users', 'People'], ['sponsors', 'heart', 'Sponsors'], ['deals', 'tag', 'Deals'], ['free-steals', 'sparkles', 'Free Steals'], ['info', 'ticket', 'Info']] as [$tab, $icon, $label])
+                <button type="button" @class(['btn btn--compact', 'btn--outline' => ! $loop->first]) data-explore-tab="{{ $tab }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"><x-attendee.line-icon :name="$icon" /><span>{{ $label }}</span></button>
+            @endforeach
         </div>
 
         <div data-explore-panel="people">
@@ -106,6 +105,12 @@
                     @endforeach
                 </div>
             @endif
+
+            <div class="free-steal-suggest">
+                <p class="free-steal-suggest__title">Built a free tool, or know a good one?</p>
+                <p class="free-steal-suggest__text">Tell us. The team looks at every suggestion before anything is added.</p>
+                <button type="button" class="btn btn--outline btn--compact" data-suggest-steal>Suggest a Free Steal</button>
+            </div>
         </div>
 
         <div data-explore-panel="info" hidden>
@@ -172,4 +177,5 @@
     @include('attendee.templates.discovery')
     @include('attendee.templates.people')
     @include('attendee.templates.explore')
+    @include('attendee.templates.free-steals')
 </x-attendee-layout>

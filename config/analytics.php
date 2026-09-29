@@ -69,7 +69,7 @@ return [
         'sponsor_name' => 'Sponsor opened',
         'link_domain' => 'Website domain opened (never the full address)',
         'offer_id' => 'Deal ID',
-        'offer_title' => 'Deal title',
+        'offer_title' => 'Deal title (or Free Steal name, on free_steal_open)',
         'lead_capture' => 'Deal asks for contact details',
 
         // Discovery

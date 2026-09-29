@@ -29,6 +29,8 @@ class DataVersion
                 $event->timezone,
                 // Every deal shown here: its own and the default deals for its country.
                 md5(\App\Models\Offer::shownAt($event)->map(fn ($offer) => $offer->id.'@'.$offer->updated_at)->implode(',')),
+                // Free Steals: the same list everywhere (a removal changes the count).
+                (string) \App\Models\FreeSteal::max('updated_at').'#'.\App\Models\FreeSteal::count(),
                 (string) $event->quests()->max('updated_at'),
                 (string) $event->quests()->count(),
             ];
