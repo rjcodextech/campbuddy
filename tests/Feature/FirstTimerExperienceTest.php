@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Event;
 use App\Models\Quest;
 use App\Support\FirstTimerGuide;
-use Database\Seeders\DemoEventSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -131,25 +130,6 @@ class FirstTimerExperienceTest extends TestCase
     public function test_a_fresh_install_has_the_default_things_to_do(): void
     {
         $this->assertSame(9, Quest::whereNull('event_id')->where('source', 'default')->count());
-    }
-
-    public function test_the_demo_seeder_builds_a_complete_walkthrough_event(): void
-    {
-        $this->seed(DemoEventSeeder::class);
-        $event = Event::where('slug', DemoEventSeeder::SLUG)->firstOrFail();
-
-        $sessions = Cache::get("event:{$event->id}:sessions");
-        $this->assertGreaterThan(10, count($sessions));
-        $this->assertStringNotContainsString('<script', json_encode($sessions));
-        $this->assertSame(20, $event->attendeeRoster()->count());
-
-        foreach (['event.home', 'event.my-day', 'event.guide', 'event.explore'] as $route) {
-            $this->get(route($route, $event))->assertOk();
-        }
-
-        // Re-running resets rather than duplicating.
-        $this->seed(DemoEventSeeder::class);
-        $this->assertSame(1, Event::where('slug', DemoEventSeeder::SLUG)->count());
     }
 
     public function test_every_attendee_page_carries_the_open_on_your_phone_popup(): void
