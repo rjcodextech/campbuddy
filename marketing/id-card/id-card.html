@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
-  CampBuddy promotion ID card — front and back, print size.
-  Card: 54 × 85.6 mm (CR80, portrait) + 3 mm bleed on every side = 60 × 91.6 mm.
-  render.mjs fills in the name, role and QR code and prints PNG (300 dpi) + PDF.
-  Open ?guides in a browser to see the trim line and the safe area.
+  CampBuddy promotion ID card: front (name) and back (QR code), print size.
+  Card: 86 × 54 mm, landscape, + 3 mm bleed on every side = 92 × 60 mm.
+  render.mjs fills in the names and the QR code and prints PDFs + 300 dpi PNGs.
+  Open ?guides in a browser to see the trim line (blue) and the safe area (pink).
 -->
 <html lang="en">
 <head>
@@ -14,212 +14,165 @@
 <style>
   :root {
     --wine: #721313;
-    --wine-deep: #5a0f0f;
     --ochre: #d77b06;
-    --maroon: #c33a19;
     --cream: #fbecd8;
     --paper: #fffaf4;
     --ink: #231f20;
+    --muted: #6b5f5a;
     --bleed: 3mm;
+    --w: 92mm;   /* 86 + bleed */
+    --h: 60mm;   /* 54 + bleed */
+    --mark: 6mm; /* room for crop marks (marks mode) */
   }
-  @page { size: 60mm 91.6mm; margin: 0; }
+  {{PAGE}}
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: #888; }
+  html, body { background: #9a9a9a; }
   body { font-family: 'Inter', system-ui, sans-serif; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .sheet { display: flex; gap: 10mm; padding: 10mm; }
+  .sheet { display: flex; flex-wrap: wrap; gap: 10mm; padding: 10mm; }
   @media print { html, body { background: none; } .sheet { display: block; padding: 0; } }
 
-  .card {
-    position: relative;
-    width: 60mm;
-    height: 91.6mm;
-    overflow: hidden;
-    break-after: page;
-    background: var(--paper);
-  }
-  /* The finished card inside the bleed. */
-  .trim { position: absolute; inset: var(--bleed); }
+  /* One printed page: the card, or (marks mode) the card with crop marks around it. */
+  .page { position: relative; break-after: page; }
+  .marks .page { width: calc(var(--w) + 2 * var(--mark)); height: calc(var(--h) + 2 * var(--mark)); background: #fff; }
+  .marks .card { position: absolute; left: var(--mark); top: var(--mark); }
+  .crop { display: none; position: absolute; background: #000; }
+  .marks .crop { display: block; }
+  /* Lines in line with the trim, outside the bleed. */
+  .crop.h { height: .25pt; width: calc(var(--mark) - 1mm); }
+  .crop.v { width: .25pt; height: calc(var(--mark) - 1mm); }
+  .crop.h.l { left: 0; } .crop.h.r { right: 0; }
+  .crop.v.t { top: 0; } .crop.v.b { bottom: 0; }
+  .crop.h.t { top: calc(var(--mark) + var(--bleed)); } .crop.h.b { bottom: calc(var(--mark) + var(--bleed)); }
+  .crop.v.l { left: calc(var(--mark) + var(--bleed)); } .crop.v.r { right: calc(var(--mark) + var(--bleed)); }
 
-  /* ---------------- Front ---------------- */
-  .front .band {
-    position: absolute;
-    left: 0; right: 0; top: 0;
-    height: calc(var(--bleed) + 30mm);
-    background: var(--wine);
-    border-bottom-left-radius: 50% 7mm;
-    border-bottom-right-radius: 50% 7mm;
-  }
+  .card { position: relative; width: var(--w); height: var(--h); overflow: hidden; background: var(--paper); }
+
   .pattern {
     position: absolute; inset: 0;
     background-image: url('../../public/media/pattern-icons.svg');
-    background-size: 26mm 26mm;
-    opacity: .35;
+    background-size: 24mm 24mm;
+    opacity: .28;
   }
-  .front .band .pattern { border-radius: inherit; }
-  .front .tag {
-    position: absolute;
-    top: 10.5mm; left: 0; right: 0;
-    text-align: center;
-    color: var(--cream);
-    font-size: 5.6pt;
-    font-weight: 700;
-    letter-spacing: .28em;
-    text-transform: uppercase;
+
+  /* ---------------- Front ---------------- */
+  .front .side {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: calc(var(--bleed) + 29mm);
+    background: var(--wine);
   }
-  .front .tag b { color: var(--ochre); font-weight: 800; }
+  .front .side::after {
+    content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: .9mm; background: var(--ochre);
+  }
   .front .mark {
     position: absolute;
-    top: 16mm; left: 50%;
-    width: 25mm; height: 25mm;
-    transform: translateX(-50%);
-    border-radius: 6mm;
+    left: calc(var(--bleed) + 4.5mm);
+    top: calc(var(--bleed) + 11mm);
+    width: 20mm; height: 20mm;
+    border-radius: 4.6mm;
     background: var(--paper);
-    box-shadow: 0 0 0 1.2mm var(--paper), 0 1.5mm 4mm rgba(60, 10, 10, .28);
+    padding: 1.1mm;
+    box-shadow: 0 1mm 3mm rgba(0, 0, 0, .25);
   }
   .front .mark img { width: 100%; height: 100%; display: block; }
-  .front .who {
+  .front .team {
     position: absolute;
-    top: 45mm; left: 4mm; right: 4mm;
-    height: 17mm;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    left: var(--bleed); width: 29mm;
+    top: calc(var(--bleed) + 35mm);
     text-align: center;
+    color: var(--cream);
+    font-size: 5pt; font-weight: 700; letter-spacing: .26em; text-transform: uppercase;
+    line-height: 1.6;
   }
+  .front .team b { display: block; color: var(--ochre); font-weight: 800; font-size: 6.4pt; letter-spacing: .14em; }
+
+  .front .main {
+    position: absolute;
+    left: calc(var(--bleed) + 29mm + 5mm);
+    right: calc(var(--bleed) + 4.5mm);
+    top: calc(var(--bleed) + 6mm);
+    bottom: calc(var(--bleed) + 4.5mm);
+    display: flex; flex-direction: column;
+  }
+  .front .logo { width: 30mm; display: block; }
+  .front .who { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
   .front .name {
     color: var(--wine);
     font-weight: 800;
-    font-size: 15pt;
-    line-height: 1.08;
-    letter-spacing: -.01em;
+    font-size: 17pt;
+    line-height: 1.06;
+    letter-spacing: -.015em;
+    text-wrap: balance;
   }
-  .front .role {
-    margin-top: 1.4mm;
-    color: var(--ochre);
-    font-weight: 700;
-    font-size: 7.4pt;
-  }
-  .front .name:empty, .front .role:empty { display: none; }
+  .front .rule { width: 9mm; height: .8mm; border-radius: 1mm; background: var(--ochre); margin-top: 2.2mm; }
+  .front .role { margin-top: 1.6mm; color: var(--muted); font-size: 6.6pt; font-weight: 600; }
+  .front .role:empty { display: none; }
   .front .ask {
-    position: absolute;
-    top: 64.5mm; left: 50%;
-    transform: translateX(-50%);
+    display: flex; align-items: center; justify-content: space-between; gap: 2mm;
+    padding-top: 2mm;
+    border-top: .25mm solid rgba(114, 19, 19, .18);
+    font-size: 5.7pt; font-weight: 600; color: var(--ink);
     white-space: nowrap;
-    padding: 1.5mm 3.6mm;
-    border-radius: 10mm;
-    background: var(--cream);
-    border: .35mm solid rgba(114, 19, 19, .25);
-    color: var(--wine);
-    font-size: 6.6pt;
-    font-weight: 700;
   }
-  .front .ask span { color: var(--ochre); }
-  .front .foot {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    height: calc(var(--bleed) + 11.5mm);
-    background: var(--cream);
-    border-top: .35mm solid rgba(114, 19, 19, .15);
-  }
-  .front .logo {
-    position: absolute;
-    bottom: calc(var(--bleed) + 3.4mm);
-    left: 50%;
-    width: 33mm;
-    transform: translateX(-50%);
-  }
+  .front .ask strong { color: var(--wine); font-weight: 800; }
+  .front .ask .site { color: var(--ochre); font-weight: 800; letter-spacing: .01em; }
 
   /* ---------------- Back ---------------- */
   .back { background: var(--wine); color: var(--cream); }
-  .back .pattern { opacity: .3; }
-  .back .glow {
-    position: absolute; inset: 0;
-    background: radial-gradient(60% 45% at 50% 44%, rgba(215, 123, 6, .22), transparent 70%);
-  }
-  .back .head {
+  .back .glow { position: absolute; inset: 0; background: radial-gradient(55% 70% at 78% 50%, rgba(215, 123, 6, .25), transparent 70%); }
+  .back .text {
     position: absolute;
-    top: 11mm; left: 4mm; right: 4mm;
+    left: calc(var(--bleed) + 6mm);
+    top: calc(var(--bleed) + 6mm);
+    bottom: calc(var(--bleed) + 5.5mm);
+    width: 43mm;
+    display: flex; flex-direction: column;
+  }
+  .back .kicker { font-size: 5.2pt; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; color: var(--ochre); }
+  .back h1 { white-space: nowrap; margin-top: 1.6mm; font-size: 9.8pt; line-height: 1.12; font-weight: 900; color: #fff; letter-spacing: -.015em; }
+  .back ul { list-style: none; margin-top: 2.6mm; display: grid; gap: 1.1mm; }
+  .back li { position: relative; padding-left: 3mm; font-size: 6.4pt; font-weight: 600; color: var(--cream); line-height: 1.2; }
+  .back li::before { content: ''; position: absolute; left: 0; top: .6em; width: 1.3mm; height: 1.3mm; border-radius: 50%; background: var(--ochre); transform: translateY(-50%); }
+  .back .url { margin-top: auto; padding-top: 2mm; font-size: 8.4pt; font-weight: 800; color: #fff; }
+  .back .qrbox {
+    position: absolute;
+    right: calc(var(--bleed) + 6mm);
+    top: calc(var(--bleed) + 6mm);
+    width: 30mm;
     text-align: center;
   }
-  .back .kicker { font-size: 5.6pt; font-weight: 700; letter-spacing: .28em; text-transform: uppercase; color: var(--ochre); }
-  .back h1 { margin-top: 1.6mm; font-size: 12pt; line-height: 1.12; font-weight: 900; color: #fff; letter-spacing: -.01em; }
   .back .qr {
-    position: absolute;
-    top: 30mm; left: 50%;
-    width: 31mm; height: 31mm;
-    transform: translateX(-50%);
-    padding: 2.4mm;
-    border-radius: 3mm;
+    width: 30mm; height: 30mm;
+    padding: 2.2mm;
+    border-radius: 2.6mm;
     background: #fff;
-    box-shadow: 0 0 0 .9mm var(--ochre);
+    box-shadow: 0 0 0 .7mm var(--ochre);
   }
   .back .qr svg { width: 100%; height: 100%; display: block; }
-  .back .scan {
-    position: absolute;
-    top: 63.5mm; left: 0; right: 0;
-    text-align: center;
-  }
-  .back .scan b { display: block; font-size: 7.6pt; font-weight: 800; color: #fff; }
-  .back .scan span { display: block; margin-top: .6mm; font-size: 9pt; font-weight: 800; color: var(--ochre); letter-spacing: .01em; }
-  .back .features {
-    position: absolute;
-    left: 3.5mm; right: 3.5mm;
-    bottom: 5.2mm;
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 1.1mm;
-  }
-  .back .features span {
-    padding: .8mm 2mm;
-    border-radius: 10mm;
-    border: .3mm solid rgba(251, 236, 216, .45);
-    font-size: 5.2pt;
-    font-weight: 600;
-    color: var(--cream);
-    white-space: nowrap;
-  }
+  .back .scan { margin-top: 2.6mm; font-size: 6.4pt; font-weight: 800; color: #fff; }
+  .back .scan span { display: block; margin-top: .4mm; font-size: 5.4pt; font-weight: 600; color: var(--cream); opacity: .85; }
 
-  /* Guides (browser only, ?guides): trim (solid) and 3 mm safe area (dashed). */
+  /* Guides (browser only, ?guides). */
   .guides .card::before, .guides .card::after { content: ''; position: absolute; z-index: 9; pointer-events: none; }
   .guides .card::before { inset: var(--bleed); outline: .2mm solid #00b3ff; border-radius: 3.2mm; }
   .guides .card::after { inset: calc(var(--bleed) + 3mm); outline: .2mm dashed #ff00a8; }
 </style>
 </head>
-<body>
+<body class="{{MODE}}">
 <div class="sheet">
-  <section class="card front{{BLANK}}" aria-label="Front">
-    <div class="band"><div class="pattern"></div></div>
-    <p class="tag">Team <b>CampBuddy</b></p>
-    <div class="mark"><img src="../../public/media/favicon.png" alt=""></div>
-    <div class="who">
-      <p class="name" id="name">{{NAME}}</p>
-      <p class="role">{{ROLE}}</p>
-    </div>
-    <p class="ask">Ask me about <span>CampBuddy</span> 👋</p>
-    <div class="foot"></div>
-    <img class="logo" src="../../public/media/logo.png" alt="CampBuddy">
-  </section>
-
-  <section class="card back" aria-label="Back">
-    <div class="pattern"></div>
-    <div class="glow"></div>
-    <div class="head">
-      <p class="kicker">Free for every attendee</p>
-      <h1>Your whole WordCamp<br>in one app</h1>
-    </div>
-    <div class="qr">{{QR}}</div>
-    <p class="scan"><b>Scan to open CampBuddy</b><span>campbuddy.club</span></p>
-    <div class="features">
-      <span>My schedule</span><span>Meet people</span><span>Camp Card</span><span>Quests</span><span>Deals</span><span>Works offline</span>
-    </div>
-  </section>
+{{PAGES}}
 </div>
 <script>
-  // A long name steps down in size until it fits the name box (two lines at most).
+  // A long name steps down in size until it fits the space (two lines at most).
   (async () => {
     await document.fonts.ready;
-    const name = document.getElementById('name');
-    const box = name.parentElement;
-    let size = 15;
-    while ((box.scrollHeight > box.clientHeight || name.getClientRects().length > 2 || name.scrollWidth > box.clientWidth) && size > 9) {
-      size -= 0.5;
-      name.style.fontSize = size + 'pt';
+    for (const name of document.querySelectorAll('.name')) {
+      const box = name.parentElement;
+      const lines = () => Math.round(name.getBoundingClientRect().height / parseFloat(getComputedStyle(name).lineHeight));
+      let size = 17;
+      while ((lines() > 2 || box.scrollHeight > box.clientHeight || name.scrollWidth > name.clientWidth) && size > 10) {
+        size -= 0.5;
+        name.style.fontSize = size + 'pt';
+      }
     }
     if (location.search.includes('guides')) document.body.classList.add('guides');
     document.body.dataset.ready = '1';

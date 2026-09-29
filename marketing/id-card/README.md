@@ -1,48 +1,49 @@
 # CampBuddy promotion ID card
 
-Promotion ke liye print hone wala ID card. Front par person ka naam hai, back par campbuddy.club ka QR code hai.
+Team CampBuddy ke 8 logon ke liye print hone wale ID cards. Front par naam hai, back par campbuddy.club ka QR code hai.
 
-## Size (printer ko ye batayein)
+## Printer ko ye bhejein
+
+**`print/CampBuddy-ID-cards.pdf`**: 16 pages. Har person ka front, phir back (page 1 = Prathamesh ka front, page 2 = back, page 3 = Abhishek ka front…).
+
+Agar printer crop marks maange to **`print/CampBuddy-ID-cards-cropmarks.pdf`** bhejein (same cards, har page par cutting lines ke saath).
 
 | | |
 |---|---|
-| Card (trim) | **54 × 85.6 mm**, CR80, portrait (normal PVC ID card) |
-| Bleed | har taraf **3 mm**, isliye file **60 × 91.6 mm** hai |
+| Card size (trim) | **86 × 54 mm**, landscape |
+| Bleed | har taraf **3 mm**, isliye file ka page **92 × 60 mm** hai |
 | Safe area | trim se 3 mm andar tak saara text hai |
-| Resolution | PNG **300 dpi** (706 × 1081 px). PDF mein text vector hai. |
-| Lanyard slot | upar beech mein 3–8 mm ki jagah khali rakhi hai, wahan slot punch ho sakta hai |
+| Printing | dono taraf (front + back), colour, matt ya gloss lamination |
+| PNG | 300 dpi (1084 × 706 px), bleed ke saath |
+
+Printer ko ye bhi bata dein: *"Colours RGB mein hain. Aapka software CMYK mein badlega; maroon aur orange ka match dekh lena."* Chahein to pehle ek card ka sample print karwa lein.
 
 ## Files: `print/`
 
 | File | Kya hai |
 |---|---|
-| `sunil-kumar-sharma.pdf` | Page 1 front, page 2 back. **Printer ko ye bhejein.** |
-| `sunil-kumar-sharma-front.png` | Front (naam ke saath) |
-| `back.png` | Back, sabke liye ek hi |
-| `blank-front.png` / `blank.pdf` | Front bina naam ke. Canva/Photoshop mein naam khud likhna ho to ye lein. |
+| `CampBuddy-ID-cards.pdf` | Saare 8 cards, front aur back (bleed ke saath) |
+| `CampBuddy-ID-cards-cropmarks.pdf` | Wahi cards, crop marks ke saath |
+| `pdf/<naam>.pdf` | Ek person ka card (front + back) |
+| `pdf/blank-front.pdf`, `png/blank-front.png` | Bina naam ka front, naya naam khud likhne ke liye |
+| `png/<naam>-front.png`, `png/back.png` | PNG images, 300 dpi |
 
-**QR code:** `https://campbuddy.club/?utm_source=id-card&utm_medium=print`. Google Analytics mein source "id-card" ke naam se dikhega, to pata chalega kitne log card se aaye. Check kiya: file ko 35% chhota karke bhi scan hota hai.
+**QR code:** `https://campbuddy.club/?utm_source=id-card&utm_medium=print`. Google Analytics mein source "id-card" dikhega. Check kiya: image 3 guna chhoti karne par bhi scan hota hai.
 
-## Baaki logon ke card
+## Naam jodna ya badalna
 
-**Tareeka 1: command se (sabse aasaan, design bilkul same rahega)**
+`names.txt` mein har line par ek naam likhein (role bhi dena ho to `Naam | Role`), phir chalayein:
 
 ```bash
-node marketing/id-card/render.mjs "Rahul Verma" "Frontend Developer"
-node marketing/id-card/render.mjs "Neha Gupta"          # role ke bina
-node marketing/id-card/render.mjs --blank               # bina naam ka front
+node marketing/id-card/render.mjs
 ```
 
-Har naam ke liye `print/<naam>.pdf` aur `print/<naam>-front.png` ban jaata hai. Lamba naam apne aap chhota hokar do line mein fit ho jaata hai. Chrome aur internet (Inter font ke liye) chahiye.
+Saari files dobara ban jaati hain. Lamba naam apne aap chhota hokar do line mein fit ho jaata hai. Ek hi person ke liye: `node marketing/id-card/render.mjs "Naam"`. Chrome aur internet (Inter font ke liye) chahiye.
 
-**Tareeka 2: Canva / Photoshop**
-
-`blank-front.png` ko background banayein. Naam aur role beech ki khali jagah mein likhein, logo ke neeche aur "Ask me about CampBuddy" ke upar:
-- Naam: **Inter ExtraBold (800), 15 pt**, colour **#721313**, center mein. Lamba naam ho to 12–13 pt.
-- Role: **Inter Bold (700), 7.4 pt**, colour **#d77b06**.
+Canva/Photoshop mein banana ho to `png/blank-front.png` lein. Naam **Inter ExtraBold (800), 17 pt**, colour **#721313**, logo ke neeche baayein taraf se shuru karein, aur uske neeche 9 mm ki orange line (#d77b06).
 
 ## Colours
 
 Wine `#721313` · Ochre `#d77b06` · Cream `#fbecd8` · Paper `#fffaf4`
 
-Design ka source `id-card.html` hai. Browser mein `id-card.html?guides` kholne par trim line (neeli) aur safe area (gulaabi) dikhte hain.
+Design ka source `id-card.html` aur `render.mjs` hai.
