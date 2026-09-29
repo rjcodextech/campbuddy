@@ -59,6 +59,8 @@ class LineIcons
         // Controls: in place of the text symbols × ‹ › ▸ ▾ ❚❚ ▶ ↗ (↗ turns into a colour emoji on iPhones).
         'x' => '<path d="M18 6 6 18M6 6l12 12"/>',
         'external' => '<path d="M7 17 17 7M8 7h9v9"/>',
+        'share' => '<path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>',
+        'download' => '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
         'chevron-left' => '<path d="m15 18-6-6 6-6"/>',
         'chevron-right' => '<path d="m9 18 6-6-6-6"/>',
         'chevron-down' => '<path d="m6 9 6 6 6-6"/>',

@@ -274,9 +274,16 @@ const LABELS = {
   download: { idle: 'Download', ready: 'Ready, tap to download' },
 };
 
+// Share / Download keep their icon: only the words beside it change.
+function setLabel(btn, text) {
+  const label = btn.querySelector('[data-export-label]');
+  if (label) label.textContent = text;
+  else btn.textContent = text;
+}
+
 function resetButton(btn) {
   const kind = btn.dataset.shareCard !== undefined ? 'share' : 'download';
-  btn.textContent = LABELS[kind].idle;
+  setLabel(btn, LABELS[kind].idle);
   btn.removeAttribute('aria-busy');
   btn.classList.remove('btn--primary', 'btn--busy');
   btn.classList.add('btn--outline');
@@ -304,7 +311,7 @@ async function handleExport(kind, layout, btn) {
   btn.dataset.state = 'preparing';
   btn.setAttribute('aria-busy', 'true');
   btn.classList.add('btn--busy');
-  btn.textContent = 'Preparing…';
+  setLabel(btn, 'Preparing…');
 
   let blob;
   try {
@@ -326,7 +333,7 @@ async function handleExport(kind, layout, btn) {
   btn.removeAttribute('aria-busy');
   btn.classList.remove('btn--outline', 'btn--busy');
   btn.classList.add('btn--primary');
-  btn.textContent = LABELS[kind].ready;
+  setLabel(btn, LABELS[kind].ready);
 }
 
 function filenameFor(layout) {
@@ -713,15 +720,15 @@ function repaintPreviews() {
 function cardContent(display) {
   const visibleFields = display.visibleFields ?? [];
 
-  // Role/company get their own dedicated line — shown only if chosen
-  // (CC2), and left out of the tag pills below so they're never shown
-  // twice on the same card.
-  const roleLine = [
+  // Role and company get their own lines — shown only if chosen (CC2),
+  // and left out of the tag pills below so they're never shown twice on
+  // the same card. A line each, so a long pair never wraps with a "·"
+  // left hanging at the end of a line.
+  const roleLines = [
     visibleFields.includes('role') && display.role,
     visibleFields.includes('company') && display.company,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  ].filter(Boolean);
+  const roleLine = roleLines.join(' · ');
 
   // "Interests" expands into one pill per tag rather than a single
   // combined blob — the rest of visibleFields (excluding role/company,
@@ -741,7 +748,7 @@ function cardContent(display) {
   // there it is left out of the pills; every other layout keeps it a pill.
   const askMe = visibleFields.includes('askMeAbout') ? (display.askMeAbout ?? '') : '';
 
-  return { name: display.name, roleLine, tags, askMe, tagsBesideAsk };
+  return { name: display.name, roleLine, roleLines, tags, askMe, tagsBesideAsk };
 }
 
 // Fills one .camp-card element (an on-screen card, or the clone being
@@ -749,7 +756,11 @@ function cardContent(display) {
 // logo drawn over its centre — is fully drawn.
 async function paintCard(card, content, qr, qrPixels = QR_PREVIEW_PX) {
   card.querySelector('.camp-card__name').textContent = content.name;
-  card.querySelector('.camp-card__role').textContent = content.roleLine;
+  card.querySelector('.camp-card__role').replaceChildren(...(content.roleLines ?? []).map((text) => {
+    const line = document.createElement('span');
+    line.textContent = text;
+    return line;
+  }));
   card.querySelector('.camp-card__scan').textContent = content.scan ?? '';
   // Size the name to the card's content (see .camp-card__name's --name-scale).
   card.classList.toggle('camp-card--long-name', (content.name ?? '').length > 20);
@@ -798,8 +809,16 @@ function imagesLoaded(root) {
   );
 }
 
+// How far a busy card steps its type down to fit, pills first, then the
+// role and the name: [pills, role/name] scales, tried in order until the
+// content fits the card (_camp-card.scss reads --fit-tags / --fit-text).
+const FIT_STEPS = [
+  [1, 1], [0.92, 1], [0.84, 1], [0.76, 1],
+  [0.76, 0.92], [0.7, 0.86], [0.66, 0.8], [0.62, 0.74],
+];
+
 // The card is a fixed size, so a long tag list can't be allowed to grow
-// it: show as many pills as fit and fold the rest into a "+N" pill.
+// it: every pill shows, and the type steps down until it all fits.
 // withPlaceholder: false when the card has something else to show instead
 // (Ticket's "Ask me about" bubble), so no "Nothing chosen" pill sits beside it.
 function paintTags(card, tags, withPlaceholder = true) {
@@ -807,23 +826,22 @@ function paintTags(card, tags, withPlaceholder = true) {
   const tagsEl = card.querySelector('.camp-card__tags');
   const pill = (text) => render('tpl-camp-card-tag', { tag: text });
 
-  if (tags.length === 0) {
-    tagsEl.replaceChildren(...(withPlaceholder ? [render('tpl-camp-card-tag-empty')] : []));
-    return;
-  }
+  tagsEl.replaceChildren(...(tags.length ? tags.map(pill) : withPlaceholder ? [render('tpl-camp-card-tag-empty')] : []));
 
-  tagsEl.replaceChildren(...tags.map(pill));
-
-  let visible = tags.length;
   const overflowing = () => body.scrollHeight > body.clientHeight + 1;
-  while (visible > 0 && overflowing()) {
-    visible -= 1;
-    tagsEl.replaceChildren(...tags.slice(0, visible).map(pill), pill(`+${tags.length - visible}`));
+  for (const [pills, text] of FIT_STEPS) {
+    card.style.setProperty('--fit-tags', pills);
+    card.style.setProperty('--fit-text', text);
+    if (!overflowing()) return;
   }
 
-  // Not even a "+N" pill fits (a long name on a busy layout): no tags at
-  // all rather than a half-cut row running into the footer.
-  if (overflowing()) tagsEl.replaceChildren();
+  // Past the smallest size (every field at its longest): drop pills from
+  // the end rather than let a half-cut row run into the QR.
+  const shown = [...tags];
+  while (shown.length && overflowing()) {
+    shown.pop();
+    tagsEl.replaceChildren(...shown.map(pill));
+  }
 }
 
 // Draws at whole pixels per module (so every module edge is crisp at any

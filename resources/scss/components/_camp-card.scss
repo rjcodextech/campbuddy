@@ -15,11 +15,11 @@
 }
 
 // --- Gallery ---------------------------------------------------------
-// All 7 layouts render at once (camp-card.blade.php's #camp-card-scroll).
-// Phones: one swipeable row that bleeds to the viewport edges by
-// canceling #main-content's side padding, then re-adds it as padding so
-// the first/last card don't sit flush against the edge. Tablets and up:
-// the same equal-width cards wrap into a grid instead.
+// All 7 layouts render at once (camp-card.blade.php's #camp-card-scroll),
+// as one row that scrolls sideways on every screen (swipe, trackpad or
+// the scrollbar), each card snapping into place. It bleeds to the edges
+// by canceling #main-content's side padding, then re-adds it as padding
+// so the first/last card don't sit flush against the edge.
 .camp-card-scroll {
     display: flex;
     align-items: flex-start;
@@ -32,33 +32,30 @@
     margin: 0 -#{v.$space-4};
     padding: v.$space-1 v.$space-4 v.$space-2;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
 
     @media (min-width: v.$bp-tablet) {
-        display: grid;
-        // Equal columns, 280–340px wide: never so wide the card looks
-        // blown up, and centered when the row doesn't fill the screen.
-        grid-template-columns: repeat(auto-fill, minmax(280px, 340px));
-        justify-content: center;
-        overflow: visible;
-        scroll-snap-type: none;
         margin: 0;
-        padding: 0;
+        padding: v.$space-1 0 v.$space-3;
+        scroll-padding-inline: 0;
     }
 }
 
-// Every item is the same width (fluid on phones, one grid column on
-// larger screens) and — because the card inside is a fixed 3:5 —
-// the same height too. It's the size container the card's cqw units
-// measure against.
+// Every item is the same width (fluid on phones, 344px on larger
+// screens) and — because the card inside is a fixed 3:5 — the same
+// height too: a bordered panel holding the layout's name, the card and
+// its Share / Download. It's the size container the card's cqw units
+// measure against (its content box, so the card is the panel's width
+// less its padding).
 .camp-card-scroll__item {
     flex: 0 0 auto;
-    width: clamp(240px, 78vw, 320px);
+    width: clamp(264px, 84vw, 344px);
+    padding: v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-lg;
+    background: var(--paper);
     scroll-snap-align: start;
     container-type: inline-size;
-
-    @media (min-width: v.$bp-tablet) {
-        width: auto;
-    }
 }
 
 .camp-card-scroll__label {
@@ -135,7 +132,7 @@ body > div > img[width='1'][height='1'] {
 .camp-card__lanyard-hole {
     display: none;
     position: absolute;
-    top: cc(8);
+    top: cc(10);
     left: 50%;
     transform: translateX(-50%);
     width: cc(18);
@@ -237,15 +234,17 @@ body > div > img[width='1'][height='1'] {
     opacity: 0.7;
 }
 
-// "Scan to connect on LinkedIn" — says what the QR does.
+// "Scan to connect on LinkedIn" — says what the QR does, beside it.
 .camp-card__scan {
+    align-self: end;
+    max-width: cc(130);
     margin: 0;
     font-family: v.$font-sans;
-    font-size: cc(11);
+    font-size: cc(12);
     font-weight: v.$font-weight-bold;
-    letter-spacing: 0.04em;
-    text-align: center;
-    line-height: 1.2;
+    letter-spacing: 0.01em;
+    text-align: left;
+    line-height: 1.25;
 
     &:empty {
         display: none;
@@ -257,17 +256,23 @@ body > div > img[width='1'][height='1'] {
 // nothing but a name shows it bigger instead of leaving the card empty.
 .camp-card__name {
     font-family: v.$font-serif;
-    font-size: calc(#{cc(24)} * var(--name-scale, 1));
+    font-size: calc(#{cc(24)} * var(--name-scale, 1) * var(--fit-text, 1));
     font-weight: v.$font-weight-bold;
     line-height: v.$line-height-tight;
     overflow-wrap: anywhere;
 }
 
 .camp-card__role {
-    font-size: cc(16);
+    font-size: calc(#{cc(15)} * var(--fit-text, 1));
+    line-height: 1.3;
     opacity: 0.85;
-    margin-top: cc(4);
+    margin-top: cc(6);
     overflow-wrap: anywhere;
+
+    // Role, then company: a line each (camp-card.js).
+    span {
+        display: block;
+    }
 
     // Empty when neither "Role" nor "Company" is in the attendee's
     // chosen visible fields — collapse rather than leave a blank line.
@@ -280,8 +285,8 @@ body > div > img[width='1'][height='1'] {
 .camp-card__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: cc(8);
-    margin-top: cc(16);
+    gap: calc(#{cc(7)} * var(--fit-tags, 1));
+    margin-top: calc(#{cc(14)} * var(--fit-tags, 1));
     margin-bottom: auto;
 
     // No tags (none chosen, or none fit): no gap, and no empty box — it
@@ -306,11 +311,11 @@ body > div > img[width='1'][height='1'] {
 // so the pill's text sits exactly where it does on screen once exported.
 .camp-card__tag {
     display: inline-block;
-    padding: cc(4) cc(12);
+    padding: calc(#{cc(4)} * var(--fit-tags, 1)) calc(#{cc(11)} * var(--fit-tags, 1));
     border-radius: v.$radius-full;
     background: rgba(255, 255, 255, 0.16);
-    font-size: cc(14);
-    line-height: cc(20);
+    font-size: calc(#{cc(13)} * var(--fit-tags, 1));
+    line-height: calc(#{cc(19)} * var(--fit-tags, 1));
     font-weight: v.$font-weight-medium;
 
     &--placeholder {
@@ -322,14 +327,19 @@ body > div > img[width='1'][height='1'] {
 // The QR lives inside the card itself (not a separate section below it)
 // so Share/Download (resources/js/attendee/camp-card.js) capture the
 // whole scannable badge in one image, not just the name/tags above it.
+// One compact row on every layout: the QR on the left, "Scan to …" and
+// the CampBuddy logo beside it, so the name and interests get the room.
 .camp-card__footer {
     flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: 1fr auto;
     justify-content: center;
-    gap: cc(10);
-    padding: cc(14) cc(20);
+    align-items: center;
+    column-gap: cc(12);
+    row-gap: cc(6);
+    padding: cc(12) cc(18);
+    text-align: left;
 
     // The `hidden` attribute is author-overridable by any rule that sets
     // `display`, including this one — without this it stops actually
@@ -340,22 +350,23 @@ body > div > img[width='1'][height='1'] {
     }
 }
 
-// One shared QR size across all 6 layouts. The <canvas>'s own pixel
-// grid is sized by JS (crisp at on-screen and print resolution alike);
-// this is only how big it's shown.
+// One shared QR size across all 7 layouts (about 2 cm in print). The
+// <canvas>'s own pixel grid is sized by JS (crisp at on-screen and print
+// resolution alike); this is only how big it's shown.
 .camp-card__qr-frame {
+    grid-row: 1 / span 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: cc(10);
+    padding: cc(5);
     background: #fff;
     border-radius: cc(4);
     border: cc(1) solid rgba(30, 30, 30, 0.08);
 
     canvas {
         display: block;
-        width: cc(104);
-        height: cc(104);
+        width: cc(80);
+        height: cc(80);
     }
 }
 
@@ -365,6 +376,8 @@ body > div > img[width='1'][height='1'] {
 // wordmark's dark lettering would disappear on the darker layouts otherwise.
 // (Pass drops the chip — see its override below.)
 .camp-card__brand-mark {
+    align-self: start;
+    justify-self: start;
     display: block;
     height: cc(22);
     width: auto;
@@ -417,7 +430,7 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__body {
         align-items: center;
-        padding-top: cc(32);
+        padding-top: cc(40);
     }
 
     .camp-card__role {
@@ -497,6 +510,10 @@ body > div > img[width='1'][height='1'] {
         padding: cc(12) cc(16);
         border-left: cc(3) solid v.$cc-ochre;
         background: rgba(255, 255, 255, 0.05);
+    }
+
+    .camp-card__tags {
+        row-gap: calc(#{cc(4)} * var(--fit-tags, 1));
     }
 
     .camp-card__tag {
@@ -582,13 +599,13 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__body {
         align-items: center;
-        padding-top: cc(32);
+        padding-top: cc(40);
     }
 
     .camp-card__name {
         font-family: v.$font-sans;
         font-weight: v.$font-weight-black;
-        font-size: calc(#{cc(27.6)} * var(--name-scale, 1));
+        font-size: calc(#{cc(27.6)} * var(--name-scale, 1) * var(--fit-text, 1));
         text-transform: uppercase;
     }
 
@@ -648,7 +665,7 @@ body > div > img[width='1'][height='1'] {
 
     .camp-card__body {
         align-items: center;
-        padding-top: cc(32);
+        padding-top: cc(40);
     }
 
     .camp-card__event-mark {
@@ -714,7 +731,7 @@ body > div > img[width='1'][height='1'] {
 // beside "Scan to …" and the CampBuddy logo. Everything is drawn with what
 // the PNG export can paint: no clip-path, no repeating gradients, no inset
 // shadows.
-$ticket-band: 150; // design px: the wine band's height, where the tear line sits
+$ticket-band: 136; // design px: the wine band's height, where the tear line sits
 
 .camp-card--ticket {
     border: 0;
@@ -753,7 +770,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
     .camp-card__rings {
         display: block;
         position: absolute;
-        top: cc(60);
+        top: cc(54);
         left: 50%;
         width: 0;
         height: 0;
@@ -784,7 +801,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
     }
 
     // Half-round bites where the tear line meets the edges: a full circle,
-    // half of it outside the card (which clips it), in the page's colour.
+    // half of it outside the card (which clips it), in the panel's colour.
     .camp-card__notch {
         display: block;
         position: absolute;
@@ -792,7 +809,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
         width: cc(20);
         height: cc(20);
         border-radius: 50%;
-        background: v.$color-paper-soft;
+        background: v.$color-paper; // the panel behind the card (.camp-card-scroll__item)
         z-index: 3;
 
         &--left {
@@ -828,10 +845,10 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
     }
 
     .camp-card__event-mark {
-        width: cc(64);
-        height: cc(64);
-        padding: cc(6);
-        border-radius: cc(15);
+        width: cc(58);
+        height: cc(58);
+        padding: cc(5);
+        border-radius: cc(14);
         border: cc(4) solid v.$cc-ochre;
         background: v.$color-paper;
         box-shadow: 0 cc(4) cc(12) rgba(0, 0, 0, 0.3);
@@ -846,7 +863,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
     }
 
     .camp-card__hello {
-        padding-top: cc(12);
+        padding-top: cc(10);
         margin-bottom: cc(4);
         font-size: cc(10);
         font-weight: 800;
@@ -857,7 +874,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
 
     .camp-card__name {
         font-family: v.$font-sans;
-        font-size: calc(#{cc(27)} * var(--name-scale, 1));
+        font-size: calc(#{cc(25)} * var(--name-scale, 1) * var(--fit-text, 1));
         font-weight: 800;
         line-height: 1.06;
         letter-spacing: -0.015em;
@@ -877,7 +894,7 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
 
     .camp-card__role {
         margin-top: cc(8);
-        font-size: cc(13);
+        font-size: calc(#{cc(13)} * var(--fit-text, 1));
         font-weight: v.$font-weight-medium;
         color: v.$cc-charcoal;
         opacity: 0.72;
@@ -886,18 +903,17 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
     .camp-card__tags {
         align-self: stretch;
         justify-content: center;
-        gap: cc(6);
-        margin-top: cc(12);
+        margin-top: calc(#{cc(12)} * var(--fit-tags, 1));
         margin-bottom: 0;
     }
 
     .camp-card__tag {
-        padding: cc(3) cc(10);
+        padding: calc(#{cc(3)} * var(--fit-tags, 1)) calc(#{cc(10)} * var(--fit-tags, 1));
         border: cc(1) solid rgba(114, 19, 19, 0.15);
         background: v.$cc-antique-white;
         color: v.$cc-dark-wine;
-        font-size: cc(12);
-        line-height: cc(18);
+        font-size: calc(#{cc(12)} * var(--fit-tags, 1));
+        line-height: calc(#{cc(18)} * var(--fit-tags, 1));
         font-weight: v.$font-weight-medium;
     }
 
@@ -907,12 +923,12 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
         display: block;
         position: relative;
         max-width: 100%;
-        margin: cc(14) 0 auto;
-        padding: cc(7) cc(14);
+        margin: calc(#{cc(14)} * var(--fit-tags, 1)) 0 auto;
+        padding: calc(#{cc(7)} * var(--fit-text, 1)) cc(14);
         border-radius: cc(14);
         background: v.$cc-dark-wine;
         color: v.$cc-antique-white;
-        font-size: cc(12);
+        font-size: calc(#{cc(12)} * var(--fit-text, 1));
         font-weight: v.$font-weight-bold;
         line-height: 1.3;
         overflow-wrap: anywhere;
@@ -944,50 +960,26 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
         margin-bottom: auto;
     }
 
-    // The QR on the left, "Scan to …" and the CampBuddy logo beside it.
+    // The QR row as a white dashed panel.
     .camp-card__footer {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        grid-template-rows: 1fr auto;
-        column-gap: cc(12);
-        row-gap: cc(6);
-        align-items: center;
-        margin: 0 cc(16) cc(16);
-        padding: cc(8) cc(10);
+        margin: 0 cc(14) cc(14);
+        padding: cc(6) cc(10);
         border-radius: cc(10);
         border: cc(1) dashed rgba(114, 19, 19, 0.25);
         background: #fff;
-        text-align: left;
-
-        &[hidden] {
-            display: none;
-        }
     }
 
     .camp-card__qr-frame {
-        grid-row: 1 / span 2;
         padding: cc(4);
         border: 0;
-
-        canvas {
-            width: cc(80);
-            height: cc(80);
-        }
     }
 
     .camp-card__scan {
-        align-self: end;
-        font-size: cc(12);
         font-weight: 800;
-        letter-spacing: 0.01em;
-        line-height: 1.25;
-        text-align: left;
         color: v.$cc-dark-wine;
     }
 
     .camp-card__brand-mark {
-        align-self: start;
-        justify-self: start;
         height: cc(18);
         padding: 0;
         border-radius: 0;
@@ -1001,9 +993,22 @@ $ticket-band: 150; // design px: the wine band's height, where the tear line sit
 }
 
 .qr__actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: v.$space-2;
+
+    .btn {
+        min-width: 0;
+        padding-inline: v.$space-2;
+        font-size: v.$font-size-sm;
+        line-height: 1.2;
+        text-align: center;
+    }
+}
+
+// While the image is made the spinner stands in for the icon.
+.qr__actions .btn--busy .line-icon {
+    display: none;
 }
 
 .cc-print-note {

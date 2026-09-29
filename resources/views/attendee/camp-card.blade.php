@@ -46,9 +46,10 @@
                         </div>
                     </div>
 
+                    {{-- Two equal buttons, together as wide as the card. camp-card.js only changes the label beside the icon. --}}
                     <div class="qr__actions">
-                        <button type="button" class="btn btn--outline btn--compact" data-share-card="{{ $key }}">Share</button>
-                        <button type="button" class="btn btn--outline btn--compact" data-download-card="{{ $key }}">Download</button>
+                        <button type="button" class="btn btn--outline" data-share-card="{{ $key }}"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
+                        <button type="button" class="btn btn--outline" data-download-card="{{ $key }}"><x-attendee.line-icon name="download" /><span data-export-label>Download</span></button>
                     </div>
                 </div>
             @endforeach
