@@ -15,7 +15,7 @@ Each deal has an admin-configurable **per-deal** toggle (`capture_leads`), off b
 
 ## In-app browsing
 
-Both sponsor links and deal redemption links open in an in-app browser overlay rather than a new browser tab, so tapping one doesn't fully leave CampBuddy — see [Why it's different](../../about/05-why-different.md). Many third-party sites block being framed (`X-Frame-Options`/CSP); there's no reliable way to detect that in advance, so the in-app browser always keeps a visible "open in your browser" escape hatch rather than leaving the attendee stuck.
+Deal redemption links open in an in-app browser overlay (sponsor chips on Explore → Sponsors are display-only since 29 Sep 2026 — sponsor links reach attendees through their deals) rather than a new browser tab, so tapping one doesn't fully leave CampBuddy — see [Why it's different](../../about/05-why-different.md). Many third-party sites block being framed (`X-Frame-Options`/CSP); there's no reliable way to detect that in advance, so the in-app browser always keeps a visible "open in your browser" escape hatch rather than leaving the attendee stuck.
 
 ## Default deals, richer cards and per-deal forms (29 Sep 2026)
 

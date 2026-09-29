@@ -15,8 +15,8 @@
     margin-top: v.$space-2;
 }
 
+// Display only (no click) — sponsor links open from the Deals tab.
 .sponsor-chip {
-    @include m.pressable-subtle;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -27,8 +27,6 @@
     background: var(--paper);
     font-weight: v.$font-weight-bold;
     font-size: v.$font-size-sm;
-    cursor: pointer;
-    transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease;
 
     &--platinum {
         border-color: var(--gold);

@@ -65,27 +65,14 @@
                     <p class="u-eyebrow">{{ $tier }}</p>
                     <div class="sponsor-group__row">
                         @foreach ($tierSponsors as $sponsor)
-                            @php($sponsorUrl = $webUrl($sponsor['website'] ?? null) ?? $webUrl($sponsor['link'] ?? null))
-                            {{-- No usable link → a plain chip, not a button that opens nothing. --}}
-                            @if ($sponsorUrl)
-                                <button type="button" class="sponsor-chip {{ $tierClass($tier) }}"
-                                        data-inapp-url="{{ $sponsorUrl }}"
-                                        data-inapp-title="{{ $sponsor['name'] }}">
-                                    @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
-                                    @else
-                                        {{ $sponsor['name'] }}
-                                    @endif
-                                </button>
-                            @else
-                                <span class="sponsor-chip {{ $tierClass($tier) }}">
-                                    @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
-                                    @else
-                                        {{ $sponsor['name'] }}
-                                    @endif
-                                </span>
-                            @endif
+                            {{-- Display only: a sponsor chip opens nothing. Sponsor links live on their deals (Deals tab). --}}
+                            <span class="sponsor-chip {{ $tierClass($tier) }}">
+                                @if (! empty($sponsor['logo_url']))
+                                    <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                @else
+                                    {{ $sponsor['name'] }}
+                                @endif
+                            </span>
                         @endforeach
                     </div>
                 </div>

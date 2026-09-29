@@ -6,7 +6,7 @@
 - **It's honest about privacy.** Anything personal you type in stays on your device unless you explicitly choose to share it.
 - **It works even with bad wifi.** Once you've opened it, the core of the app keeps working offline — which matters a lot at a crowded venue.
 - **It feels like it belongs to the event.** Each WordCamp's own name and logo greet you inside the app, so it feels like an official part of that event, not a generic third-party tool.
-- **It keeps you in the app.** Tap a sponsor or a deal and it opens right there, in place, instead of bouncing you out to a separate browser tab and losing your spot.
+- **It keeps you in the app.** Tap a deal and it opens right there, in place, instead of bouncing you out to a separate browser tab and losing your spot.
 - **It's free**, made by the WordPress community, for the WordPress community.
 
 ---
