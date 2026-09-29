@@ -40,7 +40,7 @@ node marketing/id-card/render.mjs
 
 Saari files dobara ban jaati hain. Lamba naam apne aap chhota hokar do line mein fit ho jaata hai. Ek hi person ke liye: `node marketing/id-card/render.mjs "Naam"`. Chrome aur internet (Inter font ke liye) chahiye.
 
-Canva/Photoshop mein banana ho to `png/blank-front.png` lein. Naam **Inter ExtraBold (800), 17 pt**, colour **#721313**, logo ke neeche baayein taraf se shuru karein, aur uske neeche 9 mm ki orange line (#d77b06).
+Canva/Photoshop mein banana ho to `png/blank-front.png` lein. Upar chhota "HELLO, I'M" (Inter ExtraBold, 5.4 pt, #d77b06, letter-spacing wide), phir naam **Inter ExtraBold (800), 17 pt**, colour **#721313**, logo ke neeche baayein taraf se shuru karein, aur uske neeche 9 mm ki orange line (#d77b06).
 
 ## Colours
 

@@ -58,32 +58,60 @@
   .front .side {
     position: absolute; left: 0; top: 0; bottom: 0;
     width: calc(var(--bleed) + 29mm);
+    overflow: hidden;
     background: var(--wine);
   }
-  .front .side::after {
-    content: ''; position: absolute; top: 0; bottom: 0; right: 0; width: .9mm; background: var(--ochre);
+  /* A ticket's tear line between the stub and the card: dashes, and a
+     half-round bite where it meets the top and bottom edges. */
+  .front .perf {
+    position: absolute; top: 0; bottom: 0;
+    left: calc(var(--bleed) + 29mm - .25mm);
+    width: .5mm;
+    background: repeating-linear-gradient(to bottom, var(--cream) 0 1.4mm, transparent 1.4mm 2.6mm);
+    opacity: .75;
   }
+  .front .bite {
+    position: absolute;
+    left: calc(var(--bleed) + 29mm - 2.6mm);
+    width: 5.2mm; height: 5.2mm;
+    border-radius: 50%;
+    background: var(--paper);
+  }
+  .front .bite.t { top: calc(var(--bleed) - 2.6mm); }
+  .front .bite.b { bottom: calc(var(--bleed) - 2.6mm); }
+  /* Rings behind the app icon, like a signal going out. */
+  .front .rings {
+    position: absolute;
+    left: calc(var(--bleed) + 14.5mm); top: 50%;
+    width: 0; height: 0;
+  }
+  .front .rings i {
+    position: absolute; border-radius: 50%;
+    border: .3mm solid rgba(251, 236, 216, .16);
+    transform: translate(-50%, -50%);
+  }
+  .front .rings i:nth-child(1) { width: 30mm; height: 30mm; }
+  .front .rings i:nth-child(2) { width: 40mm; height: 40mm; border-color: rgba(251, 236, 216, .1); }
+  .front .rings i:nth-child(3) { width: 50mm; height: 50mm; border-color: rgba(251, 236, 216, .06); }
   .front .mark {
     position: absolute;
     left: calc(var(--bleed) + 4.5mm);
-    top: calc(var(--bleed) + 11mm);
+    top: calc(50% - 10mm);
     width: 20mm; height: 20mm;
     border-radius: 4.6mm;
     background: var(--paper);
     padding: 1.1mm;
-    box-shadow: 0 1mm 3mm rgba(0, 0, 0, .25);
+    box-shadow: 0 0 0 .8mm var(--ochre), 0 1.2mm 3.5mm rgba(0, 0, 0, .3);
   }
   .front .mark img { width: 100%; height: 100%; display: block; }
-  .front .team {
+  /* The app mark again, large and faint, tucked into the far corner. */
+  .front .watermark {
     position: absolute;
-    left: var(--bleed); width: 29mm;
-    top: calc(var(--bleed) + 35mm);
-    text-align: center;
-    color: var(--cream);
-    font-size: 5pt; font-weight: 700; letter-spacing: .26em; text-transform: uppercase;
-    line-height: 1.6;
+    right: -9mm; bottom: -11mm;
+    width: 40mm;
+    opacity: .06;
+    transform: rotate(-12deg);
   }
-  .front .team b { display: block; color: var(--ochre); font-weight: 800; font-size: 6.4pt; letter-spacing: .14em; }
 
   .front .main {
     position: absolute;
@@ -95,6 +123,7 @@
   }
   .front .logo { width: 30mm; display: block; }
   .front .who { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+  .front .hello { margin-bottom: 1.3mm; color: var(--ochre); font-size: 5.4pt; font-weight: 800; letter-spacing: .26em; text-transform: uppercase; }
   .front .name {
     color: var(--wine);
     font-weight: 800;

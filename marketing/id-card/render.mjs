@@ -51,12 +51,14 @@ const crops = ['h l t', 'h r t', 'h l b', 'h r b', 'v l t', 'v r t', 'v l b', 'v
 const front = ({ name, role }) => `
   <div class="page">${crops}
     <section class="card front" aria-label="Front">
-      <div class="side"><div class="pattern"></div></div>
+      <img class="watermark" src="../../public/media/favicon.png" alt="">
+      <div class="side"><div class="pattern"></div><div class="rings"><i></i><i></i><i></i></div></div>
+      <div class="perf"></div><div class="bite t"></div><div class="bite b"></div>
       <div class="mark"><img src="../../public/media/favicon.png" alt=""></div>
-      <p class="team">Team<b>CampBuddy</b></p>
       <div class="main">
         <img class="logo" src="../../public/media/logo.png" alt="CampBuddy">
         <div class="who">
+          ${name ? '<p class="hello">Hello, I’m</p>' : ''}
           <p class="name">${escape(name)}</p>
           ${name ? '<div class="rule"></div>' : ''}
           <p class="role">${escape(role)}</p>
