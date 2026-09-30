@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
 use App\Http\Controllers\Api\DataVersionController;
+use App\Http\Controllers\Api\DeviceTransferController;
 use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\DiscoveryWaveController;
 use App\Http\Controllers\Api\FreeStealSuggestionController;
@@ -34,6 +35,12 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
         // Waves: only the profile's owner (bearer owner token) sees its own.
         Route::get('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'index'])->name('api.discovery.waves.index');
 
+        // Moving an attendee's data to another device (DeviceTransferController):
+        // each call is authorized by a secret only one of the two devices holds.
+        Route::get('/discovery/{discoveryId}/transfer', [DeviceTransferController::class, 'pending'])->name('api.device-transfers.pending');
+        Route::get('/device-transfers/{transferId}', [DeviceTransferController::class, 'show'])->name('api.device-transfers.show');
+        Route::get('/device-transfers/{transferId}/sender', [DeviceTransferController::class, 'senderStatus'])->name('api.device-transfers.sender');
+
         Route::middleware('throttle:api-writes')->group(function () {
             Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');
             Route::post('/discovery', [DiscoveryController::class, 'store'])->name('api.discovery.store');
@@ -42,6 +49,12 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::post('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'store'])->name('api.discovery.waves.store');
             Route::post('/discovery/{discoveryId}/messages', [DiscoveryWaveController::class, 'message'])->name('api.discovery.messages.store');
             Route::delete('/discovery/{discoveryId}/waves/{targetId}', [DiscoveryWaveController::class, 'destroy'])->name('api.discovery.waves.destroy');
+
+            Route::post('/device-transfers', [DeviceTransferController::class, 'store'])->name('api.device-transfers.store');
+            Route::post('/device-transfers/{transferId}/complete', [DeviceTransferController::class, 'complete'])->name('api.device-transfers.complete');
+            Route::delete('/device-transfers/{transferId}', [DeviceTransferController::class, 'destroy'])->name('api.device-transfers.destroy');
+            Route::post('/discovery/{discoveryId}/transfer/{transferId}/approve', [DeviceTransferController::class, 'approve'])->name('api.device-transfers.approve');
+            Route::post('/discovery/{discoveryId}/transfer/{transferId}/decline', [DeviceTransferController::class, 'decline'])->name('api.device-transfers.decline');
 
             Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');
             Route::post('/free-steal-suggestions', [FreeStealSuggestionController::class, 'store'])->name('api.free-steal-suggestions.store');

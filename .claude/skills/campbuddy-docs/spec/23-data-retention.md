@@ -38,3 +38,5 @@ Tests: `tests/Feature/RetentionTest.php` (the "Sylhet" case: no end date, sessio
 Tests: `tests/js/` (`saved-copies`, `data-freshness`, `cache-version`, `sw`, `offline-warmup`) assert that no `caches.delete` / entry delete happens on any refresh path, and `tests/browser/offline.e2e.mjs` watches the real Cache Storage during a data change and a failing server.
 
 Also kept the same way: the **saved attendee-list photos** (`campbuddy-avatars`, at most 3000, replaced not deleted) — [4.4](04-non-functional-requirements.md#44-offline-first) note 6.
+
+**Device transfers** (`device_transfers`): a request to move someone's data to another device holds only public keys, statuses and — for at most 10 minutes, until the new device fetches it — the end-to-end encrypted payload the server can't read. Finished requests keep no payload and are deleted after 24 h; unanswered ones after 10 min (pruned every 5 min, and with the discovery profile).

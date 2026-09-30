@@ -463,6 +463,14 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
     } catch (error) {
       submitBtn.disabled = false;
       showError(error.userMessage ?? "Couldn't save. Check your connection and try again.");
+
+      // This phone's copy of the list didn't know yet that the name was linked
+      // meanwhile — often on the person's own other device: offer to move it here.
+      if (!existing && body.attendee_roster_id && error.status === 422 && /already linked this name/i.test(error.message)) {
+        import('./device-transfer.js')
+          .then(({ openTransferRequest }) => openTransferRequest({ eventSlug, eventId, entry: picked }))
+          .catch(() => {});
+      }
     }
   });
 }
@@ -534,7 +542,11 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
         row.addEventListener('click', () => {
           if (taken) {
             track('discovery_name_taken');
-            showToast('Someone already linked this name. If that wasn\'t you, ask an organizer.');
+            // Often it's the same person on their other device: offer to move it here.
+            const eventId = Number(document.getElementById('app')?.dataset.eventId);
+            import('./device-transfer.js')
+              .then(({ openTransferRequest }) => openTransferRequest({ eventSlug, eventId, entry: a }))
+              .catch(() => showToast('Someone already linked this name. If that wasn\'t you, ask an organizer.'));
             return;
           }
           onPick(a);

@@ -204,6 +204,16 @@ export async function removeMeeting(eventId, personKey) {
 }
 
 /**
+ * Writes rows into one of the keyed stores as they are (each row carries its
+ * own key) — used to bring in data moved from another device (device-transfer.js).
+ */
+export async function putRows(storeName, rows) {
+  return withStore(storeName, 'readwrite', async (store) => {
+    for (const row of rows) await promisify(store.put(row));
+  });
+}
+
+/**
  * Wipes every store — the "Clear My CampBuddy Data" action.
  */
 export async function clearAll() {

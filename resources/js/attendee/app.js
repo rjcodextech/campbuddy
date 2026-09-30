@@ -100,6 +100,9 @@ async function init() {
   // On the event's days: "N things left in your plan" (plan-reminder.js).
   import('./plan-reminder.js').then(({ initPlanReminder }) => initPlanReminder()).catch(() => {});
 
+  // This device holds the attendee's profile: show it if another device asks to have it moved.
+  import('./device-transfer.js').then(({ initDeviceTransferWatch }) => initDeviceTransferWatch(root)).catch(() => {});
+
   if (document.getElementById('home-data')) {
     const { renderHome } = await import('./home.js');
     renderHome(root);

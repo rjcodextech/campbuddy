@@ -7,6 +7,7 @@ use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
+use App\Models\DeviceTransfer;
 use App\Models\Event;
 use App\Support\FetchLogRetention;
 use App\Support\SystemHealth;
@@ -111,6 +112,12 @@ Schedule::call(fn () => Artisan::call('campbuddy:indexnow'))
     ->dailyAt('04:30')
     ->name('indexnow')
     ->withoutOverlapping(30);
+
+// "Move my CampBuddy to this device" requests (DeviceTransfer) live minutes at
+// most; this deletes every one whose time is up, sealed data included.
+Schedule::call(fn () => DeviceTransfer::prune())
+    ->everyFiveMinutes()
+    ->name('prune-device-transfers');
 
 /*
 |--------------------------------------------------------------------------

@@ -83,5 +83,6 @@
     </div>
 
     @include('attendee.templates.shared')
+    @include('attendee.templates.device-transfer')
 </body>
 </html>

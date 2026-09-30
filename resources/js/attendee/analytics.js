@@ -106,6 +106,11 @@ const EVENTS = {
   discovery_join: ['surface', 'identity', 'tag_count'],
   discovery_update: ['surface', 'identity', 'tag_count'],
   discovery_name_taken: [], // the "pick my name" search hit a name already linked
+  // Moving everything to another device (device-transfer.js) — only that it happened.
+  device_transfer_request: [],
+  device_transfer_approve: [],
+  device_transfer_decline: [],
+  device_transfer_done: [],
   discovery_profile_link_click: ['link_type'], // wporg | linkedin | twitter | website — never the address
   roster_link_click: ['link_type'], // same, on "Who's attending"
   discovery_leave: ['surface'],
