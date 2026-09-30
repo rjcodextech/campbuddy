@@ -45,7 +45,10 @@ export async function apiGet(eventSlug, path, ownerToken = null) {
   const headers = apiHeaders();
   if (ownerToken) headers.Authorization = `Bearer ${ownerToken}`;
 
-  const res = await fetchWithRetry(`/api/v1/events/${eventSlug}${path}`, { headers });
+  // 'no-cache': always ask the server (an unchanged list costs an empty 304).
+  // Without it the browser honours the lists' stale-while-revalidate and shows
+  // a copy up to a minute old first — someone who just joined wouldn't appear.
+  const res = await fetchWithRetry(`/api/v1/events/${eventSlug}${path}`, { headers, cache: 'no-cache' });
 
   if (!res.ok) {
     reportFailure(path, 'GET', res.status);
