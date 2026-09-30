@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Console\Commands\IndexNowCommand;
 use App\Models\Event;
 use App\Support\CacheVersion;
+use App\Support\SystemHealth;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -35,13 +37,23 @@ class CachePurger
     private const INGESTED_KEYS = ['sessions', 'speakers', 'sponsors', 'organizers'];
 
     /**
+     * Timestamps kept forever that a flush must not reset: without the
+     * scheduler heartbeat the dashboard and /api/v1/health would say "the
+     * scheduler has never run" until the next cron minute, and without
+     * IndexNow's last run the next run would resubmit every URL.
+     */
+    private const MARKER_KEYS = [SystemHealth::HEARTBEAT_KEY, IndexNowCommand::LAST_RUN_KEY];
+
+    /**
      * @return array{message: string, version: string, cloudflare: string, storage_link: string, caches_cleared: bool}
      */
     public function purge(?string $by = null): array
     {
         $keep = $this->setAsideIngestedData();
+        $markers = $this->setAsideMarkers();
         $cachesCleared = $this->clearServerCaches();
         $this->putBack($keep);
+        $this->putBackMarkers($markers);
 
         $storageLink = $this->ensureStorageLink();
         $cloudflare = $this->purgeCloudflare();
@@ -83,6 +95,30 @@ class CachePurger
     {
         foreach ($keep as $key => $value) {
             Cache::put($key, $value, now()->addDays(14));
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function setAsideMarkers(): array
+    {
+        $markers = [];
+
+        foreach (self::MARKER_KEYS as $key) {
+            $value = Cache::get($key);
+
+            if ($value !== null) {
+                $markers[$key] = $value;
+            }
+        }
+
+        return $markers;
+    }
+
+    /** @param  array<string, mixed>  $markers */
+    private function putBackMarkers(array $markers): void
+    {
+        foreach ($markers as $key => $value) {
+            Cache::forever($key, $value);
         }
     }
 

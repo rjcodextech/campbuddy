@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Console\Commands\IndexNowCommand;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\User;
 use App\Services\DataRefresher;
 use App\Support\CacheVersion;
+use App\Support\SystemHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
@@ -141,6 +143,20 @@ class CachePurgeTest extends TestCase
         $last = CacheVersion::last();
         $this->assertSame('admin@campbuddy.test', $last['by']);
         $this->assertNotEmpty($last['summary']);
+    }
+
+    public function test_a_purge_keeps_the_scheduler_heartbeat_and_indexnow_last_run(): void
+    {
+        $this->fakeWordCampSite();
+        $beat = now()->toIso8601String();
+        Cache::forever(SystemHealth::HEARTBEAT_KEY, $beat);
+        Cache::forever(IndexNowCommand::LAST_RUN_KEY, $beat);
+
+        $this->purge()->assertRedirect(route('dashboard'));
+
+        $this->assertSame($beat, Cache::get(SystemHealth::HEARTBEAT_KEY));
+        $this->assertSame($beat, Cache::get(IndexNowCommand::LAST_RUN_KEY));
+        $this->assertTrue(SystemHealth::checks()['scheduler']);
     }
 
     public function test_each_purge_produces_a_strictly_newer_version(): void
