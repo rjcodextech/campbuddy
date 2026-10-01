@@ -40,7 +40,7 @@
 
                 <x-form.textarea name="maker_links" label="Maker's own links" rows="3" class="md:col-span-6" :value="$steal->maker_links" maxlength="1000"
                                  placeholder="e.g. https://profiles.wordpress.org/lubus"
-                                 hint="One per line: WordPress.org profile, GitHub, X, LinkedIn, website. When one of these is on an event's Attendees page, that event shows “Made by someone at this WordCamp” and puts this card first." />
+                                 hint="One per line: WordPress.org profile, GitHub, X, LinkedIn, website. When one of these is on an event's Attendees page, that event shows “Made by someone attending this WordCamp” and puts this card first." />
             </div>
         </x-card>
 

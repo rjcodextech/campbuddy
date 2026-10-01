@@ -2,10 +2,10 @@
     One Free Steal on Explore → Free Steals: a free WordPress plugin or tool
     picked by the CampBuddy team, as one row on a shelf (components/_sponsor.scss,
     .steal-row): its logo (or a category icon without one), the name and its
-    maker, a Featured tag, and "Made at this WordCamp" when the maker is on
-    this event's Attendees page (FreeSteal::forEvent). Tapping the row opens
-    its sheet (explore.js, like the meet sheet): what it does, the category and
-    one button. The link is plain and opens in a new tab: GitHub and
+    maker and a Featured tag. Tapping the row opens its sheet (explore.js,
+    like the meet sheet): what it does, the category, "Made by someone
+    attending this WordCamp" when the maker is on this event's Attendees page
+    (FreeSteal::forEvent), and one button. The link is plain and opens in a new tab: GitHub and
     WordPress.org refuse to be framed.
 --}}
 @php($sheet = 'steal-sheet-'.$steal->id)
@@ -19,9 +19,6 @@
         <span class="steal-row__who">
             <span class="steal-row__name">{{ $steal->name }}</span>
             <span class="steal-row__maker">by {{ $steal->maker }}</span>
-            @if ($steal->made_here)
-                <span class="steal-row__here"><x-attendee.line-icon name="map-pin" /> Made at this WordCamp</span>
-            @endif
         </span>
 
         <span class="steal-row__side">
@@ -51,7 +48,7 @@
                         <span class="deal-card__tag">Featured</span>
                     @endif
                     @if ($steal->made_here)
-                        <span class="free-steal__here"><x-attendee.line-icon name="map-pin" /> Made by someone at this WordCamp</span>
+                        <span class="free-steal__here"><x-attendee.line-icon name="map-pin" /> Made by someone attending this WordCamp</span>
                     @endif
                 </div>
             @endif

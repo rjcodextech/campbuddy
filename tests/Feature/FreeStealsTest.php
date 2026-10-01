@@ -292,7 +292,7 @@ class FreeStealsTest extends TestCase
         $this->assertStringContainsString('<span>Info</span>', $html);
     }
 
-    // ---- Made by someone at this WordCamp ------------------------------------
+    // ---- Made by someone attending this WordCamp ------------------------------------
 
     private function attendee(Event $event, array $links, bool $suppressed = false): AttendeeRoster
     {
@@ -316,8 +316,8 @@ class FreeStealsTest extends TestCase
         $this->assertSame(['Off Switch', 'Company Tool'], $here->pluck('name')->all());
         $this->assertTrue($here->first()->made_here);
 
-        $this->get(route('event.explore', $jaipur))->assertOk()->assertSee('Made by someone at this WordCamp');
-        $this->get(route('event.explore', $delhi))->assertOk()->assertDontSee('Made by someone at this WordCamp');
+        $this->get(route('event.explore', $jaipur))->assertOk()->assertSee('Made by someone attending this WordCamp');
+        $this->get(route('event.explore', $delhi))->assertOk()->assertDontSee('Made by someone attending this WordCamp');
         $this->assertSame(['Company Tool', 'Off Switch'], FreeSteal::forEvent($delhi)->pluck('name')->all());
     }
 
