@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataRefreshController;
@@ -113,6 +114,9 @@ Route::prefix('admin')->group(function () {
 
         // Everything that is failing, in one place (the dashboard only summarises it).
         Route::get('errors', ErrorsController::class)->name('admin.errors.index');
+
+        // Google Analytics, read here (one GA stream at a time; cached an hour).
+        Route::get('analytics', AnalyticsController::class)->middleware('throttle:30,1')->name('admin.analytics.index');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
