@@ -85,6 +85,16 @@ export async function exportPdf(event) {
 
   const { jsPDF } = await import('jspdf');
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+
+  // Anything beyond Latin (Hindi, Bangla, Urdu, Tamil, Chinese, emoji…): the
+  // PDF library can't shape those scripts, so the phone lays the pages out
+  // itself and they go in as pictures — every language right, text not selectable.
+  if (needsPictures(model)) {
+    await drawAsPictures(doc, model);
+    doc.save(fileName(event));
+    return true;
+  }
+
   const page = { w: doc.internal.pageSize.getWidth(), h: doc.internal.pageSize.getHeight(), m: 48 };
   const width = page.w - page.m * 2;
   let y = page.m;
@@ -155,9 +165,110 @@ export async function exportPdf(event) {
     doc.text(`campbuddy.club  ·  ${i} / ${pages}`, page.m, page.h - 24);
   }
 
-  const slug = event.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  doc.save(`campbuddy-${slug || 'wordcamp'}.pdf`);
+  doc.save(fileName(event));
   return true;
+}
+
+function fileName(event) {
+  const slug = String(event.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return `campbuddy-${slug || 'wordcamp'}.pdf`;
+}
+
+// Text the built-in PDF font can draw: Latin-1 plus the typographic quotes,
+// dashes and ellipsis pdfSafe turns into plain ones.
+const LATIN = /^[\x00-\xFF–—‘’“”…]*$/;
+
+/** Whether any text in the PDF is outside what the built-in font can draw. */
+export function needsPictures(model) {
+  const all = [model.title, ...model.sections.flatMap((s) => [s.heading, ...s.rows])];
+  return all.some((text) => !LATIN.test(String(text)));
+}
+
+// A4 at 96 dpi, the way the browser lays it out; drawn at 2× for print.
+const SHEET = { w: 794, h: 1123, pad: 64, scale: 2 };
+
+/**
+ * The same layout as the text PDF, as real HTML pages the browser renders
+ * (its own fonts and shaping, any script, right-to-left too), then each page
+ * captured with html2canvas and placed on an A4 page.
+ */
+async function drawAsPictures(doc, model) {
+  const { default: html2canvas } = await import('html2canvas');
+
+  const host = document.createElement('div');
+  host.setAttribute('aria-hidden', 'true');
+  host.style.cssText = 'position:fixed;left:-10000px;top:0;';
+  document.body.appendChild(host);
+
+  const font = 'system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Arabic", sans-serif';
+  const el = (tag, css, text) => {
+    const node = document.createElement(tag);
+    node.style.cssText = css;
+    if (text !== undefined) {
+      node.textContent = text;
+      node.dir = 'auto';
+    }
+    return node;
+  };
+  const newSheet = () => {
+    const sheet = el('div', `box-sizing:border-box;width:${SHEET.w}px;height:${SHEET.h}px;padding:${SHEET.pad}px;background:#fff;color:#231f20;font-family:${font};position:relative;overflow:hidden;`);
+    sheet.appendChild(el('div', 'position:absolute;left:0;top:0;right:0;height:10px;background:#c33a19;'));
+    // Blocks go in here; its own height says when the page is full.
+    sheet.content = el('div', '');
+    sheet.appendChild(sheet.content);
+    host.appendChild(sheet);
+    return sheet;
+  };
+  // Room for text: the page less its margins and the footer line.
+  const full = (sheet) => sheet.content.offsetHeight > SHEET.h - SHEET.pad * 2 - 24;
+
+  // Blocks in reading order; each goes on the current sheet, or starts a new one if it doesn't fit.
+  const blocks = [
+    el('h1', 'margin:0 0 6px;font-size:30px;line-height:1.2;font-weight:800;', model.title),
+    el('p', 'margin:0 0 18px;font-size:13px;color:#6b625e;', `Saved from CampBuddy on ${new Date().toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}`),
+  ];
+  for (const section of model.sections) {
+    blocks.push(el('h2', 'margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #eadfd6;font-size:18px;font-weight:700;color:#c33a19;', section.heading));
+    for (const row of section.rows) {
+      const [head, ...details] = String(row).split('\n');
+      const item = el('div', 'display:flex;gap:10px;margin:0 0 8px;font-size:14px;line-height:1.45;');
+      item.appendChild(el('span', 'flex:none;', '•'));
+      const body = el('div', 'min-width:0;overflow-wrap:anywhere;');
+      body.appendChild(el('div', '', head));
+      details.forEach((d) => body.appendChild(el('div', 'font-size:12.5px;color:#6b625e;', d)));
+      item.appendChild(body);
+      blocks.push(item);
+    }
+  }
+
+  const sheets = [newSheet()];
+  for (const block of blocks) {
+    let sheet = sheets[sheets.length - 1];
+    sheet.content.appendChild(block);
+    // Doesn't fit: it starts the next page (unless it's alone — then it stays, cut at the bottom).
+    if (full(sheet) && sheet.content.childElementCount > 1) {
+      // A section heading never stays alone at the bottom: it moves with its first item.
+      const heading = block.previousElementSibling?.tagName === 'H2' && sheet.content.childElementCount > 2 ? block.previousElementSibling : null;
+      sheet = newSheet();
+      sheets.push(sheet);
+      if (heading) sheet.content.appendChild(heading);
+      sheet.content.appendChild(block);
+    }
+  }
+
+  try {
+    const w = doc.internal.pageSize.getWidth();
+    const h = doc.internal.pageSize.getHeight();
+
+    for (let i = 0; i < sheets.length; i++) {
+      sheets[i].appendChild(el('div', `position:absolute;left:${SHEET.pad}px;bottom:28px;font-size:11px;color:#6b625e;`, `campbuddy.club  ·  ${i + 1} / ${sheets.length}`));
+      const canvas = await html2canvas(sheets[i], { backgroundColor: '#ffffff', scale: SHEET.scale, logging: false, width: SHEET.w, height: SHEET.h, windowWidth: SHEET.w });
+      if (i > 0) doc.addPage();
+      doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, w, h);
+    }
+  } finally {
+    host.remove();
+  }
 }
 
 /** Whether this phone holds anything for the event — only they get the thank-you card. */

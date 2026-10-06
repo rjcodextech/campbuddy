@@ -7,7 +7,7 @@ globalThis.window = {};
 globalThis.location = { href: 'https://campbuddy.club/event/x', origin: 'https://campbuddy.club', search: '' };
 globalThis.document = { getElementById: () => null, querySelectorAll: () => [] };
 
-const { pdfModel, pdfSafe, hasEventData } = await import('../../resources/js/attendee/export-pdf.js');
+const { pdfModel, pdfSafe, hasEventData, needsPictures } = await import('../../resources/js/attendee/export-pdf.js');
 const { shouldOpen } = await import('../../resources/js/attendee/thank-you.js');
 
 const dump = {
@@ -70,4 +70,12 @@ test('the card opens from day 3, once, or at once from the push', () => {
   assert.equal(shouldOpen({ ...base, hasData: false }), false);
   assert.equal(shouldOpen({ ...base, daysSince: 1, forced: true, hasData: false }), true);
   assert.equal(shouldOpen({ ...base, forced: true, seen: true }), false);
+});
+
+test('Latin-only data stays a text PDF; any other script switches to the page-picture PDF', () => {
+  const latin = { title: 'My WordCamp Rajasthan 2026', sections: [{ heading: 'Sessions I saved (1)', rows: ['Sat · “AI” – José’s talk…'] }] };
+  assert.equal(needsPictures(latin), false);
+  for (const text of ['मिलना है – Polyglots', 'বাংলা নোট', 'اردو نوٹ', 'தமிழ்', '中文', 'Great talk 🎉']) {
+    assert.equal(needsPictures({ ...latin, sections: [{ heading: 'People', rows: [`Asha\nNote: ${text}`] }] }), true, text);
+  }
 });
