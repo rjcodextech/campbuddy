@@ -86,6 +86,10 @@ class AfterEventTest extends TestCase
         $this->assertTrue($next < $justDone && $justDone < $done, 'upcoming first, then the most recently finished');
         $this->assertSame(2, substr_count($html, 'event-card--completed'));
         $this->assertStringContainsString('Completed', $html);
+        // Each has its own "Save your WordCamp Data" button (the PDF is made right on the picker), outside the card's link.
+        $this->assertSame(2, substr_count($html, 'data-export-event='));
+        $this->assertStringContainsString('Save your WordCamp Data', $html);
+        $this->assertDoesNotMatchRegularExpression('#<a [^>]*>(?:(?!</a>).)*data-export-event#s', $html);
         // Each completed card brings its thank-you card along.
         $this->assertSame(2, substr_count($html, 'data-thank-you'."\n") + substr_count($html, 'data-thank-you '));
     }

@@ -97,7 +97,10 @@ async function init() {
   // After a WordCamp (event pages, and "Completed" cards on the picker): the thank-you card.
   if (document.querySelector('dialog[data-thank-you]')) {
     import('./thank-you.js')
-      .then(({ initThankYou }) => initThankYou({ surface: document.getElementById('app') ? 'event' : 'home' }))
+      .then(({ initThankYou, initCompletedExports }) => {
+        initCompletedExports();
+        return initThankYou({ surface: document.getElementById('app') ? 'event' : 'home' });
+      })
       .catch(() => {});
   }
 

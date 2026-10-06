@@ -156,3 +156,34 @@ function readJson(el) {
     return {};
   }
 }
+
+// The picker's "Save your WordCamp Data" under each Completed card: the PDF,
+// made right there. The event's name and quest titles come from its thank-you
+// card on the same page.
+export function initCompletedExports() {
+  document.querySelectorAll('[data-export-event]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const dialog = document.getElementById(`thank-you-${btn.dataset.exportEvent}`);
+      if (!dialog) return;
+
+      btn.disabled = true;
+      try {
+        const made = await exportPdf({
+          id: dialog.dataset.eventId,
+          name: dialog.dataset.eventName,
+          questTitles: readJson(dialog.querySelector('[data-thank-you-quests]')),
+        });
+        if (made) {
+          track('data_export', { method: 'pdf' });
+          showToast('Saved. Look for it in your downloads.');
+        } else {
+          showToast('Nothing from this WordCamp is saved on this phone.');
+        }
+      } catch {
+        showToast("Couldn't make the PDF. Try again.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+}
