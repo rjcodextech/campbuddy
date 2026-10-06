@@ -394,7 +394,9 @@ export async function renderMyDay(root) {
     if (!btn) return;
     activeDay = btn.dataset.day === '__all' ? null : (btn.dataset.day === activeDay ? null : btn.dataset.day);
     document.querySelectorAll('#day-filters [data-day]').forEach((b) => setPressed(b, b.dataset.day === (activeDay ?? '__all')));
-    track('schedule_filter', { filter_type: 'day', filter_value: activeDay ? btn.textContent : 'all' });
+    // The day key, not the chip's text: the text follows the phone's language
+    // ("Sun 4 Oct", "Sun, Oct 4"…), which split one day into many GA rows.
+    track('schedule_filter', { filter_type: 'day', filter_value: activeDay ?? 'all' });
     renderFull();
   });
 

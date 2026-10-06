@@ -416,16 +416,25 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
       display_name: identity === 'typed' ? displayName || null : null,
     };
 
+    // Why a Join didn't go through, so GA shows where people stop (only the
+    // reason — never what they typed). Updates aren't counted: they're not the drop-off.
+    const blocked = (result) => {
+      if (!existing) track('discovery_join_blocked', { surface: surfaceOf(options), result });
+    };
+
     if (identity === 'roster' && !picked) {
       showError('Find and tap your name in the list, or choose "Type my name".');
+      blocked('no_name_picked');
       return;
     }
     if (identity === 'typed' && displayName.length < 2) {
       showError('Type the name people know you by, or choose "Stay anonymous".');
+      blocked('name_too_short');
       return;
     }
     if (body.tags.length === 0) {
       showError('Pick at least one tag that describes you.');
+      blocked('no_tags');
       return;
     }
 
@@ -463,6 +472,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
     } catch (error) {
       submitBtn.disabled = false;
       showError(error.userMessage ?? "Couldn't save. Check your connection and try again.");
+      blocked('save_failed');
 
       // This phone's copy of the list didn't know yet that the name was linked
       // meanwhile — often on the person's own other device: offer to move it here.

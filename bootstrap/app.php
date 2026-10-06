@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureEventIsPublic;
+use App\Http\Middleware\RedirectWwwToApex;
 use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Every response — pages, the API, the admin panel, /up.
         $middleware->append(SecurityHeaders::class);
+
+        // One address for the app: www.campbuddy.club → campbuddy.club.
+        // Inside TrustProxies and SecurityHeaders so the redirect keeps https behind Cloudflare.
+        $middleware->append(RedirectWwwToApex::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

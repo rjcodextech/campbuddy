@@ -104,6 +104,7 @@ const EVENTS = {
   // identity = which way they chose to be shown (attendee_list | typed_name |
   // anonymous) — the kind of choice, never the name or the entry picked.
   discovery_join: ['surface', 'identity', 'tag_count'],
+  discovery_join_blocked: ['surface', 'result'], // why Join didn't go through: no_name_picked | name_too_short | no_tags | save_failed
   discovery_update: ['surface', 'identity', 'tag_count'],
   discovery_name_taken: [], // the "pick my name" search hit a name already linked
   // Moving everything to another device (device-transfer.js) — only that it happened.
@@ -272,7 +273,21 @@ function onError(e) {
 }
 
 function onRejection(e) {
-  reportError(e.reason?.name ? `Unhandled${e.reason.name}` : 'UnhandledRejection');
+  reportError(e.reason?.name ? `Unhandled${e.reason.name}` : 'UnhandledRejection', rejectionPlace(e.reason?.stack));
+}
+
+// A rejected promise has no filename/lineno, only a stack: take its first
+// frame in our own scripts, as file:line:column (built files are one line, so
+// the column is what finds the code). Never the message.
+export function rejectionPlace(stack) {
+  if (typeof stack !== 'string') return null;
+
+  for (const m of stack.matchAll(/(https?:\/\/[^\s()@]+?):(\d+):(\d+)/g)) {
+    if (!m[1].startsWith(location.origin)) continue;
+    return `${m[1].split('?')[0].split('/').pop()}:${m[2]}:${m[3]}`;
+  }
+
+  return null;
 }
 
 // The kind of page and — on an event page — where the event is in time

@@ -53,7 +53,9 @@ return [
         'session_title' => 'Session title',
         'overlap' => 'Saved session overlaps another saved one',
         'link_type' => 'Kind of link: slides, video, wporg, linkedin…',
-        'result' => 'Reminder offer result',
+        // Shared (all 50 dimensions are taken): the reminder offer's result, and
+        // why a discovery Join didn't go through (discovery_join_blocked).
+        'result' => 'Reminder offer result, or why a discovery join was blocked',
 
         // Quest, Contribute
         'quest_id' => 'Quest ID',
