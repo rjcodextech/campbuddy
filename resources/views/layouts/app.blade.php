@@ -5,6 +5,7 @@
         ['label' => 'Default deals', 'icon' => 'tag', 'href' => route('admin.deals.index'), 'active' => request()->routeIs('admin.deals.*')],
         ['label' => 'Free Steals', 'icon' => 'download', 'href' => route('admin.free-steals.index'), 'active' => request()->routeIs('admin.free-steals.*')],
         ['label' => 'Event managers', 'icon' => 'users', 'href' => route('admin.event-managers.index'), 'active' => request()->routeIs('admin.event-managers.*')],
+        ['label' => 'Feedback', 'icon' => 'inbox', 'href' => route('admin.feedback.index'), 'active' => request()->routeIs('admin.feedback.*')],
         ['label' => 'Analytics', 'icon' => 'eye', 'href' => route('admin.analytics.index'), 'active' => request()->routeIs('admin.analytics.*')],
         ['label' => 'Errors', 'icon' => 'exclamation-triangle', 'href' => route('admin.errors.index'), 'active' => request()->routeIs('admin.errors.*')],
         ['label' => 'Media Library', 'icon' => 'photo', 'href' => route('admin.media.index'), 'active' => request()->routeIs('admin.media.*')],

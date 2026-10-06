@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DataVersionController;
 use App\Http\Controllers\Api\DeviceTransferController;
 use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\DiscoveryWaveController;
+use App\Http\Controllers\Api\EventFeedbackController;
 use App\Http\Controllers\Api\FreeStealSuggestionController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
@@ -58,6 +59,8 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
 
             Route::post('/offers/{offer}/leads', [OfferLeadController::class, 'store'])->name('api.offers.leads.store');
             Route::post('/free-steal-suggestions', [FreeStealSuggestionController::class, 'store'])->name('api.free-steal-suggestions.store');
+            // The after-event thank-you card's rating (one per device, changeable).
+            Route::post('/feedback', [EventFeedbackController::class, 'store'])->name('api.feedback.store');
         });
 
         // Reminder bookmarks: a public write, so throttled too — on their own,

@@ -27,6 +27,7 @@
         'Discovery' => [
             'discovery_join_start' => 'Tapped Join', 'discovery_join' => 'Joined discovery', 'discovery_wave' => 'Waved at someone',
             'discovery_mutual_view' => 'Saw a mutual wave', 'discovery_message' => 'Sent a message', 'device_transfer_done' => 'Moved to a new phone',
+            'discovery_join_blocked' => 'Join stopped (missing name / tags, or save failed)',
         ],
         'Camp Card, install, reminders' => [
             'camp_card_save' => 'Saved their Camp Card', 'camp_card_download' => 'Downloaded their Camp Card', 'share' => 'Shared',
@@ -35,6 +36,10 @@
         'Deals, sponsors, Free Steals' => [
             'deal_open' => 'Opened a deal', 'generate_lead' => 'Sent a lead', 'deal_code_copy' => 'Copied a coupon code',
             'sponsor_open' => 'Opened a sponsor', 'free_steal_open' => 'Opened a Free Steal', 'free_steal_suggest' => 'Suggested a Free Steal',
+        ],
+        'After the event' => [
+            'thank_you_view' => 'Saw the thank-you card', 'event_feedback' => 'Rated it (see Admin → Feedback)',
+            'data_export' => 'Exported their data (PDF or JSON)', 'thank_you_next_click' => 'Tapped "your next WordCamp"',
         ],
     ];
     $hasAppEvents = $events->has('page_context');

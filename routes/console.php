@@ -7,6 +7,7 @@ use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
+use App\Jobs\SendThankYouPushJob;
 use App\Models\DeviceTransfer;
 use App\Models\Event;
 use App\Support\FetchLogRetention;
@@ -83,6 +84,10 @@ Schedule::call(fn () => Cache::forever(SystemHealth::HEARTBEAT_KEY, now()->toIso
 // The reminder window is 5-10 minutes before a session — every
 // minute is the tightest useful cadence without spamming the queue.
 Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders');
+
+// Day 3 after a WordCamp: one thank-you push per event (rating + PDF export).
+// Hourly, so each venue gets it in its own daytime (the job checks the hour).
+Schedule::job(new SendThankYouPushJob)->hourlyAt(5)->name('send-thank-you-push');
 
 // Central discovery, every 2 days — new WordCamps don't appear hourly,
 // and every result lands as a draft pending admin approval. Laravel's

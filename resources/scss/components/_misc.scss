@@ -183,3 +183,15 @@
         transform: translate(-50%, -8px);
     }
 }
+
+// A button that reads as an inline text link (e.g. "Download the raw data").
+.link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: var(--brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}

@@ -349,18 +349,18 @@ class TimeAccuracyTest extends TestCase
         $this->withoutVite()->get('/')->assertSee('WordCamp Rajasthan 2026');
 
         // 08:00 UTC on the 11th is 01:00 on the 11th there: the last day is over
-        // (so the picker stops listing it) — but nothing is archived yet.
+        // (so the picker lists it as "Completed") — but nothing is archived yet.
         $this->travelTo(CarbonImmutable::parse('2026-10-11T08:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('active', $la->fresh()->status);
-        $this->withoutVite()->get('/')->assertDontSee('WordCamp Rajasthan 2026');
+        $this->withoutVite()->get('/')->assertSee('WordCamp Rajasthan 2026')->assertSee('event-card--completed', false);
 
-        // Retention runs to the end of the 13th in Los Angeles = 06:59:59 UTC on the 14th.
-        $this->travelTo(CarbonImmutable::parse('2026-10-14T06:00:00Z'));
+        // Retention runs to the end of the 17th in Los Angeles = 06:59:59 UTC on the 18th.
+        $this->travelTo(CarbonImmutable::parse('2026-10-18T06:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('active', $la->fresh()->status);
 
-        $this->travelTo(CarbonImmutable::parse('2026-10-14T08:00:00Z'));
+        $this->travelTo(CarbonImmutable::parse('2026-10-18T08:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('archived', $la->fresh()->status);
     }
@@ -375,8 +375,12 @@ class TimeAccuracyTest extends TestCase
         $this->assertSame('active', $nz->fresh()->status);
         $this->assertTrue(EventTime::isOver($nz));
 
-        // Retention runs to the end of the 13th in Auckland (UTC+13) = 10:59:59 UTC that day.
-        $this->travelTo(CarbonImmutable::parse('2026-10-13T12:00:00Z'));
+        // Retention runs to the end of the 17th in Auckland (UTC+13) = 10:59:59 UTC that day.
+        $this->travelTo(CarbonImmutable::parse('2026-10-17T10:00:00Z'));
+        EvaluateEventLifecycleJob::dispatchSync();
+        $this->assertSame('active', $nz->fresh()->status);
+
+        $this->travelTo(CarbonImmutable::parse('2026-10-17T12:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('archived', $nz->fresh()->status);
     }
@@ -388,7 +392,7 @@ class TimeAccuracyTest extends TestCase
         $this->postJson(route('api.discovery.store', $event), ['tags' => ['developer']])->assertCreated();
 
         $this->assertSame(
-            '2026-10-14T18:29:59+00:00', // 23:59:59 IST on the 14th: the 11th plus three days
+            '2026-10-18T18:29:59+00:00', // 23:59:59 IST on the 18th: the 11th plus seven days
             CarbonImmutable::parse(\App\Models\DiscoveryProfile::first()->expires_at)->utc()->toIso8601String()
         );
     }

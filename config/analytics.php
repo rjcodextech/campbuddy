@@ -105,6 +105,7 @@ return [
         'tag_count' => 'Discovery interest tags chosen',
         'left_count' => 'Plan items still to do when reminded',
         'metric_value' => 'Web Vitals value (ms, or unitless for CLS)',
+        'rating' => 'Thank-you card rating (1-5)',
     ],
 
     // Marked as key events (GA4's "conversions"): the outcomes that mean

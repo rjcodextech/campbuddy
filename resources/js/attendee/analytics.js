@@ -144,7 +144,12 @@ const EVENTS = {
   camp_card_export_error: ['action', 'layout'],
 
   // Data controls
-  data_export: [],
+  data_export: ['method'], // pdf (Save my day as PDF) | json (raw data)
+
+  // After the event: the thank-you card (thank-you.js)
+  thank_you_view: ['surface'], // event | home
+  event_feedback: ['surface', 'rating'], // rating 1-5 as a number; the comment never goes to GA
+  thank_you_next_click: ['surface'], // "your next WordCamp" link
   data_clear: [],
 
   // Health

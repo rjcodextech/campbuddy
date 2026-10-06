@@ -68,6 +68,11 @@
     <div class="app-frame app-frame--with-nav">
         @include('attendee.partials.desktop-notice')
 
+        {{-- Once it's over: the thank-you card (rating, PDF, next WordCamp). thank-you.js decides when it opens. --}}
+        @if ($eventPhase === 'after')
+            @include('attendee.partials.thank-you', ['event' => $event])
+        @endif
+
         {{-- Event facts the planner and calendar exports need (plan.js, calendar.js). --}}
         <div id="app" data-event-slug="{{ $event->slug }}" data-event-id="{{ $event->id }}"
              data-event-name="{{ $event->display_name }}"

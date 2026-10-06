@@ -9,7 +9,8 @@ use Illuminate\View\View;
 
 /**
  * Root route: always shows the WordCamp picker — every upcoming or current
- * event (up to LIMIT), soonest first — rather than silently skipping it whenever
+ * event (up to LIMIT), soonest first, then the ones that finished in the last
+ * week as "Completed" — rather than silently skipping it whenever
  * there's only one visible event. Multi-event browsing (§2.2) lands here
  * as more events go live; this is the always-reachable entry point,
  * including as a "WordCamp's" destination from inside an event
@@ -37,7 +38,7 @@ class HomeController extends Controller
             // A few days of slack in SQL — the earliest time zone is a day behind
             // UTC, and an event whose end date is missing may still have sessions
             // days after its start (found below, from its schedule)…
-            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->subDays(3)->toDateString()]))
+            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->subDays(EventTime::RETENTION_DAYS + 3)->toDateString()]))
             // Soonest first; events with no start date go after the dated ones
             // (MySQL sorts NULLs first in ascending order), then by id so the
             // order never shuffles between page loads.
@@ -46,11 +47,18 @@ class HomeController extends Controller
             ->orderBy('id')
             ->take(self::LIMIT * 4)
             ->get()
-            // …then exact: shown until its last day has ended at the venue.
+            // …then exact: upcoming until its last day has ended at the venue;
+            // after that "Completed" for the retention week (people can still
+            // open it, export their day as a PDF, answer the thank-you card),
+            // listed after every upcoming one, most recently finished first.
             ->tap(fn ($found) => EventTime::primeSessionDays($found))
-            ->reject(fn (Event $event) => EventTime::isOver($event))
+            ->filter(fn (Event $event) => ! EventTime::isOver($event) || EventTime::retained($event))
+            ->partition(fn (Event $event) => ! EventTime::isOver($event))
+            ->pipe(fn ($parts) => $parts[0]->concat($parts[1]->sortByDesc(fn (Event $event) => EventTime::lastDay($event))))
             ->take(self::LIMIT)
             ->values();
+
+        $completed = $events->filter(fn (Event $event) => EventTime::isOver($event))->pluck('id')->flip()->all();
 
         // Each card's country, and the time zones of those countries so the
         // browser can pick the visitor's own (EventCountry).
@@ -59,6 +67,7 @@ class HomeController extends Controller
 
         return view('welcome', [
             'events' => $events,
+            'completed' => $completed,
             'eventCountries' => $countries->all(),
             'countryNames' => $codes->mapWithKeys(fn ($code) => [$code => EventCountry::name($code)])->all(),
             'countryZones' => EventCountry::timezones($codes),

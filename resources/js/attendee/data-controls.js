@@ -5,6 +5,7 @@
 import { apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { clearAll, exportAll, kvGet, kvSet } from './db.js';
+import { showToast } from './toast.js';
 
 // The card itself is attendee/partials/data-controls.blade.php, included
 // inside #data-controls on the pages that offer it — this only wires it.
@@ -12,8 +13,35 @@ export function mountDataControls(root, containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  document.getElementById('dc-export').addEventListener('click', () => exportData(root));
+  document.getElementById('dc-export').addEventListener('click', (e) => exportPdfFor(root, e.currentTarget));
+  document.getElementById('dc-export-json')?.addEventListener('click', () => exportData(root));
   document.getElementById('dc-clear').addEventListener('click', () => clearData(root));
+}
+
+// "Save as PDF": this event's sessions, people, quests and the Camp Card.
+async function exportPdfFor(root, btn) {
+  btn.disabled = true;
+  try {
+    let questTitles = {};
+    try {
+      questTitles = JSON.parse(document.getElementById('dc-quests')?.textContent ?? '{}');
+    } catch {
+      // Quests then show by number.
+    }
+
+    const { exportPdf } = await import('./export-pdf.js');
+    const made = await exportPdf({ id: root.dataset.eventId, name: root.dataset.eventName, questTitles });
+    if (made) {
+      track('data_export', { method: 'pdf' });
+      showToast('Saved. Look for it in your downloads.');
+    } else {
+      showToast('Nothing saved for this WordCamp on this phone yet.');
+    }
+  } catch {
+    showToast("Couldn't make the PDF. Try again.");
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function exportData(root) {
@@ -26,7 +54,7 @@ async function exportData(root) {
   a.click();
   // Revoking straight away cancels the download on iOS Safari and some Firefox versions.
   setTimeout(() => URL.revokeObjectURL(url), 10000);
-  track('data_export');
+  track('data_export', { method: 'json' });
 }
 
 async function clearData(root) {

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Event;
+use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -23,7 +24,7 @@ class EventTime
     /** Today's date at the venue ("Y-m-d"). */
     public static function today(Event $event, ?\DateTimeInterface $now = null): string
     {
-        return \Carbon\CarbonImmutable::instance($now ?? now())->setTimezone(self::zone($event))->toDateString();
+        return CarbonImmutable::instance($now ?? now())->setTimezone(self::zone($event))->toDateString();
     }
 
     /**
@@ -32,8 +33,15 @@ class EventTime
      * until this many days have passed. Scraped dates are sometimes missing or
      * a day off, and an attendee's own plans and connections must never vanish
      * while the event might still be on — or the morning after.
+     *
+     * 7 (was 3 until 6 Oct 2026): a finished WordCamp stays on the picker as
+     * "Completed" for a week, so people can still open it, export their day
+     * as a PDF and answer the thank-you card (day 3 onward).
      */
-    public const RETENTION_DAYS = 3;
+    public const RETENTION_DAYS = 7;
+
+    /** Days after its last day when the thank-you push goes out and the card starts showing. */
+    public const THANK_YOU_AFTER_DAYS = 3;
 
     /** How many days before its start date a scheduled session still counts as the event (Contributor Day). */
     public const LEAD_DAYS = 3;
@@ -80,6 +88,19 @@ class EventTime
         return $session < $start && $session >= $earliest ? $session : $start;
     }
 
+    /** Whole days since the event's last day, at the venue (1 = the day after); null without dates or before it's over. */
+    public static function daysSinceEnd(Event $event, ?\DateTimeInterface $now = null): ?int
+    {
+        $last = self::lastDay($event);
+        $today = self::today($event, $now);
+
+        if ($last === null || $last >= $today) {
+            return null;
+        }
+
+        return (int) CarbonImmutable::parse($last)->diffInDays(CarbonImmutable::parse($today));
+    }
+
     /** Whether the event's last day is over at the venue. */
     public static function isOver(Event $event, ?\DateTimeInterface $now = null): bool
     {
@@ -94,7 +115,7 @@ class EventTime
      * measured in the latest zone on Earth (UTC−12), so no event is ever cut
      * short by a guess. Null when the event has no dates at all.
      */
-    public static function retentionEnd(Event $event): ?\Carbon\CarbonImmutable
+    public static function retentionEnd(Event $event): ?CarbonImmutable
     {
         $last = self::lastDay($event);
 
@@ -104,7 +125,7 @@ class EventTime
 
         $zone = self::parse($event->timezone) ?? new DateTimeZone('Etc/GMT+12');
 
-        return \Carbon\CarbonImmutable::parse($last.' 23:59:59', $zone)->addDays(self::RETENTION_DAYS)->utc();
+        return CarbonImmutable::parse($last.' 23:59:59', $zone)->addDays(self::RETENTION_DAYS)->utc();
     }
 
     /** Whether the event is still inside its retention window (an event with no dates always is). */
@@ -112,7 +133,7 @@ class EventTime
     {
         $end = self::retentionEnd($event);
 
-        return $end === null || \Carbon\CarbonImmutable::instance($now ?? now())->lte($end);
+        return $end === null || CarbonImmutable::instance($now ?? now())->lte($end);
     }
 
     /**
@@ -170,7 +191,7 @@ class EventTime
                     }
 
                     try {
-                        $day = \Carbon\CarbonImmutable::parse($session['starts_at'])->setTimezone($zone)->toDateString();
+                        $day = CarbonImmutable::parse($session['starts_at'])->setTimezone($zone)->toDateString();
                     } catch (Throwable) {
                         continue;
                     }
@@ -220,7 +241,7 @@ class EventTime
             }
 
             try {
-                $start = \Carbon\CarbonImmutable::parse($session['starts_at']);
+                $start = CarbonImmutable::parse($session['starts_at']);
             } catch (Throwable) {
                 continue;
             }

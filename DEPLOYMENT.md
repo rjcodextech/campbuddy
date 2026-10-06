@@ -122,6 +122,19 @@ php artisan optimize:clear && php artisan optimize
 
 **Suraksha:** `.env` ka koi bhi hissa (khaas kar `VAPID_PRIVATE_KEY`, `APP_KEY`, DB password, API token) chat, email ya screenshot me na bhejein. Galti se chala jaye to `VAPID_*` ko rotate na karein (upar wajah), bas dobara share na karein; API token aur DB password badal lein.
 
+## 6 Oct 2026 ka release: Analytics, Feedback, Completed WordCamps
+
+Is release me (stable par 3 commits, deploy aapko karna hai):
+
+- **Naya migration** `2026_10_06_090100_add_event_feedback_and_thank_you` (`event_feedback` table + `events.thank_you_sent_at`). `campbuddy:doctor` chala dega.
+- **Retention 3 → 7 din**: khatam WordCamp picker par 7 din "Completed" dikhega, uske pages khule rahenge, discovery data 7 din baad hatega. Deploy ke turant baad pichhle hafte khatam hue events (jaise Rajasthan) wapas "Completed" dikhenge — ye sahi hai.
+- **Naya scheduled job** `send-thank-you-push` (har ghante :05) — cron pehle se chal raha hai to kuch nahi karna.
+- **npm build zaroori** (`public/build/` upload karein): naya `jspdf` package aur naye JS/CSS.
+- **GA**: `php artisan campbuddy:ga-setup` ek baar (naya custom metric `rating`; Editor key sirf us waqt rakhein). Admin → Analytics ke liye Viewer key (upar `.env` table dekhein).
+- **www redirect**: `www.campbuddy.club` ab app khud `campbuddy.club` par 301 karta hai. Cloudflare me alag redirect rule ki zaroorat nahi.
+
+Deploy ke baad check: `/admin/analytics` khule aur numbers dikhaye; `/admin/feedback` khule; `https://www.campbuddy.club/` → `https://campbuddy.club/` par jaaye; homepage par Rajasthan "Completed" dikhe.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.

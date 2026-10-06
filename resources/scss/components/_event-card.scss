@@ -193,3 +193,32 @@
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: v.$space-4;
 }
+
+// A WordCamp that's over but still inside its retention week (HomeController):
+// a cool teal wash instead of paper, so it reads as "done" next to the
+// upcoming ones without looking disabled. Its pages still open.
+.event-card--completed {
+    background: color-mix(in srgb, var(--teal) 7%, var(--paper));
+    border-color: color-mix(in srgb, var(--teal) 30%, var(--line));
+
+    .event-card__footer {
+        border-top-color: color-mix(in srgb, var(--teal) 22%, var(--line));
+    }
+
+    .event-card__cta {
+        color: color-mix(in srgb, var(--teal) 70%, var(--ink));
+    }
+}
+
+.event-card__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 2px v.$space-2;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--teal) 14%, var(--paper));
+    color: color-mix(in srgb, var(--teal) 70%, var(--ink));
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    white-space: nowrap;
+}

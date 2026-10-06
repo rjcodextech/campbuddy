@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventManagerActivityController;
 use App\Http\Controllers\Admin\EventManagerController;
+use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
@@ -117,6 +118,8 @@ Route::prefix('admin')->group(function () {
 
         // Google Analytics, read here (one GA stream at a time; cached an hour).
         Route::get('analytics', AnalyticsController::class)->middleware('throttle:30,1')->name('admin.analytics.index');
+        // What attendees said on the after-event thank-you card.
+        Route::get('feedback', FeedbackController::class)->name('admin.feedback.index');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -44,7 +44,9 @@ Names are `snake_case`; `share`, `generate_lead` and `exception` are GA4 recomme
 | Deals / leads | `deal_lead_form_open`, `deal_lead_form_cancel`, `generate_lead` | `offer_id`, `offer_title` — **no lead fields** |
 | Discovery / roster | `discovery_join_start`, `discovery_join`, `discovery_update`, `discovery_leave`, `discovery_met_mark`, `home_discovery_explore_click`, `roster_search_use`, `roster_removal_search`, `roster_removal_confirm` | `surface` (home\|explore) only — no profile, match or roster data |
 | Camp Card | `camp_card_save`, `camp_card_download`, `share`, `camp_card_export_error` | `layout`; `method`, `content_type`, `item_id`; `action` — never its content |
-| Data controls | `data_export`, `data_clear` | — |
+| Data controls | `data_export`, `data_clear` | `method` (pdf / json) on `data_export` |
+| After the event (thank-you card) | `thank_you_view`, `event_feedback`, `thank_you_next_click` | `surface` (event / home); `rating` (custom metric, 1–5) on `event_feedback` — the comment never goes to GA |
+| Discovery Join drop-off | `discovery_join_blocked` | `surface`, `result` (no_name_picked / name_too_short / no_tags / save_failed; `result` is shared with `reminder_offer`, all 50 dimensions being taken) |
 | Health | `exception`, `api_error` | `description`; `endpoint`, `method`, `status` |
 
 > **Privacy-statement wording:** [17](17-privacy.md) says Quest progress "stays on your phone." `quest_complete`/`quest_undo` and `session_save` are anonymous engagement events, not the progress data itself, and neither is on the [8.5](08-security-privacy.md#85-analytics-guardrail) exclusion list — but if that wording should be literal, delete those entries from `EVENTS` and they stop being sent.

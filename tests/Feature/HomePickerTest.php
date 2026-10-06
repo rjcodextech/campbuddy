@@ -138,14 +138,18 @@ class HomePickerTest extends TestCase
         $this->assertEqualsCanonicalizing(['Running now', 'Ends today', 'Single day today'], $this->listed());
     }
 
-    public function test_past_events_are_hidden_including_ones_with_no_end_date(): void
+    public function test_past_events_are_listed_after_the_upcoming_ones_for_a_week_including_ones_with_no_end_date(): void
     {
         $this->event('Ended yesterday', now()->subDays(3)->toDateString(), now()->subDay()->toDateString());
         // Only a start date, and it has passed: that IS its last known day, so it's over.
         $this->event('Single day, past', now()->subDays(2)->toDateString(), null);
         $this->event('Upcoming', now()->addDays(4)->toDateString());
+        // Over for longer than the retention week: gone.
+        $this->event('Long over', now()->subDays(12)->toDateString(), now()->subDays(10)->toDateString());
 
-        $this->assertSame(['Upcoming'], $this->listed());
+        // Upcoming first; the finished ones after it as "Completed", most recently finished first.
+        $this->assertSame(['Upcoming', 'Ended yesterday', 'Single day, past'], $this->listed());
+        $this->assertSame(2, substr_count($this->get('/')->getContent(), 'event-card--completed'));
     }
 
     public function test_drafts_hidden_and_archived_events_are_never_listed(): void

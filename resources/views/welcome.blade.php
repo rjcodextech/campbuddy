@@ -186,8 +186,10 @@
                                 }
                             @endphp
 
+                            @php($isCompleted = isset($completed[$event->id]))
                             <x-attendee.event-card
                                 :href="route('event.home', $event)"
+                                @class(['event-card--completed' => $isCompleted])
                                 data-track="select_event"
                                 :data-track-event-slug="$event->slug"
                                 :title="$event->display_name"
@@ -201,13 +203,26 @@
                                 location-layout="row"
                             >
                                 <x-slot:footer>
-                                    <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
+                                    @if ($isCompleted)
+                                        {{-- Finished: open for the retention week, for the PDF export and the thank-you card. --}}
+                                        <span class="event-card__status"><x-attendee.line-icon name="party" /> Completed</span>
+                                        <span class="event-card__cta">Save your day as PDF <span aria-hidden="true">→</span></span>
+                                    @else
+                                        <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
+                                    @endif
                                 </x-slot:footer>
                             </x-attendee.event-card>
                         @endforeach
                     </div>
 
                     <button type="button" class="btn btn--outline btn--full picker-more" data-picker-more hidden></button>
+
+                    {{-- A thank-you card per "Completed" WordCamp; thank-you.js opens the first one this phone has data for. --}}
+                    @foreach ($events as $event)
+                        @if (isset($completed[$event->id]))
+                            @include('attendee.partials.thank-you', ['event' => $event])
+                        @endif
+                    @endforeach
 
                     {{-- Country names, and each listed country's time zones: the browser
                     matches its own zone against these to find the visitor's country. --}}
