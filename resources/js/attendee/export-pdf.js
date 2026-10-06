@@ -42,7 +42,13 @@ export function pdfModel(dump, event, formatWhen) {
 
   const people = mine(dump.meetings)
     .filter((m) => m.name && !m.mergedInto && m.status !== 'skipped')
-    .map((m) => [m.name, m.sub, STATUS[m.status] ?? null].filter(Boolean).join('  ·  '));
+    // First line: who and how it went; then, each on its own line, what they wrote down.
+    .map((m) => [
+      [m.name, m.sub, STATUS[m.status] ?? null].filter(Boolean).join('  ·  '),
+      m.note ? `Note: ${m.note}` : null,
+      m.at && Number.isFinite(Date.parse(m.at)) ? `Planned: ${formatWhen(Date.parse(m.at))}` : null,
+      personLinks(m.links),
+    ].filter(Boolean).join('\n'));
   if (people.length) sections.push({ heading: `People I planned to meet (${people.length})`, rows: people });
 
   const quests = mine(dump.questProgress).map((q) => event.questTitles?.[q.questId] ?? `Quest #${q.questId}`);
@@ -58,6 +64,16 @@ export function pdfModel(dump, event, formatWhen) {
   }
 
   return { title: `My ${event.name}`, sections };
+}
+
+// A person's saved links ({ url, type } or plain strings), short: "linkedin.com/in/asha".
+function personLinks(links) {
+  const list = (Array.isArray(links) ? links : [])
+    .map((l) => (typeof l === 'string' ? l : l?.url))
+    .filter((u) => typeof u === 'string' && /^https?:\/\//i.test(u))
+    .map((u) => u.replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, ''));
+
+  return list.length ? `Links: ${list.join(', ')}` : null;
 }
 
 /** Builds and downloads the PDF. Resolves to false when there was nothing to put in it. */
@@ -110,11 +126,24 @@ export async function exportPdf(event) {
     doc.setFontSize(10.5);
     doc.setTextColor(35, 31, 32);
     for (const row of section.rows) {
-      const lines = doc.splitTextToSize(pdfSafe(row) || '-', width - 12);
-      ensure(lines.length * 14 + 4);
+      // A row's first line is the item; any further lines (a person's note,
+      // time, links) sit under it in grey.
+      const [head, ...details] = String(row).split('\n');
+      const lines = doc.splitTextToSize(pdfSafe(head) || '-', width - 12);
+      const extra = details.flatMap((d) => doc.splitTextToSize(pdfSafe(d), width - 12));
+      ensure((lines.length + extra.length) * 14 + 4);
       doc.text('•', page.m, y + 14);
       lines.forEach((line, i) => doc.text(line, page.m + 12, y + 14 + i * 14));
-      y += lines.length * 14 + 4;
+      y += lines.length * 14;
+      if (extra.length) {
+        doc.setFontSize(9.5);
+        doc.setTextColor(107, 98, 94);
+        extra.forEach((line, i) => doc.text(line, page.m + 12, y + 13 + i * 13));
+        y += extra.length * 13 + 2;
+        doc.setFontSize(10.5);
+        doc.setTextColor(35, 31, 32);
+      }
+      y += 4;
     }
   }
 
