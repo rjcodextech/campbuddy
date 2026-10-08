@@ -161,6 +161,12 @@ php artisan campbuddy:upcoming-push --within=30                     # sirf agle 
 
 Koi migration/build nahi; sirf `app/Console/Commands/SendUpcomingPushCommand.php` upload.
 
+## 8 Oct 2026: Admin → Commands
+
+Admin sidebar me naya **Commands** page: CampBuddy ki saari artisan commands (`App\Console\Commands`, nayi command apne aap dikhegi), har ek ka kaam, arguments/options, aur **Run** form. Run usi request me chalta hai (queue nahi) aur output page par dikhta hai; ek waqt me ek hi command; har run `laravel.log` me "Admin ran a command" ke saath (kisne, kya). Push commands par `--yes` apne aap lagta hai — browser pehle poochhta hai, dry-run pehle try karein. `campbuddy:doctor` sirf terminal se. 100 second se lambi command (ingest, discover) par Cloudflare page timeout dikha sakta hai, par server par command poori chalegi.
+
+Upload: `app/Http/Controllers/Admin/CommandController.php`, `resources/views/admin/commands/`, `routes/web.php`, `resources/views/layouts/app.blade.php`, aur **`public/build/`** (npm build). Migration nahi. Upload ke baad `php artisan route:clear` aur `view:clear` (ya `campbuddy:doctor`).
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.

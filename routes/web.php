@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CachePurgeController;
+use App\Http\Controllers\Admin\CommandController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
@@ -120,6 +121,9 @@ Route::prefix('admin')->group(function () {
         Route::get('analytics', AnalyticsController::class)->middleware('throttle:30,1')->name('admin.analytics.index');
         // What attendees said on the after-event thank-you card.
         Route::get('feedback', FeedbackController::class)->name('admin.feedback.index');
+        // CampBuddy's artisan commands: what each does, and a Run form (one at a time).
+        Route::get('commands', [CommandController::class, 'index'])->name('admin.commands.index');
+        Route::post('commands/{name}', [CommandController::class, 'run'])->where('name', '[a-z0-9:-]+')->middleware('throttle:10,1')->name('admin.commands.run');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

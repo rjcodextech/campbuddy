@@ -74,6 +74,7 @@ class EveryPageAndAccessTest extends TestCase
             'entry' => $entry->id,
             'quest' => $quest->id,
             'questId' => $quest->id,
+            'name' => 'campbuddy:prune-fetch-log',
             // Breeze's e-mail verification link.
             'id' => 1,
             'hash' => sha1('x'),
