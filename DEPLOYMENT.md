@@ -171,6 +171,12 @@ Upload: `app/Http/Controllers/Admin/CommandController.php`, `resources/views/adm
 
 `EvaluateEventLifecycleJob` ab draft ka seedha `/attendees/` page check karta hai. Jis draft WordCamp ki site par Attendees page nahi hai (zyaatar international drafts), wo chupchaap skip — `laravel.log` me "ParseAttendeeRosterJob failed … 404" har raat nahi aayega. Upload: `app/Jobs/EvaluateEventLifecycleJob.php`. Migration/build nahi.
 
+## 8 Oct 2026: Commands page par saari artisan commands
+
+Commands page ab 3 hisson me: **CampBuddy** (10, Run ke saath), **Laravel maintenance** (optimize:clear, cache/config/route/view:clear, queue:failed, queue:retry, queue:flush, migrate:status, route:list, schedule:list, about — Run ke saath; upload ke baad cache saaf karna ab admin se bhi ho sakta hai), aur **baaki saari** artisan commands sirf list (migrate:fresh, db:wipe, make:* jaisi — web se nahi chalengi, 403).
+
+Upload: `app/Http/Controllers/Admin/CommandController.php` aur poora `resources/views/admin/commands/` folder (naya `_card.blade.php` bhi), `public/build/`. Phir `php artisan view:clear`.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.

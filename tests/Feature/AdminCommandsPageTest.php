@@ -39,7 +39,13 @@ class AdminCommandsPageTest extends TestCase
             ->assertSee('campbuddy:export-push')
             ->assertSee('campbuddy:doctor')
             ->assertSee('Terminal only')
-            ->assertDontSee('inspire');
+            // Laravel's own: the safe ones runnable, every other one listed.
+            ->assertSee('Laravel maintenance')
+            ->assertSee(route('admin.commands.run', 'optimize:clear'), false)
+            ->assertSee(route('admin.commands.run', 'queue:failed'), false)
+            ->assertSee('migrate:fresh')
+            ->assertDontSee(route('admin.commands.run', 'migrate:fresh'), false)
+            ->assertSee('db:wipe');
     }
 
     public function test_a_run_shows_its_output(): void
@@ -63,13 +69,31 @@ class AdminCommandsPageTest extends TestCase
             ->assertSee('No upcoming WordCamp found.');
     }
 
+    public function test_safe_laravel_commands_run_too(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->followingRedirects()
+            ->post('/admin/commands/queue:failed')
+            ->assertOk()
+            ->assertSee('Done')
+            ->assertSee('php artisan queue:failed');
+
+        // An argument that takes several values (queue:retry {id*}).
+        $this->followingRedirects()
+            ->post('/admin/commands/queue:retry', ['arg_id' => 'all'])
+            ->assertOk()
+            ->assertSee('php artisan queue:retry all');
+    }
+
     public function test_doctor_and_unknown_commands_cannot_be_run_from_here(): void
     {
         $this->actingAs(User::factory()->create());
 
         $this->post('/admin/commands/campbuddy:doctor')->assertForbidden();
-        $this->post('/admin/commands/migrate:fresh')->assertNotFound();
-        $this->post('/admin/commands/inspire')->assertNotFound();
+        $this->post('/admin/commands/migrate:fresh')->assertForbidden();
+        $this->post('/admin/commands/db:wipe')->assertForbidden();
+        $this->post('/admin/commands/no-such:command')->assertNotFound();
     }
 
     public function test_the_sidebar_links_to_the_commands_page(): void
