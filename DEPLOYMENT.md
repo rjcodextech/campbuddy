@@ -147,6 +147,20 @@ php artisan campbuddy:export-push --event=wordcamp-slug --yes  # sirf ek WordCam
 
 Koi migration nahi. **npm build zaroori** (`thank-you.js` badla hai) — `public/build/` aur `app/Console/Commands/SendExportPushCommand.php` upload karein, phir command chalayein (purane build par `?export=1` card nahi kholega).
 
+## 8 Oct 2026: `campbuddy:upcoming-push` (haath se chalne wali command)
+
+Har phone (reminders on) ko abhi ek push: uske **apne country** ka agla WordCamp ("<WordCamp> is coming up — On 1 Nov. See the schedule and plan your day."), tap karne par us WordCamp ka page. Phone ka country = jis WordCamp ke reminders usne aakhri baar on kiye uska country. Jo WordCamp phone pehle se follow kar raha hai wo skip, uske baad wala. Default me sirf agle 90 din me shuru hone wale. Koi record nahi rakhta — har baar chalane par phir jayega.
+
+```
+php artisan campbuddy:upcoming-push --dry-run                       # country, WordCamp, kitne phones — bhejta kuch nahi
+php artisan campbuddy:upcoming-push                                 # poochh kar bhejegi
+php artisan campbuddy:upcoming-push --country=IN --yes              # sirf India ke phones
+php artisan campbuddy:upcoming-push --event=wordcamp-slug           # yahi WordCamp, uske country ke phones ko
+php artisan campbuddy:upcoming-push --within=30                     # sirf agle 30 din wale
+```
+
+Koi migration/build nahi; sirf `app/Console/Commands/SendUpcomingPushCommand.php` upload.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.
