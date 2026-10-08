@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventManagerActivityController;
 use App\Http\Controllers\Admin\EventManagerController;
+use App\Http\Controllers\Admin\EventQrController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
@@ -167,6 +168,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('free-steal-suggestions/{suggestion}', [FreeStealController::class, 'dismiss'])->name('admin.free-steals.suggestions.dismiss');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
+        Route::get('events/{event}/qr', EventQrController::class)->name('admin.events.qr');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
         Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
         Route::post('events/{event}/roster/{entry}/release-claim', [RosterController::class, 'releaseClaim'])->name('admin.events.roster.release-claim');

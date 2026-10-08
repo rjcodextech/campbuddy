@@ -61,6 +61,12 @@
 4. **wpsimplified.in** ke liye nayi GA property banao aur us site ka tag badlo (ya stream hata do).
 5. Agle WordCamp organizers ko QR kit (Package B ke baad) bhejo.
 
+## Status (9 Oct 2026)
+
+- **Package A — ho gaya:** commit `e8f5d15` (stable).
+- **Package B — ho gaya:** Admin + Event manager → event → **QR codes** tab (is commit mein).
+- Dono deploy nahi hue; owner deploy karega.
+
 ## Order
 
 A → test → commit → B → test → commit. Har package: `npm run test:js`, related PHPUnit files, `npm run build`. Branch `stable`, push/deploy nahi.

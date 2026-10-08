@@ -3,6 +3,7 @@
 use App\Http\Controllers\Manager\AuthController;
 use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
+use App\Http\Controllers\Manager\QrController;
 use App\Http\Controllers\Manager\QuestController;
 use App\Http\Middleware\EnsureEventManager;
 use App\Http\Middleware\ThrottleManagerWrites;
@@ -39,6 +40,7 @@ Route::prefix('manager')->group(function () {
         Route::put('events/{eventId}/information', [EventController::class, 'updateInformation'])->name('manager.events.information.update');
 
         Route::get('events/{eventId}/quests', [QuestController::class, 'index'])->name('manager.events.quests');
+        Route::get('events/{eventId}/qr', QrController::class)->name('manager.events.qr');
         Route::post('events/{eventId}/quests', [QuestController::class, 'store'])->name('manager.events.quests.store');
         Route::put('events/{eventId}/quests/{questId}', [QuestController::class, 'update'])->name('manager.events.quests.update');
         Route::delete('events/{eventId}/quests/{questId}', [QuestController::class, 'destroy'])->name('manager.events.quests.destroy');

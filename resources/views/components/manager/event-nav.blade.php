@@ -1,9 +1,9 @@
 {{--
-    The three sections an event manager can edit, as a tab strip.
+    The sections of an event manager's event (three to edit, plus its QR codes), as a tab strip.
 
       <x-manager.event-nav :event="$event" current="details" />
 
-    current: details | information | quests
+    current: details | information | quests | qr
 --}}
 @props(['event', 'current'])
 
@@ -12,6 +12,7 @@
         'details' => ['Event details', route('manager.events.details', $event)],
         'information' => ['Event information', route('manager.events.information', $event)],
         'quests' => ['Quests & checklist', route('manager.events.quests', $event)],
+        'qr' => ['QR codes', route('manager.events.qr', $event)],
     ];
 @endphp
 
