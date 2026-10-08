@@ -57,7 +57,9 @@ Laravel Scheduler (daily, per active event):
 Laravel Scheduler (daily, offset from the roster job):
   → EvaluateEventLifecycleJob (added post-launch, see §5.3)
       auto-archives events whose dates have passed, auto-publishes a draft once its
-      site is reachable and has ≥1 public attendee
+      Attendees page (`<site>/attendees/`) is reachable and has ≥1 public attendee
+      (since 8 Oct 2026 a draft with no Attendees page is skipped quietly — no
+      roster job, no warning, no fetch_log row; it used to warn every night)
 
   → writes to attendee_roster, event cache tables
   → logs to fetch_log (same table/purpose as V1), tagged per job type

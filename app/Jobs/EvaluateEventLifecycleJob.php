@@ -25,7 +25,7 @@ use Throwable;
  *    AND it already has at least one public attendee — reuses
  *    ParseAttendeeRosterJob so the roster is actually ingested, not
  *    just probed, and skips the roster fetch entirely for a site
- *    that's unreachable.
+ *    whose Attendees page isn't reachable (missing, private, site down).
  *
  * Neither rule ever touches an event outside these exact conditions —
  * this never demotes something an admin already approved/archived, and
@@ -73,7 +73,10 @@ class EvaluateEventLifecycleJob implements ShouldQueue
         Event::where('status', 'draft')
             ->get()
             ->each(function (Event $event) {
-                if (! $this->isReachable($event->source_site_url)) {
+                // Its Attendees page, not just the site: many WordCamps have
+                // none (or not yet), and a 404 there is "not ready", not a
+                // failure to log every night (8 Oct 2026).
+                if (! $this->isReachable(rtrim($event->source_site_url, '/').'/attendees/')) {
                     return;
                 }
 

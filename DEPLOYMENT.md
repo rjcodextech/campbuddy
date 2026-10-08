@@ -167,6 +167,10 @@ Admin sidebar me naya **Commands** page: CampBuddy ki saari artisan commands (`A
 
 Upload: `app/Http/Controllers/Admin/CommandController.php`, `resources/views/admin/commands/`, `routes/web.php`, `resources/views/layouts/app.blade.php`, aur **`public/build/`** (npm build). Migration nahi. Upload ke baad `php artisan route:clear` aur `view:clear` (ya `campbuddy:doctor`).
 
+## 8 Oct 2026: drafts ki raat wali 404 warning band
+
+`EvaluateEventLifecycleJob` ab draft ka seedha `/attendees/` page check karta hai. Jis draft WordCamp ki site par Attendees page nahi hai (zyaatar international drafts), wo chupchaap skip — `laravel.log` me "ParseAttendeeRosterJob failed … 404" har raat nahi aayega. Upload: `app/Jobs/EvaluateEventLifecycleJob.php`. Migration/build nahi.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.
