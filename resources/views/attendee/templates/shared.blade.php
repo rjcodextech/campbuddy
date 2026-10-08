@@ -64,6 +64,7 @@
                 <li>Choose "Add to Home Screen"</li>
                 <li>Open CampBuddy from your home screen and star the session again</li>
             </ol>
+            <p class="footer-note" style="text-align:left">Until then, the CampBuddy Home tab shows "starts in … min" for your saved sessions.</p>
             <button type="button" class="btn btn--primary btn--full" data-action="close">Got it</button>
         </div>
     </dialog>

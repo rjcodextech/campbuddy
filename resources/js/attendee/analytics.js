@@ -61,6 +61,7 @@ const EVENTS = {
   session_unsave: ['schedule_session_id', 'session_title'],
   session_link_click: ['schedule_session_id', 'link_type'], // slides | video
   reminder_offer: ['result'],
+  reminder_ios_hint: ['result'],
   reminder_cancel: [],
 
   // Quest

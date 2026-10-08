@@ -20,6 +20,7 @@ import { peopleStatus } from './people-status.js';
 import { onPeopleChanged } from './people-sync.js';
 import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
+import { syncIosReminderHint } from './ios-reminder-hint.js';
 import { render, renderFragment } from './template.js';
 import { iconText } from './line-icon.js';
 import { showToast } from './toast.js';
@@ -175,6 +176,7 @@ export async function renderMyDay(root) {
 
     renderPlanSummary(plan, counts);
     renderPeople(plan);
+    syncIosReminderHint(document.getElementById('plan-sessions-heading'), bookmarkedIds.size);
 
     const itemOf = new Map(plan.sessions.map((i) => [i.id, i]));
     const mine = planFilter === 'hidden'

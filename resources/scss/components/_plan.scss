@@ -408,6 +408,16 @@ dialog.meet-sheet {
     line-height: v.$line-height-snug;
 }
 
+// The iPhone "reminders need the Home Screen" card in My schedule
+// (ios-reminder-hint.js): text above its button, close button top-right.
+.plan-reminder--hint {
+    align-items: flex-start;
+
+    .plan-reminder__text p {
+        margin: 0 0 v.$space-2;
+    }
+}
+
 .plan-reminder__close {
     width: 32px;
     height: 32px;

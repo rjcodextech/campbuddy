@@ -79,6 +79,11 @@ export function initInstallPrompt() {
   });
 }
 
+/** The same steps the header button shows, for this browser — opened from elsewhere (ios-reminder-hint.js). */
+export function openInstallSteps() {
+  showInstallSteps(STEPS[detectPlatform()]);
+}
+
 function showInstallSteps(steps) {
   const dialog = render('tpl-install-dialog');
 

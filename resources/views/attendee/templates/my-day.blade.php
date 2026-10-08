@@ -98,6 +98,20 @@
     <span class="schedule-tag" data-slot="tag"></span>
 </template>
 
+{{-- ios-reminder-hint.js: iPhone/iPad in a browser tab — reminders need
+    CampBuddy on the Home Screen first (N3); shown above the saved sessions
+    until it is closed. --}}
+<template id="tpl-ios-reminder-hint">
+    <div class="plan-reminder plan-reminder--hint" role="note">
+        <span class="plan-reminder__icon" aria-hidden="true"><x-attendee.line-icon name="clock" /></span>
+        <div class="plan-reminder__text">
+            <p><strong>Reminders on iPhone need CampBuddy on your Home Screen.</strong> Until then, the CampBuddy Home tab shows "starts in … min" for your saved sessions.</p>
+            <button type="button" class="btn btn--primary btn--compact" data-action="how">Show me how</button>
+        </div>
+        <button type="button" class="plan-reminder__close" data-action="dismiss" aria-label="Dismiss"><x-attendee.line-icon name="x" /></button>
+    </div>
+</template>
+
 {{-- My schedule: the plan's progress, and a calendar export of all of it. --}}
 <template id="tpl-plan-summary">
     <div class="plan-summary">
