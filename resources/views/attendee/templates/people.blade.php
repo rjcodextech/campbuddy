@@ -34,7 +34,8 @@
         <img class="roster-row__avatar" alt="" width="44" height="44" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
         <div class="roster-row__body">
-            <span class="roster-row__name" data-slot="name"></span>
+            {{-- A button: it opens the person's sheet (person-card.js). --}}
+            <button type="button" class="roster-row__name" data-person-open data-slot="name"></button>
             <span class="roster-row__roles" data-slot="roles"></span>
             <span class="roster-row__open" data-slot="open-badge"><x-attendee.line-icon name="hand" /> Open to meet</span>
             <div class="roster-row__links" data-slot="links"></div>
@@ -42,6 +43,50 @@
         <button type="button" class="meet-btn" data-slot="meet"></button>
     </div>
 </template>
+
+{{-- person-card.js: one attendee-list person — photo, roles, talks, links,
+    + Meet, and (organizer / speaker / volunteer / microsponsor) a card made
+    from their public WordCamp info to download or share. --}}
+<template id="tpl-person-sheet">
+    <dialog class="steal-sheet person-sheet" aria-labelledby="person-sheet-name">
+        <div class="steal-sheet__card">
+            <span class="steal-sheet__grab" aria-hidden="true"></span>
+
+            <div class="steal-sheet__head">
+                <img class="roster-row__avatar person-sheet__avatar" alt="" width="60" height="60" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+                <div class="person-sheet__who">
+                    <span class="deal-card__name" id="person-sheet-name" data-slot="name"></span>
+                    <span class="roster-row__roles" data-slot="roles"></span>
+                </div>
+                <button type="button" class="topbar__icon-btn" aria-label="Close" data-person-close><x-attendee.line-icon name="x" /></button>
+            </div>
+
+            <ul class="person-sheet__talks" data-slot="talks"></ul>
+            <div class="roster-row__links" data-slot="links"></div>
+            <button type="button" class="meet-btn person-sheet__meet" data-slot="meet"></button>
+
+            <div class="person-sheet__card-part" data-slot="card-part">
+                <div class="person-sheet__preview" data-slot="preview"></div>
+                <p class="person-sheet__note">Made from their public WordCamp info: the attendee list, the speaker and organizer pages.</p>
+                <div class="qr__actions">
+                    <button type="button" class="btn btn--outline" data-person-export="share"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
+                    <button type="button" class="btn btn--outline" data-person-export="download"><x-attendee.line-icon name="download" /><span data-export-label>Download card</span></button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+</template>
+
+<template id="tpl-person-talk">
+    <li data-slot="talk"></li>
+</template>
+
+{{-- The card itself: the Camp Card's Ticket face, with the "made from public info" line. --}}
+<template id="tpl-person-card">
+    @include('attendee.partials.camp-card-face', ['key' => 'ticket', 'event' => $event, 'source' => true])
+</template>
+
+@include('attendee.templates.camp-card-tags')
 
 {{-- people.js: Organizer / Speaker / Volunteer / Microsponsor on a roster row (roster-roles.js) --}}
 <template id="tpl-role-badge">

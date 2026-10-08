@@ -135,7 +135,8 @@ const EVENTS = {
   plan_reminder_click: ['left_count'],
   home_discovery_explore_click: [],
   roster_search_use: [],
-  roster_filter: ['filter_value'], // once per page load; never the query
+  roster_filter: ['filter_value'],
+  person_card: ['result'], // once per page load; never the query
   roster_removal_search: [], // never the name
   roster_removal_confirm: [],
 

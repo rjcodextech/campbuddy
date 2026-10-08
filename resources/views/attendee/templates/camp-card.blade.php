@@ -18,10 +18,4 @@
     <button type="button" class="cc-suggest__chip" data-slot="chip"></button>
 </template>
 
-<template id="tpl-camp-card-tag">
-    <span class="camp-card__tag" data-slot="tag"></span>
-</template>
-
-<template id="tpl-camp-card-tag-empty">
-    <span class="camp-card__tag camp-card__tag--placeholder">Nothing chosen to show yet</span>
-</template>
+@include('attendee.templates.camp-card-tags')

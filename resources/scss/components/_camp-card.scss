@@ -956,7 +956,8 @@ $ticket-band: 136; // design px: the wine band's height, where the tear line sit
     }
 
     // Without a bubble the tags keep the block centred.
-    &:has(.camp-card__ask:empty) .camp-card__tags {
+    &:has(.camp-card__ask:empty) .camp-card__tags,
+    &:has(.camp-card__ask[hidden]) .camp-card__tags {
         margin-bottom: auto;
     }
 
@@ -1056,4 +1057,19 @@ $ticket-band: 136; // design px: the wine band's height, where the tear line sit
     to {
         transform: rotate(360deg);
     }
+}
+
+// "Made from public WordCamp info" — only on a card made for someone else
+// from public data (person-card.js, partials/camp-card-face.blade.php).
+.camp-card__source {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: cc(1.5);
+    margin: 0;
+    font-size: cc(7.5);
+    line-height: 1.2;
+    text-align: center;
+    color: v.$cc-charcoal;
+    opacity: 0.7;
 }

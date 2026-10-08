@@ -183,6 +183,84 @@
     margin: v.$space-3 0;
 }
 
+// The name is a button that opens the person's sheet (person-card.js); it
+// still reads as the bold name it was.
+button.roster-row__name {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.roster-row {
+    cursor: pointer;
+}
+
+// --- A person's sheet (person-card.js), on .steal-sheet's bottom sheet ------
+.person-sheet__avatar {
+    width: 60px;
+    height: 60px;
+    border: 2px solid var(--gold);
+}
+
+.person-sheet__who {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-1;
+}
+
+.person-sheet__talks {
+    margin: 0;
+    padding-left: v.$space-5;
+    font-size: v.$font-size-sm;
+
+    li + li {
+        margin-top: v.$space-1;
+    }
+
+    &:empty {
+        display: none;
+    }
+}
+
+.person-sheet__meet {
+    align-self: flex-start;
+}
+
+.person-sheet__card-part {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: v.$space-3;
+    padding-top: v.$space-3;
+    border-top: 1px solid var(--line);
+}
+
+// The card preview is a container, like the Camp Card gallery's items, so the
+// card's cqw sizes scale with it.
+.person-sheet__preview {
+    width: min(240px, 70vw);
+    container-type: inline-size;
+}
+
+.person-sheet__note {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+    text-align: center;
+}
+
 .roster-row__links {
     display: flex;
     flex-wrap: wrap;

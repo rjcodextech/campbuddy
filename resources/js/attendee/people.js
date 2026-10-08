@@ -17,6 +17,7 @@ import { peopleStatus, stateOfMatch } from './people-status.js';
 import { DESCRIBE_TAGS, MAX_DESCRIBE_TAGS, discoveryPrefill, onboardingAfterDiscovery } from './profile-sync.js';
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
+import { openPersonSheet } from './person-card.js';
 import { ALL, ROLE_FILTER_LABELS, ROLE_LABELS, effectiveRoleFilter, matchesRole, roleCounts, rolesOf, visibleRoleFilters } from './roster-roles.js';
 import { render, renderFragment } from './template.js';
 import { iconText, lineIcon } from './line-icon.js';
@@ -330,13 +331,25 @@ function rosterRow(a, eventId) {
   });
   row.classList.toggle('roster-row--role', roles.length > 0);
 
-  wireMeetButton(row.querySelector('.meet-btn'), eventId, {
+  const person = {
     personKey: `r:${a.id}`,
     name: a.name ?? '',
     avatarUrl: a.gravatar_url || null,
     sub: 'On the attendee list',
     source: 'roster',
     links: (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')),
+  };
+  wireMeetButton(row.querySelector('.meet-btn'), eventId, person);
+
+  // The name (a button) — or a tap anywhere on the row but its links and
+  // "+ Meet" — opens the person's sheet (person-card.js).
+  const open = () => openPersonSheet(a, {
+    links: links.map((l) => l.cloneNode(true)),
+    wireMeet: (btn) => wireMeetButton(btn, eventId, person),
+  });
+  row.addEventListener('click', (e) => {
+    if (e.target.closest('a, .meet-btn')) return;
+    open();
   });
 
   return row;
