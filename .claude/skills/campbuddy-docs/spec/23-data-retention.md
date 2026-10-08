@@ -16,6 +16,7 @@ Scraped events often arrive with **no end date** (in the reference data 20 of 21
 |---|---|
 | **Archiving** (`EvaluateEventLifecycleJob`, daily) | An `active`/`approved` event is archived only when `EventTime::retained()` is false — i.e. after its retention end. (Archived events answer 404, so archiving early would take the app away mid-event.) |
 | **Discovery profiles** | `expires_at` is stamped with `retentionEnd` at join. While the event is retained, `DiscoveryProfile::scopeAlive()` ignores the stored stamp altogether — profiles made before the schedule was known carry an earlier one. Used by the discovery list, waves/messages, and the roster's "Open to meet" badge. |
+| **Shared Camp Cards** | Same as discovery profiles: `expires_at` = `retentionEnd` when shared, `SharedCampCard::scopeAlive()` ignores it while the event is retained. Removed only by the owner (switch off, "Clear my data"), an admin (*Remove card*), or with the list entry itself. |
 | **Discovery chat** (`ChatWindow`) | A session on a later day extends the chat's days beyond a missing/short end date (within the 7-day cap). |
 | **WordCamp picker** (`/`) | Lists an event until its real last day has ended at the venue (`isOver` is schedule-aware); the SQL pre-filter has 3 days of slack for this. |
 | **Page facts** | `data-event-end` and `data-event-phase` on every event page use the real last day, so the app's own "is it an event day?" logic (plan reminder, meeting-date limits, update polling) is right too. |

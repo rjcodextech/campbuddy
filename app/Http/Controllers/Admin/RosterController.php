@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Api\RosterController as RosterApi;
 use App\Http\Controllers\Controller;
 use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
+use App\Models\SharedCampCard;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,7 @@ class RosterController extends Controller
         $query = fn (bool $withDiscovery) => $event->attendeeRoster()
             ->when($request->string('q')->isNotEmpty(), fn ($q) => $q->where('name', 'like', '%'.$request->string('q').'%'))
             ->when($withDiscovery, fn ($q) => $q->withExists('discoveryProfile as in_discovery'))
+            ->when($withDiscovery, fn ($q) => $q->withExists('sharedCampCard as has_camp_card'))
             ->orderBy('name')
             ->paginate(50)
             ->withQueryString();
@@ -64,6 +67,18 @@ class RosterController extends Controller
         DiscoveryProfile::where('attendee_roster_id', $entry->id)->update(['attendee_roster_id' => null]);
 
         return redirect()->route('admin.events.roster.index', $event)->with('status', "{$entry->name} is no longer linked to a discovery profile — they can now pick their own name.");
+    }
+
+    /** Takes a shared Camp Card off the attendee list (abuse, or a name claimed by the wrong person). */
+    public function removeCard(Event $event, AttendeeRoster $entry): RedirectResponse
+    {
+        Gate::authorize('update', $event);
+        abort_unless($entry->event_id === $event->id, 404);
+
+        SharedCampCard::where('attendee_roster_id', $entry->id)->delete();
+        RosterApi::forget($event);
+
+        return redirect()->route('admin.events.roster.index', $event)->with('status', "{$entry->name}'s Camp Card was taken off the attendee list.");
     }
 
     public function unsuppress(Event $event, AttendeeRoster $entry): RedirectResponse

@@ -16,6 +16,7 @@ import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 import { campCardPrefill, onboardingAfterCampCard } from './profile-sync.js';
 import { cardContent, cardPng, paintCard, saveBlob, tapStillCounts } from './camp-card-paint.js';
+import { initCardShare } from './card-share.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
 
@@ -52,6 +53,12 @@ function resolveLink(field, value) {
     return handle ? `https://x.com/${handle}` : null;
   }
   return value;
+}
+
+// The field whose link the card's QR opens: the chosen one, else the first filled in.
+function qrFieldOf(card) {
+  if (!card) return null;
+  return [card.primaryLink, ...LINK_FIELDS].find((f) => f && resolveLink(f, card[f])) ?? null;
 }
 
 // Interests used to be saved as a single comma-separated string before
@@ -111,6 +118,19 @@ export async function renderCampCard() {
   setupRequiredFields(form);
   renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
 
+  // "Show my Camp Card on the attendee list" (card-share.js) — works from what is saved.
+  const app = document.getElementById('app');
+  const sharing = initCardShare({
+    eventSlug: app?.dataset.eventSlug,
+    eventId: Number(app?.dataset.eventId),
+    resolveLink,
+    current: async () => {
+      const saved = await kvGet('campCard');
+      const tidy = saved ? { ...saved, interests: normalizeInterests(saved.interests) } : null;
+      return { card: tidy, qrField: qrFieldOf(tidy) };
+    },
+  }).catch(() => null);
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -151,6 +171,7 @@ export async function renderCampCard() {
     renderAllPreviews(data);
     document.getElementById('cc-edit-details').open = false;
     showToast('Camp Card saved.');
+    sharing.then((share) => share?.onCardSaved());
   });
   document.querySelectorAll('[data-download-card]').forEach((btn) => {
     btn.addEventListener('click', () => handleExport('download', btn.dataset.downloadCard, btn));
@@ -615,9 +636,7 @@ function renderAllPreviews(card) {
   sampleNoteEl.hidden = !isSample;
 
   // The link the QR opens: the chosen one, else the first that's filled in.
-  const qrField = !isSample
-    ? [card.primaryLink, ...LINK_FIELDS].find((f) => f && resolveLink(f, card[f]))
-    : null;
+  const qrField = !isSample ? qrFieldOf(card) : null;
   const primaryUrl = qrField ? resolveLink(qrField, card[qrField]) : null;
 
   // Same QR (same primary link) shared across every layout's canvas — no

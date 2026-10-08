@@ -19,3 +19,21 @@
 </template>
 
 @include('attendee.templates.camp-card-tags')
+
+{{-- card-share.js: pick yourself on the attendee list --}}
+<template id="tpl-cc-share-picker">
+    <div class="cc-share__picker">
+        <label class="form-field__label" for="cc-share-search">Find your name on the attendee list</label>
+        <input type="search" id="cc-share-search" class="search-input" placeholder="Type your name…" autocomplete="off" data-share-search>
+        <div class="cc-share__results" data-share-results></div>
+        <button type="button" class="btn btn--compact btn--outline" data-share-cancel>Cancel</button>
+    </div>
+</template>
+
+<template id="tpl-cc-share-result">
+    <button type="button" class="cc-share__result" data-slot="name"></button>
+</template>
+
+<template id="tpl-cc-share-status">
+    <p class="cc-share__status"><x-attendee.line-icon name="users" /><span>On the attendee list as <strong data-slot="name"></strong>. Saving your card updates it there too.</span></p>
+</template>

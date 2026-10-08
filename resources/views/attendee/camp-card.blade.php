@@ -38,7 +38,7 @@
 
             <p class="cc-editor__privacy">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-                Saved on this device only. Nothing you type here is sent to CampBuddy.
+                Saved on this device only. Nothing you type here is sent to CampBuddy, unless you turn on "Show my Camp Card on the attendee list" below.
             </p>
 
             {{-- novalidate: the required fields are checked and highlighted by camp-card.js
@@ -120,6 +120,22 @@
                 <button type="submit" class="btn btn--primary btn--full cc-form__save" id="cc-save">Save Camp Card</button>
             </form>
         </details>
+
+        {{-- card-share.js: off until the attendee turns it on; then only what is ON the card is shared. --}}
+        <section class="card cc-share" id="cc-share" aria-labelledby="cc-share-title">
+            <div class="cc-share__head">
+                <div class="cc-share__text">
+                    <h2 class="cc-share__title" id="cc-share-title">Show my Camp Card on the attendee list</h2>
+                    <p class="cc-share__desc">People who tap your name in Explore → People see your card and can save it. Only what is on your card is shared: the fields you chose under "Show on my card" and the link your QR opens. Turn it off any time.</p>
+                </div>
+                <label class="cc-share__switch">
+                    <input type="checkbox" id="cc-share-toggle" role="switch">
+                    <span class="cc-share__slider" aria-hidden="true"></span>
+                    <span class="u-visually-hidden">Show my Camp Card on the attendee list</span>
+                </label>
+            </div>
+            <div id="cc-share-body" aria-live="polite"></div>
+        </section>
 
         <div id="data-controls" style="margin-top:24px">
             @include('attendee.partials.data-controls')

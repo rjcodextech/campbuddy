@@ -40,6 +40,12 @@ class AttendeeRoster extends Model
         return $this->hasOne(DiscoveryProfile::class, 'attendee_roster_id');
     }
 
+    /** The Camp Card this entry's owner chose to show on the attendee list, if any. */
+    public function sharedCampCard(): HasOne
+    {
+        return $this->hasOne(SharedCampCard::class, 'attendee_roster_id');
+    }
+
     /**
      * Hides this entry from the public list, and lets go of any discovery
      * profile that claimed it — a removed name mustn't live on in matches.

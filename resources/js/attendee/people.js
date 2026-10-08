@@ -325,7 +325,12 @@ function rosterRow(a, eventId) {
     'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
     'avatar-initial': a.gravatar_url ? null : initial,
     name: a.name ?? '',
-    roles: roles.length > 0 ? roles.map((role) => render('tpl-role-badge', { badge: { text: ROLE_LABELS[role], class: { [`role-badge--${role}`]: true } } })) : null,
+    roles: roles.length > 0 || a.camp_card
+      ? [
+        ...roles.map((role) => render('tpl-role-badge', { badge: { text: ROLE_LABELS[role], class: { [`role-badge--${role}`]: true } } })),
+        ...(a.camp_card ? [render('tpl-role-badge', { badge: { text: 'Camp Card', class: { 'role-badge--card': true } } })] : []),
+      ]
+      : null,
     'open-badge': Boolean(a.open_to_meet),
     links: links.length > 0 ? links : null,
   });

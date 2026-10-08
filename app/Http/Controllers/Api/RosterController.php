@@ -11,6 +11,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
@@ -40,20 +41,37 @@ class RosterController extends Controller
 
         return ConditionalJson::cached($request, "event:{$event->id}:roster:page:{$page}", self::TTL_SECONDS, 30, function () use ($event) {
             try {
-                return $this->page($event, withOpenToMeet: true);
+                return $this->page($event, withOpenToMeet: true, withCards: true);
             } catch (QueryException $e) {
-                // The discovery link column isn't there yet (a deploy that hasn't
-                // run `php artisan migrate`). The attendee list must still load —
-                // just without the "open to meet" marks. The admin dashboard flags
-                // the pending migration.
+                // A table or column isn't there yet (a deploy that hasn't run
+                // `php artisan migrate`). The attendee list must still load —
+                // just without the shared Camp Cards, or the "open to meet" marks
+                // too. The admin dashboard flags the pending migration.
                 report($e);
 
-                return $this->page($event, withOpenToMeet: false);
+                try {
+                    return $this->page($event, withOpenToMeet: true, withCards: false);
+                } catch (QueryException) {
+                    return $this->page($event, withOpenToMeet: false, withCards: false);
+                }
             }
         });
     }
 
-    private function page(Event $event, bool $withOpenToMeet): LengthAwarePaginator
+    /**
+     * Drops the built pages, so a change made by an attendee (a Camp Card put
+     * on or taken off the list) shows on the next request rather than within
+     * the minute. Cloudflare may still serve its own copy for up to 30 s.
+     */
+    public static function forget(Event $event): void
+    {
+        $pages = (int) ceil($event->attendeeRoster()->count() / 200) + 1;
+        foreach (range(1, min($pages, self::MAX_PAGE)) as $page) {
+            Cache::forget("event:{$event->id}:roster:page:{$page}");
+        }
+    }
+
+    private function page(Event $event, bool $withOpenToMeet, bool $withCards): LengthAwarePaginator
     {
         $roles = $this->roles($event);
 
@@ -62,6 +80,8 @@ class RosterController extends Controller
             // "Open to meet": they picked this entry as themselves in attendee
             // discovery — their own choice to be found. One subquery, not one per row.
             ->when($withOpenToMeet, fn ($q) => $q->withExists(['discoveryProfile as open_to_meet' => fn ($q) => $q->alive($event)]))
+            // "Show my Camp Card on the attendee list": the owner's own choice (SharedCampCard).
+            ->when($withCards, fn ($q) => $q->with(['sharedCampCard' => fn ($q) => $q->alive($event)]))
             ->orderBy('name')
             ->paginate(200)
             ->through(fn ($entry) => [
@@ -79,6 +99,7 @@ class RosterController extends Controller
                 // Organizer / speaker / volunteer / microsponsor of this event, and a speaker's talks (RosterRoles).
                 'roles' => $roles[$entry->id]['roles'] ?? [],
                 'talks' => $roles[$entry->id]['talks'] ?? [],
+                'camp_card' => $withCards && $entry->sharedCampCard ? $entry->sharedCampCard->publicCard() : null,
             ]);
 
     }

@@ -67,7 +67,8 @@
 
             <div class="person-sheet__card-part" data-slot="card-part">
                 <div class="person-sheet__preview" data-slot="preview"></div>
-                <p class="person-sheet__note">Made from their public WordCamp info: the attendee list, the speaker and organizer pages.</p>
+                <p class="person-sheet__note" data-slot="note-public">Made from their public WordCamp info: the attendee list, the speaker and organizer pages.</p>
+                <p class="person-sheet__note" data-slot="note-own">Their own Camp Card, shared by them.</p>
                 <div class="qr__actions">
                     <button type="button" class="btn btn--outline" data-person-export="share"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
                     <button type="button" class="btn btn--outline" data-person-export="download"><x-attendee.line-icon name="download" /><span data-export-label>Download card</span></button>

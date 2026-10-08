@@ -66,12 +66,19 @@
                             @if ($entry->in_discovery)
                                 <x-badge variant="info">In discovery</x-badge>
                             @endif
+                            @if ($entry->has_camp_card)
+                                <x-badge variant="info">Camp Card</x-badge>
+                            @endif
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-2">
                             @if ($entry->in_discovery)
                                 <x-action-form :action="route('admin.events.roster.release-claim', [$event, $entry])" variant="secondary" size="sm"
                                                :confirm="'Unlink '.$entry->name.' from the discovery profile that claimed this name?'">Unlink</x-action-form>
+                            @endif
+                            @if ($entry->has_camp_card)
+                                <x-action-form :action="route('admin.events.roster.remove-card', [$event, $entry])" variant="secondary" size="sm"
+                                               :confirm="'Take the Camp Card of '.$entry->name.' off the attendee list?'">Remove card</x-action-form>
                             @endif
                             @if ($entry->is_suppressed)
                                 <x-action-form :action="route('admin.events.roster.unsuppress', [$event, $entry])" size="sm">Restore</x-action-form>

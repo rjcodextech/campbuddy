@@ -1,16 +1,17 @@
 // A person on the attendee list (Explore → People), opened in a sheet: their
-// photo, roles, talks and links, "+ Meet", and — for an organizer, speaker,
-// volunteer or microsponsor — a card to download or share.
-//
-// That card is the Camp Card's Ticket design (camp-card-paint.js, same 900
-// DPI PNG), built only from what the WordCamp site already shows publicly:
-// the attendee-list name and links, the roles and talks (RosterRoles). It
-// says so on the card ("Made from public WordCamp info") — it isn't a card
-// the person made. Nothing about them is sent anywhere or stored.
+// photo, roles, talks and links, "+ Meet", and a card to download or share:
+//   - their OWN Camp Card, when they chose "Show my Camp Card on the attendee
+//     list" (card-share.js) — exactly the fields they put on it;
+//   - otherwise, for an organizer, speaker, volunteer or microsponsor, a card
+//     built only from what the WordCamp site already shows publicly (the
+//     attendee-list name and links, roles and talks — RosterRoles), which
+//     says so on the card ("Made from public WordCamp info").
+// Both are the Camp Card's Ticket design (camp-card-paint.js, same 900 DPI
+// PNG). Nothing about them is sent anywhere or stored.
 
 import QRCode from 'qrcode-generator';
 import { track } from './analytics.js';
-import { cardPng, paintCard, saveBlob, tapStillCounts } from './camp-card-paint.js';
+import { cardContent, cardPng, paintCard, saveBlob, tapStillCounts } from './camp-card-paint.js';
 import { ROLE_LABELS, rolesOf } from './roster-roles.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
@@ -38,6 +39,41 @@ export function qrLinkFor(entry) {
 /** Only people with a role get a card made from public data. */
 export function hasPublicCard(entry) {
   return rolesOf(entry).length > 0;
+}
+
+/** They chose to show their own Camp Card on the list. */
+export function hasOwnCard(entry) {
+  return Boolean(entry?.camp_card && typeof entry.camp_card === 'object');
+}
+
+// Under the QR of their own card — the Camp Card page's own words (camp-card.js).
+const OWN_SCAN_LABELS = {
+  linkedin: 'Scan to connect on LinkedIn',
+  website: 'Scan to visit my website',
+  wordpressOrg: 'Scan for my WordPress.org profile',
+  twitter: 'Scan to follow me on X',
+};
+
+/** The QR link of their own card: what they chose, if it is a web address. */
+export function ownQrLink(entry) {
+  const qr = entry?.camp_card?.qr;
+  return qr && /^https?:\/\//i.test(qr.url ?? '') ? { type: qr.type, url: qr.url } : null;
+}
+
+/** Their own card, as the Camp Card page would draw it: the list name, and only the fields they shared. */
+export function ownCardContent(entry) {
+  const shared = entry?.camp_card ?? {};
+  const display = { name: entry?.name ?? '', visibleFields: [] };
+  ['role', 'company', 'city', 'interests', 'askMeAbout'].forEach((key) => {
+    const value = shared[key];
+    if ((Array.isArray(value) && value.length) || (typeof value === 'string' && value.trim() !== '')) {
+      display[key] = value;
+      display.visibleFields.push(key);
+    }
+  });
+  const qr = ownQrLink(entry);
+
+  return { ...cardContent(display), scan: qr ? (OWN_SCAN_LABELS[qr.type] ?? '') : '' };
 }
 
 /**
@@ -68,7 +104,7 @@ export function cardFilename(name) {
 }
 
 function makeQr(entry) {
-  const link = qrLinkFor(entry);
+  const link = hasOwnCard(entry) ? ownQrLink(entry) : qrLinkFor(entry);
   if (!link) return null;
 
   const qr = QRCode(0, 'H');
@@ -84,7 +120,8 @@ function makeQr(entry) {
  */
 export function openPersonSheet(entry, { links = [], wireMeet = null } = {}) {
   const roles = rolesOf(entry);
-  const withCard = hasPublicCard(entry);
+  const own = hasOwnCard(entry);
+  const withCard = own || hasPublicCard(entry);
 
   const dialog = render('tpl-person-sheet', {
     avatar: { attrs: { src: entry.gravatar_url || '/media/illustrations/avatar.svg' } },
@@ -93,6 +130,8 @@ export function openPersonSheet(entry, { links = [], wireMeet = null } = {}) {
     talks: (entry.talks ?? []).length ? entry.talks.map((t) => render('tpl-person-talk', { talk: t })) : null,
     links: links.length ? links : null,
     'card-part': withCard,
+    'note-public': withCard && !own,
+    'note-own': own,
   });
 
   wireMeet?.(dialog.querySelector('[data-slot="meet"]'));
@@ -112,11 +151,14 @@ export function openPersonSheet(entry, { links = [], wireMeet = null } = {}) {
 }
 
 function setUpCard(dialog, entry) {
-  const content = personCardContent(entry);
+  const own = hasOwnCard(entry);
+  const content = own ? ownCardContent(entry) : personCardContent(entry);
   const qr = makeQr(entry);
   const preview = render('tpl-person-card');
   dialog.querySelector('[data-slot="preview"]').appendChild(preview);
   const face = preview.classList.contains('camp-card') ? preview : preview.querySelector('.camp-card');
+  // Their own card is theirs: no "made from public info" line on it.
+  if (own) face.querySelector('.camp-card__source')?.remove();
 
   // The on-screen preview: no "Nothing chosen to show yet" pill — that hint is
   // for someone editing their own card, and this one has nothing to choose.

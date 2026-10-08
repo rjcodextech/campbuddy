@@ -179,6 +179,12 @@
     color: var(--ink);
 }
 
+.role-badge--card {
+    background: #fff;
+    border-color: var(--brand-primary);
+    color: var(--brand-primary);
+}
+
 .roster-role-filters {
     margin: v.$space-3 0;
 }

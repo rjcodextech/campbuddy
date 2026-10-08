@@ -88,6 +88,17 @@ async function clearData(root) {
 
   if (!confirmed) return;
 
+  // A Camp Card shown on the attendee list (card-share.js) is taken off too:
+  // without the token kept here nobody could remove it any more.
+  const shared = await kvGet(`campCardShare:${eventId}`).catch(() => null);
+  if (shared) {
+    try {
+      await apiMutate(eventSlug, `/camp-card-share/${shared.shareId}`, 'DELETE', null, shared.ownerToken);
+    } catch {
+      // Clear locally regardless; it stays hidden after the event's retention window.
+    }
+  }
+
   await clearAll();
   track('data_clear');
   alert('Your local CampBuddy data has been cleared.');

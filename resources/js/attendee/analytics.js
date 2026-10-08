@@ -136,7 +136,8 @@ const EVENTS = {
   home_discovery_explore_click: [],
   roster_search_use: [],
   roster_filter: ['filter_value'],
-  person_card: ['result'], // once per page load; never the query
+  person_card: ['result'],
+  camp_card_share: ['result'], // once per page load; never the query
   roster_removal_search: [], // never the name
   roster_removal_confirm: [],
 

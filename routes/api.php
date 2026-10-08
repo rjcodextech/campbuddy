@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\FreeStealSuggestionController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\RosterController;
+use App\Http\Controllers\Api\SharedCampCardController;
 use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,10 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::post('/free-steal-suggestions', [FreeStealSuggestionController::class, 'store'])->name('api.free-steal-suggestions.store');
             // The after-event thank-you card's rating (one per device, changeable).
             Route::post('/feedback', [EventFeedbackController::class, 'store'])->name('api.feedback.store');
+
+            Route::post('/camp-card-share', [SharedCampCardController::class, 'store'])->name('api.camp-card-share.store');
+            Route::put('/camp-card-share/{shareId}', [SharedCampCardController::class, 'update'])->name('api.camp-card-share.update');
+            Route::delete('/camp-card-share/{shareId}', [SharedCampCardController::class, 'destroy'])->name('api.camp-card-share.destroy');
         });
 
         // Reminder bookmarks: a public write, so throttled too — on their own,
