@@ -134,7 +134,8 @@ const EVENTS = {
   plan_reminder_view: ['left_count'],
   plan_reminder_click: ['left_count'],
   home_discovery_explore_click: [],
-  roster_search_use: [], // once per page load; never the query
+  roster_search_use: [],
+  roster_filter: ['filter_value'], // once per page load; never the query
   roster_removal_search: [], // never the name
   roster_removal_confirm: [],
 

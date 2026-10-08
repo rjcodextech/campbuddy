@@ -13,6 +13,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 /**
@@ -60,10 +61,13 @@ class ParseAttendeeRosterJob implements ShouldQueue
                 return;
             }
 
-            // Keyed by hash, so the same person listed twice is stored once.
+            // Keyed by hash, so the same person listed twice is stored once — a
+            // microsponsor if either listing says so (their block and the main list).
             $rows = [];
             foreach ($entries as $entry) {
-                $rows[$scraper->contentHash($entry['name'], $entry['links'])] = $entry;
+                $hash = $scraper->contentHash($entry['name'], $entry['links']);
+                $entry['microsponsor'] = ($entry['microsponsor'] ?? false) || ($rows[$hash]['microsponsor'] ?? false);
+                $rows[$hash] = $entry;
             }
             $seenHashes = array_keys($rows);
 
@@ -73,6 +77,8 @@ class ParseAttendeeRosterJob implements ShouldQueue
 
             $now = now();
             $upserts = [];
+            // Before `php artisan migrate` has added the column, the roster still refreshes, without the mark.
+            $withMicrosponsor = Schema::hasColumn('attendee_roster', 'is_microsponsor');
 
             foreach ($rows as $hash => $entry) {
                 // IN5: a suppressed entry stays suppressed across re-runs
@@ -91,11 +97,12 @@ class ParseAttendeeRosterJob implements ShouldQueue
                     'is_suppressed' => false,
                     'created_at' => $now,
                     'updated_at' => $now,
-                ];
+                ] + ($withMicrosponsor ? ['is_microsponsor' => $entry['microsponsor']] : []);
             }
 
+            $updated = ['name', 'gravatar_url', 'links', 'updated_at', ...($withMicrosponsor ? ['is_microsponsor'] : [])];
             foreach (array_chunk($upserts, 200) as $chunk) {
-                AttendeeRoster::upsert($chunk, ['event_id', 'content_hash'], ['name', 'gravatar_url', 'links', 'updated_at']);
+                AttendeeRoster::upsert($chunk, ['event_id', 'content_hash'], $updated);
             }
 
             $new = collect($seenHashes)->reject(fn ($hash) => $existing->has($hash))->count();

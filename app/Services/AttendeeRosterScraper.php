@@ -14,7 +14,7 @@ use Symfony\Component\DomCrawler\Crawler;
 class AttendeeRosterScraper
 {
     /**
-     * @return array<int, array{name: string, gravatar_url: ?string, links: array<int, array{type: string, url: string}>}>|null
+     * @return array<int, array{name: string, gravatar_url: ?string, links: array<int, array{type: string, url: string}>, microsponsor: bool}>|null
      *                                                                                                                          null means the page's expected structure wasn't found at
      *                                                                                                                          all — distinct from a structure that parsed
      *                                                                                                                          cleanly into zero entries (nobody's opted in yet).
@@ -30,7 +30,55 @@ class AttendeeRosterScraper
 
         $entries = [];
 
-        $list->filter('li')->each(function (Crawler $li) use (&$entries) {
+        // One list at a time, in page order: a page may list its microsponsors
+        // in a block of their own (isMicrosponsorList).
+        $list->each(function (Crawler $oneList) use (&$entries) {
+            $this->parseList($oneList, $this->isMicrosponsorList($oneList), $entries);
+        });
+
+        return $entries;
+    }
+
+    /**
+     * Whether this list is a page's separate "Microsponsors" block: the list,
+     * or one of the few blocks around it, is marked as such (a class like
+     * "microsponsor"), or carries a heading saying so while holding no other
+     * attendee list. The plain CampTix page has no such block — nobody is
+     * marked there.
+     */
+    private function isMicrosponsorList(Crawler $list): bool
+    {
+        $pattern = '/micro[\s_-]*sponsor/i';
+        $node = $list->getNode(0);
+
+        for ($depth = 0; $node instanceof \DOMElement && $depth < 4; $depth++, $node = $node->parentNode) {
+            if (preg_match($pattern, $node->getAttribute('class').' '.$node->getAttribute('id'))) {
+                return true;
+            }
+
+            if ($depth === 0) {
+                continue;
+            }
+
+            $block = new Crawler($node);
+            if ($block->filter('.tix-attendee-list')->count() !== 1) {
+                return false;
+            }
+
+            foreach ($block->filter('h1, h2, h3, h4') as $heading) {
+                if (preg_match($pattern, $heading->textContent)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /** @param array<int, array<string, mixed>> $entries */
+    private function parseList(Crawler $list, bool $microsponsor, array &$entries): void
+    {
+        $list->filter('li')->each(function (Crawler $li) use (&$entries, $microsponsor) {
             $nameNode = $li->filter('.tix-attendee-name');
 
             if ($nameNode->count() === 0) {
@@ -67,10 +115,8 @@ class AttendeeRosterScraper
                 $links[] = ['type' => $type, 'url' => $href];
             });
 
-            $entries[] = ['name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links];
+            $entries[] = ['name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links, 'microsponsor' => $microsponsor];
         });
-
-        return $entries;
     }
 
     public function contentHash(string $name, array $links): string

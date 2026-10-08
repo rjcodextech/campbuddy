@@ -115,6 +115,21 @@ class WordCampNormalizer
         ], $organizers);
     }
 
+    /**
+     * Volunteers carry only a name (no photo, no bio) — enough to mark them
+     * on the attendee list (RosterRoles).
+     *
+     * @param  array<int, array<string, mixed>>  $volunteers
+     * @return array<int, array{id: mixed, name: string}>
+     */
+    public function normalizeVolunteers(array $volunteers): array
+    {
+        return array_values(array_filter(array_map(fn (array $volunteer) => [
+            'id' => $volunteer['id'] ?? null,
+            'name' => $this->decodeTitle($this->rendered($volunteer['title'] ?? null)),
+        ], $volunteers), fn (array $v) => $v['id'] !== null && $v['name'] !== ''));
+    }
+
     /** A WordPress `{ rendered: "…" }` field's string, or "" for anything else. */
     private function rendered(mixed $field): string
     {

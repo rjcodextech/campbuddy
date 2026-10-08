@@ -42,7 +42,7 @@ Names are `snake_case`; `share`, `generate_lead` and `exception` are GA4 recomme
 | Contribute | `contribute_matches_view`, `contribute_retry`, `contribute_team_view` | `answer_count`, `answers`; `team_id`, `team_name`, `source` |
 | Explore | `explore_tab_view`, `sponsor_open`, `deal_open`, `useful_link_click`, `in_app_browser_fallback`, `in_app_browser_external_open` | `tab`; `sponsor_name`, `offer_title`, `link_domain`, `lead_capture`; `link_type`; `via` |
 | Deals / leads | `deal_lead_form_open`, `deal_lead_form_cancel`, `generate_lead` | `offer_id`, `offer_title` — **no lead fields** |
-| Discovery / roster | `discovery_join_start`, `discovery_join`, `discovery_update`, `discovery_leave`, `discovery_met_mark`, `home_discovery_explore_click`, `roster_search_use`, `roster_removal_search`, `roster_removal_confirm` | `surface` (home\|explore) only — no profile, match or roster data |
+| Discovery / roster | `discovery_join_start`, `discovery_join`, `discovery_update`, `discovery_leave`, `discovery_met_mark`, `home_discovery_explore_click`, `roster_search_use`, `roster_filter` (`filter_value`: all / organizer / speaker / volunteer / microsponsor), `roster_removal_search`, `roster_removal_confirm` | `surface` (home\|explore) only — no profile, match or roster data |
 | Camp Card | `camp_card_save`, `camp_card_download`, `share`, `camp_card_export_error` | `layout`; `method`, `content_type`, `item_id`; `action` — never its content |
 | Data controls | `data_export`, `data_clear` | `method` (pdf / json) on `data_export` |
 | After the event (thank-you card) | `thank_you_view`, `event_feedback`, `thank_you_next_click` | `surface` (event / home); `rating` (custom metric, 1–5) on `event_feedback` — the comment never goes to GA |

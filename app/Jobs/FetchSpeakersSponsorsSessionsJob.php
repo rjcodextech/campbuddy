@@ -109,6 +109,15 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             $counts[$key] = $items === null ? $this->cachedCount($key) : $this->store($key, $items, $problems, $changes);
         }
 
+        // Volunteers only mark people on the attendee list (RosterRoles). Older
+        // sites have no such list (404), most publish it on the day, so a failure
+        // here is never a problem to report: the last list simply stays.
+        try {
+            $this->store('volunteers', $normalizer->normalizeVolunteers($client->fetchVolunteers()), $problems, $changes);
+        } catch (Throwable) {
+            // Kept as it was.
+        }
+
         $summary = sprintf(
             '%d sessions, %d speakers, %d sponsors, %d organizers',
             $counts['sessions'],

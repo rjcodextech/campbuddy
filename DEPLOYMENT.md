@@ -177,6 +177,13 @@ Commands page ab 3 hisson me: **CampBuddy** (10, Run ke saath), **Laravel mainte
 
 Upload: `app/Http/Controllers/Admin/CommandController.php` aur poora `resources/views/admin/commands/` folder (naya `_card.blade.php` bhi), `public/build/`. Phir `php artisan view:clear`.
 
+## 9 Oct 2026: iPhone reminder card, Event QR codes, attendee list roles
+
+- **iPhone reminder card** (My Day → My schedule). Upload: `public/build/`, `resources/views/attendee/templates/{my-day,shared}.blade.php`, `config/analytics.php`.
+- **Event → QR codes** (admin + manager). Upload: `app/Support/QrKit.php`, `app/Http/Controllers/Admin/EventQrController.php`, `app/Http/Controllers/Manager/QrController.php`, `routes/web.php`, `routes/manager.php`, `resources/views/partials/qr-kit.blade.php`, `resources/views/{admin,manager}/events/qr.blade.php`, `resources/views/components/{admin,manager}/event-nav.blade.php`, `public/build/`.
+- **Attendee list roles** (Organizer / Speaker / Volunteer / Microsponsor badges + filter chips). **Migration hai:** `2026_10_09_090000_add_microsponsor_to_attendee_roster` — upload ke baad `php artisan migrate --force` (ya `campbuddy:doctor`). Migration se pahale bhi roster chalta rahega, bas microsponsor mark nahi aayega. Upload: `app/Support/RosterRoles.php`, `app/Services/{AttendeeRosterScraper,WordCampRestClient,WordCampNormalizer}.php`, `app/Jobs/{ParseAttendeeRosterJob,FetchSpeakersSponsorsSessionsJob}.php`, `app/Models/AttendeeRoster.php`, `app/Http/Controllers/Api/RosterController.php`, `resources/views/attendee/templates/people.blade.php`, `public/build/`. Volunteers agle 15-min fetch mein aayenge, microsponsors agli midnight roster run mein (ya Admin → Event → "Fetch latest").
+- Phir `php artisan optimize:clear && php artisan optimize`.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.

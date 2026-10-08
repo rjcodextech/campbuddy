@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Support\ConditionalJson;
+use App\Support\RosterRoles;
 use App\Support\SafeUrl;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Throwable;
 
 /**
  * GET /api/v1/events/{slug}/roster — the ingested Attendees-page
@@ -53,6 +55,8 @@ class RosterController extends Controller
 
     private function page(Event $event, bool $withOpenToMeet): LengthAwarePaginator
     {
+        $roles = $this->roles($event);
+
         return $event->attendeeRoster()
             ->where('is_suppressed', false)
             // "Open to meet": they picked this entry as themselves in attendee
@@ -72,7 +76,27 @@ class RosterController extends Controller
                     ->filter(fn ($link) => SafeUrl::web($link['url'] ?? null) !== null)
                     ->values()
                     ->all(),
+                // Organizer / speaker / volunteer / microsponsor of this event, and a speaker's talks (RosterRoles).
+                'roles' => $roles[$entry->id]['roles'] ?? [],
+                'talks' => $roles[$entry->id]['talks'] ?? [],
             ]);
 
+    }
+
+    /**
+     * The roles marks are extra: if working them out fails, the list still
+     * loads, just without them.
+     *
+     * @return array<int, array{roles: list<string>, talks: list<string>}>
+     */
+    private function roles(Event $event): array
+    {
+        try {
+            return RosterRoles::forEvent($event);
+        } catch (Throwable $e) {
+            report($e);
+
+            return [];
+        }
     }
 }

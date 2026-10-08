@@ -20,11 +20,13 @@ class AttendeeRoster extends Model
         'links',
         'content_hash',
         'is_suppressed',
+        'is_microsponsor',
     ];
 
     protected $casts = [
         'links' => 'array',
         'is_suppressed' => 'boolean',
+        'is_microsponsor' => 'boolean',
     ];
 
     public function event(): BelongsTo

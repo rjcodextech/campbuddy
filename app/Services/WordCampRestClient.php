@@ -80,6 +80,17 @@ class WordCampRestClient
     }
 
     /**
+     * The event's volunteers (post type wcb_volunteer, newer WordCamp sites
+     * only — older ones answer 404). Usually published close to the event.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function fetchVolunteers(): array
+    {
+        return $this->fetchCollection('wcb_volunteer');
+    }
+
+    /**
      * Resolves a taxonomy's numeric term IDs to names — session
      * tracks and sponsor tiers are meaningless without this join.
      *

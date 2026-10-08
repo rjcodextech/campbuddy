@@ -17,6 +17,7 @@ import { peopleStatus, stateOfMatch } from './people-status.js';
 import { DESCRIBE_TAGS, MAX_DESCRIBE_TAGS, discoveryPrefill, onboardingAfterDiscovery } from './profile-sync.js';
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
+import { ALL, ROLE_FILTER_LABELS, ROLE_LABELS, effectiveRoleFilter, matchesRole, roleCounts, rolesOf, visibleRoleFilters } from './roster-roles.js';
 import { render, renderFragment } from './template.js';
 import { iconText, lineIcon } from './line-icon.js';
 import { showToast } from './toast.js';
@@ -118,6 +119,8 @@ async function renderRoster(eventSlug, eventId) {
   const saved = await rosterStore.read(eventSlug);
   let entries = saved?.entries ?? [];
   let noteEl = null;
+  let roleFilter = ALL;
+  let chipsEl = null;
 
   const showNote = (text) => {
     if (!noteEl) {
@@ -132,9 +135,48 @@ async function renderRoster(eventSlug, eventId) {
     noteEl = null;
   };
 
+  // "All 319 · Organizers 15 · Speakers 25 …" above the list — only when
+  // someone on it has a role (roster-roles.js). Counts are of the whole list.
+  const drawRoleChips = () => {
+    const counts = roleCounts(entries);
+    const filters = visibleRoleFilters(counts);
+    roleFilter = effectiveRoleFilter(roleFilter, counts);
+
+    if (filters.length === 0) {
+      chipsEl?.remove();
+      chipsEl = null;
+      return;
+    }
+
+    if (!chipsEl) {
+      chipsEl = document.createElement('div');
+      chipsEl.className = 'chip-group roster-role-filters';
+      chipsEl.setAttribute('role', 'group');
+      chipsEl.setAttribute('aria-label', 'Show on the attendee list');
+      searchEl.after(chipsEl);
+    }
+
+    chipsEl.replaceChildren(...filters.map((f) => {
+      const on = f === roleFilter;
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = `chip${on ? ' chip--selected' : ''}`;
+      chip.setAttribute('aria-pressed', String(on));
+      chip.dataset.roleFilter = f;
+      chip.textContent = `${ROLE_FILTER_LABELS[f]} ${counts[f]}`;
+      chip.addEventListener('click', () => {
+        roleFilter = f;
+        track('roster_filter', { filter_value: f });
+        draw();
+      });
+      return chip;
+    }));
+  };
+
   const draw = () => {
+    drawRoleChips();
     const q = searchEl.value.trim().toLowerCase();
-    const list = q ? entries.filter((a) => a.name.toLowerCase().includes(q)) : entries;
+    const list = entries.filter((a) => matchesRole(a, roleFilter) && (!q || a.name.toLowerCase().includes(q)));
 
     if (list.length === 0) {
       el.replaceChildren(render(entries.length === 0 ? 'tpl-roster-empty' : 'tpl-roster-no-match'));
@@ -277,13 +319,16 @@ function rosterRow(a, eventId) {
     })
   );
 
+  const roles = rolesOf(a);
   const row = render('tpl-roster-row', {
     'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
     'avatar-initial': a.gravatar_url ? null : initial,
     name: a.name ?? '',
+    roles: roles.length > 0 ? roles.map((role) => render('tpl-role-badge', { badge: { text: ROLE_LABELS[role], class: { [`role-badge--${role}`]: true } } })) : null,
     'open-badge': Boolean(a.open_to_meet),
     links: links.length > 0 ? links : null,
   });
+  row.classList.toggle('roster-row--role', roles.length > 0);
 
   wireMeetButton(row.querySelector('.meet-btn'), eventId, {
     personKey: `r:${a.id}`,

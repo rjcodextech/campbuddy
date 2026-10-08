@@ -121,6 +121,68 @@
     text-wrap: balance;
 }
 
+// --- Roles on the attendee list (roster-roles.js) ----------------------------
+// A row whose person is an organizer / speaker / volunteer / microsponsor is
+// tinted and carries a badge per role.
+.roster-row--role {
+    margin: 0 calc(-1 * #{v.$space-3});
+    padding-left: v.$space-3;
+    padding-right: v.$space-3;
+    background: #fff8e8;
+    box-shadow: inset 3px 0 0 var(--gold);
+
+    > .roster-row__avatar {
+        border-color: var(--gold);
+    }
+}
+
+.roster-row__roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-1;
+
+    &:empty {
+        display: none;
+    }
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px v.$space-2;
+    border-radius: v.$radius-full;
+    border: 1px solid transparent;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    line-height: 1.5;
+}
+
+.role-badge--organizer {
+    background: var(--brand-primary);
+    color: #fff;
+}
+
+.role-badge--speaker {
+    background: var(--gold);
+    color: var(--ink);
+}
+
+.role-badge--volunteer {
+    background: #e3f3e9;
+    border-color: #9fd3b2;
+    color: #14532d;
+}
+
+.role-badge--microsponsor {
+    background: var(--peach);
+    border-color: var(--gold);
+    color: var(--ink);
+}
+
+.roster-role-filters {
+    margin: v.$space-3 0;
+}
+
 .roster-row__links {
     display: flex;
     flex-wrap: wrap;
