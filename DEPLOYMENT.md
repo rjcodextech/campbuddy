@@ -135,6 +135,18 @@ Is release me (stable par 3 commits, deploy aapko karna hai):
 
 Deploy ke baad check: `/admin/analytics` khule aur numbers dikhaye; `/admin/feedback` khule; `https://www.campbuddy.club/` → `https://campbuddy.club/` par jaaye; homepage par Rajasthan "Completed" dikhe.
 
+## 8 Oct 2026: `campbuddy:export-push` (haath se chalne wali command)
+
+Pichhle 7 din me khatam hue WordCamp ke liye har phone (reminders on) ko abhi ek push: "Save your <WordCamp> data" — tap karne par thank-you card khulta hai jisme PDF button hai. Ek phone ke 2 WordCamps hon to sirf sabse latest wala. Thank-you push jaisa koi gate nahi (venue time, "ek baar") — har baar chalane par phir jayega, isliye ek hi baar chalayein.
+
+```
+php artisan campbuddy:export-push --dry-run                    # kisko kitne jayenge, bhejta kuch nahi
+php artisan campbuddy:export-push                              # poochh kar bhejega
+php artisan campbuddy:export-push --event=wordcamp-slug --yes  # sirf ek WordCamp, bina poochhe
+```
+
+Koi migration ya build nahi; sirf `app/Console/Commands/SendExportPushCommand.php` upload.
+
 ## Deploy: server par step-by-step
 
 Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye commands server ke Terminal (cPanel → Terminal ya SSH) me chalti hain.
