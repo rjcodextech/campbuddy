@@ -70,6 +70,9 @@ test('the card opens from day 3, once, or at once from the push', () => {
   assert.equal(shouldOpen({ ...base, hasData: false }), false);
   assert.equal(shouldOpen({ ...base, daysSince: 1, forced: true, hasData: false }), true);
   assert.equal(shouldOpen({ ...base, forced: true, seen: true }), false);
+  // The export push opens it even once seen, with or without data.
+  assert.equal(shouldOpen({ ...base, always: true, seen: true }), true);
+  assert.equal(shouldOpen({ ...base, always: true, seen: true, hasData: false, daysSince: 1 }), true);
 });
 
 test('Latin-only data stays a text PDF; any other script switches to the page-picture PDF', () => {

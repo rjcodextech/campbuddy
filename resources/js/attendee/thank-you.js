@@ -15,7 +15,10 @@ import { showToast } from './toast.js';
 const seenKey = (eventId) => `thankYou:${eventId}`;
 
 /** Whether this dialog's card should open now. Pure, for tests. */
-export function shouldOpen({ daysSince, fromDay, forced, seen, hasData }) {
+export function shouldOpen({ daysSince, fromDay, forced, always = false, seen, hasData }) {
+  // The "save your data" push (campbuddy:export-push, ?export=1) opens it
+  // even when it was already seen: the PDF button is what that push is for.
+  if (always) return true;
   if (seen) return false;
   if (forced) return true;
   return hasData && Number.isFinite(daysSince) && daysSince >= fromDay;
@@ -32,7 +35,9 @@ export async function initThankYou({ surface }) {
     return; // No storage: nothing of theirs to thank them for or export.
   }
 
-  const forced = new URLSearchParams(location.search).get('thanks') === '1';
+  const params = new URLSearchParams(location.search);
+  const forced = params.get('thanks') === '1';
+  const always = params.get('export') === '1';
 
   for (const dialog of dialogs) {
     const eventId = dialog.dataset.eventId;
@@ -49,6 +54,7 @@ export async function initThankYou({ surface }) {
       daysSince: Number(dialog.dataset.daysSince),
       fromDay: Number(dialog.dataset.fromDay),
       forced: forced && surface === 'event',
+      always: always && surface === 'event',
       seen: Boolean(seen),
       hasData: hasEventData(dump, eventId),
     });

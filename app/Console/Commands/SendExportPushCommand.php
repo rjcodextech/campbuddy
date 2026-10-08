@@ -18,6 +18,8 @@ use Minishlink\WebPush\WebPush;
  * A phone (device_id) subscribed to more than one gets only the latest one.
  * Unlike the day-3 thank-you push, nothing is checked or stored: no venue
  * hours, no "sent once" — each run sends again.
+ * The link (?export=1) opens the thank-you card with its PDF button even on
+ * a phone that already closed it (thank-you.js).
  *
  *   php artisan campbuddy:export-push --dry-run          # who would get what
  *   php artisan campbuddy:export-push --yes              # send, no prompt
@@ -90,7 +92,7 @@ class SendExportPushCommand extends Command
             $payload = json_encode([
                 'title' => "Save your {$event->display_name} data",
                 'body' => 'Your schedule, notes and people stay on this phone for a few more days. Save them as a PDF.',
-                'url' => route('event.home', $event).'?thanks=1',
+                'url' => route('event.home', $event).'?export=1',
             ]);
             $options = ['topic' => substr(hash('sha256', 'export-'.$event->id), 0, 24)];
 
