@@ -1529,42 +1529,98 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   }
 
   if (design === 'split') {
-    // Photo across the top, a block in the role's tone with the words below.
-    const ph = Math.round(fTop * (square ? 0.54 : 0.62));
-    if (photo) drawCover(ctx, photo, 0, 0, W, ph, 0.22);
-    else { ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = pal.primary; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
-    const g = ctx.createLinearGradient(0, ph * 0.5, 0, ph);
+    // The photo fills the top three quarters; the bottom quarter, in the role's
+    // tone, holds the words, the event and the QR. The site's artwork lives in
+    // the picture: its skyline rises from the colour block into the photo (in
+    // that tone), tall art (a sprig) grows from the corner, the pattern lines
+    // the block faintly.
+    const ph = Math.round(H * 0.75);
+    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    if (photo) drawCover(ctx, photo, 0, 0, W, ph, 0.25);
+    else {
+      ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph);
+      if (ART.pattern) fillWithPattern(ctx, ART.pattern, rc, 0, 0, W, ph, 180, 0.12);
+      ctx.fillStyle = rc; ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.round(ph * 0.34)}px ${HEAD ?? FONT}`;
+      ctx.fillText(initials(person.name), W / 2, ph * 0.5);
+      ctx.textAlign = 'left';
+    }
+    // The photo darkens into the role's tone where it meets the block.
+    const g = ctx.createLinearGradient(0, ph * 0.55, 0, ph);
     g.addColorStop(0, alpha(rc, 0));
-    g.addColorStop(1, alpha(rc, 0.9));
+    g.addColorStop(1, alpha(rc, 0.75));
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
-    ctx.fillStyle = rc;
-    const s = look.tilt * 40;
-    ctx.beginPath(); ctx.moveTo(0, ph - 40 - s); ctx.lineTo(W, ph - 40 + s); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
-    if (ART.pattern) {
+
+    // As a silhouette only art that reads as one: a real skyline (very wide) or tall art; a busy collage would become a blob.
+    const shape = ART.illustration && (artInfo(ART.illustration).aspect >= 2.8 || artInfo(ART.illustration).aspect < 1.4) ? ART.illustration : null;
+    const art = shape ? recolour(shape, rc) : null;
+    if (art) {
+      const info = artInfo(shape);
       ctx.save();
-      ctx.beginPath(); ctx.moveTo(0, ph - 40 - s); ctx.lineTo(W, ph - 40 + s); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.clip();
-      fillWithPattern(ctx, ART.pattern, onRc, 0, ph - 120, W, H, 200, 0.08);
+      if (info.aspect >= 1.4) {
+        // A skyline standing on the block, as wide as the card.
+        const k = Math.min(W / art.width, (ph * (square ? 0.24 : 0.28)) / art.height);
+        ctx.drawImage(art, (W - art.width * k) / 2, ph - art.height * k + 2, art.width * k, art.height * k);
+      } else {
+        // Tall art grows from the corner, away from the label.
+        const h = ph * 0.42;
+        const w = h * info.aspect;
+        ctx.translate(look.corner === 'left' ? w : W - w, ph - h + 2);
+        if (look.corner === 'left') ctx.scale(-1, 1);
+        ctx.drawImage(art, 0, 0, w, h);
+      }
       ctx.restore();
     }
-    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 26, height: 58 });
-    let y = ph + (square ? 50 : 90);
+
+    // The block.
+    ctx.fillStyle = rc;
+    ctx.fillRect(0, ph, W, H - ph);
+    if (ART.pattern) fillWithPattern(ctx, ART.pattern, onRc, 0, ph, W, H - ph, 120, 0.08);
+
+    // On the photo: the label, the event's logo.
+    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: square ? 22 : 26, height: square ? 50 : 58 });
+    if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
+
+    // In the block: the QR (and CampBuddy's mark) on the right, the words on the left.
+    const pad = square ? 30 : (tall ? 56 : 40);
+    const blockH = H - ph;
+    const chipH = square ? 44 : (tall ? 70 : 54);
+    const qr = Math.min(blockH - 2 * pad - chipH - 10, tall ? 260 : 190);
+    const qx = W - SAFE - qr;
+    const qy = ph + (blockH - qr - chipH - 10) / 2;
+    drawQr(ctx, qrLink(kit.event.qr, `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`), qx, qy, qr, pal.ink, pal.paper);
+    ctx.fillStyle = pal.paper;
+    roundRect(ctx, qx, qy + qr + 10, qr, chipH, 12);
+    ctx.fill();
+    if (brand) drawContain(ctx, brand, qx + 8, qy + qr + 16, qr - 16, chipH - 12);
+
+    const tw = qx - 36 - SAFE;
+    let y = ph + pad;
     ctx.fillStyle = onRc;
-    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 100 : (square ? 60 : 84), 36, 2, 900);
-    n.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += n.size * 1.04; });
-    ctx.font = `800 30px ${FONT}`;
-    ctx.fillStyle = alpha(onRc, 0.85);
-    if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE), SAFE, y + 6); y += 56; }
-    const room = fTop - 30 - y;
-    if (talk && room > 40) {
+    const n = fitText(ctx, person.name, tw, tall ? 96 : (square ? 50 : 66), 30, 1, 900, HEAD ?? FONT);
+    ctx.font = `900 ${n.size}px ${HEAD ?? FONT}`;
+    y += n.size * 0.9;
+    ctx.fillText(n.lines[0], SAFE, y);
+    y += square ? 14 : 20;
+    const small = tall ? 34 : (square ? 22 : 26);
+    const eventLine = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
+    const bottom = ph + blockH - pad;
+    if (roles) {
+      ctx.font = `800 ${small}px ${FONT}`;
+      ctx.fillStyle = alpha(onRc, 0.9);
+      y += small;
+      ctx.fillText(ellipsize(ctx, roles, tw), SAFE, y);
+    }
+    const room = bottom - small - 16 - (y + 10);
+    if (talk && room > small) {
       ctx.fillStyle = onRc;
-      const t = fitText(ctx, talk, W - 2 * SAFE, tall ? 42 : 34, 18, Math.max(1, Math.min(4, Math.floor(room / 44))), 600);
-      t.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += t.size * 1.3; });
+      const t = fitText(ctx, talk, tw, small + 2, 16, Math.max(1, Math.min(2, Math.floor(room / ((small + 2) * 1.25)))), 600);
+      y += 10;
+      t.lines.forEach((l) => { y += t.size * 1.25; ctx.fillText(l, SAFE, y); });
     }
-    if (!band) {
-      ctx.fillStyle = mix(rc, pal.ink, 0.35);
-      ctx.fillRect(0, footerTop - 20, W, H - footerTop + 20);
-    }
-    foot(mix(rc, pal.ink, 0.35));
+    ctx.font = `700 ${small - 4}px ${FONT}`;
+    ctx.fillStyle = alpha(onRc, 0.8);
+    ctx.fillText(ellipsize(ctx, eventLine, tw), SAFE, bottom);
     addGrain(ctx, W, H);
     return;
   }
