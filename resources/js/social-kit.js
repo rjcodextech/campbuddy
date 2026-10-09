@@ -728,13 +728,32 @@ export function spotlightCaption(kit, s) {
 
 const FEATURES = ['The full schedule, with reminders', 'People who share your interests', 'Your Contributor Day team', 'Deals and free tools for you'];
 
+/**
+ * Days until the event's first day, counted now at the venue (so a card
+ * drawn or downloaded tomorrow says one day less); null once it has started.
+ */
+export function daysToGo(kit, now = new Date()) {
+  const start = kit?.event?.starts;
+  if (!start) return null;
+  let today;
+  try {
+    today = new Intl.DateTimeFormat('en-CA', { timeZone: kit.event.timezone || undefined, year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+  } catch {
+    today = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+  }
+  const days = Math.round((Date.parse(`${start}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000);
+  return days > 0 ? days : null;
+}
+
 /** The drawable content of a post: kicker, headline, line, and a body. */
 export function postContent(post, fields, kit, pick) {
   const base = { key: post.key, kicker: post.kicker ?? '', headline: fields.headline, line: fields.line, body: { type: 'none' } };
 
   switch (post.key) {
-    case 'countdown':
-      return { ...base, body: post.days ? { type: 'countdown', days: post.days } : { type: 'none' } };
+    case 'countdown': {
+      const days = daysToGo(kit) ?? post.days;
+      return { ...base, body: days ? { type: 'countdown', days } : { type: 'none' } };
+    }
     case 'app':
       return { ...base, body: { type: 'features', items: FEATURES } };
     case 'speakers':
@@ -973,7 +992,7 @@ function paintArtBackground(ctx, box, pal) {
  * The block at the foot of every card: the reader's reason to scan, the event
  * (name · dates · hashtag) and, on the right, the QR with CampBuddy's mark.
  */
-function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta) {
+function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') {
   const color = block.color;
   const x0 = block.x0 ?? 0;
   const x1 = block.x1 ?? g.W;
@@ -1019,11 +1038,20 @@ function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta) {
   if (brand) drawContain(ctx, brand, qx + 8, qy + qr + 16, qr - 16, chipH - 12);
 
   const tw = qx - 36 - left;
+  let ty = top + pad;
+  if (label) {
+    // Who this is, first: "Organizer at WordCamp Delhi".
+    const lf = fitText(ctx, label, tw, g.tall ? 34 : (g.square ? 22 : 26), 16, 1, 800, FONT);
+    ctx.font = `800 ${lf.size}px ${FONT}`;
+    ctx.fillStyle = alpha(on, 0.82);
+    ctx.fillText(lf.lines[0], left, ty + lf.size * 0.9);
+    ty += lf.size * 1.5;
+  }
   ctx.fillStyle = on;
   // The site's text font here, not its display font: this line must read at a glance.
-  const c = fitText(ctx, cta, tw, g.tall ? 52 : (g.square ? 32 : 40), 22, 2, 800, FONT);
+  const c = fitText(ctx, cta, tw, label ? (g.tall ? 44 : (g.square ? 28 : 34)) : (g.tall ? 52 : (g.square ? 32 : 40)), 20, 2, 800, FONT);
   ctx.font = `800 ${c.size}px ${FONT}`;
-  c.lines.forEach((l, i) => ctx.fillText(l, left, top + pad + c.size * (0.9 + i * 1.1)));
+  c.lines.forEach((l, i) => ctx.fillText(l, left, ty + c.size * (0.9 + i * 1.1)));
   const small = g.tall ? 28 : (g.square ? 20 : 22);
   ctx.font = `600 ${small}px ${FONT}`;
   ctx.fillStyle = alpha(on, 0.78);
@@ -1138,9 +1166,9 @@ function mosaicGrid(n, w, h) {
   return best;
 }
 
-/** Faces per speakers card at this size. */
-function mosaicPage(H) {
-  return H >= 1900 ? 12 : (H < 1100 ? 6 : 8);
+/** Faces per speakers card: three, side by side, so every face is big. */
+function mosaicPage() {
+  return 3;
 }
 
 /** Every card of a post at this size and design (measured with fonts loaded). */
@@ -1289,12 +1317,15 @@ async function paintPicture(ctx, box, content, pal, round) {
       ? body.people
       : body.speakers.map((name, i) => ({ name, photo: body.photos[i] ?? null }));
     const list = people.length ? people : [{ name: content.headline, photo: null }];
-    const { cols, rows } = mosaicGrid(list.length, box.w, box.h);
-    const cw = box.w / cols;
+    // One or two faces left for the last card: the same size as on the others, centred, space either side.
+    const few = body.type === 'photos' && list.length < 3;
+    const { cols, rows } = few ? { cols: list.length, rows: 1 } : mosaicGrid(list.length, box.w, box.h);
+    const cw = few ? box.w / 3 : box.w / cols;
     const ch = box.h / rows;
+    const x0 = box.x + (box.w - cw * cols) / 2;
     const imgs = await Promise.all(list.map((p) => loadImage(p.photo)));
     for (let i = 0; i < rows * cols; i++) {
-      const cx = box.x + (i % cols) * cw;
+      const cx = x0 + (i % cols) * cw;
       const cy = box.y + Math.floor(i / cols) * ch;
       ctx.save();
       ctx.beginPath(); ctx.rect(cx, cy, cw + 1, ch + 1); ctx.clip();
@@ -1313,7 +1344,7 @@ async function paintPicture(ctx, box, content, pal, round) {
           ctx.textAlign = 'left';
         }
       }
-      if (list[i] && body.type === 'photos' && list.length > 1) {
+      if (list[i] && body.type === 'photos') {
         // The name on its own face, on a short shade at the bottom of the tile.
         const nh = Math.min(70, ch * 0.24);
         const grad = ctx.createLinearGradient(0, cy + ch - nh, 0, cy + ch);
@@ -1328,8 +1359,8 @@ async function paintPicture(ctx, box, content, pal, round) {
       ctx.restore();
     }
     ctx.fillStyle = pal.paper;
-    for (let c = 1; c < cols; c++) ctx.fillRect(box.x + c * cw - 2, box.y, 4, box.h);
-    for (let r = 1; r < rows; r++) ctx.fillRect(box.x, box.y + r * ch - 2, box.w, 4);
+    for (let c = 1; c < cols; c++) ctx.fillRect(x0 + c * cw - 2, box.y, 4, box.h);
+    for (let r = 1; r < rows; r++) ctx.fillRect(x0, box.y + r * ch - 2, cw * cols, 4);
   } else if (ART.photo) {
     drawCover(ctx, ART.photo, box.x, box.y, box.w, box.h, 0.5);
   }
@@ -1453,6 +1484,22 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
 
 // ---- People cards (social posts, not the attendee app's Camp Card) --------
 
+/** The footer line of a people card: why the reader would look for this person, by role. */
+export function personCta(person, kit) {
+  const first = String(person.name ?? '').trim().split(/\s+/)[0] || 'them';
+  const event = kit?.short ?? kit?.event?.name ?? 'WordCamp';
+  switch (person.roles?.[0]) {
+    case 'organizer': return `Say hi to ${first}, one of the people making ${event} happen`;
+    case 'speaker': return person.talk ? `Save ${first}'s talk and get a reminder` : `Catch ${first} on stage at ${event}`;
+    case 'volunteer': return `Thank ${first}, a volunteer at ${event}`;
+    case 'sponsor': return `Visit ${first} at the sponsor booth`;
+    case 'media_partner': return `Follow ${first}'s coverage of ${event}`;
+    case 'microsponsor': return `Thank ${first} for backing ${event}`;
+    case 'table_lead': return `Join ${first}'s table on Contributor Day`;
+    default: return `Meet ${first} at ${event}`;
+  }
+}
+
 export function personHeadline(person, kit) {
   const event = kit?.short ?? 'WordCamp';
   if (person.roles?.length) return `${person.role_labels[0]} at ${event}`;
@@ -1491,28 +1538,30 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  const [photo, mark, brand] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png'), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
+  // The WordCamp's logo, on every people card.
+  const LW = H < 1100 ? 150 : 180;
+  const LH = H < 1100 ? 84 : 100;
+  const topLogo = (x) => { if (eventLogo) logoTile(ctx, eventLogo, x, SAFE - 22, LW, LH, paletteOf(colors), 18); };
   const pal = paletteOf(colors);
   const look = eventLook(kit.event.seed);
   const rc = roleColor(person, colors);
   const onRc = textOn(rc, pal.ink, pal.paper);
   const { roles, talk } = personLines(person);
-  const label = personHeadline(person, kit).toUpperCase();
   const tall = H >= 1900;
   const square = H < 1100;
   // The posts' grid: a block at the foot in the role's tone (why scan, the
   // event, the QR); the site's artwork large in each design's background.
   const g = grid(W, H);
-  const first = String(person.name ?? '').trim().split(/\s+/)[0] || 'them';
-  const short = kit.short ?? kit.event.name;
-  const cta = person.roles?.[0] === 'speaker' && person.talk ? `Save ${first}'s talk in CampBuddy` : `Meet ${first} at ${short}`;
+  const cta = personCta(person, kit);
+  const footLabel = personHeadline(person, kit);
   const qrContent = `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`;
   const fTop = g.blockTop - 20;
   // The foot of every design: the block (a deeper tone where the design is already in the role's tone).
   const foot = (under) => {
     const color = under === rc ? mix(rc, pal.ink, 0.3) : rc;
-    paintBlock(ctx, g, { color }, pal, kit, brand, qrContent, cta);
+    paintBlock(ctx, g, { color }, pal, kit, brand, qrContent, cta, footLabel);
   };
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -1522,7 +1571,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = rc;
     ctx.fillRect(0, 0, W, H);
     paintArtBackground(ctx, { x: 0, y: 0, w: W, h: g.blockTop, on: rc }, pal);
-    pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 28, height: 60, align: 'center' });
+    topLogo(SAFE);
     const room = fTop - (SAFE + 80) - (talk && !square ? (tall ? 220 : 120) : 30);
     const ph = Math.min(room, tall ? 1000 : 900);
     const pw = ph - 150;
@@ -1590,10 +1639,12 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.restore();
     ctx.save(); roundRect(ctx, bx, by, bw, bh, 32); ctx.clip();
     ctx.fillStyle = pal.primary; ctx.fillRect(bx, by, bw, square ? 100 : 130);
-    if (mark) logoTile(ctx, mark, bx + 28, by + (square ? 18 : 30), 70, 70, pal, 14);
+    const hh = square ? 100 : 130;
+    const lw = Math.min(bw * 0.36, 170);
+    if (eventLogo) logoTile(ctx, eventLogo, bx + 22, by + (hh - (hh - 36)) / 2, lw, hh - 36, pal, 14);
     ctx.fillStyle = pal.onPrimary;
-    const ev = fitText(ctx, kit.event.name, bw - 150, 30, 18, 1, 800);
-    ctx.fillText(ev.lines[0], bx + 116, by + (square ? 62 : 76));
+    const ev = fitText(ctx, kit.event.name, bw - lw - 66, 30, 16, 2, 800);
+    ev.lines.forEach((l, i) => ctx.fillText(l, bx + lw + 44, by + hh / 2 + ev.size * 0.35 + (i - (ev.lines.length - 1) / 2) * ev.size * 1.1));
     const bandH = square ? 80 : 110;
     ctx.fillStyle = rc; ctx.fillRect(bx, by + bh - bandH, bw, bandH);
     ctx.fillStyle = onRc; ctx.textAlign = 'center';
@@ -1643,7 +1694,6 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     }
     paintArtBackground(ctx, { x: 0, y: bandTop * 0.64, w: W, h: bandTop * 0.36, on: dark }, pal);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
-    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: square ? 22 : 26, height: square ? 50 : 58 });
     if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
     ctx.fillStyle = rc;
     ctx.fillRect(0, bandTop, W, bandH);
@@ -1669,7 +1719,6 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     paintArtBackground(ctx, { x: 0, y: 0, w: W, h: g.blockTop, on: pal.paper }, pal);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
     if (logo) logoTile(ctx, logo, SAFE, SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
-    pill(ctx, label, W - SAFE, SAFE - 10 + ((square ? 84 : 100) - (square ? 50 : 58)) / 2 - 12, { bg: rc, fg: onRc, size: square ? 20 : 24, height: square ? 50 : 58, align: 'right' });
     const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 2, 800, HEAD ?? FONT);
     const nameH = n.lines.length * n.size * 1.04;
     const small = tall ? 34 : (square ? 22 : 28);
@@ -1755,8 +1804,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillRect(0, ph, W, H - ph);
     if (ART.pattern) fillWithPattern(ctx, ART.pattern, onRc, 0, ph, W, H - ph, 120, 0.08);
 
-    // On the photo: the label, the event's logo.
-    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: square ? 22 : 26, height: square ? 50 : 58 });
+    // On the photo: the event's logo (who this is goes in the block).
     if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
 
     // In the block: the QR (and CampBuddy's mark) on the right, the words on the left.
@@ -1783,11 +1831,16 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const small = tall ? 34 : (square ? 22 : 26);
     const eventLine = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
     const bottom = ph + blockH - pad;
-    if (roles) {
-      ctx.font = `800 ${small}px ${FONT}`;
-      ctx.fillStyle = alpha(onRc, 0.9);
-      y += small;
-      ctx.fillText(ellipsize(ctx, roles, tw), SAFE, y);
+    // Who, then why: "Organizer at WordCamp Delhi", then the role's line.
+    ctx.font = `800 ${small}px ${FONT}`;
+    ctx.fillStyle = alpha(onRc, 0.9);
+    y += small;
+    ctx.fillText(ellipsize(ctx, footLabel, tw), SAFE, y);
+    if (!talk) {
+      // The role's line, on two lines if it needs them.
+      ctx.fillStyle = onRc;
+      const c = fitText(ctx, cta, tw, small, 15, 2, 600);
+      c.lines.forEach((l) => { y += c.size * 1.3; ctx.fillText(l, SAFE, y); });
     }
     const room = bottom - small - 16 - (y + 10);
     if (talk && room > small) {
@@ -1816,11 +1869,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const r = tall ? 210 : (square ? 100 : 130);
     const photoLeft = look.corner === 'left';
     circlePhoto(ctx, photo, photoLeft ? W - SAFE - 30 - r : SAFE + 30 + r, SAFE + 40 + r, r, 0, rc, pal.soft, pal.primary, person.name);
-    ctx.font = `800 26px ${FONT}`;
-    ctx.fillStyle = rc;
-    ctx.textAlign = photoLeft ? 'left' : 'right';
-    ctx.fillText(label, photoLeft ? SAFE + 30 : W - SAFE - 30, SAFE + 50);
-    ctx.textAlign = 'left';
+    topLogo(photoLeft ? SAFE + 30 : W - SAFE - 30 - LW);
     let y = SAFE + 40 + 2 * r + (tall ? 200 : (square ? 70 : 110));
     ctx.fillStyle = pal.ink;
     const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 2, 700, SERIF);
@@ -1852,10 +1901,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   if (ART.illustration || ART.pattern) paintArtBackground(ctx, { x: 0, y: 0, w: W, h: top + Math.abs(s), on: rc }, pal);
   else drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
   ctx.restore();
+  topLogo(SAFE);
   ctx.strokeStyle = rc === pal.secondary ? pal.primary : pal.secondary;
   ctx.lineWidth = 14;
   ctx.beginPath(); ctx.moveTo(0, top + s + 16); ctx.lineTo(W, top - s + 16); ctx.stroke();
-  pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 30, height: 64, align: 'center' });
   const r = tall ? 290 : (square ? 160 : 215);
   const cy = top - (square ? 30 : 20);
   circlePhoto(ctx, photo, W / 2, cy, r, 14, pal.paper, pal.soft, pal.primary, person.name);
@@ -1988,7 +2037,9 @@ export function initSocialKit() {
   const quality = choiceGroup('social-quality', () => {}, 'social');
 
   // Each post and each person takes the next piece of the site's artwork.
-  kit.people.forEach((person, i) => { person.artIndex = i; });
+  // Same role, same artwork: every organizer's card has one piece, every speaker's the next…
+  const ROLE_ART = ['organizer', 'speaker', 'volunteer', 'sponsor', 'media_partner', 'microsponsor', 'table_lead'];
+  kit.people.forEach((person) => { const i = ROLE_ART.indexOf(person.roles?.[0]); person.artIndex = i < 0 ? ROLE_ART.length : i; });
   const posts = [...document.querySelectorAll('[data-social-post]')].map((card, cardIndex) => {
     const post = kit.posts.find((p) => p.key === card.dataset.socialPost);
     const field = (name) => card.querySelector(`[data-field="${name}"]`);
@@ -2001,7 +2052,20 @@ export function initSocialKit() {
     let pages = [];
     let drawing = Promise.resolve();
 
+    // The countdown's headline and caption follow the number of days as it changes.
+    let shownDays = post.key === 'countdown' ? post.days : null;
+    const syncDays = () => {
+      if (post.key !== 'countdown') return;
+      const now = daysToGo(kit);
+      if (!now || !shownDays || now === shownDays) return;
+      for (const name of ['headline', 'caption']) {
+        const el = field(name);
+        if (el) el.value = el.value.replace(new RegExp(`\\b${shownDays}\\b`, 'g'), String(now));
+      }
+      shownDays = now;
+    };
     const replan = () => {
+      syncDays();
       pages = planPost({ ...postContent(post, fields(), kit, pickEl?.value), artIndex: cardIndex }, size(), style(), colors);
       pageIndex = Math.min(pageIndex, pages.length - 1);
       // A class, not `hidden`: the row's own `flex` would win over the attribute.

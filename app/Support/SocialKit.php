@@ -362,6 +362,8 @@ class SocialKit
         return collect(EventData::get($event->id, 'speakers') ?? [])
             ->map(fn ($p) => ['name' => (string) ($p['name'] ?? ''), 'photo' => self::bigPhoto($p['avatar_url'] ?? null, 300)])
             ->filter(fn ($p) => $p['name'] !== '')
+            // The same person listed twice: one face.
+            ->unique(fn ($p) => mb_strtolower(trim($p['name'])))
             ->values()->all();
     }
 
@@ -371,6 +373,7 @@ class SocialKit
         return collect(EventData::get($event->id, 'sponsors') ?? [])
             ->map(fn ($s) => ['name' => (string) ($s['name'] ?? ''), 'logo' => $s['logo_url'] ?? null, 'tier' => $s['tier_names'][0] ?? null])
             ->filter(fn ($s) => $s['name'] !== '')
+            ->unique(fn ($s) => mb_strtolower(trim($s['name'])))
             ->values()->all();
     }
 
@@ -396,12 +399,27 @@ class SocialKit
 
         $tags = self::hashtags($event);
         $people = [];
+        // One person, one card: two list entries for the same person (two
+        // tickets) are told apart by their Gravatar, else their name, and
+        // their roles are put together.
+        $seen = [];
         foreach ($entries as $entry) {
             $personRoles = $roles[$entry->id]['roles'] ?? [];
             $card = $cards[$entry->id] ?? null;
             if ($personRoles === [] && ! $card) {
                 continue;
             }
+            $key = $entry->gravatar_url ? (string) preg_replace('/\?.*$/', '', $entry->gravatar_url) : mb_strtolower(trim($entry->name));
+            if (isset($seen[$key])) {
+                $i = $seen[$key];
+                $people[$i]['roles'] = array_values(array_unique([...$people[$i]['roles'], ...$personRoles]));
+                $people[$i]['role_labels'] = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $people[$i]['roles']);
+                $people[$i]['talk'] ??= $roles[$entry->id]['talks'][0] ?? null;
+                $people[$i]['card'] ??= $card;
+
+                continue;
+            }
+            $seen[$key] = count($people);
 
             $labels = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $personRoles);
             $talk = $roles[$entry->id]['talks'][0] ?? null;
@@ -441,6 +459,9 @@ class SocialKit
                 'logo' => $event->logoUrl() ?? $event->faviconUrl(),
                 'mark' => $event->faviconUrl() ?? $event->logoUrl(),
                 'slug' => $event->slug,
+                // The countdown counts from these in the browser, so a card drawn tomorrow says one day less.
+                'starts' => $event->starts_on?->format('Y-m-d'),
+                'timezone' => EventTime::zone($event)->getName(),
                 // Every card's QR: the event in CampBuddy; social-kit.js adds the card's utm_content.
                 'qr' => route('event.home', $event).'?'.http_build_query(['utm_source' => 'campbuddy', 'utm_medium' => 'social', 'utm_campaign' => $event->slug]),
                 // Same event, same look; another event, another (social-kit.js seeds its shapes with this).

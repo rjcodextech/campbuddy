@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { contrastRatio, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, daysToGo, personCta, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -152,4 +152,21 @@ test('the other site colours decorate and give each role its own tone', () => {
   const colors = { ...p };
   assert.equal(roleColor({ roles: ['volunteer'] }, colors), p.extras[0], 'a volunteer takes one of the site colours');
   assert.equal(roleColor({ roles: ['organizer'] }, colors), p.primary);
+});
+
+test('the countdown counts the days at the venue when the card is drawn', () => {
+  const kit = { event: { starts: '2026-12-12', timezone: 'Asia/Kolkata' } };
+  assert.equal(daysToGo(kit, new Date('2026-10-10T06:00:00Z')), 63);
+  assert.equal(daysToGo(kit, new Date('2026-10-10T19:00:00Z')), 62, 'after midnight in Delhi it is the next day there');
+  assert.equal(daysToGo(kit, new Date('2026-12-12T06:00:00Z')), null, 'the day itself: no countdown');
+  assert.equal(daysToGo({ event: {} }), null);
+});
+
+test('a people card says why to find the person, by role', () => {
+  const kit = { short: 'WordCamp Delhi' };
+  assert.equal(personCta({ name: 'Anup Kumar', roles: ['organizer'] }, kit), 'Say hi to Anup, one of the people making WordCamp Delhi happen');
+  assert.equal(personCta({ name: 'Amit Singh', roles: ['speaker'], talk: 'Closing' }, kit), "Save Amit's talk and get a reminder");
+  assert.equal(personCta({ name: 'Asha', roles: ['volunteer'] }, kit), 'Thank Asha, a volunteer at WordCamp Delhi');
+  assert.equal(personCta({ name: 'Kim Lee', roles: ['table_lead'] }, kit), "Join Kim's table on Contributor Day");
+  assert.equal(personCta({ name: 'Ravi', roles: [] }, kit), 'Meet Ravi at WordCamp Delhi');
 });

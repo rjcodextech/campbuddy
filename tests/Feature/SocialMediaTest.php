@@ -143,6 +143,20 @@ class SocialMediaTest extends TestCase
         $this->assertStringContainsString('utm_content=people-speaker', $people[0]['link']);
     }
 
+    public function test_one_person_one_card_and_no_one_twice_on_the_posts(): void
+    {
+        $gravatar = 'https://secure.gravatar.com/avatar/bbb222bbb222bbb222bbb222bbb222bb?s=96';
+        AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Rahul', 'links' => [], 'gravatar_url' => $gravatar, 'content_hash' => 'r1', 'is_suppressed' => false]);
+        AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Rahul', 'links' => [], 'gravatar_url' => $gravatar, 'content_hash' => 'r2', 'is_suppressed' => false]);
+        EventData::put($this->event->id, 'speakers', [['id' => 7, 'name' => 'Rahul', 'avatar_url' => 'https://secure.gravatar.com/avatar/bbb222bbb222bbb222bbb222bbb222bb'], ['id' => 8, 'name' => 'rahul ', 'avatar_url' => null]]);
+        EventData::put($this->event->id, 'sessions', [['id' => 1, 'title' => 'Blocks', 'speaker_ids' => [7]]]);
+        EventData::put($this->event->id, 'sponsors', [['id' => 1, 'name' => 'Acme'], ['id' => 2, 'name' => 'ACME']]);
+
+        $this->assertCount(1, SocialKit::people($this->event), 'two tickets, one card');
+        $this->assertCount(1, SocialKit::speakers($this->event));
+        $this->assertCount(1, SocialKit::sponsors($this->event));
+    }
+
     public function test_the_page_renders_and_colours_are_checked(): void
     {
         $this->actingAs(User::factory()->create());

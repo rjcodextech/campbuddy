@@ -195,6 +195,7 @@ Upload: `app/Http/Controllers/Admin/CommandController.php` aur poora `resources/
 - **10 Oct (raat 6): Social media 5 artwork + upload, sponsor logos, har event ke alag shabd** — **Migration nahi.** Badle: `app/Services/{WordCampRestClient,WordCampNormalizer,SiteThemeScraper}.php`, `app/Support/{SiteTheme,SocialKit,SocialForms}.php`, `app/Http/Controllers/{Admin,Manager}/SocialController.php`, `routes/{web,manager}.php`, `resources/views/partials/social-media.blade.php`, `public/build/`. Deploy ke baad: `campbuddy:doctor` (data dobara aata hai, sponsor logos ke saath), phir har event ke Social media page par **Read the site again** (tagline + poori site ka artwork).
 - **10 Oct (raat 7): Social media ka naya design system** (Split card + saare cards; 4 style buttons hat gaye). **Migration nahi.** Badle: `app/Support/SiteTheme.php`, `resources/views/partials/social-media.blade.php`, `public/build/`. Deploy ke baad har event par **Read the site again** (tagline ab date/venue wali nahi leta).
 - **10 Oct (raat 8): Social media 7 post designs + 7 people designs, artwork background mein, Print 6x @ 600 DPI.** **Migration nahi.** Badle: `resources/views/partials/social-media.blade.php`, `public/build/`.
+- **10 Oct (raat 9): speakers 3 per card, live countdown, people cards (role-wise artwork, label footer mein, logo, duplicate hataye).** **Migration nahi.** Badle: `app/Support/SocialKit.php`, `public/build/`.
 - Phir `php artisan optimize:clear && php artisan optimize`.
 
 ## Deploy: server par step-by-step
