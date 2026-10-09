@@ -13,7 +13,7 @@
 //     and the starting style;
 //   - nothing overlaps: content that doesn't fit is split over several cards
 //     (1/3, 2/3…), shapes stay out of the text column;
-//   - print ready: a 3× export (3240 px wide) stamped 300 DPI, with every
+//   - print ready: a 6× export (6480 px wide) stamped 600 DPI, with every
 //     word and code at least 72 px (at 1080) inside the edge.
 
 import QRCode from 'qrcode-generator';
@@ -21,7 +21,10 @@ import { zipStore } from './zip-store.js';
 import { withPngDpi } from './attendee/png-dpi.js';
 
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920] };
-const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 3, dpi: 300 } };
+// Print: six times the pixels (6480 px wide), stamped 600 DPI — 10.8 inches wide, sharp enough for a standee.
+const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 6, dpi: 600 } };
+// The scale being drawn at: artwork is prepared at this many times its card size, so print stays sharp.
+let RES = 1;
 const DEFAULT_FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
 const DEFAULT_SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
 // Text and headline fonts: CampBuddy's, or the WordCamp site's own (useSiteFonts()).
@@ -42,7 +45,7 @@ export function useArt(index = 0) {
     ART[kind] = list.length ? list[Math.abs(index) % list.length] : null;
   }
 }
-const STYLES = ['bold', 'poster', 'ticket', 'gradient'];
+const PEOPLE_DESIGNS = ['classic', 'polaroid', 'badge', 'split', 'minimal', 'spotlight', 'arch'];
 const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
 const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
 const SAFE = 72;
@@ -236,8 +239,8 @@ export function eventLook(seed) {
     texture: pick(TEXTURES),
     corner: r() < 0.5 ? 'right' : 'left',
     tilt: r() < 0.5 ? -1 : 1,
-    style: pick(STYLES),
-    design: pick(['classic', 'polaroid', 'badge', 'split', 'minimal']),
+    style: pick(POST_DESIGNS),
+    design: pick(PEOPLE_DESIGNS),
     rnd: r,
   };
 }
@@ -440,9 +443,10 @@ const recolours = new Map();
  * a colour of its own.
  */
 export function recolour(img, color) {
-  const key = `${img.src}|${color}`;
+  const max = Math.min(4000, 900 * RES);
+  const key = `${img.src}|${color}|${max}`;
   if (recolours.has(key)) return recolours.get(key);
-  const scale = Math.min(1, 900 / Math.max(img.width, img.height));
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
   const c = document.createElement('canvas');
   c.width = Math.max(1, Math.round(img.width * scale));
   c.height = Math.max(1, Math.round(img.height * scale));
@@ -485,9 +489,10 @@ export function recolour(img, color) {
 
 /** A photo in two brand tones (dark to light), so it reads as the brand. */
 export function duotone(img, dark, light, maxSide = 1400) {
-  const key = `${img.src}|duo|${dark}|${light}`;
+  const max = Math.min(4000, maxSide * RES);
+  const key = `${img.src}|duo|${dark}|${light}|${max}`;
   if (recolours.has(key)) return recolours.get(key);
-  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
   const c = document.createElement('canvas');
   c.width = Math.round(img.width * scale);
   c.height = Math.round(img.height * scale);
@@ -759,16 +764,14 @@ export function postContent(post, fields, kit, pick) {
 
 // ---- Layout ---------------------------------------------------------------
 //
-// One design system for every post (10 Oct 2026): one message and one hero
-// per card, the event's own artwork inside the design, and a colour block at
-// the foot with what the reader gets from scanning, the event, the QR and
-// CampBuddy's mark. Two families:
-//   - type-led (save the date, countdown, schedule, app, sponsors, a day,
-//     Contributor Day, meet, thank you): the light colour, a big headline or
-//     number, the body, and the site's skyline rising from the block;
-//   - picture-led (speakers, a session, and — when the site has a photo —
-//     save the date, meet, thank you): faces or the place fill the top, the
-//     words sit on it, the skyline rises into the picture as a silhouette.
+// Seven designs for the posts (10 Oct 2026), one system underneath: one
+// message and one hero per card, the site's artwork large in the background
+// (as wide as the card when it is a skyline or a banner, fitted when it is
+// smaller), and a block at the foot with what the reader gets from scanning,
+// the event, the QR and CampBuddy's mark. Faces and photos are never under
+// words: a picture gets its own box and the words sit below it.
+
+const POST_DESIGNS = ['classic', 'poster', 'frame', 'ticket', 'magazine', 'split', 'minimal'];
 
 /** The grid every card shares: the block at the foot, the header, the column. */
 function grid(W, H) {
@@ -800,12 +803,12 @@ const CTA = {
   'thank-you': 'Keep your day as a PDF',
 };
 
-/** Posts that use the site's own photo of the place, when it has one. */
+/** Posts that show the site's own photo of the place, when it has one. */
 const PHOTO_POSTS = ['save-the-date', 'meet', 'thank-you'];
 
-function family(content) {
-  if (['photos', 'session'].includes(content.body.type)) return 'picture';
-  return ART.photo && PHOTO_POSTS.includes(content.key) ? 'picture' : 'type';
+function isPicture(content) {
+  if (['photos', 'session'].includes(content.body.type)) return true;
+  return Boolean(ART.photo && PHOTO_POSTS.includes(content.key));
 }
 
 const ROWS = {
@@ -825,11 +828,6 @@ function itemsKey(type) {
   return { list: 'items', tables: 'tables', logos: 'logos', photos: 'people' }[type];
 }
 
-/** Faces on one speakers card: a 3 × 3 mosaic (3 × 5 on a story). */
-function mosaicPage(H) {
-  return H >= 1900 ? 15 : 9;
-}
-
 /**
  * The cards a post becomes: lists, tables, photo and logo grids are split so
  * every card holds only what fits (1/3, 2/3…); anything else is one card.
@@ -845,40 +843,128 @@ export function paginate(content, room, H) {
   return pages;
 }
 
-/** How tall the site's illustration rises from the block (`amount` 1 = full, less when a list needs room). */
-function riseHeight(g, img, amount = 1, onPicture = false) {
-  if (!img || !amount) return 0;
-  const info = artInfo(img);
-  if (onPicture && info.aspect >= 1.4 && info.aspect < 2.8 && !info.mono) return 0;
-  const max = g.square ? 170 : (g.tall ? 380 : 250);
-  const h = info.aspect < 1.4 ? max : Math.min(max, (g.W - 40) / info.aspect);
-  return Math.round(h * amount);
+/**
+ * Where each design puts things: the background, an optional panel or ticket,
+ * the area for the words (`area`), the colours of the words, and the block.
+ */
+function layoutFor(design, g, pal) {
+  const { W, H, blockTop } = g;
+  const base = {
+    bg: pal.paper, ink: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, bar: pal.secondary,
+    art: { x: 0, y: 0, w: W, h: blockTop, on: pal.paper },
+    head: { x: g.x, y: g.headerTop, w: g.w, onPicture: false },
+    area: { x: g.x, y: g.headerTop + g.logo.h + (g.square ? 36 : 56), w: g.w, bottom: blockTop - (g.square ? 24 : 40) },
+    block: { color: pal.primary, x0: 0, x1: W },
+    panel: null, ticket: null, split: null, frameLine: false,
+  };
+  switch (design) {
+    case 'poster':
+      return {
+        ...base, bg: pal.primary, ink: pal.paper, muted: alpha(pal.paper, 0.86), accent: pal.paper, bar: pal.secondary,
+        art: { ...base.art, on: pal.primary },
+        head: { ...base.head, onPicture: true },
+        block: { color: pal.paper, x0: 0, x1: W },
+      };
+    case 'frame': {
+      const m = g.square ? 28 : 40;
+      const panel = { x: m, y: m, w: W - 2 * m, h: blockTop - 2 * m + 10 };
+      return {
+        ...base, bg: pal.primary,
+        art: { ...base.art, on: pal.primary },
+        panel,
+        head: { x: panel.x + 36, y: panel.y + 30, w: panel.w - 72, onPicture: false },
+        area: { x: panel.x + 36, y: panel.y + 30 + g.logo.h + (g.square ? 26 : 44), w: panel.w - 72, bottom: panel.y + panel.h - 34 },
+        block: { color: mix(pal.primary, pal.ink, 0.35), x0: 0, x1: W },
+      };
+    }
+    case 'ticket': {
+      const m = g.square ? 30 : 44;
+      const ticket = { x: m, y: m, w: W - 2 * m, h: H - 2 * m };
+      return {
+        ...base, bg: pal.deep,
+        art: { x: 0, y: 0, w: W, h: H, on: pal.deep },
+        ticket,
+        head: { x: ticket.x + 40, y: ticket.y + 30, w: ticket.w - 80, onPicture: false },
+        area: { x: ticket.x + 40, y: ticket.y + 30 + g.logo.h + (g.square ? 26 : 44), w: ticket.w - 80, bottom: blockTop - 34 },
+        block: { color: pal.primary, x0: ticket.x, x1: ticket.x + ticket.w, bottom: ticket.y + ticket.h, ticket: true },
+      };
+    }
+    case 'magazine': {
+      // The artwork is the hero of the top: shown big, in its own colours, on a soft ground.
+      const show = Math.round(blockTop * (g.square ? 0.4 : 0.44));
+      return {
+        ...base,
+        art: { x: 0, y: 0, w: W, h: show, on: pal.soft, showcase: true },
+        head: { ...base.head, onPicture: true },
+        area: { x: g.x, y: show + (g.square ? 30 : 50), w: g.w, bottom: blockTop - (g.square ? 24 : 40) },
+      };
+    }
+    case 'split': {
+      const side = Math.round(W * 0.34);
+      return {
+        ...base,
+        art: { x: 0, y: 0, w: side, h: blockTop, on: pal.primary },
+        split: side,
+        head: { x: side + 44, y: g.headerTop, w: W - side - 44 - SAFE, onPicture: false, logoInSide: true },
+        area: { x: side + 44, y: g.headerTop + (g.square ? 96 : 120), w: W - side - 44 - SAFE, bottom: blockTop - (g.square ? 24 : 40) },
+      };
+    }
+    case 'minimal':
+      return {
+        ...base, frameLine: true,
+        art: { x: W * 0.4, y: blockTop * 0.45, w: W * 0.6, h: blockTop * 0.55, on: pal.paper, corner: true },
+        block: { color: pal.paper, x0: 0, x1: W, line: true },
+      };
+    default:
+      return base;
+  }
 }
 
 /**
- * The site's illustration standing on the block: a real skyline (or one-colour
- * art) as a silhouette in the block's colour, so the block seems to rise into
- * the card; a picture in its own colours (a collage) on a light card only;
- * tall art (a sprig) grows from the corner.
+ * The site's artwork in the background of `box`: a wide piece (a skyline, a
+ * banner) as wide as the box and standing on its foot; a smaller one fitted
+ * into the corner; in two soft tones of the ground so the words always read.
+ * `showcase` shows it in its own colours instead (Magazine). Without an
+ * illustration, the pattern (or the photo) fills the box faintly.
  */
-function paintRise(ctx, g, h, color, pal, onPicture, corner) {
-  const img = ART.illustration;
-  if (!img || h < 40) return;
-  const info = artInfo(img);
-  // A busy collage on a picture or a colour would only be a blob.
-  if (onPicture && !info.mono && info.aspect >= 1.4 && info.aspect < 2.8) return;
-  const silhouette = onPicture || info.mono || info.aspect >= 2.8 || info.aspect < 1.4;
-  const art = silhouette ? recolour(img, color) : artFor(img, pal, pal.paper);
-  if (!art) return;
+function paintArtBackground(ctx, box, pal) {
+  const on = box.on;
+  const darkGround = textOn(on, pal.ink, pal.paper) === pal.paper;
+  const strong = darkGround ? mix(on, pal.paper, 0.22) : mix(on, pal.primary, 0.3);
+  const faint = darkGround ? mix(on, pal.ink, 0.12) : mix(on, pal.primary, 0.08);
   ctx.save();
-  if (info.aspect < 1.4) {
-    const w = h * info.aspect;
-    ctx.translate(corner === 'left' ? w + 10 : g.W - w - 10, g.blockTop - h + 2);
-    if (corner === 'left') ctx.scale(-1, 1);
-    ctx.drawImage(art, 0, 0, w, h);
-  } else {
-    const k = Math.min(g.W / art.width, h / art.height);
-    ctx.drawImage(art, (g.W - art.width * k) / 2, g.blockTop - art.height * k + 2, art.width * k, art.height * k);
+  ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
+  if (box.showcase) {
+    ctx.fillStyle = on;
+    ctx.fillRect(box.x, box.y, box.w, box.h);
+  }
+  const img = ART.illustration;
+  if (img) {
+    const info = artInfo(img);
+    const art = box.showcase ? artFor(img, pal, on) : (info.mono || info.opaque ? recolour(img, strong) : duotone(img, strong, faint));
+    if (art) {
+      if (info.aspect >= 1.4 && !box.corner) {
+        // Wide: the full width of the box, standing on its foot (or fitted when it would be too tall).
+        const k = Math.min(box.w / art.width, (box.h * (box.showcase ? 0.86 : 0.7)) / art.height);
+        const w = art.width * k;
+        const h = art.height * k;
+        ctx.drawImage(art, box.x + (box.w - w) / 2, box.showcase ? box.y + (box.h - h) / 2 + 30 : box.y + box.h - h, w, h);
+      } else {
+        // Smaller or tall: as big as fits, in the corner.
+        const k = Math.min(box.w / art.width, (box.h * 0.9) / art.height);
+        const w = art.width * k;
+        const h = art.height * k;
+        ctx.drawImage(art, box.x + box.w - w, box.y + box.h - h, w, h);
+      }
+    }
+  } else if (ART.pattern) {
+    fillWithPattern(ctx, ART.pattern, darkGround ? pal.paper : pal.primary, box.x, box.y, box.w, box.h, 200, box.showcase ? 0.18 : 0.07);
+  } else if (ART.photo && !box.showcase) {
+    const photo = duotone(ART.photo, mix(on, pal.ink, 0.2), mix(on, pal.paper, 0.2));
+    if (photo) {
+      ctx.globalAlpha = 0.35;
+      drawCover(ctx, photo, box.x, box.y, box.w, box.h);
+    }
   }
   ctx.restore();
 }
@@ -887,56 +973,86 @@ function paintRise(ctx, g, h, color, pal, onPicture, corner) {
  * The block at the foot of every card: the reader's reason to scan, the event
  * (name · dates · hashtag) and, on the right, the QR with CampBuddy's mark.
  */
-function paintBlock(ctx, g, color, pal, kit, brand, qrContent, cta) {
+function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta) {
+  const color = block.color;
+  const x0 = block.x0 ?? 0;
+  const x1 = block.x1 ?? g.W;
+  const bottom = block.bottom ?? g.H;
+  const top = g.blockTop;
+  const h = bottom - top;
   const on = textOn(color, pal.ink, pal.paper);
+  ctx.save();
+  if (block.ticket) {
+    // The ticket's stub: below a perforation, notches on both edges.
+    ctx.beginPath(); roundRect(ctx, x0, top - 40, x1 - x0, h + 40, 36); ctx.clip();
+  }
   ctx.fillStyle = color;
-  ctx.fillRect(0, g.blockTop, g.W, g.blockH);
-  if (ART.pattern) fillWithPattern(ctx, ART.pattern, on, 0, g.blockTop, g.W, g.blockH, 120, 0.07);
+  ctx.fillRect(x0, top, x1 - x0, h);
+  if (ART.pattern && !block.line) fillWithPattern(ctx, ART.pattern, on, x0, top, x1 - x0, h, 120, 0.07);
+  ctx.restore();
+  if (block.line) {
+    ctx.fillStyle = alpha(pal.ink, 0.2);
+    ctx.fillRect(g.x, top, g.w, 2);
+  }
+  if (block.ticket) {
+    ctx.fillStyle = pal.deep;
+    for (const x of [x0, x1]) { ctx.beginPath(); ctx.arc(x, top, 26, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = alpha(pal.paper, 0.6);
+    ctx.setLineDash([14, 12]);
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(x0 + 40, top); ctx.lineTo(x1 - 40, top); ctx.stroke();
+    ctx.setLineDash([]);
+  }
 
-  const pad = g.square ? 30 : (g.tall ? 52 : 40);
+  const inner = block.ticket ? 36 : 0;
+  const left = (block.ticket ? x0 + 40 : SAFE);
+  const right = (block.ticket ? x1 - 40 : g.W - SAFE);
+  const pad = g.square ? 28 : (g.tall ? 50 : 38);
   const chipH = g.square ? 44 : (g.tall ? 64 : 52);
-  const qr = Math.min(g.blockH - 2 * pad - chipH - 10, g.tall ? 250 : 180);
-  const qx = g.W - SAFE - qr;
-  const qy = g.blockTop + (g.blockH - qr - chipH - 10) / 2;
-  drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, qy, qr, pal.ink, pal.paper);
-  ctx.fillStyle = pal.paper;
+  const qr = Math.min(h - 2 * pad - chipH - 10, g.tall ? 250 : 180);
+  const qx = right - qr;
+  const qy = top + (h - qr - chipH - 10) / 2;
+  drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, qy, qr, pal.ink, color === pal.paper || block.line ? mix(pal.paper, '#ffffff', 0.5) : pal.paper);
+  ctx.fillStyle = block.line || color === pal.paper ? mix(pal.paper, pal.ink, 0.06) : pal.paper;
   roundRect(ctx, qx, qy + qr + 10, qr, chipH, 12);
   ctx.fill();
   if (brand) drawContain(ctx, brand, qx + 8, qy + qr + 16, qr - 16, chipH - 12);
 
-  const tw = qx - 40 - SAFE;
-  const top = g.blockTop + pad;
-  const bottom = g.H - pad;
+  const tw = qx - 36 - left;
   ctx.fillStyle = on;
   // The site's text font here, not its display font: this line must read at a glance.
   const c = fitText(ctx, cta, tw, g.tall ? 52 : (g.square ? 32 : 40), 22, 2, 800, FONT);
   ctx.font = `800 ${c.size}px ${FONT}`;
-  c.lines.forEach((l, i) => ctx.fillText(l, SAFE, top + c.size * (0.9 + i * 1.1)));
+  c.lines.forEach((l, i) => ctx.fillText(l, left, top + pad + c.size * (0.9 + i * 1.1)));
   const small = g.tall ? 28 : (g.square ? 20 : 22);
   ctx.font = `600 ${small}px ${FONT}`;
   ctx.fillStyle = alpha(on, 0.78);
-  ctx.fillText('Free · no sign-up · works offline', SAFE, bottom - small * 1.6);
+  ctx.fillText('Free · no sign-up · works offline', left, bottom - pad - small * 1.6 - inner * 0);
   ctx.font = `800 ${small}px ${FONT}`;
   ctx.fillStyle = on;
   const tag = (kit.event.hashtags ?? '').split(' ')[2];
-  ctx.fillText(ellipsize(ctx, [kit.event.name, kit.event.dates, tag].filter(Boolean).join('  ·  '), tw), SAFE, bottom);
+  ctx.fillText(ellipsize(ctx, [kit.event.name, kit.event.dates, tag].filter(Boolean).join('  ·  '), tw), left, bottom - pad);
 }
 
 /** The header: the event's logo, and the kicker (and page number) on the right. */
-function paintTop(ctx, g, pal, logo, kicker, page, onPicture) {
-  // Smaller on a picture, so it covers less of the faces.
-  const k = onPicture ? 0.78 : 1;
-  logoTile(ctx, logo, g.x, g.headerTop, g.logo.w * k, g.logo.h * k, pal, 20);
-  let right = g.W - SAFE;
+function paintTop(ctx, g, L, pal, logo, kicker, page) {
+  const head = L.head;
+  const lw = g.logo.w * (head.logoInSide ? 0.8 : 1);
+  const lh = g.logo.h * (head.logoInSide ? 0.8 : 1);
+  if (head.logoInSide) logoTile(ctx, logo, (L.split - lw) / 2, g.headerTop, lw, lh, pal, 18);
+  else logoTile(ctx, logo, head.x, head.y, lw, lh, pal, 20);
+  let right = head.x + head.w;
   const h = g.square ? 48 : 56;
   const size = g.square ? 22 : 26;
-  const colors = onPicture ? { bg: pal.paper, fg: pal.ink } : { bg: pal.primary, fg: pal.onPrimary };
-  const y = g.headerTop + (g.logo.h - h) / 2;
+  const colors = head.onPicture ? { bg: pal.paper, fg: pal.ink } : { bg: pal.primary, fg: pal.onPrimary };
+  const y = head.y + (lh - h) / 2;
+  const leftEdge = head.logoInSide ? head.x : head.x + lw + 24;
   if (page.total > 1) right -= pill(ctx, `${page.index}/${page.total}`, right, y, { ...colors, size, height: h, pad: 18, align: 'right' }) + 12;
   if (kicker) {
     ctx.font = `800 ${size}px ${FONT}`;
-    const text = ellipsize(ctx, String(kicker).toUpperCase(), right - (g.x + g.logo.w + 30) - 44);
-    pill(ctx, text, right, y, { ...colors, size, height: h, pad: 22, align: 'right' });
+    const text = ellipsize(ctx, String(kicker).toUpperCase(), right - leftEdge - 44);
+    if (head.logoInSide) pill(ctx, text, leftEdge, y, { ...colors, size, height: h, pad: 22 });
+    else pill(ctx, text, right, y, { ...colors, size, height: h, pad: 22, align: 'right' });
   }
 }
 
@@ -946,38 +1062,38 @@ function dateParts(dates) {
   return m ? { big: m[1].replace(/\s+/g, ''), small: `${m[2]} ${m[3]}`.toUpperCase() } : { big: '', small: String(dates ?? '').toUpperCase() };
 }
 
-/** The type-led hero: headline (or the date / the number) and line, measured for this card. */
-function measureHero(ctx, content, g, kit, top, bottom) {
-  const w = g.w;
+/** The words of a card, measured for `w`: headline (or the date / the number) and line. */
+function measureHero(ctx, content, g, kit, w, top, bottom, picture = false) {
   const body = content.body.type;
-  const hasBody = !['none', 'countdown'].includes(body);
+  const hasBody = !picture && !['none', 'countdown'].includes(body);
+  const scale = Math.min(1, w / g.w);
+  const S = (n) => Math.round(n * (0.6 + 0.4 * scale));
   const parts = [];
-  if (content.key === 'save-the-date') {
+  if (picture) {
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 92 : (g.square ? 52 : 70)), 30, 2, 800, HEAD ?? FONT), gap: 16 });
+    const line = content.key === 'spotlight' && content.body.speakers?.length ? [content.line, content.body.speakers.join(', ')].filter(Boolean).join(' · ') : content.line;
+    if (line) parts.push({ kind: 'line', fit: fitText(ctx, line, w, S(g.tall ? 38 : 30), 18, 2, 600), gap: 0 });
+  } else if (content.key === 'save-the-date') {
     const d = dateParts(kit?.event?.dates);
-    const head = fitText(ctx, content.headline, w, g.tall ? 84 : (g.square ? 56 : 68), 36, 2, 800, HEAD ?? FONT);
-    const big = d.big ? fitText(ctx, d.big, w, g.tall ? 300 : (g.square ? 190 : 240), 90, 1, 900, HEAD ?? FONT) : null;
-    parts.push({ kind: 'head', fit: head, gap: 34 });
-    if (big) parts.push({ kind: 'big', fit: big, gap: 22 });
-    parts.push({ kind: 'month', text: d.small, size: g.tall ? 64 : (g.square ? 42 : 52), gap: 26 });
-    // The place (the big date already says when).
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 84 : (g.square ? 56 : 68)), 30, 2, 800, HEAD ?? FONT), gap: 34 });
+    if (d.big) parts.push({ kind: 'big', fit: fitText(ctx, d.big, w, S(g.tall ? 300 : (g.square ? 190 : 240)), 80, 1, 900, HEAD ?? FONT), gap: 22 });
+    parts.push({ kind: 'month', text: d.small, size: S(g.tall ? 64 : (g.square ? 42 : 52)), gap: 26 });
     const dates = kit?.event?.dates ?? '';
     const where = (dates ? String(content.line ?? '').replace(dates, '') : String(content.line ?? '')).replace(/^[\s·]+/, '');
-    if (where) parts.push({ kind: 'line', fit: fitText(ctx, where, w, g.tall ? 38 : 30, 20, 2, 600), gap: 0 });
+    if (where) parts.push({ kind: 'line', fit: fitText(ctx, where, w, S(g.tall ? 38 : 30), 18, 2, 600), gap: 0 });
   } else if (body === 'countdown' && content.body.days) {
-    const big = fitText(ctx, String(content.body.days), w, g.tall ? 440 : (g.square ? 260 : 340), 120, 1, 900, HEAD ?? FONT);
-    parts.push({ kind: 'big', fit: big, gap: 22 });
-    parts.push({ kind: 'month', text: content.body.days === 1 ? 'DAY TO GO' : 'DAYS TO GO', size: g.tall ? 72 : (g.square ? 46 : 58), gap: 26 });
-    if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, g.tall ? 40 : 32, 20, 2, 600), gap: 0 });
+    parts.push({ kind: 'big', fit: fitText(ctx, String(content.body.days), w, S(g.tall ? 440 : (g.square ? 260 : 340)), 110, 1, 900, HEAD ?? FONT), gap: 22 });
+    parts.push({ kind: 'month', text: content.body.days === 1 ? 'DAY TO GO' : 'DAYS TO GO', size: S(g.tall ? 72 : (g.square ? 46 : 58)), gap: 26 });
+    if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, S(g.tall ? 40 : 32), 18, 2, 600), gap: 0 });
   } else {
-    const head = fitText(ctx, content.headline, w, g.tall ? 120 : (g.square ? (hasBody ? 64 : 84) : (hasBody ? 84 : 104)), 40, 3, 800, HEAD ?? FONT);
-    parts.push({ kind: 'head', fit: head, gap: 22 });
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 120 : (g.square ? (hasBody ? 64 : 84) : (hasBody ? 84 : 104))), 36, 3, 800, HEAD ?? FONT), gap: 22 });
     parts.push({ kind: 'bar', gap: 22 });
-    if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, g.tall ? 40 : 32, 20, 2, 600), gap: 0 });
+    if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, S(g.tall ? 40 : 32), 18, 2, 600), gap: 0 });
   }
   const heightOf = (p) => {
     if (p.kind === 'bar') return 10;
     if (p.kind === 'month') return p.size;
-    if (p.kind === 'big') return p.fit.size * 0.86;
+    if (p.kind === 'big') return p.fit.size * 0.78;
     if (p.kind === 'line') return p.fit.lines.length * p.fit.size * 1.25;
     return p.fit.lines.length * p.fit.size * 1.04;
   };
@@ -997,64 +1113,84 @@ function bodyHeight(body, H, room) {
   }
 }
 
-/** Where the type-led hero may draw: under the header, over the rising art. */
-function heroBox(g, rise) {
-  return { top: g.headerTop + g.logo.h + (g.square ? 36 : (g.tall ? 90 : 56)), bottom: g.blockTop - rise - (g.square ? 20 : 34) };
+/** The picture box of a picture-led card (above its words), in the design's area. */
+function pictureBox(g, L) {
+  const share = g.square ? 0.5 : (g.tall ? 0.62 : 0.56);
+  const full = !L.panel && !L.ticket && !L.split && !L.frameLine;
+  const x = full ? 0 : L.area.x;
+  const w = full ? g.W : L.area.w;
+  const y = L.area.y - (g.square ? 10 : 16);
+  const h = Math.round((L.area.bottom - y) * share);
+  return { x, y, w, h };
 }
 
-/** Every card of a post at this size (measured with fonts loaded). `styleName` is kept for older callers. */
+/** Faces on a speakers card: a grid whose cells are about as tall as wide. */
+function mosaicGrid(n, w, h) {
+  let best = { cols: 1, rows: n };
+  let score = Infinity;
+  for (let cols = 1; cols <= Math.min(n, 6); cols++) {
+    const rows = Math.ceil(n / cols);
+    const cell = (w / cols) / (h / rows);
+    const waste = rows * cols - n;
+    const sc = Math.abs(Math.log(cell / 0.9)) + waste * 0.15;
+    if (sc < score) { score = sc; best = { cols, rows }; }
+  }
+  return best;
+}
+
+/** Faces per speakers card at this size. */
+function mosaicPage(H) {
+  return H >= 1900 ? 12 : (H < 1100 ? 6 : 8);
+}
+
+/** Every card of a post at this size and design (measured with fonts loaded). */
 export function planPost(content, size, styleName, colors) {
   const [W, H] = SIZES[size];
   const g = grid(W, H);
+  const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
+  const L = layoutFor(design, g, paletteOf(colors));
   const ctx = document.createElement('canvas').getContext('2d');
   useArt(content.artIndex ?? 0);
-  void styleName; void colors;
 
   if (content.body.type === 'photos') {
     const all = content.body.people ?? [];
-    if (!all.length) return [{ ...content, body: { type: 'none' }, artAmount: 1 }];
+    if (!all.length) return [{ ...content, body: { type: 'none' } }];
     const per = mosaicPage(H);
     const pages = [];
-    for (let i = 0; i < all.length; i += per) pages.push({ ...content, artAmount: 1, body: { ...content.body, people: all.slice(i, i + per) } });
+    for (let i = 0; i < all.length; i += per) pages.push({ ...content, body: { ...content.body, people: all.slice(i, i + per) } });
     return pages;
   }
-  if (family(content) === 'picture') return [{ ...content, artAmount: 1 }];
-
-  // The skyline gets lower, then gives way, when the body would otherwise not fit two rows.
-  const needs = itemsKey(content.body.type) ? ROWS[content.body.type](H) * 2 : (content.body.type === 'features' ? 220 : 0);
-  let artAmount = 1;
-  const measure = (amount) => {
-    const box = heroBox(g, riseHeight(g, ART.illustration, amount));
-    return measureHero(ctx, content, g, null, box.top, box.bottom);
-  };
-  let m = measure(artAmount);
-  for (const amount of [0.6, 0]) {
-    if (!ART.illustration || !needs || m.room >= needs) break;
-    artAmount = amount;
-    m = measure(artAmount);
-  }
-  return paginate({ ...content, artAmount }, m.room, H);
+  if (isPicture(content)) return [content];
+  const m = measureHero(ctx, content, g, null, L.area.w, L.area.y, L.area.bottom);
+  return paginate(content, m.room, H);
 }
 
 // ---- Painting a post --------------------------------------------------------
 
-async function paintBody(ctx, body, x, y, w, h, pal, kit, H) {
+async function paintBody(ctx, body, x, y, w, h, pal, kit, H, ink) {
   const tall = H >= 1900;
+  // On a light card times are in the main colour; on a coloured one (Poster) in the accent, or the light colour when the accent wouldn't read.
+  const onColour = ink !== pal.ink;
+  const lineColor = alpha(ink, 0.16);
+  const muted = alpha(ink, 0.68);
+  const accent = !onColour ? pal.primary : (contrast(pal.secondary, pal.primary) >= 3 ? pal.secondary : pal.paper);
 
   if (body.type === 'features') {
     const rowH = h / body.items.length;
+    // Everything scales with the row, so a short area still has clear rows.
+    const r = Math.min(24, rowH * 0.32);
     body.items.forEach((item, i) => {
       const ry = y + i * rowH + rowH / 2;
       ctx.fillStyle = pal.secondary;
-      ctx.beginPath(); ctx.arc(x + 24, ry, 24, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + r, ry, r, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = pal.onSecondary;
-      ctx.lineWidth = 5;
+      ctx.lineWidth = Math.max(3, r / 5);
       ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(x + 13, ry); ctx.lineTo(x + 21, ry + 8); ctx.lineTo(x + 35, ry - 8); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + r * 0.55, ry); ctx.lineTo(x + r * 0.88, ry + r * 0.33); ctx.lineTo(x + r * 1.45, ry - r * 0.33); ctx.stroke();
       ctx.lineCap = 'butt';
-      ctx.fillStyle = pal.ink;
-      const t = fitText(ctx, item, w - 72, tall ? 44 : 34, 20, 2, 700);
-      t.lines.forEach((l, k) => ctx.fillText(l, x + 72, ry + t.size * 0.35 + (k - (t.lines.length - 1) / 2) * t.size * 1.15));
+      ctx.fillStyle = ink;
+      const t = fitText(ctx, item, w - r * 3, Math.min(tall ? 44 : 34, rowH * 0.42), 14, rowH > 70 ? 2 : 1, 700);
+      t.lines.forEach((l, k) => ctx.fillText(l, x + r * 3, ry + t.size * 0.35 + (k - (t.lines.length - 1) / 2) * t.size * 1.15));
     });
     return;
   }
@@ -1094,17 +1230,17 @@ async function paintBody(ctx, body, x, y, w, h, pal, kit, H) {
     body.items.forEach((it, i) => {
       const ry = y + i * rowH;
       if (i) {
-        ctx.fillStyle = alpha(pal.ink, 0.12);
+        ctx.fillStyle = lineColor;
         ctx.fillRect(x, ry, w, 2);
       }
-      ctx.fillStyle = pal.primary;
+      ctx.fillStyle = accent;
       ctx.font = `800 ${tall ? 30 : 26}px ${FONT}`;
       ctx.fillText(it.time, x, ry + rowH * 0.42);
-      ctx.fillStyle = pal.ink;
+      ctx.fillStyle = ink;
       const t = fitText(ctx, it.title, w - timeW, tall ? 36 : 30, 18, 1, 800);
       ctx.fillText(t.lines[0], x + timeW, ry + rowH * 0.42);
       if (it.meta) {
-        ctx.fillStyle = alpha(pal.ink, 0.66);
+        ctx.fillStyle = muted;
         const m = fitText(ctx, it.meta, w - timeW, tall ? 26 : 22, 16, 1, 600);
         ctx.fillText(m.lines[0], x + timeW, ry + rowH * 0.74);
       }
@@ -1117,15 +1253,15 @@ async function paintBody(ctx, body, x, y, w, h, pal, kit, H) {
     body.tables.forEach((t, i) => {
       const ry = y + i * rowH;
       if (i) {
-        ctx.fillStyle = alpha(pal.ink, 0.12);
+        ctx.fillStyle = lineColor;
         ctx.fillRect(x, ry, w, 2);
       }
       ctx.fillStyle = pal.secondary;
       ctx.beginPath(); ctx.arc(x + 12, ry + rowH / 2, 12, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = pal.ink;
+      ctx.fillStyle = ink;
       const n = fitText(ctx, t.name, w * 0.46, tall ? 36 : 32, 18, 1, 800);
       ctx.fillText(n.lines[0], x + 40, ry + rowH / 2 + n.size * 0.35);
-      ctx.fillStyle = alpha(pal.ink, 0.66);
+      ctx.fillStyle = muted;
       ctx.textAlign = 'right';
       const p = fitText(ctx, t.place || (t.leads?.length ? `Leads: ${t.leads.join(', ')}` : ''), w * 0.48, 26, 16, 1, 600);
       ctx.fillText(p.lines[0] ?? '', x + w, ry + rowH / 2 + p.size * 0.35);
@@ -1140,180 +1276,179 @@ function proxied(kit, url) {
   return `${kit.imageUrl}?u=${encodeURIComponent(url)}`;
 }
 
-/** The picture of a picture-led card: speakers' faces, a session's speakers, or the site's photo of the place. */
-async function paintPicture(ctx, g, content, pal, kit) {
-  const h = g.blockTop;
+/** The picture of a picture-led card, in its own box: speakers' faces, a session's speakers, or the site's photo of the place. */
+async function paintPicture(ctx, box, content, pal, round) {
   const body = content.body;
   const tones = [pal.primary, pal.deep, ...pal.extras];
+  ctx.save();
+  if (round) roundRect(ctx, box.x, box.y, box.w, box.h, 28);
+  else { ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); }
+  ctx.clip();
   if (body.type === 'photos' || body.type === 'session') {
     const people = body.type === 'photos'
       ? body.people
       : body.speakers.map((name, i) => ({ name, photo: body.photos[i] ?? null }));
     const list = people.length ? people : [{ name: content.headline, photo: null }];
-    const n = list.length;
-    // Up to three faces side by side, full height; then 2 × 2, then rows of three.
-    const cols = n <= 3 ? n : (n === 4 ? 2 : 3);
-    const rows = Math.ceil(n / cols);
-    const cw = g.W / cols;
-    const ch = h / rows;
+    const { cols, rows } = mosaicGrid(list.length, box.w, box.h);
+    const cw = box.w / cols;
+    const ch = box.h / rows;
     const imgs = await Promise.all(list.map((p) => loadImage(p.photo)));
     for (let i = 0; i < rows * cols; i++) {
-      const cx = (i % cols) * cw;
-      const cy = Math.floor(i / cols) * ch;
+      const cx = box.x + (i % cols) * cw;
+      const cy = box.y + Math.floor(i / cols) * ch;
       ctx.save();
       ctx.beginPath(); ctx.rect(cx, cy, cw + 1, ch + 1); ctx.clip();
+      const tone = tones[i % tones.length];
       if (imgs[i]) drawCover(ctx, imgs[i], cx, cy, cw + 1, ch + 1, 0.25);
       else {
-        // No photo (or an empty place in the grid): a tile in a brand tone, the site's pattern, initials.
-        ctx.fillStyle = tones[i % tones.length];
+        // No photo (or an empty place): a tile in a brand tone, the site's pattern, initials.
+        ctx.fillStyle = tone;
         ctx.fillRect(cx, cy, cw + 1, ch + 1);
-        if (ART.pattern) fillWithPattern(ctx, ART.pattern, textOn(tones[i % tones.length], pal.ink, pal.paper), cx, cy, cw + 1, ch + 1, 110, 0.12);
+        if (ART.pattern) fillWithPattern(ctx, ART.pattern, textOn(tone, pal.ink, pal.paper), cx, cy, cw + 1, ch + 1, 110, 0.12);
         if (list[i]) {
-          ctx.fillStyle = textOn(tones[i % tones.length], pal.ink, pal.paper);
+          ctx.fillStyle = textOn(tone, pal.ink, pal.paper);
           ctx.textAlign = 'center';
           ctx.font = `900 ${Math.round(Math.min(cw, ch) * 0.34)}px ${HEAD ?? FONT}`;
           ctx.fillText(initials(list[i].name), cx + cw / 2, cy + ch / 2 + Math.min(cw, ch) * 0.12);
           ctx.textAlign = 'left';
         }
       }
-      ctx.restore();
-      if (list[i] && body.type === 'photos' && n > 1) {
-        // The name on each face.
-        const nh = Math.min(64, ch * 0.2);
-        const grad = ctx.createLinearGradient(0, cy + ch - nh * 1.8, 0, cy + ch);
+      if (list[i] && body.type === 'photos' && list.length > 1) {
+        // The name on its own face, on a short shade at the bottom of the tile.
+        const nh = Math.min(70, ch * 0.24);
+        const grad = ctx.createLinearGradient(0, cy + ch - nh, 0, cy + ch);
         grad.addColorStop(0, alpha(pal.ink, 0));
-        grad.addColorStop(1, alpha(pal.ink, 0.7));
+        grad.addColorStop(1, alpha(pal.ink, 0.72));
         ctx.fillStyle = grad;
-        ctx.fillRect(cx, cy + ch - nh * 1.8, cw, nh * 1.8);
+        ctx.fillRect(cx, cy + ch - nh, cw, nh);
         ctx.fillStyle = pal.paper;
-        const t = fitText(ctx, list[i].name, cw - 28, g.tall ? 28 : 24, 14, 1, 700);
-        ctx.fillText(t.lines[0], cx + 16, cy + ch - 16);
+        const t = fitText(ctx, list[i].name, cw - 24, Math.min(26, Math.max(15, cw / 12)), 13, 1, 700);
+        ctx.fillText(t.lines[0], cx + 12, cy + ch - 12);
       }
+      ctx.restore();
     }
-    // Thin lines between the faces, in the light colour.
     ctx.fillStyle = pal.paper;
-    for (let c = 1; c < cols; c++) ctx.fillRect(c * cw - 2, 0, 4, h);
-    for (let r = 1; r < rows; r++) ctx.fillRect(0, r * ch - 2, g.W, 4);
-  } else {
-    const photo = ART.photo;
-    if (photo) drawCover(ctx, photo, 0, 0, g.W, h, 0.5);
+    for (let c = 1; c < cols; c++) ctx.fillRect(box.x + c * cw - 2, box.y, 4, box.h);
+    for (let r = 1; r < rows; r++) ctx.fillRect(box.x, box.y + r * ch - 2, box.w, 4);
+  } else if (ART.photo) {
+    drawCover(ctx, ART.photo, box.x, box.y, box.w, box.h, 0.5);
   }
+  ctx.restore();
+}
+
+/** The parts of the words, drawn from `y` in the area. */
+function paintWords(ctx, m, x, y, L) {
+  for (const p of m.parts) {
+    if (p.kind === 'head') {
+      ctx.font = `800 ${p.fit.size}px ${HEAD ?? FONT}`;
+      ctx.fillStyle = L.ink;
+      p.fit.lines.forEach((l, i) => ctx.fillText(l, x, y + p.fit.size * (0.86 + i * 1.04)));
+    } else if (p.kind === 'big') {
+      // Placed by the glyphs' real height: display fonts draw digits very differently.
+      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT}`;
+      ctx.fillStyle = L.accent;
+      const mt = ctx.measureText(p.fit.lines[0]);
+      const asc = mt.actualBoundingBoxAscent || p.fit.size * 0.72;
+      const desc = mt.actualBoundingBoxDescent || 0;
+      ctx.fillText(p.fit.lines[0], x - p.fit.size * 0.04, y + asc);
+      y += asc + desc + p.gap;
+      continue;
+    } else if (p.kind === 'month') {
+      ctx.font = `800 ${p.size}px ${FONT}`;
+      ctx.fillStyle = L.ink;
+      ctx.fillText(p.text, x, y + p.size * 0.86);
+    } else if (p.kind === 'bar') {
+      ctx.fillStyle = L.bar;
+      roundRect(ctx, x, y, 120, 10, 5);
+      ctx.fill();
+    } else if (p.kind === 'line') {
+      ctx.font = `600 ${p.fit.size}px ${FONT}`;
+      ctx.fillStyle = L.muted;
+      p.fit.lines.forEach((l, i) => ctx.fillText(l, x, y + p.fit.size * (0.9 + i * 1.25)));
+    }
+    y += m.heightOf(p) + p.gap;
+  }
+  return y;
 }
 
 /**
- * Draws one card of a post. `page` = {index, total}; `scale` 1 for social,
- * 3 for print (the same design, three times the pixels). `styleName` is kept
- * for older callers: every card now uses the one design system.
+ * Draws one card of a post in one of the seven designs (`styleName`). `page`
+ * = {index, total}; `scale` 1 for social, 6 for print (the same design, six
+ * times the pixels).
  */
 export async function drawEventPost(canvas, size, styleName, content, kit, colors, page = { index: 1, total: 1 }, scale = 1) {
   const [W, H] = SIZES[size];
   canvas.width = W * scale;
   canvas.height = H * scale;
+  RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  void styleName;
   const pal = paletteOf(colors);
-  const look = eventLook(kit.event.seed);
   const g = grid(W, H);
+  const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
+  const L = layoutFor(design, g, pal);
   const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), loadImage('/media/logo-wordmark.png')]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
   const cta = CTA[content.key] ?? 'Scan to open CampBuddy';
 
-  if (family(content) === 'picture') {
-    ctx.fillStyle = pal.deep;
-    ctx.fillRect(0, 0, W, H);
-    await paintPicture(ctx, g, content, pal, kit);
-    useArt(content.artIndex ?? 0);
-    // The picture darkens into the block's colour, where the words sit.
-    const shade = ctx.createLinearGradient(0, g.blockTop * 0.42, 0, g.blockTop);
-    shade.addColorStop(0, alpha(pal.primary, 0));
-    shade.addColorStop(0.55, alpha(pal.deep, 0.55));
-    shade.addColorStop(1, alpha(pal.primary, 0.94));
-    ctx.fillStyle = shade;
-    ctx.fillRect(0, 0, W, g.blockTop);
-    const top = ctx.createLinearGradient(0, 0, 0, 260);
-    top.addColorStop(0, alpha(pal.ink, 0.35));
-    top.addColorStop(1, alpha(pal.ink, 0));
-    ctx.fillStyle = top;
-    ctx.fillRect(0, 0, W, 260);
-    const rise = riseHeight(g, ART.illustration, 1, true);
-    paintRise(ctx, g, rise, pal.primary, pal, true, look.corner === 'left' ? 'right' : 'left');
-    paintTop(ctx, g, pal, logo, content.kicker, page, true);
-
-    // The words, on the picture, just above the block.
-    let y = g.blockTop - (g.square ? 34 : 50);
-    ctx.fillStyle = pal.paper;
-    const lineText = content.key === 'save-the-date' ? content.line : content.line;
-    if (lineText) {
-      const l = fitText(ctx, lineText, g.w, g.tall ? 40 : 32, 20, 2, 600);
-      ctx.font = `600 ${l.size}px ${FONT}`;
-      ctx.fillStyle = alpha(pal.paper, 0.92);
-      [...l.lines].reverse().forEach((t) => { ctx.fillText(t, g.x, y); y -= l.size * 1.25; });
-      y -= 14;
-    }
-    const headText = content.key === 'save-the-date' ? `${content.headline}` : content.headline;
-    const hfit = fitText(ctx, headText, g.w, g.tall ? 110 : (g.square ? 64 : 84), 36, 3, 800, HEAD ?? FONT);
-    ctx.font = `800 ${hfit.size}px ${HEAD ?? FONT}`;
-    ctx.fillStyle = pal.paper;
-    [...hfit.lines].reverse().forEach((t) => { ctx.fillText(t, g.x, y); y -= hfit.size * 1.04; });
-    paintBlock(ctx, g, pal.primary, pal, kit, brand, content.key, cta);
-    return;
-  }
-
-  // Type-led: the light colour, the site's pattern along the top edge.
-  ctx.fillStyle = pal.paper;
+  // Ground, the artwork in the background, then the panel / ticket / side.
+  ctx.fillStyle = L.bg;
   ctx.fillRect(0, 0, W, H);
-  if (ART.pattern) {
-    fillWithPattern(ctx, ART.pattern, pal.primary, 0, 0, W, g.blockTop, 200, 0.045);
-    patternStrip(ctx, ART.pattern, pal, pal.paper, 0, 0, W, 26);
-  } else {
+  if (L.split) {
     ctx.fillStyle = pal.primary;
-    ctx.fillRect(0, 0, W, 12);
+    ctx.fillRect(0, 0, L.split, g.blockTop);
   }
-  const rise = riseHeight(g, ART.illustration, content.artAmount ?? 1);
-  paintRise(ctx, g, rise, pal.primary, pal, false, look.corner === 'left' ? 'right' : 'left');
-  paintTop(ctx, g, pal, logo, content.kicker, page, false);
+  paintArtBackground(ctx, L.art, pal);
+  if (L.panel) {
+    ctx.save();
+    ctx.shadowColor = alpha(pal.ink, 0.3); ctx.shadowBlur = 30; ctx.shadowOffsetY = 10;
+    ctx.fillStyle = pal.paper;
+    roundRect(ctx, L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30);
+    ctx.fill();
+    ctx.restore();
+  }
+  if (L.ticket) {
+    ctx.save();
+    ctx.shadowColor = alpha(pal.ink, 0.4); ctx.shadowBlur = 36; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = pal.paper;
+    roundRect(ctx, L.ticket.x, L.ticket.y, L.ticket.w, L.ticket.h, 36);
+    ctx.fill();
+    ctx.restore();
+    // The site's artwork, faintly, on the ticket too.
+    ctx.save();
+    roundRect(ctx, L.ticket.x, L.ticket.y, L.ticket.w, L.ticket.h, 36);
+    ctx.clip();
+    paintArtBackground(ctx, { x: L.ticket.x, y: L.ticket.y, w: L.ticket.w, h: g.blockTop - L.ticket.y, on: pal.paper }, pal);
+    ctx.restore();
+  }
+  if (L.frameLine) {
+    ctx.strokeStyle = alpha(pal.ink, 0.2);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(34, 34, W - 68, g.blockTop - 34);
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(34, 34, 12, g.blockTop - 34);
+  }
+  paintTop(ctx, g, L, pal, logo, content.kicker, page);
 
-  const box = heroBox(g, rise);
-  const m = measureHero(ctx, content, g, kit, box.top, box.bottom);
-  const bH = bodyHeight(content.body, H, m.room);
-  let y = box.top + Math.max(0, (box.bottom - box.top - (m.textH + (bH ? m.gap + bH : 0))) / 2);
-  for (const p of m.parts) {
-    const ph = m.heightOf(p);
-    if (p.kind === 'head') {
-      ctx.font = `800 ${p.fit.size}px ${HEAD ?? FONT}`;
-      ctx.fillStyle = pal.ink;
-      p.fit.lines.forEach((l, i) => ctx.fillText(l, g.x, y + p.fit.size * (0.86 + i * 1.04)));
-    } else if (p.kind === 'big') {
-      // Placed by the glyphs' real height: display fonts draw digits very differently.
-      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT}`;
-      ctx.fillStyle = pal.primary;
-      const mt = ctx.measureText(p.fit.lines[0]);
-      const asc = mt.actualBoundingBoxAscent || p.fit.size * 0.72;
-      const desc = mt.actualBoundingBoxDescent || 0;
-      ctx.fillText(p.fit.lines[0], g.x - p.fit.size * 0.04, y + asc);
-      y += asc + desc + p.gap;
-      continue;
-    } else if (p.kind === 'month') {
-      ctx.font = `800 ${p.size}px ${FONT}`;
-      ctx.fillStyle = pal.ink;
-      ctx.fillText(p.text, g.x, y + p.size * 0.86);
-    } else if (p.kind === 'bar') {
-      ctx.fillStyle = pal.secondary;
-      roundRect(ctx, g.x, y, 120, 10, 5);
-      ctx.fill();
-    } else if (p.kind === 'line') {
-      ctx.font = `600 ${p.fit.size}px ${FONT}`;
-      ctx.fillStyle = alpha(pal.ink, 0.72);
-      p.fit.lines.forEach((l, i) => ctx.fillText(l, g.x, y + p.fit.size * (0.9 + i * 1.25)));
-    }
-    y += ph + p.gap;
+  if (isPicture(content)) {
+    // The picture in its own box; the words below it, never on it.
+    const box = pictureBox(g, L);
+    await paintPicture(ctx, box, content, pal, Boolean(L.panel || L.ticket || L.split || L.frameLine));
+    useArt(content.artIndex ?? 0);
+    const top = box.y + box.h + (g.square ? 24 : 40);
+    const m = measureHero(ctx, content, g, kit, L.area.w, top, L.area.bottom, true);
+    paintWords(ctx, m, L.area.x, top + Math.max(0, (L.area.bottom - top - m.textH) / 2), L);
+  } else {
+    const m = measureHero(ctx, content, g, kit, L.area.w, L.area.y, L.area.bottom);
+    const bH = bodyHeight(content.body, H, m.room);
+    let y = L.area.y + Math.max(0, (L.area.bottom - L.area.y - (m.textH + (bH ? m.gap + bH : 0))) / 2);
+    y = paintWords(ctx, m, L.area.x, y, L);
+    if (bH > 0 && m.room >= 100) await paintBody(ctx, content.body, L.area.x, y + m.gap, L.area.w, bH, pal, kit, H, L.ink);
+    useArt(content.artIndex ?? 0);
   }
-  if (bH > 0 && m.room >= 100) await paintBody(ctx, content.body, g.x, y + m.gap, g.w, bH, pal, kit, H);
-  useArt(content.artIndex ?? 0);
-  paintBlock(ctx, g, pal.primary, pal, kit, brand, content.key, cta);
+  paintBlock(ctx, g, L.block, pal, kit, brand, content.key, cta);
 }
 
 // ---- People cards (social posts, not the attendee app's Camp Card) --------
@@ -1353,6 +1488,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const [W, H] = SIZES[size];
   canvas.width = W * scale;
   canvas.height = H * scale;
+  RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   const [photo, mark, brand] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
@@ -1366,22 +1502,18 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const tall = H >= 1900;
   const square = H < 1100;
   // The posts' grid: a block at the foot in the role's tone (why scan, the
-  // event, the QR), the site's skyline rising from it into the design.
+  // event, the QR); the site's artwork large in each design's background.
   const g = grid(W, H);
   const first = String(person.name ?? '').trim().split(/\s+/)[0] || 'them';
   const short = kit.short ?? kit.event.name;
   const cta = person.roles?.[0] === 'speaker' && person.talk ? `Save ${first}'s talk in CampBuddy` : `Meet ${first} at ${short}`;
   const qrContent = `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`;
-  const rise = riseHeight(g, ART.illustration, square ? 0.7 : 0.85);
-  const fTop = g.blockTop - rise - 16;
-  // The foot of every design: the rising art, then the block (a deeper tone where the design is already in the role's tone).
+  const fTop = g.blockTop - 20;
+  // The foot of every design: the block (a deeper tone where the design is already in the role's tone).
   const foot = (under) => {
     const color = under === rc ? mix(rc, pal.ink, 0.3) : rc;
-    const onLight = textOn(under, pal.ink, pal.paper) === pal.ink;
-    paintRise(ctx, g, rise, color, pal, !onLight, look.corner);
-    paintBlock(ctx, g, color, pal, kit, brand, qrContent, cta);
+    paintBlock(ctx, g, { color }, pal, kit, brand, qrContent, cta);
   };
-  const wallPattern = (color, opacity) => ART.pattern && fillWithPattern(ctx, ART.pattern, color, 0, 0, W, H, 200, opacity);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
@@ -1389,7 +1521,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // A tilted instant photo taped onto a wall in the role's tone.
     ctx.fillStyle = rc;
     ctx.fillRect(0, 0, W, H);
-    if (!wallPattern(onRc, 0.14)) watermark(ctx, mark, W, H, 0.07);
+    paintArtBackground(ctx, { x: 0, y: 0, w: W, h: g.blockTop, on: rc }, pal);
     pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 28, height: 60, align: 'center' });
     const room = fTop - (SAFE + 80) - (talk && !square ? (tall ? 220 : 120) : 30);
     const ph = Math.min(room, tall ? 1000 : 900);
@@ -1436,7 +1568,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const wall = pal.soft;
     ctx.fillStyle = wall;
     ctx.fillRect(0, 0, W, H);
-    wallPattern(pal.primary, 0.1);
+    paintArtBackground(ctx, { x: 0, y: 0, w: W, h: g.blockTop, on: wall }, pal);
     const bw = W * (square ? 0.56 : 0.66);
     const bh = (fTop - 30) - (SAFE + 70);
     const bx = (W - bw) / 2;
@@ -1493,6 +1625,106 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     return;
   }
 
+  if (design === 'spotlight') {
+    // The photo, big, in two tones of the role's colour; a band in that colour
+    // with the name; the site's artwork faint across the foot of the photo.
+    const bandH = square ? 150 : (tall ? 270 : 210);
+    const bandTop = g.blockTop - bandH;
+    const dark = mix(rc, pal.ink, 0.6);
+    const tone = photo ? duotone(photo, dark, mix(pal.paper, rc, 0.08)) : null;
+    ctx.fillStyle = dark;
+    ctx.fillRect(0, 0, W, bandTop);
+    if (tone) drawCover(ctx, tone, 0, 0, W, bandTop, 0.25);
+    else {
+      ctx.fillStyle = pal.paper; ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.round(bandTop * 0.3)}px ${HEAD ?? FONT}`;
+      ctx.fillText(initials(person.name), W / 2, bandTop * 0.58);
+      ctx.textAlign = 'left';
+    }
+    paintArtBackground(ctx, { x: 0, y: bandTop * 0.64, w: W, h: bandTop * 0.36, on: dark }, pal);
+    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: square ? 22 : 26, height: square ? 50 : 58 });
+    if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
+    ctx.fillStyle = rc;
+    ctx.fillRect(0, bandTop, W, bandH);
+    ctx.fillStyle = onRc;
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 110 : (square ? 60 : 80), 32, 1, 900, HEAD ?? FONT);
+    ctx.font = `900 ${n.size}px ${HEAD ?? FONT}`;
+    let y = bandTop + (square ? 28 : 44) + n.size * 0.86;
+    ctx.fillText(n.lines[0], SAFE, y);
+    const small = tall ? 34 : (square ? 22 : 28);
+    ctx.font = `700 ${small}px ${FONT}`;
+    ctx.fillStyle = alpha(onRc, 0.88);
+    const sub = [roles, talk].filter(Boolean).join('  ·  ');
+    if (sub) ctx.fillText(ellipsize(ctx, sub, W - 2 * SAFE), SAFE, y + small + (square ? 12 : 20));
+    foot(rc);
+    return;
+  }
+
+  if (design === 'arch') {
+    // The photo in an arch (a jharokha, a doorway), outlined in the role's
+    // colour, on the light colour with the site's artwork behind.
+    ctx.fillStyle = pal.paper;
+    ctx.fillRect(0, 0, W, H);
+    paintArtBackground(ctx, { x: 0, y: 0, w: W, h: g.blockTop, on: pal.paper }, pal);
+    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    if (logo) logoTile(ctx, logo, SAFE, SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
+    pill(ctx, label, W - SAFE, SAFE - 10 + ((square ? 84 : 100) - (square ? 50 : 58)) / 2 - 12, { bg: rc, fg: onRc, size: square ? 20 : 24, height: square ? 50 : 58, align: 'right' });
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 2, 800, HEAD ?? FONT);
+    const nameH = n.lines.length * n.size * 1.04;
+    const small = tall ? 34 : (square ? 22 : 28);
+    const textH = nameH + small * 1.8 + (talk ? small * 1.6 : 0) + 30;
+    const top = SAFE + (square ? 90 : 120);
+    const room = fTop - top - textH - 24;
+    const aw = Math.min(W * (square ? 0.44 : 0.58), room / 1.3);
+    const ah = aw * 1.3;
+    const ax = (W - aw) / 2;
+    const arch = (inset) => {
+      const x = ax - inset;
+      const w = aw + 2 * inset;
+      const yTop = top - inset;
+      const r = w / 2;
+      ctx.beginPath();
+      ctx.moveTo(x, top + ah + inset);
+      ctx.lineTo(x, yTop + r);
+      ctx.arc(x + r, yTop + r, r, Math.PI, 0);
+      ctx.lineTo(x + w, top + ah + inset);
+      ctx.closePath();
+    };
+    ctx.fillStyle = rc;
+    arch(22); ctx.fill();
+    ctx.fillStyle = pal.paper;
+    arch(12); ctx.fill();
+    ctx.save();
+    arch(0); ctx.clip();
+    if (photo) drawCover(ctx, photo, ax, top, aw, ah, 0.3);
+    else {
+      ctx.fillStyle = pal.soft; ctx.fillRect(ax, top, aw, ah);
+      ctx.fillStyle = rc; ctx.textAlign = 'center';
+      ctx.font = `900 ${Math.round(aw * 0.36)}px ${HEAD ?? FONT}`;
+      ctx.fillText(initials(person.name), W / 2, top + ah * 0.6);
+      ctx.textAlign = 'left';
+    }
+    ctx.restore();
+    let y = top + ah + 22 + (square ? 30 : 50);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = pal.ink;
+    ctx.font = `800 ${n.size}px ${HEAD ?? FONT}`;
+    n.lines.forEach((l) => { y += n.size * 0.86; ctx.fillText(l, W / 2, y); y += n.size * 0.18; });
+    ctx.font = `800 ${small}px ${FONT}`;
+    ctx.fillStyle = rc;
+    if (roles) { y += small * 1.3; ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE), W / 2, y); }
+    if (talk) {
+      ctx.font = `600 ${small - 2}px ${FONT}`;
+      ctx.fillStyle = alpha(pal.ink, 0.75);
+      y += small * 1.4;
+      ctx.fillText(ellipsize(ctx, talk, W - 2 * SAFE), W / 2, y);
+    }
+    ctx.textAlign = 'left';
+    foot(pal.paper);
+    return;
+  }
+
   if (design === 'split') {
     // The photo fills the top three quarters; the bottom quarter, in the role's
     // tone, holds the words, the event and the QR. The site's artwork lives in
@@ -1516,26 +1748,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     g.addColorStop(1, alpha(rc, 0.75));
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
 
-    // As a silhouette only art that reads as one: a real skyline (very wide) or tall art; a busy collage would become a blob.
-    const shape = ART.illustration && (artInfo(ART.illustration).aspect >= 2.8 || artInfo(ART.illustration).aspect < 1.4) ? ART.illustration : null;
-    const art = shape ? recolour(shape, rc) : null;
-    if (art) {
-      const info = artInfo(shape);
-      ctx.save();
-      if (info.aspect >= 1.4) {
-        // A skyline standing on the block, as wide as the card.
-        const k = Math.min(W / art.width, (ph * (square ? 0.24 : 0.28)) / art.height);
-        ctx.drawImage(art, (W - art.width * k) / 2, ph - art.height * k + 2, art.width * k, art.height * k);
-      } else {
-        // Tall art grows from the corner, away from the label.
-        const h = ph * 0.42;
-        const w = h * info.aspect;
-        ctx.translate(look.corner === 'left' ? w : W - w, ph - h + 2);
-        if (look.corner === 'left') ctx.scale(-1, 1);
-        ctx.drawImage(art, 0, 0, w, h);
-      }
-      ctx.restore();
-    }
+    paintArtBackground(ctx, { x: 0, y: ph * 0.62, w: W, h: ph * 0.38, on: mix(rc, pal.ink, 0.2) }, pal);
 
     // The block.
     ctx.fillStyle = rc;
@@ -1593,6 +1806,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // Light colour, thin lines, lots of air: the name does the talking.
     ctx.fillStyle = pal.paper;
     ctx.fillRect(0, 0, W, H);
+    paintArtBackground(ctx, { x: W * 0.25, y: g.blockTop * 0.35, w: W * 0.75, h: g.blockTop * 0.65, on: pal.paper, corner: true }, pal);
     ctx.strokeStyle = alpha(pal.ink, 0.2);
     ctx.lineWidth = 2;
     ctx.strokeRect(40, 40, W - 80, H - 80);
@@ -1630,14 +1844,13 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const top = fTop * (square ? 0.5 : 0.48);
   ctx.fillStyle = pal.paper;
   ctx.fillRect(0, 0, W, H);
+  paintArtBackground(ctx, { x: 0, y: top, w: W, h: g.blockTop - top, on: pal.paper }, pal);
   const s = look.tilt * 60;
   ctx.save();
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, top - s); ctx.lineTo(0, top + s); ctx.closePath();
   ctx.fillStyle = rc; ctx.fill(); ctx.clip();
-  watermark(ctx, mark, W, H, 0.08);
-  if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, top + 80, 200, 0.12))) {
-    drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
-  }
+  if (ART.illustration || ART.pattern) paintArtBackground(ctx, { x: 0, y: 0, w: W, h: top + Math.abs(s), on: rc }, pal);
+  else drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
   ctx.restore();
   ctx.strokeStyle = rc === pal.secondary ? pal.primary : pal.secondary;
   ctx.lineWidth = 14;
@@ -1770,8 +1983,7 @@ export function initSocialKit() {
   const size = () => sizeEl?.value ?? '1080x1350';
   let people = null;
   let redrawAll = () => {};
-  // One design system for every post (no style to pick any more).
-  const style = () => 'system';
+  const style = choiceGroup('social-style', () => redrawAll(), look.style);
   const design = choiceGroup('people-design', () => people?.redraw(), look.design);
   const quality = choiceGroup('social-quality', () => {}, 'social');
 

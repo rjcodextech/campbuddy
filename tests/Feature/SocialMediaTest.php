@@ -104,7 +104,7 @@ class SocialMediaTest extends TestCase
 
         $this->actingAs(User::factory()->create());
         $this->get(route('admin.events.social', $this->event))->assertOk()
-            ->assertSee('Story 1080 × 1920', false)->assertDontSee('data-social-style', false)
+            ->assertSee('Story 1080 × 1920', false)->assertSee('data-social-style="magazine"', false)->assertSee('data-people-design="arch"', false)
             ->assertSee('data-people-design="polaroid"', false)->assertSee('Sat 3 Oct');
     }
 

@@ -120,13 +120,21 @@
             <span class="cb-label" id="social-quality-label">Quality</span>
             <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-quality-label">
                 <button type="button" class="cb-btn cb-btn-sm cb-btn-primary" data-social-quality="social" aria-pressed="true" title="1080 px wide">Social</button>
-                <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="3× size, 300 DPI">Print (3×, 300 DPI)</button>
+                <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="6× size (6480 px wide), 600 DPI">Print (6×, 600 DPI)</button>
+            </div>
+        </div>
+        <div class="flex flex-col gap-1 text-sm">
+            <span class="cb-label" id="social-style-label">Post design</span>
+            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-style-label">
+                @foreach (['classic' => 'Classic', 'poster' => 'Poster', 'frame' => 'Frame', 'ticket' => 'Ticket', 'magazine' => 'Magazine', 'split' => 'Split', 'minimal' => 'Minimal'] as $key => $label)
+                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-social-style="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                @endforeach
             </div>
         </div>
         <div class="flex flex-col gap-1 text-sm">
             <span class="cb-label" id="social-people-design-label">People card design</span>
             <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-people-design-label">
-                @foreach (['classic' => 'Classic', 'polaroid' => 'Polaroid', 'badge' => 'Badge', 'split' => 'Split', 'minimal' => 'Minimal'] as $key => $label)
+                @foreach (['classic' => 'Classic', 'polaroid' => 'Polaroid', 'badge' => 'Badge', 'split' => 'Split', 'minimal' => 'Minimal', 'spotlight' => 'Spotlight', 'arch' => 'Arch'] as $key => $label)
                     <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-people-design="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
                 @endforeach
             </div>
