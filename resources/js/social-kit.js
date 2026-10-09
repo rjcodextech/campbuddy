@@ -534,6 +534,157 @@ export function duotone(img, dark, light, maxSide = 1400) {
   return c;
 }
 
+const artInfos = new WeakMap();
+
+/**
+ * What a piece of artwork is: `mono` (one colour, like a white skyline or a
+ * black sprig: it is drawn in a brand colour) or in colours of its own (the
+ * site's terracotta skyline, a sepia collage: drawn as it is), `opaque` (no
+ * transparency) and its `aspect`.
+ */
+export function artInfo(img) {
+  if (artInfos.has(img)) return artInfos.get(img);
+  const info = { mono: false, opaque: false, aspect: img.width / img.height };
+  try {
+    const c = document.createElement('canvas');
+    c.width = c.height = 96;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 96, 96);
+    const d = ctx.getImageData(0, 0, 96, 96).data;
+    let n = 0;
+    let solid = 0;
+    let sat = 0;
+    let lum = 0;
+    let lum2 = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 240) solid++;
+      if (d[i + 3] < 128) continue;
+      const rgb = [d[i], d[i + 1], d[i + 2]];
+      const l = luminance(rgb);
+      sat += rgbToHsl(rgb)[1];
+      lum += l;
+      lum2 += l * l;
+      n++;
+    }
+    info.opaque = solid / (d.length / 4) > 0.9;
+    if (n) {
+      const spread = Math.sqrt(Math.max(0, lum2 / n - (lum / n) ** 2));
+      info.mono = !info.opaque && sat / n < 0.15 && spread < 0.12;
+    }
+  } catch {
+    info.mono = true;
+  }
+  artInfos.set(img, info);
+  return info;
+}
+
+/** The artwork as it is drawn on `under`: its own colours, or (one-colour art) the brand colour that reads there. */
+function artFor(img, pal, under) {
+  if (!artInfo(img).mono) return img;
+  return recolour(img, textOn(under, pal.primary, pal.paper) === pal.primary ? pal.primary : pal.paper);
+}
+
+/**
+ * Height of the band at the foot of a card where the site's illustration
+ * stands (0 = none): wide art (a skyline) up to the width of the card, tall
+ * art (a sprig) as a frieze. `amount` 1 = full, less on a card whose list needs room.
+ */
+function artBand(W, H, img, amount = 1) {
+  if (!img || !amount) return 0;
+  const square = H < 1100;
+  const tall = H >= 1900;
+  const aspect = img.width / img.height;
+  const band = aspect < 1.4
+    ? (square ? 150 : (tall ? 280 : 210))
+    : Math.max(square ? 120 : 170, Math.min(square ? 220 : (tall ? 520 : 340), (W - 40) / aspect));
+  return Math.round(band * amount);
+}
+
+/**
+ * The site's pattern as a crisp strip (a border, a divider): in its own
+ * colours on light ground, or one-colour art in the brand colour that reads.
+ */
+function patternStrip(ctx, img, pal, under, x, y, w, h) {
+  const art = artFor(img, pal, under);
+  if (!art) return;
+  const t = document.createElement('canvas');
+  const scale = ctx.getTransform().a || 1;
+  const k = (h * scale) / art.height;
+  t.width = Math.max(1, Math.round(art.width * k));
+  t.height = Math.max(1, Math.round(h * scale));
+  const tc = t.getContext('2d');
+  tc.imageSmoothingQuality = 'high';
+  tc.drawImage(art, 0, 0, t.width, t.height);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.translate(x, y);
+  ctx.scale(1 / scale, 1 / scale);
+  ctx.fillStyle = ctx.createPattern(t, 'repeat-x');
+  ctx.fillRect(0, 0, w * scale, h * scale);
+  ctx.restore();
+}
+
+/**
+ * The foot of a card: a light ground from `top` to the bottom, the site's
+ * pattern as a strip along its top edge, and the site's illustration standing
+ * on the footer — a skyline in its own colours, as wide as the card; tall art
+ * repeated (and mirrored) as a frieze. Clipped to `clip` (the ticket) if given.
+ */
+function paintArtBand(ctx, W, H, top, footerTop, pal, { ground = true, strip = true, clip = null } = {}) {
+  ctx.save();
+  if (clip) { clip(); ctx.clip(); }
+  if (ground) {
+    ctx.fillStyle = pal.paper;
+    ctx.fillRect(0, top, W, H - top);
+  }
+  const stripH = strip && ART.pattern ? 34 : 0;
+  if (stripH) patternStrip(ctx, ART.pattern, pal, pal.paper, 0, top, W, stripH);
+  else if (strip && ground) {
+    ctx.fillStyle = pal.secondary;
+    ctx.fillRect(0, top, W, 10);
+  }
+  const img = ART.illustration;
+  if (img) {
+    const art = artFor(img, pal, pal.paper);
+    const room = footerTop - top - stripH - 14;
+    if (art && room > 40) {
+      const info = artInfo(img);
+      if (info.aspect < 1.4) {
+        const h = room;
+        const w = h * info.aspect;
+        const n = Math.max(1, Math.floor((W + w * 0.25) / (w * 0.92)));
+        const step = W / n;
+        for (let i = 0; i < n; i++) {
+          ctx.save();
+          ctx.translate(step * i + step / 2, footerTop - h);
+          if (i % 2) ctx.scale(-1, 1);
+          ctx.drawImage(art, -w / 2, 0, w, h);
+          ctx.restore();
+        }
+      } else {
+        const k = Math.min((W - 40) / art.width, room / art.height);
+        const w = art.width * k;
+        const h = art.height * k;
+        if (info.opaque) {
+          // A picture with its own ground: full width, faded into the light colour at the top.
+          ctx.save();
+          ctx.beginPath(); ctx.rect(0, footerTop - room, W, room); ctx.clip();
+          drawCover(ctx, art, 0, footerTop - room, W, room);
+          const g = ctx.createLinearGradient(0, footerTop - room, 0, footerTop - room * 0.55);
+          g.addColorStop(0, pal.paper);
+          g.addColorStop(1, alpha(pal.paper, 0));
+          ctx.fillStyle = g;
+          ctx.fillRect(0, footerTop - room, W, room);
+          ctx.restore();
+        } else {
+          ctx.drawImage(art, (W - w) / 2, footerTop - h, w, h);
+        }
+      }
+    }
+  }
+  ctx.restore();
+}
+
 /** The site's pattern, recoloured and tiled at `tile` px tall, filling a box. */
 function fillWithPattern(ctx, img, color, x, y, w, h, tile = 130, opacity = 1) {
   const art = recolour(img, color);
@@ -723,16 +874,18 @@ function styleOf(name, pal) {
 function frame(W, H, styleName, withArt = true) {
   const square = H < 1100;
   const tall = H >= 1900;
-  // The site's illustration (a skyline, a motif) gets its own band above the footer.
-  const artH = withArt && ART.illustration ? (square ? 110 : (tall ? 260 : 170)) : 0;
   const footerH = square ? 200 : (tall ? 260 : 230);
   const inset = styleName === 'ticket' ? 46 : 0;
+  // The site's illustration (a skyline) stands in a light band on the footer;
+  // `withArt` 1 = full height, less when a list needs the room, 0 = none.
+  const artH = artBand(W - 2 * inset, H, ART.illustration, withArt === true ? 1 : Number(withArt) || 0);
   const stub = styleName === 'ticket' ? Math.round(H * (tall ? 0.15 : (square ? 0.17 : 0.19))) : 0;
   const x = SAFE + inset;
   const w = W - 2 * x;
   const headerTop = SAFE + inset;
   const logo = square ? { w: 200, h: 112 } : { w: 260, h: 146 };
-  const top = styleName === 'ticket' ? inset + stub + 50 : headerTop + logo.h + (square ? 34 : 112);
+  // The kicker sits beside the logo, so the words start just under it.
+  const top = styleName === 'ticket' ? inset + stub + 50 : headerTop + logo.h + (square ? 34 : (tall ? 110 : 64));
   const footer = H - inset - footerH;
   return { x, w, headerTop, logo, top, footer, footerH, inset, stub, square, tall, artH, contentBottom: footer - artH };
 }
@@ -801,15 +954,16 @@ export function planPost(content, size, styleName, colors) {
   const ctx = c.getContext('2d');
   const style = styleOf(styleName, paletteOf(colors));
   useArt(content.artIndex ?? 0);
-  let m = measureText(ctx, content, frame(W, H, styleName), style);
-  // The site's illustration gives way when the body would otherwise not fit a row.
-  const needs = itemsKey(content.body.type) ? ROWS[content.body.type](H) * 2 : (content.body.type !== 'none' ? 200 : 0);
-  let noArt = false;
-  if (ART.illustration && needs && m.room < needs) {
-    noArt = true;
-    m = measureText(ctx, content, frame(W, H, styleName, false), style);
+  // The site's illustration gets smaller, then gives way, when the body would otherwise not fit two rows.
+  const needs = itemsKey(content.body.type) ? ROWS[content.body.type](H) * 2 : (content.body.type !== 'none' ? 220 : 0);
+  let artAmount = 1;
+  let m = measureText(ctx, content, frame(W, H, styleName, artAmount), style);
+  for (const amount of [0.6, 0]) {
+    if (!ART.illustration || !needs || m.room >= needs) break;
+    artAmount = amount;
+    m = measureText(ctx, content, frame(W, H, styleName, artAmount), style);
   }
-  return paginate({ ...content, noArt }, m.room, H);
+  return paginate({ ...content, artAmount }, m.room, H);
 }
 
 // ---- Painting a post --------------------------------------------------------
@@ -877,32 +1031,37 @@ function paintBackground(ctx, W, H, f, style, pal, look, mark) {
 function paintHeader(ctx, W, f, style, pal, look, logo, content, page) {
   const onStub = style.name === 'ticket';
   const tileY = onStub ? f.inset + (f.stub - f.logo.h) / 2 : f.headerTop;
+  if (onStub && ART.pattern) {
+    // The site's pattern, faintly, across the ticket's stub.
+    ctx.save();
+    roundRect(ctx, f.inset, f.inset, W - 2 * f.inset, f.stub, 40);
+    ctx.clip();
+    fillWithPattern(ctx, ART.pattern, pal.onPrimary, f.inset, f.inset, W - 2 * f.inset, f.stub, 110, 0.16);
+    ctx.restore();
+  }
   logoTile(ctx, logo, f.x, tileY, f.logo.w, f.logo.h, pal);
 
-  // The event's motif beside the logo, inside its own box.
-  const mx = f.x + f.logo.w + 30;
-  const mw = W - f.inset - SAFE - mx;
-  const motifColors = style.name === 'poster' ? [alpha(pal.extras[0], 0.7), alpha(pal.secondary, 0.8)] : [alpha(pal.extras[0], 0.75), alpha(pal.secondary, 0.85)];
-  const boxW = mw - (page.total > 1 ? 120 : 0);
-  if (mw > 120) {
-    const patternColor = style.name === 'poster' || style.name === 'ticket' && !onStub ? pal.primary : pal.secondary;
-    const drawn = ART.pattern && fillWithPattern(ctx, ART.pattern, patternColor, mx, tileY, boxW, f.logo.h, f.logo.h / 2, 0.9);
-    if (!drawn) drawMotif(ctx, look.motif, mx, tileY, boxW, f.logo.h, ...motifColors, seeded(look.seedValue));
-  }
-
+  // Right of the logo: the page number (1/3), the kicker before it.
+  let right = W - f.inset - SAFE;
+  const pillH = f.square ? 48 : 56;
   if (page.total > 1) {
-    pill(ctx, `${page.index}/${page.total}`, W - f.inset - SAFE, tileY + (f.logo.h - 54) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 54, pad: 18, align: 'right' });
+    right -= pill(ctx, `${page.index}/${page.total}`, right, tileY + (f.logo.h - pillH) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: f.square ? 22 : 26, height: pillH, pad: 18, align: 'right' }) + 14;
+  }
+  if (content.kicker && onStub) {
+    // On the stub the kicker sits on the perforation.
+    pill(ctx, String(content.kicker).toUpperCase(), f.x, f.inset + f.stub - 27, { bg: style.kicker.bg, fg: style.kicker.fg, size: 24, height: 54 });
+  } else if (content.kicker) {
+    ctx.font = `800 ${f.square ? 22 : 26}px ${FONT}`;
+    const room = right - (f.x + f.logo.w + 30);
+    const text = ellipsize(ctx, String(content.kicker).toUpperCase(), room - 40);
+    right -= pill(ctx, text, right, tileY + (f.logo.h - pillH) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: f.square ? 22 : 26, height: pillH, pad: 20, align: 'right' }) + 24;
   }
 
-  if (content.kicker) {
-    if (onStub) {
-      // On the stub there is no room under the logo: the kicker sits on the perforation.
-      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.inset + f.stub - 27, { bg: style.kicker.bg, fg: style.kicker.fg, size: 24, height: 54 });
-    } else if (f.square) {
-      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.top - 4 - 50, { bg: style.kicker.bg, fg: style.kicker.fg, size: 22, height: 46, pad: 18 });
-    } else {
-      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.headerTop + f.logo.h + 32, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 56 });
-    }
+  // An event without artwork of its own: its motif fills the space between, inside its own box.
+  const mx = f.x + f.logo.w + 30;
+  if (!ART.pattern && !ART.illustration && right - mx > 120) {
+    const motifColors = [alpha(pal.extras[0], 0.75), alpha(pal.secondary, 0.85)];
+    drawMotif(ctx, look.motif, mx, tileY, right - mx, f.logo.h, ...motifColors, seeded(look.seedValue));
   }
 }
 
@@ -1068,12 +1227,16 @@ function paintFooter(ctx, W, f, style, pal, kit, brand, qrContent, withQr = true
   const x0 = f.inset;
   const x1 = W - f.inset;
 
-  if (style.name === 'bold') {
+  // On the light band under the site's illustration the footer is light too.
+  const dark = style.name === 'gradient' && !f.artH;
+  if (style.name === 'bold' && !f.artH) {
     ctx.fillStyle = pal.paper;
     ctx.fillRect(0, y, W, h + 40);
     ctx.fillStyle = pal.secondary;
     ctx.fillRect(0, y - 12, W, 12);
-  } else if (style.name === 'gradient') {
+  } else if (f.artH) {
+    // Nothing to draw: the illustration stands on the footer.
+  } else if (dark) {
     ctx.fillStyle = fs.bg;
     roundRect(ctx, f.x - 24, y + 10, f.w + 48, h - 30, 30);
     ctx.fill();
@@ -1089,7 +1252,7 @@ function paintFooter(ctx, W, f, style, pal, kit, brand, qrContent, withQr = true
   if (qr) {
     drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, qy, qr, pal.ink, pal.paper);
     ctx.font = `700 ${f.square ? 16 : 18}px ${FONT}`;
-    ctx.fillStyle = style.name === 'gradient' ? pal.paper : pal.ink;
+    ctx.fillStyle = dark ? pal.paper : pal.ink;
     ctx.textAlign = 'center';
     ctx.fillText('Scan · open in CampBuddy', qx + qr / 2, qy + qr + 26);
     ctx.textAlign = 'left';
@@ -1106,12 +1269,12 @@ function paintFooter(ctx, W, f, style, pal, kit, brand, qrContent, withQr = true
   if (brand) drawContain(ctx, brand, bx + 12, by + 8, bw - 24, bh - 16);
 
   const tw = bx - 30 - f.x;
-  ctx.fillStyle = style.name === 'gradient' ? pal.paper : pal.ink;
+  ctx.fillStyle = dark ? pal.paper : pal.ink;
   const name = fitText(ctx, kit.event.name, tw, f.square ? 34 : 42, 20, 2, 800);
   let ty = y + h / 2 - (name.lines.length * name.size * 1.1 + 40) / 2 + name.size * 0.9 - 8;
   name.lines.forEach((l) => { ctx.fillText(l, f.x, ty); ty += name.size * 1.1; });
   ctx.font = `700 ${f.square ? 22 : 26}px ${FONT}`;
-  ctx.fillStyle = style.name === 'gradient' ? pal.secondary : pal.primary;
+  ctx.fillStyle = dark ? pal.secondary : pal.primary;
   ctx.fillText(ellipsize(ctx, [kit.event.dates, kit.event.hashtags.split(' ')[2]].filter(Boolean).join('  ·  '), tw), f.x, ty + 12);
   void x0;
 }
@@ -1131,7 +1294,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   const look = { ...eventLook(kit.event.seed), seedValue: kit.event.seed };
   const [logo, mark, brand] = await Promise.all([loadImage(kit.event.logo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
   useArt(content.artIndex ?? 0);
-  const f = frame(W, H, styleName, !content.noArt);
+  const f = frame(W, H, styleName, content.artAmount ?? 1);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
@@ -1168,19 +1331,10 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   if (bH > 0 && m.room >= 120) await paintBody(ctx, content.body, f.x, y + m.gap, f.w, bH, style, pal, kit, H);
   useArt(content.artIndex ?? 0);
 
-  if (ART.illustration && f.artH) {
-    // The site's illustration, in one brand colour, sitting on the footer.
-    const color = style.name === 'poster' || style.name === 'ticket' ? pal.primary : pal.paper;
-    const art = recolour(ART.illustration, color);
-    if (art) {
-      const k = Math.min(f.w / art.width, (f.artH - 10) / art.height);
-      const aw = art.width * k;
-      const ah = art.height * k;
-      ctx.save();
-      ctx.globalAlpha = style.name === 'gradient' || style.name === 'bold' ? 0.85 : 0.9;
-      ctx.drawImage(art, f.x + (f.w - aw) / 2, f.footer - ah - (style.name === 'bold' ? 14 : 4), aw, ah);
-      ctx.restore();
-    }
+  if (f.artH) {
+    // The site's illustration on a light band at the foot, the pattern along its edge.
+    const m = f.inset;
+    paintArtBand(ctx, W, H, f.contentBottom, f.footer, pal, { clip: m ? () => roundRect(ctx, m, m, W - 2 * m, H - 2 * m, 40) : null });
   }
 
   paintFooter(ctx, W, f, style, pal, kit, brand, content.key, content.key !== 'app');
@@ -1248,15 +1402,13 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const tall = H >= 1900;
   const square = H < 1100;
   const footerTop = H - (square ? 200 : (tall ? 260 : 230));
-  // The site's illustration (a skyline…) gets a band of its own on the footer.
-  const band = ART.illustration && !square ? (tall ? 220 : 130) : 0;
+  // The site's illustration (a skyline…) stands on the footer in a light band of its own.
+  const band = artBand(W, H, ART.illustration, square ? 0.7 : (tall ? 1 : 0.8));
   const fTop = footerTop - band;
-  const illustrate = (under) => {
-    if (!band) return;
-    const art = recolour(ART.illustration, textOn(under, pal.primary, pal.paper) === pal.primary ? pal.primary : pal.paper);
-    if (!art) return;
-    const k = Math.min((W - 2 * SAFE) / art.width, (band - 16) / art.height);
-    ctx.drawImage(art, (W - art.width * k) / 2, footerTop - art.height * k - 6, art.width * k, art.height * k);
+  // The foot of the card: the band and footer, or (no illustration) the footer on `under`.
+  const foot = (under) => {
+    if (band) paintArtBand(ctx, W, H, fTop, footerTop, pal);
+    personFooter(ctx, W, H, pal, kit, brand, person, band ? pal.paper : under);
   };
   const wallPattern = (color, opacity) => ART.pattern && fillWithPattern(ctx, ART.pattern, color, 0, 0, W, H, 200, opacity);
   ctx.textBaseline = 'alphabetic';
@@ -1304,8 +1456,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       t.lines.forEach((l, i) => ctx.fillText(l, W / 2, ty + i * t.size * 1.25));
       ctx.textAlign = 'left';
     }
-    illustrate(rc);
-    personFooter(ctx, W, H, pal, kit, brand, person, rc);
+    foot(rc);
     addGrain(ctx, W, H);
     return;
   }
@@ -1365,8 +1516,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       t.lines.forEach((l) => { y += t.size * 1.2; ctx.fillText(l, W / 2, y); });
     }
     ctx.textAlign = 'left';
-    illustrate(wall);
-    personFooter(ctx, W, H, pal, kit, brand, person, wall);
+    foot(wall);
     addGrain(ctx, W, H, 0.04);
     return;
   }
@@ -1403,10 +1553,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       const t = fitText(ctx, talk, W - 2 * SAFE, tall ? 42 : 34, 18, Math.max(1, Math.min(4, Math.floor(room / 44))), 600);
       t.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += t.size * 1.3; });
     }
-    ctx.fillStyle = mix(rc, pal.ink, 0.35);
-    ctx.fillRect(0, footerTop - 20, W, H - footerTop + 20);
-    illustrate(rc);
-    personFooter(ctx, W, H, pal, kit, brand, person, mix(rc, pal.ink, 0.35));
+    if (!band) {
+      ctx.fillStyle = mix(rc, pal.ink, 0.35);
+      ctx.fillRect(0, footerTop - 20, W, H - footerTop + 20);
+    }
+    foot(mix(rc, pal.ink, 0.35));
     addGrain(ctx, W, H);
     return;
   }
@@ -1444,8 +1595,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       ctx.font = `italic 500 ${t.size}px ${SERIF}`;
       t.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += t.size * 1.3; });
     }
-    illustrate(pal.paper);
-    personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
+    foot(pal.paper);
     addGrain(ctx, W, H, 0.035);
     return;
   }
@@ -1484,8 +1634,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     t.lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += t.size * 1.3; });
   }
   ctx.textAlign = 'left';
-  illustrate(pal.paper);
-  personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
+  foot(pal.paper);
   addGrain(ctx, W, H, 0.035);
 }
 
