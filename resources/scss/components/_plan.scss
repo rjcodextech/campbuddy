@@ -598,3 +598,46 @@ dialog.meet-sheet {
 .plan-filters {
     margin: v.$space-3 0 v.$space-2;
 }
+
+// --- "Running late" (ScheduleDelay; partials/delay-banner.blade.php) ----------
+.delay-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    margin-bottom: v.$space-4;
+    padding: v.$space-3;
+    border: 1px solid #e0a3a3;
+    border-left: 4px solid var(--brand-primary);
+    border-radius: 12px;
+    background: #fdecec;
+}
+
+.delay-banner__icon {
+    font-size: 1.4rem;
+    color: var(--brand-primary);
+}
+
+.delay-banner__body p {
+    margin: 0;
+}
+
+.delay-banner__title {
+    font-weight: v.$font-weight-bold;
+}
+
+.delay-banner__line {
+    font-size: v.$font-size-sm;
+}
+
+.delay-banner__hint {
+    margin-top: v.$space-1 !important;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+}
+
+.schedule-item__was {
+    display: block;
+    font-size: v.$font-size-xs;
+    font-weight: normal;
+    color: var(--muted);
+}

@@ -3,7 +3,7 @@
 
       <x-manager.event-nav :event="$event" current="details" />
 
-    current: details | information | quests | attendees | tables | qr
+    current: details | information | quests | attendees | tables | delay | qr
 --}}
 @props(['event', 'current'])
 
@@ -14,6 +14,7 @@
         'quests' => ['Quests & checklist', route('manager.events.quests', $event)],
         'attendees' => ['Attendees', route('manager.events.attendees', $event)],
         'tables' => ['Contributor Day', route('manager.events.tables', $event)],
+        'delay' => ['Running late', route('manager.events.delay', $event)],
         'qr' => ['QR codes', route('manager.events.qr', $event)],
     ];
 @endphp

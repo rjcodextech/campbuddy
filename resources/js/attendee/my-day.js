@@ -669,8 +669,11 @@ function setupChipFilter(elId, sessions, valuesOf, labelOf = (name) => name) {
 
 function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expandedSessionId, statusById = null) {
   const speakerNames = (session.speaker_ids ?? []).map((id) => speakersById.get(id)?.name).filter(Boolean).join(', ');
+  // "Running late" (ScheduleDelay on the server): the new time, with the planned one under it.
   const time = Number.isFinite(session.startMs)
-    ? formatTime(session.startMs)
+    ? (session.delay_minutes && session.original_starts_at
+      ? [document.createTextNode(formatTime(session.startMs)), render('tpl-schedule-was', { was: formatTime(new Date(session.original_starts_at).getTime()) })]
+      : formatTime(session.startMs))
     : 'TBA';
   const metaLine = [session.track_names?.[0], typeLabel(session.session_type)].filter(Boolean).join(' · ');
   const saved = bookmarkedIds.has(session.id);

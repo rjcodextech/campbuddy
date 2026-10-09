@@ -7,6 +7,7 @@ use App\Jobs\ParseAttendeeRosterJob;
 use App\Models\ContributorTable;
 use App\Models\Event;
 use App\Models\Quest;
+use App\Support\ScheduleDelay;
 use App\Support\EventData;
 use App\Support\HtmlText;
 use Illuminate\Support\Collection;
@@ -204,7 +205,8 @@ class EventPageController extends Controller
             $this->refreshAfterResponse($event);
         }
 
-        return $value;
+        // "Running late" (ScheduleDelay): every page shows the moved times.
+        return $key === 'sessions' ? ScheduleDelay::apply($event, $value) : $value;
     }
 
     /**

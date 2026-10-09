@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\PushSubscription;
 use App\Models\SessionBookmark;
 use App\Support\EventData;
+use App\Support\ScheduleDelay;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;
@@ -128,6 +129,28 @@ class SessionRemindersTest extends TestCase
         $this->assertNotNull($inWindow->fresh()->reminder_sent_at);
         $this->assertNull($later->fresh()->reminder_sent_at);
         $this->assertNull($off->fresh()->reminder_sent_at);
+    }
+
+    public function test_a_running_late_delay_moves_the_reminder_too(): void
+    {
+        $this->pushService();
+        $this->subscribe('a');
+        $this->subscribe('b');
+        $keynote = $this->bookmark('a', 1);
+        $later = $this->bookmark('b', 2);
+
+        // Main Hall 20 min late from now: the keynote (09:07) moves to 09:27 - no reminder yet.
+        ScheduleDelay::set($this->event, 'Main Hall', 20, CarbonImmutable::now(), null, 'admin: A');
+        $this->run_();
+        $this->assertCount(0, $this->sent);
+        $this->assertNull($keynote->fresh()->reminder_sent_at);
+
+        // Twenty minutes on, it is inside the window of its new time.
+        $this->travel(20)->minutes();
+        $this->run_();
+        $this->assertCount(1, $this->sent);
+        $this->assertNotNull($keynote->fresh()->reminder_sent_at);
+        $this->assertNull($later->fresh()->reminder_sent_at, 'another track keeps its time');
     }
 
     public function test_a_reminder_is_sent_once_however_often_the_job_runs(): void

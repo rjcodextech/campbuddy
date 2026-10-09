@@ -45,6 +45,7 @@ class Event extends Model
         'info' => 'array',
         'info_fetched' => 'array',
         'info_fetched_at' => 'datetime',
+        'schedule_delays' => 'array',
         'starts_on' => 'date',
         'ends_on' => 'date',
     ];

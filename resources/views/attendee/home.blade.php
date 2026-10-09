@@ -2,6 +2,7 @@
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
+        @include('attendee.partials.delay-banner')
         {{-- Event branding lives here now, not the global topbar (§Header) —
         logo falls back to CampBuddy's own icon so this never looks broken
         for an event that hasn't uploaded one. --}}

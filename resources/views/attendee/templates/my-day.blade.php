@@ -94,6 +94,11 @@
     </div>
 </template>
 
+{{-- my-day.js: a session moved by "Running late" shows its planned time under the new one. --}}
+<template id="tpl-schedule-was">
+    <s class="schedule-item__was" title="Planned time"><span class="u-visually-hidden">planned </span><span data-slot="was"></span></s>
+</template>
+
 <template id="tpl-schedule-tag">
     <span class="schedule-tag" data-slot="tag"></span>
 </template>

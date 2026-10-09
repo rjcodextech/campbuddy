@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
+use App\Http\Controllers\Admin\ScheduleDelayController;
 use App\Http\Controllers\CalendarFileController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\HomeController;
@@ -170,6 +171,9 @@ Route::prefix('admin')->group(function () {
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::get('events/{event}/qr', EventQrController::class)->name('admin.events.qr');
+        Route::get('events/{event}/delay', [ScheduleDelayController::class, 'index'])->name('admin.events.delay');
+        Route::post('events/{event}/delay', [ScheduleDelayController::class, 'store'])->name('admin.events.delay.store');
+        Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
         Route::get('events/{event}/tables', [ContributorTableController::class, 'index'])->name('admin.events.tables.index');
         Route::post('events/{event}/tables', [ContributorTableController::class, 'store'])->name('admin.events.tables.store');
         Route::put('events/{event}/tables/{table}', [ContributorTableController::class, 'update'])->name('admin.events.tables.update');

@@ -6,6 +6,8 @@
             <h1 class="section-head__title">My Day</h1>
         </div>
 
+        @include('attendee.partials.delay-banner')
+
         {{-- MD1: two distinct views, not a blended filtered list. --}}
         <div role="tablist" aria-label="Schedule view" class="tab-strip">
             <button type="button" class="btn btn--compact" data-view-tab="full" role="tab" aria-selected="true">Full schedule</button>

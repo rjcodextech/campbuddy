@@ -7,6 +7,7 @@ use App\Models\PushSubscription;
 use App\Models\SessionBookmark;
 use App\Support\ConcurrentWebPush;
 use App\Support\EventData;
+use App\Support\ScheduleDelay;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -48,7 +49,8 @@ class SendSessionRemindersJob implements ShouldQueue
 
     private function remindForEvent(Event $event): void
     {
-        $sessions = collect(EventData::get($event->id, 'sessions') ?? [])
+        // With any "running late" delay added (ScheduleDelay), so a reminder comes before the moved start.
+        $sessions = collect(ScheduleDelay::apply($event, EventData::get($event->id, 'sessions') ?? []))
             ->filter(fn ($s) => $s['starts_at'])
             ->keyBy('id');
 

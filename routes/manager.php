@@ -7,6 +7,7 @@ use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
 use App\Http\Controllers\Manager\QrController;
 use App\Http\Controllers\Manager\QuestController;
+use App\Http\Controllers\Manager\ScheduleDelayController;
 use App\Http\Middleware\EnsureEventManager;
 use App\Http\Middleware\ThrottleManagerWrites;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,9 @@ Route::prefix('manager')->group(function () {
         Route::get('events/{eventId}/quests', [QuestController::class, 'index'])->name('manager.events.quests');
         Route::get('events/{eventId}/qr', QrController::class)->name('manager.events.qr');
         Route::get('events/{eventId}/attendees', [AttendeeController::class, 'index'])->name('manager.events.attendees');
+        Route::get('events/{eventId}/delay', [ScheduleDelayController::class, 'index'])->name('manager.events.delay');
+        Route::post('events/{eventId}/delay', [ScheduleDelayController::class, 'store'])->name('manager.events.delay.store');
+        Route::post('events/{eventId}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('manager.events.delay.clear');
         Route::get('events/{eventId}/tables', [ContributorTableController::class, 'index'])->name('manager.events.tables');
         Route::post('events/{eventId}/tables', [ContributorTableController::class, 'store'])->name('manager.events.tables.store');
         Route::put('events/{eventId}/tables/{tableId}', [ContributorTableController::class, 'update'])->whereNumber('tableId')->name('manager.events.tables.update');
