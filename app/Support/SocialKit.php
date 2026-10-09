@@ -298,7 +298,14 @@ class SocialKit
             return null;
         }
 
-        return str_contains($url, 'gravatar.com/') ? preg_replace('/([?&])s=\d+/', '$1s='.$size, $url) : $url;
+        if (! str_contains($url, 'gravatar.com/')) {
+            return $url;
+        }
+        $url = (string) preg_replace('/([?&])s=\d+/', '$1s='.$size, $url);
+
+        // No picture of their own: Gravatar answers 404 instead of its grey silhouette, and the
+        // card draws their initials in the brand colours.
+        return str_contains($url, 'd=') ? (string) preg_replace('/([?&])d=[^&]*/', '$1d=404', $url) : $url.(str_contains($url, '?') ? '&' : '?').'d=404';
     }
 
     /** @return list<array{name: string, photo: ?string}> the speakers for the lineup post */

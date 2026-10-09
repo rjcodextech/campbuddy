@@ -29,8 +29,19 @@ let FONT = DEFAULT_FONT;
 let SERIF = DEFAULT_SERIF;
 let HEAD = null;
 
-// The WordCamp site's artwork in use (setSiteArt()): a pattern, an illustration, a photo.
+// The WordCamp site's artwork (setSiteArt()): every ticked piece, by kind…
+const SITE_ART = { pattern: [], illustration: [], photo: [] };
+// …and the pieces the card being drawn uses (useArt()): each post and each
+// person takes the next one in turn, so every piece of the site's artwork is used.
 const ART = { pattern: null, illustration: null, photo: null };
+
+/** Sets the artwork for card number `index` (a post's place on the page, a person's in the list). */
+export function useArt(index = 0) {
+  for (const kind of ['pattern', 'illustration', 'photo']) {
+    const list = SITE_ART[kind];
+    ART[kind] = list.length ? list[Math.abs(index) % list.length] : null;
+  }
+}
 const STYLES = ['bold', 'poster', 'ticket', 'gradient'];
 const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
 const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
@@ -174,19 +185,26 @@ export function paletteFromSite(colors) {
   const darks = list.filter((c) => c.lum < 0.06).sort((a, b) => (b.s > 0.1) - (a.s > 0.1) || a.lum - b.lum);
   const lights = list.filter((c) => c.lum > 0.8).sort((a, b) => (b.s > 0.05) - (a.s > 0.05) || b.lum - a.lum);
 
-  return readable({
+  const palette = readable({
     primary,
     secondary: second ? second.hex : mix(primary, '#ffffff', 0.45),
     ink: darks[0]?.hex ?? mix(primary, '#000000', 0.8),
     paper: lights[0]?.hex ?? mix(primary, '#ffffff', 0.94),
   });
+  // Every other real colour of the site, for decoration (most saturated first).
+  const used = new Set([primaryPick.hex, second?.hex, palette.primary, palette.secondary]);
+  palette.extras = [...chroma].filter((c) => !used.has(c.hex)).sort((a, b) => b.s - a.s).slice(0, 4).map((c) => c.hex);
+  return palette;
 }
 
-/** The colours a card may use: the four brand colours and tones between them. */
+/** The colours a card may use: the four brand colours, the site's other colours, and tones between them. */
 function paletteOf(colors) {
   const { primary, secondary, ink, paper } = colors;
+  const extras = (colors.extras ?? []).filter(Boolean);
   return {
     primary, secondary, ink, paper,
+    // The site's other colours (saffron, indigo…), for shapes and role tones; the brand's when there are none.
+    extras: extras.length ? extras : [secondary, mix(primary, secondary, 0.5)],
     deep: mix(primary, ink, 0.4),
     soft: mix(primary, paper, 0.86),
     accentSoft: mix(secondary, paper, 0.7),
@@ -236,7 +254,8 @@ function loadImage(url) {
       img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
       // A failed image isn't remembered: the next redraw tries again.
-      img.onerror = () => { images.delete(url); resolve(null); };
+      // (A Gravatar asked with d=404 that fails simply has no picture: that answer is kept.)
+      img.onerror = () => { if (!url.includes('d=404')) images.delete(url); resolve(null); };
       img.src = url;
     }));
   }
@@ -781,6 +800,7 @@ export function planPost(content, size, styleName, colors) {
   const c = document.createElement('canvas');
   const ctx = c.getContext('2d');
   const style = styleOf(styleName, paletteOf(colors));
+  useArt(content.artIndex ?? 0);
   let m = measureText(ctx, content, frame(W, H, styleName), style);
   // The site's illustration gives way when the body would otherwise not fit a row.
   const needs = itemsKey(content.body.type) ? ROWS[content.body.type](H) * 2 : (content.body.type !== 'none' ? 200 : 0);
@@ -815,19 +835,22 @@ function paintBackground(ctx, W, H, f, style, pal, look, mark) {
       ctx.fillStyle = rg;
       ctx.fillRect(0, 0, W, H);
     }
-    watermark(ctx, mark, W, H, 0.05);
+    if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, H, 240, 0.06))) watermark(ctx, mark, W, H, 0.05);
   } else if (style.name === 'bold') {
     if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, H, 220, 0.07))) watermark(ctx, mark, W, H, 0.06);
-    drawTexture(ctx, look.texture, W, H, alpha(pal.secondary, 0.14), look.corner);
+    drawTexture(ctx, look.texture, W, H, alpha(pal.extras[0], 0.16), look.corner);
   } else if (style.name === 'poster') {
     if (ART.pattern) fillWithPattern(ctx, ART.pattern, pal.primary, 0, 0, W, H, 220, 0.05);
-    drawTexture(ctx, look.texture, W, H, alpha(pal.primary, 0.08), look.corner);
+    drawTexture(ctx, look.texture, W, H, alpha(pal.extras[0], 0.12), look.corner);
     ctx.fillStyle = pal.primary;
     ctx.fillRect(look.corner === 'left' ? 0 : W - 18, 0, 18, H);
   } else if (style.name === 'ticket') {
     ctx.fillStyle = pal.deep;
     ctx.fillRect(0, 0, W, H);
-    watermark(ctx, mark, W, H, 0.08);
+    // Around the ticket: the site's photo in two dark tones, or its pattern, or the event's mark.
+    const photo = ART.photo ? duotone(ART.photo, mix(pal.deep, pal.ink, 0.5), pal.deep) : null;
+    if (photo) drawCover(ctx, photo, 0, 0, W, H);
+    else if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, H, 200, 0.1))) watermark(ctx, mark, W, H, 0.08);
     const m = f.inset;
     ctx.save();
     ctx.shadowColor = alpha(pal.ink, 0.45); ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
@@ -859,7 +882,7 @@ function paintHeader(ctx, W, f, style, pal, look, logo, content, page) {
   // The event's motif beside the logo, inside its own box.
   const mx = f.x + f.logo.w + 30;
   const mw = W - f.inset - SAFE - mx;
-  const motifColors = style.name === 'poster' ? [alpha(pal.primary, 0.55), alpha(pal.secondary, 0.8)] : [alpha(pal.paper, 0.35), alpha(pal.secondary, 0.85)];
+  const motifColors = style.name === 'poster' ? [alpha(pal.extras[0], 0.7), alpha(pal.secondary, 0.8)] : [alpha(pal.extras[0], 0.75), alpha(pal.secondary, 0.85)];
   const boxW = mw - (page.total > 1 ? 120 : 0);
   if (mw > 120) {
     const patternColor = style.name === 'poster' || style.name === 'ticket' && !onStub ? pal.primary : pal.secondary;
@@ -942,7 +965,7 @@ async function paintBody(ctx, body, x, y, w, h, style, pal, kit, H) {
     body.people.forEach((p, i) => {
       const cx = x + cellW * (i % cols) + cellW / 2;
       const cy = y + rowH * Math.floor(i / cols) + r + 6;
-      circlePhoto(ctx, imgs[i], cx, cy, r, 6, light ? pal.secondary : pal.paper, pal.accentSoft, pal.ink, p.name);
+      circlePhoto(ctx, imgs[i], cx, cy, r, 6, light ? pal.secondary : pal.paper, pal.soft, pal.primary, p.name);
       ctx.fillStyle = style.fg;
       ctx.textAlign = 'center';
       const name = fitText(ctx, p.name, cellW - 12, tall ? 26 : 22, 15, 2, 700);
@@ -1020,7 +1043,7 @@ async function paintBody(ctx, body, x, y, w, h, style, pal, kit, H) {
     const photos = body.photos.slice(0, 3);
     const imgs = await Promise.all(photos.map((u) => loadImage(u)));
     const r = Math.min(h / 2 - 12, photos.length > 1 ? 110 : 140);
-    photos.forEach((_, i) => circlePhoto(ctx, imgs[i], x + r + 10 + i * (r * 1.45), y + h / 2, r, 8, light ? pal.secondary : pal.paper, pal.accentSoft, pal.ink, body.speakers[i]));
+    photos.forEach((_, i) => circlePhoto(ctx, imgs[i], x + r + 10 + i * (r * 1.45), y + h / 2, r, 8, light ? pal.secondary : pal.paper, pal.soft, pal.primary, body.speakers[i]));
     const tx = x + r * 2 + 50 + (Math.max(photos.length, 1) - 1) * r * 1.45;
     ctx.fillStyle = style.fg;
     const names = fitText(ctx, body.speakers.join(', '), x + w - tx, tall ? 44 : 36, 20, 3, 800);
@@ -1106,8 +1129,9 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   const pal = paletteOf(colors);
   const style = styleOf(styleName, pal);
   const look = { ...eventLook(kit.event.seed), seedValue: kit.event.seed };
-  const f = frame(W, H, styleName, !content.noArt);
   const [logo, mark, brand] = await Promise.all([loadImage(kit.event.logo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  useArt(content.artIndex ?? 0);
+  const f = frame(W, H, styleName, !content.noArt);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
@@ -1142,6 +1166,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   }
 
   if (bH > 0 && m.room >= 120) await paintBody(ctx, content.body, f.x, y + m.gap, f.w, bH, style, pal, kit, H);
+  useArt(content.artIndex ?? 0);
 
   if (ART.illustration && f.artH) {
     // The site's illustration, in one brand colour, sitting on the footer.
@@ -1173,6 +1198,10 @@ export function personHeadline(person, kit) {
 /** A tone of the brand for someone's first role (organizer: main, speaker: accent…). */
 export function roleColor(person, colors) {
   const { primary, secondary, ink } = colors;
+  const extras = colors.extras ?? [];
+  // With the site's own colours, each role takes one of them.
+  const fromSite = { volunteer: extras[0], sponsor: extras[1], media_partner: extras[2], microsponsor: extras[3], table_lead: extras[0] }[person.roles?.[0]];
+  if (fromSite) return fromSite;
   switch (person.roles?.[0]) {
     case 'speaker': return secondary;
     case 'volunteer': return mix(primary, ink, 0.45);
@@ -1209,6 +1238,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   const [photo, mark, brand] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  useArt(person.artIndex ?? 0);
   const pal = paletteOf(colors);
   const look = eventLook(kit.event.seed);
   const rc = roleColor(person, colors);
@@ -1217,7 +1247,18 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const label = personHeadline(person, kit).toUpperCase();
   const tall = H >= 1900;
   const square = H < 1100;
-  const fTop = H - (square ? 200 : (tall ? 260 : 230));
+  const footerTop = H - (square ? 200 : (tall ? 260 : 230));
+  // The site's illustration (a skyline…) gets a band of its own on the footer.
+  const band = ART.illustration && !square ? (tall ? 220 : 130) : 0;
+  const fTop = footerTop - band;
+  const illustrate = (under) => {
+    if (!band) return;
+    const art = recolour(ART.illustration, textOn(under, pal.primary, pal.paper) === pal.primary ? pal.primary : pal.paper);
+    if (!art) return;
+    const k = Math.min((W - 2 * SAFE) / art.width, (band - 16) / art.height);
+    ctx.drawImage(art, (W - art.width * k) / 2, footerTop - art.height * k - 6, art.width * k, art.height * k);
+  };
+  const wallPattern = (color, opacity) => ART.pattern && fillWithPattern(ctx, ART.pattern, color, 0, 0, W, H, 200, opacity);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
@@ -1225,7 +1266,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // A tilted instant photo taped onto a wall in the role's tone.
     ctx.fillStyle = rc;
     ctx.fillRect(0, 0, W, H);
-    watermark(ctx, mark, W, H, 0.07);
+    if (!wallPattern(onRc, 0.14)) watermark(ctx, mark, W, H, 0.07);
     pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 28, height: 60, align: 'center' });
     const room = fTop - (SAFE + 80) - (talk && !square ? (tall ? 220 : 120) : 30);
     const ph = Math.min(room, tall ? 1000 : 900);
@@ -1242,7 +1283,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const inner = pw - 50;
     ctx.save(); ctx.beginPath(); ctx.rect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.clip();
     if (photo) drawCover(ctx, photo, -inner / 2, -ph / 2 + 25, inner, inner);
-    else { ctx.fillStyle = pal.accentSoft; ctx.fillRect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(inner * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), 0, -ph / 2 + 25 + inner * 0.64); }
+    else { ctx.fillStyle = pal.soft; ctx.fillRect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.fillStyle = pal.primary; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(inner * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), 0, -ph / 2 + 25 + inner * 0.64); }
     ctx.restore();
     ctx.fillStyle = pal.ink;
     ctx.textAlign = 'center';
@@ -1263,6 +1304,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       t.lines.forEach((l, i) => ctx.fillText(l, W / 2, ty + i * t.size * 1.25));
       ctx.textAlign = 'left';
     }
+    illustrate(rc);
     personFooter(ctx, W, H, pal, kit, brand, person, rc);
     addGrain(ctx, W, H);
     return;
@@ -1273,12 +1315,19 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const wall = pal.soft;
     ctx.fillStyle = wall;
     ctx.fillRect(0, 0, W, H);
+    wallPattern(pal.primary, 0.1);
     const bw = W * (square ? 0.56 : 0.66);
     const bh = (fTop - 30) - (SAFE + 70);
     const bx = (W - bw) / 2;
     const by = SAFE + 70;
     ctx.fillStyle = rc;
     ctx.beginPath(); ctx.moveTo(W / 2 - 60, 0); ctx.lineTo(W / 2 + 60, 0); ctx.lineTo(W / 2 + 30, by + 20); ctx.lineTo(W / 2 - 30, by + 20); ctx.closePath(); ctx.fill();
+    if (ART.pattern) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(W / 2 - 60, 0); ctx.lineTo(W / 2 + 60, 0); ctx.lineTo(W / 2 + 30, by + 20); ctx.lineTo(W / 2 - 30, by + 20); ctx.closePath(); ctx.clip();
+      fillWithPattern(ctx, ART.pattern, onRc, W / 2 - 60, 0, 120, by + 20, 60, 0.35);
+      ctx.restore();
+    }
     ctx.fillStyle = alpha(pal.ink, 0.45);
     roundRect(ctx, W / 2 - 42, by - 16, 84, 46, 12); ctx.fill();
     ctx.save();
@@ -1303,7 +1352,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const inner = bh - (square ? 100 : 130) - bandH;
     const r = Math.min(bw * (tall ? 0.34 : 0.26), inner * (talk ? 0.26 : 0.3));
     const cy = by + (square ? 100 : 130) + 26 + r;
-    circlePhoto(ctx, photo, W / 2, cy, r, 8, rc, pal.accentSoft, pal.ink, person.name);
+    circlePhoto(ctx, photo, W / 2, cy, r, 8, rc, pal.soft, pal.primary, person.name);
     ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
     const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 2, 900);
     let y = cy + r + 14;
@@ -1316,6 +1365,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       t.lines.forEach((l) => { y += t.size * 1.2; ctx.fillText(l, W / 2, y); });
     }
     ctx.textAlign = 'left';
+    illustrate(wall);
     personFooter(ctx, W, H, pal, kit, brand, person, wall);
     addGrain(ctx, W, H, 0.04);
     return;
@@ -1325,7 +1375,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // Photo across the top, a block in the role's tone with the words below.
     const ph = Math.round(fTop * (square ? 0.5 : 0.56));
     if (photo) drawCover(ctx, photo, 0, 0, W, ph);
-    else { ctx.fillStyle = pal.accentSoft; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
+    else { ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = pal.primary; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
     const g = ctx.createLinearGradient(0, ph * 0.5, 0, ph);
     g.addColorStop(0, alpha(rc, 0));
     g.addColorStop(1, alpha(rc, 0.9));
@@ -1333,6 +1383,12 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = rc;
     const s = look.tilt * 40;
     ctx.beginPath(); ctx.moveTo(0, ph - 40 - s); ctx.lineTo(W, ph - 40 + s); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    if (ART.pattern) {
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(0, ph - 40 - s); ctx.lineTo(W, ph - 40 + s); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.clip();
+      fillWithPattern(ctx, ART.pattern, onRc, 0, ph - 120, W, H, 200, 0.08);
+      ctx.restore();
+    }
     pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 26, height: 58 });
     let y = ph + (square ? 50 : 90);
     ctx.fillStyle = onRc;
@@ -1348,7 +1404,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       t.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += t.size * 1.3; });
     }
     ctx.fillStyle = mix(rc, pal.ink, 0.35);
-    ctx.fillRect(0, fTop - 20, W, H - fTop + 20);
+    ctx.fillRect(0, footerTop - 20, W, H - footerTop + 20);
+    illustrate(rc);
     personFooter(ctx, W, H, pal, kit, brand, person, mix(rc, pal.ink, 0.35));
     addGrain(ctx, W, H);
     return;
@@ -1363,9 +1420,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.strokeRect(40, 40, W - 80, H - 80);
     ctx.fillStyle = rc;
     ctx.fillRect(look.corner === 'left' ? 40 : W - 56, 40, 16, fTop - 60);
+    if (ART.pattern) fillWithPattern(ctx, ART.pattern, rc, look.corner === 'left' ? 64 : W - 140, 40, 76, fTop - 60, 76, 0.35);
     const r = tall ? 210 : (square ? 100 : 130);
     const photoLeft = look.corner === 'left';
-    circlePhoto(ctx, photo, photoLeft ? W - SAFE - 30 - r : SAFE + 30 + r, SAFE + 40 + r, r, 0, rc, pal.accentSoft, pal.ink, person.name);
+    circlePhoto(ctx, photo, photoLeft ? W - SAFE - 30 - r : SAFE + 30 + r, SAFE + 40 + r, r, 0, rc, pal.soft, pal.primary, person.name);
     ctx.font = `800 26px ${FONT}`;
     ctx.fillStyle = rc;
     ctx.textAlign = photoLeft ? 'left' : 'right';
@@ -1386,6 +1444,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       ctx.font = `italic 500 ${t.size}px ${SERIF}`;
       t.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += t.size * 1.3; });
     }
+    illustrate(pal.paper);
     personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
     addGrain(ctx, W, H, 0.035);
     return;
@@ -1410,7 +1469,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 30, height: 64, align: 'center' });
   const r = tall ? 290 : (square ? 160 : 215);
   const cy = top - (square ? 30 : 20);
-  circlePhoto(ctx, photo, W / 2, cy, r, 14, pal.paper, pal.accentSoft, pal.ink, person.name);
+  circlePhoto(ctx, photo, W / 2, cy, r, 14, pal.paper, pal.soft, pal.primary, person.name);
   let y = cy + r + (square ? 70 : (tall ? 150 : 100));
   ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
   const name = fitText(ctx, person.name, W - 2 * SAFE, square ? 60 : (tall ? 100 : 80), 34, 2, 900);
@@ -1425,6 +1484,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     t.lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += t.size * 1.3; });
   }
   ctx.textAlign = 'left';
+  illustrate(pal.paper);
   personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
   addGrain(ctx, W, H, 0.035);
 }
@@ -1517,12 +1577,13 @@ function useSiteFonts(fonts, on) {
   HEAD = on && fonts.heading ? fonts.heading : null;
 }
 
-/** Which of the site's artwork is in use: the first ticked of each kind. */
+/** Loads every ticked piece of the site's artwork, by kind. */
 async function setSiteArt(kit, enabled) {
   for (const kind of ['pattern', 'illustration', 'photo']) {
-    const art = (kit.site?.art ?? []).find((a, i) => a.kind === kind && enabled.has(i));
-    ART[kind] = art ? await loadImage(proxied(kit, art.url)) : null;
+    const pieces = (kit.site?.art ?? []).filter((a, i) => a.kind === kind && enabled.has(i));
+    SITE_ART[kind] = (await Promise.all(pieces.map((a) => loadImage(proxied(kit, a.url))))).filter(Boolean);
   }
+  useArt(0);
 }
 
 export function initSocialKit() {
@@ -1539,7 +1600,9 @@ export function initSocialKit() {
   const design = choiceGroup('people-design', () => people?.redraw(), look.design);
   const quality = choiceGroup('social-quality', () => {}, 'social');
 
-  const posts = [...document.querySelectorAll('[data-social-post]')].map((card) => {
+  // Each post and each person takes the next piece of the site's artwork.
+  kit.people.forEach((person, i) => { person.artIndex = i; });
+  const posts = [...document.querySelectorAll('[data-social-post]')].map((card, cardIndex) => {
     const post = kit.posts.find((p) => p.key === card.dataset.socialPost);
     const field = (name) => card.querySelector(`[data-field="${name}"]`);
     const pickEl = card.querySelector('[data-pick]');
@@ -1552,7 +1615,7 @@ export function initSocialKit() {
     let drawing = Promise.resolve();
 
     const replan = () => {
-      pages = planPost(postContent(post, fields(), kit, pickEl?.value), size(), style(), colors);
+      pages = planPost({ ...postContent(post, fields(), kit, pickEl?.value), artIndex: cardIndex }, size(), style(), colors);
       pageIndex = Math.min(pageIndex, pages.length - 1);
       // A class, not `hidden`: the row's own `flex` would win over the attribute.
       if (pager) pager.classList.toggle('hidden', pages.length < 2);
@@ -1706,7 +1769,7 @@ export function initSocialKit() {
       if (announce && status) status.textContent = logo ? 'The logo has no clear colours: keeping these.' : 'No logo for this event yet.';
       return false;
     }
-    setColors(palette, announce ? 'Picked from the logo ✓ Save to keep them.' : null);
+    setColors({ ...palette, extras: [] }, announce ? 'Picked from the logo ✓ Save to keep them.' : null);
     return true;
   };
   document.querySelector('[data-colors-from-logo]')?.addEventListener('click', () => fromLogo(true));
@@ -1723,10 +1786,9 @@ export function initSocialKit() {
     }
     await setSiteArt(kit, enabledArt()).catch(() => {});
     await document.fonts?.ready;
-    if (!kit.colorsSaved) {
-      if (sitePalette) setColors(sitePalette, null);
-      else await fromLogo(false);
-    }
+    // The site's own colours come first; saved colours are for a site that names none.
+    if (sitePalette) setColors(sitePalette, 'From the WordCamp site.');
+    else if (!kit.colorsSaved) await fromLogo(false);
     showContrast();
     redrawAll();
   })();

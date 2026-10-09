@@ -72,7 +72,7 @@
     {{-- Brand colours --}}
     <form method="POST" action="{{ $colorsUrl }}" data-social-colors>
         @csrf
-        <x-card title="Brand colours" description="{{ $kit['colorsSaved'] ? 'Saved for this event.' : 'Not saved yet: these are picked from the event logo. Adjust and save.' }}">
+        <x-card title="Brand colours" description="{{ $kit['site']['colors'] !== [] ? 'Taken from the WordCamp site (made readable). Try others here if you like; the site colours come back next time.' : ($kit['colorsSaved'] ? 'Saved for this event.' : 'Not saved yet: these are picked from the event logo. Adjust and save.') }}">
             <div class="flex flex-wrap items-end gap-4">
                 @foreach (['primary' => 'Main', 'secondary' => 'Accent', 'ink' => 'Text', 'paper' => 'Light'] as $key => $label)
                     <label class="flex flex-col gap-1 text-sm">

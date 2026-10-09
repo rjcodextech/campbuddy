@@ -144,3 +144,12 @@ test('readable() fixes a palette by deepening, never by adding a colour', () => 
   assert.ok(contrastRatio(p.paper, p.primary) >= 4.5);
   assert.ok(Math.max(contrastRatio(p.ink, p.secondary), contrastRatio(p.paper, p.secondary)) >= 4.5);
 });
+
+test('the other site colours decorate and give each role its own tone', () => {
+  const p = paletteFromSite([{ hex: '#c33a19' }, { hex: '#e39d1c' }, { hex: '#0d2343' }, { hex: '#1f8a4c' }, { hex: '#2a1810' }, { hex: '#faf7f0' }]);
+  assert.ok(p.extras.length >= 1, 'colours beyond the four are kept');
+  assert.ok(p.extras.every((hex) => ![p.primary, p.secondary].includes(hex)));
+  const colors = { ...p };
+  assert.equal(roleColor({ roles: ['volunteer'] }, colors), p.extras[0], 'a volunteer takes one of the site colours');
+  assert.equal(roleColor({ roles: ['organizer'] }, colors), p.primary);
+});

@@ -121,6 +121,7 @@ class SocialMediaTest extends TestCase
         $this->assertCount(1, $people);
         $this->assertSame($rahul->id, $people[0]['id']);
         $this->assertStringContainsString('s=600', $people[0]['photo'], 'a sharper photo for print');
+        $this->assertStringContainsString('d=404', $people[0]['photo'], 'no grey silhouette: initials in the brand colours instead');
         $this->assertStringContainsString('Rahul is speaking at WordCamp Rajasthan 2026', $people[0]['caption']);
         $this->assertStringContainsString('utm_content=people-speaker', $people[0]['link']);
     }
