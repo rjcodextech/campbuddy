@@ -50,7 +50,7 @@ class SiteTheme
             $response = Http::timeout(12)->withHeaders(['User-Agent' => 'CampBuddy (+https://campbuddy.club)'])->get($site.'/');
             $response->throw();
             $theme = (new SiteThemeScraper)->parse($response->body(), self::notArt($event), self::mediaLibrary($site))
-                + ['tagline' => self::readTagline($site), 'fetched_at' => now()->toIso8601String()];
+                + ['tagline' => self::readTagline($site, (string) ($event->info['venue'] ?? '')), 'fetched_at' => now()->toIso8601String()];
         } catch (Throwable $e) {
             report($e);
 
@@ -205,9 +205,11 @@ class SiteTheme
     /**
      * The site's tagline (WordPress "Tagline" setting, from its REST index):
      * "Dil se Dilli, code se community". A leading date ("Nov 21–22, Namma
-     * WordPress") is dropped, as is WordPress's own placeholder.
+     * WordPress") is dropped; a tagline that is only a date, or a date and the
+     * venue ("6th November, Whitworth Locke"), isn't one; nor is WordPress's
+     * own placeholder.
      */
-    private static function readTagline(string $site): ?string
+    private static function readTagline(string $site, string $venue = ''): ?string
     {
         try {
             $description = Http::timeout(8)->acceptJson()->get($site.'/wp-json/', ['_fields' => 'description'])->throw()->json('description');
@@ -216,10 +218,20 @@ class SiteTheme
 
             return null;
         }
-        $tagline = trim(html_entity_decode(strip_tags((string) $description), ENT_QUOTES | ENT_HTML5));
-        $tagline = trim((string) preg_replace('/^(\d{1,2}\s*(?:[-–&]\s*\d{1,2}\s*)?[A-Za-z]+|[A-Za-z]+\s+\d{1,2}\s*(?:[-–&]\s*\d{1,2})?)(?:,?\s*\d{4})?\s*[,:|·–-]\s*/u', '', $tagline));
 
-        return preg_match(self::PLACEHOLDER_TAGLINES, $tagline) || mb_strlen($tagline) > 80 ? null : $tagline;
+        return self::cleanTagline((string) $description, $venue);
+    }
+
+    public static function cleanTagline(string $description, string $venue = ''): ?string
+    {
+        $tagline = trim(html_entity_decode(strip_tags($description), ENT_QUOTES | ENT_HTML5));
+        $day = '\d{1,2}(?:st|nd|rd|th)?';
+        $date = "(?:{$day}(?:\s*(?:[-–&]|to)\s*{$day})?\s+[a-z]+|[a-z]+\s+{$day}(?:\s*(?:[-–&]|to)\s*{$day})?)(?:,?\s*\d{4})?";
+        $tagline = trim((string) preg_replace("/^{$date}\s*(?:[,:|·–-]\s*|$)/iu", '', $tagline));
+        $months = '/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\b20\d\d\b/i';
+        $isVenue = $venue !== '' && $tagline !== '' && (stripos($venue, $tagline) !== false || stripos($tagline, $venue) !== false);
+
+        return $tagline === '' || $isVenue || preg_match(self::PLACEHOLDER_TAGLINES, $tagline) || preg_match($months, $tagline) || mb_strlen($tagline) > 80 ? null : $tagline;
     }
 
     /** Images that are people or sponsors, never artwork. @return list<string> */

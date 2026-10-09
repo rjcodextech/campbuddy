@@ -124,14 +124,6 @@
             </div>
         </div>
         <div class="flex flex-col gap-1 text-sm">
-            <span class="cb-label" id="social-style-label">Post style</span>
-            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-style-label">
-                @foreach (['bold' => 'Bold', 'poster' => 'Poster', 'ticket' => 'Ticket', 'gradient' => 'Gradient'] as $key => $label)
-                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-social-style="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
-                @endforeach
-            </div>
-        </div>
-        <div class="flex flex-col gap-1 text-sm">
             <span class="cb-label" id="social-people-design-label">People card design</span>
             <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-people-design-label">
                 @foreach (['classic' => 'Classic', 'polaroid' => 'Polaroid', 'badge' => 'Badge', 'split' => 'Split', 'minimal' => 'Minimal'] as $key => $label)
