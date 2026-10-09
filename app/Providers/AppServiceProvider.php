@@ -6,6 +6,7 @@ use App\Rules\NotPrivateNetworkUrl;
 use App\Support\ApiClient;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -27,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // On the live site, artisan commands that empty the database
+        // (migrate:fresh, migrate:refresh, migrate:reset, db:wipe) refuse to run.
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+
         // When the site is configured as https (APP_URL=https://…), every
         // generated link is https regardless of what the proxy/host reports —
         // a login page or manifest link that downgrades to http is a

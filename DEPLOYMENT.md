@@ -190,6 +190,7 @@ Upload: `app/Http/Controllers/Admin/CommandController.php` aur poora `resources/
 - **10 Oct (raat): Social media — CampBuddy ki awaaz, sirf brand colours, har card par QR (UTM), har event alag design, multi-card, Print 3×.** Migration nahi. Upload: `app/Support/SocialKit.php`, `resources/views/partials/social-media.blade.php`, `public/build/`.
 - **10 Oct (raat 2): Social media WordCamp site ki branding se** — site ke colours, fonts, artwork (pattern / skyline / photo). **Migration:** `2026_10_09_090600_add_site_theme_to_events`. Naye: `app/Services/SiteThemeScraper.php`, `app/Support/SiteTheme.php`. Badle: `app/Support/{SocialKit,SocialImageProxy}.php`, `app/Models/Event.php`, `app/Http/Controllers/{Admin,Manager}/SocialController.php`, `routes/{web,manager}.php`, `resources/views/partials/social-media.blade.php`, `public/build/`. Pahali baar Social media page khulne par CampBuddy event ki site ka home page padhta hai (12 s tak); font aur images `storage/app/social-cache/` mein cache hote hain.
 - **10 Oct (raat 3): har Social media creative mein site ke colours, fonts, artwork** — site ke colours saved brand colours se upar, baaki site colours roles/shapes mein, har post aur person card par artwork baari-baari, bina photo wale log initials ke saath. **Migration nahi.** Badle: `app/Support/SocialKit.php`, `resources/views/partials/social-media.blade.php`, `public/build/`.
+- **10 Oct (raat 4): database mitne se suraksha** — live par `migrate:fresh` / `migrate:refresh` / `migrate:reset` / `db:wipe` band. **Migration nahi.** Badla: `app/Providers/AppServiceProvider.php` (sirf ye ek file).
 - Phir `php artisan optimize:clear && php artisan optimize`.
 
 ## Deploy: server par step-by-step
@@ -214,6 +215,8 @@ Poora deploy 4 kadam ka hai; sabse zaroori kadam 3 (`campbuddy:doctor`) hai. Ye 
     | `vendor/` sirf tab jab `composer.lock` badla ho | PHP libraries |
 
     **Kabhi upload na karein:** `public/hot`, `.env` (server ki apni `.env` hai), `storage/`, `bootstrap/cache/` (aapke computer ka cache server ko tod sakta hai), `node_modules/`, `.git/`, `tests/`, `tools/`, `.claude/`.
+
+    **Database kabhi na mitey (9 Oct 2026 ko local DB isi tarah mit gaya tha):** server par `php artisan test`, `migrate:fresh`, `migrate:refresh`, `migrate:reset`, `db:wipe` kabhi na chalayein. 10 Oct se live (`APP_ENV=production`) par ye chaaron commands khud mana kar deti hain, aur tests sirf sqlite `:memory:` par chalte hain (MySQL dikhe to turant ruk jaate hain). `vendor/` server par `composer install --no-dev` se hi banayein (doctor yahi karta hai), local ka `vendor/` (jisme PHPUnit hai) upload na karein.
 
     **FileZilla settings (ek baar):**
 
