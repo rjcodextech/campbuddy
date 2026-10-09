@@ -40,6 +40,13 @@
             <button type="button" class="btn btn--outline btn--full" id="contrib-retry" style="margin-top:14px">Answer again</button>
         </div>
 
+        {{-- Filled by contribute.js when the organizers entered tables; hidden otherwise. --}}
+        <section id="contrib-tables" class="card contrib-tables" aria-labelledby="contrib-tables-title" hidden>
+            <h2 class="section-head__title" id="contrib-tables-title">Tables at this WordCamp</h2>
+            <p class="footer-note" style="text-align:left;margin:4px 0 10px">Where each team sits on Contributor Day, and who to say hi to.</p>
+            <ul class="contrib-tables__list" id="contrib-tables-list"></ul>
+        </section>
+
         <div id="contrib-all-teams" style="margin-top:24px">
             <p class="section-head__title" style="margin-bottom:10px">All contributor teams</p>
             <div id="contrib-all-list"></div>
@@ -65,6 +72,11 @@
             <p style="font-weight:700;margin-top:14px">At their table</p>
             <p class="footer-note" style="text-align:left" data-slot="at-the-table"></p>
 
+            <div data-slot="where">
+                <p style="font-weight:700;margin-top:14px">Find the table</p>
+                <p class="footer-note" style="text-align:left" data-slot="where-text"></p>
+            </div>
+
             <div style="margin-top:18px;display:flex;justify-content:flex-end">
                 <button type="button" class="btn btn--primary" data-action="close">Got it</button>
             </div>
@@ -75,5 +87,6 @@
 
     <script type="application/json" id="contribute-data">{!! json_encode([
         'contributorDayQuestId' => $contributorDayQuestId,
+        'tables' => $tables ?? [],
     ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</script>
 </x-attendee-layout>

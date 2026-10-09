@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\CachePurgeController;
 use App\Http\Controllers\Admin\CommandController;
+use App\Http\Controllers\Admin\ContributorTableController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DataRefreshController;
 use App\Http\Controllers\Admin\DealLeadController;
@@ -169,6 +170,10 @@ Route::prefix('admin')->group(function () {
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::get('events/{event}/qr', EventQrController::class)->name('admin.events.qr');
+        Route::get('events/{event}/tables', [ContributorTableController::class, 'index'])->name('admin.events.tables.index');
+        Route::post('events/{event}/tables', [ContributorTableController::class, 'store'])->name('admin.events.tables.store');
+        Route::put('events/{event}/tables/{table}', [ContributorTableController::class, 'update'])->name('admin.events.tables.update');
+        Route::delete('events/{event}/tables/{table}', [ContributorTableController::class, 'destroy'])->name('admin.events.tables.destroy');
         Route::post('events/{event}/roster/{entry}/suppress', [RosterController::class, 'suppress'])->name('admin.events.roster.suppress');
         Route::post('events/{event}/roster/{entry}/unsuppress', [RosterController::class, 'unsuppress'])->name('admin.events.roster.unsuppress');
         Route::post('events/{event}/roster/{entry}/release-claim', [RosterController::class, 'releaseClaim'])->name('admin.events.roster.release-claim');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
+use App\Models\ContributorTable;
 use App\Models\Event;
 use App\Models\Quest;
 use App\Support\EventData;
@@ -75,6 +76,8 @@ class EventPageController extends Controller
         return view('attendee.contribute', [
             'event' => $event,
             'contributorDayQuestId' => $contributorDayQuestId,
+            // Where each team's table is and who leads it, if the organizers said (ContributorTable).
+            'tables' => collect(ContributorTable::forEvent($event))->map->publicData()->values()->all(),
         ]);
     }
 

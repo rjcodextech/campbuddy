@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use Illuminate\Support\Facades\Cache;
+use App\Models\ContributorTable;
 use Illuminate\Database\QueryException;
 
 /**
@@ -133,6 +134,17 @@ class RosterRoles
             if ($entry->is_microsponsor ?? false) {
                 $found[$entry->id]['microsponsor'] = true;
             }
+        }
+
+        // Contributor Day table leads (ContributorTable): picked from the list, or typed names on it once.
+        $leads = ContributorTable::leadsOf($event);
+        foreach ($leads['ids'] as $id) {
+            if ($entries->contains('id', $id)) {
+                $found[$id]['table_lead'] = true;
+            }
+        }
+        foreach ($leads['names'] as $name) {
+            $mark(['name' => $name], 'table_lead');
         }
 
         $auto = self::shape($found, $talks);

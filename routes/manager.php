@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Manager\AttendeeController;
 use App\Http\Controllers\Manager\AuthController;
+use App\Http\Controllers\Manager\ContributorTableController;
 use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
 use App\Http\Controllers\Manager\QrController;
@@ -43,6 +44,10 @@ Route::prefix('manager')->group(function () {
         Route::get('events/{eventId}/quests', [QuestController::class, 'index'])->name('manager.events.quests');
         Route::get('events/{eventId}/qr', QrController::class)->name('manager.events.qr');
         Route::get('events/{eventId}/attendees', [AttendeeController::class, 'index'])->name('manager.events.attendees');
+        Route::get('events/{eventId}/tables', [ContributorTableController::class, 'index'])->name('manager.events.tables');
+        Route::post('events/{eventId}/tables', [ContributorTableController::class, 'store'])->name('manager.events.tables.store');
+        Route::put('events/{eventId}/tables/{tableId}', [ContributorTableController::class, 'update'])->whereNumber('tableId')->name('manager.events.tables.update');
+        Route::delete('events/{eventId}/tables/{tableId}', [ContributorTableController::class, 'destroy'])->whereNumber('tableId')->name('manager.events.tables.destroy');
         Route::post('events/{eventId}/attendees/{entryId}/roles', [AttendeeController::class, 'roles'])->whereNumber('entryId')->name('manager.events.attendees.roles');
         Route::post('events/{eventId}/quests', [QuestController::class, 'store'])->name('manager.events.quests.store');
         Route::put('events/{eventId}/quests/{questId}', [QuestController::class, 'update'])->name('manager.events.quests.update');

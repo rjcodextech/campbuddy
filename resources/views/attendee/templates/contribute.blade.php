@@ -15,6 +15,17 @@
         <span>
             <span class="action-card__title" data-slot="name"></span>
             <span class="action-card__desc" data-slot="desc"></span>
+            <span class="contrib-table-line" data-slot="table"><x-attendee.line-icon name="map-pin" /> <span data-slot="table-text"></span></span>
         </span>
     </button>
+</template>
+
+{{-- contribute.js: one Contributor Day table the organizers entered (ContributorTable). --}}
+<template id="tpl-contribute-table">
+    <li class="contrib-table">
+        <p class="contrib-table__team" data-slot="team"></p>
+        <p class="contrib-table__place" data-slot="place"><x-attendee.line-icon name="map-pin" /> <span data-slot="place-text"></span></p>
+        <p class="contrib-table__leads" data-slot="leads"><x-attendee.line-icon name="users" /> <span data-slot="leads-text"></span></p>
+        <p class="contrib-table__note" data-slot="note"></p>
+    </li>
 </template>

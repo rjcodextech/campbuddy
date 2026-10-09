@@ -15,7 +15,9 @@ export async function renderContribute(root) {
   if (!tagsEl) return;
 
   const eventId = Number(root.dataset.eventId);
-  const { contributorDayQuestId } = JSON.parse(document.getElementById('contribute-data').textContent);
+  const { contributorDayQuestId, tables = [] } = JSON.parse(document.getElementById('contribute-data').textContent);
+  tablesByTeam = groupTables(tables);
+  renderTables(tables);
   const selected = new Set();
 
   tagsEl.replaceChildren(
@@ -103,6 +105,42 @@ function setupContributorDay(answer, setChip) {
   });
 }
 
+// Contributor Day tables the organizers entered (ContributorTable), by team id.
+let tablesByTeam = new Map();
+
+/** team id → its tables; "other" tables aren't tied to a curated team. */
+export function groupTables(tables) {
+  const map = new Map();
+  (tables ?? []).forEach((t) => {
+    if (!t || t.team === 'other') return;
+    map.set(t.team, [...(map.get(t.team) ?? []), t]);
+  });
+  return map;
+}
+
+/** "Floor 2 · Hall B · Table 5 · Leads: Asha, Ravi" for one team's tables. */
+export function whereText(tables) {
+  return (tables ?? [])
+    .map((t) => [t.place, t.leads?.length ? `Leads: ${t.leads.join(', ')}` : ''].filter(Boolean).join(' · '))
+    .filter(Boolean)
+    .join(' | ');
+}
+
+function renderTables(tables) {
+  const section = document.getElementById('contrib-tables');
+  if (!section || !tables.length) return;
+
+  document.getElementById('contrib-tables-list').replaceChildren(...tables.map((t) => render('tpl-contribute-table', {
+    team: t.name,
+    place: Boolean(t.place),
+    'place-text': t.place,
+    leads: Boolean(t.leads?.length),
+    'leads-text': t.leads?.length ? `Table ${t.leads.length === 1 ? 'lead' : 'leads'}: ${t.leads.join(', ')}` : '',
+    note: t.note || null,
+  })));
+  section.hidden = false;
+}
+
 function scoreTeam(team, answers) {
   if (answers.length === 0) return 0;
   return team.matches.filter((m) => answers.includes(m)).length;
@@ -132,11 +170,15 @@ function renderAllTeams(eventId, questId) {
 }
 
 function teamCard(team) {
+  const where = whereText(tablesByTeam.get(team.id));
+
   return render('tpl-contribute-team-card', {
     card: { attrs: { 'data-team-id': team.id } },
     emoji: lineIcon(team.icon),
     name: team.name,
     desc: team.description,
+    table: Boolean(where),
+    'table-text': where,
   });
 }
 
@@ -162,6 +204,8 @@ async function showTeamDetail(team, eventId, questId) {
     'who-it-suits': team.whoItSuits,
     'beginner-task': team.beginnerTask,
     'at-the-table': team.atTheTable,
+    where: { attrs: { hidden: !whereText(tablesByTeam.get(team.id)) } },
+    'where-text': whereText(tablesByTeam.get(team.id)),
   });
 
   dialog.showModal();

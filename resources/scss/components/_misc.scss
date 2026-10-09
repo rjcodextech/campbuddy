@@ -195,3 +195,57 @@
     text-underline-offset: 2px;
     cursor: pointer;
 }
+
+// --- Contributor Day tables on the Contribute tab (contribute.js) ------------
+.contrib-tables {
+    margin-top: 14px;
+}
+
+.contrib-tables__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contrib-table {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+
+    &:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+
+    p {
+        margin: 0;
+        font-size: 0.88rem;
+    }
+}
+
+.contrib-table__team {
+    font-weight: 700;
+    font-size: 1rem !important;
+}
+
+.contrib-table__place,
+.contrib-table__leads {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px !important;
+}
+
+.contrib-table__note {
+    margin-top: 4px !important;
+    color: var(--muted);
+}
+
+.contrib-table-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--brand-primary);
+}

@@ -77,3 +77,5 @@ Full CRUD on events, not just approve/view — an admin is never limited to what
 > **Admin → Roster (9 Oct 2026):** a *Camp Card* badge on entries whose owner shows their Camp Card on the attendee list, and **Remove card** (`admin.events.roster.remove-card`) to take it off — for abuse or a name claimed by the wrong person.
 
 > **Roles (10 Oct 2026):** Admin → Roster has a *Roles* button per visible person (tick roles; "auto" = found from the WordCamp site); event managers get the same on a new **Attendees** tab for their own events. See [3.3](03-functional-requirements/03-roster-ingestion.md).
+
+> **Contributor Day tab (10 Oct 2026):** Admin → Event → *Contributor Day* (and the manager's same tab) — see [3.9](03-functional-requirements/09-contribute.md).

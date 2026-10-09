@@ -59,6 +59,7 @@ class EveryPageAndAccessTest extends TestCase
         FreeStealSuggestion::create(['event_id' => $this->event->id, 'name' => 'Cool', 'url' => 'https://c.example']);
         $entry = AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Asha Rao', 'links' => [['url' => 'https://github.com/asha', 'type' => 'website']], 'content_hash' => 'h1', 'is_suppressed' => false]);
         $quest = Quest::create(['event_id' => $this->event->id, 'source' => 'event', 'title' => 'Say hi', 'description' => 'To someone', 'sort_order' => 1, 'is_active' => true]);
+        $table = \App\Models\ContributorTable::create(['event_id' => $this->event->id, 'team' => 'polyglots', 'leads' => [['name' => 'Asha Rao', 'roster_id' => $entry->id]]]);
         $manager = EventManager::factory()->create(['is_active' => true]);
         $manager->events()->attach($this->event->id);
 
@@ -75,6 +76,8 @@ class EveryPageAndAccessTest extends TestCase
             'quest' => $quest->id,
             'questId' => $quest->id,
             'entryId' => $entry->id,
+            'table' => $table->id,
+            'tableId' => $table->id,
             'name' => 'campbuddy:prune-fetch-log',
             // Breeze's e-mail verification link.
             'id' => 1,

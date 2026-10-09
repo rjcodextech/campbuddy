@@ -5,7 +5,7 @@
 
       <x-admin.event-nav :event="$event" current="quests" />
 
-    current: details | quests | offers | roster | leads | qr
+    current: details | quests | offers | roster | leads | tables | qr
 --}}
 @props(['event', 'current'])
 
@@ -20,6 +20,7 @@
         'offers' => ['Deals', route('admin.events.offers.index', $event), $event->offers_count],
         'roster' => ['Roster', route('admin.events.roster.index', $event), $event->attendee_roster_count],
         'leads' => ['Deal leads', route('admin.events.deal-leads.index', $event), $leadCount],
+        'tables' => ['Contributor Day', route('admin.events.tables.index', $event), null],
         'qr' => ['QR codes', route('admin.events.qr', $event), null],
     ];
 

@@ -216,8 +216,9 @@ class DiscoveryIdentityTest extends TestCase
         $this->assertFalse($rows['Person 1']['open_to_meet']);
         $this->assertSame($ada->id, $rows['Ada Lovelace']['id']);
         // A fixed number whatever the list's length: the page, the open-to-meet
-        // subquery, the shared Camp Cards, and the roles (RosterRoles: the list
-        // and the organizer / speaker / volunteer feeds, once a minute).
-        $this->assertLessThan(10, $queries);
+        // subquery, the shared Camp Cards, and the roles (RosterRoles, once a
+        // minute: the list, the organizer / speaker / volunteer feeds, the
+        // Contributor Day tables and the hand marks).
+        $this->assertLessThan(12, $queries);
     }
 }
