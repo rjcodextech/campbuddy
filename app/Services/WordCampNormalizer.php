@@ -93,12 +93,32 @@ class WordCampNormalizer
                 'description_html' => $contentHtml,
                 'website' => $this->httpUrl($sponsor['meta']['_wcpt_sponsor_website'] ?? null),
                 // Shown as an <img> in CampBuddy's pages: web addresses only.
-                'logo_url' => SafeUrl::web($this->client->extractFirstImage($contentHtml)),
+                'logo_url' => SafeUrl::web($this->client->extractFirstImage($contentHtml)) ?? $this->featuredImage($sponsor),
                 'tier_ids' => $tierIds,
                 'tier_names' => $this->names($tierIds, $tierNames),
                 'link' => $this->httpUrl($sponsor['link'] ?? null),
             ];
         }, $sponsors);
+    }
+
+    /**
+     * The post's featured image (asked for with _embed=wp:featuredmedia): a
+     * copy about 768 px wide when the site made one (sharp in print, light on
+     * a phone), else the file itself; web addresses only.
+     *
+     * @param  array<string, mixed>  $post
+     */
+    private function featuredImage(array $post): ?string
+    {
+        $media = $post['_embedded']['wp:featuredmedia'][0] ?? null;
+        if (! is_array($media)) {
+            return null;
+        }
+        $sizes = $media['media_details']['sizes'] ?? [];
+
+        return SafeUrl::web($sizes['medium_large']['source_url'] ?? null)
+            ?? SafeUrl::web($sizes['large']['source_url'] ?? null)
+            ?? SafeUrl::web($media['source_url'] ?? null);
     }
 
     /**

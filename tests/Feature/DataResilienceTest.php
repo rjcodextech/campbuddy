@@ -218,6 +218,21 @@ class DataResilienceTest extends TestCase
         $this->assertNull($sponsor['logo_url']);
     }
 
+    public function test_a_sponsor_logo_comes_from_the_featured_image_when_the_text_has_none(): void
+    {
+        $normalizer = new WordCampNormalizer(new WordCampRestClient(self::SITE));
+        $media = ['source_url' => 'https://x.wordcamp.org/files/acme.png', 'media_details' => ['sizes' => ['medium_large' => ['source_url' => 'https://x.wordcamp.org/files/acme-768x300.png']]]];
+
+        [$sponsor] = $normalizer->normalizeSponsors([['id' => 1, 'title' => ['rendered' => 'Acme'], 'content' => ['rendered' => ''], '_embedded' => ['wp:featuredmedia' => [$media]]]], []);
+        $this->assertSame('https://x.wordcamp.org/files/acme-768x300.png', $sponsor['logo_url']);
+
+        [$sponsor] = $normalizer->normalizeSponsors([['id' => 1, 'title' => ['rendered' => 'Acme'], 'content' => ['rendered' => '<img src="https://x.wordcamp.org/files/in-text.png">'], '_embedded' => ['wp:featuredmedia' => [$media]]]], []);
+        $this->assertSame('https://x.wordcamp.org/files/in-text.png', $sponsor['logo_url'], 'an image in the text still comes first');
+
+        [$sponsor] = $normalizer->normalizeSponsors([['id' => 1, 'title' => ['rendered' => 'Acme'], 'content' => ['rendered' => ''], '_embedded' => ['wp:featuredmedia' => [['source_url' => 'javascript:alert(1)']]]]], []);
+        $this->assertNull($sponsor['logo_url']);
+    }
+
     public function test_a_long_description_is_trimmed_at_a_word(): void
     {
         $normalizer = new WordCampNormalizer(new WordCampRestClient(self::SITE));

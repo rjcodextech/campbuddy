@@ -48,6 +48,8 @@ Route::prefix('manager')->group(function () {
         Route::post('events/{eventId}/social/colors', [SocialController::class, 'colors'])->name('manager.events.social.colors');
         Route::get('events/{eventId}/social/image', [SocialController::class, 'image'])->name('manager.events.social.image');
         Route::post('events/{eventId}/social/site', [SocialController::class, 'site'])->name('manager.events.social.site');
+        Route::post('events/{eventId}/social/art', [SocialController::class, 'art'])->middleware('throttle:20,1')->name('manager.events.social.art');
+        Route::post('events/{eventId}/social/art/remove', [SocialController::class, 'removeArt'])->name('manager.events.social.art.remove');
         Route::post('events/{eventId}/social/webhook', [SocialController::class, 'webhook'])->name('manager.events.social.webhook');
         Route::post('events/{eventId}/social/publish', [SocialController::class, 'publish'])->middleware('throttle:20,1')->name('manager.events.social.publish');
         Route::get('events/{eventId}/attendees', [AttendeeController::class, 'index'])->name('manager.events.attendees');

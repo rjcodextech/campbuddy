@@ -45,23 +45,38 @@
                 @endif
             </div>
             <div>
-                <p class="cb-label">Artwork on the site</p>
-                @if ($site['art'] !== [])
-                    <p class="mb-2 text-xs text-muted">Patterns go beside the logo and in the background; an illustration (a skyline, a motif) sits above the footer; a photo becomes the background of the Gradient style. All are recoloured in the brand colours.</p>
-                    <div class="flex flex-wrap gap-3">
-                        @foreach ($site['art'] as $i => $art)
-                            <label class="flex w-32 flex-col gap-1 text-xs">
-                                <span class="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
-                                    <img src="{{ $imageUrl }}?u={{ urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
-                                </span>
-                                <span class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> {{ ucfirst($art['kind']) }}</span>
-                                <span class="truncate text-muted" title="{{ $art['name'] }}">{{ $art['name'] }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-sm text-muted">No patterns or illustrations found on the site: CampBuddy draws its own shapes.</p>
-                @endif
+                <p class="cb-label">Artwork ({{ count($site['art']) }} of {{ \App\Support\SiteTheme::SLOTS }})</p>
+                <p class="mb-2 text-xs text-muted">From the site's pages and media library. A pattern makes the border strip and the background; an illustration (a skyline, a motif) stands at the foot of every card, in its own colours; a photo is the background of the Gradient style. Empty places take your own upload.</p>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    @foreach ($site['art'] as $i => $art)
+                        <div class="flex flex-col gap-1 text-xs">
+                            <span class="flex h-24 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
+                                <img src="{{ ($art['uploaded'] ?? false) ? $art['url'] : $imageUrl.'?u='.urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
+                            </span>
+                            <label class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> {{ ucfirst($art['kind']) }}{{ ($art['uploaded'] ?? false) ? ' · uploaded' : '' }}</label>
+                            <span class="truncate text-muted" title="{{ $art['name'] }}">{{ $art['name'] }}</span>
+                            <form method="POST" action="{{ $artRemoveUrl }}" x-data x-on:submit="if (! confirm('Take this artwork off?')) $event.preventDefault()">
+                                @csrf
+                                <input type="hidden" name="piece" value="{{ $art['id'] }}">
+                                <x-button variant="link" size="sm">Take off</x-button>
+                            </form>
+                        </div>
+                    @endforeach
+                    @for ($slot = count($site['art']); $slot < \App\Support\SiteTheme::SLOTS; $slot++)
+                        <form method="POST" action="{{ $artUrl }}" enctype="multipart/form-data" class="flex flex-col gap-1.5 rounded-lg border border-dashed border-line p-2 text-xs">
+                            @csrf
+                            <span class="font-medium text-muted">Empty place {{ $slot + 1 }}</span>
+                            <input type="file" name="art" accept="image/png,image/jpeg,image/webp" required class="w-full text-xs file:mr-2 file:rounded file:border-0 file:bg-paper-soft file:px-2 file:py-1">
+                            <select name="kind" class="cb-input py-1 text-xs" aria-label="Kind of artwork">
+                                <option value="illustration">Illustration</option>
+                                <option value="pattern">Pattern</option>
+                                <option value="photo">Photo</option>
+                            </select>
+                            <x-button type="submit" variant="secondary" size="sm" icon="upload">Upload</x-button>
+                        </form>
+                    @endfor
+                </div>
+                @error('art') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
             </div>
         </div>
         <x-slot:footer>

@@ -51,12 +51,29 @@ class SocialMediaTest extends TestCase
         $this->assertSame('#WordCamp #WordPress #WCRajasthan #WCRajasthan2026', SocialKit::hashtags($this->event));
 
         $posts = collect(SocialKit::posts($this->event, CarbonImmutable::parse('2026-09-21 10:00', 'Asia/Kolkata')))->keyBy('key');
-        $this->assertSame('12 days to go', $posts['countdown']['headline']);
+        $this->assertStringContainsString('12', $posts['countdown']['headline']);
+        $this->assertStringContainsString('12 days to go until WordCamp Rajasthan 2026.', $posts['countdown']['caption']);
         $this->assertSame('2 sessions · 1 speakers', $posts['schedule']['line']);
-        foreach ($posts->except(['today', 'spotlight']) as $key => $post) {
+        $this->assertFalse($posts->has('today'), 'sessions without times: no empty day card');
+        $this->assertFalse($posts->has('spotlight'));
+        foreach ($posts as $key => $post) {
             $this->assertStringContainsString('CampBuddy', $post['caption'], "{$key}: CampBuddy is talking");
             $this->assertStringContainsString("utm_campaign=wordcamp-rajasthan-2026&utm_content={$key}", $post['caption'], "{$key}: its own tagged link");
         }
+    }
+
+    public function test_every_event_gets_its_own_words_and_the_sites_tagline(): void
+    {
+        $other = Event::create(['slug' => 'wordcamp-pune-2027', 'display_name' => 'WordCamp Pune 2027', 'source_site_url' => 'https://pune.wordcamp.org/2027', 'status' => 'active', 'is_visible' => true, 'starts_on' => '2027-01-10']);
+        $words = fn (Event $e) => collect(SocialKit::posts($e))->map(fn ($p) => str_replace([$e->display_name, SocialKit::shortName($e), SocialKit::link($e, $p['key'])], '', $p['headline'].'|'.$p['line'].'|'.$p['kicker']))->implode("\n");
+        $this->assertNotSame($words($this->event), $words($other), 'two events, different wording');
+        $this->assertSame(SocialKit::posts($this->event), SocialKit::posts($this->event->fresh()), 'the same event, the same words every time');
+
+        $this->event->forceFill(['site_theme' => ['colors' => [], 'fonts' => [], 'art' => [], 'tagline' => 'Padharo mhare des', 'fetched_at' => now()->toIso8601String()]])->save();
+        $posts = collect(SocialKit::posts($this->event->fresh()))->keyBy('key');
+        $this->assertSame('Padharo mhare des', $posts['save-the-date']['kicker']);
+        $this->assertStringStartsWith("Padharo mhare des.\n\n", $posts['save-the-date']['caption']);
+        $this->assertStringStartsWith("Padharo mhare des.\n\n", $posts['thank-you']['caption']);
     }
 
     public function test_more_posts_get_the_schedule_speakers_sponsors_and_tables(): void

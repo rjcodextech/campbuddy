@@ -5,7 +5,8 @@ namespace App\Services;
 use App\Support\SafeUrl;
 
 /**
- * Reads a WordCamp site's own look from its home page, for the Social media
+ * Reads a WordCamp site's own look from its home page (and the artwork in
+ * its media library, when given), for the Social media
  * designs: the colours its theme defines (block-theme presets the site
  * changed or added, and colours its own CSS uses most), its heading and body
  * fonts (the @font-face files the site serves), and its artwork — background
@@ -28,15 +29,16 @@ class SiteThemeScraper
 
     private const ART_WORDS = '/(pattern|motif|tile|jali|texture|skyline|illustration|sprig|wall|banner|hero|backdrop|bg|background|mandala|border|frame|doodle)/i';
 
-    private const SKIP_WORDS = '/(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge)/i';
+    // Graphics with words or prices on them (ticket tiers, a venue map, a flyer) aren't artwork either.
+    private const SKIP_WORDS = '/(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge|ticket|price|pricing|map|flyer|poster|screenshot|schedule|cta)/i';
 
     /** @return array{colors: list<array{name: string, hex: string}>, fonts: array<string, array{family: string, faces: list<array{url: string, weight: string, style: string, range: ?string}>}>, art: list<array{url: string, kind: string, name: string}>} */
-    public function parse(string $html, array $skipUrls = []): array
+    public function parse(string $html, array $skipUrls = [], array $mediaUrls = []): array
     {
         return [
             'colors' => $this->colors($html),
             'fonts' => $this->fonts($html),
-            'art' => $this->art($html, $skipUrls),
+            'art' => $this->art($html, $skipUrls, $mediaUrls),
         ];
     }
 
@@ -123,7 +125,8 @@ class SiteThemeScraper
     }
 
     /** @return list<array{url: string, kind: string, name: string}> */
-    private function art(string $html, array $skipUrls): array
+    /** @param  list<string>  $mediaUrls  the site's media library (any page's uploads), named like artwork to count */
+    private function art(string $html, array $skipUrls, array $mediaUrls = []): array
     {
         $skip = array_flip(array_map(fn ($u) => $this->original((string) $u), array_filter($skipUrls)));
         $art = [];
@@ -136,7 +139,7 @@ class SiteThemeScraper
 
         // Illustrations from the site's media library.
         preg_match_all('/https?:\/\/[a-z0-9.-]*wordcamp\.org\/[^\s"\'()<>]*\/files\/[^\s"\'()<>]+\.(?:png|jpe?g|webp)/i', $html, $media);
-        foreach ($media[0] as $url) {
+        foreach ([...$media[0], ...$mediaUrls] as $url) {
             $this->addArt($art, $url, $skip, false);
         }
 

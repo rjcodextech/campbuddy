@@ -70,7 +70,9 @@ class WordCampRestClient
     /** @return array<int, array<string, mixed>> */
     public function fetchSponsors(): array
     {
-        return $this->fetchCollection('sponsors');
+        // Most WordCamp sites keep the sponsor's logo as the post's featured
+        // image, not in its text: ask for it with the post.
+        return $this->fetchCollection('sponsors', ['_embed' => 'wp:featuredmedia']);
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -165,9 +167,10 @@ class WordCampRestClient
      * a site that has turned the REST API off — is a failure too, never
      * silently read as "this event has no sessions".
      *
+     * @param  array<string, string>  $query  extra query arguments (e.g. _embed)
      * @return array<int, array<string, mixed>>
      */
-    private function fetchCollection(string $endpoint): array
+    private function fetchCollection(string $endpoint, array $query = []): array
     {
         $items = [];
         $page = 1;
@@ -180,6 +183,7 @@ class WordCampRestClient
                 ->get("{$this->baseUrl}/wp-json/wp/v2/{$endpoint}", [
                     'per_page' => 100,
                     'page' => $page,
+                    ...$query,
                 ])
                 ->throw();
 

@@ -357,11 +357,12 @@ function drawContain(ctx, img, x, y, w, h) {
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
 
-function drawCover(ctx, img, x, y, w, h) {
+/** Fills the box, cropping the rest; `focusY` 0 keeps the top, 0.5 the middle (faces sit high in a photo). */
+function drawCover(ctx, img, x, y, w, h, focusY = 0.5) {
   const ratio = Math.max(w / img.width, h / img.height);
   const dw = img.width * ratio;
   const dh = img.height * ratio;
-  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) * focusY, dw, dh);
 }
 
 function circlePhoto(ctx, img, cx, cy, r, ring, ringColor, fill, ink, name) {
@@ -544,7 +545,7 @@ const artInfos = new WeakMap();
  */
 export function artInfo(img) {
   if (artInfos.has(img)) return artInfos.get(img);
-  const info = { mono: false, opaque: false, aspect: img.width / img.height };
+  const info = { mono: false, opaque: false, aspect: img.width / img.height, lum: 0.5 };
   try {
     const c = document.createElement('canvas');
     c.width = c.height = 96;
@@ -568,6 +569,7 @@ export function artInfo(img) {
     }
     info.opaque = solid / (d.length / 4) > 0.9;
     if (n) {
+      info.lum = lum / n;
       const spread = Math.sqrt(Math.max(0, lum2 / n - (lum / n) ** 2));
       info.mono = !info.opaque && sat / n < 0.15 && spread < 0.12;
     }
@@ -580,7 +582,9 @@ export function artInfo(img) {
 
 /** The artwork as it is drawn on `under`: its own colours, or (one-colour art) the brand colour that reads there. */
 function artFor(img, pal, under) {
-  if (!artInfo(img).mono) return img;
+  const info = artInfo(img);
+  // Its own colours, unless they'd vanish on this ground (a cream skyline on a cream band).
+  if (!info.mono && Math.abs(info.lum - luminance(hexToRgb(under))) >= 0.3) return img;
   return recolour(img, textOn(under, pal.primary, pal.paper) === pal.primary ? pal.primary : pal.paper);
 }
 
@@ -1434,7 +1438,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.shadowColor = 'transparent';
     const inner = pw - 50;
     ctx.save(); ctx.beginPath(); ctx.rect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.clip();
-    if (photo) drawCover(ctx, photo, -inner / 2, -ph / 2 + 25, inner, inner);
+    if (photo) drawCover(ctx, photo, -inner / 2, -ph / 2 + 25, inner, inner, 0.3);
     else { ctx.fillStyle = pal.soft; ctx.fillRect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.fillStyle = pal.primary; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(inner * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), 0, -ph / 2 + 25 + inner * 0.64); }
     ctx.restore();
     ctx.fillStyle = pal.ink;
@@ -1501,11 +1505,14 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = wall;
     roundRect(ctx, W / 2 - 46, by + 16, 92, 20, 10); ctx.fill();
     const inner = bh - (square ? 100 : 130) - bandH;
-    const r = Math.min(bw * (tall ? 0.34 : 0.26), inner * (talk ? 0.26 : 0.3));
+    // The name is measured first, so a two-line name never runs into the role band: the photo gives way.
+    const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 2, 900);
+    const nameH = n.lines.length * n.size * 1.06 + 14;
+    const r = Math.max(40, Math.min(bw * (tall ? 0.34 : 0.26), inner * (talk ? 0.26 : 0.3), (inner - 26 - nameH - 22 - 8) / 2));
     const cy = by + (square ? 100 : 130) + 26 + r;
     circlePhoto(ctx, photo, W / 2, cy, r, 8, rc, pal.soft, pal.primary, person.name);
     ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
-    const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 2, 900);
+    ctx.font = `900 ${n.size}px ${FONT}`;
     let y = cy + r + 14;
     n.lines.forEach((l) => { y += n.size; ctx.fillText(l, W / 2, y); y += n.size * 0.06; });
     const room = by + bh - bandH - 16 - y;
@@ -1523,8 +1530,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
 
   if (design === 'split') {
     // Photo across the top, a block in the role's tone with the words below.
-    const ph = Math.round(fTop * (square ? 0.5 : 0.56));
-    if (photo) drawCover(ctx, photo, 0, 0, W, ph);
+    const ph = Math.round(fTop * (square ? 0.54 : 0.62));
+    if (photo) drawCover(ctx, photo, 0, 0, W, ph, 0.22);
     else { ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = pal.primary; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
     const g = ctx.createLinearGradient(0, ph * 0.5, 0, ph);
     g.addColorStop(0, alpha(rc, 0));

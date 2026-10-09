@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\EnsureEventManager;
 use App\Models\Event;
+use App\Models\EventManager;
 use App\Models\User;
 use App\Services\SiteThemeScraper;
 use App\Support\EventData;
 use App\Support\SiteTheme;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -81,6 +84,78 @@ HTML;
             ->assertSee('From the WordCamp site')->assertSee('#c33a19')->assertSee('Newsreader')->assertSee('jaipur-skyline');
         $this->post(route('admin.events.social.site', $event))->assertRedirect()->assertSessionHas('status');
         Http::assertSentCount(2);
+    }
+
+    public function test_artwork_comes_from_the_whole_media_library_and_the_tagline_from_the_site(): void
+    {
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        $file = fn (string $name) => ['source_url' => "https://jaipur.wordcamp.org/2026/files/2026/09/{$name}"];
+        Http::fake([
+            self::SITE.'/' => Http::response($this->html()),
+            self::SITE.'/wp-json/wp/v2/media*' => Http::response([$file('hawa-mahal-illustration.png'), $file('venue-map.png'), $file('tickets-pricing-banner.png'), $file('bandhani-pattern.png'), $file('ajit_profile.jpg')]),
+            self::SITE.'/wp-json/*' => Http::response(['description' => 'Oct 3–4, Padharo mhare des']),
+        ]);
+
+        $theme = SiteTheme::refresh($event);
+        $names = array_column($theme['art'], 'name');
+        $this->assertContains('hawa-mahal-illustration', $names, 'from another page, via the media library');
+        $this->assertContains('bandhani-pattern', $names);
+        $this->assertNotContains('venue-map', $names, 'a map is not artwork');
+        $this->assertNotContains('tickets-pricing-banner', $names, 'nor a ticket price graphic');
+        $this->assertLessThanOrEqual(SiteTheme::SLOTS, count($theme['art']));
+        $this->assertSame('Padharo mhare des', $theme['tagline'], 'the date in front of the tagline is dropped');
+        $this->assertSame('Padharo mhare des', SiteTheme::tagline($event->fresh()));
+    }
+
+    public function test_wordpress_placeholder_taglines_are_ignored(): void
+    {
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        Http::fake([self::SITE.'/' => Http::response($this->html()), self::SITE.'/wp-json/wp/v2/media*' => Http::response([]), self::SITE.'/wp-json/*' => Http::response(['description' => 'Just another WordCamp'])]);
+
+        $this->assertNull(SiteTheme::refresh($event)['tagline']);
+    }
+
+    public function test_empty_places_take_an_upload_and_artwork_can_be_taken_off(): void
+    {
+        Storage::fake('public');
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        Http::fake([self::SITE.'/' => Http::response($this->html()), self::SITE.'/wp-json/*' => Http::response([])]);
+        SiteTheme::refresh($event);
+        $this->actingAs(User::factory()->create());
+
+        $this->get(route('admin.events.social', $event))->assertOk()->assertSee('Artwork (2 of 5)')->assertSee('Empty place 3');
+
+        $this->post(route('admin.events.social.art', $event), ['art' => UploadedFile::fake()->image('camel.png', 800, 300), 'kind' => 'illustration'])
+            ->assertRedirect()->assertSessionHas('status', 'Artwork added.');
+        $theme = SiteTheme::get($event->fresh());
+        $uploaded = collect($theme['art'])->firstWhere('uploaded', true);
+        $this->assertSame('camel', $uploaded['name']);
+        Storage::disk('public')->assertExists(substr($uploaded['url'], strlen('/storage/')));
+
+        $this->post(route('admin.events.social.art', $event), ['art' => UploadedFile::fake()->image('tiny.png', 50, 50), 'kind' => 'pattern'])->assertSessionHasErrors('art');
+        $this->post(route('admin.events.social.art', $event), ['art' => UploadedFile::fake()->create('x.svg', 10, 'image/svg+xml'), 'kind' => 'pattern'])->assertSessionHasErrors('art');
+
+        // An uploaded piece is deleted; one from the site stays off after reading the site again.
+        $this->post(route('admin.events.social.art.remove', $event), ['piece' => $uploaded['id']])->assertSessionHas('status', 'Artwork taken off.');
+        Storage::disk('public')->assertMissing(substr($uploaded['url'], strlen('/storage/')));
+        $skyline = collect(SiteTheme::get($event->fresh())['art'])->firstWhere('name', 'jaipur-skyline');
+        $this->post(route('admin.events.social.art.remove', $event), ['piece' => $skyline['id']]);
+        $this->post(route('admin.events.social.site', $event));
+        $this->assertNotContains('jaipur-skyline', array_column(SiteTheme::get($event->fresh())['art'], 'name'));
+    }
+
+    public function test_a_manager_uploads_for_their_own_event_only_and_it_is_logged(): void
+    {
+        Storage::fake('public');
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        $other = Event::create(['slug' => 'wordcamp-other-2026', 'display_name' => 'WordCamp Other 2026', 'source_site_url' => 'https://other.wordcamp.org/2026', 'status' => 'active', 'is_visible' => true]);
+        $manager = EventManager::create(['name' => 'Mona', 'email' => 'mona@example.test', 'phone' => '+919800000000', 'password' => 'secret-password-1', 'is_active' => true]);
+        $manager->events()->sync([$event->id]);
+        $this->actingAs($manager, EnsureEventManager::GUARD);
+
+        $this->post(route('manager.events.social.art', $event->id), ['art' => UploadedFile::fake()->image('fort.png', 800, 300), 'kind' => 'illustration'])->assertSessionHas('status', 'Artwork added.');
+        $this->assertDatabaseHas('event_manager_changes', ['event_id' => $event->id, 'section' => 'social', 'action' => 'added']);
+        $this->post(route('manager.events.social.art', $other->id), ['art' => UploadedFile::fake()->image('x.png', 800, 300), 'kind' => 'illustration'])->assertNotFound();
     }
 
     public function test_a_site_that_cannot_be_read_leaves_the_page_working(): void

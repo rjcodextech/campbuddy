@@ -34,6 +34,8 @@ class SocialController extends Controller
             'colorsUrl' => route('manager.events.social.colors', $event),
             'imageUrl' => route('manager.events.social.image', $event),
             'siteUrl' => route('manager.events.social.site', $event),
+            'artUrl' => route('manager.events.social.art', $event),
+            'artRemoveUrl' => route('manager.events.social.art.remove', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('manager.events.social.publish', $event) : null,
             'webhookUrl' => route('manager.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -85,6 +87,27 @@ class SocialController extends Controller
         $theme = SiteTheme::refresh($event);
 
         return redirect()->route('manager.events.social', $event)->with('status', $theme['error'] ?? 'Read the WordCamp site again: '.count($theme['colors']).' colours, '.count($theme['fonts']).' fonts, '.count($theme['art']).' pieces of artwork.');
+    }
+
+    /** Artwork uploaded into an empty slot. */
+    public function art(Request $request, string $eventId): RedirectResponse
+    {
+        $event = $this->managedEvent($request, $eventId);
+        [$file, $kind] = SocialForms::artwork($request);
+        $status = SiteTheme::upload($event, $file, $kind);
+        ManagerActivity::record($request->user(EnsureEventManager::GUARD), $event, 'social', 'added', 'Artwork '.ManagerActivity::quote($file->getClientOriginalName()));
+
+        return redirect()->route('manager.events.social', $event)->with('status', $status);
+    }
+
+    /** Takes a piece of artwork off (an uploaded one is deleted). */
+    public function removeArt(Request $request, string $eventId): RedirectResponse
+    {
+        $event = $this->managedEvent($request, $eventId);
+        $status = SiteTheme::remove($event, (string) $request->input('piece'));
+        ManagerActivity::record($request->user(EnsureEventManager::GUARD), $event, 'social', 'removed', 'Artwork');
+
+        return redirect()->route('manager.events.social', $event)->with('status', $status);
     }
 
     /** The old "QR codes" tab now lives on this page. */
