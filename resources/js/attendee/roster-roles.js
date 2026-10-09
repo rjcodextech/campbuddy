@@ -1,15 +1,19 @@
 // The attendee list's role marks (Explore → People): who is also an
-// organizer, speaker, volunteer or microsponsor of this WordCamp — worked out
-// on the server (App\Support\RosterRoles) and sent with each roster entry.
+// organizer, speaker, volunteer, microsponsor, sponsor, media partner or table
+// lead of this WordCamp — worked out on the server (App\Support\RosterRoles,
+// plus roles an admin or manager set by hand) and sent with each roster entry.
 // Pure helpers here; people.js draws the badges and the filter chips.
 
-export const ROLE_ORDER = ['organizer', 'speaker', 'volunteer', 'microsponsor'];
+export const ROLE_ORDER = ['organizer', 'speaker', 'volunteer', 'microsponsor', 'sponsor', 'media_partner', 'table_lead'];
 
 export const ROLE_LABELS = {
   organizer: 'Organizer',
   speaker: 'Speaker',
   volunteer: 'Volunteer',
   microsponsor: 'Microsponsor',
+  sponsor: 'Sponsor',
+  media_partner: 'Media Partner',
+  table_lead: 'Table Lead',
 };
 
 /** Plural chip labels: "Organizers 15". */
@@ -19,6 +23,9 @@ export const ROLE_FILTER_LABELS = {
   speaker: 'Speakers',
   volunteer: 'Volunteers',
   microsponsor: 'Microsponsors',
+  sponsor: 'Sponsors',
+  media_partner: 'Media Partners',
+  table_lead: 'Table Leads',
 };
 
 export const ALL = 'all';

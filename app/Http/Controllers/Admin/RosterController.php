@@ -8,6 +8,9 @@ use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
 use App\Models\SharedCampCard;
+use App\Support\RosterMarks;
+use App\Support\RosterRoles;
+use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +45,16 @@ class RosterController extends Controller
             $roster = $query(false);
         }
 
-        return view('admin.roster.index', ['event' => $event, 'roster' => $roster, 'q' => $request->string('q')->toString()]);
+        $roles = RosterRoles::withAutomatic($event);
+
+        return view('admin.roster.index', [
+            'event' => $event,
+            'roster' => $roster,
+            'q' => $request->string('q')->toString(),
+            'roles' => $roles['marked'],
+            'autoRoles' => $roles['auto'],
+            'marksReady' => RosterMarks::available(),
+        ]);
     }
 
     public function suppress(Event $event, AttendeeRoster $entry): RedirectResponse
@@ -67,6 +79,18 @@ class RosterController extends Controller
         DiscoveryProfile::where('attendee_roster_id', $entry->id)->update(['attendee_roster_id' => null]);
 
         return redirect()->route('admin.events.roster.index', $event)->with('status', "{$entry->name} is no longer linked to a discovery profile — they can now pick their own name.");
+    }
+
+    /** Sets one attendee's roles by hand (RosterMarks). */
+    public function roles(Event $event, AttendeeRoster $entry, Request $request): RedirectResponse
+    {
+        Gate::authorize('update', $event);
+        abort_unless($entry->event_id === $event->id, 404);
+        $request->validate(['roles' => ['array'], 'roles.*' => ['string', Rule::in(RosterRoles::ROLES)]]);
+
+        RosterMarks::set($event, $entry, $request->input('roles', []), 'admin: '.$request->user()->name);
+
+        return back()->with('status', "Roles of {$entry->name} saved.");
     }
 
     /** Takes a shared Camp Card off the attendee list (abuse, or a name claimed by the wrong person). */

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Manager\AttendeeController;
 use App\Http\Controllers\Manager\AuthController;
 use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
@@ -41,6 +42,8 @@ Route::prefix('manager')->group(function () {
 
         Route::get('events/{eventId}/quests', [QuestController::class, 'index'])->name('manager.events.quests');
         Route::get('events/{eventId}/qr', QrController::class)->name('manager.events.qr');
+        Route::get('events/{eventId}/attendees', [AttendeeController::class, 'index'])->name('manager.events.attendees');
+        Route::post('events/{eventId}/attendees/{entryId}/roles', [AttendeeController::class, 'roles'])->whereNumber('entryId')->name('manager.events.attendees.roles');
         Route::post('events/{eventId}/quests', [QuestController::class, 'store'])->name('manager.events.quests.store');
         Route::put('events/{eventId}/quests/{questId}', [QuestController::class, 'update'])->name('manager.events.quests.update');
         Route::delete('events/{eventId}/quests/{questId}', [QuestController::class, 'destroy'])->name('manager.events.quests.destroy');

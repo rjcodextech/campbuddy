@@ -11,7 +11,9 @@
             This mirrors the event's public Attendees page. <strong>Suppress</strong> hides someone from the attendee
             app (and it stays hidden when the roster is re-imported); <strong>Restore</strong> brings them back.
             <strong>In discovery</strong> means someone picked this name as themselves in attendee discovery — if the
-            real person says it wasn't them, <strong>Unlink</strong> frees the name.
+            real person says it wasn't them, <strong>Unlink</strong> frees the name. <strong>Roles</strong> (organizer,
+            speaker, volunteer, media partner, sponsor, table lead…) show as badges on the attendee list; "auto" ones come
+            from the WordCamp site, and you can add or take off any of them.
         </x-alert>
 
         <x-card flush>
@@ -47,6 +49,9 @@
                                 @endif
                                 <span class="font-medium">{{ $entry->name }}</span>
                             </div>
+                            @if (! empty($roles[$entry->id]['roles']))
+                                <div class="mt-1 flex flex-wrap gap-1 pl-11">@include('partials.roster-role-badges', ['roles' => $roles[$entry->id]['roles']])</div>
+                            @endif
                         </td>
                         <td class="hidden sm:table-cell">
                             <div class="flex flex-wrap gap-1">
@@ -72,6 +77,14 @@
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-2">
+                            @if ($marksReady && ! $entry->is_suppressed)
+                                @include('partials.roster-roles-form', [
+                                    'action' => route('admin.events.roster.roles', [$event, $entry]),
+                                    'entry' => $entry,
+                                    'current' => $roles[$entry->id]['roles'] ?? [],
+                                    'auto' => $autoRoles[$entry->id]['roles'] ?? [],
+                                ])
+                            @endif
                             @if ($entry->in_discovery)
                                 <x-action-form :action="route('admin.events.roster.release-claim', [$event, $entry])" variant="secondary" size="sm"
                                                :confirm="'Unlink '.$entry->name.' from the discovery profile that claimed this name?'">Unlink</x-action-form>
