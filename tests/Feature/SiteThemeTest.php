@@ -107,6 +107,14 @@ HTML;
         $this->assertSame('Padharo mhare des', SiteTheme::tagline($event->fresh()));
     }
 
+    public function test_a_tagline_that_is_only_a_date_or_the_venue_is_not_one(): void
+    {
+        $this->assertSame('Dil se Dilli, code se community', SiteTheme::cleanTagline('Dil se Dilli, code se community'));
+        $this->assertSame('Namma WordPress', SiteTheme::cleanTagline('Nov 21–22, Namma WordPress'));
+        $this->assertNull(SiteTheme::cleanTagline('12 &amp; 13 november 2026'));
+        $this->assertNull(SiteTheme::cleanTagline('6th November, Whitworth Locke', 'Whitworth Locke — Manchester'));
+    }
+
     public function test_wordpress_placeholder_taglines_are_ignored(): void
     {
         $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);

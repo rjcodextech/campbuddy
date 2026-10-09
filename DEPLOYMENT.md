@@ -193,6 +193,7 @@ Upload: `app/Http/Controllers/Admin/CommandController.php` aur poora `resources/
 - **10 Oct (raat 4): database mitne se suraksha** — live par `migrate:fresh` / `migrate:refresh` / `migrate:reset` / `db:wipe` band. **Migration nahi.** Badla: `app/Providers/AppServiceProvider.php` (sirf ye ek file).
 - **10 Oct (raat 5): Social media cards ka redesign** — site ka artwork asli rangon mein, card ke neeche poori chaudai mein, pattern border ki tarah. **Migration nahi.** Sirf `public/build/` upload karein.
 - **10 Oct (raat 6): Social media 5 artwork + upload, sponsor logos, har event ke alag shabd** — **Migration nahi.** Badle: `app/Services/{WordCampRestClient,WordCampNormalizer,SiteThemeScraper}.php`, `app/Support/{SiteTheme,SocialKit,SocialForms}.php`, `app/Http/Controllers/{Admin,Manager}/SocialController.php`, `routes/{web,manager}.php`, `resources/views/partials/social-media.blade.php`, `public/build/`. Deploy ke baad: `campbuddy:doctor` (data dobara aata hai, sponsor logos ke saath), phir har event ke Social media page par **Read the site again** (tagline + poori site ka artwork).
+- **10 Oct (raat 7): Social media ka naya design system** (Split card + saare cards; 4 style buttons hat gaye). **Migration nahi.** Badle: `app/Support/SiteTheme.php`, `resources/views/partials/social-media.blade.php`, `public/build/`. Deploy ke baad har event par **Read the site again** (tagline ab date/venue wali nahi leta).
 - Phir `php artisan optimize:clear && php artisan optimize`.
 
 ## Deploy: server par step-by-step
