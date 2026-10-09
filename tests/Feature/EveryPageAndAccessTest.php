@@ -136,7 +136,8 @@ class EveryPageAndAccessTest extends TestCase
 
         $this->assertGreaterThan(20, count($pages), 'the admin pages were found');
         foreach ($pages as $route) {
-            $response = $this->get($this->url($route));
+            // The old QR codes address leads to the Social media page.
+            $response = str_ends_with((string) $route->getName(), '.qr') ? $this->followingRedirects()->get($this->url($route)) : $this->get($this->url($route));
             $this->assertSame(200, $response->baseResponse->getStatusCode(), "{$route->uri()} ({$route->getName()})");
         }
     }
@@ -174,7 +175,8 @@ class EveryPageAndAccessTest extends TestCase
 
         foreach ($pages as $route) {
             // A manager with one event lands straight on it.
-            $response = $route->getName() === 'manager.dashboard' ? $this->followingRedirects()->get($this->url($route)) : $this->get($this->url($route));
+            // A manager with one event lands straight on it; the old QR codes address leads to Social media.
+            $response = in_array($route->getName(), ['manager.dashboard', 'manager.events.qr'], true) ? $this->followingRedirects()->get($this->url($route)) : $this->get($this->url($route));
             $this->assertSame(200, $response->status(), $route->uri());
 
             if (in_array('eventId', $route->parameterNames(), true)) {

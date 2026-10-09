@@ -41,7 +41,9 @@ class QrKitTest extends TestCase
         $event = $this->event('wc-jaipur');
         $this->actingAs(User::factory()->create());
 
-        $this->get(route('admin.events.qr', $event))
+        // The kit now lives on the Social media page; the old address leads there.
+        $this->get(route('admin.events.qr', $event))->assertRedirect(route('admin.events.social', $event).'#qr');
+        $this->get(route('admin.events.social', $event))
             ->assertOk()
             ->assertSee('Badge / ID card')
             ->assertSee('utm_source=standee', false)
@@ -56,7 +58,9 @@ class QrKitTest extends TestCase
         $manager->events()->attach($mine->id);
         Auth::guard('manager')->setUser($manager);
 
-        $this->get(route('manager.events.qr', $mine->id))->assertOk()->assertSee('Slide on screen');
+        $this->get(route('manager.events.qr', $mine->id))->assertRedirect(route('manager.events.social', $mine->id).'#qr');
+        $this->get(route('manager.events.social', $mine->id))->assertOk()->assertSee('Slide on screen');
+        $this->get(route('manager.events.social', $other->id))->assertNotFound();
         $this->get(route('manager.events.qr', $other->id))->assertNotFound();
     }
 }

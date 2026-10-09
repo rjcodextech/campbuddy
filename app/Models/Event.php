@@ -38,6 +38,9 @@ class Event extends Model
         'is_visible',
     ];
 
+    /** The Publish webhook is a secret (SocialPublisher): never serialized. */
+    protected $hidden = ['social_webhook'];
+
     protected $casts = [
         'is_visible' => 'boolean',
         'timezone_locked' => 'boolean',
@@ -46,6 +49,8 @@ class Event extends Model
         'info_fetched' => 'array',
         'info_fetched_at' => 'datetime',
         'schedule_delays' => 'array',
+        'brand_colors' => 'array',
+        'social_webhook' => 'encrypted',
         'starts_on' => 'date',
         'ends_on' => 'date',
     ];

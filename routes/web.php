@@ -12,7 +12,6 @@ use App\Http\Controllers\Admin\ErrorsController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\EventManagerActivityController;
 use App\Http\Controllers\Admin\EventManagerController;
-use App\Http\Controllers\Admin\EventQrController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
@@ -20,6 +19,7 @@ use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\Admin\ScheduleDelayController;
+use App\Http\Controllers\Admin\SocialController;
 use App\Http\Controllers\CalendarFileController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\HomeController;
@@ -170,7 +170,11 @@ Route::prefix('admin')->group(function () {
         Route::delete('free-steal-suggestions/{suggestion}', [FreeStealController::class, 'dismiss'])->name('admin.free-steals.suggestions.dismiss');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
-        Route::get('events/{event}/qr', EventQrController::class)->name('admin.events.qr');
+        Route::get('events/{event}/qr', [SocialController::class, 'qr'])->name('admin.events.qr');
+        Route::get('events/{event}/social', [SocialController::class, 'index'])->name('admin.events.social');
+        Route::post('events/{event}/social/colors', [SocialController::class, 'colors'])->name('admin.events.social.colors');
+        Route::post('events/{event}/social/webhook', [SocialController::class, 'webhook'])->name('admin.events.social.webhook');
+        Route::post('events/{event}/social/publish', [SocialController::class, 'publish'])->middleware('throttle:20,1')->name('admin.events.social.publish');
         Route::get('events/{event}/delay', [ScheduleDelayController::class, 'index'])->name('admin.events.delay');
         Route::post('events/{event}/delay', [ScheduleDelayController::class, 'store'])->name('admin.events.delay.store');
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
