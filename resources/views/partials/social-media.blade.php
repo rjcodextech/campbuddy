@@ -13,6 +13,62 @@
         then download (several cards come as one ZIP), copy the caption or share. Check the words before posting.
     </x-alert>
 
+    {{-- The WordCamp site's own colours, fonts and artwork (App\Support\SiteTheme), used by the designs. --}}
+    @php($site = $kit['site'])
+    <x-card title="From the WordCamp site" :description="$site['fetched_at'] ? 'Read from '.$event->source_site_url.' on '.\Carbon\Carbon::parse($site['fetched_at'])->format('j M, g:i A').'.' : ($site['error'] ?? 'Not read yet.')">
+        <div class="space-y-4">
+            <div>
+                <p class="cb-label">Colours on the site</p>
+                @if ($site['colors'] !== [])
+                    <div class="flex flex-wrap items-center gap-2">
+                        @foreach ($site['colors'] as $color)
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-line px-2 py-1 text-xs" title="{{ $color['name'] }}">
+                                <span class="h-4 w-4 rounded-full border border-line" style="background: {{ $color['hex'] }}"></span>{{ $color['hex'] }}
+                            </span>
+                        @endforeach
+                        <x-button type="button" variant="secondary" size="sm" data-colors-from-site>Use the site's colours</x-button>
+                    </div>
+                @else
+                    <p class="text-sm text-muted">The site doesn't name any colours of its own: the logo's colours are used.</p>
+                @endif
+            </div>
+            <div>
+                <p class="cb-label">Fonts on the site</p>
+                @if ($site['fonts'] !== [])
+                    <label class="flex flex-wrap items-center gap-2 text-sm">
+                        <input type="checkbox" class="cb-check" data-site-fonts checked>
+                        <span>Use them: headlines in <strong>{{ $site['fonts']['heading']['family'] ?? '—' }}</strong>, text in <strong>{{ $site['fonts']['body']['family'] ?? '—' }}</strong></span>
+                        <span class="text-xs text-muted" data-site-fonts-status></span>
+                    </label>
+                @else
+                    <p class="text-sm text-muted">No web fonts found on the site: CampBuddy's own fonts are used.</p>
+                @endif
+            </div>
+            <div>
+                <p class="cb-label">Artwork on the site</p>
+                @if ($site['art'] !== [])
+                    <p class="mb-2 text-xs text-muted">Patterns go beside the logo and in the background; an illustration (a skyline, a motif) sits above the footer; a photo becomes the background of the Gradient style. All are recoloured in the brand colours.</p>
+                    <div class="flex flex-wrap gap-3">
+                        @foreach ($site['art'] as $i => $art)
+                            <label class="flex w-32 flex-col gap-1 text-xs">
+                                <span class="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
+                                    <img src="{{ $imageUrl }}?u={{ urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
+                                </span>
+                                <span class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> {{ ucfirst($art['kind']) }}</span>
+                                <span class="truncate text-muted" title="{{ $art['name'] }}">{{ $art['name'] }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                @else
+                    <p class="text-sm text-muted">No patterns or illustrations found on the site: CampBuddy draws its own shapes.</p>
+                @endif
+            </div>
+        </div>
+        <x-slot:footer>
+            <x-action-form :action="$siteUrl" variant="secondary" size="sm" icon="refresh">Read the site again</x-action-form>
+        </x-slot:footer>
+    </x-card>
+
     {{-- Brand colours --}}
     <form method="POST" action="{{ $colorsUrl }}" data-social-colors>
         @csrf
@@ -28,6 +84,7 @@
                 <span class="text-sm text-muted" data-colors-status aria-live="polite"></span>
             </div>
             <p class="mt-3 text-xs text-muted">Every card uses only these four colours and tones between them.</p>
+            <p class="mt-1 text-xs" data-contrast aria-live="polite"></p>
             <x-slot:footer>
                 <x-button size="sm">Save colours</x-button>
             </x-slot:footer>

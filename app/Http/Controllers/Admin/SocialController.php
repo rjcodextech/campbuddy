@@ -9,6 +9,7 @@ use App\Support\SocialColors;
 use App\Support\SocialForms;
 use App\Support\SocialImageProxy;
 use App\Support\SocialKit;
+use App\Support\SiteTheme;
 use App\Support\SocialPublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -30,6 +31,7 @@ class SocialController extends Controller
             'codes' => QrKit::codes($event),
             'colorsUrl' => route('admin.events.social.colors', $event),
             'imageUrl' => route('admin.events.social.image', $event),
+            'siteUrl' => route('admin.events.social.site', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('admin.events.social.publish', $event) : null,
             'webhookUrl' => route('admin.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -64,6 +66,15 @@ class SocialController extends Controller
         Gate::authorize('viewAny', Event::class);
 
         return SocialImageProxy::respond((string) $request->query('u'));
+    }
+
+    /** Reads the WordCamp site's colours, fonts and artwork again. */
+    public function site(Event $event): RedirectResponse
+    {
+        Gate::authorize('update', $event);
+        $theme = SiteTheme::refresh($event);
+
+        return redirect()->route('admin.events.social', $event)->with('status', $theme['error'] ?? 'Read the WordCamp site again: '.count($theme['colors']).' colours, '.count($theme['fonts']).' fonts, '.count($theme['art']).' pieces of artwork.');
     }
 
     /** The old "QR codes" tab now lives on this page. */

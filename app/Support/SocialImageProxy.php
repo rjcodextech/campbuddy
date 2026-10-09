@@ -8,11 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Sponsor logos on a WordCamp site come without CORS headers, so a browser
- * canvas that draws them can't be saved as a PNG. The Social media page asks
- * for them through this: CampBuddy fetches the image once (only from
- * WordCamp / WordPress.com / Gravatar hosts, only images, at most 4 MB),
- * keeps a copy, and serves it from its own address.
+ * Sponsor logos, the site's artwork and its font files on a WordCamp site
+ * come without CORS headers, so a browser canvas that draws them can't be
+ * saved as a PNG. The Social media page asks for them through this:
+ * CampBuddy fetches the file once (only from WordCamp / WordPress.com /
+ * Gravatar hosts, only images or .woff/.woff2 fonts, at most 4 MB, never
+ * SVG), keeps a copy, and serves it from its own address.
  */
 class SocialImageProxy
 {
@@ -45,12 +46,17 @@ class SocialImageProxy
 
         if (! $disk->exists($path)) {
             try {
-                $response = Http::timeout(10)->accept('image/*')->get($url);
+                $response = Http::timeout(10)->get($url);
             } catch (Throwable) {
                 abort(404);
             }
             $type = (string) $response->header('Content-Type');
-            abort_unless($response->successful() && str_starts_with($type, 'image/') && ! str_contains($type, 'svg') && strlen($response->body()) <= self::MAX_BYTES, 404);
+            $font = (bool) preg_match('/\.(woff2?)$/i', (string) parse_url($url, PHP_URL_PATH), $ext);
+            if ($font) {
+                // The site's own font files (its headings and text), served as fonts whatever the host labels them.
+                $type = strtolower($ext[1]) === 'woff2' ? 'font/woff2' : 'font/woff';
+            }
+            abort_unless($response->successful() && ($font || (str_starts_with($type, 'image/') && ! str_contains($type, 'svg'))) && strlen($response->body()) <= self::MAX_BYTES, 404);
             $disk->put($path, $response->body());
             $disk->put($path.'.type', $type);
         }

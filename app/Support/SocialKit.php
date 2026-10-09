@@ -400,6 +400,8 @@ class SocialKit
             'schedule' => self::schedule($event),
             'tables' => collect(\App\Models\ContributorTable::forEvent($event))->map->publicData()->values()->all(),
             'short' => self::shortName($event),
+            // The WordCamp site's own colours, fonts and artwork (read from its home page).
+            'site' => SiteTheme::get($event),
         ];
     }
 }

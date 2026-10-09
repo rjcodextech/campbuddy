@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { eventLook, mix, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -123,4 +123,24 @@ test('role colours and mixing', () => {
   assert.equal(roleColor({ roles: ['speaker'] }, colors), '#e0a11b');
   assert.equal(roleColor({ roles: ['volunteer'] }, colors), mix('#7a1f2b', '#231f20', 0.45), 'a tone of the brand, not a new colour');
   assert.equal(mix('#000000', '#ffffff', 0.5), '#808080');
+});
+
+test('a palette from the site\'s own colours, always readable', () => {
+  const site = [
+    { hex: '#c33a19' }, { hex: '#e39d1c' }, { hex: '#2a1810' }, { hex: '#5c4332' }, { hex: '#faf7f0' }, { hex: '#0d2343' }, { hex: '#fbeedd' },
+  ];
+  const p = paletteFromSite(site);
+  assert.equal(p.ink, '#2a1810', 'its darkest colour is the text');
+  assert.ok(['#faf7f0', '#fbeedd'].includes(p.paper), 'its lightest tinted colour is the light one');
+  assert.ok(contrastRatio(p.ink, p.paper) >= 7);
+  assert.ok(contrastRatio(p.paper, p.primary) >= 4.5, 'light text reads on the main colour');
+  assert.ok(Math.max(contrastRatio(p.ink, p.secondary), contrastRatio(p.paper, p.secondary)) >= 4.5, 'labels read on the accent');
+  assert.equal(paletteFromSite([{ hex: '#ffffff' }, { hex: '#111111' }]), null, 'no real colours: none');
+});
+
+test('readable() fixes a palette by deepening, never by adding a colour', () => {
+  const p = readable({ primary: '#f2c94c', secondary: '#f2c94c', ink: '#777777', paper: '#ffffff' });
+  assert.ok(contrastRatio(p.ink, p.paper) >= 7);
+  assert.ok(contrastRatio(p.paper, p.primary) >= 4.5);
+  assert.ok(Math.max(contrastRatio(p.ink, p.secondary), contrastRatio(p.paper, p.secondary)) >= 4.5);
 });

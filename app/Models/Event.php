@@ -50,6 +50,7 @@ class Event extends Model
         'info_fetched_at' => 'datetime',
         'schedule_delays' => 'array',
         'brand_colors' => 'array',
+        'site_theme' => 'array',
         'social_webhook' => 'encrypted',
         'starts_on' => 'date',
         'ends_on' => 'date',

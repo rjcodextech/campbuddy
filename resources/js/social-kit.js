@@ -22,8 +22,15 @@ import { withPngDpi } from './attendee/png-dpi.js';
 
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920] };
 const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 3, dpi: 300 } };
-const FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
-const SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
+const DEFAULT_FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
+const DEFAULT_SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
+// Text and headline fonts: CampBuddy's, or the WordCamp site's own (useSiteFonts()).
+let FONT = DEFAULT_FONT;
+let SERIF = DEFAULT_SERIF;
+let HEAD = null;
+
+// The WordCamp site's artwork in use (setSiteArt()): a pattern, an illustration, a photo.
+const ART = { pattern: null, illustration: null, photo: null };
 const STYLES = ['bold', 'poster', 'ticket', 'gradient'];
 const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
 const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
@@ -119,7 +126,60 @@ export function paletteFromPixels(data) {
   const secondary = second ? rgbToHex(avg(second[1])) : mix(primary, '#ffffff', 0.45);
   const ink = darkest ? rgbToHex(darkest.rgb) : mix(primary, '#000000', 0.78);
 
-  return { primary, secondary, ink: luminance(hexToRgb(ink)) < 0.05 ? ink : mix(primary, '#000000', 0.8), paper: mix(primary, '#ffffff', 0.94) };
+  return readable({ primary, secondary, ink: luminance(hexToRgb(ink)) < 0.05 ? ink : mix(primary, '#000000', 0.8), paper: mix(primary, '#ffffff', 0.94) });
+}
+
+/** WCAG contrast ratio between two colours (1–21). */
+export function contrastRatio(a, b) {
+  return contrast(a, b);
+}
+
+/**
+ * Keeps a palette readable: the text colour on the light one at least 7:1,
+ * the light colour on the main one at least 4.5:1 — by taking the text
+ * colour darker or the main colour deeper, never by adding a colour.
+ */
+export function readable(palette) {
+  const p = { ...palette };
+  for (let i = 0; i < 12 && contrast(p.ink, p.paper) < 7; i++) p.ink = mix(p.ink, '#000000', 0.2);
+  for (let i = 0; i < 12 && contrast(p.paper, p.primary) < 4.5; i++) p.primary = mix(p.primary, p.ink, 0.12);
+  // Labels sit on the accent colour in the text or the light colour, whichever reads better.
+  const label = () => Math.max(contrast(p.ink, p.secondary), contrast(p.paper, p.secondary));
+  const towards = luminance(hexToRgb(p.secondary)) > 0.18 ? p.paper : p.ink;
+  for (let i = 0; i < 12 && label() < 4.5; i++) p.secondary = mix(p.secondary, towards, 0.12);
+  return p;
+}
+
+/**
+ * A palette from the WordCamp site's own colours: main = its strongest
+ * colour dark enough for light text, accent = the next distinct hue, text =
+ * its darkest colour, light = its lightest tinted colour. Null when the site
+ * has fewer than two real colours.
+ */
+export function paletteFromSite(colors) {
+  const list = (colors ?? []).map((c) => {
+    const rgb = hexToRgb(c.hex);
+    const [h, s, l] = rgbToHsl(rgb);
+    return { hex: c.hex.toLowerCase(), h, s, l, lum: luminance(rgb) };
+  });
+  const chroma = list.filter((c) => c.s >= 0.35 && c.l >= 0.15 && c.l <= 0.75);
+  if (chroma.length < 2 && list.length < 3) return null;
+  if (chroma.length === 0) return null;
+
+  const primaryPick = [...chroma].filter((c) => c.lum <= 0.25).sort((a, b) => b.s - a.s)[0] ?? [...chroma].sort((a, b) => b.s - a.s)[0];
+  let primary = primaryPick.hex;
+  for (let i = 0; i < 6 && luminance(hexToRgb(primary)) > 0.2; i++) primary = mix(primary, '#000000', 0.15);
+  const hueGap = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+  const second = chroma.filter((c) => c.hex !== primaryPick.hex && hueGap(c.h, primaryPick.h) >= 35).sort((a, b) => b.s - a.s)[0];
+  const darks = list.filter((c) => c.lum < 0.06).sort((a, b) => (b.s > 0.1) - (a.s > 0.1) || a.lum - b.lum);
+  const lights = list.filter((c) => c.lum > 0.8).sort((a, b) => (b.s > 0.05) - (a.s > 0.05) || b.lum - a.lum);
+
+  return readable({
+    primary,
+    secondary: second ? second.hex : mix(primary, '#ffffff', 0.45),
+    ink: darks[0]?.hex ?? mix(primary, '#000000', 0.8),
+    paper: lights[0]?.hex ?? mix(primary, '#ffffff', 0.94),
+  });
 }
 
 /** The colours a card may use: the four brand colours and tones between them. */
@@ -376,6 +436,104 @@ function watermark(ctx, mark, W, H, opacity = 0.06, step = 220) {
   ctx.restore();
 }
 
+const recolours = new Map();
+
+/**
+ * The site's artwork in one brand colour, keeping only its shape: a
+ * transparent image keeps its alpha; an opaque one (a JPEG tile) keeps its
+ * lines (dark lines on light, or light on dark). So artwork never brings in
+ * a colour of its own.
+ */
+export function recolour(img, color) {
+  const key = `${img.src}|${color}`;
+  if (recolours.has(key)) return recolours.get(key);
+  const scale = Math.min(1, 900 / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(img.width * scale));
+  c.height = Math.max(1, Math.round(img.height * scale));
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  try {
+    const data = ctx.getImageData(0, 0, c.width, c.height);
+    const d = data.data;
+    let opaque = 0;
+    let sum = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] > 240) opaque++;
+      sum += luminance([d[i], d[i + 1], d[i + 2]]);
+    }
+    const n = d.length / 4;
+    const solid = opaque / n > 0.9;
+    const lightImage = sum / n > 0.5;
+    const [r, g, b] = hexToRgb(color);
+    const covers = new Float32Array(n);
+    for (let i = 0, k = 0; i < d.length; i += 4, k++) {
+      const lum = luminance([d[i], d[i + 1], d[i + 2]]);
+      covers[k] = solid ? (lightImage ? 1 - lum : lum) : d[i + 3] / 255;
+    }
+    // Faint line art (a pale skyline) is stretched to full strength: its strongest strokes become solid.
+    const sorted = Float32Array.from(covers).sort();
+    const top = Math.max(0.05, sorted[Math.floor(n * 0.98)]);
+    const floor = solid ? sorted[Math.floor(n * 0.5)] : 0;
+    for (let i = 0, k = 0; i < d.length; i += 4, k++) {
+      d[i] = r; d[i + 1] = g; d[i + 2] = b;
+      d[i + 3] = Math.round(Math.max(0, Math.min(1, (covers[k] - floor) / Math.max(0.05, top - floor))) * 255);
+    }
+    ctx.putImageData(data, 0, 0);
+  } catch {
+    // Not readable (shouldn't happen through the proxy): no artwork rather than a foreign colour.
+    return null;
+  }
+  recolours.set(key, c);
+  return c;
+}
+
+/** A photo in two brand tones (dark to light), so it reads as the brand. */
+export function duotone(img, dark, light, maxSide = 1400) {
+  const key = `${img.src}|duo|${dark}|${light}`;
+  if (recolours.has(key)) return recolours.get(key);
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale);
+  c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  try {
+    const data = ctx.getImageData(0, 0, c.width, c.height);
+    const d = data.data;
+    const a = hexToRgb(dark);
+    const b = hexToRgb(light);
+    for (let i = 0; i < d.length; i += 4) {
+      const t = (0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]) / 255;
+      d[i] = a[0] + (b[0] - a[0]) * t; d[i + 1] = a[1] + (b[1] - a[1]) * t; d[i + 2] = a[2] + (b[2] - a[2]) * t;
+    }
+    ctx.putImageData(data, 0, 0);
+  } catch {
+    return null;
+  }
+  recolours.set(key, c);
+  return c;
+}
+
+/** The site's pattern, recoloured and tiled at `tile` px tall, filling a box. */
+function fillWithPattern(ctx, img, color, x, y, w, h, tile = 130, opacity = 1) {
+  const art = recolour(img, color);
+  if (!art) return false;
+  const t = document.createElement('canvas');
+  const k = tile / art.height;
+  t.width = Math.max(1, Math.round(art.width * k));
+  t.height = Math.max(1, Math.round(tile));
+  t.getContext('2d').drawImage(art, 0, 0, t.width, t.height);
+  ctx.save();
+  ctx.globalAlpha = opacity;
+  ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.translate(x, y);
+  ctx.fillStyle = ctx.createPattern(t, 'repeat');
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
+  return true;
+}
+
 /**
  * The event's motif, inside its own box (top corner, beside the logo, never
  * behind words): rings, dots, stripes, triangles, waves, arcs, blocks or
@@ -532,20 +690,22 @@ export function postContent(post, fields, kit, pick) {
 function styleOf(name, pal) {
   switch (name) {
     case 'poster':
-      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.primary, fg: pal.onPrimary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: SERIF, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
+      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.primary, fg: pal.onPrimary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: HEAD ?? SERIF, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
     case 'ticket':
-      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
+      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: HEAD ?? FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
     case 'gradient':
-      return { name, bg: pal.primary, fg: pal.paper, muted: alpha(pal.paper, 0.86), accent: pal.secondary, kicker: { bg: alpha(pal.paper, 0.18), fg: pal.paper }, card: { bg: alpha(pal.paper, 0.14), fg: pal.paper, muted: alpha(pal.paper, 0.8) }, family: FONT, footer: { bg: alpha(pal.paper, 0.14), fg: pal.paper, accent: pal.secondary } };
+      return { name, bg: pal.primary, fg: pal.paper, muted: alpha(pal.paper, 0.86), accent: pal.secondary, kicker: { bg: alpha(pal.paper, 0.18), fg: pal.paper }, card: { bg: alpha(pal.paper, 0.14), fg: pal.paper, muted: alpha(pal.paper, 0.8) }, family: HEAD ?? FONT, footer: { bg: alpha(pal.paper, 0.14), fg: pal.paper, accent: pal.secondary } };
     default:
-      return { name: 'bold', bg: pal.primary, fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.86), accent: pal.secondary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: alpha(pal.onPrimary, 0.12), fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.8) }, family: FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
+      return { name: 'bold', bg: pal.primary, fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.86), accent: pal.secondary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: alpha(pal.onPrimary, 0.12), fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.8) }, family: HEAD ?? FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
   }
 }
 
 /** The fixed parts of a card: content column, where the text may start, the footer. */
-function frame(W, H, styleName) {
+function frame(W, H, styleName, withArt = true) {
   const square = H < 1100;
   const tall = H >= 1900;
+  // The site's illustration (a skyline, a motif) gets its own band above the footer.
+  const artH = withArt && ART.illustration ? (square ? 110 : (tall ? 260 : 170)) : 0;
   const footerH = square ? 200 : (tall ? 260 : 230);
   const inset = styleName === 'ticket' ? 46 : 0;
   const stub = styleName === 'ticket' ? Math.round(H * (tall ? 0.15 : (square ? 0.17 : 0.19))) : 0;
@@ -555,7 +715,7 @@ function frame(W, H, styleName) {
   const logo = square ? { w: 200, h: 112 } : { w: 260, h: 146 };
   const top = styleName === 'ticket' ? inset + stub + 50 : headerTop + logo.h + (square ? 34 : 112);
   const footer = H - inset - footerH;
-  return { x, w, headerTop, logo, top, footer, footerH, inset, stub, square, tall };
+  return { x, w, headerTop, logo, top, footer, footerH, inset, stub, square, tall, artH, contentBottom: footer - artH };
 }
 
 const ROWS = {
@@ -582,7 +742,7 @@ function measureText(ctx, content, f, style) {
   const line = fitText(ctx, content.line, f.w, f.tall ? 44 : 36, 22, 2, 600);
   const textH = head.lines.length * head.size * 1.06 + (content.line ? 46 + line.lines.length * line.size * 1.3 : 0);
   const gap = hasBody ? (f.tall ? 70 : 36) : 0;
-  const room = f.footer - 40 - f.top - textH - gap;
+  const room = f.contentBottom - 40 - f.top - textH - gap;
   return { head, line, textH, gap, room };
 }
 
@@ -620,9 +780,16 @@ export function planPost(content, size, styleName, colors) {
   const [W, H] = SIZES[size];
   const c = document.createElement('canvas');
   const ctx = c.getContext('2d');
-  const f = frame(W, H, styleName);
-  const m = measureText(ctx, content, f, styleOf(styleName, paletteOf(colors)));
-  return paginate(content, m.room, H);
+  const style = styleOf(styleName, paletteOf(colors));
+  let m = measureText(ctx, content, frame(W, H, styleName), style);
+  // The site's illustration gives way when the body would otherwise not fit a row.
+  const needs = itemsKey(content.body.type) ? ROWS[content.body.type](H) * 2 : (content.body.type !== 'none' ? 200 : 0);
+  let noArt = false;
+  if (ART.illustration && needs && m.room < needs) {
+    noArt = true;
+    m = measureText(ctx, content, frame(W, H, styleName, false), style);
+  }
+  return paginate({ ...content, noArt }, m.room, H);
 }
 
 // ---- Painting a post --------------------------------------------------------
@@ -632,10 +799,13 @@ function paintBackground(ctx, W, H, f, style, pal, look, mark) {
   ctx.fillRect(0, 0, W, H);
 
   if (style.name === 'gradient') {
+    // The site's photo, in two tones of the brand, under the brand gradient.
+    const photo = ART.photo ? duotone(ART.photo, pal.deep, pal.primary) : null;
+    if (photo) drawCover(ctx, photo, 0, 0, W, H);
     const g = ctx.createLinearGradient(0, 0, W * (look.corner === 'left' ? -0.2 : 1.2), H);
-    g.addColorStop(0, pal.deep);
-    g.addColorStop(0.55, pal.primary);
-    g.addColorStop(1, mix(pal.primary, pal.secondary, 0.65));
+    g.addColorStop(0, alpha(pal.deep, photo ? 0.75 : 1));
+    g.addColorStop(0.55, alpha(pal.primary, photo ? 0.55 : 1));
+    g.addColorStop(1, alpha(mix(pal.primary, pal.secondary, 0.65), photo ? 0.8 : 1));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
     for (const [x, y, r, c, a] of [[look.corner === 'left' ? 0 : W, H * 0.08, W * 0.6, pal.secondary, 0.4], [look.corner === 'left' ? W : 0, H * 0.75, W * 0.5, pal.paper, 0.14]]) {
@@ -647,9 +817,10 @@ function paintBackground(ctx, W, H, f, style, pal, look, mark) {
     }
     watermark(ctx, mark, W, H, 0.05);
   } else if (style.name === 'bold') {
-    watermark(ctx, mark, W, H, 0.06);
+    if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, H, 220, 0.07))) watermark(ctx, mark, W, H, 0.06);
     drawTexture(ctx, look.texture, W, H, alpha(pal.secondary, 0.14), look.corner);
   } else if (style.name === 'poster') {
+    if (ART.pattern) fillWithPattern(ctx, ART.pattern, pal.primary, 0, 0, W, H, 220, 0.05);
     drawTexture(ctx, look.texture, W, H, alpha(pal.primary, 0.08), look.corner);
     ctx.fillStyle = pal.primary;
     ctx.fillRect(look.corner === 'left' ? 0 : W - 18, 0, 18, H);
@@ -689,7 +860,12 @@ function paintHeader(ctx, W, f, style, pal, look, logo, content, page) {
   const mx = f.x + f.logo.w + 30;
   const mw = W - f.inset - SAFE - mx;
   const motifColors = style.name === 'poster' ? [alpha(pal.primary, 0.55), alpha(pal.secondary, 0.8)] : [alpha(pal.paper, 0.35), alpha(pal.secondary, 0.85)];
-  if (mw > 120) drawMotif(ctx, look.motif, mx + (page.total > 1 ? 0 : 0), tileY, mw - (page.total > 1 ? 120 : 0), f.logo.h, ...motifColors, seeded(look.seedValue));
+  const boxW = mw - (page.total > 1 ? 120 : 0);
+  if (mw > 120) {
+    const patternColor = style.name === 'poster' || style.name === 'ticket' && !onStub ? pal.primary : pal.secondary;
+    const drawn = ART.pattern && fillWithPattern(ctx, ART.pattern, patternColor, mx, tileY, boxW, f.logo.h, f.logo.h / 2, 0.9);
+    if (!drawn) drawMotif(ctx, look.motif, mx, tileY, boxW, f.logo.h, ...motifColors, seeded(look.seedValue));
+  }
 
   if (page.total > 1) {
     pill(ctx, `${page.index}/${page.total}`, W - f.inset - SAFE, tileY + (f.logo.h - 54) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 54, pad: 18, align: 'right' });
@@ -930,7 +1106,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   const pal = paletteOf(colors);
   const style = styleOf(styleName, pal);
   const look = { ...eventLook(kit.event.seed), seedValue: kit.event.seed };
-  const f = frame(W, H, styleName);
+  const f = frame(W, H, styleName, !content.noArt);
   const [logo, mark, brand] = await Promise.all([loadImage(kit.event.logo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -940,7 +1116,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
 
   const m = measureText(ctx, content, f, style);
   const bH = bodyHeight(content.body, H, m.room);
-  let y = f.top + Math.max(0, (f.footer - 40 - f.top - (m.textH + (bH ? m.gap : 0) + bH)) / 2);
+  let y = f.top + Math.max(0, (f.contentBottom - 40 - f.top - (m.textH + (bH ? m.gap : 0) + bH)) / 2);
 
   ctx.font = `900 ${m.head.size}px ${style.family}`;
   m.head.lines.forEach((l, i) => {
@@ -966,6 +1142,21 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   }
 
   if (bH > 0 && m.room >= 120) await paintBody(ctx, content.body, f.x, y + m.gap, f.w, bH, style, pal, kit, H);
+
+  if (ART.illustration && f.artH) {
+    // The site's illustration, in one brand colour, sitting on the footer.
+    const color = style.name === 'poster' || style.name === 'ticket' ? pal.primary : pal.paper;
+    const art = recolour(ART.illustration, color);
+    if (art) {
+      const k = Math.min(f.w / art.width, (f.artH - 10) / art.height);
+      const aw = art.width * k;
+      const ah = art.height * k;
+      ctx.save();
+      ctx.globalAlpha = style.name === 'gradient' || style.name === 'bold' ? 0.85 : 0.9;
+      ctx.drawImage(art, f.x + (f.w - aw) / 2, f.footer - ah - (style.name === 'bold' ? 14 : 4), aw, ah);
+      ctx.restore();
+    }
+  }
 
   paintFooter(ctx, W, f, style, pal, kit, brand, content.key, content.key !== 'app');
   addGrain(ctx, W, H, style.name === 'poster' ? 0.05 : 0.045);
@@ -1209,7 +1400,9 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, top - s); ctx.lineTo(0, top + s); ctx.closePath();
   ctx.fillStyle = rc; ctx.fill(); ctx.clip();
   watermark(ctx, mark, W, H, 0.08);
-  drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
+  if (!(ART.pattern && fillWithPattern(ctx, ART.pattern, pal.paper, 0, 0, W, top + 80, 200, 0.12))) {
+    drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
+  }
   ctx.restore();
   ctx.strokeStyle = rc === pal.secondary ? pal.primary : pal.secondary;
   ctx.lineWidth = 14;
@@ -1296,6 +1489,41 @@ function choiceGroup(attr, onChange, initial = null) {
 }
 
 // ---- Page -----------------------------------------------------------------
+
+/**
+ * Loads the WordCamp site's heading and text fonts (through CampBuddy's
+ * proxy, so the canvas may use them) under names of their own; resolves to
+ * the font stacks, or null for a role that didn't load.
+ */
+async function loadSiteFonts(kit) {
+  const out = {};
+  for (const [role, font] of Object.entries(kit.site?.fonts ?? {})) {
+    const family = `CB Site ${role}`;
+    const faces = (font.faces ?? []).map((f) => new FontFace(family, `url(${proxied(kit, f.url)})`, {
+      weight: f.weight || '400',
+      style: f.style || 'normal',
+      ...(f.range ? { unicodeRange: f.range } : {}),
+    }));
+    const loaded = (await Promise.allSettled(faces.map((face) => face.load()))).filter((r) => r.status === 'fulfilled').map((r) => r.value);
+    loaded.forEach((face) => document.fonts.add(face));
+    if (loaded.length) out[role] = `"${family}", ${role === 'heading' ? DEFAULT_SERIF : DEFAULT_FONT}`;
+  }
+  return out;
+}
+
+function useSiteFonts(fonts, on) {
+  FONT = on && fonts.body ? fonts.body : DEFAULT_FONT;
+  SERIF = on && fonts.heading ? fonts.heading : DEFAULT_SERIF;
+  HEAD = on && fonts.heading ? fonts.heading : null;
+}
+
+/** Which of the site's artwork is in use: the first ticked of each kind. */
+async function setSiteArt(kit, enabled) {
+  for (const kind of ['pattern', 'illustration', 'photo']) {
+    const art = (kit.site?.art ?? []).find((a, i) => a.kind === kind && enabled.has(i));
+    ART[kind] = art ? await loadImage(proxied(kit, art.url)) : null;
+  }
+}
 
 export function initSocialKit() {
   const dataEl = document.getElementById('social-kit-data');
@@ -1420,9 +1648,46 @@ export function initSocialKit() {
   sizeEl?.addEventListener('change', redrawAll);
 
   const status = document.querySelector('[data-colors-status]');
+  const contrastEl = document.querySelector('[data-contrast]');
+  const showContrast = () => {
+    if (!contrastEl) return;
+    const checks = [
+      ['Text on light', contrast(colors.ink, colors.paper), 7],
+      ['Light on main', contrast(colors.paper, colors.primary), 4.5],
+      ['Label on accent', Math.max(contrast(colors.ink, colors.secondary), contrast(colors.paper, colors.secondary)), 4.5],
+    ];
+    contrastEl.textContent = checks.map(([label, ratio, min]) => `${label} ${ratio.toFixed(1)}:1 ${ratio >= min ? '✓' : `✗ (needs ${min}:1)`}`).join('  ·  ');
+    contrastEl.className = `mt-1 text-xs ${checks.every(([, r, m]) => r >= m) ? 'text-teal' : 'text-danger'}`;
+  };
+  const setColors = (palette, message) => {
+    Object.assign(colors, palette);
+    Object.entries(palette).forEach(([k, v]) => {
+      const input = document.querySelector(`[data-color="${k}"]`);
+      if (input) input.value = v;
+    });
+    if (message && status) status.textContent = message;
+    showContrast();
+    redrawAll();
+  };
   document.querySelectorAll('[data-color]').forEach((input) => {
-    input.addEventListener('input', () => { colors[input.dataset.color] = input.value; if (status) status.textContent = 'Not saved yet.'; redrawAll(); });
+    input.addEventListener('input', () => { colors[input.dataset.color] = input.value; if (status) status.textContent = 'Not saved yet.'; showContrast(); redrawAll(); });
   });
+  const sitePalette = paletteFromSite(kit.site?.colors);
+  document.querySelector('[data-colors-from-site]')?.addEventListener('click', () => {
+    if (sitePalette) setColors(sitePalette, 'Picked from the WordCamp site ✓ Save to keep them.');
+    else if (status) status.textContent = 'The site has too few colours of its own: try Pick from logo.';
+  });
+
+  // The site's fonts: on by default when the site has them.
+  let siteFonts = {};
+  const fontsBox = document.querySelector('[data-site-fonts]');
+  const fontsStatus = document.querySelector('[data-site-fonts-status]');
+  fontsBox?.addEventListener('change', () => { useSiteFonts(siteFonts, fontsBox.checked); redrawAll(); });
+
+  // The site's artwork: every piece ticked starts in use.
+  const artBoxes = [...document.querySelectorAll('[data-site-art]')];
+  const enabledArt = () => new Set(artBoxes.filter((b) => b.checked).map((b) => Number(b.dataset.siteArt)));
+  artBoxes.forEach((b) => b.addEventListener('change', async () => { await setSiteArt(kit, enabledArt()); redrawAll(); }));
   const fromLogo = async (announce = true) => {
     const logo = await loadImage(kit.event.logo || kit.event.mark);
     let palette = null;
@@ -1441,21 +1706,31 @@ export function initSocialKit() {
       if (announce && status) status.textContent = logo ? 'The logo has no clear colours: keeping these.' : 'No logo for this event yet.';
       return false;
     }
-    Object.assign(colors, palette);
-    Object.entries(palette).forEach(([k, v]) => {
-      const input = document.querySelector(`[data-color="${k}"]`);
-      if (input) input.value = v;
-    });
-    if (announce && status) status.textContent = 'Picked from the logo ✓ Save to keep them.';
-    redrawAll();
+    setColors(palette, announce ? 'Picked from the logo ✓ Save to keep them.' : null);
     return true;
   };
   document.querySelector('[data-colors-from-logo]')?.addEventListener('click', () => fromLogo(true));
 
-  document.fonts?.ready.then(async () => {
-    if (!kit.colorsSaved) await fromLogo(false);
+  // Start: the site's fonts and artwork, and — until colours are saved — the
+  // site's colours (or the logo's, when the site names none).
+  (async () => {
+    try {
+      siteFonts = await loadSiteFonts(kit);
+      useSiteFonts(siteFonts, fontsBox?.checked ?? false);
+      if (fontsStatus && kit.site?.fonts && Object.keys(kit.site.fonts).length && !Object.keys(siteFonts).length) fontsStatus.textContent = '(could not load them)';
+    } catch {
+      // CampBuddy's fonts then.
+    }
+    await setSiteArt(kit, enabledArt()).catch(() => {});
+    await document.fonts?.ready;
+    if (!kit.colorsSaved) {
+      if (sitePalette) setColors(sitePalette, null);
+      else await fromLogo(false);
+    }
+    showContrast();
     redrawAll();
-  });
+  })();
+  showContrast();
   redrawAll();
 }
 
