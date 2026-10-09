@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Support\QrKit;
 use App\Support\SocialColors;
 use App\Support\SocialForms;
+use App\Support\SocialImageProxy;
 use App\Support\SocialKit;
 use App\Support\SocialPublisher;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 /** Admin → Event → Social media: posts, people cards, brand colours, QR codes, Publish. */
 class SocialController extends Controller
@@ -27,6 +29,7 @@ class SocialController extends Controller
             'kit' => SocialKit::data($event),
             'codes' => QrKit::codes($event),
             'colorsUrl' => route('admin.events.social.colors', $event),
+            'imageUrl' => route('admin.events.social.image', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('admin.events.social.publish', $event) : null,
             'webhookUrl' => route('admin.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -53,6 +56,14 @@ class SocialController extends Controller
         Gate::authorize('update', $event);
 
         return SocialForms::publish($request, $event, 'admin: '.$request->user()->name);
+    }
+
+    /** A WordCamp-hosted image (sponsor logo) served from here, so the page's canvas may use it. */
+    public function image(Request $request, Event $event): Response
+    {
+        Gate::authorize('viewAny', Event::class);
+
+        return SocialImageProxy::respond((string) $request->query('u'));
     }
 
     /** The old "QR codes" tab now lives on this page. */

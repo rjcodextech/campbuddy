@@ -173,6 +173,7 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/qr', [SocialController::class, 'qr'])->name('admin.events.qr');
         Route::get('events/{event}/social', [SocialController::class, 'index'])->name('admin.events.social');
         Route::post('events/{event}/social/colors', [SocialController::class, 'colors'])->name('admin.events.social.colors');
+        Route::get('events/{event}/social/image', [SocialController::class, 'image'])->name('admin.events.social.image');
         Route::post('events/{event}/social/webhook', [SocialController::class, 'webhook'])->name('admin.events.social.webhook');
         Route::post('events/{event}/social/publish', [SocialController::class, 'publish'])->middleware('throttle:20,1')->name('admin.events.social.publish');
         Route::get('events/{event}/delay', [ScheduleDelayController::class, 'index'])->name('admin.events.delay');

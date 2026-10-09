@@ -57,6 +57,54 @@ class SocialMediaTest extends TestCase
         $this->assertStringContainsString('utm_source=social', $posts['app']['caption']);
     }
 
+    public function test_more_posts_get_the_schedule_speakers_sponsors_and_tables(): void
+    {
+        EventData::put($this->event->id, 'speakers', [['id' => 7, 'name' => 'Rahul', 'avatar_url' => 'https://secure.gravatar.com/avatar/bbb?s=96&d=mm']]);
+        EventData::put($this->event->id, 'sponsors', [['id' => 1, 'name' => 'Hosting.com', 'logo_url' => 'https://rajasthan.wordcamp.org/2026/files/logo.png', 'tier_names' => ['Gold']]]);
+        EventData::put($this->event->id, 'sessions', [
+            ['id' => 1, 'title' => 'Opening', 'starts_at' => '2026-10-03T03:30:00+00:00', 'speaker_ids' => [], 'track_names' => ['Track 1']],
+            ['id' => 2, 'title' => 'Blocks', 'starts_at' => '2026-10-03T05:00:00+00:00', 'speaker_ids' => [7], 'track_names' => ['Track 1']],
+            ['id' => 3, 'title' => 'Day two', 'starts_at' => '2026-10-04T04:00:00+00:00', 'speaker_ids' => [7], 'track_names' => []],
+        ]);
+        \App\Models\ContributorTable::create(['event_id' => $this->event->id, 'team' => 'polyglots', 'floor' => '2']);
+
+        $kit = SocialKit::data($this->event);
+
+        $this->assertSame(['save-the-date', 'countdown', 'schedule', 'app', 'thank-you', 'speakers', 'sponsors', 'today', 'spotlight', 'contributor', 'volunteers'], array_column($kit['posts'], 'key'));
+        $this->assertSame([['key' => '2026-10-03', 'label' => 'Sat 3 Oct'], ['key' => '2026-10-04', 'label' => 'Sun 4 Oct']], $kit['schedule']['days']);
+        $blocks = collect($kit['schedule']['sessions'])->firstWhere('id', 2);
+        $this->assertSame('10:30 AM', $blocks['time'], 'the venue time, not the server time');
+        $this->assertSame(['Rahul'], $blocks['speakers']);
+        $this->assertStringContainsString('s=600', $blocks['photos'][0]);
+        $this->assertSame(2, $kit['schedule']['next'], 'the next session with a speaker');
+        $this->assertSame('Hosting.com', $kit['sponsors'][0]['name']);
+        $this->assertSame('Polyglots', $kit['tables'][0]['name']);
+        $this->assertSame('WordCamp Rajasthan', $kit['short']);
+
+        $this->actingAs(User::factory()->create());
+        $this->get(route('admin.events.social', $this->event))->assertOk()
+            ->assertSee('Story 1080 × 1920', false)->assertSee('data-social-style="ticket"', false)
+            ->assertSee('data-people-design="polaroid"', false)->assertSee('Sat 3 Oct');
+    }
+
+    public function test_sponsor_logos_come_through_an_allowlisted_proxy(): void
+    {
+        Storage::fake('local');
+        Http::fake([
+            'rajasthan.wordcamp.org/*' => Http::response('PNGDATA', 200, ['Content-Type' => 'image/png']),
+            'evil.example/*' => Http::response('x', 200, ['Content-Type' => 'image/png']),
+        ]);
+        $this->actingAs(User::factory()->create());
+        $url = fn ($u) => route('admin.events.social.image', $this->event).'?u='.urlencode($u);
+
+        $this->get($url('https://rajasthan.wordcamp.org/2026/files/logo.png'))->assertOk()->assertHeader('Content-Type', 'image/png');
+        $this->get($url('https://rajasthan.wordcamp.org/2026/files/logo.png'))->assertOk();
+        Http::assertSentCount(1);
+        $this->get($url('https://evil.example/a.png'))->assertNotFound();
+        $this->get($url('http://127.0.0.1/a.png'))->assertNotFound();
+        $this->get($url('file:///etc/passwd'))->assertNotFound();
+    }
+
     public function test_people_cards_list_only_people_with_a_role(): void
     {
         $rahul = AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Rahul', 'links' => [], 'gravatar_url' => 'https://secure.gravatar.com/avatar/bbb222bbb222bbb222bbb222bbb222bb?s=96', 'content_hash' => 'r', 'is_suppressed' => false]);

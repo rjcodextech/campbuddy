@@ -124,6 +124,8 @@ class SocialKit
             [
                 'key' => 'save-the-date',
                 'label' => 'Save the date',
+                'kicker' => 'Mark your calendar',
+                'body' => 'none',
                 'headline' => 'Save the date',
                 'line' => $when,
                 'caption' => "Save the date: {$name} is on {$dates}".($place !== '' ? " at {$place}" : '').".\n\nTalks, workshops, Contributor Day and a room full of people who build with WordPress. First WordCamp? You are very welcome.\n\nTickets and details: {$site}\n\n{$tags}",
@@ -131,6 +133,9 @@ class SocialKit
             [
                 'key' => 'countdown',
                 'label' => 'Countdown',
+                'kicker' => 'Countdown',
+                'body' => 'countdown',
+                'days' => $days,
                 'headline' => $days === null ? 'It\'s WordCamp time' : ($days === 1 ? '1 day to go' : "{$days} days to go"),
                 'line' => $when,
                 'caption' => ($days === null ? "{$name} is here!" : ($days === 1 ? "Tomorrow: {$name}!" : "{$days} days to go until {$name}.")).
@@ -139,6 +144,8 @@ class SocialKit
             [
                 'key' => 'schedule',
                 'label' => 'Schedule is live',
+                'kicker' => 'Just announced',
+                'body' => 'none',
                 'headline' => 'The schedule is live',
                 'line' => trim(($sessions ? "{$sessions} sessions" : '').($sessions && $speakers ? ' · ' : '').($speakers ? "{$speakers} speakers" : '')) ?: $when,
                 'caption' => "The schedule for {$name} is out".($sessions ? ": {$sessions} sessions" : '').($speakers ? " and {$speakers} speakers" : '').".\n\nSave the talks you want and get a reminder before each one: {$app}\n\n{$tags}",
@@ -146,6 +153,8 @@ class SocialKit
             [
                 'key' => 'app',
                 'label' => 'Get CampBuddy',
+                'kicker' => 'Free · no sign-up',
+                'body' => 'qr',
                 'headline' => 'Your WordCamp companion',
                 'line' => 'Schedule, people to meet, Contributor Day: scan to open',
                 'caption' => "Going to {$name}? CampBuddy puts the schedule, the people you want to meet and Contributor Day tips in one place. Free, no sign-up, works offline.\n\nOpen it here: {$app}\n\n{$tags}",
@@ -153,13 +162,146 @@ class SocialKit
             [
                 'key' => 'thank-you',
                 'label' => 'Thank you',
+                'kicker' => 'That\'s a wrap',
+                'body' => 'none',
                 'headline' => 'Thank you!',
                 'line' => $name,
                 'caption' => "Thank you to everyone who made {$name} happen: speakers, sponsors, volunteers, organizers and every single attendee.\n\nSee you at the next WordCamp!\n\n{$tags}",
             ],
+            [
+                'key' => 'speakers',
+                'label' => 'Speaker lineup',
+                'kicker' => 'Speakers announced',
+                'headline' => 'Meet the speakers',
+                'line' => $speakers ? "{$speakers} speakers · {$when}" : $when,
+                'body' => 'photos',
+                'caption' => "Here are the speakers of {$name}".($speakers ? ": {$speakers} people sharing what they know about WordPress" : '').".\n\nSee every talk and save your favourites: {$app}\n\n{$tags}",
+            ],
+            [
+                'key' => 'sponsors',
+                'label' => 'Thank you, sponsors',
+                'kicker' => 'With thanks to',
+                'headline' => 'Our sponsors',
+                'line' => 'They help keep WordCamp tickets affordable',
+                'body' => 'logos',
+                'caption' => "A big thank you to the sponsors of {$name}. They help keep WordCamp tickets affordable for everyone. Say hello at their booths!\n\n{$tags}",
+            ],
+            [
+                'key' => 'today',
+                'label' => 'Today at WordCamp',
+                'picker' => 'day',
+                'kicker' => 'On the schedule',
+                'headline' => 'Today at '.self::shortName($event),
+                'line' => $place,
+                'body' => 'list',
+                'caption' => '',
+            ],
+            [
+                'key' => 'spotlight',
+                'label' => 'Session spotlight',
+                'picker' => 'session',
+                'kicker' => 'Up next',
+                'headline' => '',
+                'line' => '',
+                'body' => 'session',
+                'caption' => '',
+            ],
+            [
+                'key' => 'contributor',
+                'label' => 'Contributor Day',
+                'kicker' => 'Give back to WordPress',
+                'headline' => 'Join Contributor Day',
+                'line' => 'No coding needed. Every table welcomes beginners.',
+                'body' => 'tables',
+                'caption' => "Contributor Day at {$name}: spend a day making WordPress better with the teams that build it. Writers, designers, translators, testers and developers are all welcome, and every table helps beginners get started.\n\nFind your team in CampBuddy: {$app}\n\n{$tags}",
+            ],
+            [
+                'key' => 'volunteers',
+                'label' => 'Call for volunteers',
+                'kicker' => 'We need you',
+                'headline' => 'Volunteer with us',
+                'line' => 'Help run '.$name,
+                'body' => 'none',
+                'caption' => "Want to see how a WordCamp works from the inside? Volunteer at {$name}: welcome attendees, help speakers and meet the whole community.\n\nSign up on the WordCamp site: {$site}\n\n{$tags}",
+            ],
         ];
 
         return $posts;
+    }
+
+    /** "WordCamp Rajasthan" without the year, for short headlines. */
+    public static function shortName(Event $event): string
+    {
+        return trim((string) preg_replace('/\s+\d{4}$/', '', (string) $event->display_name));
+    }
+
+    /**
+     * The schedule as the Today / Spotlight posts need it, with times already
+     * in the venue's time zone (any "running late" delay included).
+     *
+     * @return array{days: list<array{key: string, label: string}>, sessions: list<array<string, mixed>>, next: ?int}
+     */
+    public static function schedule(Event $event, ?CarbonImmutable $now = null): array
+    {
+        $zone = EventTime::zone($event);
+        $now ??= CarbonImmutable::now();
+        $speakers = collect(EventData::get($event->id, 'speakers') ?? [])->keyBy('id');
+
+        $sessions = collect(ScheduleDelay::apply($event, EventData::get($event->id, 'sessions') ?? []))
+            ->filter(fn ($s) => is_array($s) && ! empty($s['starts_at']) && ($s['title'] ?? '') !== '')
+            ->map(function ($s) use ($zone, $speakers) {
+                $start = CarbonImmutable::parse($s['starts_at'])->setTimezone($zone);
+                $people = collect($s['speaker_ids'] ?? [])->map(fn ($id) => $speakers->get($id))->filter();
+
+                return [
+                    'id' => $s['id'],
+                    'title' => $s['title'],
+                    'at' => $start->toIso8601String(),
+                    'day' => $start->format('Y-m-d'),
+                    'time' => $start->format('g:i A'),
+                    'track' => $s['track_names'][0] ?? null,
+                    'type' => $s['session_type'] ?? null,
+                    'speakers' => $people->pluck('name')->values()->all(),
+                    'photos' => $people->map(fn ($p) => self::bigPhoto($p['avatar_url'] ?? null))->filter()->values()->all(),
+                ];
+            })
+            ->sortBy('at')
+            ->values();
+
+        $days = $sessions->pluck('day')->unique()->values()
+            ->map(fn ($day) => ['key' => $day, 'label' => CarbonImmutable::parse($day)->format('D j M')])->all();
+        $next = $sessions->first(fn ($s) => CarbonImmutable::parse($s['at'])->greaterThan($now) && ($s['speakers'] !== []))
+            ?? $sessions->first(fn ($s) => $s['speakers'] !== []) ?? $sessions->first();
+
+        return ['days' => $days, 'sessions' => $sessions->all(), 'next' => $next['id'] ?? null];
+    }
+
+    /** A Gravatar at a size fit for a post. */
+    public static function bigPhoto(?string $url, int $size = 600): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+
+        return str_contains($url, 'gravatar.com/') ? preg_replace('/([?&])s=\d+/', '$1s='.$size, $url) : $url;
+    }
+
+    /** @return list<array{name: string, photo: ?string}> the speakers for the lineup post */
+    public static function speakers(Event $event): array
+    {
+        return collect(EventData::get($event->id, 'speakers') ?? [])
+            ->map(fn ($p) => ['name' => (string) ($p['name'] ?? ''), 'photo' => self::bigPhoto($p['avatar_url'] ?? null, 300)])
+            ->filter(fn ($p) => $p['name'] !== '')
+            ->values()->all();
+    }
+
+    /** @return list<array{name: string, logo: ?string, tier: ?string}> */
+    public static function sponsors(Event $event): array
+    {
+        return collect(EventData::get($event->id, 'sponsors') ?? [])
+            ->map(fn ($s) => ['name' => (string) ($s['name'] ?? ''), 'logo' => $s['logo_url'] ?? null, 'tier' => $s['tier_names'][0] ?? null])
+            ->filter(fn ($s) => $s['name'] !== '')
+            ->values()->all();
     }
 
     /**
@@ -198,7 +340,7 @@ class SocialKit
             $people[] = [
                 'id' => $entry->id,
                 'name' => $entry->name,
-                'photo' => $entry->gravatar_url ? preg_replace('/([?&])s=\d+/', '$1s=600', $entry->gravatar_url) : null,
+                'photo' => self::bigPhoto($entry->gravatar_url),
                 'roles' => $personRoles,
                 'role_labels' => $labels,
                 'talk' => $talk,
@@ -231,6 +373,11 @@ class SocialKit
             'colorsSaved' => self::hasSavedColors($event),
             'posts' => self::posts($event),
             'people' => self::people($event),
+            'speakers' => self::speakers($event),
+            'sponsors' => self::sponsors($event),
+            'schedule' => self::schedule($event),
+            'tables' => collect(\App\Models\ContributorTable::forEvent($event))->map->publicData()->values()->all(),
+            'short' => self::shortName($event),
         ];
     }
 }

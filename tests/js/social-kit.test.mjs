@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { paletteFromPixels, personHeadline, shareLinks, slugify, textOn } = await import('../../resources/js/social-kit.js');
+const { fitBody, mix, paletteFromPixels, personHeadline, postContent, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -49,4 +49,56 @@ test('text colour, names, share links, card headline', () => {
   assert.ok(decodeURIComponent(links.X.split('text=')[1]).length <= 270, 'X text fits');
   assert.equal(personHeadline({ roles: ['speaker'], role_labels: ['Speaker'] }), 'Meet our Speaker');
   assert.equal(personHeadline({ roles: [], role_labels: [] }), 'Meet me at WordCamp');
+});
+
+const kit = {
+  event: { name: 'WordCamp Test 2026', app: 'https://campbuddy.club/event/x?utm_source=social', hashtags: '#WordCamp #WordPress #WCTest' },
+  speakers: [{ name: 'A', photo: 'a.png' }, { name: 'B', photo: null }],
+  sponsors: [{ name: 'S', logo: 'https://x.wordcamp.org/s.png' }],
+  tables: [],
+  schedule: {
+    days: [{ key: '2026-10-03', label: 'Sat 3 Oct' }],
+    sessions: [
+      { id: 1, day: '2026-10-03', time: '9:00 AM', title: 'Registration', speakers: [], photos: [] },
+      { id: 2, day: '2026-10-03', time: '10:00 AM', title: 'Blocks', speakers: ['Rahul'], photos: ['r.png'], track: 'Track 1' },
+      { id: 3, day: '2026-10-03', time: '11:00 AM', title: 'Themes', speakers: ['Asha'], photos: [] },
+      { id: 4, day: '2026-10-03', time: '12:00 PM', title: 'SEO', speakers: ['Mia'], photos: [] },
+    ],
+  },
+};
+
+test('the posts take their body from the kit', () => {
+  const f = { headline: 'H', line: 'L', caption: '' };
+  assert.equal(postContent({ key: 'speakers' }, f, kit).body.people.length, 1, 'only speakers with a photo');
+  assert.equal(postContent({ key: 'app' }, f, kit).body.type, 'qr');
+  assert.equal(postContent({ key: 'contributor' }, f, kit).body.type, 'none', 'no tables: no list');
+  const spot = postContent({ key: 'spotlight' }, { headline: '', line: '', caption: '' }, kit, 2);
+  assert.equal(spot.headline, 'Blocks');
+  assert.equal(spot.line, '10:00 AM · Track 1');
+  assert.equal(spot.body.type, 'session');
+  const today = postContent({ key: 'today', kicker: 'x' }, f, kit, '2026-10-03');
+  assert.equal(today.kicker, 'Sat 3 Oct');
+  assert.deepEqual(today.body.items.map((i) => i.title), ['Blocks', 'Themes', 'SEO'], 'talks before registration when there are enough');
+});
+
+test('captions for a day and a session', () => {
+  assert.match(todayCaption(kit, '2026-10-03', sessionsOfDay(kit.schedule.sessions, '2026-10-03')), /^Sat 3 Oct at WordCamp Test 2026:\n\n10:00 AM {2}Blocks \(Rahul\)/);
+  assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /Up next at WordCamp Test 2026: "Blocks" with Rahul, 10:00 AM in Track 1\./);
+});
+
+test('a body too tall for its room loses rows, or goes', () => {
+  const list = { type: 'list', items: Array.from({ length: 6 }, (_, i) => ({ time: '1', title: String(i) })) };
+  const fitted = fitBody(list, 1350, 300);
+  assert.equal(fitted.body.items.length, 2);
+  assert.ok(fitted.h <= 300);
+  assert.deepEqual(fitBody({ type: 'qr', url: 'x' }, 1350, 100), { body: { type: 'none' }, h: 0 });
+  assert.equal(fitBody({ type: 'qr', url: 'x' }, 1350, 200).h, 200, 'a QR shrinks to fit');
+});
+
+test('role colours and mixing', () => {
+  const colors = { primary: '#7a1f2b', secondary: '#e0a11b', ink: '#231f20', paper: '#fff8ee' };
+  assert.equal(roleColor({ roles: ['organizer'] }, colors), '#7a1f2b');
+  assert.equal(roleColor({ roles: ['speaker'] }, colors), '#e0a11b');
+  assert.equal(roleColor({ roles: ['volunteer'] }, colors), '#1f8a4c');
+  assert.equal(mix('#000000', '#ffffff', 0.5), '#808080');
 });

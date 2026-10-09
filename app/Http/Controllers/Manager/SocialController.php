@@ -8,12 +8,14 @@ use App\Support\ManagerActivity;
 use App\Support\QrKit;
 use App\Support\SocialColors;
 use App\Support\SocialForms;
+use App\Support\SocialImageProxy;
 use App\Support\SocialKit;
 use App\Support\SocialPublisher;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 /** An event manager's "Social media": the admin's page for their own events; changes logged. */
 class SocialController extends Controller
@@ -29,6 +31,7 @@ class SocialController extends Controller
             'kit' => SocialKit::data($event),
             'codes' => QrKit::codes($event),
             'colorsUrl' => route('manager.events.social.colors', $event),
+            'imageUrl' => route('manager.events.social.image', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('manager.events.social.publish', $event) : null,
             'webhookUrl' => route('manager.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -63,6 +66,14 @@ class SocialController extends Controller
         }
 
         return $reply;
+    }
+
+    /** A WordCamp-hosted image (sponsor logo) served from here, so the page's canvas may use it. */
+    public function image(Request $request, string $eventId): Response
+    {
+        $this->managedEvent($request, $eventId);
+
+        return SocialImageProxy::respond((string) $request->query('u'));
     }
 
     /** The old "QR codes" tab now lives on this page. */

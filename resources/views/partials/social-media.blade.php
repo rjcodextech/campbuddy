@@ -31,24 +31,62 @@
         </x-card>
     </form>
 
+    {{-- Size, style and people-card design: for every image on the page. --}}
+    <div class="sticky top-0 z-10 -mx-1 flex flex-wrap items-end gap-3 rounded-xl border border-line bg-white/95 px-4 py-3 shadow-sm backdrop-blur">
+        <label class="flex flex-col gap-1 text-sm">
+            <span class="cb-label">Size</span>
+            <select class="cb-input w-auto" data-social-size>
+                <option value="1080x1350">Portrait 1080 × 1350 (feed)</option>
+                <option value="1080x1080">Square 1080 × 1080</option>
+                <option value="1080x1920">Story 1080 × 1920</option>
+            </select>
+        </label>
+        <div class="flex flex-col gap-1 text-sm">
+            <span class="cb-label" id="social-style-label">Post style</span>
+            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-style-label">
+                @foreach (['bold' => 'Bold', 'poster' => 'Poster', 'ticket' => 'Ticket', 'gradient' => 'Gradient'] as $key => $label)
+                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-social-style="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                @endforeach
+            </div>
+        </div>
+        <div class="flex flex-col gap-1 text-sm">
+            <span class="cb-label" id="social-people-design-label">People card design</span>
+            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-people-design-label">
+                @foreach (['classic' => 'Classic', 'polaroid' => 'Polaroid', 'badge' => 'Badge', 'split' => 'Split', 'minimal' => 'Minimal'] as $key => $label)
+                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-people-design="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+
     {{-- Event posts --}}
     <section class="space-y-3" aria-labelledby="social-posts-title">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="social-posts-title" class="text-base font-semibold">Event posts</h2>
-            <label class="flex items-center gap-2 text-sm">
-                <span>Size</span>
-                <select class="cb-input w-auto" data-social-size>
-                    <option value="1080x1350">1080 × 1350 (portrait: Instagram, LinkedIn, Facebook)</option>
-                    <option value="1080x1080">1080 × 1080 (square)</option>
-                </select>
-            </label>
-        </div>
+        <h2 id="social-posts-title" class="text-base font-semibold">Event posts</h2>
 
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($kit['posts'] as $post)
                 <x-card :title="$post['label']" data-social-post="{{ $post['key'] }}">
                     <div class="space-y-3">
                         <canvas class="w-full rounded-lg border border-line bg-paper-soft" data-preview></canvas>
+                        @if (($post['picker'] ?? null) === 'day' && $kit['schedule']['days'] !== [])
+                            <div>
+                                <label class="cb-label" for="post-{{ $post['key'] }}-pick">Day</label>
+                                <select id="post-{{ $post['key'] }}-pick" class="cb-input" data-pick>
+                                    @foreach ($kit['schedule']['days'] as $day)
+                                        <option value="{{ $day['key'] }}">{{ $day['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @elseif (($post['picker'] ?? null) === 'session' && $kit['schedule']['sessions'] !== [])
+                            <div>
+                                <label class="cb-label" for="post-{{ $post['key'] }}-pick">Session</label>
+                                <select id="post-{{ $post['key'] }}-pick" class="cb-input" data-pick>
+                                    @foreach ($kit['schedule']['sessions'] as $session)
+                                        <option value="{{ $session['id'] }}" @selected($session['id'] === $kit['schedule']['next'])>{{ $session['time'] }} · {{ \Illuminate\Support\Str::limit($session['title'], 60) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div>
                             <label class="cb-label" for="post-{{ $post['key'] }}-headline">Headline on the image</label>
                             <input id="post-{{ $post['key'] }}-headline" type="text" maxlength="60" value="{{ $post['headline'] }}" class="cb-input" data-field="headline">
@@ -122,5 +160,5 @@
         @include('partials.qr-kit', ['event' => $event, 'codes' => $codes])
     </section>
 
-    <script type="application/json" id="social-kit-data">{!! json_encode($kit + ['publishUrl' => $publishUrl], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
+    <script type="application/json" id="social-kit-data">{!! json_encode($kit + ['publishUrl' => $publishUrl, 'imageUrl' => $imageUrl], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) !!}</script>
 </div>
