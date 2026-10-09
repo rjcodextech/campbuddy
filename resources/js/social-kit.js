@@ -1,29 +1,34 @@
 // Admin / manager → Event → Social media (partials/social-media.blade.php).
-// Draws the event's posts and people cards on canvases, in the event's brand
-// colours, from App\Support\SocialKit::data(): four post styles (Bold,
-// Poster, Ticket, Gradient), five people-card designs, three sizes (feed
-// portrait, square, story). Downloads PNGs, a ZIP of the people cards,
-// copies captions, opens share links, and — if a webhook is set — hands a
-// post to Publish. Nothing here talks to a social network itself.
+// CampBuddy's own posts about an event (CampBuddy talking to the people going
+// to it), drawn on canvases from App\Support\SocialKit::data().
+//
+// Rules the drawing keeps:
+//   - only the event's brand colours (main, accent, text, light) and mixes of
+//     them — no other colour, not even pure white: light text is the "light"
+//     colour, the QR is "text" on "light";
+//   - every card carries the event's logo, CampBuddy's mark and a QR to the
+//     event in CampBuddy, tagged with the event and the post or role
+//     (utm_content);
+//   - every event looks different: its slug seeds the shapes, their corner
+//     and the starting style;
+//   - nothing overlaps: content that doesn't fit is split over several cards
+//     (1/3, 2/3…), shapes stay out of the text column;
+//   - print ready: a 3× export (3240 px wide) stamped 300 DPI, with every
+//     word and code at least 72 px (at 1080) inside the edge.
 
 import QRCode from 'qrcode-generator';
 import { zipStore } from './zip-store.js';
+import { withPngDpi } from './attendee/png-dpi.js';
 
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920] };
+const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 3, dpi: 300 } };
 const FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
 const SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
+const STYLES = ['bold', 'poster', 'ticket', 'gradient'];
+const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
+const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
+const SAFE = 72;
 const PEOPLE_PAGE = 8;
-
-/** A colour per role, so a card says at a glance who someone is. */
-export const ROLE_COLORS = {
-  organizer: null, // the event's main colour
-  speaker: null, // the event's accent colour
-  volunteer: '#1f8a4c',
-  sponsor: '#1d4f91',
-  media_partner: '#7a2d9c',
-  microsponsor: '#b77900',
-  table_lead: '#0e7c7b',
-};
 
 // ---- Colours --------------------------------------------------------------
 
@@ -59,12 +64,17 @@ function luminance(rgb) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
-/** White or the dark text colour, whichever reads better on `background`. */
-export function textOn(background, dark = '#231f20') {
-  return luminance(hexToRgb(background)) > 0.4 ? dark : '#ffffff';
+function contrast(a, b) {
+  const [la, lb] = [luminance(hexToRgb(a)), luminance(hexToRgb(b))].sort((x, y) => y - x);
+  return (la + 0.05) / (lb + 0.05);
 }
 
-/** `hex` mixed toward `toward` by `amount` (0–1). */
+/** The light or the dark brand colour, whichever reads better on `background`. */
+export function textOn(background, dark = '#231f20', light = '#ffffff') {
+  return contrast(background, dark) >= contrast(background, light) ? dark : light;
+}
+
+/** `hex` mixed toward `toward` by `amount` (0–1) — still the brand's colours. */
 export function mix(hex, toward, amount) {
   const a = hexToRgb(hex);
   const b = hexToRgb(toward);
@@ -77,17 +87,20 @@ function alpha(hex, a) {
 }
 
 /**
- * The logo's two strongest colours: pixels that are clearly coloured (not
- * white, black or grey), grouped by hue, weighted by how saturated they are.
- * The main colour is darkened if needed so white text on it stays readable.
- * Returns null when the logo has no real colour (then the defaults stay).
+ * A full palette from the logo's pixels: main (its strongest real colour,
+ * dark enough for light text), accent (the next distinct hue, or a lighter
+ * tone of the main one), text (the logo's darkest colour, or the main one
+ * taken near black) and light (the main one taken near white).
+ * Null when the logo has no real colour.
  */
 export function paletteFromPixels(data) {
   const buckets = new Map();
+  let darkest = null;
   for (let i = 0; i < data.length; i += 4) {
     if (data[i + 3] < 200) continue;
     const rgb = [data[i], data[i + 1], data[i + 2]];
     const [h, s, l] = rgbToHsl(rgb);
+    if (l < 0.22 && s > 0.15 && (!darkest || l < darkest.l)) darkest = { rgb, l };
     if (s < 0.3 || l < 0.12 || l > 0.9) continue;
     const key = Math.round(h / 30) % 12;
     const b = buckets.get(key) ?? { w: 0, r: 0, g: 0, bl: 0 };
@@ -99,11 +112,56 @@ export function paletteFromPixels(data) {
   if (ranked.length === 0) return null;
   const avg = (b) => [b.r / b.w, b.g / b.w, b.bl / b.w];
 
-  let primary = avg(ranked[0][1]);
-  for (let i = 0; i < 6 && luminance(primary) > 0.25; i++) primary = primary.map((v) => v * 0.8);
+  let main = avg(ranked[0][1]);
+  for (let i = 0; i < 6 && luminance(main) > 0.2; i++) main = main.map((v) => v * 0.82);
+  const primary = rgbToHex(main);
   const second = ranked.find(([key]) => Math.min(Math.abs(key - ranked[0][0]), 12 - Math.abs(key - ranked[0][0])) >= 2);
+  const secondary = second ? rgbToHex(avg(second[1])) : mix(primary, '#ffffff', 0.45);
+  const ink = darkest ? rgbToHex(darkest.rgb) : mix(primary, '#000000', 0.78);
 
-  return { primary: rgbToHex(primary), secondary: second ? rgbToHex(avg(second[1])) : null };
+  return { primary, secondary, ink: luminance(hexToRgb(ink)) < 0.05 ? ink : mix(primary, '#000000', 0.8), paper: mix(primary, '#ffffff', 0.94) };
+}
+
+/** The colours a card may use: the four brand colours and tones between them. */
+function paletteOf(colors) {
+  const { primary, secondary, ink, paper } = colors;
+  return {
+    primary, secondary, ink, paper,
+    deep: mix(primary, ink, 0.4),
+    soft: mix(primary, paper, 0.86),
+    accentSoft: mix(secondary, paper, 0.7),
+    onPrimary: textOn(primary, ink, paper),
+    onSecondary: textOn(secondary, ink, paper),
+  };
+}
+
+// ---- Every event, its own look ---------------------------------------------
+
+/** A small, seeded random: the same event always draws the same shapes. */
+export function seeded(seed) {
+  let a = (Number(seed) >>> 0) || 1;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** What differs between events: the shapes, their corner, the starting style. */
+export function eventLook(seed) {
+  const r = seeded(seed);
+  const pick = (list) => list[Math.floor(r() * list.length)];
+  return {
+    motif: pick(MOTIFS),
+    texture: pick(TEXTURES),
+    corner: r() < 0.5 ? 'right' : 'left',
+    tilt: r() < 0.5 ? -1 : 1,
+    style: pick(STYLES),
+    design: pick(['classic', 'polaroid', 'badge', 'split', 'minimal']),
+    rnd: r,
+  };
 }
 
 // ---- Drawing helpers ------------------------------------------------------
@@ -117,12 +175,51 @@ function loadImage(url) {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
-      // A failed image isn't remembered: the next redraw tries again (a busy server, a slow logo).
+      // A failed image isn't remembered: the next redraw tries again.
       img.onerror = () => { images.delete(url); resolve(null); };
       img.src = url;
     }));
   }
   return images.get(url);
+}
+
+const lightness = new WeakMap();
+
+/**
+ * Whether a logo is mostly light (white lettering on a transparent
+ * background): such a logo sits on a dark tile, or it would vanish.
+ */
+export function isLightImage(img) {
+  if (!img) return false;
+  if (lightness.has(img)) return lightness.get(img);
+  let light = false;
+  try {
+    const c = document.createElement('canvas');
+    c.width = 60; c.height = 60;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, 60, 60);
+    const d = ctx.getImageData(0, 0, 60, 60).data;
+    let sum = 0;
+    let n = 0;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i + 3] < 128) continue;
+      sum += luminance([d[i], d[i + 1], d[i + 2]]);
+      n++;
+    }
+    light = n > 0 && sum / n > 0.6;
+  } catch {
+    light = false;
+  }
+  lightness.set(img, light);
+  return light;
+}
+
+/** A tile for a logo: the light colour, or the dark one when the logo itself is light. */
+function logoTile(ctx, img, x, y, w, h, pal, r = 24) {
+  ctx.fillStyle = isLightImage(img) ? pal.ink : pal.paper;
+  roundRect(ctx, x, y, w, h, r);
+  ctx.fill();
+  if (img) drawContain(ctx, img, x + w * 0.07, y + h * 0.1, w * 0.86, h * 0.8);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -144,13 +241,15 @@ function fitText(ctx, text, maxWidth, size, min, maxLines, weight = 800, family 
     if (lines.length <= maxLines && lines.every((l) => ctx.measureText(l).width <= maxWidth)) return { lines, size: s };
   }
   ctx.font = `${weight} ${min}px ${family}`;
-  const lines = wrap(ctx, text, maxWidth).slice(0, maxLines);
-  return { lines: lines.map((l) => ellipsize(ctx, l, maxWidth)), size: min };
+  const lines = wrap(ctx, text, maxWidth);
+  const kept = lines.slice(0, maxLines);
+  if (lines.length > maxLines) kept[maxLines - 1] = `${kept[maxLines - 1]}…`;
+  return { lines: kept.map((l) => ellipsize(ctx, l, maxWidth)), size: min };
 }
 
 function ellipsize(ctx, text, maxWidth) {
   if (ctx.measureText(text).width <= maxWidth) return text;
-  let t = text;
+  let t = text.replace(/…$/, '');
   while (t.length > 1 && ctx.measureText(`${t}…`).width > maxWidth) t = t.slice(0, -1);
   return `${t}…`;
 }
@@ -186,7 +285,7 @@ function drawCover(ctx, img, x, y, w, h) {
   ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
 
-function circlePhoto(ctx, img, cx, cy, r, ring, ringColor, fallback, name) {
+function circlePhoto(ctx, img, cx, cy, r, ring, ringColor, fill, ink, name) {
   if (ring) {
     ctx.fillStyle = ringColor;
     ctx.beginPath(); ctx.arc(cx, cy, r + ring, 0, Math.PI * 2); ctx.fill();
@@ -195,12 +294,13 @@ function circlePhoto(ctx, img, cx, cy, r, ring, ringColor, fallback, name) {
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
   if (img) drawCover(ctx, img, cx - r, cy - r, 2 * r, 2 * r);
   else {
-    ctx.fillStyle = fallback;
+    ctx.fillStyle = fill;
     ctx.fillRect(cx - r, cy - r, 2 * r, 2 * r);
-    ctx.fillStyle = textOn(fallback);
+    ctx.fillStyle = ink;
     ctx.font = `800 ${Math.round(r * 0.8)}px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.fillText(initials(name), cx, cy + r * 0.3);
+    ctx.textAlign = 'left';
   }
   ctx.restore();
 }
@@ -209,25 +309,36 @@ function initials(name) {
   return String(name ?? '?').trim().split(/\s+/).slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('') || '?';
 }
 
-function qrCanvas(url, size) {
+/** A QR in the brand's text colour on its light colour (dark on light, as scanners need). */
+function drawQr(ctx, url, x, y, size, dark, light) {
   const qr = QRCode(0, 'M');
   qr.addData(url);
   qr.make();
   const count = qr.getModuleCount();
-  const cell = Math.max(1, Math.floor(size / (count + 4)));
-  const c = document.createElement('canvas');
-  c.width = c.height = cell * (count + 4);
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = '#000';
-  for (let r = 0; r < count; r++) for (let col = 0; col < count; col++) if (qr.isDark(r, col)) ctx.fillRect((col + 2) * cell, (r + 2) * cell, cell, cell);
-  return c;
+  const cell = size / (count + 4);
+  ctx.fillStyle = light;
+  roundRect(ctx, x, y, size, size, size * 0.08);
+  ctx.fill();
+  ctx.fillStyle = dark;
+  for (let r = 0; r < count; r++) {
+    for (let c = 0; c < count; c++) {
+      if (qr.isDark(r, c)) ctx.fillRect(x + (c + 2) * cell, y + (r + 2) * cell, Math.ceil(cell), Math.ceil(cell));
+    }
+  }
 }
 
-// A fine grain over the whole image, so flat colour looks printed, not plastic.
+/** The card's QR link: the event in CampBuddy, tagged with this post or role. */
+export function qrLink(base, content) {
+  const url = new URL(base, 'https://campbuddy.club');
+  url.searchParams.set('utm_content', content);
+  return url.toString();
+}
+
+// A fine grain, so flat colour looks printed (neutral: it only lightens and darkens).
 let grain = null;
 function addGrain(ctx, W, H, strength = 0.05) {
+  // Not on a print file: at 3x the noise would make every PNG many times bigger, and paper has its own grain.
+  if (ctx.getTransform().a > 1) return;
   if (!grain) {
     grain = document.createElement('canvas');
     grain.width = grain.height = 220;
@@ -248,8 +359,8 @@ function addGrain(ctx, W, H, strength = 0.05) {
   ctx.restore();
 }
 
-// The event's mark, small and tilted, repeated across the background.
-function watermark(ctx, mark, W, H, opacity = 0.07, step = 210) {
+// The event's mark, small and tilted, repeated very faintly across a background.
+function watermark(ctx, mark, W, H, opacity = 0.06, step = 220) {
   if (!mark) return;
   ctx.save();
   ctx.globalAlpha = opacity;
@@ -258,32 +369,97 @@ function watermark(ctx, mark, W, H, opacity = 0.07, step = 210) {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(-0.26);
-      drawContain(ctx, mark, -45, -45, 90, 90);
+      drawContain(ctx, mark, -42, -42, 84, 84);
       ctx.restore();
     }
   }
   ctx.restore();
 }
 
-function dotGrid(ctx, x, y, cols, rows, gap, r, color) {
-  ctx.fillStyle = color;
-  for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-    ctx.beginPath(); ctx.arc(x + i * gap, y + j * gap, r, 0, Math.PI * 2); ctx.fill();
+/**
+ * The event's motif, inside its own box (top corner, beside the logo, never
+ * behind words): rings, dots, stripes, triangles, waves, arcs, blocks or
+ * plus signs, in the accent and light colours.
+ */
+function drawMotif(ctx, kind, x, y, w, h, c1, c2, rnd) {
+  ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  ctx.lineWidth = 6;
+  const cx = x + w * 0.62;
+  const cy = y + h * 0.5;
+  switch (kind) {
+    case 'rings':
+      for (let i = 0; i < 5; i++) { ctx.strokeStyle = i % 2 ? c2 : c1; ctx.beginPath(); ctx.arc(cx, cy, 30 + i * 26, 0, Math.PI * 2); ctx.stroke(); }
+      break;
+    case 'dots':
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 5; j++) { ctx.fillStyle = (i + j) % 3 ? c1 : c2; ctx.beginPath(); ctx.arc(x + 30 + i * 34, y + 24 + j * 30, 6, 0, Math.PI * 2); ctx.fill(); }
+      break;
+    case 'stripes':
+      for (let i = -h; i < w; i += 30) { ctx.strokeStyle = (i / 30) % 2 ? c1 : c2; ctx.beginPath(); ctx.moveTo(x + i, y + h); ctx.lineTo(x + i + h, y); ctx.stroke(); }
+      break;
+    case 'triangles':
+      for (let i = 0; i < 6; i++) {
+        const tx = x + 20 + (i % 3) * (w / 3);
+        const ty = y + 20 + Math.floor(i / 3) * (h / 2);
+        const s = 40 + rnd() * 30;
+        ctx.fillStyle = i % 2 ? c1 : c2;
+        ctx.beginPath(); ctx.moveTo(tx, ty + s); ctx.lineTo(tx + s / 2, ty); ctx.lineTo(tx + s, ty + s); ctx.closePath(); ctx.fill();
+      }
+      break;
+    case 'waves':
+      for (let k = 0; k < 4; k++) {
+        ctx.strokeStyle = k % 2 ? c1 : c2;
+        ctx.beginPath();
+        for (let i = 0; i <= w; i += 6) { const yy = y + 30 + k * 34 + Math.sin(i / 26) * 12; if (i === 0) ctx.moveTo(x + i, yy); else ctx.lineTo(x + i, yy); }
+        ctx.stroke();
+      }
+      break;
+    case 'arcs':
+      for (let i = 0; i < 4; i++) { ctx.strokeStyle = i % 2 ? c2 : c1; ctx.lineWidth = 14; ctx.beginPath(); ctx.arc(x + w, y + h, 50 + i * 40, Math.PI, Math.PI * 1.5); ctx.stroke(); }
+      break;
+    case 'blocks':
+      for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { if ((i + j) % 2) continue; ctx.fillStyle = (i + j) % 4 ? c1 : c2; roundRect(ctx, x + 20 + i * 54, y + 16 + j * 54, 44, 44, 8); ctx.fill(); }
+      break;
+    default: // plus
+      ctx.lineWidth = 8;
+      for (let i = 0; i < 5; i++) for (let j = 0; j < 3; j++) {
+        if ((i + j) % 2) continue;
+        const px = x + 30 + i * 46;
+        const py = y + 30 + j * 46;
+        ctx.strokeStyle = (i + j) % 4 ? c1 : c2;
+        ctx.beginPath(); ctx.moveTo(px - 12, py); ctx.lineTo(px + 12, py); ctx.moveTo(px, py - 12); ctx.lineTo(px, py + 12); ctx.stroke();
+      }
   }
+  ctx.restore();
 }
 
-function rings(ctx, cx, cy, from, count, gap, color, width = 3) {
+/** One big, faint shape across the background (behind everything, ≤ 10 % strength). */
+function drawTexture(ctx, kind, W, H, color, corner) {
+  ctx.save();
+  ctx.fillStyle = color;
   ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  for (let i = 0; i < count; i++) {
-    ctx.beginPath(); ctx.arc(cx, cy, from + i * gap, 0, Math.PI * 2); ctx.stroke();
+  const left = corner === 'left';
+  const x = left ? W * 0.05 : W * 0.95;
+  switch (kind) {
+    case 'diamond':
+      ctx.translate(x, H * 0.62); ctx.rotate(Math.PI / 4); ctx.fillRect(-W * 0.32, -W * 0.32, W * 0.64, W * 0.64);
+      break;
+    case 'arc':
+      ctx.lineWidth = 70; ctx.beginPath(); ctx.arc(x, H * 0.7, W * 0.42, 0, Math.PI * 2); ctx.stroke();
+      break;
+    case 'bars':
+      for (let i = 0; i < 5; i++) ctx.fillRect(left ? -40 + i * 46 : W - 220 + i * 46, H * 0.35, 22, H * 0.4);
+      break;
+    default:
+      ctx.beginPath(); ctx.arc(x, H * 0.66, W * 0.38, 0, Math.PI * 2); ctx.fill();
   }
+  ctx.restore();
 }
 
 function pill(ctx, text, x, y, { bg, fg, size = 30, pad = 26, height = 60, align = 'left' }) {
   ctx.font = `800 ${size}px ${FONT}`;
   const w = ctx.measureText(text).width + pad * 2;
-  const left = align === 'center' ? x - w / 2 : x;
+  const left = align === 'center' ? x - w / 2 : (align === 'right' ? x - w : x);
   ctx.fillStyle = bg;
   roundRect(ctx, left, y, w, height, height / 2);
   ctx.fill();
@@ -295,25 +471,27 @@ function pill(ctx, text, x, y, { bg, fg, size = 30, pad = 26, height = 60, align
 
 // ---- What a post shows ----------------------------------------------------
 
-/** Session list for the Today post: that day's talks (or all its sessions if few). */
-export function sessionsOfDay(sessions, day, max = 7) {
+/** That day's talks (or all its sessions if there are few talks). */
+export function sessionsOfDay(sessions, day) {
   const ofDay = (sessions ?? []).filter((s) => s.day === day);
   const talks = ofDay.filter((s) => s.speakers?.length);
-  return (talks.length >= 3 ? talks : ofDay).slice(0, max);
+  return talks.length >= 3 ? talks : ofDay;
 }
 
 export function todayCaption(kit, day, list) {
   const label = kit.schedule.days.find((d) => d.key === day)?.label ?? '';
   const lines = list.map((s) => `${s.time}  ${s.title}${s.speakers?.length ? ` (${s.speakers.join(', ')})` : ''}`);
-  return `${label} at ${kit.event.name}:\n\n${lines.join('\n')}\n\nThe full schedule, with reminders: ${kit.event.app}\n\n${kit.event.hashtags}`;
+  return `${label} at ${kit.event.name}:\n\n${lines.join('\n')}\n\nSave your picks and get a reminder before each talk in CampBuddy: ${qrLink(kit.event.qr, 'today')}\n\n${kit.event.hashtags} #CampBuddy`;
 }
 
 export function spotlightCaption(kit, s) {
   if (!s) return '';
   const who = s.speakers?.length ? ` with ${s.speakers.join(', ')}` : '';
   const where = s.track ? ` in ${s.track}` : '';
-  return `Up next at ${kit.event.name}: "${s.title}"${who}, ${s.time}${where}.\n\nSave it in CampBuddy and get a reminder: ${kit.event.app}\n\n${kit.event.hashtags}`;
+  return `Up next at ${kit.event.name}: "${s.title}"${who}, ${s.time}${where}.\n\nSave it in CampBuddy and get a reminder before it starts: ${qrLink(kit.event.qr, 'spotlight')}\n\n${kit.event.hashtags} #CampBuddy`;
 }
+
+const FEATURES = ['The full schedule, with reminders', 'People who share your interests', 'Your Contributor Day team', 'Deals and free tools for you'];
 
 /** The drawable content of a post: kicker, headline, line, and a body. */
 export function postContent(post, fields, kit, pick) {
@@ -323,11 +501,11 @@ export function postContent(post, fields, kit, pick) {
     case 'countdown':
       return { ...base, body: post.days ? { type: 'countdown', days: post.days } : { type: 'none' } };
     case 'app':
-      return { ...base, body: { type: 'qr', url: kit.event.app } };
+      return { ...base, body: { type: 'features', items: FEATURES } };
     case 'speakers':
-      return { ...base, body: { type: 'photos', people: kit.speakers.filter((p) => p.photo).slice(0, 12) } };
+      return { ...base, body: { type: 'photos', people: kit.speakers.filter((p) => p.photo) } };
     case 'sponsors':
-      return { ...base, body: { type: 'logos', logos: kit.sponsors.slice(0, 12) } };
+      return { ...base, body: { type: 'logos', logos: kit.sponsors } };
     case 'today': {
       const list = sessionsOfDay(kit.schedule.sessions, pick);
       const label = kit.schedule.days.find((d) => d.key === pick)?.label;
@@ -343,300 +521,278 @@ export function postContent(post, fields, kit, pick) {
       };
     }
     case 'contributor':
-      return { ...base, body: kit.tables.length ? { type: 'tables', tables: kit.tables.slice(0, 6) } : { type: 'none' } };
+      return { ...base, body: kit.tables.length ? { type: 'tables', tables: kit.tables } : { type: 'none' } };
     default:
       return base;
   }
 }
 
-// ---- Styles ---------------------------------------------------------------
-// Each style paints the background and says which colours sit on it; the
-// header, text block, body and footer are laid out the same way for all.
+// ---- Layout ---------------------------------------------------------------
 
-function styleOf(name, colors) {
-  const { primary, secondary, ink, paper } = colors;
+function styleOf(name, pal) {
   switch (name) {
     case 'poster':
-      return { name, fg: ink, muted: alpha(ink, 0.75), accent: primary, kicker: { bg: primary, fg: textOn(primary) }, card: { bg: '#ffffff', fg: ink }, headlineFamily: SERIF, headlineWeight: 900, logoTile: false };
+      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.primary, fg: pal.onPrimary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: SERIF, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
     case 'ticket':
-      return { name, fg: ink, muted: alpha(ink, 0.72), accent: primary, kicker: { bg: secondary, fg: textOn(secondary) }, card: { bg: mix(paper, primary, 0.08), fg: ink }, cardBg: mix(paper, primary, 0.03), headlineFamily: FONT, headlineWeight: 900, logoTile: true };
+      return { name, bg: pal.paper, fg: pal.ink, muted: alpha(pal.ink, 0.72), accent: pal.primary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: pal.soft, fg: pal.ink, muted: alpha(pal.ink, 0.7) }, family: FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
     case 'gradient':
-      return { name, fg: '#ffffff', muted: 'rgba(255,255,255,0.86)', accent: '#ffffff', kicker: { bg: 'rgba(255,255,255,0.2)', fg: '#ffffff' }, card: { bg: 'rgba(255,255,255,0.14)', fg: '#ffffff' }, headlineFamily: FONT, headlineWeight: 900, logoTile: true };
+      return { name, bg: pal.primary, fg: pal.paper, muted: alpha(pal.paper, 0.86), accent: pal.secondary, kicker: { bg: alpha(pal.paper, 0.18), fg: pal.paper }, card: { bg: alpha(pal.paper, 0.14), fg: pal.paper, muted: alpha(pal.paper, 0.8) }, family: FONT, footer: { bg: alpha(pal.paper, 0.14), fg: pal.paper, accent: pal.secondary } };
     default:
-      return { name: 'bold', fg: textOn(primary), muted: alpha(textOn(primary), 0.86), accent: secondary, kicker: { bg: secondary, fg: textOn(secondary) }, card: { bg: 'rgba(255,255,255,0.12)', fg: textOn(primary) }, headlineFamily: FONT, headlineWeight: 900, logoTile: true };
+      return { name: 'bold', bg: pal.primary, fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.86), accent: pal.secondary, kicker: { bg: pal.secondary, fg: pal.onSecondary }, card: { bg: alpha(pal.onPrimary, 0.12), fg: pal.onPrimary, muted: alpha(pal.onPrimary, 0.8) }, family: FONT, footer: { bg: pal.paper, fg: pal.ink, accent: pal.primary } };
   }
 }
 
-const TICKET_MARGIN = 54;
+/** The fixed parts of a card: content column, where the text may start, the footer. */
+function frame(W, H, styleName) {
+  const square = H < 1100;
+  const tall = H >= 1900;
+  const footerH = square ? 200 : (tall ? 260 : 230);
+  const inset = styleName === 'ticket' ? 46 : 0;
+  const stub = styleName === 'ticket' ? Math.round(H * (tall ? 0.15 : (square ? 0.17 : 0.19))) : 0;
+  const x = SAFE + inset;
+  const w = W - 2 * x;
+  const headerTop = SAFE + inset;
+  const logo = square ? { w: 200, h: 112 } : { w: 260, h: 146 };
+  const top = styleName === 'ticket' ? inset + stub + 50 : headerTop + logo.h + (square ? 34 : 112);
+  const footer = H - inset - footerH;
+  return { x, w, headerTop, logo, top, footer, footerH, inset, stub, square, tall };
+}
 
-/** Paints the background; returns the content box {x, y, w, footer}. */
-function paintBackground(ctx, W, H, style, colors, mark) {
-  const { primary, secondary, ink, paper } = colors;
+const ROWS = {
+  list: (H) => (H >= 1900 ? 140 : 108),
+  tables: (H) => (H >= 1900 ? 120 : 98),
+  logos: (H) => (H >= 1900 ? 170 : 132),
+  photos: (H) => (H >= 1900 ? 250 : 212),
+};
 
-  if (style.name === 'poster') {
-    ctx.fillStyle = paper;
-    ctx.fillRect(0, 0, W, H);
-    // A big disc and a half-disc in the brand colours, a dot grid, a corner triangle.
-    // A disc peeking in at the bottom right (beside the footer, not under it),
-    // a half-disc at the top, rings and a dot grid in the corner.
-    ctx.fillStyle = primary;
-    ctx.beginPath(); ctx.arc(W + 40, H + 40, 300, 0, Math.PI * 2); ctx.fill();
-    rings(ctx, W + 40, H + 40, 340, 3, 28, alpha(primary, 0.35), 3);
-    ctx.fillStyle = secondary;
-    ctx.beginPath(); ctx.arc(W * 0.84, 0, W * 0.18, 0, Math.PI); ctx.fill();
-    dotGrid(ctx, W - 250, 230, 6, 4, 28, 4, alpha(primary, 0.45));
-    ctx.fillStyle = ink;
-    ctx.fillRect(0, 0, 18, H);
-    return { x: 80, y: 80, w: W - 160, footer: H - 200 };
+function columns(type, H) {
+  if (type === 'logos') return 3;
+  if (type === 'photos') return H < 1100 ? 5 : 4;
+  return 1;
+}
+
+function itemsKey(type) {
+  return { list: 'items', tables: 'tables', logos: 'logos', photos: 'people' }[type];
+}
+
+/** Headline and line sized for this card; how much room the body has under them. */
+function measureText(ctx, content, f, style) {
+  const hasBody = content.body.type !== 'none';
+  const head = fitText(ctx, content.headline, f.w, f.tall ? 128 : (f.square ? (hasBody ? 68 : 88) : (hasBody ? 96 : 112)), 40, hasBody ? 2 : 3, 900, style.family);
+  const line = fitText(ctx, content.line, f.w, f.tall ? 44 : 36, 22, 2, 600);
+  const textH = head.lines.length * head.size * 1.06 + (content.line ? 46 + line.lines.length * line.size * 1.3 : 0);
+  const gap = hasBody ? (f.tall ? 70 : 36) : 0;
+  const room = f.footer - 40 - f.top - textH - gap;
+  return { head, line, textH, gap, room };
+}
+
+/**
+ * The cards a post becomes: lists, tables, photo and logo grids are split so
+ * every card holds only what fits (1/3, 2/3…); anything else is one card.
+ */
+export function paginate(content, room, H) {
+  const key = itemsKey(content.body.type);
+  if (!key) return [content];
+  const all = content.body[key] ?? [];
+  if (!all.length) return [{ ...content, body: { type: 'none' } }];
+  const perPage = Math.max(1, Math.floor(Math.max(room, 0) / ROWS[content.body.type](H)) * columns(content.body.type, H));
+  const pages = [];
+  for (let i = 0; i < all.length; i += perPage) pages.push({ ...content, body: { ...content.body, [key]: all.slice(i, i + perPage) } });
+  return pages;
+}
+
+function bodyHeight(body, H, room) {
+  const rows = (n, type) => Math.ceil(n / columns(type, H)) * ROWS[type](H);
+  switch (body.type) {
+    case 'list': return rows(body.items.length, 'list');
+    case 'tables': return rows(body.tables.length, 'tables');
+    case 'logos': return rows(body.logos.length, 'logos');
+    case 'photos': return rows(body.people.length, 'photos');
+    case 'countdown': return Math.min(room, H >= 1900 ? 400 : (H < 1100 ? 220 : 300));
+    case 'session': return Math.min(room, H >= 1900 ? 340 : (H < 1100 ? 200 : 270));
+    case 'features': return Math.min(room, H >= 1900 ? 520 : (H < 1100 ? 250 : 360));
+    default: return 0;
   }
+}
 
-  if (style.name === 'ticket') {
-    const m = TICKET_MARGIN;
-    const stub = Math.round(H * (H >= 1900 ? 0.18 : (H < 1100 ? 0.17 : 0.22)));
-    ctx.fillStyle = mix(primary, '#000000', 0.3);
-    ctx.fillRect(0, 0, W, H);
-    watermark(ctx, mark, W, H, 0.09);
-    // The ticket: rounded card, a coloured stub on top, notches and a perforation.
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
-    ctx.fillStyle = style.cardBg;
-    roundRect(ctx, m, m, W - 2 * m, H - 2 * m, 40);
-    ctx.fill();
-    ctx.restore();
-    ctx.save();
-    roundRect(ctx, m, m, W - 2 * m, H - 2 * m, 40);
-    ctx.clip();
-    ctx.fillStyle = primary;
-    ctx.fillRect(m, m, W - 2 * m, stub);
-    rings(ctx, W - m - 80, m + stub / 2, 50, 5, 34, alpha('#ffffff', 0.16), 3);
-    ctx.restore();
-    ctx.fillStyle = mix(primary, '#000000', 0.3);
-    for (const x of [m, W - m]) { ctx.beginPath(); ctx.arc(x, m + stub, 32, 0, Math.PI * 2); ctx.fill(); }
-    ctx.strokeStyle = alpha(ink, 0.3);
-    ctx.setLineDash([16, 14]);
-    ctx.lineWidth = 4;
-    ctx.beginPath(); ctx.moveTo(m + 50, m + stub); ctx.lineTo(W - m - 50, m + stub); ctx.stroke();
-    ctx.setLineDash([]);
-    return { x: m + 56, y: m + stub + 50, w: W - 2 * m - 112, footer: H - m - 150, stub: { top: m, height: stub } };
-  }
+/** Every card of a post at this size and style (measured with fonts loaded). */
+export function planPost(content, size, styleName, colors) {
+  const [W, H] = SIZES[size];
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  const f = frame(W, H, styleName);
+  const m = measureText(ctx, content, f, styleOf(styleName, paletteOf(colors)));
+  return paginate(content, m.room, H);
+}
+
+// ---- Painting a post --------------------------------------------------------
+
+function paintBackground(ctx, W, H, f, style, pal, look, mark) {
+  ctx.fillStyle = style.bg;
+  ctx.fillRect(0, 0, W, H);
 
   if (style.name === 'gradient') {
-    const g = ctx.createLinearGradient(0, 0, W, H);
-    g.addColorStop(0, mix(primary, '#000000', 0.2));
-    g.addColorStop(0.55, primary);
-    g.addColorStop(1, mix(primary, secondary, 0.75));
+    const g = ctx.createLinearGradient(0, 0, W * (look.corner === 'left' ? -0.2 : 1.2), H);
+    g.addColorStop(0, pal.deep);
+    g.addColorStop(0.55, pal.primary);
+    g.addColorStop(1, mix(pal.primary, pal.secondary, 0.65));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
-    for (const [x, y, r, c, a] of [[W * 0.95, H * 0.1, W * 0.6, secondary, 0.55], [0, H * 0.7, W * 0.55, mix(secondary, '#ffffff', 0.35), 0.35], [W * 0.6, H * 1.05, W * 0.5, ink, 0.4]]) {
+    for (const [x, y, r, c, a] of [[look.corner === 'left' ? 0 : W, H * 0.08, W * 0.6, pal.secondary, 0.4], [look.corner === 'left' ? W : 0, H * 0.75, W * 0.5, pal.paper, 0.14]]) {
       const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
       rg.addColorStop(0, alpha(c, a));
       rg.addColorStop(1, alpha(c, 0));
       ctx.fillStyle = rg;
       ctx.fillRect(0, 0, W, H);
     }
-    watermark(ctx, mark, W, H, 0.05, 240);
-    return { x: 80, y: 80, w: W - 160, footer: H - 210 };
+    watermark(ctx, mark, W, H, 0.05);
+  } else if (style.name === 'bold') {
+    watermark(ctx, mark, W, H, 0.06);
+    drawTexture(ctx, look.texture, W, H, alpha(pal.secondary, 0.14), look.corner);
+  } else if (style.name === 'poster') {
+    drawTexture(ctx, look.texture, W, H, alpha(pal.primary, 0.08), look.corner);
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(look.corner === 'left' ? 0 : W - 18, 0, 18, H);
+  } else if (style.name === 'ticket') {
+    ctx.fillStyle = pal.deep;
+    ctx.fillRect(0, 0, W, H);
+    watermark(ctx, mark, W, H, 0.08);
+    const m = f.inset;
+    ctx.save();
+    ctx.shadowColor = alpha(pal.ink, 0.45); ctx.shadowBlur = 40; ctx.shadowOffsetY = 14;
+    ctx.fillStyle = pal.paper;
+    roundRect(ctx, m, m, W - 2 * m, H - 2 * m, 40);
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    roundRect(ctx, m, m, W - 2 * m, H - 2 * m, 40);
+    ctx.clip();
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(m, m, W - 2 * m, f.stub);
+    ctx.restore();
+    ctx.fillStyle = pal.deep;
+    for (const x of [m, W - m]) { ctx.beginPath(); ctx.arc(x, m + f.stub, 30, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = alpha(pal.ink, 0.3);
+    ctx.setLineDash([16, 14]);
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(m + 46, m + f.stub); ctx.lineTo(W - m - 46, m + f.stub); ctx.stroke();
+    ctx.setLineDash([]);
   }
-
-  // Bold
-  ctx.fillStyle = primary;
-  ctx.fillRect(0, 0, W, H);
-  watermark(ctx, mark, W, H, 0.07);
-  ctx.globalAlpha = 0.28;
-  ctx.fillStyle = secondary;
-  ctx.beginPath(); ctx.arc(W * 0.98, H * 0.04, W * 0.4, 0, Math.PI * 2); ctx.fill();
-  ctx.globalAlpha = 1;
-  rings(ctx, W * 0.98, H * 0.04, W * 0.46, 3, 30, alpha('#ffffff', 0.18), 3);
-  ctx.fillStyle = paper;
-  ctx.fillRect(0, H - 210, W, 210);
-  ctx.fillStyle = secondary;
-  ctx.fillRect(0, H - 222, W, 12);
-  return { x: 80, y: 80, w: W - 160, footer: H - 222 };
 }
 
-/** Logo and kicker; returns where the text block may start. */
-function paintHeader(ctx, box, style, colors, logo, content) {
-  if (style.name === 'ticket') {
-    // On the ticket's coloured stub.
-    const { top, height } = box.stub;
-    const tileH = Math.min(150, height - 60);
-    const tileW = tileH * 1.75;
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, box.x, top + (height - tileH) / 2, tileW, tileH, 24);
-    ctx.fill();
-    if (logo) drawContain(ctx, logo, box.x + 16, top + (height - tileH) / 2 + 14, tileW - 32, tileH - 28);
-    if (content.kicker) {
-      ctx.font = `800 30px ${FONT}`;
-      ctx.fillStyle = textOn(colors.primary);
-      ctx.textAlign = 'right';
-      ctx.fillText(String(content.kicker).toUpperCase(), box.x + box.w, top + height / 2 + 10);
-      ctx.textAlign = 'left';
-    }
-    return box.y;
+function paintHeader(ctx, W, f, style, pal, look, logo, content, page) {
+  const onStub = style.name === 'ticket';
+  const tileY = onStub ? f.inset + (f.stub - f.logo.h) / 2 : f.headerTop;
+  logoTile(ctx, logo, f.x, tileY, f.logo.w, f.logo.h, pal);
+
+  // The event's motif beside the logo, inside its own box.
+  const mx = f.x + f.logo.w + 30;
+  const mw = W - f.inset - SAFE - mx;
+  const motifColors = style.name === 'poster' ? [alpha(pal.primary, 0.55), alpha(pal.secondary, 0.8)] : [alpha(pal.paper, 0.35), alpha(pal.secondary, 0.85)];
+  if (mw > 120) drawMotif(ctx, look.motif, mx + (page.total > 1 ? 0 : 0), tileY, mw - (page.total > 1 ? 120 : 0), f.logo.h, ...motifColors, seeded(look.seedValue));
+
+  if (page.total > 1) {
+    pill(ctx, `${page.index}/${page.total}`, W - f.inset - SAFE, tileY + (f.logo.h - 54) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 54, pad: 18, align: 'right' });
   }
 
-  let y = box.y;
-  const compact = box.compact;
-  const tw = compact ? 220 : 290;
-  const th = compact ? 128 : 170;
-  if (style.logoTile) {
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, box.x, y, tw, th, compact ? 22 : 28);
-    ctx.fill();
-    if (logo) drawContain(ctx, logo, box.x + 16, y + 14, tw - 32, th - 28);
-  } else if (logo) {
-    drawContain(ctx, logo, box.x, y, tw, th);
-  }
-  if (compact && content.kicker) {
-    // On a square the kicker sits beside the logo.
-    pill(ctx, String(content.kicker).toUpperCase(), box.x + tw + 24, y + (th - 54) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 54 });
-    return y + th + 30;
-  }
-  y += th + 40;
   if (content.kicker) {
-    pill(ctx, String(content.kicker).toUpperCase(), box.x, y, { bg: style.kicker.bg, fg: style.kicker.fg, size: 28, height: 58 });
-    y += 82;
-  }
-  return y;
-}
-
-/**
- * The body made to fit `room` pixels: lists, tables, photo and logo grids
- * lose whole rows; the QR, countdown and session shrink; below 150 px there
- * is no body at all. Returns {body, h}.
- */
-export function fitBody(body, H, room) {
-  let h = bodyHeight(body, H);
-  if (h <= room) return { body, h };
-  const minimum = body.type === 'list' || body.type === 'tables' ? (H >= 1900 ? 140 : 108) : 150;
-  if (room < minimum) return { body: { type: 'none' }, h: 0 };
-  const tall = H >= 1900;
-  const trim = (key, rowH, perRow) => {
-    const rows = Math.max(1, Math.floor(room / rowH));
-    const next = { ...body, [key]: body[key].slice(0, rows * perRow) };
-    return { body: next, h: bodyHeight(next, H) };
-  };
-  switch (body.type) {
-    case 'list': return trim('items', tall ? 140 : 108, 1);
-    case 'tables': return trim('tables', tall ? 120 : 98, 1);
-    case 'logos': return trim('logos', tall ? 170 : 130, 3);
-    case 'photos': {
-      const n = Math.min(body.people.length, tall ? 12 : (H > 1100 ? 8 : 4));
-      const cols = Math.max(1, n > 6 || (n > 4 && !tall) ? 4 : Math.min(4, n));
-      return trim('people', tall ? 250 : 210, cols);
+    if (onStub) {
+      // On the stub there is no room under the logo: the kicker sits on the perforation.
+      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.inset + f.stub - 27, { bg: style.kicker.bg, fg: style.kicker.fg, size: 24, height: 54 });
+    } else if (f.square) {
+      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.top - 4 - 50, { bg: style.kicker.bg, fg: style.kicker.fg, size: 22, height: 46, pad: 18 });
+    } else {
+      pill(ctx, String(content.kicker).toUpperCase(), f.x, f.headerTop + f.logo.h + 32, { bg: style.kicker.bg, fg: style.kicker.fg, size: 26, height: 56 });
     }
-    default:
-      return { body, h: room };
   }
 }
 
-function bodyHeight(body, H) {
+async function paintBody(ctx, body, x, y, w, h, style, pal, kit, H) {
   const tall = H >= 1900;
-  switch (body.type) {
-    case 'countdown': return tall ? 400 : (H > 1100 ? 300 : 240);
-    case 'qr': return tall ? 400 : (H > 1100 ? 330 : 270);
-    case 'photos': {
-      const n = Math.min(body.people.length, tall ? 12 : (H > 1100 ? 8 : 4));
-      const cols = n > 6 || (n > 4 && !tall) ? 4 : Math.min(4, n);
-      return n ? Math.ceil(n / Math.max(cols, 1)) * (tall ? 250 : 210) : 0;
-    }
-    case 'logos': {
-      const n = Math.min(body.logos.length, tall ? 12 : (H > 1100 ? 9 : 6));
-      return n ? Math.ceil(n / 3) * (tall ? 170 : 130) : 0;
-    }
-    case 'list': return Math.min(body.items.length, tall ? 7 : (H > 1100 ? 5 : 3)) * (tall ? 140 : 108);
-    case 'tables': return Math.min(body.tables.length, tall ? 6 : (H > 1100 ? 4 : 3)) * (tall ? 120 : 98);
-    case 'session': return body.photos.length ? (tall ? 340 : (H > 1100 ? 270 : 220)) : 0;
-    default: return 0;
-  }
-}
-
-async function paintBody(ctx, body, x, y, w, h, style, colors, kit, H) {
-  const tall = H >= 1900;
-  const card = style.card;
   const light = style.name === 'poster' || style.name === 'ticket';
 
   if (body.type === 'countdown') {
-    const r = h / 2 - 8;
-    const cx = x + r + 8;
+    const r = h / 2 - 6;
+    const cx = x + r + 6;
     const cy = y + h / 2;
-    ctx.fillStyle = light ? colors.primary : 'rgba(255,255,255,0.16)';
+    ctx.fillStyle = light ? pal.primary : alpha(pal.paper, 0.16);
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = light ? colors.secondary : alpha('#ffffff', 0.6);
+    ctx.strokeStyle = pal.secondary;
     ctx.lineWidth = 12;
     ctx.lineCap = 'round';
     ctx.beginPath(); ctx.arc(cx, cy, r - 16, -Math.PI / 2, Math.PI * 1.15); ctx.stroke();
     ctx.lineCap = 'butt';
-    ctx.fillStyle = light ? textOn(colors.primary) : '#ffffff';
+    ctx.fillStyle = light ? pal.onPrimary : pal.paper;
     ctx.textAlign = 'center';
     const digits = String(body.days);
     ctx.font = `900 ${Math.round(r * (digits.length > 2 ? 0.7 : 0.95))}px ${FONT}`;
     ctx.fillText(digits, cx, cy + r * 0.32);
     ctx.textAlign = 'left';
     ctx.fillStyle = style.fg;
-    ctx.font = `900 ${tall ? 72 : 60}px ${FONT}`;
+    ctx.font = `900 ${tall ? 72 : 58}px ${FONT}`;
     ctx.fillText(body.days === 1 ? 'day' : 'days', cx + r + 40, cy);
-    ctx.font = `700 ${tall ? 42 : 36}px ${FONT}`;
+    ctx.font = `700 ${tall ? 40 : 34}px ${FONT}`;
     ctx.fillStyle = style.muted;
-    ctx.fillText('to go', cx + r + 40, cy + 54);
+    ctx.fillText('to go', cx + r + 40, cy + 52);
     return;
   }
 
-  if (body.type === 'qr') {
-    const side = h - 40;
-    const qr = qrCanvas(body.url, side);
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, x, y, side + 40, side + 40, 28);
-    ctx.fill();
-    ctx.drawImage(qr, x + 20, y + 20, side, side);
-    const tx = x + side + 90;
-    ctx.fillStyle = style.fg;
-    ctx.font = `900 ${tall ? 56 : 46}px ${FONT}`;
-    ctx.fillText('Scan me', tx, y + side / 2 - 10);
-    ctx.font = `700 ${tall ? 34 : 28}px ${FONT}`;
-    ctx.fillStyle = style.muted;
-    ['Free · no sign-up', 'Works offline'].forEach((t, i) => ctx.fillText(t, tx, y + side / 2 + 44 + i * 42));
+  if (body.type === 'features') {
+    // What CampBuddy does, beside a big QR to it.
+    const side = Math.min(h, w * 0.42);
+    drawQr(ctx, qrLink(kit.event.qr, 'app'), x + w - side, y + (h - side) / 2, side, pal.ink, pal.paper);
+    const tw = w - side - 40;
+    const rowH = h / body.items.length;
+    body.items.forEach((item, i) => {
+      const ry = y + i * rowH + rowH / 2;
+      ctx.fillStyle = pal.secondary;
+      ctx.beginPath(); ctx.arc(x + 22, ry, 22, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = pal.onSecondary;
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(x + 12, ry); ctx.lineTo(x + 20, ry + 8); ctx.lineTo(x + 33, ry - 8); ctx.stroke();
+      ctx.fillStyle = style.fg;
+      const t = fitText(ctx, item, tw - 64, tall ? 40 : 32, 20, 2, 700);
+      t.lines.forEach((l, k) => ctx.fillText(l, x + 64, ry + t.size * 0.35 + (k - (t.lines.length - 1) / 2) * t.size * 1.15));
+    });
     return;
   }
 
   if (body.type === 'photos') {
-    const people = body.people.slice(0, tall ? 12 : (H > 1100 ? 8 : 4));
-    const cols = Math.max(1, people.length > 6 || (people.length > 4 && !tall) ? 4 : Math.min(4, people.length));
+    const cols = columns('photos', H);
     const cellW = w / cols;
-    const rowH = tall ? 250 : 210;
-    const r = Math.min(cellW * 0.36, rowH * 0.34);
-    const imgs = await Promise.all(people.map((p) => loadImage(p.photo)));
-    people.forEach((p, i) => {
+    const rowH = ROWS.photos(H);
+    const r = Math.min(cellW * 0.36, rowH * 0.32);
+    const imgs = await Promise.all(body.people.map((p) => loadImage(p.photo)));
+    body.people.forEach((p, i) => {
       const cx = x + cellW * (i % cols) + cellW / 2;
       const cy = y + rowH * Math.floor(i / cols) + r + 6;
-      circlePhoto(ctx, imgs[i], cx, cy, r, 6, light ? colors.secondary : '#ffffff', colors.secondary, p.name);
+      circlePhoto(ctx, imgs[i], cx, cy, r, 6, light ? pal.secondary : pal.paper, pal.accentSoft, pal.ink, p.name);
       ctx.fillStyle = style.fg;
       ctx.textAlign = 'center';
-      const name = fitText(ctx, p.name, cellW - 16, tall ? 26 : 22, 16, 1, 700);
-      ctx.fillText(name.lines[0], cx, cy + r + 36);
+      const name = fitText(ctx, p.name, cellW - 12, tall ? 26 : 22, 15, 2, 700);
+      name.lines.forEach((l, k) => ctx.fillText(l, cx, cy + r + 34 + k * name.size * 1.1));
       ctx.textAlign = 'left';
     });
     return;
   }
 
   if (body.type === 'logos') {
-    const logos = body.logos.slice(0, tall ? 12 : (H > 1100 ? 9 : 6));
     const cols = 3;
     const gap = 18;
     const cellW = (w - gap * (cols - 1)) / cols;
-    const rowH = tall ? 170 : 130;
-    const imgs = await Promise.all(logos.map((l) => loadImage(proxied(kit, l.logo))));
-    logos.forEach((l, i) => {
+    const rowH = ROWS.logos(H);
+    const imgs = await Promise.all(body.logos.map((l) => loadImage(proxied(kit, l.logo))));
+    body.logos.forEach((l, i) => {
       const bx = x + (cellW + gap) * (i % cols);
       const by = y + rowH * Math.floor(i / cols);
-      ctx.fillStyle = '#fff';
-      roundRect(ctx, bx, by, cellW, rowH - gap, 20);
-      ctx.fill();
-      if (imgs[i]) drawContain(ctx, imgs[i], bx + 22, by + 16, cellW - 44, rowH - gap - 32);
+      if (imgs[i]) logoTile(ctx, imgs[i], bx, by, cellW, rowH - gap, pal, 20);
       else {
-        ctx.fillStyle = colors.ink;
+        ctx.fillStyle = style.name === 'poster' || style.name === 'ticket' ? pal.soft : pal.paper;
+        roundRect(ctx, bx, by, cellW, rowH - gap, 20);
+        ctx.fill();
+        ctx.fillStyle = pal.ink;
         ctx.textAlign = 'center';
-        const t = fitText(ctx, l.name, cellW - 30, 30, 18, 2, 800);
+        const t = fitText(ctx, l.name, cellW - 30, 30, 16, 2, 800);
         t.lines.forEach((line, k) => ctx.fillText(line, bx + cellW / 2, by + (rowH - gap) / 2 + (k - (t.lines.length - 1) / 2) * t.size * 1.1 + t.size * 0.35));
         ctx.textAlign = 'left';
       }
@@ -645,20 +801,19 @@ async function paintBody(ctx, body, x, y, w, h, style, colors, kit, H) {
   }
 
   if (body.type === 'list') {
-    const items = body.items.slice(0, tall ? 7 : (H > 1100 ? 5 : 3));
-    const rowH = tall ? 140 : 108;
-    items.forEach((it, i) => {
+    const rowH = ROWS.list(H);
+    body.items.forEach((it, i) => {
       const ry = y + i * rowH;
-      ctx.fillStyle = card.bg;
+      ctx.fillStyle = style.card.bg;
       roundRect(ctx, x, ry, w, rowH - 14, 22);
       ctx.fill();
       const pw = pill(ctx, it.time, x + 18, ry + (rowH - 14 - 54) / 2, { bg: style.kicker.bg, fg: style.kicker.fg, size: 24, height: 54, pad: 16 });
-      ctx.fillStyle = card.fg;
+      ctx.fillStyle = style.card.fg;
       const tx = x + 18 + pw + 22;
-      const t = fitText(ctx, it.title, x + w - tx - 20, tall ? 34 : 29, 20, 1, 800);
+      const t = fitText(ctx, it.title, x + w - tx - 20, tall ? 34 : 29, 18, 1, 800);
       ctx.fillText(t.lines[0], tx, ry + (it.meta ? (rowH - 14) * 0.45 : (rowH - 14) * 0.5 + t.size * 0.35));
       if (it.meta) {
-        ctx.fillStyle = style.name === 'gradient' || style.name === 'bold' ? 'rgba(255,255,255,0.8)' : alpha(colors.ink, 0.7);
+        ctx.fillStyle = style.card.muted;
         const m = fitText(ctx, it.meta, x + w - tx - 20, tall ? 26 : 22, 16, 1, 600);
         ctx.fillText(m.lines[0], tx, ry + (rowH - 14) * 0.78);
       }
@@ -667,17 +822,16 @@ async function paintBody(ctx, body, x, y, w, h, style, colors, kit, H) {
   }
 
   if (body.type === 'tables') {
-    const tables = body.tables.slice(0, tall ? 6 : (H > 1100 ? 4 : 3));
-    const rowH = tall ? 120 : 98;
-    tables.forEach((t, i) => {
+    const rowH = ROWS.tables(H);
+    body.tables.forEach((t, i) => {
       const ry = y + i * rowH;
-      ctx.fillStyle = card.bg;
+      ctx.fillStyle = style.card.bg;
       roundRect(ctx, x, ry, w, rowH - 14, 22);
       ctx.fill();
-      ctx.fillStyle = card.fg;
-      const n = fitText(ctx, t.name, w * 0.45, 32, 20, 1, 800);
+      ctx.fillStyle = style.card.fg;
+      const n = fitText(ctx, t.name, w * 0.45, 32, 18, 1, 800);
       ctx.fillText(n.lines[0], x + 28, ry + (rowH - 14) / 2 + n.size * 0.35);
-      ctx.fillStyle = style.muted;
+      ctx.fillStyle = style.card.muted;
       ctx.textAlign = 'right';
       const p = fitText(ctx, t.place || (t.leads?.length ? `Leads: ${t.leads.join(', ')}` : ''), w * 0.48, 26, 16, 1, 600);
       ctx.fillText(p.lines[0] ?? '', x + w - 28, ry + (rowH - 14) / 2 + p.size * 0.35);
@@ -690,12 +844,10 @@ async function paintBody(ctx, body, x, y, w, h, style, colors, kit, H) {
     const photos = body.photos.slice(0, 3);
     const imgs = await Promise.all(photos.map((u) => loadImage(u)));
     const r = Math.min(h / 2 - 12, photos.length > 1 ? 110 : 140);
-    photos.forEach((_, i) => {
-      circlePhoto(ctx, imgs[i], x + r + 10 + i * (r * 1.45), y + h / 2, r, 8, light ? colors.secondary : '#ffffff', colors.secondary, body.speakers[i]);
-    });
+    photos.forEach((_, i) => circlePhoto(ctx, imgs[i], x + r + 10 + i * (r * 1.45), y + h / 2, r, 8, light ? pal.secondary : pal.paper, pal.accentSoft, pal.ink, body.speakers[i]));
     const tx = x + r * 2 + 50 + (Math.max(photos.length, 1) - 1) * r * 1.45;
     ctx.fillStyle = style.fg;
-    const names = fitText(ctx, body.speakers.join(', '), x + w - tx, tall ? 44 : 36, 22, 3, 800);
+    const names = fitText(ctx, body.speakers.join(', '), x + w - tx, tall ? 44 : 36, 20, 3, 800);
     names.lines.forEach((l, k) => ctx.fillText(l, tx, y + h / 2 - ((names.lines.length - 1) * names.size * 1.2) / 2 + k * names.size * 1.2 + names.size * 0.35));
   }
 }
@@ -706,148 +858,139 @@ function proxied(kit, url) {
   return `${kit.imageUrl}?u=${encodeURIComponent(url)}`;
 }
 
-function paintFooter(ctx, W, H, box, style, colors, kit, brand) {
-  const { primary, ink } = colors;
-  const tags = kit.event.hashtags.split(' ').slice(2).join('  ');
-  const when = [kit.event.dates, tags].filter(Boolean).join('   ');
+/**
+ * Footer, the same on every card: the event (name, dates, hashtag) on the
+ * left, then CampBuddy's mark and a QR to the event in CampBuddy.
+ */
+function paintFooter(ctx, W, f, style, pal, kit, brand, qrContent, withQr = true) {
+  const y = f.footer;
+  const h = f.footerH - (f.inset ? 24 : 0);
+  const fs = style.footer;
+  const x0 = f.inset;
+  const x1 = W - f.inset;
 
   if (style.name === 'bold') {
-    const fy = H - 210;
-    ctx.fillStyle = ink;
-    const name = fitText(ctx, kit.event.name, W - 420, 50, 30, 1, 800);
-    ctx.fillText(name.lines[0], 80, fy + 88);
-    ctx.font = `700 28px ${FONT}`;
-    ctx.fillStyle = primary;
-    ctx.fillText(ellipsize(ctx, when, W - 420), 80, fy + 144);
-    if (brand) drawContain(ctx, brand, W - 80 - 220, fy + 60, 220, 90);
-    return;
-  }
-
-  if (style.name === 'ticket') {
-    const fy = box.footer;
-    ctx.strokeStyle = alpha(ink, 0.15);
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(box.x, fy); ctx.lineTo(box.x + box.w, fy); ctx.stroke();
-    ctx.fillStyle = ink;
-    const name = fitText(ctx, kit.event.name, box.w - 280, 40, 24, 1, 800);
-    ctx.fillText(name.lines[0], box.x, fy + 58);
-    ctx.font = `700 26px ${FONT}`;
-    ctx.fillStyle = primary;
-    ctx.fillText(ellipsize(ctx, when, box.w - 280), box.x, fy + 100);
-    // A barcode, ticket-style.
-    let bx = box.x + box.w - 230;
-    for (let i = 0; i < 34; i++) {
-      const bw = [3, 6, 2, 8, 3, 4][i % 6];
-      ctx.fillStyle = ink;
-      ctx.fillRect(bx, fy + 28, bw, 80);
-      bx += bw + 3;
-    }
-    return;
-  }
-
-  if (style.name === 'poster') {
-    const fy = box.footer;
-    ctx.fillStyle = ink;
-    ctx.fillRect(box.x, fy, 120, 8);
-    const name = fitText(ctx, kit.event.name, W - 480, 44, 26, 1, 800);
-    ctx.fillText(name.lines[0], box.x, fy + 66);
-    ctx.font = `700 28px ${FONT}`;
-    ctx.fillStyle = alpha(ink, 0.75);
-    ctx.fillText(ellipsize(ctx, when, W - 480), box.x, fy + 110);
-    return;
-  }
-
-  // Gradient: white on colour, the CampBuddy mark on a white chip.
-  const fy = box.footer;
-  ctx.fillStyle = 'rgba(255,255,255,0.14)';
-  roundRect(ctx, box.x, fy, box.w, 134, 30);
-  ctx.fill();
-  ctx.fillStyle = '#fff';
-  const name = fitText(ctx, kit.event.name, box.w - 320, 42, 26, 1, 800);
-  ctx.fillText(name.lines[0], box.x + 34, fy + 60);
-  ctx.font = `600 26px ${FONT}`;
-  ctx.fillStyle = 'rgba(255,255,255,0.86)';
-  ctx.fillText(ellipsize(ctx, when, box.w - 320), box.x + 34, fy + 102);
-  if (brand) {
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, box.x + box.w - 250, fy + 30, 220, 74, 18);
+    ctx.fillStyle = pal.paper;
+    ctx.fillRect(0, y, W, h + 40);
+    ctx.fillStyle = pal.secondary;
+    ctx.fillRect(0, y - 12, W, 12);
+  } else if (style.name === 'gradient') {
+    ctx.fillStyle = fs.bg;
+    roundRect(ctx, f.x - 24, y + 10, f.w + 48, h - 30, 30);
     ctx.fill();
-    drawContain(ctx, brand, box.x + box.w - 240, fy + 38, 200, 58);
+  } else {
+    ctx.strokeStyle = alpha(pal.ink, 0.18);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(f.x, y + 6); ctx.lineTo(x1 - SAFE, y + 6); ctx.stroke();
   }
+
+  const qr = withQr ? Math.min(h - 70, f.square ? 120 : 150) : 0;
+  const qx = x1 - SAFE - qr;
+  const qy = y + (h - qr) / 2 - 8;
+  if (qr) {
+    drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, qy, qr, pal.ink, pal.paper);
+    ctx.font = `700 ${f.square ? 16 : 18}px ${FONT}`;
+    ctx.fillStyle = style.name === 'gradient' ? pal.paper : pal.ink;
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan · open in CampBuddy', qx + qr / 2, qy + qr + 26);
+    ctx.textAlign = 'left';
+  }
+
+  // CampBuddy's mark on a light chip, beside the QR.
+  const bw = f.square ? 170 : 210;
+  const bh = f.square ? 62 : 74;
+  const bx = (qr ? qx - 24 : x1 - SAFE) - bw;
+  const by = y + (h - bh) / 2 - 8;
+  ctx.fillStyle = pal.paper;
+  roundRect(ctx, bx, by, bw, bh, 18);
+  ctx.fill();
+  if (brand) drawContain(ctx, brand, bx + 12, by + 8, bw - 24, bh - 16);
+
+  const tw = bx - 30 - f.x;
+  ctx.fillStyle = style.name === 'gradient' ? pal.paper : pal.ink;
+  const name = fitText(ctx, kit.event.name, tw, f.square ? 34 : 42, 20, 2, 800);
+  let ty = y + h / 2 - (name.lines.length * name.size * 1.1 + 40) / 2 + name.size * 0.9 - 8;
+  name.lines.forEach((l) => { ctx.fillText(l, f.x, ty); ty += name.size * 1.1; });
+  ctx.font = `700 ${f.square ? 22 : 26}px ${FONT}`;
+  ctx.fillStyle = style.name === 'gradient' ? pal.secondary : pal.primary;
+  ctx.fillText(ellipsize(ctx, [kit.event.dates, kit.event.hashtags.split(' ')[2]].filter(Boolean).join('  ·  '), tw), f.x, ty + 12);
+  void x0;
 }
 
-// ---- Event post -----------------------------------------------------------
-
-export async function drawEventPost(canvas, size, styleName, content, kit, colors) {
+/**
+ * Draws one card of a post. `page` = {index, total}; `scale` 1 for social,
+ * 3 for print (the same design, three times the pixels).
+ */
+export async function drawEventPost(canvas, size, styleName, content, kit, colors, page = { index: 1, total: 1 }, scale = 1) {
   const [W, H] = SIZES[size];
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = W * scale;
+  canvas.height = H * scale;
   const ctx = canvas.getContext('2d');
-  const style = styleOf(styleName, colors);
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  const pal = paletteOf(colors);
+  const style = styleOf(styleName, pal);
+  const look = { ...eventLook(kit.event.seed), seedValue: kit.event.seed };
+  const f = frame(W, H, styleName);
   const [logo, mark, brand] = await Promise.all([loadImage(kit.event.logo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
-  const box = paintBackground(ctx, W, H, style, colors, mark);
-  box.compact = H < 1100;
-  const top = paintHeader(ctx, box, style, colors, logo, content);
+  paintBackground(ctx, W, H, f, style, pal, look, mark);
+  paintHeader(ctx, W, f, style, pal, look, logo, content, page);
 
-  // Text and body share the space between the header and the footer.
-  const bottom = box.footer - 50;
-  const wanted = bodyHeight(content.body, H);
-  // With a body, the headline gets two lines and a little less size, so the body has room.
-  const head = fitText(ctx, content.headline, box.w, H >= 1900 ? 132 : (H > 1100 ? (wanted ? 100 : 112) : (wanted ? 70 : 92)), 44, wanted ? 2 : 3, style.headlineWeight, style.headlineFamily);
-  const line = fitText(ctx, content.line, box.w, H >= 1900 ? 46 : 38, 24, 2, 600);
-  const textH = head.lines.length * head.size * 1.06 + (content.line ? 50 + line.lines.length * line.size * 1.3 : 0);
-  const gap = wanted ? (H >= 1900 ? 80 : 40) : 0;
-  const fitted = fitBody(content.body, H, bottom - top - textH - gap);
-  const bH = fitted.h;
-  let y = top + Math.max(0, (bottom - top - (textH + (bH ? gap : 0) + bH)) / 2);
+  const m = measureText(ctx, content, f, style);
+  const bH = bodyHeight(content.body, H, m.room);
+  let y = f.top + Math.max(0, (f.footer - 40 - f.top - (m.textH + (bH ? m.gap : 0) + bH)) / 2);
 
-  // Headline (poster: a marker stroke under the first line).
-  ctx.font = `${style.headlineWeight} ${head.size}px ${style.headlineFamily}`;
-  head.lines.forEach((l, i) => {
-    y += head.size * 0.92;
-    if (style.name === 'poster' && i === head.lines.length - 1) {
-      // A highlighter stroke along the bottom of the last line.
-      ctx.fillStyle = alpha(colors.primary, 0.28);
-      ctx.fillRect(box.x - 6, y - head.size * 0.22, Math.min(ctx.measureText(l).width + 12, box.w), head.size * 0.3);
+  ctx.font = `900 ${m.head.size}px ${style.family}`;
+  m.head.lines.forEach((l, i) => {
+    y += m.head.size * 0.92;
+    if (style.name === 'poster' && i === m.head.lines.length - 1) {
+      ctx.fillStyle = alpha(pal.secondary, 0.55);
+      ctx.fillRect(f.x - 4, y + m.head.size * 0.08, Math.min(ctx.measureText(l).width + 8, f.w), m.head.size * 0.14);
     }
     ctx.fillStyle = style.fg;
-    ctx.fillText(l, box.x, y);
-    y += head.size * 0.14;
+    ctx.fillText(l, f.x, y);
+    y += m.head.size * 0.14;
   });
 
   if (content.line) {
-    y += 20;
-    ctx.fillStyle = style.accent;
-    roundRect(ctx, box.x, y, 120, 12, 6);
-    ctx.fill();
     y += 18;
+    ctx.fillStyle = style.accent;
+    roundRect(ctx, f.x, y, 120, 12, 6);
+    ctx.fill();
+    y += 16;
     ctx.fillStyle = style.muted;
-    ctx.font = `600 ${line.size}px ${FONT}`;
-    line.lines.forEach((l) => { y += line.size * 1.1; ctx.fillText(l, box.x, y); y += line.size * 0.2; });
+    ctx.font = `600 ${m.line.size}px ${FONT}`;
+    m.line.lines.forEach((l) => { y += m.line.size * 1.1; ctx.fillText(l, f.x, y); y += m.line.size * 0.2; });
   }
 
-  if (bH) await paintBody(ctx, fitted.body, box.x, y + gap, box.w, bH, style, colors, kit, H);
+  if (bH > 0 && m.room >= 120) await paintBody(ctx, content.body, f.x, y + m.gap, f.w, bH, style, pal, kit, H);
 
-  paintFooter(ctx, W, H, box, style, colors, kit, brand);
-  addGrain(ctx, W, H, style.name === 'poster' ? 0.06 : 0.05);
+  paintFooter(ctx, W, f, style, pal, kit, brand, content.key, content.key !== 'app');
+  addGrain(ctx, W, H, style.name === 'poster' ? 0.05 : 0.045);
 }
 
 // ---- People cards (social posts, not the attendee app's Camp Card) --------
 
-export function personHeadline(person) {
-  if (person.roles?.length) return `Meet our ${person.role_labels[0]}`;
-  return 'Meet me at WordCamp';
+export function personHeadline(person, kit) {
+  const event = kit?.short ?? 'WordCamp';
+  if (person.roles?.length) return `${person.role_labels[0]} at ${event}`;
+  return `See you at ${event}`;
 }
 
-/** The colour of someone's first role (organizer: main colour, speaker: accent). */
+/** A tone of the brand for someone's first role (organizer: main, speaker: accent…). */
 export function roleColor(person, colors) {
-  const role = person.roles?.[0];
-  if (role === 'organizer' || !role) return colors.primary;
-  if (role === 'speaker') return colors.secondary;
-  return ROLE_COLORS[role] ?? colors.primary;
+  const { primary, secondary, ink } = colors;
+  switch (person.roles?.[0]) {
+    case 'speaker': return secondary;
+    case 'volunteer': return mix(primary, ink, 0.45);
+    case 'sponsor': return mix(secondary, ink, 0.5);
+    case 'media_partner': return mix(primary, secondary, 0.5);
+    case 'microsponsor': return mix(secondary, primary, 0.3);
+    case 'table_lead': return mix(primary, ink, 0.25);
+    default: return primary;
+  }
 }
 
 function personLines(person) {
@@ -857,256 +1000,247 @@ function personLines(person) {
   };
 }
 
-function footerStrip(ctx, W, y, h, kit, mark, bg) {
-  const fg = textOn(bg);
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, y, W, h);
-  ctx.textAlign = 'left';
-  if (mark) {
-    ctx.fillStyle = '#fff';
-    roundRect(ctx, 60, y + (h - 80) / 2, 80, 80, 16);
-    ctx.fill();
-    drawContain(ctx, mark, 68, y + (h - 80) / 2 + 8, 64, 64);
-  }
-  ctx.fillStyle = fg;
-  const left = mark ? 165 : 60;
-  const ev = fitText(ctx, kit.event.name, W - left - 280, 36, 22, 1, 800);
-  ctx.fillText(ev.lines[0], left, y + h / 2 - 4);
-  ctx.font = `600 26px ${FONT}`;
-  ctx.fillStyle = alpha(fg, 0.82);
-  ctx.fillText(kit.event.dates, left, y + h / 2 + 34);
-  ctx.textAlign = 'right';
-  ctx.font = `800 26px ${FONT}`;
-  ctx.fillStyle = fg;
-  ctx.fillText(kit.event.hashtags.split(' ').slice(2, 3).join(' '), W - 60, y + h / 2 + 10);
-  ctx.textAlign = 'left';
+/** People cards share the post footer: event, CampBuddy mark, QR (tagged with the role). */
+function personFooter(ctx, W, H, pal, kit, brand, person, under) {
+  const dark = textOn(under, pal.ink, pal.paper) === pal.paper;
+  const f = { ...frame(W, H, 'bold'), inset: 0 };
+  const style = dark
+    ? { name: 'gradient', footer: { bg: alpha(pal.paper, 0.14) } }
+    : { name: 'poster', footer: {} };
+  paintFooter(ctx, W, f, style, pal, kit, brand, `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`);
+  return f.footer;
 }
 
-export async function drawPersonCard(canvas, size, design, person, kit, colors) {
+export async function drawPersonCard(canvas, size, design, person, kit, colors, scale = 1) {
   const [W, H] = SIZES[size];
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = W * scale;
+  canvas.height = H * scale;
   const ctx = canvas.getContext('2d');
-  const [photo, mark] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark)]);
-  const { primary, secondary, ink, paper } = colors;
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  const [photo, mark, brand] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  const pal = paletteOf(colors);
+  const look = eventLook(kit.event.seed);
   const rc = roleColor(person, colors);
+  const onRc = textOn(rc, pal.ink, pal.paper);
   const { roles, talk } = personLines(person);
-  const label = personHeadline(person).toUpperCase();
+  const label = personHeadline(person, kit).toUpperCase();
   const tall = H >= 1900;
   const square = H < 1100;
+  const fTop = H - (square ? 200 : (tall ? 260 : 230));
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
 
   if (design === 'polaroid') {
-    // A tilted instant photo taped onto a coloured wall.
+    // A tilted instant photo taped onto a wall in the role's tone.
     ctx.fillStyle = rc;
     ctx.fillRect(0, 0, W, H);
-    watermark(ctx, mark, W, H, 0.08);
-    dotGrid(ctx, 70, H - 330, 8, 3, 30, 4, alpha(textOn(rc), 0.25));
-    pill(ctx, label, W / 2, 60, { bg: '#fff', fg: ink, size: 32, height: 66, align: 'center' });
-    const pw = tall ? W * 0.76 : Math.min(W * 0.66, (H - 420) - 150);
-    const ph = pw + 160;
+    watermark(ctx, mark, W, H, 0.07);
+    pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 28, height: 60, align: 'center' });
+    const room = fTop - (SAFE + 80) - (talk && !square ? (tall ? 220 : 120) : 30);
+    const ph = Math.min(room, tall ? 1000 : 900);
+    const pw = ph - 150;
     const cx = W / 2;
-    const below = 130 + (talk && !square ? (tall ? 260 : 150) : 40);
-    const cy = Math.max(150 + ph / 2, 150 + (H - below - 150) / 2);
+    const cy = SAFE + 80 + 20 + ph / 2;
     ctx.save();
     ctx.translate(cx, cy);
-    ctx.rotate(-0.045);
-    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 18;
-    ctx.fillStyle = '#fffdf8';
+    ctx.rotate(-0.04 * look.tilt);
+    ctx.shadowColor = alpha(pal.ink, 0.4); ctx.shadowBlur = 36; ctx.shadowOffsetY = 16;
+    ctx.fillStyle = pal.paper;
     ctx.fillRect(-pw / 2, -ph / 2, pw, ph);
     ctx.shadowColor = 'transparent';
-    const inner = pw - 56;
-    if (photo) {
-      ctx.save(); ctx.beginPath(); ctx.rect(-inner / 2, -ph / 2 + 28, inner, inner); ctx.clip();
-      drawCover(ctx, photo, -inner / 2, -ph / 2 + 28, inner, inner);
-      ctx.restore();
-    } else {
-      ctx.fillStyle = secondary; ctx.fillRect(-inner / 2, -ph / 2 + 28, inner, inner);
-      ctx.fillStyle = textOn(secondary); ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(inner * 0.4)}px ${FONT}`;
-      ctx.fillText(initials(person.name), 0, -ph / 2 + 28 + inner * 0.64);
-    }
-    ctx.fillStyle = ink;
+    const inner = pw - 50;
+    ctx.save(); ctx.beginPath(); ctx.rect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.clip();
+    if (photo) drawCover(ctx, photo, -inner / 2, -ph / 2 + 25, inner, inner);
+    else { ctx.fillStyle = pal.accentSoft; ctx.fillRect(-inner / 2, -ph / 2 + 25, inner, inner); ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(inner * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), 0, -ph / 2 + 25 + inner * 0.64); }
+    ctx.restore();
+    ctx.fillStyle = pal.ink;
     ctx.textAlign = 'center';
-    const n = fitText(ctx, person.name, inner, 60, 32, 1, 700, SERIF);
+    const n = fitText(ctx, person.name, inner, 56, 28, 1, 700, SERIF);
     ctx.font = `italic 700 ${n.size}px ${SERIF}`;
-    ctx.fillText(n.lines[0], 0, ph / 2 - 76);
-    ctx.font = `700 26px ${FONT}`;
-    ctx.fillStyle = mix(rc, '#000000', 0.2);
-    ctx.fillText(ellipsize(ctx, roles, inner), 0, ph / 2 - 34);
-    ctx.fillStyle = alpha(mix(secondary, '#ffffff', 0.55), 0.8);
-    ctx.save(); ctx.rotate(0.07); ctx.fillRect(-95, -ph / 2 - 26, 190, 54); ctx.restore();
+    ctx.fillText(n.lines[0], 0, ph / 2 - 66);
+    ctx.font = `700 24px ${FONT}`;
+    ctx.fillStyle = rc;
+    ctx.fillText(ellipsize(ctx, roles, inner), 0, ph / 2 - 28);
+    ctx.fillStyle = alpha(pal.secondary, 0.75);
+    ctx.save(); ctx.rotate(0.07 * look.tilt); ctx.fillRect(-90, -ph / 2 - 24, 180, 50); ctx.restore();
     ctx.restore();
     if (talk && !square) {
-      ctx.fillStyle = textOn(rc);
+      ctx.fillStyle = onRc;
       ctx.textAlign = 'center';
-      const t = fitText(ctx, talk, W - 160, tall ? 44 : 32, 22, tall ? 3 : 2, 700);
-      const ty = cy + ph / 2 + (tall ? 110 : 70);
+      const t = fitText(ctx, talk, W - 2 * SAFE, tall ? 42 : 30, 20, tall ? 3 : 2, 700);
+      const ty = cy + ph / 2 + (tall ? 90 : 60);
       t.lines.forEach((l, i) => ctx.fillText(l, W / 2, ty + i * t.size * 1.25));
       ctx.textAlign = 'left';
     }
-    footerStrip(ctx, W, H - 130, 130, kit, mark, mix(rc, '#000000', 0.35));
+    personFooter(ctx, W, H, pal, kit, brand, person, rc);
     addGrain(ctx, W, H);
     return;
   }
 
   if (design === 'badge') {
     // A conference badge on a lanyard.
-    const wall = mix(paper, rc, 0.14);
+    const wall = pal.soft;
     ctx.fillStyle = wall;
     ctx.fillRect(0, 0, W, H);
-    dotGrid(ctx, 30, 30, 34, Math.ceil(H / 32), 32, 2.4, alpha(rc, 0.18));
-    const bw = W * (square ? 0.62 : 0.72);
-    const bh = H * (tall ? 0.72 : (square ? 0.8 : 0.78));
+    const bw = W * (square ? 0.56 : 0.66);
+    const bh = (fTop - 30) - (SAFE + 70);
     const bx = (W - bw) / 2;
-    const by = H - bh - 50;
+    const by = SAFE + 70;
     ctx.fillStyle = rc;
-    ctx.beginPath(); ctx.moveTo(W / 2 - 70, 0); ctx.lineTo(W / 2 + 70, 0); ctx.lineTo(W / 2 + 34, by + 20); ctx.lineTo(W / 2 - 34, by + 20); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#9aa0a6';
-    roundRect(ctx, W / 2 - 46, by - 16, 92, 50, 12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W / 2 - 60, 0); ctx.lineTo(W / 2 + 60, 0); ctx.lineTo(W / 2 + 30, by + 20); ctx.lineTo(W / 2 - 30, by + 20); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = alpha(pal.ink, 0.45);
+    roundRect(ctx, W / 2 - 42, by - 16, 84, 46, 12); ctx.fill();
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 36; ctx.shadowOffsetY = 14;
-    ctx.fillStyle = '#ffffff';
-    roundRect(ctx, bx, by, bw, bh, 36); ctx.fill();
+    ctx.shadowColor = alpha(pal.ink, 0.25); ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+    ctx.fillStyle = pal.paper;
+    roundRect(ctx, bx, by, bw, bh, 32); ctx.fill();
     ctx.restore();
-    ctx.save(); roundRect(ctx, bx, by, bw, bh, 36); ctx.clip();
-    ctx.fillStyle = primary; ctx.fillRect(bx, by, bw, 150);
-    if (mark) { ctx.fillStyle = '#fff'; roundRect(ctx, bx + 36, by + 44, 80, 80, 16); ctx.fill(); drawContain(ctx, mark, bx + 44, by + 52, 64, 64); }
-    ctx.fillStyle = textOn(primary);
-    const ev = fitText(ctx, kit.event.name, bw - 180, 34, 20, 1, 800);
-    ctx.fillText(ev.lines[0], bx + 136, by + 96);
-    ctx.fillStyle = rc; ctx.fillRect(bx, by + bh - 120, bw, 120);
-    ctx.fillStyle = textOn(rc); ctx.textAlign = 'center';
-    const rl = fitText(ctx, (person.role_labels?.[0] ?? 'Attendee').toUpperCase(), bw - 60, tall ? 58 : 50, 28, 1, 900);
-    ctx.fillText(rl.lines[0], bx + bw / 2, by + bh - 44);
+    ctx.save(); roundRect(ctx, bx, by, bw, bh, 32); ctx.clip();
+    ctx.fillStyle = pal.primary; ctx.fillRect(bx, by, bw, square ? 100 : 130);
+    if (mark) logoTile(ctx, mark, bx + 28, by + (square ? 18 : 30), 70, 70, pal, 14);
+    ctx.fillStyle = pal.onPrimary;
+    const ev = fitText(ctx, kit.event.name, bw - 150, 30, 18, 1, 800);
+    ctx.fillText(ev.lines[0], bx + 116, by + (square ? 62 : 76));
+    const bandH = square ? 80 : 110;
+    ctx.fillStyle = rc; ctx.fillRect(bx, by + bh - bandH, bw, bandH);
+    ctx.fillStyle = onRc; ctx.textAlign = 'center';
+    const rl = fitText(ctx, (person.role_labels?.[0] ?? 'Attendee').toUpperCase(), bw - 50, tall ? 56 : (square ? 36 : 46), 22, 1, 900);
+    ctx.fillText(rl.lines[0], bx + bw / 2, by + bh - bandH / 2 + rl.size * 0.35);
     ctx.restore();
     ctx.fillStyle = wall;
-    roundRect(ctx, W / 2 - 50, by + 18, 100, 22, 11); ctx.fill();
-    const room = bh - 150 - 120;
-    const r = Math.min(bw * (tall ? 0.36 : 0.27), room * (talk ? 0.27 : 0.3));
-    const cy = by + 150 + 30 + r;
-    circlePhoto(ctx, photo, W / 2, cy, r, 10, rc, secondary, person.name);
-    ctx.fillStyle = ink; ctx.textAlign = 'center';
-    const n = fitText(ctx, person.name, bw - 80, tall ? 90 : 70, 34, 2, 900);
-    let y = cy + r + (tall ? 50 : 20);
-    n.lines.forEach((l) => { y += n.size; ctx.fillText(l, W / 2, y); y += n.size * 0.08; });
-    if (talk) {
-      ctx.fillStyle = alpha(ink, 0.75);
-      const t = fitText(ctx, talk, bw - 100, tall ? 38 : 28, 18, square ? 1 : (tall ? 3 : 2), 600);
-      y += tall ? 30 : 10;
+    roundRect(ctx, W / 2 - 46, by + 16, 92, 20, 10); ctx.fill();
+    const inner = bh - (square ? 100 : 130) - bandH;
+    const r = Math.min(bw * (tall ? 0.34 : 0.26), inner * (talk ? 0.26 : 0.3));
+    const cy = by + (square ? 100 : 130) + 26 + r;
+    circlePhoto(ctx, photo, W / 2, cy, r, 8, rc, pal.accentSoft, pal.ink, person.name);
+    ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
+    const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 2, 900);
+    let y = cy + r + 14;
+    n.lines.forEach((l) => { y += n.size; ctx.fillText(l, W / 2, y); y += n.size * 0.06; });
+    const room = by + bh - bandH - 16 - y;
+    if (talk && room > 40) {
+      ctx.fillStyle = alpha(pal.ink, 0.75);
+      const t = fitText(ctx, talk, bw - 90, tall ? 36 : 26, 16, Math.max(1, Math.min(3, Math.floor(room / 36))), 600);
+      y += 8;
       t.lines.forEach((l) => { y += t.size * 1.2; ctx.fillText(l, W / 2, y); });
     }
     ctx.textAlign = 'left';
+    personFooter(ctx, W, H, pal, kit, brand, person, wall);
     addGrain(ctx, W, H, 0.04);
     return;
   }
 
   if (design === 'split') {
-    // Photo across the top, a coloured block with the words below.
-    const ph = Math.round(H * (tall ? 0.56 : 0.52));
+    // Photo across the top, a block in the role's tone with the words below.
+    const ph = Math.round(fTop * (square ? 0.5 : 0.56));
     if (photo) drawCover(ctx, photo, 0, 0, W, ph);
-    else { ctx.fillStyle = secondary; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = textOn(secondary); ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
+    else { ctx.fillStyle = pal.accentSoft; ctx.fillRect(0, 0, W, ph); ctx.fillStyle = pal.ink; ctx.textAlign = 'center'; ctx.font = `900 ${Math.round(ph * 0.4)}px ${FONT}`; ctx.fillText(initials(person.name), W / 2, ph * 0.64); ctx.textAlign = 'left'; }
     const g = ctx.createLinearGradient(0, ph * 0.5, 0, ph);
-    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(0, alpha(rc, 0));
     g.addColorStop(1, alpha(rc, 0.9));
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
     ctx.fillStyle = rc;
-    ctx.beginPath(); ctx.moveTo(0, ph - 70); ctx.lineTo(W, ph + 10); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
-    const fg = textOn(rc);
-    pill(ctx, label, 60, 60, { bg: '#fff', fg: ink, size: 30, height: 62 });
-    let y = ph + (square ? 80 : 110);
-    ctx.fillStyle = fg;
-    const n = fitText(ctx, person.name, W - 140, tall ? 100 : (square ? 70 : 86), 40, 2, 900);
-    n.lines.forEach((l) => { ctx.fillText(l, 70, y); y += n.size * 1.04; });
-    ctx.font = `800 32px ${FONT}`;
-    ctx.fillStyle = alpha(fg, 0.85);
-    if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 140), 70, y + 8); y += 64; }
-    if (talk) {
-      ctx.fillStyle = fg;
-      const t = fitText(ctx, talk, W - 140, 36, 22, tall ? 4 : (square ? 1 : 2), 600);
-      t.lines.forEach((l) => { ctx.fillText(l, 70, y); y += t.size * 1.3; });
+    const s = look.tilt * 40;
+    ctx.beginPath(); ctx.moveTo(0, ph - 40 - s); ctx.lineTo(W, ph - 40 + s); ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    pill(ctx, label, SAFE, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 26, height: 58 });
+    let y = ph + (square ? 50 : 90);
+    ctx.fillStyle = onRc;
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 100 : (square ? 60 : 84), 36, 2, 900);
+    n.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += n.size * 1.04; });
+    ctx.font = `800 30px ${FONT}`;
+    ctx.fillStyle = alpha(onRc, 0.85);
+    if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE), SAFE, y + 6); y += 56; }
+    const room = fTop - 30 - y;
+    if (talk && room > 40) {
+      ctx.fillStyle = onRc;
+      const t = fitText(ctx, talk, W - 2 * SAFE, tall ? 42 : 34, 18, Math.max(1, Math.min(4, Math.floor(room / 44))), 600);
+      t.lines.forEach((l) => { ctx.fillText(l, SAFE, y); y += t.size * 1.3; });
     }
-    footerStrip(ctx, W, H - 120, 120, kit, mark, mix(rc, '#000000', 0.35));
+    ctx.fillStyle = mix(rc, pal.ink, 0.35);
+    ctx.fillRect(0, fTop - 20, W, H - fTop + 20);
+    personFooter(ctx, W, H, pal, kit, brand, person, mix(rc, pal.ink, 0.35));
     addGrain(ctx, W, H);
     return;
   }
 
   if (design === 'minimal') {
-    // Paper, thin lines, lots of air: the name does the talking.
-    ctx.fillStyle = paper;
+    // Light colour, thin lines, lots of air: the name does the talking.
+    ctx.fillStyle = pal.paper;
     ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = alpha(ink, 0.2);
+    ctx.strokeStyle = alpha(pal.ink, 0.2);
     ctx.lineWidth = 2;
     ctx.strokeRect(40, 40, W - 80, H - 80);
     ctx.fillStyle = rc;
-    ctx.fillRect(40, 40, 16, H - 80);
-    ctx.font = `800 28px ${FONT}`;
-    ctx.fillStyle = mix(rc, '#000000', 0.1);
-    ctx.fillText(label, 110, 130);
-    const r = tall ? 230 : (square ? 110 : 130);
-    circlePhoto(ctx, photo, W - 110 - r, 100 + r, r, 0, rc, secondary, person.name);
-    let y = 100 + 2 * r + (tall ? 330 : (square ? 90 : 130));
-    ctx.fillStyle = ink;
-    const n = fitText(ctx, person.name, W - 220, tall ? 150 : (square ? 84 : 104), 46, 2, 700, SERIF);
+    ctx.fillRect(look.corner === 'left' ? 40 : W - 56, 40, 16, fTop - 60);
+    const r = tall ? 210 : (square ? 100 : 130);
+    const photoLeft = look.corner === 'left';
+    circlePhoto(ctx, photo, photoLeft ? W - SAFE - 30 - r : SAFE + 30 + r, SAFE + 40 + r, r, 0, rc, pal.accentSoft, pal.ink, person.name);
+    ctx.font = `800 26px ${FONT}`;
+    ctx.fillStyle = rc;
+    ctx.textAlign = photoLeft ? 'left' : 'right';
+    ctx.fillText(label, photoLeft ? SAFE + 30 : W - SAFE - 30, SAFE + 50);
+    ctx.textAlign = 'left';
+    let y = SAFE + 40 + 2 * r + (tall ? 200 : (square ? 70 : 110));
+    ctx.fillStyle = pal.ink;
+    const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 2, 700, SERIF);
     ctx.font = `700 ${n.size}px ${SERIF}`;
-    n.lines.forEach((l) => { ctx.fillText(l, 110, y); y += n.size * 1.02; });
-    ctx.fillStyle = rc; ctx.fillRect(110, y + 6, 120, 8);
-    y += 64;
-    ctx.font = `700 30px ${FONT}`; ctx.fillStyle = alpha(ink, 0.8);
-    if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 220), 110, y); y += 56; }
-    if (talk) {
-      const t = fitText(ctx, talk, W - 220, tall ? 46 : 34, 22, square ? 2 : (tall ? 4 : 3), 500, SERIF);
+    n.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += n.size * 1.02; });
+    ctx.fillStyle = rc; ctx.fillRect(SAFE + 30, y + 4, 120, 8);
+    y += 58;
+    ctx.font = `700 28px ${FONT}`; ctx.fillStyle = alpha(pal.ink, 0.8);
+    if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE - 60), SAFE + 30, y); y += 52; }
+    const room = fTop - 30 - y;
+    if (talk && room > 40) {
+      const t = fitText(ctx, talk, W - 2 * SAFE - 60, tall ? 44 : 32, 18, Math.max(1, Math.min(4, Math.floor(room / 42))), 500, SERIF);
       ctx.font = `italic 500 ${t.size}px ${SERIF}`;
-      t.lines.forEach((l) => { ctx.fillText(l, 110, y); y += t.size * 1.3; });
+      t.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += t.size * 1.3; });
     }
-    ctx.fillStyle = ink;
-    const ev = fitText(ctx, kit.event.name, W - 400, 34, 22, 1, 800);
-    ctx.fillText(ev.lines[0], 110, H - 120);
-    ctx.font = `600 26px ${FONT}`; ctx.fillStyle = alpha(ink, 0.7);
-    ctx.fillText(`${kit.event.dates}   ${kit.event.hashtags.split(' ').slice(2, 3).join(' ')}`, 110, H - 80);
-    if (mark) drawContain(ctx, mark, W - 110 - 90, H - 175, 90, 90);
-    addGrain(ctx, W, H, 0.04);
+    personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
+    addGrain(ctx, W, H, 0.035);
     return;
   }
 
-  // Classic: colour on top with a slanted edge, round photo, name below.
-  const top = H * (square ? 0.5 : (tall ? 0.42 : 0.46));
-  ctx.fillStyle = paper;
+  // Classic: the role's tone on top with a slanted edge, round photo, name below.
+  const top = fTop * (square ? 0.5 : 0.48);
+  ctx.fillStyle = pal.paper;
   ctx.fillRect(0, 0, W, H);
+  const s = look.tilt * 60;
   ctx.save();
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, top - 60); ctx.lineTo(0, top + 60); ctx.closePath();
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(W, 0); ctx.lineTo(W, top - s); ctx.lineTo(0, top + s); ctx.closePath();
   ctx.fillStyle = rc; ctx.fill(); ctx.clip();
-  watermark(ctx, mark, W, H, 0.09);
+  watermark(ctx, mark, W, H, 0.08);
+  drawMotif(ctx, look.motif, SAFE, SAFE + 70, 260, 150, alpha(pal.paper, 0.3), alpha(pal.secondary, 0.8), seeded(kit.event.seed));
   ctx.restore();
-  ctx.strokeStyle = rc === secondary ? primary : secondary;
-  ctx.lineWidth = 16;
-  ctx.beginPath(); ctx.moveTo(0, top + 76); ctx.lineTo(W, top - 44); ctx.stroke();
-  pill(ctx, label, W / 2, 60, { bg: '#fff', fg: ink, size: 34, height: 70, align: 'center' });
-  const r = tall ? 300 : (square ? 175 : 225);
-  const cy = top - (square ? 50 : 30);
-  circlePhoto(ctx, photo, W / 2, cy, r, 16, '#ffffff', secondary, person.name);
-  let y = cy + r + (square ? 90 : (tall ? 170 : 120));
-  ctx.fillStyle = ink; ctx.textAlign = 'center';
-  const name = fitText(ctx, person.name, W - 160, square ? 70 : (tall ? 104 : 84), 44, 2, 900);
+  ctx.strokeStyle = rc === pal.secondary ? pal.primary : pal.secondary;
+  ctx.lineWidth = 14;
+  ctx.beginPath(); ctx.moveTo(0, top + s + 16); ctx.lineTo(W, top - s + 16); ctx.stroke();
+  pill(ctx, label, W / 2, SAFE - 10, { bg: pal.paper, fg: pal.ink, size: 30, height: 64, align: 'center' });
+  const r = tall ? 290 : (square ? 160 : 215);
+  const cy = top - (square ? 30 : 20);
+  circlePhoto(ctx, photo, W / 2, cy, r, 14, pal.paper, pal.accentSoft, pal.ink, person.name);
+  let y = cy + r + (square ? 70 : (tall ? 150 : 100));
+  ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
+  const name = fitText(ctx, person.name, W - 2 * SAFE, square ? 60 : (tall ? 100 : 80), 34, 2, 900);
   name.lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += name.size * 1.1; });
-  ctx.fillStyle = mix(rc, '#000000', 0.2);
-  ctx.font = `800 34px ${FONT}`;
-  if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 160), W / 2, y + 4); y += 60; }
-  if (talk) {
-    ctx.fillStyle = ink;
-    const t = fitText(ctx, talk, W - 200, tall ? 50 : 38, 24, square ? 1 : (tall ? 4 : 3), 500);
-    if (tall) y += 20;
+  ctx.fillStyle = mix(rc, pal.ink, 0.2);
+  ctx.font = `800 32px ${FONT}`;
+  if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE), W / 2, y + 2); y += 54; }
+  const room = fTop - 30 - y;
+  if (talk && room > 40) {
+    ctx.fillStyle = pal.ink;
+    const t = fitText(ctx, talk, W - 2 * SAFE - 40, tall ? 48 : 36, 18, Math.max(1, Math.min(4, Math.floor(room / 46))), 500);
     t.lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += t.size * 1.3; });
   }
   ctx.textAlign = 'left';
-  footerStrip(ctx, W, H - 120, 120, kit, mark, primary);
-  addGrain(ctx, W, H, 0.04);
+  personFooter(ctx, W, H, pal, kit, brand, person, pal.paper);
+  addGrain(ctx, W, H, 0.035);
 }
 
 // ---- Files ----------------------------------------------------------------
 
-function canvasBlob(canvas) {
-  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+async function canvasBlob(canvas, quality = 'social') {
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  return quality === 'print' ? withPngDpi(blob, QUALITY.print.dpi) : blob;
 }
 
 function save(blob, filename) {
@@ -1145,21 +1279,19 @@ async function copy(text, btn) {
   setTimeout(() => { btn.textContent = label; }, 2000);
 }
 
-/** A row of buttons acting as one choice (style, card design); calls onChange with the value. */
-function choiceGroup(attr, onChange) {
+/** A row of buttons acting as one choice; `initial` selects one at start. */
+function choiceGroup(attr, onChange, initial = null) {
   const buttons = [...document.querySelectorAll(`[data-${attr}]`)];
   const key = attr.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-  let value = buttons.find((b) => b.getAttribute('aria-pressed') === 'true')?.dataset[key] ?? buttons[0]?.dataset[key];
-  buttons.forEach((b) => b.addEventListener('click', () => {
-    value = b.dataset[key];
-    buttons.forEach((o) => {
-      const on = o === b;
-      o.setAttribute('aria-pressed', String(on));
-      o.classList.toggle('cb-btn-primary', on);
-      o.classList.toggle('cb-btn-secondary', !on);
-    });
-    onChange(value);
-  }));
+  let value = initial ?? buttons.find((b) => b.getAttribute('aria-pressed') === 'true')?.dataset[key] ?? buttons[0]?.dataset[key];
+  const paint = () => buttons.forEach((o) => {
+    const on = o.dataset[key] === value;
+    o.setAttribute('aria-pressed', String(on));
+    o.classList.toggle('cb-btn-primary', on);
+    o.classList.toggle('cb-btn-secondary', !on);
+  });
+  paint();
+  buttons.forEach((b) => b.addEventListener('click', () => { value = b.dataset[key]; paint(); onChange(value); }));
   return () => value;
 }
 
@@ -1170,24 +1302,44 @@ export function initSocialKit() {
   if (!dataEl) return;
   const kit = JSON.parse(dataEl.textContent);
   const colors = { ...kit.colors };
+  const look = eventLook(kit.event.seed);
   const sizeEl = document.querySelector('[data-social-size]');
   const size = () => sizeEl?.value ?? '1080x1350';
   let people = null;
   let redrawAll = () => {};
-  const style = choiceGroup('social-style', () => redrawAll());
-  const design = choiceGroup('people-design', () => people?.redraw());
+  const style = choiceGroup('social-style', () => redrawAll(), look.style);
+  const design = choiceGroup('people-design', () => people?.redraw(), look.design);
+  const quality = choiceGroup('social-quality', () => {}, 'social');
 
   const posts = [...document.querySelectorAll('[data-social-post]')].map((card) => {
     const post = kit.posts.find((p) => p.key === card.dataset.socialPost);
     const field = (name) => card.querySelector(`[data-field="${name}"]`);
     const pickEl = card.querySelector('[data-pick]');
     const canvas = card.querySelector('[data-preview]');
+    const pager = card.querySelector('[data-pager]');
+    const pageLabel = card.querySelector('[data-page-label]');
     const fields = () => ({ headline: field('headline').value, line: field('line').value, caption: field('caption').value });
+    let pageIndex = 0;
+    let pages = [];
     let drawing = Promise.resolve();
+
+    const replan = () => {
+      pages = planPost(postContent(post, fields(), kit, pickEl?.value), size(), style(), colors);
+      pageIndex = Math.min(pageIndex, pages.length - 1);
+      // A class, not `hidden`: the row's own `flex` would win over the attribute.
+      if (pager) pager.classList.toggle('hidden', pages.length < 2);
+      if (pageLabel) pageLabel.textContent = `Card ${pageIndex + 1} of ${pages.length}`;
+    };
     const redraw = () => {
-      drawing = drawing.then(() => drawEventPost(canvas, size(), style(), postContent(post, fields(), kit, pickEl?.value), kit, colors)).catch(() => {});
+      drawing = drawing.then(() => {
+        replan();
+        return drawEventPost(canvas, size(), style(), pages[pageIndex], kit, colors, { index: pageIndex + 1, total: pages.length });
+      }).catch(() => {});
       return drawing;
     };
+
+    pager?.querySelector('[data-prev]')?.addEventListener('click', () => { pageIndex = Math.max(0, pageIndex - 1); redraw(); });
+    pager?.querySelector('[data-next]')?.addEventListener('click', () => { pageIndex = Math.min(pages.length - 1, pageIndex + 1); redraw(); });
 
     // Today / Spotlight: the caption follows the chosen day or session.
     const refreshCaption = () => {
@@ -1204,31 +1356,51 @@ export function initSocialKit() {
     };
     if (pickEl) {
       refreshCaption();
-      pickEl.addEventListener('change', () => { refreshCaption(); redraw(); });
+      pickEl.addEventListener('change', () => { pageIndex = 0; refreshCaption(); redraw(); });
     }
 
     field('headline').addEventListener('input', redraw);
     field('line').addEventListener('input', redraw);
-    card.querySelector('[data-action="download"]').addEventListener('click', async () => {
-      await redraw();
-      save(await canvasBlob(canvas), `${kit.event.slug}-${post.key}-${style()}-${size()}.png`);
+
+    // Every card of the post, at the chosen quality: one PNG, or a ZIP of them.
+    const renderAll = async () => {
+      await drawing;
+      const q = QUALITY[quality()];
+      const out = document.createElement('canvas');
+      const files = [];
+      for (const [i, page] of pages.entries()) {
+        await drawEventPost(out, size(), style(), page, kit, colors, { index: i + 1, total: pages.length }, q.scale);
+        files.push({ name: `${kit.event.slug}-${post.key}${pages.length > 1 ? `-${i + 1}` : ''}-${quality()}.png`, blob: await canvasBlob(out, quality()) });
+      }
+      return files;
+    };
+
+    card.querySelector('[data-action="download"]').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      const files = await renderAll();
+      if (files.length === 1) save(files[0].blob, files[0].name);
+      else {
+        const entries = await Promise.all(files.map(async (f) => ({ name: f.name, data: new Uint8Array(await f.blob.arrayBuffer()) })));
+        entries.push({ name: 'caption.txt', data: new TextEncoder().encode(field('caption').value) });
+        save(new Blob([zipStore(entries)], { type: 'application/zip' }), `${kit.event.slug}-${post.key}-${quality()}.zip`);
+      }
+      btn.disabled = false;
     });
     card.querySelector('[data-action="copy"]').addEventListener('click', (e) => copy(field('caption').value, e.currentTarget));
     card.querySelector('[data-action="share"]').addEventListener('click', async () => {
       const caption = field('caption').value;
-      await redraw();
-      const blob = await canvasBlob(canvas);
-      const file = new File([blob], `${kit.event.slug}-${post.key}.png`, { type: 'image/png' });
-      if (navigator.canShare?.({ files: [file] })) {
+      const files = (await renderAll()).map((f) => new File([f.blob], f.name, { type: 'image/png' }));
+      if (navigator.canShare?.({ files })) {
         try {
-          await navigator.share({ files: [file], text: caption });
+          await navigator.share({ files, text: caption });
           return;
         } catch {
           // Cancelled or refused: fall back to the links below.
         }
       }
       const linksEl = card.querySelector('[data-share-links]');
-      linksEl.replaceChildren('Copy the caption and download the image, then: ', ...shareLinks(caption, kit.event.site).flatMap(([label, href], i) => {
+      linksEl.replaceChildren('Copy the caption and download the image, then: ', ...shareLinks(caption, qrLink(kit.event.qr, post.key)).flatMap(([label, href], i) => {
         const a = document.createElement('a');
         a.href = href;
         a.target = '_blank';
@@ -1243,44 +1415,51 @@ export function initSocialKit() {
     return redraw;
   });
 
-  people = setUpPeople(kit, colors, size, design);
+  people = setUpPeople(kit, colors, size, design, quality);
   redrawAll = () => { posts.forEach((r) => r()); people?.redraw(); };
   sizeEl?.addEventListener('change', redrawAll);
 
+  const status = document.querySelector('[data-colors-status]');
   document.querySelectorAll('[data-color]').forEach((input) => {
-    input.addEventListener('input', () => { colors[input.dataset.color] = input.value; redrawAll(); });
+    input.addEventListener('input', () => { colors[input.dataset.color] = input.value; if (status) status.textContent = 'Not saved yet.'; redrawAll(); });
   });
-  const fromLogo = async () => {
+  const fromLogo = async (announce = true) => {
     const logo = await loadImage(kit.event.logo || kit.event.mark);
-    if (!logo) return false;
-    const c = document.createElement('canvas');
-    c.width = 80; c.height = 80;
-    const ctx = c.getContext('2d');
-    drawContain(ctx, logo, 0, 0, 80, 80);
     let palette = null;
-    try {
-      palette = paletteFromPixels(ctx.getImageData(0, 0, 80, 80).data);
-    } catch {
+    if (logo) {
+      const c = document.createElement('canvas');
+      c.width = 120; c.height = 120;
+      const ctx = c.getContext('2d');
+      drawContain(ctx, logo, 0, 0, 120, 120);
+      try {
+        palette = paletteFromPixels(ctx.getImageData(0, 0, 120, 120).data);
+      } catch {
+        palette = null;
+      }
+    }
+    if (!palette) {
+      if (announce && status) status.textContent = logo ? 'The logo has no clear colours: keeping these.' : 'No logo for this event yet.';
       return false;
     }
-    if (!palette) return false;
-    colors.primary = palette.primary;
-    if (palette.secondary) colors.secondary = palette.secondary;
-    document.querySelector('[data-color="primary"]').value = colors.primary;
-    document.querySelector('[data-color="secondary"]').value = colors.secondary;
+    Object.assign(colors, palette);
+    Object.entries(palette).forEach(([k, v]) => {
+      const input = document.querySelector(`[data-color="${k}"]`);
+      if (input) input.value = v;
+    });
+    if (announce && status) status.textContent = 'Picked from the logo ✓ Save to keep them.';
     redrawAll();
     return true;
   };
-  document.querySelector('[data-colors-from-logo]')?.addEventListener('click', fromLogo);
+  document.querySelector('[data-colors-from-logo]')?.addEventListener('click', () => fromLogo(true));
 
   document.fonts?.ready.then(async () => {
-    if (!kit.colorsSaved) await fromLogo();
+    if (!kit.colorsSaved) await fromLogo(false);
     redrawAll();
   });
   redrawAll();
 }
 
-function setUpPeople(kit, colors, size, design) {
+function setUpPeople(kit, colors, size, design, quality) {
   const grid = document.querySelector('[data-people-grid]');
   if (!grid) return null;
   const roleEl = document.querySelector('[data-people-role]');
@@ -1299,7 +1478,7 @@ function setUpPeople(kit, colors, size, design) {
       const box = document.createElement('div');
       box.className = 'space-y-2 rounded-xl border border-line bg-white p-3 shadow-sm';
       const canvas = document.createElement('canvas');
-      canvas.className = 'w-full rounded-lg';
+      canvas.className = 'mx-auto block h-64 w-auto max-w-full rounded-lg';
       const name = document.createElement('p');
       name.className = 'text-sm font-medium';
       name.textContent = person.name;
@@ -1310,8 +1489,9 @@ function setUpPeople(kit, colors, size, design) {
       dl.className = 'cb-btn cb-btn-secondary cb-btn-sm';
       dl.textContent = 'Download';
       dl.addEventListener('click', async () => {
-        await drawPersonCard(canvas, size(), design(), person, kit, colors);
-        save(await canvasBlob(canvas), `${slugify(person.name)}-${design()}-${size()}.png`);
+        const out = document.createElement('canvas');
+        await drawPersonCard(out, size(), design(), person, kit, colors, QUALITY[quality()].scale);
+        save(await canvasBlob(out, quality()), `${slugify(person.name)}-${design()}-${quality()}.png`);
       });
       const cp = document.createElement('button');
       cp.type = 'button';
@@ -1341,15 +1521,15 @@ function setUpPeople(kit, colors, size, design) {
     const used = new Set();
     for (const [i, person] of list.entries()) {
       if (status) status.textContent = `Making ${i + 1} of ${list.length}…`;
-      await drawPersonCard(canvas, size(), design(), person, kit, colors);
+      await drawPersonCard(canvas, size(), design(), person, kit, colors, QUALITY[quality()].scale);
       let name = `${slugify(person.name)}.png`;
       for (let n = 2; used.has(name); n++) name = `${slugify(person.name)}-${n}.png`;
       used.add(name);
-      files.push({ name, data: new Uint8Array(await (await canvasBlob(canvas)).arrayBuffer()) });
+      files.push({ name, data: new Uint8Array(await (await canvasBlob(canvas, quality())).arrayBuffer()) });
       captions.push(`${name}\n${person.caption}\n`);
     }
     files.push({ name: 'captions.txt', data: new TextEncoder().encode(captions.join('\n')) });
-    save(new Blob([zipStore(files)], { type: 'application/zip' }), `${kit.event.slug}-people-${roleEl?.value || 'all'}-${design()}-${size()}.zip`);
+    save(new Blob([zipStore(files)], { type: 'application/zip' }), `${kit.event.slug}-people-${roleEl?.value || 'all'}-${design()}-${quality()}.zip`);
     if (status) status.textContent = `${list.length} cards saved in one ZIP, with captions.txt.`;
     btn.disabled = false;
   });

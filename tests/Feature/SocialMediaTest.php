@@ -53,8 +53,10 @@ class SocialMediaTest extends TestCase
         $posts = collect(SocialKit::posts($this->event, CarbonImmutable::parse('2026-09-21 10:00', 'Asia/Kolkata')))->keyBy('key');
         $this->assertSame('12 days to go', $posts['countdown']['headline']);
         $this->assertSame('2 sessions · 1 speakers', $posts['schedule']['line']);
-        $this->assertStringContainsString('https://rajasthan.wordcamp.org/2026', $posts['save-the-date']['caption']);
-        $this->assertStringContainsString('utm_source=social', $posts['app']['caption']);
+        foreach ($posts->except(['today', 'spotlight']) as $key => $post) {
+            $this->assertStringContainsString('CampBuddy', $post['caption'], "{$key}: CampBuddy is talking");
+            $this->assertStringContainsString("utm_campaign=wordcamp-rajasthan-2026&utm_content={$key}", $post['caption'], "{$key}: its own tagged link");
+        }
     }
 
     public function test_more_posts_get_the_schedule_speakers_sponsors_and_tables(): void
@@ -70,7 +72,9 @@ class SocialMediaTest extends TestCase
 
         $kit = SocialKit::data($this->event);
 
-        $this->assertSame(['save-the-date', 'countdown', 'schedule', 'app', 'thank-you', 'speakers', 'sponsors', 'today', 'spotlight', 'contributor', 'volunteers'], array_column($kit['posts'], 'key'));
+        $this->assertSame(['save-the-date', 'countdown', 'schedule', 'app', 'speakers', 'sponsors', 'today', 'spotlight', 'contributor', 'meet', 'thank-you'], array_column($kit['posts'], 'key'));
+        $this->assertStringContainsString('utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-rajasthan-2026', $kit['event']['qr']);
+        $this->assertSame(crc32('wordcamp-rajasthan-2026'), $kit['event']['seed']);
         $this->assertSame([['key' => '2026-10-03', 'label' => 'Sat 3 Oct'], ['key' => '2026-10-04', 'label' => 'Sun 4 Oct']], $kit['schedule']['days']);
         $blocks = collect($kit['schedule']['sessions'])->firstWhere('id', 2);
         $this->assertSame('10:30 AM', $blocks['time'], 'the venue time, not the server time');
@@ -117,7 +121,8 @@ class SocialMediaTest extends TestCase
         $this->assertCount(1, $people);
         $this->assertSame($rahul->id, $people[0]['id']);
         $this->assertStringContainsString('s=600', $people[0]['photo'], 'a sharper photo for print');
-        $this->assertStringContainsString('Meet our speaker Rahul', $people[0]['caption']);
+        $this->assertStringContainsString('Rahul is speaking at WordCamp Rajasthan 2026', $people[0]['caption']);
+        $this->assertStringContainsString('utm_content=people-speaker', $people[0]['link']);
     }
 
     public function test_the_page_renders_and_colours_are_checked(): void

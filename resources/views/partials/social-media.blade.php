@@ -8,8 +8,9 @@
 --}}
 <div class="max-w-6xl space-y-6" data-social-kit>
     <x-alert type="info">
-        Ready-made posts for {{ $event->display_name }} in its own colours: pick a size, edit the words, then copy the caption and
-        download the image (or share it straight from your phone). Captions are written from the event's details — check them before posting.
+        CampBuddy's posts for {{ $event->display_name }}, in the event's own colours, with its logo, CampBuddy's mark and a QR to the
+        event in CampBuddy on every card (each QR tagged for this event and the post or role). Pick a size and quality, edit the words,
+        then download (several cards come as one ZIP), copy the caption or share. Check the words before posting.
     </x-alert>
 
     {{-- Brand colours --}}
@@ -24,7 +25,9 @@
                     </label>
                 @endforeach
                 <x-button type="button" variant="secondary" size="sm" data-colors-from-logo>Pick from logo</x-button>
+                <span class="text-sm text-muted" data-colors-status aria-live="polite"></span>
             </div>
+            <p class="mt-3 text-xs text-muted">Every card uses only these four colours and tones between them.</p>
             <x-slot:footer>
                 <x-button size="sm">Save colours</x-button>
             </x-slot:footer>
@@ -41,6 +44,13 @@
                 <option value="1080x1920">Story 1080 × 1920</option>
             </select>
         </label>
+        <div class="flex flex-col gap-1 text-sm">
+            <span class="cb-label" id="social-quality-label">Quality</span>
+            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-quality-label">
+                <button type="button" class="cb-btn cb-btn-sm cb-btn-primary" data-social-quality="social" aria-pressed="true" title="1080 px wide">Social</button>
+                <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="3× size, 300 DPI">Print (3×, 300 DPI)</button>
+            </div>
+        </div>
         <div class="flex flex-col gap-1 text-sm">
             <span class="cb-label" id="social-style-label">Post style</span>
             <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-style-label">
@@ -67,7 +77,13 @@
             @foreach ($kit['posts'] as $post)
                 <x-card :title="$post['label']" data-social-post="{{ $post['key'] }}">
                     <div class="space-y-3">
-                        <canvas class="w-full rounded-lg border border-line bg-paper-soft" data-preview></canvas>
+                        {{-- A small preview (so the fields below stay in view); downloads are full size. --}}
+                        <canvas class="mx-auto block h-72 w-auto max-w-full rounded-lg border border-line bg-paper-soft" data-preview></canvas>
+                        <div class="hidden items-center justify-center gap-2 text-sm [&:not(.hidden)]:flex" data-pager>
+                            <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-prev aria-label="Previous card">‹</button>
+                            <span data-page-label class="tabular-nums text-muted"></span>
+                            <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-next aria-label="Next card">›</button>
+                        </div>
                         @if (($post['picker'] ?? null) === 'day' && $kit['schedule']['days'] !== [])
                             <div>
                                 <label class="cb-label" for="post-{{ $post['key'] }}-pick">Day</label>
@@ -119,7 +135,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 id="social-people-title" class="text-base font-semibold">People cards</h2>
-                <p class="text-sm text-muted">"Meet our speaker" style posts for everyone marked on the attendee list (Attendees / Roster → Roles) and everyone who shows their Camp Card there. Name, photo, role and talk only.</p>
+                <p class="text-sm text-muted">A card for everyone marked on the attendee list (Attendees / Roster → Roles) and everyone who shows their Camp Card there: name, photo, role and talk, the event's branding and a QR to CampBuddy tagged with their role.</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <label class="sr-only" for="people-role">Who</label>

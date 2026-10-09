@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { fitBody, mix, paletteFromPixels, personHeadline, postContent, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
+const { eventLook, mix, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -23,7 +23,7 @@ test('a stored ZIP has each file, its name and an end record pointing at the dir
   assert.ok(new TextDecoder().decode(zip).includes('hello'));
 });
 
-test('the palette comes from the strongest real colours, dark enough for white text', () => {
+test('the palette comes from the logo: all four colours', () => {
   const px = [];
   const push = (rgb, n) => { for (let i = 0; i < n; i++) px.push(...rgb, 255); };
   push([255, 255, 255], 500); // white background: ignored
@@ -31,28 +31,31 @@ test('the palette comes from the strongest real colours, dark enough for white t
   push([20, 50, 140], 120); // blue: accent
   push([128, 128, 128], 200); // grey: ignored
   const palette = paletteFromPixels(new Uint8ClampedArray(px));
-  assert.ok(palette.primary.startsWith('#'));
+  assert.deepEqual(Object.keys(palette).sort(), ['ink', 'paper', 'primary', 'secondary']);
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(palette.primary.slice(i, i + 2), 16));
   assert.ok(r > g && r > b, 'the main colour is the red');
-  assert.equal(textOn(palette.primary), '#ffffff', 'white text reads on it');
-  assert.ok(palette.secondary, 'the blue is the accent');
+  assert.equal(textOn(palette.primary, palette.ink, palette.paper), palette.paper, 'the light colour reads on it');
+  assert.equal(textOn(palette.paper, palette.ink, palette.paper), palette.ink, 'the text colour reads on the light one');
+  const [br, , bb] = [1, 3, 5].map((i) => parseInt(palette.secondary.slice(i, i + 2), 16));
+  assert.ok(bb > br, 'the blue is the accent');
   assert.equal(paletteFromPixels(new Uint8ClampedArray([255, 255, 255, 255, 0, 0, 0, 255])), null, 'no real colour: keep the defaults');
 });
 
 test('text colour, names, share links, card headline', () => {
   assert.equal(textOn('#fff8ee'), '#231f20');
   assert.equal(textOn('#0c2343'), '#ffffff');
+  assert.equal(textOn('#0c2343', '#231f20', '#fff8ee'), '#fff8ee', 'light text is the brand light colour, not white');
   assert.equal(slugify('Aachal Pardeshi'), 'aachal-pardeshi');
   assert.equal(slugify('José Ñandú'), 'jose-nandu');
   const links = Object.fromEntries(shareLinks('x'.repeat(400), 'https://rajasthan.wordcamp.org/2026'));
   assert.ok(links.LinkedIn.includes(encodeURIComponent('https://rajasthan.wordcamp.org/2026')));
   assert.ok(decodeURIComponent(links.X.split('text=')[1]).length <= 270, 'X text fits');
-  assert.equal(personHeadline({ roles: ['speaker'], role_labels: ['Speaker'] }), 'Meet our Speaker');
-  assert.equal(personHeadline({ roles: [], role_labels: [] }), 'Meet me at WordCamp');
+  assert.equal(personHeadline({ roles: ['speaker'], role_labels: ['Speaker'] }, { short: 'WordCamp Delhi' }), 'Speaker at WordCamp Delhi');
+  assert.equal(personHeadline({ roles: [], role_labels: [] }, { short: 'WordCamp Delhi' }), 'See you at WordCamp Delhi');
 });
 
 const kit = {
-  event: { name: 'WordCamp Test 2026', app: 'https://campbuddy.club/event/x?utm_source=social', hashtags: '#WordCamp #WordPress #WCTest' },
+  event: { name: 'WordCamp Test 2026', qr: 'https://campbuddy.club/event/x?utm_source=campbuddy&utm_medium=social&utm_campaign=x', hashtags: '#WordCamp #WordPress #WCTest' },
   speakers: [{ name: 'A', photo: 'a.png' }, { name: 'B', photo: null }],
   sponsors: [{ name: 'S', logo: 'https://x.wordcamp.org/s.png' }],
   tables: [],
@@ -70,7 +73,7 @@ const kit = {
 test('the posts take their body from the kit', () => {
   const f = { headline: 'H', line: 'L', caption: '' };
   assert.equal(postContent({ key: 'speakers' }, f, kit).body.people.length, 1, 'only speakers with a photo');
-  assert.equal(postContent({ key: 'app' }, f, kit).body.type, 'qr');
+  assert.equal(postContent({ key: 'app' }, f, kit).body.type, 'features');
   assert.equal(postContent({ key: 'contributor' }, f, kit).body.type, 'none', 'no tables: no list');
   const spot = postContent({ key: 'spotlight' }, { headline: '', line: '', caption: '' }, kit, 2);
   assert.equal(spot.headline, 'Blocks');
@@ -84,21 +87,40 @@ test('the posts take their body from the kit', () => {
 test('captions for a day and a session', () => {
   assert.match(todayCaption(kit, '2026-10-03', sessionsOfDay(kit.schedule.sessions, '2026-10-03')), /^Sat 3 Oct at WordCamp Test 2026:\n\n10:00 AM {2}Blocks \(Rahul\)/);
   assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /Up next at WordCamp Test 2026: "Blocks" with Rahul, 10:00 AM in Track 1\./);
+  assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /utm_content=spotlight/);
+  assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /CampBuddy/);
 });
 
-test('a body too tall for its room loses rows, or goes', () => {
-  const list = { type: 'list', items: Array.from({ length: 6 }, (_, i) => ({ time: '1', title: String(i) })) };
-  const fitted = fitBody(list, 1350, 300);
-  assert.equal(fitted.body.items.length, 2);
-  assert.ok(fitted.h <= 300);
-  assert.deepEqual(fitBody({ type: 'qr', url: 'x' }, 1350, 100), { body: { type: 'none' }, h: 0 });
-  assert.equal(fitBody({ type: 'qr', url: 'x' }, 1350, 200).h, 200, 'a QR shrinks to fit');
+test('content that does not fit is split over cards, never cut or overlapped', () => {
+  const items = Array.from({ length: 7 }, (_, i) => ({ time: '1', title: String(i) }));
+  const pages = paginate({ key: 'today', body: { type: 'list', items } }, 300, 1350);
+  assert.deepEqual(pages.map((p) => p.body.items.length), [2, 2, 2, 1], '108 px a row: two to a card');
+  assert.deepEqual(pages.flatMap((p) => p.body.items.map((i) => i.title)), ['0', '1', '2', '3', '4', '5', '6'], 'nothing lost, nothing twice');
+  const people = Array.from({ length: 10 }, (_, i) => ({ name: String(i) }));
+  assert.deepEqual(paginate({ body: { type: 'photos', people } }, 430, 1350).map((p) => p.body.people.length), [8, 2], 'two rows of four');
+  assert.equal(paginate({ body: { type: 'none' } }, 10, 1350).length, 1);
+  assert.equal(paginate({ body: { type: 'list', items: [] } }, 300, 1350)[0].body.type, 'none');
+});
+
+test('every card links to the event in CampBuddy, tagged with its post or role', () => {
+  const url = new URL(qrLink(kit.event.qr, 'people-speaker'));
+  assert.equal(url.searchParams.get('utm_source'), 'campbuddy');
+  assert.equal(url.searchParams.get('utm_campaign'), 'x');
+  assert.equal(url.searchParams.get('utm_content'), 'people-speaker');
+});
+
+test('each event has its own look, always the same for that event', () => {
+  const a = eventLook(123);
+  const b = eventLook(123);
+  assert.deepEqual([a.motif, a.texture, a.style, a.design], [b.motif, b.texture, b.style, b.design]);
+  const looks = new Set([1, 2, 3, 4, 5, 6, 7, 8].map((seed) => JSON.stringify(((l) => [l.motif, l.style, l.texture])(eventLook(seed)))));
+  assert.ok(looks.size >= 6, 'different events, different looks');
 });
 
 test('role colours and mixing', () => {
   const colors = { primary: '#7a1f2b', secondary: '#e0a11b', ink: '#231f20', paper: '#fff8ee' };
   assert.equal(roleColor({ roles: ['organizer'] }, colors), '#7a1f2b');
   assert.equal(roleColor({ roles: ['speaker'] }, colors), '#e0a11b');
-  assert.equal(roleColor({ roles: ['volunteer'] }, colors), '#1f8a4c');
+  assert.equal(roleColor({ roles: ['volunteer'] }, colors), mix('#7a1f2b', '#231f20', 0.45), 'a tone of the brand, not a new colour');
   assert.equal(mix('#000000', '#ffffff', 0.5), '#808080');
 });

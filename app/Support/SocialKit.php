@@ -103,96 +103,90 @@ class SocialKit
     }
 
     /**
-     * The event posts: what the image says (headline, line) and a caption.
+     * CampBuddy's own posts about an event — CampBuddy talking to the people
+     * going to it, not the organizers announcing it. What the image says
+     * (kicker, headline, line) and a caption; each post's QR / link carries
+     * its own `utm_content` (link()).
      *
-     * @return list<array{key: string, label: string, headline: string, line: string, caption: string}>
+     * @return list<array<string, mixed>>
      */
     public static function posts(Event $event, ?CarbonImmutable $now = null): array
     {
         $name = $event->display_name;
+        $short = self::shortName($event);
         $dates = self::dates($event);
         $place = self::venue($event) !== '' ? self::venue($event) : self::place($event);
-        $when = trim($dates.($place !== '' ? ', '.$place : ''));
-        $site = $event->source_site_url;
-        $app = self::appUrl($event);
-        $tags = self::hashtags($event);
+        $when = trim($dates.($place !== '' ? ' · '.$place : ''));
+        $tags = self::hashtags($event).' #CampBuddy';
         $sessions = count(EventData::get($event->id, 'sessions') ?? []);
         $speakers = count(EventData::get($event->id, 'speakers') ?? []);
         $days = self::daysToGo($event, $now);
+        $link = fn (string $key) => self::link($event, $key);
 
-        $posts = [
+        return [
             [
                 'key' => 'save-the-date',
-                'label' => 'Save the date',
-                'kicker' => 'Mark your calendar',
-                'body' => 'none',
-                'headline' => 'Save the date',
+                'label' => 'Coming up',
+                'kicker' => 'Coming up',
+                'headline' => "{$short} is coming",
                 'line' => $when,
-                'caption' => "Save the date: {$name} is on {$dates}".($place !== '' ? " at {$place}" : '').".\n\nTalks, workshops, Contributor Day and a room full of people who build with WordPress. First WordCamp? You are very welcome.\n\nTickets and details: {$site}\n\n{$tags}",
+                'body' => 'none',
+                'caption' => "{$name} is on {$dates}".($place !== '' ? " at {$place}" : '').".\n\nGoing? Open it in CampBuddy, your free WordCamp companion: the schedule, people to meet and Contributor Day tips in one place. No sign-up, no download.\n\n{$link('save-the-date')}\n\n{$tags}",
             ],
             [
                 'key' => 'countdown',
                 'label' => 'Countdown',
                 'kicker' => 'Countdown',
+                'headline' => $days === null ? "{$short} is here" : ($days === 1 ? 'Tomorrow!' : "{$days} days to go"),
+                'line' => 'Get ready with CampBuddy',
                 'body' => 'countdown',
                 'days' => $days,
-                'headline' => $days === null ? 'It\'s WordCamp time' : ($days === 1 ? '1 day to go' : "{$days} days to go"),
-                'line' => $when,
-                'caption' => ($days === null ? "{$name} is here!" : ($days === 1 ? "Tomorrow: {$name}!" : "{$days} days to go until {$name}.")).
-                    "\n\nPlan your sessions, find people to meet and get Contributor Day tips in CampBuddy, free and without signing up: {$app}\n\n{$tags}",
+                'caption' => ($days === null ? "{$name} is here!" : ($days === 1 ? "{$name} is tomorrow!" : "{$days} days to go until {$name}.")).
+                    "\n\nPick your sessions, find people to meet and pack the right things with CampBuddy. Free, no sign-up:\n\n{$link('countdown')}\n\n{$tags}",
             ],
             [
                 'key' => 'schedule',
-                'label' => 'Schedule is live',
-                'kicker' => 'Just announced',
-                'body' => 'none',
-                'headline' => 'The schedule is live',
+                'label' => 'Schedule in CampBuddy',
+                'kicker' => 'Now in CampBuddy',
+                'headline' => 'The full schedule, in your pocket',
                 'line' => trim(($sessions ? "{$sessions} sessions" : '').($sessions && $speakers ? ' · ' : '').($speakers ? "{$speakers} speakers" : '')) ?: $when,
-                'caption' => "The schedule for {$name} is out".($sessions ? ": {$sessions} sessions" : '').($speakers ? " and {$speakers} speakers" : '').".\n\nSave the talks you want and get a reminder before each one: {$app}\n\n{$tags}",
+                'body' => 'none',
+                'caption' => "The {$name} schedule is in CampBuddy".($sessions ? ": {$sessions} sessions" : '').($speakers ? " and {$speakers} speakers" : '').". Save the talks you like and get a reminder before each one, even offline.\n\n{$link('schedule')}\n\n{$tags}",
             ],
             [
                 'key' => 'app',
                 'label' => 'Get CampBuddy',
                 'kicker' => 'Free · no sign-up',
-                'body' => 'qr',
                 'headline' => 'Your WordCamp companion',
-                'line' => 'Schedule, people to meet, Contributor Day: scan to open',
-                'caption' => "Going to {$name}? CampBuddy puts the schedule, the people you want to meet and Contributor Day tips in one place. Free, no sign-up, works offline.\n\nOpen it here: {$app}\n\n{$tags}",
-            ],
-            [
-                'key' => 'thank-you',
-                'label' => 'Thank you',
-                'kicker' => 'That\'s a wrap',
-                'body' => 'none',
-                'headline' => 'Thank you!',
-                'line' => $name,
-                'caption' => "Thank you to everyone who made {$name} happen: speakers, sponsors, volunteers, organizers and every single attendee.\n\nSee you at the next WordCamp!\n\n{$tags}",
+                'line' => "For everyone at {$short}",
+                'body' => 'features',
+                'caption' => "Going to {$name}? CampBuddy puts the schedule, the people you want to meet, Contributor Day tips and deals in one place. Free, no sign-up, works offline.\n\nScan the code or open: {$link('app')}\n\n{$tags}",
             ],
             [
                 'key' => 'speakers',
-                'label' => 'Speaker lineup',
-                'kicker' => 'Speakers announced',
-                'headline' => 'Meet the speakers',
-                'line' => $speakers ? "{$speakers} speakers · {$when}" : $when,
+                'label' => 'Speakers',
+                'kicker' => 'Speakers',
+                'headline' => "Meet the {$short} speakers",
+                'line' => 'Their talks are in CampBuddy',
                 'body' => 'photos',
-                'caption' => "Here are the speakers of {$name}".($speakers ? ": {$speakers} people sharing what they know about WordPress" : '').".\n\nSee every talk and save your favourites: {$app}\n\n{$tags}",
+                'caption' => "Meet the speakers of {$name}".($speakers ? ": {$speakers} people sharing what they know" : '').". Find every talk, save the ones you want and get a reminder in CampBuddy.\n\n{$link('speakers')}\n\n{$tags}",
             ],
             [
                 'key' => 'sponsors',
-                'label' => 'Thank you, sponsors',
-                'kicker' => 'With thanks to',
-                'headline' => 'Our sponsors',
-                'line' => 'They help keep WordCamp tickets affordable',
+                'label' => 'Sponsors',
+                'kicker' => 'Say hi at their booths',
+                'headline' => 'The sponsors who make it happen',
+                'line' => 'Their deals are in CampBuddy',
                 'body' => 'logos',
-                'caption' => "A big thank you to the sponsors of {$name}. They help keep WordCamp tickets affordable for everyone. Say hello at their booths!\n\n{$tags}",
+                'caption' => "These sponsors help keep {$name} affordable. Stop by their booths, and find their deals for attendees in CampBuddy.\n\n{$link('sponsors')}\n\n{$tags}",
             ],
             [
                 'key' => 'today',
-                'label' => 'Today at WordCamp',
+                'label' => 'Day schedule',
                 'picker' => 'day',
                 'kicker' => 'On the schedule',
-                'headline' => 'Today at '.self::shortName($event),
-                'line' => $place,
+                'headline' => "Today at {$short}",
+                'line' => 'Save your picks in CampBuddy',
                 'body' => 'list',
                 'caption' => '',
             ],
@@ -209,24 +203,45 @@ class SocialKit
             [
                 'key' => 'contributor',
                 'label' => 'Contributor Day',
-                'kicker' => 'Give back to WordPress',
-                'headline' => 'Join Contributor Day',
-                'line' => 'No coding needed. Every table welcomes beginners.',
+                'kicker' => 'Contributor Day',
+                'headline' => 'Find your Contributor Day table',
+                'line' => 'CampBuddy matches you with a team',
                 'body' => 'tables',
-                'caption' => "Contributor Day at {$name}: spend a day making WordPress better with the teams that build it. Writers, designers, translators, testers and developers are all welcome, and every table helps beginners get started.\n\nFind your team in CampBuddy: {$app}\n\n{$tags}",
+                'caption' => "Contributor Day at {$name}: not sure which table to join? Answer three quick questions in CampBuddy and it suggests the team for you. No coding needed, every table welcomes beginners.\n\n{$link('contributor')}\n\n{$tags}",
             ],
             [
-                'key' => 'volunteers',
-                'label' => 'Call for volunteers',
-                'kicker' => 'We need you',
-                'headline' => 'Volunteer with us',
-                'line' => 'Help run '.$name,
+                'key' => 'meet',
+                'label' => 'Find your people',
+                'kicker' => 'Don\'t go alone',
+                'headline' => 'Find people to meet',
+                'line' => 'CampBuddy shows who shares your interests',
                 'body' => 'none',
-                'caption' => "Want to see how a WordCamp works from the inside? Volunteer at {$name}: welcome attendees, help speakers and meet the whole community.\n\nSign up on the WordCamp site: {$site}\n\n{$tags}",
+                'caption' => "First WordCamp, or don't know anyone at {$name}? CampBuddy shows attendees who share your interests, and gives you an easy way to say hi.\n\n{$link('meet')}\n\n{$tags}",
+            ],
+            [
+                'key' => 'thank-you',
+                'label' => 'Thank you',
+                'kicker' => 'That\'s a wrap',
+                'headline' => "Thank you, {$short}!",
+                'line' => 'Your day is saved in CampBuddy',
+                'body' => 'none',
+                'caption' => "Thank you for using CampBuddy at {$name}! Your sessions, notes and the people you met stay in the app, and you can save it all as a PDF.\n\nSee you at the next WordCamp.\n\n{$link('thank-you')}\n\n{$tags}",
             ],
         ];
+    }
 
-        return $posts;
+    /**
+     * The link every card's QR (and caption) opens: the event in CampBuddy,
+     * tagged with the event and the post or role it came from.
+     */
+    public static function link(Event $event, string $content): string
+    {
+        return route('event.home', $event).'?'.http_build_query([
+            'utm_source' => 'campbuddy',
+            'utm_medium' => 'social',
+            'utm_campaign' => $event->slug,
+            'utm_content' => $content,
+        ]);
     }
 
     /** "WordCamp Rajasthan" without the year, for short headlines. */
@@ -337,6 +352,8 @@ class SocialKit
             $talk = $roles[$entry->id]['talks'][0] ?? null;
             $main = $labels[0] ?? 'Attendee';
 
+            $role = $personRoles[0] ?? 'camp-card';
+            $link = self::link($event, 'people-'.str_replace('_', '-', $role));
             $people[] = [
                 'id' => $entry->id,
                 'name' => $entry->name,
@@ -345,9 +362,10 @@ class SocialKit
                 'role_labels' => $labels,
                 'talk' => $talk,
                 'card' => $card,
+                'link' => $link,
                 'caption' => $talk
-                    ? "Meet our speaker {$entry->name}! Catch \"{$talk}\" at {$event->display_name}.\n\n{$tags}"
-                    : "Meet {$entry->name}, ".strtolower($main === 'Attendee' ? 'one of our attendees' : 'our '.$main)." at {$event->display_name}!\n\n{$tags}",
+                    ? "{$entry->name} is speaking at {$event->display_name}: \"{$talk}\". Save the talk in CampBuddy and get a reminder before it starts.\n\n{$link}\n\n{$tags} #CampBuddy"
+                    : "Say hi to {$entry->name}".($main === 'Attendee' ? '' : ', '.strtolower($main))." at {$event->display_name}! Find them, and everyone else worth meeting, in CampBuddy.\n\n{$link}\n\n{$tags} #CampBuddy",
             ];
         }
 
@@ -368,6 +386,10 @@ class SocialKit
                 'logo' => $event->logoUrl() ?? $event->faviconUrl(),
                 'mark' => $event->faviconUrl() ?? $event->logoUrl(),
                 'slug' => $event->slug,
+                // Every card's QR: the event in CampBuddy; social-kit.js adds the card's utm_content.
+                'qr' => route('event.home', $event).'?'.http_build_query(['utm_source' => 'campbuddy', 'utm_medium' => 'social', 'utm_campaign' => $event->slug]),
+                // Same event, same look; another event, another (social-kit.js seeds its shapes with this).
+                'seed' => crc32((string) $event->slug),
             ],
             'colors' => self::colors($event),
             'colorsSaved' => self::hasSavedColors($event),
