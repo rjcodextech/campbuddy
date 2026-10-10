@@ -51,6 +51,8 @@ class Event extends Model
         'schedule_delays' => 'array',
         'brand_colors' => 'array',
         'site_theme' => 'array',
+        'photo_album_notified_at' => 'datetime',
+        'wordpress_tv_notified_at' => 'datetime',
         'social_webhook' => 'encrypted',
         'starts_on' => 'date',
         'ends_on' => 'date',

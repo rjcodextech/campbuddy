@@ -15,12 +15,14 @@ use App\Http\Controllers\Admin\EventManagerController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MemoriesController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\Admin\ScheduleDelayController;
 use App\Http\Controllers\Admin\SocialController;
 use App\Http\Controllers\CalendarFileController;
+use App\Http\Controllers\EventMemoriesPageController;
 use App\Http\Controllers\EventPageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ManifestController;
@@ -90,6 +92,11 @@ Route::withoutMiddleware([
         Route::get('/event/{event:slug}/guide', [EventPageController::class, 'guide'])->name('event.guide');
         Route::get('/event/{event:slug}/manifest.json', ManifestController::class)->name('event.manifest');
     });
+
+    // The photo album and WordPress.tv talks (App\Support\EventMemories). Not behind
+    // event.public: it stays open after the event is archived, because the videos
+    // often arrive weeks later. The controller still 404s a draft or hidden event.
+    Route::get('/event/{event:slug}/memories', EventMemoriesPageController::class)->name('event.memories');
 });
 
 // The one attendee form that does need a session: CSRF protection and its
@@ -182,6 +189,9 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/delay', [ScheduleDelayController::class, 'index'])->name('admin.events.delay');
         Route::post('events/{event}/delay', [ScheduleDelayController::class, 'store'])->name('admin.events.delay.store');
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
+        Route::get('events/{event}/memories', [MemoriesController::class, 'index'])->name('admin.events.memories');
+        Route::post('events/{event}/memories', [MemoriesController::class, 'store'])->name('admin.events.memories.store');
+        Route::post('events/{event}/memories/notify/{kind}', [MemoriesController::class, 'notify'])->whereIn('kind', ['photos', 'videos'])->middleware('throttle:10,1')->name('admin.events.memories.notify');
         Route::get('events/{event}/tables', [ContributorTableController::class, 'index'])->name('admin.events.tables.index');
         Route::post('events/{event}/tables', [ContributorTableController::class, 'store'])->name('admin.events.tables.store');
         Route::put('events/{event}/tables/{table}', [ContributorTableController::class, 'update'])->name('admin.events.tables.update');

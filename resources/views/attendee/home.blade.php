@@ -25,6 +25,9 @@
             </div>
         </section>
 
+        {{-- After the event: the photo album and WordPress.tv talks, once an organizer adds them. --}}
+        @include('attendee.partials.memories-card', ['event' => $event])
+
         <div id="starting-soon-banner" hidden></div>
 
         {{-- Shown by default — first-timers are who CampBuddy is for — and

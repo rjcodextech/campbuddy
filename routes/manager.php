@@ -5,6 +5,7 @@ use App\Http\Controllers\Manager\AuthController;
 use App\Http\Controllers\Manager\ContributorTableController;
 use App\Http\Controllers\Manager\DashboardController;
 use App\Http\Controllers\Manager\EventController;
+use App\Http\Controllers\Manager\MemoriesController;
 use App\Http\Controllers\Manager\QuestController;
 use App\Http\Controllers\Manager\ScheduleDelayController;
 use App\Http\Controllers\Manager\SocialController;
@@ -56,6 +57,9 @@ Route::prefix('manager')->group(function () {
         Route::get('events/{eventId}/delay', [ScheduleDelayController::class, 'index'])->name('manager.events.delay');
         Route::post('events/{eventId}/delay', [ScheduleDelayController::class, 'store'])->name('manager.events.delay.store');
         Route::post('events/{eventId}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('manager.events.delay.clear');
+        Route::get('events/{eventId}/memories', [MemoriesController::class, 'index'])->name('manager.events.memories');
+        Route::post('events/{eventId}/memories', [MemoriesController::class, 'store'])->name('manager.events.memories.store');
+        Route::post('events/{eventId}/memories/notify/{kind}', [MemoriesController::class, 'notify'])->whereIn('kind', ['photos', 'videos'])->middleware('throttle:10,1')->name('manager.events.memories.notify');
         Route::get('events/{eventId}/tables', [ContributorTableController::class, 'index'])->name('manager.events.tables');
         Route::post('events/{eventId}/tables', [ContributorTableController::class, 'store'])->name('manager.events.tables.store');
         Route::put('events/{eventId}/tables/{tableId}', [ContributorTableController::class, 'update'])->whereNumber('tableId')->name('manager.events.tables.update');

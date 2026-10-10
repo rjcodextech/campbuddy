@@ -1,0 +1,69 @@
+{{--
+    /event/{slug}/memories (EventMemoriesPageController): the photo album and
+    the WordPress.tv talks, where the Memories pushes land. A page of its own,
+    not the attendee layout: it stays open after the event is archived, when
+    the app's other pages (and its tab bar) are gone.
+--}}
+@php($documentTitle = 'Memories | '.$event->display_name.' | '.config('campbuddy.name'))
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>{{ $documentTitle }}</title>
+    <meta name="description" content="Photos and recorded talks from {{ $event->display_name }}.">
+    <meta name="robots" content="noindex">
+    @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false), 'tabIcon' => $event->faviconUrl()])
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    @include('attendee.partials.analytics', ['eventSlug' => $event->slug])
+
+    @vite(['resources/scss/main.scss'])
+</head>
+<body class="app-shell" data-page-type="memories">
+    @include('attendee.partials.line-icons')
+
+    <div class="app-frame">
+        <header class="topbar">
+            <a href="{{ route('home') }}" class="brand">
+                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
+            </a>
+        </header>
+
+        <main id="main-content" tabindex="-1">
+            <section class="home-hero" aria-label="Event">
+                <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104">
+                <div class="home-hero__body">
+                    <p class="home-hero__eyebrow">Memories</p>
+                    <h1 class="home-hero__title">{{ $event->display_name }}</h1>
+                    @if ($event->starts_on)
+                        <p class="home-hero__meta">
+                            {{ $event->starts_on->format('j M Y') }}@if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) – {{ $event->ends_on->format('j M Y') }}@endif
+                        </p>
+                    @endif
+                </div>
+            </section>
+
+            @if ($links === [])
+                <div class="card memories__empty">
+                    <p class="action-card__title">Nothing here yet</p>
+                    <p class="action-card__desc">The photo album and the recorded talks show up here once the organizers share them. Talks usually reach WordPress.tv a few weeks after the event.</p>
+                </div>
+            @else
+                @include('attendee.partials.memories-card', ['event' => $event])
+            @endif
+
+            <p class="memories__back">
+                @if ($live)
+                    <a class="btn btn--outline btn--full" href="{{ route('event.home', $event) }}">Back to {{ $event->display_name }}</a>
+                @else
+                    <a class="btn btn--outline btn--full" href="{{ route('home') }}#find-your-camp">Find your next WordCamp</a>
+                @endif
+            </p>
+        </main>
+    </div>
+</body>
+</html>

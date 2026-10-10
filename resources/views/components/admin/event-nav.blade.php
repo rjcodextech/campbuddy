@@ -5,7 +5,7 @@
 
       <x-admin.event-nav :event="$event" current="quests" />
 
-    current: details | quests | offers | roster | leads | tables | delay | social
+    current: details | quests | offers | roster | leads | tables | delay | social | memories
 --}}
 @props(['event', 'current'])
 
@@ -23,6 +23,7 @@
         'tables' => ['Contributor Day', route('admin.events.tables.index', $event), null],
         'delay' => ['Running late', route('admin.events.delay', $event), null],
         'social' => ['Social media', route('admin.events.social', $event), null],
+        'memories' => ['Memories', route('admin.events.memories', $event), null],
     ];
 
     $timing = \App\Support\EventListing::timing($event);

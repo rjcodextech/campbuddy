@@ -1,6 +1,6 @@
 @php
     $filtering = $filters['manager'] || $filters['event'];
-    $sections = ['details' => 'Details', 'information' => 'Information', 'quests' => 'Quests', 'attendees' => 'Attendees', 'tables' => 'Contributor Day', 'delay' => 'Running late', 'social' => 'Social media'];
+    $sections = ['details' => 'Details', 'information' => 'Information', 'quests' => 'Quests', 'attendees' => 'Attendees', 'tables' => 'Contributor Day', 'delay' => 'Running late', 'social' => 'Social media', 'memories' => 'Memories'];
 @endphp
 
 <x-app-layout title="Manager activity" subtitle="What event managers changed, newest first. Entries are kept for {{ $keepDays }} days."
