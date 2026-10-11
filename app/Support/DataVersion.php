@@ -30,6 +30,8 @@ class DataVersion
                 // Memories: the photo album and WordPress.tv links on Home.
                 $event->photo_album_url,
                 $event->wordpress_tv_url,
+                // The site's artwork behind the name on Home.
+                is_array($event->site_theme) ? ($event->site_theme['hero']['url'] ?? null) : null,
                 // Every deal shown here: its own and the default deals for its country.
                 md5(\App\Models\Offer::shownAt($event)->map(fn ($offer) => $offer->id.'@'.$offer->updated_at)->implode(',')),
                 // Free Steals: the same list everywhere (a removal changes the count).

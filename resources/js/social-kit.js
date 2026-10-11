@@ -2017,7 +2017,11 @@ function useSiteFonts(fonts, on) {
 async function setSiteArt(kit, enabled) {
   for (const kind of ['pattern', 'illustration', 'photo']) {
     const pieces = (kit.site?.art ?? []).filter((a, i) => a.kind === kind && enabled.has(i));
-    SITE_ART[kind] = (await Promise.all(pieces.map((a) => loadImage(proxied(kit, a.url))))).filter(Boolean);
+    // A site piece too small to stay sharp at card size (an old 20 px sprite, a thumbnail) is left out;
+    // a pattern repeats, so it may be small; an upload was chosen by someone, so it stays.
+    const minSide = kind === 'pattern' ? 48 : 400;
+    const loaded = await Promise.all(pieces.map((a) => loadImage(proxied(kit, a.url))));
+    SITE_ART[kind] = loaded.filter((img, i) => img && (pieces[i].uploaded || Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height) >= minSide));
   }
   useArt(0);
 }

@@ -46,15 +46,26 @@
             </div>
             <div>
                 <p class="cb-label">Artwork ({{ count($site['art']) }} of {{ \App\Support\SiteTheme::SLOTS }})</p>
-                <p class="mb-2 text-xs text-muted">From the site's pages and media library. A pattern makes the border strip and the background; an illustration (a skyline, a motif) stands at the foot of every card, in its own colours; a photo is the background of the Gradient style. Empty places take your own upload.</p>
+                <p class="mb-2 text-xs text-muted">From the site's pages and media library, best first (too small, logos, people, frames and graphics with words are left out). A pattern lines the cards; an illustration (a skyline, a motif) stands inside the design; a photo of the place is the picture behind picture-led cards. Wrong kind? Change it below the piece. Empty places take your own upload.</p>
                 <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                     @foreach ($site['art'] as $i => $art)
                         <div class="flex flex-col gap-1 text-xs">
                             <span class="flex h-24 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
                                 <img src="{{ ($art['uploaded'] ?? false) ? $art['url'] : $imageUrl.'?u='.urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
                             </span>
-                            <label class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> {{ ucfirst($art['kind']) }}{{ ($art['uploaded'] ?? false) ? ' · uploaded' : '' }}</label>
-                            <span class="truncate text-muted" title="{{ $art['name'] }}">{{ $art['name'] }}</span>
+                            <label class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> Use{{ ($art['uploaded'] ?? false) ? ' · uploaded' : '' }}</label>
+                            <span class="truncate text-muted" title="{{ $art['name'] }}{{ isset($art['width'], $art['height']) ? ' · '.$art['width'].' × '.$art['height'].' px' : '' }}">{{ $art['name'] }}</span>
+                            {{-- What it is decides where it goes on a card; CampBuddy guesses, this corrects it. --}}
+                            <form method="POST" action="{{ $artKindUrl }}">
+                                @csrf
+                                <input type="hidden" name="piece" value="{{ $art['id'] }}">
+                                <select name="kind" class="cb-input py-1 text-xs" aria-label="What {{ $art['name'] }} is" onchange="this.form.submit()">
+                                    @foreach (\App\Support\SiteTheme::KINDS as $kind)
+                                        <option value="{{ $kind }}" @selected($art['kind'] === $kind)>{{ ucfirst($kind) }}</option>
+                                    @endforeach
+                                </select>
+                                <noscript><x-button type="submit" variant="link" size="sm">Save</x-button></noscript>
+                            </form>
                             <form method="POST" action="{{ $artRemoveUrl }}" x-data x-on:submit="if (! confirm('Take this artwork off?')) $event.preventDefault()">
                                 @csrf
                                 <input type="hidden" name="piece" value="{{ $art['id'] }}">
@@ -77,6 +88,29 @@
                     @endfor
                 </div>
                 @error('art') <p class="mt-1 text-xs text-danger">{{ $message }}</p> @enderror
+
+                {{-- The rest of what the site has: any of it can take a place ("Use this"). --}}
+                @if (! empty($site['more']))
+                    <details class="mt-4">
+                        <summary class="cursor-pointer text-sm font-medium text-maroon">More from the site ({{ count($site['more']) }})</summary>
+                        <p class="mt-1 text-xs text-muted">"Use this" puts a piece first; the last piece CampBuddy picked by itself makes room.</p>
+                        <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                            @foreach ($site['more'] as $piece)
+                                <div class="flex flex-col gap-1 text-xs">
+                                    <span class="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
+                                        <img src="{{ $imageUrl.'?u='.urlencode($piece['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
+                                    </span>
+                                    <span class="truncate text-muted" title="{{ $piece['name'] }}">{{ ucfirst($piece['kind']) }} · {{ $piece['name'] }}{{ $piece['hidden'] ? ' (taken off)' : '' }}</span>
+                                    <form method="POST" action="{{ $artUseUrl }}">
+                                        @csrf
+                                        <input type="hidden" name="piece" value="{{ $piece['id'] }}">
+                                        <x-button type="submit" variant="secondary" size="sm">Use this</x-button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    </details>
+                @endif
             </div>
         </div>
         <x-slot:footer>

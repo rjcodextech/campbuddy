@@ -34,6 +34,8 @@ class SocialController extends Controller
             'siteUrl' => route('admin.events.social.site', $event),
             'artUrl' => route('admin.events.social.art', $event),
             'artRemoveUrl' => route('admin.events.social.art.remove', $event),
+            'artUseUrl' => route('admin.events.social.art.use', $event),
+            'artKindUrl' => route('admin.events.social.art.kind', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('admin.events.social.publish', $event) : null,
             'webhookUrl' => route('admin.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -94,6 +96,22 @@ class SocialController extends Controller
         Gate::authorize('update', $event);
 
         return redirect()->route('admin.events.social', $event)->with('status', SiteTheme::remove($event, (string) $request->input('piece')));
+    }
+
+    /** Puts another piece of the site's artwork in use. */
+    public function useArt(Request $request, Event $event): RedirectResponse
+    {
+        Gate::authorize('update', $event);
+
+        return redirect()->route('admin.events.social', $event)->with('status', SiteTheme::use($event, (string) $request->input('piece')));
+    }
+
+    /** Says what a piece of artwork is (pattern, illustration, photo). */
+    public function artKind(Request $request, Event $event): RedirectResponse
+    {
+        Gate::authorize('update', $event);
+
+        return redirect()->route('admin.events.social', $event)->with('status', SiteTheme::setKind($event, (string) $request->input('piece'), (string) $request->input('kind')));
     }
 
     /** The old "QR codes" tab now lives on this page. */

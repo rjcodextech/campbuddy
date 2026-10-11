@@ -27,18 +27,29 @@ class SiteThemeScraper
     /** WordPress core's palette, present on every site. */
     private const CORE = ['black', 'white', 'cyan-bluish-gray', 'pale-pink', 'vivid-red', 'luminous-vivid-orange', 'luminous-vivid-amber', 'light-green-cyan', 'vivid-green-cyan', 'pale-cyan-blue', 'vivid-cyan-blue', 'vivid-purple'];
 
-    private const ART_WORDS = '/(pattern|motif|tile|jali|texture|skyline|illustration|sprig|wall|banner|hero|backdrop|bg|background|mandala|border|frame|doodle)/i';
+    private const ART_WORDS = '/(pattern|motif|tile|jali|texture|skyline|illustration|sprig|wall|banner|hero|backdrop|bg|background|mandala|border|doodle|wapuu|sketch|artwork|graphic)/i';
 
-    // Graphics with words or prices on them (ticket tiers, a venue map, a flyer) aren't artwork either.
-    private const SKIP_WORDS = '/(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge|ticket|price|pricing|map|flyer|poster|screenshot|schedule|cta)/i';
+    // Words that name a real piece of artwork, whatever its shape or file type.
+    private const SHAPE_WORDS = '/(pattern|motif|tile|jali|texture|mandala|skyline|illustration|sprig|doodle|sketch)/i';
 
-    /** @return array{colors: list<array{name: string, hex: string}>, fonts: array<string, array{family: string, faces: list<array{url: string, weight: string, style: string, range: ?string}>}>, art: list<array{url: string, kind: string, name: string}>} */
-    public function parse(string $html, array $skipUrls = [], array $mediaUrls = []): array
+    // Photos of the place itself: the venue, the city.
+    private const PLACE_WORDS = '/(?<![a-z])(venue|hall|hotel|campus|auditorium|exterior|building|city|aerial|landmark|centre|center)/i';
+
+    // Graphics with words or prices on them (ticket tiers, a venue map, a flyer) aren't artwork either,
+    // nor frames, templates and social graphics ("post-frame", "social-frames-featured", made for
+    // people's photos or carrying words), hotel rooms, or pictures of the team.
+    private const SKIP_WORDS = '/(?<![a-z])(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge|ticket|price|pricing|map|flyer|poster|screenshot|schedule|cta|frame|template|social|og-image|share|save-the-date|announce|room|organi[sz]er|volunteer|selfie|layout|floor-?plan|post|posts|update|fb|facebook|insta|instagram|twitter|linkedin|featured|story|reel|call[-_ ]for|with (the )?text|text reads)/i';
+
+    /**
+     * @param  list<string|array>  $media  the site's media library (see art())
+     * @return array{colors: list<array{name: string, hex: string}>, fonts: array<string, array{family: string, faces: list<array{url: string, weight: string, style: string, range: ?string}>}>, art: list<array{url: string, kind: string, name: string}>}
+     */
+    public function parse(string $html, array $skipUrls = [], array $media = []): array
     {
         return [
             'colors' => $this->colors($html),
             'fonts' => $this->fonts($html),
-            'art' => $this->art($html, $skipUrls, $mediaUrls),
+            'art' => $this->art($html, $skipUrls, $media),
         ];
     }
 
@@ -124,53 +135,189 @@ class SiteThemeScraper
         return (bool) preg_match('/@font-face\s*\{[^}]*font-family:\s*["\']?'.preg_quote($family, '/').'["\']?\s*;/i', $html);
     }
 
-    /** @return list<array{url: string, kind: string, name: string}> */
-    /** @param  list<string>  $mediaUrls  the site's media library (any page's uploads), named like artwork to count */
-    private function art(string $html, array $skipUrls, array $mediaUrls = []): array
+    /**
+     * The site's artwork, best first: what its home page shows as a backdrop
+     * (CSS backgrounds, Cover blocks), and pictures there or in its media
+     * library whose file name, title or alt text says artwork (a skyline, a
+     * pattern) or the place (the venue, the city). Too small to print, a
+     * logo, a person, a sponsor, a frame or a graphic with words: left out.
+     * Copies of one piece (white / black, -scaled, -1, cropped-) count once,
+     * the biggest kept. The kind comes from the words, then the shape: a
+     * wide piece is an illustration (a band), a JPEG a photo.
+     *
+     * @param  list<string|array{url: string, width?: ?int, height?: ?int, title?: string, alt?: string}>  $media  the site's media library
+     * @return list<array{url: string, kind: string, name: string, width?: int, height?: int}>
+     */
+    private function art(string $html, array $skipUrls, array $media = []): array
     {
         $skip = array_flip(array_map(fn ($u) => $this->original((string) $u), array_filter($skipUrls)));
-        $art = [];
+        $found = [];
+        $add = function (string $url, string $source, ?int $w = null, ?int $h = null, string $words = '') use (&$found, $skip) {
+            $url = $this->original($url);
+            if (! SafeUrl::web($url) || isset($skip[$url]) || ! preg_match('/\.(png|jpe?g|webp)$/i', $url)) {
+                return;
+            }
+            $found[$url] = [
+                'url' => $url,
+                'sources' => array_values(array_unique([...($found[$url]['sources'] ?? []), $source])),
+                'width' => $w ?? ($found[$url]['width'] ?? null),
+                'height' => $h ?? ($found[$url]['height'] ?? null),
+                'words' => trim(($found[$url]['words'] ?? '').' '.$words),
+            ];
+        };
 
-        // Backgrounds in the site's CSS: tiles and patterns, or a hero photo.
-        preg_match_all('/url\([\'"]?(https?:\/\/[^\'")\s]+\.(?:png|jpe?g|webp))[\'"]?\)/i', $html, $bg);
+        // What the home page shows as a backdrop: CSS backgrounds and Cover blocks.
+        preg_match_all('/url\(\s*[\'"]?(https?:\/\/[^\'")\s]+\.(?:png|jpe?g|webp))(?:\?[^\'")\s]*)?[\'"]?\s*\)/i', $html, $bg);
         foreach ($bg[1] as $url) {
-            $this->addArt($art, $url, $skip, true);
+            $add($url, 'backdrop');
+        }
+        preg_match_all('/<img\b[^>]*>/i', $html, $imgs);
+        foreach ($imgs[0] as $tag) {
+            $attr = fn (string $name) => preg_match('/\s'.$name.'=["\']([^"\']*)["\']/i', $tag, $m) ? html_entity_decode($m[1]) : '';
+            if ($attr('src') === '') {
+                continue;
+            }
+            $cover = (bool) preg_match('/wp-block-cover__image|header-image|hero/i', $attr('class'));
+            $add($attr('src'), $cover ? 'backdrop' : 'page', null, null, $attr('alt'));
+        }
+        // Any other upload of this site the page mentions (a srcset, a link).
+        preg_match_all('/https?:\/\/[a-z0-9.-]*wordcamp\.org\/[^\s"\'()<>]*\/files\/[^\s"\'()<>]+\.(?:png|jpe?g|webp)/i', $html, $files);
+        foreach ($files[0] as $url) {
+            $add($url, 'page');
         }
 
-        // Illustrations from the site's media library.
-        preg_match_all('/https?:\/\/[a-z0-9.-]*wordcamp\.org\/[^\s"\'()<>]*\/files\/[^\s"\'()<>]+\.(?:png|jpe?g|webp)/i', $html, $media);
-        foreach ([...$media[0], ...$mediaUrls] as $url) {
-            $this->addArt($art, $url, $skip, false);
+        // The media library: every page's uploads, with their size, title and alt text.
+        foreach ($media as $item) {
+            $item = is_array($item) ? $item : ['url' => $item];
+            if (is_string($item['url'] ?? null)) {
+                $add($item['url'], 'library', $item['width'] ?? null, $item['height'] ?? null, trim(($item['title'] ?? '').' '.($item['alt'] ?? '')));
+            }
         }
 
-        // Shapes that work as a band (a skyline, a sprig, a motif) before big pictures (a wall, a banner).
-        $rank = fn (array $a) => preg_match('/(skyline|sprig|motif|jali|tile|pattern)/i', $a['name']) ? 0 : 1;
-        $list = array_values($art);
-        usort($list, fn ($x, $y) => $rank($x) <=> $rank($y));
+        // One of each piece: its copies count once, the best kept.
+        $best = [];
+        foreach ($found as $piece) {
+            $piece = $this->judge($piece);
+            if ($piece === null) {
+                continue;
+            }
+            $family = $this->family($piece['name']);
+            if (! isset($best[$family]) || $this->better($piece, $best[$family])) {
+                $best[$family] = $piece;
+            }
+        }
 
-        return array_slice($list, 0, 12);
+        $list = array_values($best);
+        usort($list, fn ($x, $y) => $y['score'] <=> $x['score']);
+
+        return array_map(fn ($p) => array_filter(
+            ['url' => $p['url'], 'kind' => $p['kind'], 'name' => $p['name'], 'width' => $p['width'], 'height' => $p['height']],
+            fn ($v) => $v !== null,
+        ), array_slice($list, 0, 12));
     }
 
-    private function addArt(array &$art, string $url, array $skip, bool $fromCss): void
+    /**
+     * Whether a picture is artwork, what kind, and how good a pick it is.
+     *
+     * @return ?array{url: string, kind: string, name: string, width: ?int, height: ?int, score: int}
+     */
+    private function judge(array $piece): ?array
     {
-        $url = $this->original($url);
-        $name = basename(parse_url($url, PHP_URL_PATH) ?: '');
-        if (! SafeUrl::web($url) || isset($art[$url]) || isset($skip[$url]) || preg_match(self::SKIP_WORDS, $name)) {
-            return;
+        $file = basename(parse_url($piece['url'], PHP_URL_PATH) ?: '');
+        $name = pathinfo($file, PATHINFO_FILENAME);
+        $words = $name.' '.$piece['words'];
+        [$w, $h] = [$piece['width'], $piece['height']];
+        $backdrop = in_array('backdrop', $piece['sources'], true);
+
+        $aspect = $w && $h ? $w / $h : null;
+        $jpeg = (bool) preg_match('/\.jpe?g$/i', $file);
+        $tile = (bool) preg_match('/(pattern|motif|tile|jali|texture|mandala)/i', $words);
+        $shape = (bool) preg_match(self::SHAPE_WORDS, $words);
+
+        if (preg_match(self::SKIP_WORDS, $words)) {
+            return null;
         }
-        if (! $fromCss && ! preg_match(self::ART_WORDS, $name)) {
-            return;
+        // A photo-sharing upload ("55314129638_55a52de455_…") or a hash name: a photo of people, not artwork.
+        if (preg_match('/^(\d{8,}_|[0-9a-f]{24,})/i', $name)) {
+            return null;
+        }
+        // Too small to print well (a 20 px sprite, a thumbnail); a tile repeats, so it may be smaller.
+        if ($w && $h && (max($w, $h) < ($tile ? 48 : 400) || min($w, $h) < ($tile ? 24 : 80))) {
+            return null;
+        }
+        // The shape of a link preview (1200 × 630, 1910 × 1000): a social graphic with words on it.
+        if ($aspect !== null && $aspect > 1.86 && $aspect < 1.95 && ! $shape) {
+            return null;
         }
 
-        $kind = preg_match('/(pattern|motif|tile|jali|texture|mandala|doodle)/i', $name) ? 'pattern'
-            : (preg_match('/\.(jpe?g)$/i', $name) && ! preg_match('/(skyline|illustration|sprig|wall)/i', $name) ? 'photo' : 'illustration');
+        $art = (bool) preg_match(self::ART_WORDS, $words);
+        $place = (bool) preg_match(self::PLACE_WORDS, $words);
+        if (! $art && ! $place && ! $backdrop) {
+            return null;
+        }
+        // A JPEG named only for a mascot ("wapuu-2026.jpg") is a photo of the plush toy among people.
+        if ($jpeg && ! $place && ! $backdrop && ! $shape && ! preg_match('/(hero|banner|backdrop|bg|background|wall)/i', $words)) {
+            return null;
+        }
+        $kind = match (true) {
+            (bool) preg_match('/(pattern|motif|tile|jali|texture|mandala)/i', $words) => 'pattern',
+            (bool) preg_match('/(skyline|illustration|sprig|wall|wapuu|doodle|sketch)/i', $words) => 'illustration',
+            $jpeg => 'photo',
+            $aspect !== null && $aspect >= 2.0 => 'illustration',
+            // A Cover block's backdrop with no art words is nearly always a photo.
+            $backdrop && ! $art => 'photo',
+            $place => 'photo',
+            default => 'illustration',
+        };
 
-        $art[$url] = ['url' => $url, 'kind' => $kind, 'name' => pathinfo($name, PATHINFO_FILENAME)];
+        $score = match (true) {
+            (bool) preg_match('/(skyline|pattern|motif|jali|tile|sprig|wapuu)/i', $words) => 6,
+            $art => 4,
+            default => 2,
+        };
+        $score += $backdrop ? 3 : 0;
+        $score += $place && $kind === 'photo' ? 1 : 0;
+        $score += $w && $h && max($w, $h) >= 1200 ? 1 : 0;
+        // A Figma export ("Frame-1000015039") or a camera file name says little: below named artwork.
+        $score -= preg_match('/^(frame|image|img|dsc|unnamed|untitled|screen|photo|pexels|unsplash)[-_ ]?\d*/i', $name) ? 2 : 0;
+
+        return ['url' => $piece['url'], 'kind' => $kind, 'name' => $name, 'width' => $w, 'height' => $h, 'score' => $score];
+    }
+
+    /** "wcjhb-skyline-white-1", "cropped-wcjhb-skyline-black-scaled" → "wcjhb-skyline". */
+    private function family(string $name): string
+    {
+        $name = (string) preg_replace('/^cropped-/', '', strtolower($name));
+        do {
+            $before = $name;
+            $name = (string) preg_replace('/[-_](scaled|edited|e\d{10,}|\d{1,2}|v\d+|@?\dx|white|black|light|dark|ink|mono|colou?r|colou?red|warm|cool|trans|transparent|copy|final|new)$/', '', $name);
+        } while ($name !== $before && $name !== '');
+
+        return $name;
+    }
+
+    /** Of two copies, the better pick, then the bigger one (a PNG / WebP over a JPEG when sizes are unknown). */
+    private function better(array $a, array $b): bool
+    {
+        $area = fn ($p) => ($p['width'] ?? 0) * ($p['height'] ?? 0);
+        if ($a['score'] !== $b['score']) {
+            return $a['score'] > $b['score'];
+        }
+        if ($area($a) !== $area($b)) {
+            return $area($a) > $area($b);
+        }
+
+        return ! preg_match('/\.jpe?g$/i', $a['url']) && (bool) preg_match('/\.jpe?g$/i', $b['url']);
     }
 
     /** The full-size file, not a "-300x200" thumbnail. */
     private function original(string $url): string
     {
+        $url = html_entity_decode(trim($url));
+        // Jetpack's image CDN ("https://i0.wp.com/delhi.wordcamp.org/…?resize=…"): the site's own file.
+        $url = (string) preg_replace('#^https?://i\d\.wp\.com/#i', 'https://', $url);
+        $url = (string) preg_replace('/\?.*$/', '', $url);
+
         return (string) preg_replace('/-\d+x\d+(\.(?:png|jpe?g|webp))$/i', '$1', $url);
     }
 

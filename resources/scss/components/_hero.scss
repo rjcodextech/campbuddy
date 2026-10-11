@@ -153,3 +153,59 @@
         }
     }
 }
+
+// The WordCamp site's own artwork, faint behind the event's name (Home and
+// Memories; App\Support\SiteTheme::hero). A see-through piece (a skyline cut
+// out on nothing) is a silhouette in the app's colour, so a white skyline
+// still shows on the cream card; anything else is the picture itself, very
+// faint. It keeps to the right-hand side, behind the words only lightly.
+.home-hero--art {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    // The art, under…
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        pointer-events: none;
+        opacity: 0.16;
+        background: var(--hero-art) right bottom / auto 92% no-repeat;
+    }
+
+    // …a fade from the card's own colour, so it melts in from the left instead of ending in an edge.
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(to right, var(--paper) 25%, rgba(255, 255, 255, 0) 65%);
+    }
+}
+
+.home-hero--mask::after {
+    opacity: 0.14;
+    background: var(--brand-primary);
+    -webkit-mask: var(--hero-art) right bottom / auto 92% no-repeat;
+    mask: var(--hero-art) right bottom / auto 92% no-repeat;
+}
+
+// A pattern repeats across the right half instead, fainter still.
+.home-hero--pattern::after {
+    opacity: 0.1;
+    background-size: 96px auto;
+    background-repeat: repeat;
+    background-position: right top;
+}
+
+.home-hero--pattern.home-hero--mask::after {
+    -webkit-mask-size: 96px auto;
+    mask-size: 96px auto;
+    -webkit-mask-repeat: repeat;
+    mask-repeat: repeat;
+    -webkit-mask-position: right top;
+    mask-position: right top;
+}

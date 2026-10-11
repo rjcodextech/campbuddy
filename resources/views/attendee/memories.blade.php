@@ -34,7 +34,10 @@
         </header>
 
         <main id="main-content" tabindex="-1">
-            <section class="home-hero" aria-label="Event">
+            {{-- The WordCamp site's own artwork, faint behind the name (SiteTheme::hero, components/_hero.scss). --}}
+            @php($heroArt = \App\Support\SiteTheme::hero($event))
+            <section @class(['home-hero', 'home-hero--art' => $heroArt, 'home-hero--'.($heroArt['kind'] ?? '') => $heroArt, 'home-hero--mask' => ! empty($heroArt['alpha'])])
+                     @if ($heroArt) style="--hero-art: url('{{ $heroArt['url'] }}')" @endif aria-label="Event">
                 <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104">
                 <div class="home-hero__body">
                     <p class="home-hero__eyebrow">Memories</p>

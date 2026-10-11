@@ -186,4 +186,123 @@ HTML;
             ->assertOk()->assertHeader('Content-Type', 'font/woff2');
         $this->get(route('admin.events.social.image', $event).'?u='.urlencode('https://jaipur.wordcamp.org/2026/files/fonts/evil.html'))->assertNotFound();
     }
+
+    private function png(int $w, int $h, bool $alpha = true): string
+    {
+        $img = imagecreatetruecolor($w, $h);
+        imagealphablending($img, false);
+        imagesavealpha($img, $alpha);
+        imagefill($img, 0, 0, imagecolorallocatealpha($img, 255, 255, 255, $alpha ? 127 : 0));
+        ob_start();
+        imagepng($img);
+
+        return (string) ob_get_clean();
+    }
+
+    public function test_artwork_is_judged_by_size_words_and_shape_and_copies_count_once(): void
+    {
+        $file = fn (string $name, ?int $w = null, ?int $h = null, string $title = '', string $alt = '') => ['url' => "https://jaipur.wordcamp.org/2026/files/2026/09/{$name}", 'width' => $w, 'height' => $h, 'title' => $title, 'alt' => $alt];
+        $html = '<html><body><div class="wp-block-cover"><img class="wp-block-cover__image-background wp-image-9" alt="" src="https://i0.wp.com/jaipur.wordcamp.org/2026/files/2026/05/amber-fort-1024x512.jpg?resize=1024%2C512&amp;ssl=1"></div></body></html>';
+        $theme = (new SiteThemeScraper)->parse($html, [], [
+            $file('pink-skyline-white.png', 3000, 600),
+            $file('pink-skyline-black-scaled.png', 2560, 512),
+            $file('cropped-pink-skyline-1.png', 1200, 240),
+            $file('bee-illustration.png', 20, 28),
+            $file('jali-tile.png', 96, 96),
+            $file('Frame-1000015039.png', 1600, 900),
+            $file('IMG_2201.jpg', 1600, 900, 'Wapuu 2026'),
+            $file('hero-banner.png', 1200, 630),
+            $file('call.webp', 1600, 800, 'Call for Wapuu', 'Wapuu with the text Call For Wapuu'),
+            $file('DSC_0042.jpg', 2000, 1333, 'Venue hall', 'The venue hall'),
+            $file('55314129638_55a52de455_k.jpg', 2048, 1365, 'wapuu 2026'),
+        ]);
+
+        $art = collect($theme['art'])->keyBy('name');
+        $this->assertEqualsCanonicalizing(['pink-skyline-white', 'jali-tile', 'amber-fort', 'DSC_0042'], $art->keys()->all(),
+            'one skyline for its three copies; no sprite, frame, mascot photo, link-preview graphic, words or photo-sharing upload');
+        $this->assertSame('illustration', $art['pink-skyline-white']['kind']);
+        $this->assertSame(3000, $art['pink-skyline-white']['width'], 'the biggest copy is kept');
+        $this->assertSame('pattern', $art['jali-tile']['kind'], 'a small tile repeats, so it stays');
+        $this->assertSame('photo', $art['amber-fort']['kind'], 'a Cover block backdrop');
+        $this->assertSame('https://jaipur.wordcamp.org/2026/files/2026/05/amber-fort.jpg', $art['amber-fort']['url'], "the site's own full-size file, not the image CDN's copy");
+        $this->assertSame('photo', $art['DSC_0042']['kind'], 'a photo of the venue, found by its title');
+        $this->assertSame('pink-skyline-white', $theme['art'][0]['name'], 'a named skyline first');
+    }
+
+    public function test_any_of_the_sites_other_artwork_can_be_put_in_use_and_its_kind_corrected(): void
+    {
+        Storage::fake('public');
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        $media = array_map(fn ($n) => ['source_url' => "https://jaipur.wordcamp.org/2026/files/2026/09/{$n}-pattern.png", 'media_details' => ['width' => 800, 'height' => 800]], ['amber', 'blue', 'coral', 'dune', 'ember', 'fern', 'gold']);
+        Http::fake([self::SITE.'/' => Http::response('<html></html>'), self::SITE.'/wp-json/wp/v2/media*' => Http::response($media), self::SITE.'/wp-json/*' => Http::response([]), '*' => Http::response('', 404)]);
+        SiteTheme::refresh($event);
+        $theme = SiteTheme::get($event->fresh());
+        $this->assertCount(SiteTheme::SLOTS, $theme['art']);
+        $this->assertCount(2, $theme['more']);
+
+        $this->actingAs(User::factory()->create());
+        $this->get(route('admin.events.social', $event))->assertOk()->assertSee('More from the site (2)')->assertSee('Use this');
+
+        $pick = $theme['more'][1];
+        $this->post(route('admin.events.social.art.use', $event), ['piece' => $pick['id']])->assertRedirect()->assertSessionHas('status', 'Artwork "'.$pick['name'].'" is in use.');
+        $theme = SiteTheme::get($event->fresh());
+        $this->assertSame($pick['name'], $theme['art'][0]['name'], 'the chosen piece comes first');
+        $this->assertCount(SiteTheme::SLOTS, $theme['art']);
+
+        $this->post(route('admin.events.social.art.kind', $event), ['piece' => $theme['art'][0]['id'], 'kind' => 'illustration'])->assertSessionHas('status');
+        $this->post(route('admin.events.social.art.kind', $event), ['piece' => $theme['art'][0]['id'], 'kind' => 'banana']);
+        $this->assertSame('illustration', SiteTheme::get($event->fresh())['art'][0]['kind']);
+
+        // Both survive reading the site again.
+        $this->post(route('admin.events.social.site', $event));
+        $after = SiteTheme::get($event->fresh())['art'][0];
+        $this->assertSame([$pick['name'], 'illustration'], [$after['name'], $after['kind']]);
+
+        // A manager can do the same for their own event only, logged.
+        $manager = EventManager::create(['name' => 'Mona', 'email' => 'mona@example.test', 'phone' => '+919800000000', 'password' => 'secret-password-1', 'is_active' => true]);
+        $manager->events()->sync([$event->id]);
+        $other = Event::create(['slug' => 'wordcamp-other-2026', 'display_name' => 'Other', 'source_site_url' => 'https://other.wordcamp.org/2026', 'status' => 'active', 'is_visible' => true]);
+        $this->actingAs($manager, EnsureEventManager::GUARD);
+        $more = SiteTheme::get($event->fresh())['more'][0];
+        $this->post(route('manager.events.social.art.use', $event->id), ['piece' => $more['id']])->assertSessionHas('status');
+        $this->post(route('manager.events.social.art.kind', $event->id), ['piece' => $more['id'], 'kind' => 'photo'])->assertSessionHas('status');
+        $this->assertDatabaseHas('event_manager_changes', ['event_id' => $event->id, 'section' => 'social', 'action' => 'updated']);
+        $this->post(route('manager.events.social.art.use', $other->id), ['piece' => $more['id']])->assertNotFound();
+        $this->post(route('manager.events.social.art.kind', $other->id), ['piece' => $more['id'], 'kind' => 'photo'])->assertNotFound();
+    }
+
+    public function test_the_attendee_app_shows_the_sites_artwork_faintly_behind_the_event_name(): void
+    {
+        Storage::fake('public');
+        $this->withoutVite();
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        Event::create(['slug' => 'wordcamp-plain-2026', 'display_name' => 'WordCamp Plain 2026', 'source_site_url' => 'https://plain.wordcamp.org/2026', 'status' => 'active', 'is_visible' => true]);
+        Http::fake([
+            self::SITE.'/' => Http::response($this->html()),
+            self::SITE.'/wp-json/*' => Http::response([]),
+            'jaipur.wordcamp.org/2026/files/2026/05/jaipur-skyline.png' => Http::response($this->png(1200, 300)),
+            'jaipur.wordcamp.org/2026/files/2026/09/jali-tile.png' => Http::response($this->png(96, 96, false)),
+            '*' => Http::response('', 404),
+        ]);
+        SiteTheme::refresh($event);
+
+        $hero = SiteTheme::hero($event->fresh());
+        $this->assertSame('illustration', $hero['kind'], 'the skyline, not the pattern');
+        $this->assertTrue($hero['alpha'], 'see-through: drawn as a silhouette');
+        Storage::disk('public')->assertExists(substr($hero['url'], strlen('/storage/')));
+
+        foreach (['/event/wordcamp-jaipur-2026', '/event/wordcamp-jaipur-2026/memories'] as $url) {
+            $this->get($url)->assertOk()->assertSee('home-hero home-hero--art home-hero--illustration home-hero--mask', false)->assertSee("--hero-art: url('{$hero['url']}')", false);
+        }
+        $this->get('/event/wordcamp-plain-2026')->assertOk()->assertDontSee('home-hero--art', false);
+
+        // Taking the skyline off moves the backdrop to the pattern and deletes the old copy.
+        $this->actingAs(User::factory()->create());
+        $skyline = collect(SiteTheme::get($event->fresh())['art'])->firstWhere('name', 'jaipur-skyline');
+        $this->post(route('admin.events.social.art.remove', $event), ['piece' => $skyline['id']]);
+        $now = SiteTheme::hero($event->fresh());
+        $this->assertSame('pattern', $now['kind']);
+        $this->assertFalse($now['alpha']);
+        Storage::disk('public')->assertMissing(substr($hero['url'], strlen('/storage/')));
+    }
 }

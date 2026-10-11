@@ -36,6 +36,8 @@ class SocialController extends Controller
             'siteUrl' => route('manager.events.social.site', $event),
             'artUrl' => route('manager.events.social.art', $event),
             'artRemoveUrl' => route('manager.events.social.art.remove', $event),
+            'artUseUrl' => route('manager.events.social.art.use', $event),
+            'artKindUrl' => route('manager.events.social.art.kind', $event),
             'publishUrl' => SocialPublisher::configured($event) ? route('manager.events.social.publish', $event) : null,
             'webhookUrl' => route('manager.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
@@ -106,6 +108,26 @@ class SocialController extends Controller
         $event = $this->managedEvent($request, $eventId);
         $status = SiteTheme::remove($event, (string) $request->input('piece'));
         ManagerActivity::record($request->user(EnsureEventManager::GUARD), $event, 'social', 'removed', 'Artwork');
+
+        return redirect()->route('manager.events.social', $event)->with('status', $status);
+    }
+
+    /** Puts another piece of the site's artwork in use. */
+    public function useArt(Request $request, string $eventId): RedirectResponse
+    {
+        $event = $this->managedEvent($request, $eventId);
+        $status = SiteTheme::use($event, (string) $request->input('piece'));
+        ManagerActivity::record($request->user(EnsureEventManager::GUARD), $event, 'social', 'updated', $status);
+
+        return redirect()->route('manager.events.social', $event)->with('status', $status);
+    }
+
+    /** Says what a piece of artwork is (pattern, illustration, photo). */
+    public function artKind(Request $request, string $eventId): RedirectResponse
+    {
+        $event = $this->managedEvent($request, $eventId);
+        $status = SiteTheme::setKind($event, (string) $request->input('piece'), (string) $request->input('kind'));
+        ManagerActivity::record($request->user(EnsureEventManager::GUARD), $event, 'social', 'updated', $status);
 
         return redirect()->route('manager.events.social', $event)->with('status', $status);
     }
