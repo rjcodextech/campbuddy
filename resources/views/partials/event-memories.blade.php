@@ -57,6 +57,8 @@
                         <x-badge variant="success">Sent {{ $event->{$meta['notified']}->diffForHumans() }}</x-badge>
                     @elseif (! $pagePublic)
                         <span class="text-xs text-muted">The event isn't public, so there's nowhere to send people yet.</span>
+                    @elseif ($url && $recipients === 0)
+                        <span class="text-xs text-muted">No phone has reminders on for this event yet.</span>
                     @elseif ($url)
                         <x-action-form :action="$notifyUrl($kind)" variant="primary" size="sm" icon="inbox"
                                        :confirm="'Send the '.$meta['label'].' notification to '.$recipients.' phones? It goes once and cannot be undone.'">

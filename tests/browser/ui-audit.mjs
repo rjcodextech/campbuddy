@@ -35,6 +35,7 @@ const attendee = [
   ['camp-card', `/event/${EVENT}/camp-card`],
   ['guide', `/event/${EVENT}/guide`],
   ['roster-removal', `/event/${EVENT}/roster-removal`],
+  ['memories', `/event/${EVENT}/memories`],
   ['admin-login', '/admin/login'],
   ['manager-login', '/manager/login'],
 ];
@@ -52,6 +53,10 @@ const admin = [
   ...(ids.offer ? [['admin-event-offer-edit', `/admin/events/${e}/offers/${ids.offer}/edit`]] : []),
   ['admin-event-roster', `/admin/events/${e}/roster`],
   ['admin-event-deal-leads', `/admin/events/${e}/deal-leads`],
+  ['admin-event-tables', `/admin/events/${e}/tables`],
+  ['admin-event-delay', `/admin/events/${e}/delay`],
+  ['admin-event-social', `/admin/events/${e}/social`],
+  ['admin-event-memories', `/admin/events/${e}/memories`],
   ['admin-deals', '/admin/deals'],
   ['admin-deal-create', '/admin/deals/create'],
   ...(ids.deal ? [['admin-deal-edit', `/admin/deals/${ids.deal}/edit`], ['admin-deal-leads', `/admin/deals/${ids.deal}/leads`]] : []),
@@ -63,6 +68,8 @@ const admin = [
   ['admin-managers-activity', '/admin/event-managers/activity'],
   ...(ids.manager ? [['admin-manager-edit', `/admin/event-managers/${ids.manager}/edit`]] : []),
   ['admin-errors', '/admin/errors'],
+  ['admin-feedback', '/admin/feedback'],
+  ['admin-commands', '/admin/commands'],
   ['admin-media', '/admin/media'],
   ['admin-profile', '/admin/profile'],
 ];
@@ -72,6 +79,11 @@ const manager = [
   ['manager-event', `/manager/events/${e}`],
   ['manager-information', `/manager/events/${e}/information`],
   ['manager-quests', `/manager/events/${e}/quests`],
+  ['manager-attendees', `/manager/events/${e}/attendees`],
+  ['manager-tables', `/manager/events/${e}/tables`],
+  ['manager-delay', `/manager/events/${e}/delay`],
+  ['manager-social', `/manager/events/${e}/social`],
+  ['manager-memories', `/manager/events/${e}/memories`],
 ];
 
 // Runs in the page: everything the audit looks at.

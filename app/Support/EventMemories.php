@@ -118,6 +118,11 @@ class EventMemories
             throw ValidationException::withMessages(['notify' => 'This notification was already sent, or its link is missing.']);
         }
 
+        // Sending to nobody would still use up the one send this link gets.
+        if (self::recipients($event) === 0) {
+            throw ValidationException::withMessages(['notify' => 'No phone has reminders on for this event yet, so there is no one to notify.']);
+        }
+
         $column = self::KINDS[$kind]['notified'];
         $claimed = Event::whereKey($event->id)->whereNull($column)->update([$column => now()]);
 

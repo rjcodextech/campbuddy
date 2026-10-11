@@ -92,6 +92,8 @@ class EventMemoriesTest extends TestCase
         $this->assertSame(self::TV, $event->wordpress_tv_url);
         // Open apps refresh to pick the card up.
         $this->assertNotSame($before, DataVersion::for($event));
+        // No phone has reminders on yet: no Send button (it would use up the one send).
+        $this->get(route('admin.events.memories', $this->event))->assertSee('No phone has reminders on for this event yet.')->assertDontSee('Send to 0 phones');
 
         $this->get('/event/wc-memories')->assertOk()->assertSee('memories-heading', false)->assertSee(self::ALBUM, false)->assertSee(self::TV, false);
         $this->get('/event/wc-memories/memories')->assertOk()->assertSee('Speaker sessions on WordPress.tv')->assertSee(self::ALBUM, false);
@@ -154,6 +156,16 @@ class EventMemoriesTest extends TestCase
         Queue::fake();
         $this->event->forceFill(['wordpress_tv_url' => self::TV])->save();
 
+        // No phone to send to: refused, and the one send is not used up.
+        try {
+            EventMemories::notify($this->event, 'videos');
+            $this->fail('sent to nobody');
+        } catch (\Illuminate\Validation\ValidationException) {
+        }
+        $this->assertNull($this->event->fresh()->wordpress_tv_notified_at);
+        Queue::assertNothingPushed();
+
+        $this->subscribe('a');
         EventMemories::notify($this->event, 'videos');
 
         Queue::assertPushed(SendMemoriesPushJob::class, fn ($job) => $job->eventId === $this->event->id && $job->kind === 'videos');
@@ -181,6 +193,7 @@ class EventMemoriesTest extends TestCase
         $manager->events()->attach($this->event->id);
         $other = Event::withoutEvents(fn () => Event::create(['slug' => 'wc-not-theirs', 'display_name' => 'Not Theirs', 'source_site_url' => 'https://nottheirs.wordcamp.org/2026', 'status' => 'active', 'is_visible' => true]));
         Auth::guard('manager')->setUser($manager);
+        $this->subscribe('a');
 
         $this->get(route('manager.events.memories', $this->event->id))->assertOk()->assertSee('Photo album');
         $this->post(route('manager.events.memories.store', $this->event->id), ['photo_album_url' => self::ALBUM])->assertRedirect();
