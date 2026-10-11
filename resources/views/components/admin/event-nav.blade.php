@@ -42,7 +42,7 @@
 
         <div class="min-w-0 flex-1 basis-56">
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <a href="{{ route('admin.events.edit', $event) }}" class="text-base font-semibold hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] text-base font-semibold hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
                 <x-event-status :status="$event->status" />
                 @unless ($event->is_visible)
                     <x-badge>Hidden</x-badge>
@@ -70,7 +70,8 @@
         @endif
     </div>
 
-    <nav aria-label="Event sections" class="overflow-x-auto border-t border-line bg-paper/60 px-2 sm:px-3">
+    {{-- Scrolled so the open section's tab is in view: with nine tabs the later ones sit past the edge, even on a laptop. --}}
+    <nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" class="overflow-x-auto border-t border-line bg-paper/60 px-2 sm:px-3">
         <ul class="flex min-w-max items-center gap-1">
             @foreach ($tabs as $key => [$label, $url, $count])
                 <li>

@@ -54,7 +54,7 @@
                    x-bind:class="{ 'max-lg:translate-x-0': sidebarOpen }"
                    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col bg-navy transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0">
                 <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
-                    <a href="{{ route('dashboard') }}" class="flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                    <a href="{{ route('dashboard') }}" class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
                         <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
                         <span class="leading-tight">
                             <span class="block text-sm font-semibold text-white">{{ config('app.name') }}</span>
@@ -145,7 +145,7 @@
                                                     <x-icon name="chevron-right" class="h-3 w-3 text-muted/60" />
                                                 @endif
                                                 @if (isset($crumb[1]) && ! $loop->last)
-                                                    <a href="{{ $crumb[1] }}" class="rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
+                                                    <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
                                                 @else
                                                     <span @if ($loop->last) aria-current="page" @endif class="{{ $loop->last ? 'font-medium text-ink' : '' }}">{{ $crumb[0] }}</span>
                                                 @endif

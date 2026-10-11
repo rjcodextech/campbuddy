@@ -31,7 +31,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <x-button>Save links</x-button>
                     @if ($pagePublic)
-                        <a href="{{ route('event.memories', $event) }}" target="_blank" rel="noopener" class="text-sm font-medium text-maroon hover:underline">Preview the Memories page</a>
+                        <a href="{{ route('event.memories', $event) }}" target="_blank" rel="noopener" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] text-sm font-medium text-maroon hover:underline">Preview the Memories page</a>
                     @endif
                 </div>
             </x-slot:footer>

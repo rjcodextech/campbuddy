@@ -27,7 +27,7 @@
         <div class="flex min-h-screen flex-col">
             <div class="bg-navy text-white">
                 <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-                    <a href="{{ route('manager.dashboard') }}" class="flex min-w-0 items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                    <a href="{{ route('manager.dashboard') }}" class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex min-w-0 items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
                         <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
                         <span class="min-w-0 leading-tight">
                             <span class="block truncate text-sm font-semibold">{{ config('app.name') }}</span>
@@ -44,7 +44,7 @@
                         <form method="POST" action="{{ route('manager.logout') }}">
                             @csrf
                             <button type="submit"
-                                    class="inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                                    class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
                                 <x-icon name="logout" class="h-4 w-4" />
                                 Sign out
                             </button>
@@ -65,7 +65,7 @@
                                                 <x-icon name="chevron-right" class="h-3 w-3 text-muted/60" />
                                             @endif
                                             @if (isset($crumb[1]) && ! $loop->last)
-                                                <a href="{{ $crumb[1] }}" class="rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
+                                                <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
                                             @else
                                                 <span @if ($loop->last) aria-current="page" @endif class="{{ $loop->last ? 'font-medium text-ink' : '' }}">{{ $crumb[0] }}</span>
                                             @endif

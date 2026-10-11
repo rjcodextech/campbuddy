@@ -20,7 +20,8 @@
     ];
 @endphp
 
-<nav aria-label="Event sections" {{ $attributes->class('-mx-4 mb-6 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0') }}>
+{{-- Scrolled so the open section's tab is in view (on a phone most tabs sit past the edge). --}}
+<nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" {{ $attributes->class('-mx-4 mb-6 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0') }}>
     <ul class="flex min-w-max items-center gap-1">
         @foreach ($tabs as $key => [$label, $url])
             <li>

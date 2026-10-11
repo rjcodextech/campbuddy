@@ -89,7 +89,7 @@ const manager = [
 // Runs in the page: everything the audit looks at.
 const PROBE = `(() => {
   const vw = window.innerWidth;
-  const visible = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && !el.closest('[hidden], template, dialog:not([open])'); };
+  const visible = (el) => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none' && !el.closest('[hidden], template, dialog:not([open])') && !el.closest('details:not([open]) > :not(summary)'); };
   const name = (el) => el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\\s+/).slice(0, 3).join('.') : '');
   const text = (el) => (el.innerText || el.value || el.getAttribute('aria-label') || '').trim().replace(/\\s+/g, ' ').slice(0, 40);
 
@@ -110,8 +110,24 @@ const PROBE = `(() => {
 
   // Tap targets.
   const interactive = [...document.querySelectorAll('a[href], button, input:not([type=hidden]), select, textarea, [role=tab], summary')].filter(visible);
-  const small = interactive.filter((el) => { const r = el.getBoundingClientRect(); return (r.height < 40 || r.width < 24) && !el.closest('p, li > span, .footer-note') ; })
-    .map((el) => { const r = el.getBoundingClientRect(); return name(el) + ' "' + text(el) + '" ' + Math.round(r.width) + 'x' + Math.round(r.height); }).slice(0, 12);
+  // The area a finger can hit: the box, grown by an invisible ::before/::after
+  // margin (position:absolute, negative inset), or the whole <label> around a checkbox.
+  // A skip link (sr-only until focused) is not a tap target.
+  const hit = (el) => {
+    const label = el.matches('input') && el.closest('label');
+    const r = (label || el).getBoundingClientRect();
+    let w = r.width, h = r.height;
+    for (const which of ['::before', '::after']) {
+      const s = getComputedStyle(el, which);
+      if (s.content === 'none' || s.position !== 'absolute') continue;
+      const grow = (side) => Math.max(0, -parseFloat(s[side]) || 0);
+      h = Math.max(h, r.height + grow('top') + grow('bottom'));
+      w = Math.max(w, r.width + grow('left') + grow('right'));
+    }
+    return { w, h };
+  };
+  const small = interactive.filter((el) => { const { w, h } = hit(el); return (h < 40 || w < 24) && !el.closest('p, li > span, .footer-note') && !el.classList.contains('sr-only'); })
+    .map((el) => { const { w, h } = hit(el); return name(el) + ' "' + text(el) + '" ' + Math.round(w) + 'x' + Math.round(h); }).slice(0, 12);
 
   // Looks: buttons and inputs grouped by their visual signature.
   const sig = (el, keys) => { const s = getComputedStyle(el); return keys.map((k) => s[k]).join(' | '); };

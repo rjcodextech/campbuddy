@@ -27,7 +27,7 @@
                 <x-badge :variant="$tag[1]" class="mb-1">{{ $tag[0] }}</x-badge>
             @endif
             <h2 class="text-base font-semibold leading-snug">
-                <a href="{{ route('admin.events.edit', $event) }}" class="hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
             </h2>
             <p class="mt-0.5 truncate text-xs text-muted" title="{{ $event->slug }}">{{ $event->slug }}</p>
         </div>

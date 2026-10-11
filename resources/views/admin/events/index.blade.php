@@ -58,7 +58,7 @@
             <a href="{{ request()->fullUrlWithQuery(['view' => null, 'page' => null]) }}"
                @if (! $tableView) aria-current="true" @endif
                @class([
-                   'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+                   'relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[""] inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
                    'bg-maroon text-white' => ! $tableView,
                    'text-muted hover:text-ink' => $tableView,
                ])>
@@ -67,7 +67,7 @@
             <a href="{{ request()->fullUrlWithQuery(['view' => 'table', 'page' => null]) }}"
                @if ($tableView) aria-current="true" @endif
                @class([
-                   'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+                   'relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[""] inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
                    'bg-maroon text-white' => $tableView,
                    'text-muted hover:text-ink' => ! $tableView,
                ])>
