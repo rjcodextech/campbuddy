@@ -38,7 +38,7 @@ class HomeController extends Controller
             // A few days of slack in SQL — the earliest time zone is a day behind
             // UTC, and an event whose end date is missing may still have sessions
             // days after its start (found below, from its schedule)…
-            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->subDays(EventTime::RETENTION_DAYS + 3)->toDateString()]))
+            ->where(fn ($q) => $q->whereRaw("{$lastDay} IS NULL")->orWhereRaw("{$lastDay} >= ?", [today()->subDays(EventTime::LISTED_DAYS + 3)->toDateString()]))
             // Soonest first; events with no start date go after the dated ones
             // (MySQL sorts NULLs first in ascending order), then by id so the
             // order never shuffles between page loads.
@@ -48,11 +48,11 @@ class HomeController extends Controller
             ->take(self::LIMIT * 4)
             ->get()
             // …then exact: upcoming until its last day has ended at the venue;
-            // after that "Completed" for the retention week (people can still
-            // open it, export their day as a PDF, answer the thank-you card),
+            // after that "Completed" for LISTED_DAYS (three months: people can
+            // still open it, export their day as a PDF, see its memories),
             // listed after every upcoming one, most recently finished first.
             ->tap(fn ($found) => EventTime::primeSessionDays($found))
-            ->filter(fn (Event $event) => ! EventTime::isOver($event) || EventTime::retained($event))
+            ->filter(fn (Event $event) => ! EventTime::isOver($event) || EventTime::listed($event))
             ->partition(fn (Event $event) => ! EventTime::isOver($event))
             ->pipe(fn ($parts) => $parts[0]->concat($parts[1]->sortByDesc(fn (Event $event) => EventTime::lastDay($event))))
             ->take(self::LIMIT)

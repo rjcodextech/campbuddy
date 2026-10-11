@@ -40,6 +40,15 @@ class EventTime
      */
     public const RETENTION_DAYS = 7;
 
+    /**
+     * How long a finished event stays on the picker as "Completed" with its
+     * pages open (schedule, PDF export, memories): 90 days, then it is
+     * archived (owner, 11 Oct 2026). Attendee-entered data still expires after
+     * RETENTION_DAYS, and the event's data stops being refreshed from its site
+     * then too (EventTime::refreshing): after that it is a finished record.
+     */
+    public const LISTED_DAYS = 90;
+
     /** Days after its last day when the thank-you push goes out and the card starts showing. */
     public const THANK_YOU_AFTER_DAYS = 3;
 
@@ -117,6 +126,37 @@ class EventTime
      */
     public static function retentionEnd(Event $event): ?CarbonImmutable
     {
+        return self::endPlus($event, self::RETENTION_DAYS);
+    }
+
+    /** The moment a finished event leaves the picker and is archived: its last day plus LISTED_DAYS. */
+    public static function listingEnd(Event $event): ?CarbonImmutable
+    {
+        return self::endPlus($event, self::LISTED_DAYS);
+    }
+
+    /** Whether the event is still listed and open (an event with no dates always is). */
+    public static function listed(Event $event, ?\DateTimeInterface $now = null): bool
+    {
+        $end = self::listingEnd($event);
+
+        return $end === null || CarbonImmutable::instance($now ?? now())->lte($end);
+    }
+
+    /**
+     * Whether the event's data is still fetched from its site on a schedule:
+     * until RETENTION_DAYS after its last day. A finished event listed for
+     * three months must not keep its site (and this host) busy every 15
+     * minutes; nothing changes there any more.
+     */
+    public static function refreshing(Event $event, ?\DateTimeInterface $now = null): bool
+    {
+        return self::retained($event, $now);
+    }
+
+    /** The end of the event's last day at the venue plus `$days` (in UTC−12 while the zone is unknown). */
+    private static function endPlus(Event $event, int $days): ?CarbonImmutable
+    {
         $last = self::lastDay($event);
 
         if ($last === null) {
@@ -125,7 +165,7 @@ class EventTime
 
         $zone = self::parse($event->timezone) ?? new DateTimeZone('Etc/GMT+12');
 
-        return CarbonImmutable::parse($last.' 23:59:59', $zone)->addDays(self::RETENTION_DAYS)->utc();
+        return CarbonImmutable::parse($last.' 23:59:59', $zone)->addDays($days)->utc();
     }
 
     /** Whether the event is still inside its retention window (an event with no dates always is). */

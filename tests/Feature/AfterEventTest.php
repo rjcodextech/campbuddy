@@ -70,12 +70,12 @@ class AfterEventTest extends TestCase
         $this->assertNull(EventTime::daysSinceEnd($this->event('wordcamp-today', '2026-10-10')));
     }
 
-    public function test_the_picker_lists_finished_wordcamps_for_a_week_as_completed_after_the_upcoming_ones(): void
+    public function test_the_picker_lists_finished_wordcamps_for_three_months_as_completed_after_the_upcoming_ones(): void
     {
         $this->event('wordcamp-next', '2026-11-01');
         $this->event('wordcamp-done', '2026-10-05');       // 5 days ago: still listed
         $this->event('wordcamp-just-done', '2026-10-08');  // 2 days ago: listed first among the finished
-        $this->event('wordcamp-long-gone', '2026-10-01');  // 9 days ago: gone
+        $this->event('wordcamp-long-gone', '2026-07-01');  // 101 days ago: gone (listed for 90)
 
         $html = $this->get('/')->assertOk()->getContent();
 
@@ -109,10 +109,10 @@ class AfterEventTest extends TestCase
         $this->get('/event/wordcamp-next')->assertOk()->assertDontSee('Thank you for being at');
     }
 
-    public function test_it_is_archived_only_after_the_week(): void
+    public function test_it_is_archived_only_after_three_months(): void
     {
-        $kept = $this->event('wordcamp-kept', '2026-10-04');   // 6 days ago
-        $gone = $this->event('wordcamp-gone', '2026-10-02');   // 8 days ago
+        $kept = $this->event('wordcamp-kept', '2026-08-01');   // 70 days ago: still listed as Completed
+        $gone = $this->event('wordcamp-gone', '2026-07-01');   // 101 days ago
 
         (new EvaluateEventLifecycleJob)->handle();
 

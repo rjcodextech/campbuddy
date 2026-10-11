@@ -10,6 +10,7 @@ use App\Jobs\SendSessionRemindersJob;
 use App\Jobs\SendThankYouPushJob;
 use App\Models\DeviceTransfer;
 use App\Models\Event;
+use App\Support\EventTime;
 use App\Support\FetchLogRetention;
 use App\Support\SystemHealth;
 use Illuminate\Foundation\Inspiring;
@@ -37,10 +38,12 @@ Artisan::command('inspire', function () {
 | favicon.
 |
 | Jobs run sequentially with a small stagger, never concurrently against
-| multiple upstream WordCamp sites at once.
+| multiple upstream WordCamp sites at once. A finished event stops being
+| fetched RETENTION_DAYS after its last day (EventTime::refreshing), though
+| it stays listed as "Completed" for three months.
 */
 Schedule::call(function () {
-    Event::where('status', 'active')->each(function (Event $event, int $index) {
+    Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchSpeakersSponsorsSessionsJob::dispatch($event)->delay(now()->addSeconds($index * 5));
     });
 })->everyFifteenMinutes()->name('ingest-sessions-speakers-sponsors');
@@ -49,7 +52,7 @@ Schedule::call(function () {
 // pages get filled in as organizers finish them — so once a day is plenty,
 // for events that are approved or live. Admin-typed values are never touched.
 Schedule::call(function () {
-    Event::whereIn('status', ['approved', 'active'])->each(function (Event $event, int $index) {
+    Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchEventInfoJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
 })->dailyAt('02:00')->name('ingest-event-info');
@@ -58,7 +61,7 @@ Schedule::call(function () {
 // event, staggered so two WordCamp sites are never scraped at once. The job
 // upserts new attendees and drops the ones who've left the source page.
 Schedule::call(function () {
-    Event::where('status', 'active')->each(function (Event $event, int $index) {
+    Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         ParseAttendeeRosterJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
 })->dailyAt('00:00')->name('ingest-attendee-roster');
@@ -70,6 +73,7 @@ Schedule::call(function () {
 Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])
         ->where(fn ($q) => $q->whereNull('logo_path')->orWhereNull('favicon_path'))
+        ->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()
         ->each(function (Event $event, int $index) {
             FetchBrandingAssetsJob::dispatch($event, onlyMissing: true)->delay(now()->addSeconds($index * 10));
         });

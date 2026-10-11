@@ -147,12 +147,18 @@ class RetentionTest extends TestCase
         $this->assertSame('active', $event->fresh()->status);
         $this->withoutVite()->get(route('event.home', $event))->assertOk();
 
-        // Retention: day 3 + 7 days = end of the 10th; archived the day after.
-        $this->travelTo(CarbonImmutable::parse('2026-10-10T23:00:00Z'));
+        // A week on, its data is no longer refreshed, but it stays live (listed as Completed).
+        $this->travelTo(CarbonImmutable::parse('2026-10-11T01:00:00Z'));
+        EvaluateEventLifecycleJob::dispatchSync();
+        $this->assertSame('active', $event->fresh()->status);
+        $this->assertFalse(EventTime::refreshing($event->fresh()));
+
+        // Listed: day 3 + 90 days = end of 1 Jan; archived the day after.
+        $this->travelTo(CarbonImmutable::parse('2027-01-01T23:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('active', $event->fresh()->status);
 
-        $this->travelTo(CarbonImmutable::parse('2026-10-11T01:00:00Z'));
+        $this->travelTo(CarbonImmutable::parse('2027-01-02T01:00:00Z'));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('archived', $event->fresh()->status);
     }
@@ -164,11 +170,14 @@ class RetentionTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-10-03T12:00:00Z'));
         $this->withoutVite()->get('/')->assertSee('WordCamp Retention 2026');
 
-        // Over: listed as "Completed" for the retention week, then gone.
+        // Over: listed as "Completed" for three months, then gone.
         $this->travelTo(CarbonImmutable::parse('2026-10-04T12:00:00Z'));
         $this->withoutVite()->get('/')->assertSee('WordCamp Retention 2026')->assertSee('event-card--completed', false);
 
-        $this->travelTo(CarbonImmutable::parse('2026-10-11T12:00:00Z'));
+        $this->travelTo(CarbonImmutable::parse('2026-12-20T12:00:00Z'));
+        $this->withoutVite()->get('/')->assertSee('WordCamp Retention 2026')->assertSee('event-card--completed', false);
+
+        $this->travelTo(CarbonImmutable::parse('2027-01-02T12:00:00Z'));
         $this->withoutVite()->get('/')->assertDontSee('WordCamp Retention 2026');
     }
 

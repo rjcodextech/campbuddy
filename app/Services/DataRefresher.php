@@ -6,6 +6,7 @@ use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Models\Event;
 use App\Models\FetchLog;
+use App\Support\EventTime;
 use Throwable;
 
 /**
@@ -51,7 +52,9 @@ class DataRefresher
         $result = ['refreshed' => [], 'queued' => [], 'failed' => [], 'skipped' => []];
         $hasQueue = config('queue.default') !== 'sync';
 
-        $events = Event::whereIn('status', ['approved', 'active'])->orderBy('starts_on')->orderBy('id')->get();
+        // A finished event's data is a record now (EventTime::refreshing): not fetched again.
+        $events = Event::whereIn('status', ['approved', 'active'])->orderBy('starts_on')->orderBy('id')->get()
+            ->filter(fn (Event $event) => EventTime::refreshing($event))->values();
 
         foreach ($events as $event) {
             $jobs = $event->status === 'active'

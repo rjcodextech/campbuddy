@@ -210,7 +210,7 @@
                             >
                                 <x-slot:footer>
                                     @if ($isCompleted)
-                                        {{-- Finished: open for the retention week, for the PDF export and the thank-you card. --}}
+                                        {{-- Finished: listed for three months (EventTime::LISTED_DAYS), for the PDF export, the thank-you card and the memories. --}}
                                         <span class="event-card__status"><x-attendee.line-icon name="party" /> Completed</span>
                                         <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
                                     @else
