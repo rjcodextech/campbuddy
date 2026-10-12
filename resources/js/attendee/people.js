@@ -391,8 +391,13 @@ function showJoinPrompt(el, eventSlug, eventId, discoveryKey, options) {
     // the empty form (profile-sync.js). Nothing is sent until they press Join.
     let prefill = null;
     try {
-      const [onboarding, campCard] = await Promise.all([kvGet('onboarding'), kvGet('campCard')]);
+      const [onboarding, campCard, carried] = await Promise.all([kvGet('onboarding'), kvGet('campCard'), kvGet(`discoveryCarry:${eventId}`)]);
       prefill = discoveryPrefill({ onboarding, campCard });
+      // Brought from their last WordCamp (bring-data.js): those answers first.
+      if (carried?.fields) {
+        const empty = (v) => v == null || (Array.isArray(v) && v.length === 0);
+        prefill = Object.fromEntries(Object.entries({ ...prefill, ...carried.fields }).map(([k, v]) => [k, empty(v) ? prefill?.[k] ?? v : v]));
+      }
     } catch {
       // Storage unavailable: an empty form, as before.
     }

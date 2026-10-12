@@ -328,3 +328,32 @@ a.move-data__option:hover,
     font-weight: v.$font-weight-bold;
     color: var(--brand-primary);
 }
+
+// ---- "Bring it from your last WordCamp" (Home, bring-data.js) ---------------
+.bring-data {
+    border-left: 4px solid var(--brand-primary);
+}
+
+.bring-data__eyebrow {
+    margin: 0 0 v.$space-1;
+    color: var(--brand-primary);
+}
+
+.bring-data__title {
+    margin: 0;
+    font-weight: v.$font-weight-bold;
+    color: var(--ink);
+}
+
+.bring-data__text {
+    margin: v.$space-2 0 v.$space-3;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    line-height: v.$line-height-body;
+}
+
+.bring-data__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}

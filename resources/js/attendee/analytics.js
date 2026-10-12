@@ -156,6 +156,8 @@ const EVENTS = {
   thank_you_next_click: ['surface'], // "your next WordCamp" link
   move_sheet_view: ['surface'], // "Take it with you": push | thank_you
   move_sheet_action: ['method'], // next_wordcamp | pdf
+  bring_data_view: [], // "Bring it from your last WordCamp" shown on Home
+  bring_data: ['result'], // done | dismissed
   data_clear: [],
 
   // Health

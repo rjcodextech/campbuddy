@@ -33,6 +33,9 @@
 
         <div id="starting-soon-banner" hidden></div>
 
+        {{-- "Bring it from your last WordCamp" (bring-data.js): a profile and people met at a WordCamp in the last month. --}}
+        <div id="bring-data" class="home-section" hidden></div>
+
         {{-- Shown by default — first-timers are who CampBuddy is for — and
         hidden by home.js for someone who told onboarding it isn't their first
         WordCamp, or who dismissed it. --}}
@@ -111,6 +114,8 @@
         // The real first day, so a Contributor Day before the registered dates counts as the event.
         'startsOn' => \App\Support\EventTime::firstDay($event),
         'endsOn' => ($event->ends_on ?? $event->starts_on)?->toDateString(),
+        // WordCamps of the last month this phone may hold a profile or people for (bring-data.js).
+        'pastEvents' => \App\Support\PastEvents::forHome($event),
         'urls' => [
             'myDay' => route('event.my-day', $event),
             'guide' => route('event.guide', $event),

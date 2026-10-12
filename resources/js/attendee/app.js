@@ -121,6 +121,16 @@ async function init() {
   if (document.getElementById('home-data')) {
     const { renderHome } = await import('./home.js');
     renderHome(root);
+
+    // "Bring it from your last WordCamp": only when the phone held one in the last month.
+    const slot = document.getElementById('bring-data');
+    let pastEvents = [];
+    try { pastEvents = JSON.parse(document.getElementById('home-data').textContent).pastEvents ?? []; } catch { /* none */ }
+    if (slot && pastEvents.length) {
+      import('./bring-data.js')
+        .then(({ initBringData }) => initBringData({ slot, eventId: Number(root.dataset.eventId), eventSlug: root.dataset.eventSlug, eventName: root.dataset.eventName, pastEvents }))
+        .catch(() => {});
+    }
   }
 
   if (document.getElementById('my-day-data')) {
