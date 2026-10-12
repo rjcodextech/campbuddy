@@ -59,7 +59,7 @@
                     <button type="button" class="tour__btn" data-tour-prev aria-label="Previous screen"><x-attendee.line-icon name="chevron-left" /></button>
                     <div class="tour__dots" role="tablist" aria-label="Screens" data-tour-dots></div>
                     <button type="button" class="tour__btn" data-tour-next aria-label="Next screen"><x-attendee.line-icon name="chevron-right" /></button>
-                    <button type="button" class="tour__btn tour__btn--play" data-tour-toggle aria-label="Pause"><x-attendee.line-icon name="pause" /></button>
+                    <button type="button" class="tour__btn tour__btn--play" data-tour-toggle aria-label="Pause" data-track="tour_control" data-track-via="pause_play"><x-attendee.line-icon name="pause" /></button>
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                 <span class="about-who__text">Learn from people who do this for a living, try open source, and meet companies that hire.</span>
                 <span class="about-who__cta">What's in it for students →</span>
             </a>
-            <a class="about-who__card" href="#find-your-camp">
+            <a class="about-who__card" href="#find-your-camp" data-track="home_link_click" data-track-target="find_your_camp">
                 <span class="about-who__emoji" aria-hidden="true"><x-attendee.line-icon name="users" /></span>
                 <span class="about-who__title">WordCamp regulars</span>
                 <span class="about-who__text">Plan your talks quickly and meet people who are into the same things.</span>

@@ -214,6 +214,6 @@
             </a>
         </div>
     @else
-        <a class="btn btn--primary btn--full" href="{{ route('home') }}#find-your-camp">Choose your WordCamp →</a>
+        <a class="btn btn--primary btn--full" href="{{ route('home') }}#find-your-camp" data-track="home_link_click" data-track-target="find_your_camp">Choose your WordCamp →</a>
     @endif
 </section>

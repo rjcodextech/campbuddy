@@ -33,7 +33,7 @@
         @include('attendee.partials.desktop-notice')
 
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand">
+            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
                 <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
             </a>
 
@@ -157,7 +157,7 @@
 
                 @if (($events ?? collect())->isEmpty())
                     <div class="card" style="text-align:center">
-                        <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}">first-timer guide</a> is a good place to start.</p>
+                        <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_intro">first-timer guide</a> is a good place to start.</p>
                     </div>
                 @else
                     {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
@@ -267,7 +267,7 @@
                 @if ($events->count() === 1)
                     <a href="{{ route('event.home', $events->first()) }}" class="btn btn--primary btn--full landing-bottom-bar__btn" data-track="select_event" data-track-event-slug="{{ $events->first()->slug }}"><span class="landing-bottom-bar__label">Open {{ $events->first()->display_name }}</span> <span aria-hidden="true">→</span></a>
                 @else
-                    <a href="#find-your-camp" class="btn btn--primary btn--full">Choose your WordCamp ↓</a>
+                    <a href="#find-your-camp" class="btn btn--primary btn--full" data-track="home_link_click" data-track-target="find_your_camp">Choose your WordCamp ↓</a>
                 @endif
             </nav>
         @endif

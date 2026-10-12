@@ -47,7 +47,12 @@ Names are `snake_case`; `share`, `generate_lead` and `exception` are GA4 recomme
 | Data controls | `data_export`, `data_clear` | `method` (pdf / json) on `data_export` |
 | After the event (thank-you card) | `thank_you_view`, `event_feedback`, `thank_you_next_click` | `surface` (event / home); `rating` (custom metric, 1–5) on `event_feedback` — the comment never goes to GA |
 | Discovery Join drop-off | `discovery_join_blocked` | `surface`, `result` (no_name_picked / name_too_short / no_tags / save_failed; `result` is shared with `reminder_offer`, all 50 dimensions being taken) |
+| Picker, lists, tour (12 Oct) | `picker_filter`, `picker_more`, `tour_control`, `list_more`, `data_refresh_tap`, `home_link_click` (also `brand`, `find_your_camp`, `wordcamps`, `memories_back`) | `target` (country code / all); `via` (prev / next / dot / pause_play); `surface` (matches / others) |
+| Camp Card edits (12 Oct) | `camp_card_customize` | `target`: qr_<link> / field_<name> / interest_add / interest_suggestion / interest_remove — never the text |
+| After the event (12 Oct) | `memories_open`, `move_sheet_view`, `move_sheet_action`, `bring_data_view`, `bring_data` | `target` (photos / videos); `surface`; `method`; `result` |
 | Health | `exception`, `api_error` | `description`; `endpoint`, `method`, `status` |
+
+**Every event also carries `page_type` and `event_phase`** (12 Oct): `sendPageContext()` calls `gtag('set', …)` after `page_context`. The domain needs no param — GA records the hostname with every hit; the Analytics page shows it as **Domains** (`hostName`). The Memories page loads no app script, so a small inline listener sends its `home_link_click` / `memories_open` clicks. No new dimensions (all 50 are taken): new events reuse registered params. Admin → Analytics added cards: Domains, Screens, Before/during/after, Photos and talks, Countries chosen, plus the *Finding a WordCamp* action group and the new rows in the other groups.
 
 > **Privacy-statement wording:** [17](17-privacy.md) says Quest progress "stays on your phone." `quest_complete`/`quest_undo` and `session_save` are anonymous engagement events, not the progress data itself, and neither is on the [8.5](08-security-privacy.md#85-analytics-guardrail) exclusion list — but if that wording should be literal, delete those entries from `EVENTS` and they stop being sent.
 

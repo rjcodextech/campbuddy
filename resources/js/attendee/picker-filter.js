@@ -13,6 +13,8 @@
 // choice is remembered on this device and kept the same across open tabs.
 
 /** Cards shown before anyone taps "Load more", and after each filter change. */
+import { track } from './analytics.js';
+
 export const FIRST = 5;
 
 /** Cards each "Load more" opens. */
@@ -271,9 +273,10 @@ export function initPickerFilter({
     render();
   }
 
-  select?.addEventListener('change', () => choose(select.value));
-  toggle?.addEventListener('click', () => choose(toggle.dataset.target || ALL));
+  select?.addEventListener('change', () => { choose(select.value); track('picker_filter', { target: select.value || 'all' }); });
+  toggle?.addEventListener('click', () => { choose(toggle.dataset.target || ALL); track('picker_filter', { target: toggle.dataset.target || 'all' }); });
   more?.addEventListener('click', () => {
+    track('picker_more');
     const from = shown;
     shown += STEP;
     render({ focusFrom: from });

@@ -20,9 +20,14 @@
     $tab = fn ($v) => $tabNames[$v] ?? $v;
 
     $actions = [
+        'Finding a WordCamp' => [
+            'select_event' => 'Opened a WordCamp from the list', 'picker_filter' => 'Changed the country', 'picker_more' => 'Tapped "Load more"',
+            'tour_view' => 'Saw the "See it in action" tour', 'tour_control' => 'Moved the tour by hand', 'guide_open' => 'Opened the first-timer guide',
+        ],
         'What people did in the app' => [
             'session_save' => 'Saved a session', 'session_expand' => 'Opened a session\'s details', 'schedule_filter' => 'Filtered the schedule',
             'quest_complete' => 'Ticked a quest', 'meet_add' => 'Added someone to meet', 'contribute_team_view' => 'Opened a contributor team',
+            'list_more' => 'Tapped "Show more" on a long list', 'data_refresh_tap' => 'Tapped "New info. Tap to refresh"',
         ],
         'Discovery' => [
             'discovery_join_start' => 'Tapped Join', 'discovery_join' => 'Joined discovery', 'discovery_wave' => 'Waved at someone',
@@ -30,7 +35,8 @@
             'discovery_join_blocked' => 'Join stopped (missing name / tags, or save failed)',
         ],
         'Camp Card, install, reminders' => [
-            'camp_card_save' => 'Saved their Camp Card', 'camp_card_download' => 'Downloaded their Camp Card', 'share' => 'Shared',
+            'camp_card_save' => 'Saved their Camp Card', 'camp_card_customize' => 'Changed their Camp Card (QR, fields, interests)',
+            'camp_card_download' => 'Downloaded their Camp Card', 'share' => 'Shared',
             'install_complete' => 'Installed the app', 'onboarding_complete' => 'Finished onboarding', 'calendar_export' => 'Added to calendar',
         ],
         'Deals, sponsors, Free Steals' => [
@@ -40,6 +46,9 @@
         'After the event' => [
             'thank_you_view' => 'Saw the thank-you card', 'event_feedback' => 'Rated it (see Admin → Feedback)',
             'data_export' => 'Exported their data (PDF or JSON)', 'thank_you_next_click' => 'Tapped "your next WordCamp"',
+            'memories_open' => 'Opened the photos or WordPress.tv talks', 'move_sheet_view' => 'Saw "Take it with you"',
+            'move_sheet_action' => 'Took their data along (next WordCamp or PDF)', 'bring_data_view' => 'Was offered last WordCamp\'s data',
+            'bring_data' => 'Brought it in, or said no thanks',
         ],
     ];
     $hasAppEvents = $events->has('page_context');
@@ -177,6 +186,9 @@
                     <x-admin.bar-list :rows="$pick('browser', 'browser', 'activeUsers')" unit="people" />
                 </div>
             </x-card>
+            <x-card title="Domains" description="The site each visit was on (GA records it with every event).">
+                <x-admin.bar-list :rows="$pick('hosts', 'hostName', 'activeUsers', null, fn ($row) => $num($row['screenPageViews']).' page views · '.$num($row['eventCount']).' events')" unit="people" />
+            </x-card>
             <x-card title="How new people first found it" description="The source of each new person's first visit.">
                 <x-admin.bar-list :rows="$pick('first_source', 'firstUserSourceMedium', 'newUsers')" unit="new people" />
             </x-card>
@@ -275,6 +287,18 @@
                         <x-admin.bar-list :rows="array_map(fn ($row) => [collect([$installNames[$row['eventName']] ?? $row['eventName'], $row['customEvent:platform'], $row['customEvent:outcome']])->reject(fn ($v) => $v === '(not set)')->implode(' · '), $row['eventCount'], $num($row['totalUsers']).' people'], $r['install'] ?? [])" unit="times" />
                         <x-admin.bar-list :rows="$pick('reminder', 'customEvent:result', 'eventCount', fn ($v) => 'Reminder offer: '.str_replace('_', ' ', $v), fn ($row) => $num($row['totalUsers']).' people')" unit="times" empty="No reminder offers in these dates." />
                     </div>
+                </x-card>
+                <x-card title="Screens" description="People who opened each kind of screen.">
+                    <x-admin.bar-list :rows="$pick('screens', 'customEvent:page_type', 'totalUsers', fn ($v) => $v === '(not set)' ? 'Unknown' : ucfirst(str_replace(['_', '-'], ' ', $v)), fn ($row) => $num($row['eventCount']).' opens')" unit="people" />
+                </x-card>
+                <x-card title="Before, during and after" description="People by where the WordCamp was when they opened it.">
+                    <x-admin.bar-list :rows="$pick('phases', 'customEvent:event_phase', 'totalUsers', fn ($v) => $v === '(not set)' ? 'No WordCamp open (home, picker, guide)' : ucfirst(str_replace('_', ' ', $v)), fn ($row) => $num($row['eventCount']).' opens')" unit="people" />
+                </x-card>
+                <x-card title="Photos and talks after the event">
+                    <x-admin.bar-list :rows="$pick('memories', 'customEvent:target', 'eventCount', fn ($v) => ['photos' => 'Photo album', 'videos' => 'WordPress.tv talks'][$v] ?? $v, fn ($row) => $num($row['totalUsers']).' people')" unit="opens" empty="Nobody opened the photos or talks in these dates." />
+                </x-card>
+                <x-card title="Countries chosen in the WordCamp list">
+                    <x-admin.bar-list :rows="$pick('picker_country', 'customEvent:target', 'eventCount', fn ($v) => $v === 'all' ? 'All countries' : strtoupper($v), fn ($row) => $num($row['totalUsers']).' people')" unit="times" empty="Nobody changed the country in these dates." />
                 </x-card>
                 <x-card title="Opened as" description="Installed app (standalone) or a browser tab.">
                     <x-admin.bar-list :rows="$pick('display_mode', 'customEvent:display_mode', 'totalUsers', fn ($v) => $v === 'standalone' ? 'Installed app' : ($v === 'browser' ? 'Browser' : 'Unknown'), fn ($row) => $num($row['eventCount']).' page opens')" unit="people" />

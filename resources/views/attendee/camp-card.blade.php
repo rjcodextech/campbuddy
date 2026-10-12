@@ -65,7 +65,7 @@
                             <div class="cc-tags__items" id="interests-tags"></div>
                             <input class="cc-tags__input" type="text" id="interests-text" placeholder="Add an interest" maxlength="30"
                                    enterkeyhint="done" autocomplete="off" aria-describedby="interests-hint">
-                            <button type="button" class="cc-tags__add" id="interests-add" hidden>Add</button>
+                            <button type="button" class="cc-tags__add" id="interests-add" hidden data-track="camp_card_customize" data-track-target="interest_add">Add</button>
                         </div>
 
                         <p class="form-field__hint" id="interests-hint" aria-live="polite">
@@ -96,10 +96,10 @@
                     <div class="form-field">
                         <span class="form-field__label" id="qr-target-label">QR code links to</span>
                         <div class="chip-group" id="qr-target-chips" role="group" aria-labelledby="qr-target-label">
-                            <button type="button" class="chip" aria-pressed="false" data-qr-target="linkedin">LinkedIn</button>
-                            <button type="button" class="chip" aria-pressed="false" data-qr-target="website">Website</button>
-                            <button type="button" class="chip" aria-pressed="false" data-qr-target="wordpressOrg">WordPress.org</button>
-                            <button type="button" class="chip" aria-pressed="false" data-qr-target="twitter">X / Twitter</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="linkedin" data-track="camp_card_customize" data-track-target="qr_linkedin">LinkedIn</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="website" data-track="camp_card_customize" data-track-target="qr_website">Website</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="wordpressOrg" data-track="camp_card_customize" data-track-target="qr_wordpressOrg">WordPress.org</button>
+                            <button type="button" class="chip" aria-pressed="false" data-qr-target="twitter" data-track="camp_card_customize" data-track-target="qr_twitter">X / Twitter</button>
                         </div>
                         <p class="form-field__hint">Faded options need their link filled in above.</p>
                     </div>
@@ -108,7 +108,7 @@
                         <span class="form-field__label" id="visible-fields-label">Show on my card</span>
                         <div class="chip-group" id="visible-fields-chips" role="group" aria-labelledby="visible-fields-label">
                             @foreach (['role' => 'Role', 'company' => 'Company', 'city' => 'City', 'interests' => 'Interests', 'askMeAbout' => 'Ask me about'] as $key => $label)
-                                <button type="button" class="chip" aria-pressed="false" data-visible-field="{{ $key }}">{{ $label }}</button>
+                                <button type="button" class="chip" aria-pressed="false" data-visible-field="{{ $key }}" data-track="camp_card_customize" data-track-target="field_{{ $key }}">{{ $label }}</button>
                             @endforeach
                         </div>
                         <p class="form-field__hint">Your name and QR code always show.</p>

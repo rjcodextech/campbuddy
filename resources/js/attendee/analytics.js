@@ -159,6 +159,12 @@ const EVENTS = {
   bring_data_view: [], // "Bring it from your last WordCamp" shown on Home
   bring_data: ['result'], // done | dismissed
   memories_open: ['target'], // photos | videos (picker card, thank-you card, Home, Memories page)
+  picker_filter: ['target'], // picker country chosen: a country code, or all
+  picker_more: [], // picker "Load more"
+  list_more: ['surface'], // a long list's "Show N more": matches | others
+  data_refresh_tap: [], // the "New info. Tap to refresh" pill
+  tour_control: ['via'], // picker tour: prev | next | dot | pause | play
+  camp_card_customize: ['target'], // qr_<link> | field_<name> | interest_add | interest_suggestion | interest_remove
   data_clear: [],
 
   // Health
@@ -215,7 +221,7 @@ export function track(name, params = {}) {
 
   // gtag only exists once the page's tag snippet ran — not on local/staging
   // (no measurement ID) and not for visitors sending GPC / Do Not Track.
-  if (typeof window.gtag !== 'function') return;
+  if (typeof window === 'undefined' || typeof window.gtag !== 'function') return;
 
   try {
     window.gtag('event', name, clean);
@@ -316,6 +322,16 @@ function sendPageContext() {
     event_phase: document.body.dataset.eventPhase,
     is_online: navigator.onLine,
   });
+
+  // …and every later event on the page carries the screen and the phase too,
+  // so any event can be split by them (both are registered dimensions).
+  try {
+    if (typeof window.gtag === 'function') {
+      window.gtag('set', { page_type: pageType, ...(document.body.dataset.eventPhase ? { event_phase: document.body.dataset.eventPhase } : {}) });
+    }
+  } catch {
+    // Analytics must never break the page.
+  }
 }
 
 // Core Web Vitals as real phones on venue wifi experience them: Largest

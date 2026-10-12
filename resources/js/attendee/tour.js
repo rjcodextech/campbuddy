@@ -30,7 +30,7 @@ export function initTour(root) {
     dot.className = 'tour__dot';
     dot.setAttribute('role', 'tab');
     dot.setAttribute('aria-label', `Screen ${i + 1} of ${slides.length}`);
-    dot.addEventListener('click', () => { show(i); stop(); });
+    dot.addEventListener('click', () => { show(i); stop(); track('tour_control', { via: 'dot' }); });
     dotsEl.appendChild(dot);
     return dot;
   });
@@ -63,8 +63,8 @@ export function initTour(root) {
     schedule();
   }
 
-  root.querySelector('[data-tour-prev]').addEventListener('click', () => { show(index - 1); stop(); });
-  root.querySelector('[data-tour-next]').addEventListener('click', () => { show(index + 1); stop(); });
+  root.querySelector('[data-tour-prev]').addEventListener('click', () => { show(index - 1); stop(); track('tour_control', { via: 'prev' }); });
+  root.querySelector('[data-tour-next]').addEventListener('click', () => { show(index + 1); stop(); track('tour_control', { via: 'next' }); });
   toggle.addEventListener('click', () => {
     playing = !playing;
     syncToggle();

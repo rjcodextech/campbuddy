@@ -36,7 +36,7 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
         @include('attendee.partials.desktop-notice')
 
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand">
+            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
                 <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
             </a>
             <div class="topbar__actions">
@@ -48,7 +48,7 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
             <span>Open on phone</span>
         </button>
 
-                <a href="{{ route('home') }}" class="topbar__text-btn">
+                <a href="{{ route('home') }}" class="topbar__text-btn" data-track="home_link_click" data-track-target="wordcamps">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
                     <span>All WordCamps</span>
                 </a>

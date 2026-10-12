@@ -10,6 +10,8 @@
 // (Wave, + Meet, I met them) changes, nothing is stored, and no request is made.
 
 /** Cards shown before anyone taps "Show more". */
+import { track } from './analytics.js';
+
 export const FIRST = 3;
 
 /** Cards revealed by each tap. */
@@ -50,6 +52,7 @@ export function windowCards(key, cards, { min = FIRST, doc = globalThis.document
   label();
 
   button.addEventListener('click', () => {
+    track('list_more', { surface: key });
     // Reveals the next `nextCount()` cards that are still hidden: each card is
     // opened once, none is added or repeated, so the label and the result agree.
     const upTo = shown + nextCount();

@@ -257,6 +257,13 @@ class AnalyticsReport
             'vitals' => ['dims' => ['customEvent:metric_name', 'customEvent:metric_rating'], 'metrics' => ['eventCount'], 'events' => 'web_vitals'],
             'exceptions' => ['dims' => ['customEvent:description'], 'metrics' => ['eventCount', 'totalUsers'], 'events' => 'exception', 'order' => 'eventCount', 'limit' => 15],
             'api_errors' => ['dims' => ['customEvent:endpoint', 'customEvent:method', 'customEvent:status'], 'metrics' => ['eventCount', 'totalUsers'], 'events' => 'api_error', 'order' => 'eventCount', 'limit' => 15],
+
+            // The domain each hit came from (GA records it on every event), the screen and the event's phase.
+            'hosts' => ['dims' => ['hostName'], 'metrics' => ['activeUsers', 'screenPageViews', 'eventCount'], 'order' => 'activeUsers', 'limit' => 10],
+            'screens' => ['dims' => ['customEvent:page_type'], 'metrics' => ['totalUsers', 'eventCount'], 'events' => 'page_context', 'order' => 'totalUsers', 'limit' => 20],
+            'phases' => ['dims' => ['customEvent:event_phase'], 'metrics' => ['totalUsers', 'eventCount'], 'events' => 'page_context', 'order' => 'totalUsers'],
+            'memories' => ['dims' => ['customEvent:target'], 'metrics' => ['eventCount', 'totalUsers'], 'events' => 'memories_open', 'order' => 'eventCount'],
+            'picker_country' => ['dims' => ['customEvent:target'], 'metrics' => ['eventCount', 'totalUsers'], 'events' => 'picker_filter', 'order' => 'eventCount', 'limit' => 15],
         ];
     }
 

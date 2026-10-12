@@ -28,7 +28,7 @@
 
     <div class="app-frame">
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand">
+            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
                 <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
             </a>
         </header>
@@ -61,12 +61,23 @@
 
             <p class="memories__back">
                 @if ($live)
-                    <a class="btn btn--outline btn--full" href="{{ route('event.home', $event) }}">Back to {{ $event->display_name }}</a>
+                    <a class="btn btn--outline btn--full" href="{{ route('event.home', $event) }}" data-track="home_link_click" data-track-target="memories_back">Back to {{ $event->display_name }}</a>
                 @else
-                    <a class="btn btn--outline btn--full" href="{{ route('home') }}#find-your-camp">Find your next WordCamp</a>
+                    <a class="btn btn--outline btn--full" href="{{ route('home') }}#find-your-camp" data-track="home_link_click" data-track-target="find_your_camp">Find your next WordCamp</a>
                 @endif
             </p>
         </main>
     </div>
+
+    {{-- Its links' clicks for GA (the page loads no app script): memories_open and home_link_click, with their target. --}}
+    <script>
+        document.addEventListener('click', function (e) {
+            var el = e.target.closest && e.target.closest('[data-track]');
+            if (!el || typeof window.gtag !== 'function') return;
+            var name = el.dataset.track;
+            if (name !== 'memories_open' && name !== 'home_link_click') return;
+            try { window.gtag('event', name, { target: el.dataset.trackTarget || '' }); } catch (err) {}
+        });
+    </script>
 </body>
 </html>

@@ -20,6 +20,7 @@
 // attendee's own data (saved sessions, Quest progress, Camp Card) lives in
 // IndexedDB and is never touched.
 
+import { track } from './analytics.js';
 import { apiHeaders } from './api.js';
 import { inEventWindow, nextDelay, retryAfterMs } from './polling.js';
 import { refreshCopies } from './saved-copies.js';
@@ -83,7 +84,7 @@ function showPill(slug) {
   pill.id = 'data-updated-pill';
   pill.className = 'data-updated-pill';
   pill.textContent = 'New info. Tap to refresh';
-  pill.addEventListener('click', () => refresh(slug));
+  pill.addEventListener('click', () => { track('data_refresh_tap'); refresh(slug); });
   document.body.appendChild(pill);
 }
 
