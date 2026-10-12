@@ -281,10 +281,10 @@
         <div class="grid gap-4 lg:grid-cols-[1fr_auto]">
             <x-card title="Make a reel" description="Preview plays it here; Make video downloads the MP4. Make all gives one ZIP with every reel and its caption.">
                 <div class="mb-4 flex flex-wrap items-end gap-4">
-                    <label class="flex flex-col gap-1 text-sm">
-                        <span class="cb-label">Music</span>
-                        <select class="cb-input w-auto" data-reel-music>
-                            <option value="auto">CampBuddy's music (made for each reel, no copyright claims)</option>
+                    <label class="flex min-w-0 max-w-full flex-col gap-1 text-sm">
+                        <span class="cb-label">Music <span class="font-normal text-muted">(CampBuddy's is made for each reel: no copyright claims)</span></span>
+                        <select class="cb-input w-auto max-w-full" data-reel-music>
+                            <option value="auto">CampBuddy's music</option>
                             <option value="file">My own track</option>
                             <option value="none">No music</option>
                         </select>

@@ -929,33 +929,46 @@ async function recordRealtime(reel, audio, onProgress) {
   const c = canvas();
   const ctx = c.getContext('2d');
   drawFrame(ctx, reel, 0);
-  const stream = c.captureStream(FPS);
+  // Frames are handed over one by one (requestFrame), so none is skipped or doubled.
+  const stream = c.captureStream(0);
+  const [track] = stream.getVideoTracks();
   let ac = null;
+  let src = null;
   if (audio) {
     ac = new AudioContext({ sampleRate: RATE });
     // Started from a click, so the browser lets it play; resume() in case it came up suspended.
-    await ac.resume().catch(() => {});
-    const dest = ac.createMediaStreamDestination();
-    const src = ac.createBufferSource();
-    src.buffer = audio;
-    src.connect(dest);
-    dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
-    src.start();
+    // (Never waits long: a browser that wants a tap first would leave resume() pending.)
+    await Promise.race([ac.resume().catch(() => {}), new Promise((r) => setTimeout(r, 400))]);
+    if (ac.state === 'running') {
+      const dest = ac.createMediaStreamDestination();
+      src = ac.createBufferSource();
+      src.buffer = audio;
+      src.connect(dest);
+      dest.stream.getAudioTracks().forEach((t) => stream.addTrack(t));
+    } else {
+      // Sound not allowed here: a silent but whole video beats a broken one.
+      ac.close();
+      ac = null;
+      reel.silent = true;
+    }
   }
   const type = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t));
-  const recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 9_000_000 });
+  const recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 7_000_000 });
   const parts = [];
   recorder.ondataavailable = (e) => parts.push(e.data);
   const done = new Promise((r) => { recorder.onstop = r; });
   recorder.start(250);
+  src?.start();
   const t0 = performance.now();
+  // A timer, not requestAnimationFrame: it keeps going when the page isn't painting.
   await new Promise((resolve) => {
     const tick = () => {
       const time = (performance.now() - t0) / 1000;
       if (time >= reel.duration) return resolve();
       drawFrame(ctx, reel, time);
+      track.requestFrame?.();
       onProgress?.(time / reel.duration);
-      requestAnimationFrame(tick);
+      setTimeout(tick, Math.max(0, 1000 / FPS - (performance.now() - t0 - time * 1000)));
     };
     tick();
   });
@@ -1049,7 +1062,7 @@ export function initSocialReels() {
     const fast = await canEncode();
     const blob = fast ? await encodeMp4(reel, audio, onProgress) : await recordRealtime(reel, audio, onProgress);
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-    return { blob, name: `${C.kit.event.slug}-reel-${item.key}.${ext}`, caption: typeof item.caption === 'function' ? item.caption() : '' };
+    return { blob, silent: Boolean(reel.silent), name: `${C.kit.event.slug}-reel-${item.key}.${ext}`, caption: typeof item.caption === 'function' ? item.caption() : '' };
   };
 
   const guard = async (btn, work) => {
@@ -1089,7 +1102,7 @@ export function initSocialReels() {
       say(`Making “${item.title}”…`);
       const out = await make(item, (p) => say(`Making “${item.title}”… ${Math.round(p * 100)} %`));
       save(out.blob, out.name);
-      say(`“${item.title}” downloaded (${(out.blob.size / 1048576).toFixed(1)} MB).`);
+      say(`“${item.title}” downloaded (${(out.blob.size / 1048576).toFixed(1)} MB)${out.silent ? ', without music: this browser would not play sound here' : ''}.`);
     }));
     buttons.append(playBtn, makeBtn);
     row.append(name, buttons);
