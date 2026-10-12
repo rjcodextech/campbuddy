@@ -6,36 +6,44 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FetchLog;
-use App\Models\Offer;
 use App\Models\OfferLead;
 use App\Support\CacheVersion;
 use App\Support\ErrorReport;
 use Illuminate\View\View;
 
 /**
- * The admin landing page: a glance at what needs attention (events waiting
- * for approval, a one-line count of what's failing) plus headline numbers.
+ * The admin landing page: only what needs a decision or a look today —
+ * what's failing, drafts waiting for approval, the next WordCamps with a
+ * countdown, three headline numbers, and the two maintenance buttons.
  */
 class DashboardController extends Controller
 {
     public function __invoke(): View
     {
-        $eventsByStatus = Event::query()
-            ->selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        $today = now()->toDateString();
+
+        // Live events that haven't ended yet, soonest first. An event with
+        // no end date counts as over once its start date has passed.
+        $upcoming = Event::query()
+            ->whereIn('status', ['approved', 'active'])
+            ->whereNotNull('starts_on')
+            ->whereRaw('COALESCE(ends_on, starts_on) >= ?', [$today])
+            ->orderBy('starts_on');
+
+        $nextEvents = (clone $upcoming)->withCount(['attendeeRoster as roster_count' => fn ($q) => $q->where('is_suppressed', false)])
+            ->limit(4)
+            ->get();
 
         return view('dashboard', [
             // What's wrong lives on the Errors page; the dashboard shows one line.
             'errorSummary' => ErrorReport::summary(),
-            'eventsByStatus' => $eventsByStatus,
-            'eventCount' => $eventsByStatus->sum(),
+            'draftCount' => Event::where('status', 'draft')->count(),
+            'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
+            'upcomingCount' => (clone $upcoming)->count(),
+            'nextEvents' => $nextEvents,
             'rosterCount' => AttendeeRoster::where('is_suppressed', false)->count(),
-            'activeDeals' => Offer::where('is_active', true)->count(),
             'leadCount' => OfferLead::count(),
             'recentLeadCount' => OfferLead::where('created_at', '>=', now()->subDays(7))->count(),
-            'recentEvents' => Event::latest('updated_at')->limit(6)->get(),
-            'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
             'lastPurge' => CacheVersion::last(),
             'cloudflareConfigured' => filled(config('services.cloudflare.zone_id')) && filled(config('services.cloudflare.api_token')),
             'lastDataFetch' => FetchLog::with('event:id,display_name')->where('job_type', 'sessions_speakers_sponsors')->latest('fetched_at')->first(),

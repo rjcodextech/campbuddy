@@ -15,7 +15,7 @@
                'border-gold/40 bg-gold/10 hover:border-gold' => $errorSummary['critical'] === 0,
            ])>
             <x-icon :name="$errorSummary['critical'] > 0 ? 'exclamation-circle' : 'exclamation-triangle'"
-                    class="h-5 w-5 shrink-0 {{ $errorSummary['critical'] > 0 ? 'text-danger' : 'text-gold' }}" />
+                    class="h-5 w-5 shrink-0 motion-safe:animate-pulse {{ $errorSummary['critical'] > 0 ? 'text-danger' : 'text-gold' }}" />
             <span class="min-w-0 flex-1">
                 <span class="font-semibold">{{ $errorSummary['total'] }} {{ \Illuminate\Support\Str::plural('problem', $errorSummary['total']) }} need attention</span>
                 <span class="text-muted">
@@ -33,75 +33,152 @@
         </p>
     @endif
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <x-stat label="Events" :value="$eventCount" icon="calendar" :href="route('admin.events.index')"
-                :hint="($eventsByStatus['active'] ?? 0).' active · '.($eventsByStatus['archived'] ?? 0).' archived'" />
-        <x-stat label="Awaiting approval" :value="$eventsByStatus['draft'] ?? 0" icon="inbox" :href="route('admin.events.index')"
-                hint="Draft events found by discovery" />
+    @php
+        // "Live now", "Tomorrow" or "12 days" — from the server's today.
+        $countdown = function ($event) {
+            $days = (int) now()->startOfDay()->diffInDays($event->starts_on, false);
+
+            return match (true) {
+                $days <= 0 => ['Live', 'now'],
+                $days === 1 => ['1', 'day to go'],
+                default => [(string) $days, 'days to go'],
+            };
+        };
+        $dates = fn ($event) => $event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)
+            ? $event->starts_on->format('j M').' – '.$event->ends_on->format('j M Y')
+            : $event->starts_on->format('j M Y');
+        $next = $nextEvents->first();
+    @endphp
+
+    <div class="grid gap-6 lg:grid-cols-3">
+        {{-- The next WordCamp, big, with a countdown; the few after it beneath. --}}
+        <section class="lg:col-span-2" aria-labelledby="coming-up">
+            <h2 id="coming-up" class="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Coming up</h2>
+
+            @if ($next)
+                @php([$big, $small] = $countdown($next))
+                <div class="cb-hero relative overflow-hidden rounded-2xl bg-navy p-6 text-white shadow-md sm:p-7">
+                    <span class="cb-hero-glow" aria-hidden="true"></span>
+
+                    <div class="relative flex flex-wrap items-start justify-between gap-6">
+                        <div class="flex min-w-0 items-start gap-4">
+                            <span class="cb-logo-in flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-sm">
+                                @if ($next->logoUrl())
+                                    <img src="{{ $next->logoUrl() }}" alt="" class="h-full w-full object-contain">
+                                @else
+                                    <x-icon name="calendar" class="h-7 w-7 text-maroon" />
+                                @endif
+                            </span>
+                            <div class="min-w-0">
+                                <p class="text-xs font-medium uppercase tracking-[0.15em] text-white/60">Next WordCamp</p>
+                                <h3 class="mt-1 break-words text-xl font-semibold tracking-tight sm:text-2xl">{{ $next->display_name }}</h3>
+                                <p class="mt-1 text-sm text-white/70">{{ $dates($next) }}</p>
+                            </div>
+                        </div>
+
+                        <div class="cb-enter text-right" aria-label="{{ $big }} {{ $small }}">
+                            <span class="block text-5xl font-bold tabular-nums leading-none tracking-tight text-gold">{{ $big }}</span>
+                            <span class="mt-1 block text-xs font-medium uppercase tracking-wide text-white/60">{{ $small }}</span>
+                        </div>
+                    </div>
+
+                    <div class="relative mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                        <span class="flex items-center gap-4 text-sm text-white/80">
+                            <span class="inline-flex items-center gap-1.5"><x-icon name="users" class="h-4 w-4" /> {{ number_format($next->roster_count) }} on the roster</span>
+                            <x-event-status :status="$next->status" />
+                        </span>
+                        <span class="flex flex-wrap gap-2">
+                            <a href="{{ route('event.home', $next) }}" target="_blank" rel="noopener"
+                               class="cb-btn cb-btn-sm border-white/20 bg-white/10 text-white hover:bg-white/20 focus-visible:ring-white/60 focus-visible:ring-offset-navy">
+                                <x-icon name="external" class="h-4 w-4" /> Open app
+                            </a>
+                            <a href="{{ route('admin.events.edit', $next) }}" class="cb-btn cb-btn-sm cb-btn-primary focus-visible:ring-offset-navy">Manage</a>
+                        </span>
+                    </div>
+                </div>
+
+                @if ($nextEvents->count() > 1)
+                    <ul class="mt-3 grid gap-3 sm:grid-cols-3">
+                        @foreach ($nextEvents->skip(1) as $event)
+                            @php([$big, $small] = $countdown($event))
+                            <li>
+                                <a href="{{ route('admin.events.edit', $event) }}"
+                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-sm transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
+                                        <span class="text-base font-bold tabular-nums leading-none">{{ $big }}</span>
+                                        <span class="text-[9px] font-semibold uppercase leading-tight">{{ $big === 'Live' ? 'now' : 'days' }}</span>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block truncate text-sm font-medium text-ink">{{ $event->display_name }}</span>
+                                        <span class="block text-xs text-muted">{{ $dates($event) }}</span>
+                                    </span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            @else
+                <div class="flex flex-col items-center rounded-2xl border border-dashed border-line bg-white px-6 py-10 text-center">
+                    <x-icon name="calendar" class="h-8 w-8 text-muted" />
+                    <p class="mt-2 font-medium">No upcoming WordCamps</p>
+                    <p class="mt-1 text-sm text-muted">Approve a draft or run discovery to find the next ones.</p>
+                </div>
+            @endif
+        </section>
+
+        {{-- Drafts wait on an admin: the one thing here that needs a decision. --}}
+        <section aria-labelledby="needs-approval">
+            <h2 id="needs-approval" class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                Needs approval
+                @if ($draftCount > 0)
+                    <span class="rounded-full bg-maroon px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white">{{ $draftCount }}</span>
+                @endif
+            </h2>
+
+            <div class="rounded-2xl border border-line bg-white p-2 shadow-sm">
+                @forelse ($draftEvents as $event)
+                    <a href="{{ route('admin.events.edit', $event) }}"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block truncate font-medium">{{ $event->display_name }}</span>
+                            @if ($event->starts_on)
+                                <span class="block text-xs text-muted">{{ $event->starts_on->format('j M Y') }}</span>
+                            @endif
+                        </span>
+                        <x-icon name="chevron-right" class="h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" />
+                    </a>
+                @empty
+                    <p class="flex items-center gap-2 px-3 py-6 text-sm text-muted">
+                        <x-icon name="check-circle" class="h-5 w-5 text-teal" /> Nothing waiting.
+                    </p>
+                @endforelse
+
+                @if ($draftCount > $draftEvents->count())
+                    <a href="{{ route('admin.events.index') }}" class="block border-t border-line px-3 py-2.5 text-sm font-medium text-maroon hover:underline">
+                        All {{ $draftCount }} drafts
+                    </a>
+                @endif
+            </div>
+        </section>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        <x-stat label="Upcoming WordCamps" :value="$upcomingCount" icon="calendar" :href="route('admin.events.index')"
+                hint="Approved or active, not over yet" />
         <x-stat label="Attendees listed" :value="number_format($rosterCount)" icon="users"
                 hint="Public, not suppressed" />
         <x-stat label="Deal leads" :value="number_format($leadCount)" icon="tag"
-                :hint="$recentLeadCount.' in the last 7 days · '.$activeDeals.' active '.\Illuminate\Support\Str::plural('deal', $activeDeals)" />
+                :hint="$recentLeadCount.' in the last 7 days'" />
     </div>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-3">
-        <div class="space-y-6 lg:col-span-2">
-            <x-card title="Recently updated events" flush>
-                <x-slot:actions>
-                    <x-button :href="route('admin.events.index')" variant="link" size="sm">View all</x-button>
-                </x-slot:actions>
-
-                <x-table>
-                    <x-slot:head>
-                        <th>Event</th>
-                        <th>Status</th>
-                        <th class="hidden sm:table-cell">Updated</th>
-                        <th class="w-px"><span class="sr-only">Actions</span></th>
-                    </x-slot:head>
-
-                    @forelse ($recentEvents as $event)
-                        <tr>
-                            <td>
-                                <a href="{{ route('admin.events.edit', $event) }}" class="font-medium hover:text-maroon hover:underline">{{ $event->display_name }}</a>
-                                <div class="text-xs text-muted">{{ $event->slug }}</div>
-                            </td>
-                            <td><x-event-status :status="$event->status" /></td>
-                            <td class="hidden whitespace-nowrap text-muted sm:table-cell">{{ $event->updated_at->diffForHumans() }}</td>
-                            <td class="text-right">
-                                <x-button :href="route('admin.events.edit', $event)" variant="secondary" size="sm">Manage</x-button>
-                            </td>
-                        </tr>
-                    @empty
-                        <x-table.empty :colspan="4" icon="calendar" title="No events yet">
-                            Add your first WordCamp, or run discovery to find upcoming ones.
-                        </x-table.empty>
-                    @endforelse
-                </x-table>
-            </x-card>
-
-        </div>
-
-        <div class="space-y-6">
-            @if ($draftEvents->isNotEmpty())
-                <x-card title="Needs approval" description="Drafts found by discovery.">
-                    @foreach ($draftEvents as $event)
-                        <a href="{{ route('admin.events.edit', $event) }}"
-                           class="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2 text-sm hover:bg-paper-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
-                            <span class="truncate font-medium">{{ $event->display_name }}</span>
-                            <x-icon name="chevron-right" class="h-4 w-4 shrink-0 text-muted" />
-                        </a>
-                    @endforeach
-                </x-card>
-            @endif
-
-            {{-- Two separate jobs, two buttons: fresh data from the WordCamp
-            sites (DataRefresher) vs. dropping saved copies (CachePurger). --}}
-            <x-card title="Event data" description="Schedule, speakers, sponsors and event info from each WordCamp site.">
-                <p class="text-sm text-muted">
-                    Updates by itself every 15 minutes. Nothing is cleared first — new items are added, changes
-                    updated, removed ones dropped — and open apps update on their own.
-                </p>
-                <p class="mt-3 border-t border-line pt-3 text-xs text-muted">
+    {{-- Two separate jobs, two buttons: fresh data from the WordCamp
+    sites (DataRefresher) vs. dropping saved copies (CachePurger). --}}
+    <section class="mt-6 grid gap-4 md:grid-cols-2" aria-label="Maintenance">
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+            <div>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="refresh" class="h-4 w-4 text-maroon" /> Event data</h2>
+                <p class="mt-1 text-xs text-muted">Updates by itself every 15 minutes; open apps update on their own.</p>
+                <p class="mt-2 text-xs text-muted">
                     @if ($lastDataFetch)
                         <span class="font-medium text-ink">Last fetched {{ $lastDataFetch->fetched_at->diffForHumans() }}</span>
                         @if ($lastDataFetch->event) — {{ $lastDataFetch->event->display_name }} @endif
@@ -109,22 +186,21 @@
                         Not fetched yet.
                     @endif
                 </p>
+            </div>
+            <x-action-form :action="route('admin.data.refresh')" icon="refresh" variant="primary">Refresh event data now</x-action-form>
+        </div>
 
-                <x-slot:footer>
-                    <x-action-form :action="route('admin.data.refresh')" icon="refresh" variant="primary">Refresh event data now</x-action-form>
-                </x-slot:footer>
-            </x-card>
-
-            <x-card title="Cache" description="Site or installed app showing an old page?">
-                <p class="text-sm text-muted">
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+            <div>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="trash" class="h-4 w-4 text-maroon" /> Cache</h2>
+                <p class="mt-1 text-xs text-muted">
                     Clears the server's caches{{ $cloudflareConfigured ? ' and Cloudflare' : '' }} and makes every open app reload.
-                    It doesn't fetch data, and attendees' saved sessions and Camp Cards aren't touched.
+                    Saved sessions and Camp Cards aren't touched.
                 </p>
                 @unless ($cloudflareConfigured)
-                    <p class="mt-2 text-xs text-muted">Using Cloudflare? Set <code>CLOUDFLARE_ZONE_ID</code> and <code>CLOUDFLARE_API_TOKEN</code> to purge it here too.</p>
+                    <p class="mt-1 text-xs text-muted">Using Cloudflare? Set <code>CLOUDFLARE_ZONE_ID</code> and <code>CLOUDFLARE_API_TOKEN</code> to purge it here too.</p>
                 @endunless
-
-                <p class="mt-3 border-t border-line pt-3 text-xs text-muted">
+                <p class="mt-2 text-xs text-muted">
                     @if ($lastPurge)
                         <span class="font-medium text-ink">Last cleared {{ \Illuminate\Support\Carbon::parse($lastPurge['purged_at'])->diffForHumans() }}</span>
                         @if (! empty($lastPurge['by'])) by {{ $lastPurge['by'] }} @endif
@@ -133,14 +209,11 @@
                         Not cleared yet.
                     @endif
                 </p>
-
-                <x-slot:footer>
-                    <x-action-form :action="route('admin.cache.purge')" icon="refresh" variant="secondary"
-                                   confirm="Clear all caches? Every open app will reload.">
-                        Clear cache
-                    </x-action-form>
-                </x-slot:footer>
-            </x-card>
+            </div>
+            <x-action-form :action="route('admin.cache.purge')" icon="refresh" variant="secondary"
+                           confirm="Clear all caches? Every open app will reload.">
+                Clear cache
+            </x-action-form>
         </div>
-    </div>
+    </section>
 </x-app-layout>

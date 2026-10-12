@@ -67,9 +67,34 @@ h3 {
     text-wrap: balance;
 }
 
+/* The dashboard's "Next WordCamp" card: a slow maroon/gold glow drifting
+   behind the countdown. */
+.cb-hero-glow {
+    position: absolute;
+    inset: -40% -20% auto auto;
+    width: 26rem;
+    height: 26rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle, rgb(195 58 25 / 0.55), rgb(227 157 28 / 0.15) 45%, transparent 70%);
+    filter: blur(8px);
+    pointer-events: none;
+    animation: cb-glow-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes cb-glow-drift {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(-3rem, 2rem) scale(1.15);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .cb-enter,
-    .cb-logo-in {
+    .cb-logo-in,
+    .cb-hero-glow {
         animation: none;
     }
 }
