@@ -57,6 +57,7 @@ const admin = [
   ['admin-event-delay', `/admin/events/${e}/delay`],
   ['admin-event-social', `/admin/events/${e}/social`],
   ['admin-event-memories', `/admin/events/${e}/memories`],
+  ['admin-event-notifications', `/admin/events/${e}/notifications`],
   ['admin-deals', '/admin/deals'],
   ['admin-deal-create', '/admin/deals/create'],
   ...(ids.deal ? [['admin-deal-edit', `/admin/deals/${ids.deal}/edit`], ['admin-deal-leads', `/admin/deals/${ids.deal}/leads`]] : []),
@@ -84,6 +85,7 @@ const manager = [
   ['manager-delay', `/manager/events/${e}/delay`],
   ['manager-social', `/manager/events/${e}/social`],
   ['manager-memories', `/manager/events/${e}/memories`],
+  ['manager-notifications', `/manager/events/${e}/notifications`],
 ];
 
 // Runs in the page: everything the audit looks at.

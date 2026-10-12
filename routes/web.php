@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\MemoriesController;
+use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
@@ -192,6 +193,7 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/delay', [ScheduleDelayController::class, 'store'])->name('admin.events.delay.store');
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
         Route::get('events/{event}/memories', [MemoriesController::class, 'index'])->name('admin.events.memories');
+        Route::get('events/{event}/notifications', NotificationsController::class)->name('admin.events.notifications');
         Route::post('events/{event}/memories', [MemoriesController::class, 'store'])->name('admin.events.memories.store');
         Route::post('events/{event}/memories/notify/{kind}', [MemoriesController::class, 'notify'])->whereIn('kind', ['photos', 'videos'])->middleware('throttle:10,1')->name('admin.events.memories.notify');
         Route::get('events/{event}/tables', [ContributorTableController::class, 'index'])->name('admin.events.tables.index');
