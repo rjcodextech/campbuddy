@@ -31,8 +31,8 @@
                 <strong class="move-data__title">Got a new phone?</strong>
                 <ol class="move-data__steps">
                     <li>On the new phone, open <strong>{{ $event->display_name }}</strong> in CampBuddy.</li>
-                    <li>Go to <strong>Explore → People → Join</strong> and pick your name. It shows a 6-digit code.</li>
-                    <li>Open CampBuddy here on this phone and type that code. Everything moves across.</li>
+                    <li>Go to <strong>Explore → People → Join</strong>, pick your name and tap <strong>Bring it here</strong>. It shows a 6-digit code.</li>
+                    <li>Keep this WordCamp open in CampBuddy on this phone: when it asks, type the code. Your Camp Card, profile, saved sessions, quests and people move across.</li>
                 </ol>
                 <span class="move-data__note">For when you joined "Meet people" with your name from the attendee list. Works until {{ \App\Support\EventTime::retentionEnd($event)?->setTimezone(\App\Support\EventTime::zone($event))->format('j M') ?? 'a month after the event' }}.</span>
             </span>

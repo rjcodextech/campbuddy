@@ -252,6 +252,7 @@ class FirstTimerGuide
             ['q' => 'I\'m a student. Is this for me?', 'a' => 'Yes. Pick "Student" when you set up, and read the student tips in the first-timer guide.'],
             ['q' => 'What happens to what I type in?', 'a' => 'It stays on your phone. Only what you choose to share in attendee discovery is shown to other attendees, and you can leave any time.'],
             ['q' => 'Does it work with bad wifi?', 'a' => 'Yes. Pages you\'ve opened keep working offline.'],
+            ['q' => 'What happens after the WordCamp?', 'a' => 'For a month you can save your day as a PDF, move CampBuddy to a new phone, and bring your profile and the people you met to your next WordCamp. The photo album and the talks on WordPress.tv show up once the organizers share them. With notifications on, CampBuddy reminds you a few times.'],
         ];
     }
 
@@ -268,7 +269,7 @@ class FirstTimerGuide
             ['q' => 'Is food included?', 'a' => 'Usually lunch, snacks and drinks are included in the ticket. Check Explore → Event Info or ask at registration.'],
             ['q' => 'I\'m shy. How do I meet people?', 'a' => 'Open the Quest tab. It has small tasks like "Say hello to another first-timer". Lunch tables, coffee breaks and the sponsor area are the easiest places to start talking.'],
             ['q' => 'Do I need to sign up for Contributor Day separately?', 'a' => 'Often, yes. It can have its own registration and a limited number of seats. Check the event\'s website or Explore → Event Info.'],
-            ['q' => 'Will the talks be recorded?', 'a' => 'Many are, and are published on WordPress.tv a few weeks later. Don\'t count on every one, though.'],
+            ['q' => 'Will the talks be recorded?', 'a' => 'Many are, and are published on WordPress.tv a few weeks later. Don\'t count on every one, though. When the organizers add the link to CampBuddy, it shows on the event and, with notifications on, you get a heads-up.'],
             ['q' => 'Who do I ask for help at the venue?', 'a' => 'Look for volunteers and organizers (they usually wear special T-shirts or badges), or go to the registration desk. If anything makes you feel unsafe, tell an organizer. That is what the Code of Conduct is for.'],
         ];
     }
