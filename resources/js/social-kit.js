@@ -2158,8 +2158,17 @@ export function initSocialKit() {
     });
     card.querySelector('[data-action="publish"]')?.addEventListener('click', (e) => publish(e.currentTarget, kit, canvas, redraw, () => ({ ...post, ...fields() })));
 
+    // For the reels (social-reels.js): this post as it stands now, its words included.
+    socialContext.posts.push({
+      key: post.key,
+      label: post.label,
+      content: () => { syncDays(); return { ...postContent(post, fields(), kit, pickEl?.value), artIndex: cardIndex }; },
+      caption: () => field('caption').value,
+    });
+
     return redraw;
   });
+  Object.assign(socialContext, { kit, colors, style });
 
   people = setUpPeople(kit, colors, size, design, quality);
   redrawAll = () => { posts.forEach((r) => r()); people?.redraw(); };
@@ -2357,3 +2366,15 @@ async function publish(btn, kit, canvas, redraw, current) {
   }
   setTimeout(() => { btn.textContent = label; btn.disabled = false; }, 4000);
 }
+
+// ---- For the reels (social-reels.js) ----------------------------------------
+// The page's live state (filled by initSocialKit) and the drawing helpers the
+// reels share with the cards, so a reel looks like the event's posts.
+export const socialContext = { kit: null, colors: null, style: null, posts: [] };
+
+export const reelTools = {
+  loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo,
+  proxied, logoTile, isLightImage, roleColor, personCta, mix, textOn, seeded, alpha,
+  fonts: () => ({ text: FONT, head: HEAD ?? FONT }),
+  siteArt: () => SITE_ART,
+};

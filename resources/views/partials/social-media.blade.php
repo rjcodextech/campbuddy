@@ -272,6 +272,45 @@
         @endif
     </section>
 
+    {{-- Reels (resources/js/social-reels.js): short videos made in this browser, from the posts above and the people cards. --}}
+    <section class="space-y-3" aria-labelledby="social-reels-title" data-social-reels>
+        <div>
+            <h2 id="social-reels-title" class="text-base font-semibold">Reels</h2>
+            <p class="text-sm text-muted">Story-size videos (1080 × 1920, MP4) with animation and music, in this event's colours, fonts and artwork: one per post above (with the words you set there), one for the organizers, volunteers, media partners and table leads, and one per five speakers. Every reel opens with the event and "CampBuddy × WPSimplified" and ends on the event's QR and WPSimplified's credit. Photos and artwork are always shown whole. Made in your browser: Chrome on a computer is fastest.</p>
+        </div>
+        <div class="grid gap-4 lg:grid-cols-[1fr_auto]">
+            <x-card title="Make a reel" description="Preview plays it here; Make video downloads the MP4. Make all gives one ZIP with every reel and its caption.">
+                <div class="mb-4 flex flex-wrap items-end gap-4">
+                    <label class="flex flex-col gap-1 text-sm">
+                        <span class="cb-label">Music</span>
+                        <select class="cb-input w-auto" data-reel-music>
+                            <option value="auto">CampBuddy's music (made for each reel, no copyright claims)</option>
+                            <option value="file">My own track</option>
+                            <option value="none">No music</option>
+                        </select>
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm hidden" data-reel-file-row>
+                        <span class="cb-label">Track (MP3, WAV, M4A)</span>
+                        <input type="file" accept="audio/*" class="text-sm" data-reel-file>
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm">
+                        <span class="cb-label">Music volume</span>
+                        <input type="range" min="0" max="100" value="85" data-reel-volume>
+                    </label>
+                </div>
+                <ul class="divide-y divide-line" data-reel-list></ul>
+                <x-slot:footer>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <x-button type="button" icon="download" data-reel-all>Make all (ZIP)</x-button>
+                        <x-button type="button" variant="secondary" size="sm" data-reel-stop>Stop preview</x-button>
+                        <p class="text-sm text-muted" data-reel-status aria-live="polite"></p>
+                    </div>
+                </x-slot:footer>
+            </x-card>
+            <canvas class="mx-auto block h-[480px] w-[270px] rounded-xl border border-line bg-paper-soft" width="1080" height="1920" data-reel-preview aria-label="Reel preview"></canvas>
+        </div>
+    </section>
+
     @if ($publishUrl !== null || $webhookUrl)
         @include('partials.social-publish', ['webhookUrl' => $webhookUrl, 'webhookSet' => $webhookSet])
     @endif

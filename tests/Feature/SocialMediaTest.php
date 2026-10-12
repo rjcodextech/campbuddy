@@ -165,6 +165,11 @@ class SocialMediaTest extends TestCase
             ->assertSee('Event posts')->assertSee('People cards')->assertSee('Brand colours')->assertSee('One-click Publish')
             ->assertSee('data-qr-kit', false)->assertDontSee('data-action="publish"', false);
 
+        // Reels: the section the browser fills in, and the logos the reels draw.
+        $this->get(route('admin.events.social', $this->event))->assertSee('data-social-reels', false)->assertSee('data-reel-list', false)->assertSee('Make all (ZIP)');
+        $this->assertFileExists(public_path('media/wpsimplified-logo.png'));
+        $this->assertFileExists(public_path('media/logo-wordmark.png'));
+
         $this->post(route('admin.events.social.colors', $this->event), ['primary' => 'red', 'secondary' => '#000000', 'ink' => '#000000', 'paper' => '#ffffff'])->assertSessionHasErrors('primary');
         $this->post(route('admin.events.social.colors', $this->event), ['primary' => '#C43E1E', 'secondary' => '#0c2343', 'ink' => '#231f20', 'paper' => '#fff8ee'])->assertRedirect();
         $this->assertSame('#c43e1e', SocialKit::colors($this->event->fresh())['primary']);

@@ -10,4 +10,10 @@ Alpine.start();
 if (document.querySelector('[data-qr-kit]')) import('./qr-kit').then((kit) => kit.initQrKit());
 
 // The Social media page's posts and people cards (drawn in the browser).
-if (document.getElementById('social-kit-data')) import('./social-kit').then((kit) => kit.initSocialKit());
+if (document.getElementById('social-kit-data')) {
+    import('./social-kit').then((kit) => {
+        kit.initSocialKit();
+        // Its reels (video) use the same live state, so they start after it.
+        if (document.querySelector('[data-social-reels]')) import('./social-reels').then((reels) => reels.initSocialReels());
+    });
+}
