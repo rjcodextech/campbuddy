@@ -219,6 +219,18 @@
                                 </x-slot:footer>
                             </x-attendee.event-card>
                             @if ($isCompleted)
+                                    {{-- Its photo album and talks on WordPress.tv, once the organizers add them (EventMemories). --}}
+                                    @php($memoryLinks = \App\Support\EventMemories::links($event))
+                                    @if ($memoryLinks !== [])
+                                        <div class="event-card__memories">
+                                            @isset($memoryLinks['photos'])
+                                                <a href="{{ $memoryLinks['photos'] }}" target="_blank" rel="noopener" data-track="memories_open" data-track-target="photos"><x-attendee.line-icon name="camera" /> Photos</a>
+                                            @endisset
+                                            @isset($memoryLinks['videos'])
+                                                <a href="{{ $memoryLinks['videos'] }}" target="_blank" rel="noopener" data-track="memories_open" data-track-target="videos"><x-attendee.line-icon name="play" /> Talks on WordPress.tv</a>
+                                            @endisset
+                                        </div>
+                                    @endif
                                     <button type="button" class="event-card__export" data-export-event="{{ $event->id }}">
                                         <x-attendee.line-icon name="download" /> Save your WordCamp Data
                                     </button>

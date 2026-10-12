@@ -20,7 +20,7 @@
         <div class="memories__list">
             @foreach ($memoryLinks as $kind => $url)
                 @php([$icon, $title, $desc] = $memoryCopy[$kind])
-                <a class="action-card action-card--wide memories__link" href="{{ $url }}" target="_blank" rel="noopener" id="memories-{{ $kind }}">
+                <a class="action-card action-card--wide memories__link" href="{{ $url }}" target="_blank" rel="noopener" id="memories-{{ $kind }}" data-track="memories_open" data-track-target="{{ $kind }}">
                     <span class="action-card__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
                     <span class="memories__text">
                         <span class="action-card__title">{{ $title }}</span>

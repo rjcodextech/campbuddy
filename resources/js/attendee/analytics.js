@@ -158,6 +158,7 @@ const EVENTS = {
   move_sheet_action: ['method'], // next_wordcamp | pdf
   bring_data_view: [], // "Bring it from your last WordCamp" shown on Home
   bring_data: ['result'], // done | dismissed
+  memories_open: ['target'], // photos | videos (picker card, thank-you card, Home, Memories page)
   data_clear: [],
 
   // Health

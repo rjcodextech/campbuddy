@@ -60,6 +60,20 @@
             <p class="thank-you__error" data-thank-you-error role="alert" hidden></p>
         </form>
 
+        @php($memoryLinks = \App\Support\EventMemories::links($event))
+        @if ($memoryLinks !== [])
+            {{-- Memories (EventMemories): the photo album and the talks, once the organizers add them. --}}
+            <div class="thank-you__memories">
+                <p class="thank-you__question">Relive it</p>
+                @isset($memoryLinks['photos'])
+                    <a href="{{ $memoryLinks['photos'] }}" target="_blank" rel="noopener" class="btn btn--outline btn--full" data-track="memories_open" data-track-target="photos"><x-attendee.line-icon name="camera" /> See the photos</a>
+                @endisset
+                @isset($memoryLinks['videos'])
+                    <a href="{{ $memoryLinks['videos'] }}" target="_blank" rel="noopener" class="btn btn--outline btn--full" data-track="memories_open" data-track-target="videos"><x-attendee.line-icon name="play" /> Watch the talks on WordPress.tv</a>
+                @endisset
+            </div>
+        @endif
+
         <div class="thank-you__actions">
             <button type="button" class="btn btn--outline btn--full" data-thank-you-pdf>
                 <x-attendee.line-icon name="download" /> Save my day as PDF

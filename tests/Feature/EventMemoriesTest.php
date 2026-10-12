@@ -209,4 +209,21 @@ class EventMemoriesTest extends TestCase
         $this->post(route('manager.events.memories.notify', [$other->id, 'photos']))->assertNotFound();
         $this->assertNull($other->fresh()->photo_album_url);
     }
+
+    public function test_a_finished_wordcamps_picker_card_and_thank_you_card_show_its_memories(): void
+    {
+        // 10 Oct: the event (7 Oct) is over and listed as Completed.
+        $this->event->forceFill(['photo_album_url' => self::ALBUM, 'wordpress_tv_url' => self::TV])->save();
+
+        $this->get('/')->assertOk()
+            ->assertSee('event-card__memories', false)
+            ->assertSee(self::ALBUM, false)->assertSee('Talks on WordPress.tv')
+            ->assertSee('Watch the talks on WordPress.tv');
+
+        $this->get('/event/wc-memories')->assertOk()->assertSee('See the photos');
+
+        // No links, no row.
+        $this->event->forceFill(['photo_album_url' => null, 'wordpress_tv_url' => null])->save();
+        $this->get('/')->assertOk()->assertDontSee('event-card__memories', false)->assertDontSee('Relive it');
+    }
 }

@@ -268,3 +268,30 @@
         @include m.focus-ring;
     }
 }
+
+// A finished WordCamp's photos and talks (EventMemories), between its card and its Save button.
+.event-card__memories {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));
+    border-top: 0;
+    background: color-mix(in srgb, var(--teal) 8%, #fff);
+
+    a {
+        display: flex;
+        flex: 1 1 50%;
+        align-items: center;
+        justify-content: center;
+        gap: v.$space-2;
+        min-height: 44px;
+        padding: v.$space-2 v.$space-3;
+        color: color-mix(in srgb, var(--teal) 70%, var(--ink));
+        font-size: v.$font-size-sm;
+        font-weight: v.$font-weight-bold;
+        text-decoration: none;
+
+        + a {
+            border-left: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));
+        }
+    }
+}

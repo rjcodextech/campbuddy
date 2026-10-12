@@ -357,3 +357,9 @@ a.move-data__option:hover,
     flex-wrap: wrap;
     gap: v.$space-2;
 }
+
+.thank-you__memories {
+    display: grid;
+    gap: v.$space-2;
+    margin-bottom: v.$space-4;
+}
