@@ -26,6 +26,8 @@ const H = 1920;
 const FPS = 30;
 const RATE = 48000;
 const SPEAKERS_PER_REEL = 5;
+// No reel is shorter than this; one with more to show runs longer.
+export const MIN_SECONDS = 30;
 // More people than this and a reel shows them six at a time instead of one by one.
 const ONE_BY_ONE = 6;
 const GRID = 6;
@@ -301,13 +303,15 @@ function partnersBadge(ctx, reel, y, p) {
 function cardScene(card, index, total, last) {
   return {
     beats: 8,
+    stretch: true,
     draw(ctx, t, dur, reel) {
       const s = 0.84;
       const w = W * s;
       const h = H * s;
       const enter = back(span(t, 0, 0.75));
       const out = last ? 0 : ease(span(t, dur - 0.4, 0.4));
-      const scale = 0.72 + (1 - 0.72) * enter;
+      // Held for a while: it drifts a touch closer over the hold (0.84 → 0.88 of the frame, never past it).
+      const scale = (0.72 + (1 - 0.72) * enter) * (1 + 0.05 * ease(span(t, 0.8, Math.max(1, dur - 1.2))));
       ctx.save();
       ctx.globalAlpha = clamp(span(t, 0, 0.25)) * (last ? 1 - span(t, dur - 0.3, 0.3) : 1);
       ctx.translate(W / 2 - out * 1300, H / 2 + 34 + (1 - enter) * 280 + Math.sin(t * 1.6) * 6);
@@ -367,6 +371,7 @@ function groupIntroScene(role, title, line, count) {
 function personScene(person, index, total, long, role) {
   return {
     beats: long ? 8 : 5,
+    stretch: true,
     draw(ctx, t, dur, reel) {
       const { pal, colors, kit } = reel;
       const { head, text } = T.fonts();
@@ -413,6 +418,7 @@ function personScene(person, index, total, long, role) {
 function gridScene(people, first, total, role) {
   return {
     beats: 7,
+    stretch: true,
     draw(ctx, t, dur, reel) {
       const { pal, colors } = reel;
       const { head } = T.fonts();
@@ -454,9 +460,222 @@ function gridScene(people, first, total, role) {
   };
 }
 
+/** What CampBuddy gives an attendee, one line after another (the same four lines as the "Get CampBuddy" post). */
+function featuresScene(features) {
+  return {
+    beats: 10,
+    stretch: true,
+    draw(ctx, t, dur, reel) {
+      const { pal, kit } = reel;
+      const { head, text } = T.fonts();
+      ctx.save();
+      header(ctx, reel, t, 'Free · no sign-up');
+      leaving(ctx, t, dur);
+      const title = fitAll(ctx, `Your ${kit.short ?? kit.event.name} companion`, W - 160, 104, 60, 3, 800, head);
+      const rowH = 214;
+      // The title and the four lines as one block, in the middle of the space between the header and the foot.
+      const block = title.lines.length * title.size * 1.12 + 80 + features.length * rowH;
+      let y = risingLines(ctx, title, Math.max(270, (H - 160 - block) / 2), pal.ink, t, 0.1, { family: head });
+      y += 80;
+      features.forEach((line, i) => {
+        const p = back(span(t, 0.5 + i * 0.28, 0.5));
+        const top = y + i * rowH;
+        ctx.save();
+        ctx.globalAlpha *= clamp(span(t, 0.5 + i * 0.28, 0.25));
+        ctx.translate((1 - p) * -120, 0);
+        // A card per line: a tick in the main colour, the words beside it.
+        ctx.shadowColor = 'rgba(0,0,0,0.08)';
+        ctx.shadowBlur = 24;
+        ctx.fillStyle = '#ffffff';
+        T.roundRect(ctx, 80, top, W - 160, rowH - 38, 34);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = pal.primary;
+        ctx.beginPath();
+        ctx.arc(162, top + (rowH - 38) / 2, 40, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = pal.onPrimary;
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        const tick = clamp(span(t, 0.75 + i * 0.28, 0.35));
+        ctx.beginPath();
+        const mid = top + (rowH - 38) / 2;
+        ctx.moveTo(144, mid);
+        ctx.lineTo(144 + 13 * Math.min(1, tick * 2), mid + 14 * Math.min(1, tick * 2));
+        if (tick > 0.5) ctx.lineTo(157 + 26 * (tick - 0.5) * 2, mid + 14 - 30 * (tick - 0.5) * 2);
+        ctx.stroke();
+        const fit = fitAll(ctx, line, W - 160 - 200, 52, 32, 2, 700, text);
+        ctx.fillStyle = pal.ink;
+        ctx.font = `700 ${fit.size}px ${text}`;
+        const lines = fit.lines.length * fit.size * 1.2;
+        fit.lines.forEach((l, k) => ctx.fillText(l, 232, top + (rowH - 38 - lines) / 2 + (k + 0.8) * fit.size * 1.2));
+        ctx.restore();
+      });
+      ctx.restore();
+    },
+  };
+}
+
+/** How to start, in three steps (the QR on the end card is step one). */
+function howScene() {
+  return {
+    beats: 9,
+    stretch: true,
+    draw(ctx, t, dur, reel) {
+      const { pal, kit } = reel;
+      const { head, text } = T.fonts();
+      ctx.save();
+      header(ctx, reel, t, '3 steps');
+      leaving(ctx, t, dur);
+      const title = fitAll(ctx, 'Ready in a minute', W - 160, 112, 60, 2, 800, head);
+      const stepH = 290;
+      const block = title.lines.length * title.size * 1.12 + 90 + 3 * stepH + 120;
+      let y = risingLines(ctx, title, Math.max(270, (H - 160 - block) / 2), pal.ink, t, 0.1, { family: head });
+      const steps = [
+        'Scan the QR, or open campbuddy.club',
+        `Pick ${kit.short ?? kit.event.name}`,
+        'Save your talks and find people who share your interests',
+      ];
+      y += 90;
+      steps.forEach((step, i) => {
+        const start = 0.45 + i * 0.35;
+        const p = back(span(t, start, 0.5));
+        const top = y + i * stepH;
+        ctx.save();
+        ctx.globalAlpha *= clamp(span(t, start, 0.2));
+        // The number in a circle that pops; a line joins it to the next one.
+        if (i < steps.length - 1) {
+          ctx.strokeStyle = T.mix(pal.primary, pal.paper, 0.6);
+          ctx.lineWidth = 6;
+          ctx.setLineDash([2, 16]);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(170, top + 160);
+          ctx.lineTo(170, top + 160 + (stepH - 180) * ease(span(t, start + 0.3, 0.4)));
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+        ctx.save();
+        ctx.translate(170, top + 80);
+        ctx.scale(0.5 + 0.5 * p, 0.5 + 0.5 * p);
+        ctx.fillStyle = i === 2 ? pal.secondary : pal.primary;
+        ctx.beginPath();
+        ctx.arc(0, 0, 76, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = i === 2 ? pal.onSecondary : pal.onPrimary;
+        ctx.font = `900 74px ${head}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(String(i + 1), 0, 26);
+        ctx.restore();
+        const fit = fitAll(ctx, step, W - 380, 58, 34, 3, 700, text);
+        ctx.fillStyle = pal.ink;
+        ctx.font = `700 ${fit.size}px ${text}`;
+        const lines = fit.lines.length * fit.size * 1.2;
+        fit.lines.forEach((l, k) => ctx.fillText(l, 290 + (1 - p) * 60, top + 80 - lines / 2 + (k + 0.8) * fit.size * 1.2));
+        ctx.restore();
+      });
+      // "Free · no sign-up · works offline", last.
+      pillAt(ctx, 'Free · no sign-up · works offline', W / 2, y + 3 * stepH + 20, pal.secondary, pal.onSecondary, 40, ease(span(t, 1.6, 0.4)));
+      ctx.restore();
+    },
+  };
+}
+
+// ---- Transitions between scenes ------------------------------------------------
+
+const TRANSITION = 0.36;
+const TRANSITIONS = ['wipe', 'iris', 'diagonal', 'shutter'];
+
+/**
+ * Over every cut: a panel in the event's colours covers the frame and opens
+ * on the next scene (the cut itself happens under it). The kind turns with
+ * each cut, starting from one picked by the event.
+ */
+function transition(ctx, reel, time) {
+  const cut = reel.scenes.find((s, i) => i > 0 && Math.abs(time - s.start) < TRANSITION);
+  if (!cut) return;
+  const index = reel.scenes.indexOf(cut);
+  const kind = TRANSITIONS[(index + reel.kit.event.seed) % TRANSITIONS.length];
+  const p = (time - (cut.start - TRANSITION)) / (2 * TRANSITION); // 0 → 1 across the cut
+  const cover = p < 0.5 ? ease(p * 2) : 1 - ease((p - 0.5) * 2); // in, then out
+  const { pal } = reel;
+  const colors = [pal.primary, pal.secondary, T.mix(pal.primary, pal.ink, 0.35)];
+  ctx.save();
+  if (kind === 'wipe') {
+    // Three bands, one after another, from the left in and out to the right.
+    colors.forEach((c, i) => {
+      const lag = i * 0.12;
+      const q = clamp((p - lag * 0.5) / (1 - lag));
+      const a = q < 0.5 ? ease(q * 2) : 1;
+      const b = q < 0.5 ? 0 : ease((q - 0.5) * 2);
+      ctx.fillStyle = c;
+      ctx.fillRect(W * b, 0, W * (a - b), H);
+    });
+  } else if (kind === 'iris') {
+    ctx.fillStyle = pal.primary;
+    ctx.beginPath();
+    ctx.arc(W / 2, H / 2, Math.hypot(W, H) * 0.55 * cover, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = pal.secondary;
+    ctx.lineWidth = 26;
+    ctx.stroke();
+  } else if (kind === 'diagonal') {
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(-0.35);
+    const w = (Math.hypot(W, H) + 200) * cover;
+    ctx.fillStyle = pal.secondary;
+    ctx.fillRect(-w / 2 - 40, -H, w + 80, H * 2);
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(-w / 2, -H, w, H * 2);
+  } else {
+    // Shutters: horizontal slats closing and opening.
+    const slats = 8;
+    const h = H / slats;
+    ctx.fillStyle = pal.primary;
+    for (let i = 0; i < slats; i++) {
+      const q = clamp(cover * 1.25 - (i % 2) * 0.15);
+      ctx.fillRect(0, i * h + (h * (1 - q)) / 2, W, h * q);
+    }
+  }
+  // The event's logo rides the middle of the panel.
+  if (reel.logo && cover > 0.6) {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = clamp((cover - 0.6) / 0.4);
+    const size = 220;
+    ctx.fillStyle = '#ffffff';
+    T.roundRect(ctx, (W - size) / 2, (H - size) / 2, size, size, 36);
+    ctx.fill();
+    T.drawContain(ctx, reel.logo, (W - size) / 2 + 22, (H - size) / 2 + 22, size - 44, size - 44);
+  }
+  ctx.restore();
+}
+
+/** Small shapes in the event's colours, drifting up across every frame (behind the words). */
+function particles(ctx, reel, time) {
+  ctx.save();
+  reel.sparks.forEach((s) => {
+    const y = ((s.y - time * s.v * 60) % (H + 120) + H + 120) % (H + 120) - 60;
+    const x = s.x + Math.sin(time * s.s + s.p) * 30;
+    ctx.globalAlpha = s.a;
+    ctx.fillStyle = s.c;
+    ctx.strokeStyle = s.c;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    if (s.ring) {
+      ctx.arc(x, y, s.r, 0, Math.PI * 2);
+      ctx.stroke();
+    } else {
+      ctx.arc(x, y, s.r * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  ctx.restore();
+}
+
 function endScene(content) {
   return {
-    beats: 8,
+    beats: 10,
     draw(ctx, t, dur, reel) {
       const { pal, kit } = reel;
       const { head, text } = T.fonts();
@@ -489,14 +708,23 @@ function endScene(content) {
 
       // The QR pops in, whole, on its light tile.
       const q = back(span(t, 0.6, 0.6));
-      const qs = 440;
+      const qs = 480;
+      // A ring breathes around the QR, so the eye goes to it.
+      const ring = (Math.sin(t * 4) + 1) / 2;
+      ctx.save();
+      ctx.globalAlpha *= clamp(span(t, 1.0, 0.3)) * (0.25 + 0.35 * ring);
+      ctx.strokeStyle = pal.secondary;
+      ctx.lineWidth = 10;
+      T.roundRect(ctx, (W - qs) / 2 - 24 - ring * 10, y + 60 - 24 - ring * 10, qs + 48 + ring * 20, qs + 48 + ring * 20, 48);
+      ctx.stroke();
+      ctx.restore();
       ctx.save();
       ctx.globalAlpha *= clamp(span(t, 0.6, 0.2));
       ctx.translate(W / 2, y + 60 + qs / 2);
       ctx.scale(0.5 + 0.5 * q, 0.5 + 0.5 * q);
       T.drawQr(ctx, qrLink(kit.event.qr, `reel-${content}`), -qs / 2, -qs / 2, qs, pal.ink, pal.paper);
       ctx.restore();
-      y += 60 + qs + 30;
+      y += 60 + qs + 70;
       ctx.save();
       ctx.globalAlpha *= ease(span(t, 0.9, 0.4));
       ctx.fillStyle = on;
@@ -624,6 +852,8 @@ async function prepare(item, kit, colors, style) {
     reel.art.skyline = info.mono || info.opaque ? T.recolour(skyline, pal.primary) : skyline;
   }
   const rnd = T.seeded(kit.event.seed);
+  const tones = [pal.primary, pal.secondary, ...(pal.extras ?? [])];
+  reel.sparks = Array.from({ length: 18 }, (_, i) => ({ x: rnd() * W, y: rnd() * H, r: 10 + rnd() * 26, a: 0.1 + rnd() * 0.12, c: tones[i % tones.length], s: 0.4 + rnd(), p: rnd() * 6, v: 0.3 + rnd() * 0.8, ring: i % 3 === 0 }));
   for (let i = 0; i < 14; i++) {
     reel.dots.push({ x: rnd() * W, y: rnd() * H, r: 20 + rnd() * 90, a: 0.05 + rnd() * 0.06, c: [pal.primary, pal.secondary, ...(pal.extras ?? [])][i % 3], s: 0.3 + rnd() * 0.6, p: rnd() * 6, v: 0.3 + rnd() });
   }
@@ -651,11 +881,18 @@ async function prepare(item, kit, colors, style) {
       chunk(spec.people, GRID).forEach((group, i) => reel.scenes.push(gridScene(group, i * GRID, spec.people.length, spec.role)));
     }
   }
+  // What CampBuddy gives them and how to start, before the QR: posts get both, people reels the steps.
+  if (spec.kind === 'post') reel.scenes.push(featuresScene(T.features));
+  reel.scenes.push(howScene());
   reel.scenes.push(endScene(spec.utm));
 
   // Every scene lasts whole beats, so the cuts fall on the music.
   const mood = MOODS[item.mood] ?? MOODS.bright;
   const beat = 60 / mood.bpm;
+  // At least MIN_SECONDS: a short reel holds its cards and people a little longer, a beat at a time, in turn.
+  const stretchable = reel.scenes.filter((s) => s.stretch);
+  let beats = reel.scenes.reduce((n, s) => n + s.beats, 0);
+  for (let i = 0; beats * beat < MIN_SECONDS && stretchable.length; i++, beats++) stretchable[i % stretchable.length].beats++;
   let at = 0;
   reel.scenes.forEach((s) => {
     s.start = at;
@@ -672,10 +909,12 @@ function drawFrame(ctx, reel, time) {
   ctx.globalAlpha = 1;
   ctx.textBaseline = 'alphabetic';
   backdrop(ctx, time, reel);
+  particles(ctx, reel, time);
   const scene = reel.scenes.findLast((s) => s.start <= time) ?? reel.scenes[0];
   ctx.save();
   scene.draw(ctx, time - scene.start, scene.dur, reel);
   ctx.restore();
+  transition(ctx, reel, time);
 }
 
 // ---- Music -------------------------------------------------------------------
@@ -1129,4 +1368,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, context: C, tools: T, postContent };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, MIN_SECONDS, context: C, tools: T, postContent };

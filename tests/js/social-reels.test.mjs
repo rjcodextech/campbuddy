@@ -59,3 +59,8 @@ test('every mood keeps a steady beat the scenes can be cut to', () => {
     assert.equal(mood.chords.length, 4, name);
   }
 });
+
+test('no reel is shorter than 30 seconds', () => {
+  assert.equal(_internals.MIN_SECONDS, 30);
+});
+

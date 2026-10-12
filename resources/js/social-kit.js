@@ -2377,4 +2377,5 @@ export const reelTools = {
   proxied, logoTile, isLightImage, roleColor, personCta, mix, textOn, seeded, alpha,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT }),
   siteArt: () => SITE_ART,
+  features: FEATURES,
 };
