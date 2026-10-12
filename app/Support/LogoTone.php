@@ -43,7 +43,9 @@ class LogoTone
     /** Light = mostly see-through, and what is drawn is near white. Pure, for tests. */
     public static function measure(string $bytes): bool
     {
-        $src = @imagecreatefromstring($bytes);
+        // Only what GD reads (PNG, WebP, GIF, JPEG): an SVG or anything else counts as not light.
+        $info = @getimagesizefromstring($bytes);
+        $src = $info && in_array($info[2], [IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF, IMAGETYPE_JPEG], true) ? @imagecreatefromstring($bytes) : false;
         if (! $src) {
             return false;
         }
