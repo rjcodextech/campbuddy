@@ -10,7 +10,8 @@
         @php($heroArt = \App\Support\SiteTheme::hero($event))
         <section @class(['home-hero', 'home-hero--art' => $heroArt, 'home-hero--'.($heroArt['kind'] ?? '') => $heroArt, 'home-hero--mask' => ! empty($heroArt['alpha'])])
                  @if ($heroArt) style="--hero-art: url('{{ $heroArt['url'] }}')" @endif aria-label="Event">
-            <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104" data-fallback="/media/icons/icon-192.png">
+            {{-- A white logo gets a dark box (LogoTone): on the cream one it would all but vanish. --}}
+            <img @class(['home-hero__logo', 'home-hero__logo--on-dark' => \App\Support\LogoTone::heroIsLight($event)]) src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104" data-fallback="/media/icons/icon-192.png">
             <div class="home-hero__body">
                 <p class="home-hero__eyebrow">{{ $event->short_name ?? 'WordCamp' }}</p>
                 <h1 class="home-hero__title">{{ $event->display_name }}</h1>

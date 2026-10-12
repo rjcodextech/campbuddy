@@ -209,3 +209,9 @@
     -webkit-mask-position: right top;
     mask-position: right top;
 }
+
+// A light logo on see-through (a white wordmark): a dark box, so it shows (LogoTone).
+.home-hero__logo--on-dark {
+    background: var(--ink);
+    border-color: var(--ink);
+}

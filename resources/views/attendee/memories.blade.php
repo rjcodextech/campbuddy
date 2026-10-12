@@ -38,7 +38,7 @@
             @php($heroArt = \App\Support\SiteTheme::hero($event))
             <section @class(['home-hero', 'home-hero--art' => $heroArt, 'home-hero--'.($heroArt['kind'] ?? '') => $heroArt, 'home-hero--mask' => ! empty($heroArt['alpha'])])
                      @if ($heroArt) style="--hero-art: url('{{ $heroArt['url'] }}')" @endif aria-label="Event">
-                <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104">
+                <img @class(['home-hero__logo', 'home-hero__logo--on-dark' => \App\Support\LogoTone::heroIsLight($event)]) src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" width="104" height="104">
                 <div class="home-hero__body">
                     <p class="home-hero__eyebrow">Memories</p>
                     <h1 class="home-hero__title">{{ $event->display_name }}</h1>
