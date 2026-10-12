@@ -32,9 +32,9 @@ class SendExportPushCommand extends Command
         {--dry-run : List what would be sent, send nothing}
         {--yes : Send without asking}';
 
-    protected $description = 'Push every phone to save its data from the last WordCamp it was at (past 7 days)';
+    protected $description = 'Push every phone to save its data from the last WordCamp it was at (past 30 days)';
 
-    /** Data goes at the end of the week, so the push need not wait longer than a day. */
+    /** Sent by hand when it matters now, so the push need not wait longer than a day. */
     public const TTL_SECONDS = 86400;
 
     public function handle(): int

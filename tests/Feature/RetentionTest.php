@@ -110,12 +110,12 @@ class RetentionTest extends TestCase
     {
         $event = $this->event(['starts_on' => '2026-10-10', 'ends_on' => '2026-10-10', 'timezone' => null]);
 
-        // The latest zone on Earth (UTC−12): end of the 10th + 7 days = 11:59:59 UTC on the 18th.
-        $this->assertSame('2026-10-18T11:59:59+00:00', EventTime::retentionEnd($event)->toIso8601String());
+        // The latest zone on Earth (UTC−12): end of the 10th + 30 days = 11:59:59 UTC on 10 Nov.
+        $this->assertSame('2026-11-10T11:59:59+00:00', EventTime::retentionEnd($event)->toIso8601String());
 
-        // Still retained at 11:00 UTC on the 18th — it is only 04:00 on the 18th in Los Angeles, and 23:00 on the 17th in Baker Island.
-        $this->assertTrue(EventTime::retained($event, CarbonImmutable::parse('2026-10-18T11:00:00Z')));
-        $this->assertFalse(EventTime::retained($event, CarbonImmutable::parse('2026-10-18T12:30:00Z')));
+        // Still retained at 11:00 UTC on 10 Nov — it is only 23:00 on the 9th in Baker Island.
+        $this->assertTrue(EventTime::retained($event, CarbonImmutable::parse('2026-11-10T11:00:00Z')));
+        $this->assertFalse(EventTime::retained($event, CarbonImmutable::parse('2026-11-10T12:30:00Z')));
     }
 
     public function test_an_event_with_no_dates_is_always_retained(): void
@@ -221,7 +221,7 @@ class RetentionTest extends TestCase
         $this->assertContains($card['discovery_id'], $listed(), 'inside the retention days');
 
         // Retention over: the stored stamp (long past) decides.
-        $this->travelTo(CarbonImmutable::parse('2026-10-12T00:30:00Z'));
+        $this->travelTo(CarbonImmutable::parse('2026-11-03T00:30:00Z'));
         $this->assertNotContains($card['discovery_id'], $listed());
     }
 
@@ -232,7 +232,7 @@ class RetentionTest extends TestCase
         $this->travelTo(CarbonImmutable::parse('2026-10-01T10:00:00Z'));
         $this->postJson(route('api.discovery.store', $event), ['tags' => ['developer']])->assertCreated();
 
-        $this->assertSame('2026-10-10T23:59:59+00:00', CarbonImmutable::parse(DiscoveryProfile::first()->expires_at)->utc()->toIso8601String());
+        $this->assertSame('2026-11-02T23:59:59+00:00', CarbonImmutable::parse(DiscoveryProfile::first()->expires_at)->utc()->toIso8601String());
     }
 
     public function test_open_to_meet_on_the_attendee_list_lasts_as_long_as_the_profile(): void

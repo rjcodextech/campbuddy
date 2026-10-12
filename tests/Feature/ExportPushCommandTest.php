@@ -70,11 +70,11 @@ class ExportPushCommandTest extends TestCase
         return collect($this->history)->map(fn ($h) => (string) $h['request']->getUri())->sort()->values()->all();
     }
 
-    public function test_each_phone_gets_one_push_about_its_latest_wordcamp_in_the_past_week(): void
+    public function test_each_phone_gets_one_push_about_its_latest_wordcamp_in_the_past_month(): void
     {
         $older = $this->event('wordcamp-older', '2026-10-04');
         $newer = $this->event('wordcamp-newer', '2026-10-08');
-        $old = $this->event('wordcamp-too-old', '2026-10-01');
+        $old = $this->event('wordcamp-too-old', '2026-09-01');
         $live = $this->event('wordcamp-today', '2026-10-10');
 
         $this->subscribe($older, 'a', 'a-older');

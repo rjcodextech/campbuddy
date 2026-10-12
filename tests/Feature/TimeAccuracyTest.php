@@ -383,10 +383,10 @@ class TimeAccuracyTest extends TestCase
         $this->assertSame('active', $nz->fresh()->status);
         $this->assertTrue(EventTime::isOver($nz));
 
-        // Retention runs to the end of the 17th in Auckland (UTC+13) = 10:59:59 UTC that day.
-        $this->travelTo(CarbonImmutable::parse('2026-10-17T10:00:00Z'));
+        // Retention runs to the end of 9 Nov in Auckland (UTC+13) = 10:59:59 UTC that day.
+        $this->travelTo(CarbonImmutable::parse('2026-11-09T10:00:00Z'));
         $this->assertTrue(EventTime::retained($nz->fresh()));
-        $this->travelTo(CarbonImmutable::parse('2026-10-17T12:00:00Z'));
+        $this->travelTo(CarbonImmutable::parse('2026-11-09T12:00:00Z'));
         $this->assertFalse(EventTime::retained($nz->fresh()));
 
         // Listed to the end of 8 Jan in Auckland (UTC+13) = 10:59:59 UTC that day.
@@ -406,7 +406,7 @@ class TimeAccuracyTest extends TestCase
         $this->postJson(route('api.discovery.store', $event), ['tags' => ['developer']])->assertCreated();
 
         $this->assertSame(
-            '2026-10-18T18:29:59+00:00', // 23:59:59 IST on the 18th: the 11th plus seven days
+            '2026-11-10T18:29:59+00:00', // 23:59:59 IST on 10 Nov: the 11th plus thirty days
             CarbonImmutable::parse(\App\Models\DiscoveryProfile::first()->expires_at)->utc()->toIso8601String()
         );
     }

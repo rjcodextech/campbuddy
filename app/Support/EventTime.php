@@ -34,18 +34,28 @@ class EventTime
      * a day off, and an attendee's own plans and connections must never vanish
      * while the event might still be on — or the morning after.
      *
-     * 7 (was 3 until 6 Oct 2026): a finished WordCamp stays on the picker as
-     * "Completed" for a week, so people can still open it, export their day
-     * as a PDF and answer the thank-you card (day 3 onward).
+     * 30 (owner, 12 Oct 2026; 7 from 6 Oct, 3 before): for a month after a
+     * WordCamp people can still be found by the people they met (discovery
+     * profiles, shared Camp Cards), move their CampBuddy to a new phone,
+     * bring it to their next WordCamp and save their day as a PDF. The
+     * after-event pushes (day 3, 7, 15) all fall inside it.
      */
-    public const RETENTION_DAYS = 7;
+    public const RETENTION_DAYS = 30;
+
+    /**
+     * How long after its last day an event's data is still fetched from its
+     * site on a schedule (EventTime::refreshing): a week, as before retention
+     * became a month — a finished event's schedule and sponsors don't change,
+     * and fetching them every 15 minutes for a month would only load the host.
+     */
+    public const FETCH_DAYS = 7;
 
     /**
      * How long a finished event stays on the picker as "Completed" with its
      * pages open (schedule, PDF export, memories): 90 days, then it is
      * archived (owner, 11 Oct 2026). Attendee-entered data still expires after
      * RETENTION_DAYS, and the event's data stops being refreshed from its site
-     * then too (EventTime::refreshing): after that it is a finished record.
+     * after FETCH_DAYS (EventTime::refreshing): after that it is a finished record.
      */
     public const LISTED_DAYS = 90;
 
@@ -145,13 +155,15 @@ class EventTime
 
     /**
      * Whether the event's data is still fetched from its site on a schedule:
-     * until RETENTION_DAYS after its last day. A finished event listed for
-     * three months must not keep its site (and this host) busy every 15
-     * minutes; nothing changes there any more.
+     * until FETCH_DAYS after its last day. A finished event listed for three
+     * months must not keep its site (and this host) busy every 15 minutes;
+     * nothing changes there any more.
      */
     public static function refreshing(Event $event, ?\DateTimeInterface $now = null): bool
     {
-        return self::retained($event, $now);
+        $end = self::endPlus($event, self::FETCH_DAYS);
+
+        return $end === null || CarbonImmutable::instance($now ?? now())->lte($end);
     }
 
     /** The end of the event's last day at the venue plus `$days` (in UTC−12 while the zone is unknown). */

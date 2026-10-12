@@ -64,7 +64,9 @@
             <button type="button" class="btn btn--outline btn--full" data-thank-you-pdf>
                 <x-attendee.line-icon name="download" /> Save my day as PDF
             </button>
-            <p class="thank-you__hint">Your sessions, people and quests live only on this phone, and this WordCamp closes in CampBuddy {{ $daysSince !== null ? 'in '.max(1, \App\Support\EventTime::RETENTION_DAYS - $daysSince + 1).' '.\Illuminate\Support\Str::plural('day', max(1, \App\Support\EventTime::RETENTION_DAYS - $daysSince + 1)) : 'soon' }}.</p>
+            {{-- Days left of the retention window: the people met can still find this person (discovery, shared Camp Card) and the data can move to a new phone. --}}
+            @php($daysLeft = $daysSince !== null ? \App\Support\EventTime::RETENTION_DAYS - $daysSince + 1 : null)
+            <p class="thank-you__hint">Your sessions, people and quests live only on this phone: save them as a PDF to keep them.@if ($daysLeft !== null && $daysLeft > 0) The people you met can still find you here for {{ $daysLeft }} more {{ \Illuminate\Support\Str::plural('day', $daysLeft) }}.@endif</p>
         </div>
 
         <a href="{{ route('home') }}#find-your-camp" class="thank-you__next" data-thank-you-next>

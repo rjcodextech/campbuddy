@@ -62,7 +62,8 @@ class AfterEventTest extends TestCase
 
     public function test_the_retention_week_is_seven_days_and_the_card_comes_on_day_three(): void
     {
-        $this->assertSame(7, EventTime::RETENTION_DAYS);
+        $this->assertSame(30, EventTime::RETENTION_DAYS);
+        $this->assertSame(7, EventTime::FETCH_DAYS);
         $this->assertSame(3, EventTime::THANK_YOU_AFTER_DAYS);
 
         $event = $this->event('wordcamp-done', '2026-10-07');
@@ -196,12 +197,12 @@ class AfterEventTest extends TestCase
         $this->assertSame(['https://push.example.test/send/a', 'https://push.example.test/send/b'], collect($history)->map(fn ($h) => (string) $h['request']->getUri())->sort()->values()->all());
     }
 
-    public function test_a_wordcamp_past_its_week_gets_no_push(): void
+    public function test_a_wordcamp_past_its_month_gets_no_push(): void
     {
         $history = [];
         $this->pushService($history);
 
-        $old = $this->event('wordcamp-old', '2026-10-01');
+        $old = $this->event('wordcamp-old', '2026-09-05');
         $this->subscribe($old, 'a');
 
         (new SendThankYouPushJob)->handle();
