@@ -125,6 +125,15 @@ class UsagePostTest extends TestCase
         $this->assertStringNotContainsString('PDF', $d['caption'], 'two PDFs is too few to say');
         $this->assertStringContainsString('They rated it 4.6 out of 5 (5 ratings).', $d['caption']);
         $this->assertStringContainsString('#CampBuddy #WPSimplified', $d['caption']);
+        $this->assertSame($d['caption'], $d['captions']['linkedin']);
+        $this->assertStringContainsString('https://campbuddy.club', $d['captions']['linkedin']);
+        $this->assertStringStartsWith('CampBuddy at ', $d['captions']['instagram']);
+        $this->assertStringContainsString('#WordPressCommunity', $d['captions']['instagram']);
+        $this->assertStringNotContainsString('https://', $d['captions']['instagram'], 'links do not work in an Instagram caption');
+        $this->assertStringStartsWith('240 people used CampBuddy at ', $d['captions']['x']);
+        $this->assertStringContainsString('850 talks saved', $d['captions']['x']);
+        $this->assertLessThanOrEqual(UsagePost::X_LIMIT, $d['x_length']);
+        $this->assertSame(UsagePost::xLength($d['captions']['x']), $d['x_length']);
 
         // Every GA question is about this event's slug, in the chosen stream, bots left out, in the range.
         $requests = collect($this->asked)->flatMap(fn ($b) => $b['requests'] ?? [])->all();
@@ -157,5 +166,13 @@ class UsagePostTest extends TestCase
             ->assertSee('Usage post')->assertSee('data-usage-post', false)
             ->assertSee('<option value="wordcamp-jaipur-2026">', false)
             ->assertDontSee('<option value="wc-later">', false);
+    }
+
+    public function test_x_counts_a_link_as_23_and_wide_characters_as_two(): void
+    {
+        $this->assertSame(23, UsagePost::xLength('campbuddy.club'));
+        $this->assertSame(23, UsagePost::xLength('https://campbuddy.club/?utm_source=x'));
+        $this->assertSame(5, UsagePost::xLength('3–4 O'), 'an en dash is one');
+        $this->assertSame(2, UsagePost::xLength('•'));
     }
 }

@@ -1,5 +1,7 @@
 // Admin → Analytics → Usage post: "CampBuddy at {WordCamp}", up to five
-// 1080 × 1350 images and a caption, from the WordCamp's real numbers
+// 4:5 images at 600 DPI (laid out on 1080 × 1350, drawn 3× = 3240 × 4050,
+// 5.4 × 6.75 in) and a caption each for LinkedIn, Instagram and X, from the
+// WordCamp's real numbers
 // (App\Support\UsagePost, 3 days before it to 3 days after it):
 //   1. the cover — how many people used CampBuddy there;
 //   2. in numbers — the biggest of the rest, as tiles;
@@ -11,9 +13,14 @@
 
 import { mix, reelTools, textOn } from './social-kit.js';
 import { zipStore } from './zip-store.js';
+import { withPngDpi } from './attendee/png-dpi.js';
 
 const W = 1080;
 const H = 1350;
+// Laid out at 200 DPI (1080 px = 5.4 in), drawn 3×: 3240 × 4050 at 600 DPI.
+const SCALE = 3;
+export const DPI = 200 * SCALE;
+export const SIZE = { width: W * SCALE, height: H * SCALE };
 const FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
 
 function load(url) {
@@ -97,7 +104,7 @@ function frame(ctx, d, assets, page, total, title) {
   // Header: the event's logo on its tile, the title, the page.
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.12)';
-  ctx.shadowBlur = 24;
+  ctx.shadowBlur = 24 * SCALE; // shadows don't follow the canvas scale
   ctx.fillStyle = '#ffffff';
   roundRect(ctx, 72, 72, 150, 150, 28);
   ctx.fill();
@@ -183,7 +190,7 @@ function tiles(ctx, d) {
     const fg = bg === '#ffffff' ? pal.ink : textOn(bg, pal.ink, pal.paper);
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.10)';
-    ctx.shadowBlur = 24;
+    ctx.shadowBlur = 24 * SCALE;
     ctx.fillStyle = bg;
     roundRect(ctx, x, y, tw, th, 32);
     ctx.fill();
@@ -355,7 +362,7 @@ export function initUsagePost() {
   const status = root.querySelector('[data-usage-status]');
   const result = root.querySelector('[data-usage-result]');
   const previews = root.querySelector('[data-usage-previews]');
-  const caption = root.querySelector('[data-usage-caption]');
+  const captions = [...root.querySelectorAll('[data-usage-caption]')];
   let made = [];
   let slug = '';
 
@@ -385,16 +392,22 @@ export function initUsagePost() {
 
       made = cards.map(([kind, title], i) => {
         const canvas = document.createElement('canvas');
-        canvas.width = W;
-        canvas.height = H;
-        canvas.className = 'h-80 w-auto shrink-0 rounded-lg border border-line';
+        canvas.width = SIZE.width;
+        canvas.height = SIZE.height;
+        canvas.className = 'shrink-0 rounded-lg border border-line';
+        // The preview: 320 px tall, whatever the canvas size (inline: not left to a class the CSS build may drop).
+        canvas.style.height = '20rem';
+        canvas.style.width = 'auto';
         const ctx = canvas.getContext('2d');
+        ctx.scale(SCALE, SCALE);
         frame(ctx, d, assets, i + 1, cards.length, title);
         DRAW[kind](ctx, d);
         return { canvas, name: `${slug}-campbuddy-usage-${i + 1}-${kind}.png` };
       });
       previews.replaceChildren(...made.map((m) => m.canvas));
-      caption.value = d.caption;
+      captions.forEach((box) => { box.value = d.captions?.[box.dataset.usageCaption] ?? d.caption; });
+      const count = root.querySelector('[data-usage-x-count]');
+      if (count) count.textContent = `${d.x_length ?? ''} / 280`;
       result.classList.remove('hidden');
       status.textContent = `${made.length} ${made.length === 1 ? 'image' : 'images'} for ${d.event.name}, from ${d.range.from} to ${d.range.to}.`;
     } catch {
@@ -406,8 +419,16 @@ export function initUsagePost() {
 
   root.querySelector('[data-usage-download]')?.addEventListener('click', async () => {
     if (!made.length) return;
-    const files = await Promise.all(made.map(async (m) => ({ name: m.name, data: new Uint8Array(await (await new Promise((r) => m.canvas.toBlob(r, 'image/png'))).arrayBuffer()) })));
-    files.push({ name: 'caption.txt', data: new TextEncoder().encode(caption.value) });
+    const btn = root.querySelector('[data-usage-download]');
+    btn.disabled = true;
+    status.textContent = 'Making the 600 DPI images…';
+    const files = await Promise.all(made.map(async (m) => {
+      const png = await withPngDpi(await new Promise((r) => m.canvas.toBlob(r, 'image/png')), DPI);
+      return { name: m.name, data: new Uint8Array(await png.arrayBuffer()) };
+    }));
+    captions.forEach((box) => files.push({ name: `caption-${box.dataset.usageCaption}.txt`, data: new TextEncoder().encode(box.value) }));
+    btn.disabled = false;
+    status.textContent = `${made.length} ${made.length === 1 ? 'image' : 'images'} (3240 × 4050, 600 DPI) and 3 captions in the ZIP.`;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([zipStore(files)], { type: 'application/zip' }));
     a.download = `${slug}-campbuddy-usage.zip`;
@@ -416,12 +437,14 @@ export function initUsagePost() {
     a.remove();
   });
 
-  root.querySelector('[data-usage-copy]')?.addEventListener('click', async (e) => {
+  root.querySelectorAll('[data-usage-copy]').forEach((btn) => btn.addEventListener('click', async () => {
+    const box = root.querySelector(`[data-usage-caption="${btn.dataset.usageCopy}"]`);
     try {
-      await navigator.clipboard.writeText(caption.value);
-      e.currentTarget.textContent = 'Copied';
+      await navigator.clipboard.writeText(box.value);
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
     } catch {
-      caption.select();
+      box.select();
     }
-  });
+  }));
 }

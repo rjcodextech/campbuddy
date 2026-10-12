@@ -121,7 +121,10 @@ class UsagePost
             'talks' => array_values(array_filter($ga['talks'] ?? [], fn ($t) => $t['saves'] >= self::MIN_SHOWN)),
             'firstDay' => EventTime::firstDay($event),
             'lastDay' => EventTime::lastDay($event),
-            'caption' => self::caption($event, $tiles, $shown, $rating, $count),
+            // One caption per network: LinkedIn (the full story), Instagram (short lines, more tags), X (280 or less).
+            'captions' => $captions = self::captions($event, $shown, $rating, $count),
+            'caption' => $captions['linkedin'],
+            'x_length' => self::xLength($captions['x']),
             'fetched_at' => now()->toIso8601String(),
         ];
     }
@@ -177,27 +180,102 @@ class UsagePost
         return $out;
     }
 
-    /** The caption: what happened, in numbers, thanks, and the event's tags. */
-    private static function caption(Event $event, array $tiles, array $shown, ?float $rating, int $count): string
+    /** X counts every link as 23 characters, whatever its length. */
+    public const X_LIMIT = 280;
+
+    private const X_LINK = 23;
+
+    private const SITE = 'campbuddy.club';
+
+    /**
+     * The captions: what happened, in numbers, thanks, and the event's tags,
+     * written for each network.
+     *
+     * @return array{linkedin: string, instagram: string, x: string}
+     */
+    private static function captions(Event $event, array $shown, ?float $rating, int $count): array
     {
         $users = collect($shown)->firstWhere('key', 'users');
         $others = array_values(array_filter($shown, fn ($s) => $s['key'] !== 'users'));
         usort($others, fn ($a, $b) => $b['value'] <=> $a['value']);
-        $lines = array_map(fn ($s) => '• '.number_format($s['value']).' '.$s['label'], $others);
+        $said = fn ($s) => number_format($s['value']).' '.$s['label'];
+        $people = $users ? number_format($users['value']).' '.($users['value'] === 1 ? 'person' : 'people') : null;
+        $name = $event->display_name;
+        $short = SocialKit::shortName($event);
+        $dates = SocialKit::dates($event);
+        $tags = SocialKit::hashtags($event);
 
-        $open = $users
-            ? number_format($users['value'])." people used CampBuddy at {$event->display_name}"
-            : "CampBuddy at {$event->display_name}";
-        $text = $open.' ('.SocialKit::dates($event).').';
-        if ($lines) {
-            $text .= "\n\n".implode("\n", $lines);
+        // LinkedIn: the whole story, every number, a clickable link.
+        $in = ($people ? "{$people} used CampBuddy at {$name}" : "CampBuddy at {$name}").' ('.$dates.').';
+        if ($others) {
+            $in .= "\n\nWhat they did with it, from 3 days before the WordCamp to 3 days after:\n".implode("\n", array_map(fn ($s) => '• '.$said($s), $others));
         }
         if ($rating !== null) {
-            $text .= "\n\nThey rated it {$rating} out of 5 ({$count} ratings).";
+            $in .= "\n\nThey rated it {$rating} out of 5 ({$count} ratings).";
         }
-        $text .= "\n\nThank you, ".SocialKit::shortName($event).'! CampBuddy is free for every WordCamp: the schedule, people to meet and reminders, no sign-up. campbuddy.club';
-        $text .= "\n\n".SocialKit::hashtags($event).' #CampBuddy #WPSimplified';
+        $in .= "\n\nThank you, {$short}: organisers, speakers, volunteers, sponsors and everyone who came."
+            ."\n\nCampBuddy is free for every WordCamp: the schedule with reminders, people to meet and your Camp Card. No sign-up."
+            ."\nTry it at your next WordCamp: https://".self::SITE
+            ."\n\n{$tags} #CampBuddy #WPSimplified";
 
-        return $text;
+        // Instagram: short lines, the top numbers, the address written out (links don't work there), more tags.
+        $ig = "CampBuddy at {$short} ({$dates})";
+        if ($people) {
+            $ig .= "\n\n{$people} used it.";
+        }
+        if ($others) {
+            $ig .= "\n".implode("\n", array_map(fn ($s) => '• '.$said($s), array_slice($others, 0, 4)));
+        }
+        if ($rating !== null) {
+            $ig .= "\n\nRated {$rating}/5 by {$count} attendees.";
+        }
+        $ig .= "\n\nThank you, {$short}! See you at the next WordCamp."
+            ."\nFree for every WordCamp, no sign-up: ".self::SITE
+            ."\n\n{$tags} #WordPressCommunity #OpenSource #CampBuddy #WPSimplified";
+
+        // X: 280 or less, counted the way X counts; numbers and tags only while they fit.
+        $head = ($people ? "{$people} used CampBuddy at {$short}" : "CampBuddy at {$short}")." ({$dates}).";
+        $end = "Thank you, {$short}! Free for every WordCamp: ".self::SITE;
+        $fits = fn (string $t) => self::xLength($t) <= self::X_LIMIT;
+        $body = [];
+        foreach (array_slice($others, 0, 3) as $s) {
+            $try = [...$body, $said($s)];
+            if ($fits($head."\n\n".implode("\n", $try)."\n\n".$end)) {
+                $body = $try;
+            }
+        }
+        if ($rating !== null && $fits($head."\n\n".implode("\n", [...$body, "Rated {$rating}/5"])."\n\n".$end)) {
+            $body[] = "Rated {$rating}/5";
+        }
+        $x = $head.($body ? "\n\n".implode("\n", $body) : '')."\n\n".$end;
+        // Tags while they fit, the event's own first (#WCDelhi2026 before #WordPress), shown in their usual order.
+        $all = [...explode(' ', $tags), '#CampBuddy'];
+        $chosen = [];
+        foreach ([...array_reverse(explode(' ', $tags)), '#CampBuddy'] as $tag) {
+            if ($fits($x."\n\n".implode(' ', array_intersect($all, [...$chosen, $tag])))) {
+                $chosen[] = $tag;
+            }
+        }
+        if ($chosen) {
+            $x .= "\n\n".implode(' ', array_intersect($all, $chosen));
+        }
+
+        return ['linkedin' => $in, 'instagram' => $ig, 'x' => $x];
+    }
+
+    /**
+     * A text's length the way X counts it: a link is 23, most Latin letters
+     * and punctuation 1, anything else (emoji, CJK, some symbols) 2.
+     */
+    public static function xLength(string $text): int
+    {
+        $text = preg_replace('~(?:https?://)?campbuddy\.club\S*~u', str_repeat('x', self::X_LINK), $text);
+        $n = 0;
+        foreach (mb_str_split($text) as $ch) {
+            $c = mb_ord($ch);
+            $n += ($c <= 4351 || ($c >= 8192 && $c <= 8205) || ($c >= 8208 && $c <= 8223) || ($c >= 8242 && $c <= 8247)) ? 1 : 2;
+        }
+
+        return $n;
     }
 }
