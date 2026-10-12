@@ -54,8 +54,8 @@
                    x-bind:class="{ 'max-lg:translate-x-0': sidebarOpen }"
                    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col bg-navy transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0">
                 <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
-                    <a href="{{ route('dashboard') }}" class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
-                        <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
+                    <a href="{{ route('dashboard') }}" class="group relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                        <img src="/media/icons/icon-192.png" alt="" class="cb-logo-in h-8 w-8 shrink-0 rounded-lg motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
                         <span class="leading-tight">
                             <span class="block text-sm font-semibold text-white">{{ config('app.name') }}</span>
                             <span class="block text-[11px] font-medium uppercase tracking-[0.15em] text-white/50">Admin</span>
@@ -80,7 +80,7 @@
                             @if ($item['active'])
                                 <span class="absolute inset-y-1.5 left-0 w-1 rounded-r bg-maroon" aria-hidden="true"></span>
                             @endif
-                            <x-icon :name="$item['icon']" class="h-5 w-5 shrink-0" />
+                            <x-icon :name="$item['icon']" class="h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" />
                             {{ $item['label'] }}
                         </a>
                     @endforeach
@@ -155,7 +155,7 @@
                                 </nav>
                             @endif
 
-                            <h1 class="truncate text-xl font-semibold tracking-tight text-ink sm:text-2xl">{{ $pageTitle }}</h1>
+                            <h1 class="cb-enter truncate text-xl font-semibold tracking-tight text-ink sm:text-2xl">{{ $pageTitle }}</h1>
                             @if ($subtitle)
                                 <p class="mt-0.5 text-sm text-muted">{{ $subtitle }}</p>
                             @endif
@@ -167,7 +167,7 @@
                     </div>
                 </header>
 
-                <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
+                <main id="main-content" tabindex="-1" class="cb-enter cb-enter-late mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
                     @if ($flash)
                         <x-alert type="success" class="mb-6">{{ $flashMessages[$flash] ?? $flash }}</x-alert>
                     @endif

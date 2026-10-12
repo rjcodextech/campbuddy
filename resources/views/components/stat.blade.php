@@ -8,17 +8,17 @@
 
 <{{ $tag }} @if ($href) href="{{ $href }}" @endif
     {{ $attributes->class([
-        'flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-sm',
-        'transition-colors hover:border-maroon/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40' => $href,
+        'group flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-sm motion-safe:transition motion-safe:duration-200',
+        'hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40' => $href,
     ]) }}>
     @if ($icon)
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
             <x-icon :name="$icon" class="h-5 w-5" />
         </span>
     @endif
     <span class="min-w-0">
         <span class="block text-sm text-muted">{{ $label }}</span>
-        <span class="mt-0.5 block text-2xl font-semibold tracking-tight text-ink">{{ $value }}</span>
+        <span class="mt-0.5 block text-2xl font-semibold tabular-nums tracking-tight text-ink">{{ $value }}</span>
         @if ($hint)
             <span class="mt-0.5 block text-xs text-muted">{{ $hint }}</span>
         @endif
