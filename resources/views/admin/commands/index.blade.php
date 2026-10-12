@@ -1,11 +1,40 @@
-<x-app-layout title="Commands" subtitle="Every artisan command: CampBuddy's own and Laravel's maintenance ones with a form to run them (the run happens right here, its output shows below it), then the rest for reference."
+<x-app-layout title="Commands" subtitle="What runs by itself and when, then every artisan command: CampBuddy's own and Laravel's maintenance ones with a form to run them (the run happens right here, its output shows below it), then the rest for reference."
               :breadcrumbs="[['Commands']]">
     @php($last = session('commandRun'))
 
     <x-alert type="warning" class="mb-6" title="Runs on the live site">
         Commands that send pushes reach real phones. Tick <strong>dry-run</strong> first where it's offered to see what would happen.
         One command runs at a time; a long one keeps going on the server even if this page stops waiting.
+        The after-event pushes (day 3, 7 and 15), session reminders and the nightly clean-ups run by themselves: see below.
     </x-alert>
+
+    {{-- The schedule (routes/console.php), read live (App\Support\ScheduledTasks). --}}
+    <x-card title="Runs by itself" description="Through the server's one cron entry (schedule:run, every minute). Times are the app's ({{ config('app.timezone') }}); the pushes after an event also wait for the venue's daytime." class="mb-10" flush>
+        <x-table>
+            <x-slot:head>
+                <th>Task</th>
+                <th>What it does</th>
+                <th>When</th>
+                <th>Next</th>
+            </x-slot:head>
+            @forelse ($tasks as $task)
+                <tr data-task="{{ $task['name'] }}">
+                    <td class="whitespace-nowrap font-mono text-xs">
+                        @if ($task['command'])
+                            <a href="#cmd-{{ str_replace(':', '-', $task['command']) }}" class="text-maroon hover:underline">{{ $task['name'] }}</a>
+                        @else
+                            {{ $task['name'] }}
+                        @endif
+                    </td>
+                    <td class="text-sm text-muted">{{ $task['what'] }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ ucfirst($task['when']) }}</td>
+                    <td class="whitespace-nowrap text-sm text-muted">{{ $task['next']?->diffForHumans() ?? '—' }}</td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="4" icon="calendar" title="The schedule could not be read" />
+            @endforelse
+        </x-table>
+    </x-card>
 
     <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">CampBuddy</h2>
     <div class="space-y-6">

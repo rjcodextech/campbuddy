@@ -48,6 +48,39 @@ class AdminCommandsPageTest extends TestCase
             ->assertSee('db:wipe');
     }
 
+    public function test_it_shows_what_runs_by_itself_from_the_live_schedule(): void
+    {
+        $html = $this->actingAs(User::factory()->create())->get('/admin/commands')->assertOk()
+            ->assertSee('Runs by itself')
+            ->assertSee('data-task="send-after-event-pushes"', false)
+            ->assertSee('Day 7 &quot;Keep your WordCamp&quot; and day 15 &quot;Take it with you&quot; pushes', false)
+            ->assertSee('data-task="clear-social-cache"', false)
+            ->assertSee('Every hour at :10')
+            ->assertSee('Every 15 minutes')
+            ->getContent();
+
+        // Every scheduled task is listed with a line saying what it does.
+        foreach (\App\Support\ScheduledTasks::all() as $task) {
+            $this->assertStringContainsString('data-task="'.$task['name'].'"', $html);
+            $this->assertNotSame('', $task['what'], "{$task['name']} has no description");
+        }
+        $this->assertCount(count(\App\Support\ScheduledTasks::WHAT), \App\Support\ScheduledTasks::all(), 'every described task is scheduled, and the other way round');
+
+        // A command the scheduler also runs says so on its card, and the task links to it.
+        $this->assertStringContainsString('href="#cmd-campbuddy-clear-social-cache"', $html);
+        $this->assertMatchesRegularExpression('/id="cmd-campbuddy-clear-social-cache".*?Runs by itself.*?Every day at 00:15/s', $html);
+    }
+
+    public function test_cron_expressions_read_as_words(): void
+    {
+        $this->assertSame('every minute', \App\Support\ScheduledTasks::cadence('* * * * *'));
+        $this->assertSame('every 5 minutes', \App\Support\ScheduledTasks::cadence('*/5 * * * *'));
+        $this->assertSame('every hour at :05', \App\Support\ScheduledTasks::cadence('05 * * * *'));
+        $this->assertSame('every day at 03:20 UTC', \App\Support\ScheduledTasks::cadence('20 3 * * *'));
+        $this->assertSame('every other day (even dates) at 03:00 UTC', \App\Support\ScheduledTasks::cadence('0 3 */2 * *'));
+        $this->assertSame('0 9 * * 1', \App\Support\ScheduledTasks::cadence('0 9 * * 1'));
+    }
+
     public function test_a_run_shows_its_output(): void
     {
         $this->actingAs(User::factory()->create())

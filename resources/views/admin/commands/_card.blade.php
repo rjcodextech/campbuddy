@@ -9,6 +9,12 @@
         @endif
     </x-slot:actions>
 
+    @if (! empty($command['scheduled']))
+        <p class="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+            <x-badge variant="info">Runs by itself</x-badge>
+            {{ ucfirst($command['scheduled']['when']) }}@if ($command['scheduled']['next']) · next run {{ $command['scheduled']['next']->diffForHumans() }}@endif. Run it here only when it can't wait.
+        </p>
+    @endif
     <p class="mb-4 overflow-x-auto rounded-md bg-paper-soft px-3 py-2 font-mono text-xs text-ink">php artisan {{ $command['name'] }}@foreach ($command['arguments'] as $argument) &lt;{{ $argument['name'] }}&gt;@endforeach @foreach ($command['options'] as $option)[--{{ $option['name'] }}{{ $option['flag'] ? '' : '=' }}] @endforeach</p>
 
     @if ($command['runnable'])

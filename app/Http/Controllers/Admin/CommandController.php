@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Support\ScheduledTasks;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Http\RedirectResponse;
@@ -46,8 +47,13 @@ class CommandController extends Controller
     public function index(): View
     {
         $commands = collect($this->commands());
+        $tasks = ScheduledTasks::all();
+        // Each CampBuddy command the scheduler also runs carries when (same name after "campbuddy:").
+        $scheduled = collect($tasks)->filter(fn ($t) => $t['command'])->keyBy('command')->all();
+        $commands = $commands->map(fn ($c) => $c + ['scheduled' => $scheduled[$c['name']] ?? null]);
 
         return view('admin.commands.index', [
+            'tasks' => $tasks,
             'commands' => $commands->where('group', 'campbuddy')->all(),
             'maintenance' => $commands->where('group', 'maintenance')->sortBy(fn ($c) => array_search($c['name'], self::MAINTENANCE, true))->all(),
             'others' => $commands->where('group', 'other')->all(),
