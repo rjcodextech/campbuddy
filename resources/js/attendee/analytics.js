@@ -154,6 +154,8 @@ const EVENTS = {
   thank_you_view: ['surface'], // event | home
   event_feedback: ['surface', 'rating'], // rating 1-5 as a number; the comment never goes to GA
   thank_you_next_click: ['surface'], // "your next WordCamp" link
+  move_sheet_view: ['surface'], // "Take it with you": push | thank_you
+  move_sheet_action: ['method'], // next_wordcamp | pdf
   data_clear: [],
 
   // Health

@@ -7,6 +7,7 @@ use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
+use App\Jobs\SendAfterEventPushesJob;
 use App\Jobs\SendThankYouPushJob;
 use App\Models\DeviceTransfer;
 use App\Models\Event;
@@ -92,6 +93,10 @@ Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-re
 // Day 3 after a WordCamp: one thank-you push per event (rating + PDF export).
 // Hourly, so each venue gets it in its own daytime (the job checks the hour).
 Schedule::job(new SendThankYouPushJob)->hourlyAt(5)->name('send-thank-you-push');
+
+// Day 7 ("save your data") and day 15 ("take it with you") after a WordCamp:
+// once each per event, in the venue's daytime (the job checks the hour).
+Schedule::job(new SendAfterEventPushesJob)->hourlyAt(10)->name('send-after-event-pushes');
 
 // Central discovery, every 2 days — new WordCamps don't appear hourly,
 // and every result lands as a draft pending admin approval. Laravel's

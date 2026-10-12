@@ -255,3 +255,76 @@ dialog.thank-you {
         @include m.focus-ring;
     }
 }
+
+// ---- "Take it with you" (partials/move-data.blade.php, move-data.js) ---------
+.move-data__body {
+    display: grid;
+    gap: v.$space-3;
+}
+
+.move-data__option {
+    display: flex;
+    gap: v.$space-3;
+    align-items: flex-start;
+    width: 100%;
+    padding: v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--ink);
+    text-align: left;
+    text-decoration: none;
+    font: inherit;
+
+    &--button {
+        cursor: pointer;
+    }
+}
+
+a.move-data__option:hover,
+.move-data__option--button:hover {
+    border-color: var(--brand-primary);
+}
+
+.move-data__icon {
+    flex-shrink: 0;
+    font-size: 1.5rem;
+    color: var(--brand-primary);
+}
+
+.move-data__title {
+    display: block;
+    font-weight: v.$font-weight-bold;
+}
+
+.move-data__text,
+.move-data__note {
+    display: block;
+    margin-top: v.$space-1;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+    line-height: v.$line-height-body;
+}
+
+.move-data__note {
+    font-size: v.$font-size-xs;
+}
+
+.move-data__steps {
+    margin: v.$space-2 0 0;
+    padding-left: 1.2em;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+
+    li + li {
+        margin-top: v.$space-1;
+    }
+}
+
+.move-data__cta {
+    display: inline-block;
+    margin-top: v.$space-2;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: var(--brand-primary);
+}

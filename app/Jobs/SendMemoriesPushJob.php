@@ -75,6 +75,7 @@ class SendMemoriesPushJob implements ShouldQueue
             }
         });
 
+        \App\Support\EventPush::log($event, $this->kind, $sent);
         Log::info('Memories push sent', ['event' => $event->slug, 'kind' => $this->kind, 'subscriptions' => $sent]);
     }
 

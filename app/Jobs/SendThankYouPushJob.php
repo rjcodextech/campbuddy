@@ -90,6 +90,7 @@ class SendThankYouPushJob implements ShouldQueue
             }
         });
 
+        \App\Support\EventPush::log($event, 'thank-you', $sent);
         Log::info('Thank-you push sent', ['event' => $event->slug, 'subscriptions' => $sent]);
     }
 

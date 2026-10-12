@@ -71,6 +71,8 @@
         {{-- Once it's over: the thank-you card (rating, PDF, next WordCamp). thank-you.js decides when it opens. --}}
         @if ($eventPhase === 'after')
             @include('attendee.partials.thank-you', ['event' => $event])
+            {{-- "Take it with you": next WordCamp, new phone, PDF (move-data.js; the day-15 push opens it). --}}
+            @include('attendee.partials.move-data', ['event' => $event])
         @endif
 
         {{-- Event facts the planner and calendar exports need (plan.js, calendar.js). --}}

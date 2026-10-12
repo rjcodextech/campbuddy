@@ -66,6 +66,9 @@
             </button>
             {{-- Days left of the retention window: the people met can still find this person (discovery, shared Camp Card) and the data can move to a new phone. --}}
             @php($daysLeft = $daysSince !== null ? \App\Support\EventTime::RETENTION_DAYS - $daysSince + 1 : null)
+            <a href="{{ route('event.home', $event) }}?move=1" class="btn btn--outline btn--full thank-you__move" data-open-move>
+                <x-attendee.line-icon name="share" /> New phone or next WordCamp? Take it with you
+            </a>
             <p class="thank-you__hint">Your sessions, people and quests live only on this phone: save them as a PDF to keep them.@if ($daysLeft !== null && $daysLeft > 0) The people you met can still find you here for {{ $daysLeft }} more {{ \Illuminate\Support\Str::plural('day', $daysLeft) }}.@endif</p>
         </div>
 
