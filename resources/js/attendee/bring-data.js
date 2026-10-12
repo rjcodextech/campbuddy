@@ -29,6 +29,21 @@ export function carriedFields(fields) {
   return out.tags.length || out.profession || out.who_to_meet || out.wporg_username || out.display_name ? out : null;
 }
 
+/** Whether what a phone holds for one event is worth bringing (a profile with answers, or people met). Pure. */
+export function worthBringing({ fields, meetings } = {}) {
+  return Boolean(carriedFields(fields)) || (meetings ?? []).some((m) => m?.name && !m.mergedInto && !m.hidden);
+}
+
+/** Whether this phone holds a profile or people met for the event (the service worker checks the same before the day-15 push). */
+export async function holdsBringable(eventId) {
+  try {
+    const [discovery, meetings] = await Promise.all([kvGet(`discovery:${eventId}`).catch(() => null), getMeetings(eventId).catch(() => [])]);
+    return worthBringing({ fields: discovery?.fields, meetings });
+  } catch {
+    return false;
+  }
+}
+
 /** The newest past WordCamp this phone holds something worth bringing for. Pure. */
 export function pickSource(pastEvents, local) {
   for (const event of pastEvents ?? []) {

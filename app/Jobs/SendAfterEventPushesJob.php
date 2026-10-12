@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Log;
  *
  *  - day 7, "save your data": the sessions, people and notes live only on the
  *    phone; one tap makes the PDF (?export=1 opens the thank-you card on it);
- *  - day 15, "take it with you": move CampBuddy to a new phone, or bring the
- *    profile and the people met to the next WordCamp (?move=1 opens the sheet
+ *  - day 15, "take it with you": bring the profile and the people met to the
+ *    next WordCamp, shown only by a phone that holds some (?move=1 opens the sheet
  *    that says how).
  *
  * The "sent" time is set before sending, so a crash can't double a push. An
@@ -52,9 +52,12 @@ class SendAfterEventPushesJob implements ShouldQueue
                 if ($days >= self::MOVE_AFTER_DAYS && $event->move_data_sent_at === null) {
                     $event->forceFill(['move_data_sent_at' => now(), 'save_data_sent_at' => $event->save_data_sent_at ?? now()])->save();
                     $this->send($event, 'move-data', [
-                        'title' => 'New phone, or your next WordCamp?',
-                        'body' => "Take {$event->display_name} with you: move CampBuddy to a new phone, or bring your profile and the people you met to your next WordCamp.",
+                        'title' => 'Going to another WordCamp?',
+                        'body' => "Bring your profile and the people you met at {$event->display_name} along: open your next WordCamp in CampBuddy and tap Bring it here.",
                         'url' => route('event.home', $event).'?move=1',
+                        // The phone shows it only if it holds a profile or people met for this event (sw.js): nothing to bring, no push.
+                        'needs' => 'bring',
+                        'eventId' => $event->id,
                     ]);
                 } elseif ($days >= self::SAVE_AFTER_DAYS && $days < self::MOVE_AFTER_DAYS && $event->save_data_sent_at === null) {
                     $event->forceFill(['save_data_sent_at' => now()])->save();

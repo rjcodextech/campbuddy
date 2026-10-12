@@ -1,8 +1,8 @@
 {{--
-    "Take it with you" (move-data.js): after a WordCamp, how to keep what this
-    phone holds for it — bring the profile and the people met to the next
-    WordCamp, move CampBuddy to a new phone, or save it all as a PDF. Opens
-    from the day-15 push (?move=1) and from the thank-you card.
+    "Take it with you" (move-data.js): after a WordCamp, bring the profile and
+    the people met to the next WordCamp, or save it all as a PDF. Opens from
+    the day-15 push (?move=1) and from the thank-you card, and only on a phone
+    that holds a profile or people met for this event.
 
     Included by layouts/attendee.blade.php on an event's pages once it's over.
 --}}
@@ -11,8 +11,8 @@
     <div class="thank-you__art">
         <x-attendee.line-icon name="share" class="thank-you__art-icon" />
         <p class="u-eyebrow thank-you__eyebrow">Take it with you</p>
-        <h2 id="{{ $moveId }}-title" class="thank-you__title">Keep your {{ $event->display_name }}</h2>
-        <p class="thank-you__lede">Your sessions, the people you met and your notes live only on this phone. Here's how to keep them.</p>
+        <h2 id="{{ $moveId }}-title" class="thank-you__title">Bring it to your next WordCamp</h2>
+        <p class="thank-you__lede">Your profile and the people you met at {{ $event->display_name }} live only on this phone. Bring them along to the next WordCamp you open in CampBuddy.</p>
     </div>
 
     <div class="thank-you__body move-data__body">
@@ -24,19 +24,6 @@
                 <span class="move-data__cta">Find your next WordCamp <span aria-hidden="true">→</span></span>
             </span>
         </a>
-
-        <div class="move-data__option">
-            <span class="move-data__icon" aria-hidden="true"><x-attendee.line-icon name="laptop" /></span>
-            <span>
-                <strong class="move-data__title">Got a new phone?</strong>
-                <ol class="move-data__steps">
-                    <li>On the new phone, open <strong>{{ $event->display_name }}</strong> in CampBuddy.</li>
-                    <li>Go to <strong>Explore → People → Join</strong>, pick your name and tap <strong>Bring it here</strong>. It shows a 6-digit code.</li>
-                    <li>Keep this WordCamp open in CampBuddy on this phone: when it asks, type the code. Your Camp Card, profile, saved sessions, quests and people move across.</li>
-                </ol>
-                <span class="move-data__note">For when you joined "Meet people" with your name from the attendee list. Works until {{ \App\Support\EventTime::retentionEnd($event)?->setTimezone(\App\Support\EventTime::zone($event))->format('j M') ?? 'a month after the event' }}.</span>
-            </span>
-        </div>
 
         <button type="button" class="move-data__option move-data__option--button" data-move-pdf>
             <span class="move-data__icon" aria-hidden="true"><x-attendee.line-icon name="download" /></span>

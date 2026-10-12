@@ -104,7 +104,7 @@ async function init() {
       .catch(() => {});
   }
 
-  // …and "Take it with you" (new phone, next WordCamp, PDF) on a finished event's pages.
+  // …and "Take it with you" (next WordCamp, PDF) on a finished event's pages.
   if (document.querySelector('dialog[data-move-data]')) {
     import('./move-data.js').then(({ initMoveData }) => initMoveData()).catch(() => {});
   }

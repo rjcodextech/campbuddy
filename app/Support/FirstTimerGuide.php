@@ -252,7 +252,7 @@ class FirstTimerGuide
             ['q' => 'I\'m a student. Is this for me?', 'a' => 'Yes. Pick "Student" when you set up, and read the student tips in the first-timer guide.'],
             ['q' => 'What happens to what I type in?', 'a' => 'It stays on your phone. Only what you choose to share in attendee discovery is shown to other attendees, and you can leave any time.'],
             ['q' => 'Does it work with bad wifi?', 'a' => 'Yes. Pages you\'ve opened keep working offline.'],
-            ['q' => 'What happens after the WordCamp?', 'a' => 'For a month you can save your day as a PDF, move CampBuddy to a new phone, and bring your profile and the people you met to your next WordCamp. The photo album and the talks on WordPress.tv show up once the organizers share them. With notifications on, CampBuddy reminds you a few times.'],
+            ['q' => 'What happens after the WordCamp?', 'a' => 'For a month you can save your day as a PDF and bring your profile and the people you met to your next WordCamp. The photo album and the talks on WordPress.tv show up once the organizers share them. With notifications on, CampBuddy reminds you a few times.'],
         ];
     }
 

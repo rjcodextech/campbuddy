@@ -130,7 +130,7 @@ class AfterEventPushesTest extends TestCase
         $this->get('/event/wordcamp-done?move=1')->assertOk()
             ->assertSee('data-move-data', false)
             ->assertSee('Going to another WordCamp?')
-            ->assertSee('Got a new phone?')
+            ->assertDontSee('Got a new phone?')
             ->assertSee('Save my day as PDF')
             ->assertSee('data-open-move', false);
 

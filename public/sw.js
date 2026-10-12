@@ -389,14 +389,60 @@ self.addEventListener('push', (event) => {
     return;
   }
 
-  event.waitUntil(
-    self.registration.showNotification(payload.title || 'CampBuddy', {
-      body: payload.body,
-      icon: '/media/icons/icon-192.png',
-      data: { url: payload.url },
-    })
-  );
+  const show = () => self.registration.showNotification(payload.title || 'CampBuddy', {
+    body: payload.body,
+    icon: '/media/icons/icon-192.png',
+    data: { url: payload.url },
+  });
+
+  // "Bring it to your next WordCamp": only when this phone holds something to bring.
+  event.waitUntil(payload.needs === 'bring' ? holdsBringable(payload.eventId).then((yes) => (yes ? show() : undefined)) : show());
 });
+
+// The same test as bring-data.js (holdsBringable): a Meet people profile
+// with answers, or people met with a name. Read only; a phone with no
+// CampBuddy database (or any error) holds nothing.
+function holdsBringable(eventId) {
+  return new Promise((resolve) => {
+    let request;
+    try {
+      request = indexedDB.open('campbuddy');
+    } catch {
+      return resolve(false);
+    }
+    // No database yet: don't create one here (the app owns its versions).
+    request.onupgradeneeded = () => request.transaction.abort();
+    request.onerror = () => resolve(false);
+    request.onsuccess = () => {
+      const db = request.result;
+      const done = (v) => { db.close(); resolve(v); };
+      try {
+        const stores = ['kv', 'meetings'].filter((n) => db.objectStoreNames.contains(n));
+        if (!stores.length) return done(false);
+        const tx = db.transaction(stores, 'readonly');
+        let profile = null;
+        let people = [];
+        if (stores.includes('kv')) {
+          const r = tx.objectStore('kv').get(`discovery:${eventId}`);
+          r.onsuccess = () => { profile = r.result; };
+        }
+        if (stores.includes('meetings')) {
+          const r = tx.objectStore('meetings').index('eventId').getAll(eventId);
+          r.onsuccess = () => { people = r.result || []; };
+        }
+        tx.oncomplete = () => {
+          const f = profile && profile.fields;
+          const hasProfile = !!f && ((Array.isArray(f.tags) && f.tags.length) || f.profession || f.who_to_meet || f.wporg_username || f.display_name);
+          done(!!hasProfile || people.some((m) => m && m.name && !m.mergedInto && !m.hidden));
+        };
+        tx.onerror = () => done(false);
+        tx.onabort = () => done(false);
+      } catch {
+        done(false);
+      }
+    };
+  });
+}
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();

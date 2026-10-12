@@ -58,7 +58,7 @@ class EventNotifications
             ],
             $after('thank-you', 'Thank you', EventTime::THANK_YOU_AFTER_DAYS, 'Thanks for coming: rate it in one tap, and save your day as a PDF.', $event->thank_you_sent_at),
             $after('save-data', 'Keep your WordCamp', SendAfterEventPushesJob::SAVE_AFTER_DAYS, 'Your sessions, the people you met and your notes live only on this phone. Save them as a PDF in one tap.', $event->save_data_sent_at ?? null),
-            $after('move-data', 'Take it with you', SendAfterEventPushesJob::MOVE_AFTER_DAYS, 'Move CampBuddy to a new phone, or bring your profile and the people you met to your next WordCamp.', $event->move_data_sent_at ?? null),
+            $after('move-data', 'Take it with you', SendAfterEventPushesJob::MOVE_AFTER_DAYS, 'Bring your profile and the people you met to your next WordCamp. Only phones that hold a profile or people met show it.', $event->move_data_sent_at ?? null),
             $memory('photos', 'Photo album', 'The official photos are up: find yourself in them.', $event->photo_album_notified_at ?? null, $event->photo_album_url ?? null),
             $memory('videos', 'WordPress.tv speaker sessions', 'Missed a talk? The recordings are on WordPress.tv.', $event->wordpress_tv_notified_at ?? null, $event->wordpress_tv_url ?? null),
         ];

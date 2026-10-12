@@ -4,7 +4,7 @@ import { test } from 'node:test';
 
 globalThis.window = {};
 globalThis.document = { querySelector: () => null, querySelectorAll: () => [], getElementById: () => null };
-const { carriedFields, pickSource, matchPeople } = await import('../../resources/js/attendee/bring-data.js');
+const { carriedFields, pickSource, matchPeople, worthBringing } = await import('../../resources/js/attendee/bring-data.js');
 
 test('the join answers come along, never the other event\'s attendee-list entry', () => {
   const fields = carriedFields({ tags: ['developer', 'designer'], profession: 'Dev', who_to_meet: 'Plugin folks', wporg_username: 'asha', display_name: null, attendee_roster_id: 42 });
@@ -35,4 +35,12 @@ test('people are matched by Gravatar, else by full name, once each', () => {
     { name: 'Asha Rao', avatarUrl: null },
   ];
   assert.deepEqual(matchPeople(people, roster).map((m) => m.entry.id), [10, 11], 'one-word names are too risky to match; nobody twice');
+});
+
+test('only a profile with answers, or people met, is worth the day-15 "bring it" push and sheet', () => {
+  assert.equal(worthBringing({}), false, 'nothing on the phone');
+  assert.equal(worthBringing({ fields: { tags: [] }, meetings: [] }), false, 'an empty profile');
+  assert.equal(worthBringing({ meetings: [{ name: 'Ada', hidden: true }, { name: '', key: 'x' }] }), false, 'only hidden or nameless people');
+  assert.equal(worthBringing({ fields: { tags: ['seo'] } }), true);
+  assert.equal(worthBringing({ meetings: [{ name: 'Ada Lovelace' }] }), true);
 });

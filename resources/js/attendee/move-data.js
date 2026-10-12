@@ -1,9 +1,12 @@
-// "Take it with you" (partials/move-data.blade.php): after a WordCamp, how to
-// keep what this phone holds for it. Opens from the day-15 push (?move=1) and
-// from the thank-you card's "Move or bring your data"; the PDF is made here
-// (export-pdf.js), with the event's quest titles from its thank-you card.
+// "Take it with you" (partials/move-data.blade.php): after a WordCamp, bring
+// the profile and the people met to the next one. Opens from the day-15 push
+// (?move=1) and from the thank-you card's link, only when this phone holds a
+// profile or people met for the event (nothing to bring: no sheet, no link).
+// The PDF is made here too (export-pdf.js), with the event's quest titles
+// from its thank-you card.
 
 import { track } from './analytics.js';
+import { holdsBringable } from './bring-data.js';
 import { exportPdf } from './export-pdf.js';
 import { showToast } from './toast.js';
 
@@ -12,9 +15,10 @@ export function shouldOpenMove(search) {
   return new URLSearchParams(search).get('move') === '1';
 }
 
-export function initMoveData() {
+export async function initMoveData() {
   const dialog = document.querySelector('dialog[data-move-data]');
   if (!dialog) return;
+  if (!(await holdsBringable(Number(dialog.dataset.eventId)))) return;
 
   const open = (surface) => {
     document.querySelectorAll('dialog[open]').forEach((d) => { if (d !== dialog) d.close(); });
@@ -48,11 +52,14 @@ export function initMoveData() {
     }
   });
 
-  // The thank-you card's link opens it in place.
-  document.querySelectorAll('[data-open-move]').forEach((link) => link.addEventListener('click', (e) => {
-    e.preventDefault();
-    open('thank_you');
-  }));
+  // The thank-you card's link (hidden until now) opens it in place.
+  document.querySelectorAll('[data-open-move]').forEach((link) => {
+    link.hidden = false;
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      open('thank_you');
+    });
+  });
 
   if (shouldOpenMove(location.search)) {
     // After the thank-you card (if it opened too): one sheet at a time, this one on top.
