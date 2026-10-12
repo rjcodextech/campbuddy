@@ -44,8 +44,9 @@ class LogoTone
     public static function measure(string $bytes): bool
     {
         // Only what GD reads (PNG, WebP, GIF, JPEG): an SVG or anything else counts as not light.
-        $info = @getimagesizefromstring($bytes);
-        $src = $info && in_array($info[2], [IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF, IMAGETYPE_JPEG], true) ? @imagecreatefromstring($bytes) : false;
+        $known = str_starts_with($bytes, "PNG") || str_starts_with($bytes, "ÿØ") || str_starts_with($bytes, 'GIF8')
+            || (str_starts_with($bytes, 'RIFF') && substr($bytes, 8, 4) === 'WEBP');
+        $src = $known ? @imagecreatefromstring($bytes) : false;
         if (! $src) {
             return false;
         }
