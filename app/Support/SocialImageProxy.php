@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,24 +38,34 @@ class SocialImageProxy
         return false;
     }
 
-    /** Copies older than this are removed every night (`campbuddy:clear-social-cache`). */
+    /** A copy no event uses any more is removed once it is older than this. */
     public const KEEP_HOURS = 24;
 
     /**
-     * Removes kept copies (and their type files) older than `$hours`: the
-     * next Social media page that needs one fetches it again. A copy made
-     * in the last day stays, so a page open at midnight keeps working.
+     * Removes only the copies no listed event uses any more (a sponsor taken
+     * off, artwork changed, an event archived), once older than `$hours` (so a
+     * page open at midnight keeps working). Every copy a listed event still
+     * uses stays, however old: it never has to be fetched from the WordCamp
+     * site again. Type files whose copy is gone go too.
      *
-     * @return array{files: int, bytes: int} what was (or, with $dryRun, would be) removed
+     * @param  ?list<string>  $inUse  addresses still used (default: inUse())
+     * @return array{files: int, bytes: int, kept: int} what was (or, with $dryRun, would be) removed, and how many stay
      */
-    public static function prune(int $hours = self::KEEP_HOURS, bool $dryRun = false): array
+    public static function prune(int $hours = self::KEEP_HOURS, bool $dryRun = false, ?array $inUse = null): array
     {
         $disk = Storage::disk('local');
+        $keep = array_flip(array_map(fn ($url) => 'social-cache/'.sha1($url), $inUse ?? self::inUse()));
         $cutoff = now()->subHours($hours)->getTimestamp();
         $files = 0;
         $bytes = 0;
+        $kept = 0;
         foreach ($disk->files('social-cache') as $path) {
-            if (str_ends_with($path, '.type') || $disk->lastModified($path) >= $cutoff) {
+            if (str_ends_with($path, '.type')) {
+                continue;
+            }
+            if (isset($keep[$path]) || $disk->lastModified($path) >= $cutoff) {
+                $kept++;
+
                 continue;
             }
             $bytes += $disk->size($path);
@@ -70,7 +81,38 @@ class SocialImageProxy
             }
         }
 
-        return ['files' => $files, 'bytes' => $bytes];
+        return ['files' => $files, 'bytes' => $bytes, 'kept' => $kept];
+    }
+
+    /**
+     * Every address the Social media pages of listed events can ask this proxy
+     * for: sponsor logos, speakers' and sessions' photos, and the site's
+     * artwork (in use or not) and font files. Read from what is stored; it
+     * fetches nothing.
+     *
+     * @return list<string>
+     */
+    public static function inUse(): array
+    {
+        $urls = [];
+        $collect = function ($value) use (&$collect, &$urls) {
+            if (is_array($value)) {
+                array_walk($value, $collect);
+            } elseif (is_string($value) && preg_match('#^https?://#i', $value)) {
+                $urls[$value] = true;
+            }
+        };
+        Event::whereIn('status', ['approved', 'active'])->get()
+            ->filter(fn (Event $event) => EventTime::listed($event))
+            ->each(function (Event $event) use ($collect) {
+                try {
+                    $collect([SocialKit::sponsors($event), SocialKit::speakers($event), SocialKit::schedule($event), $event->site_theme]);
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            });
+
+        return array_keys($urls);
     }
 
     public static function respond(string $url): Response

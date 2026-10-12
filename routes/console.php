@@ -114,8 +114,8 @@ Schedule::call(fn () => FetchLogRetention::prune())
     ->dailyAt('03:20')
     ->name('prune-fetch-log')
     ->withoutOverlapping(30);
-// The Social media page's kept copies of logos, artwork and fonts: anything
-// older than a day goes every night (fetched again when a page needs it).
+// The Social media page's copies of logos, artwork and fonts: only those no
+// listed event uses any more go (older than a day); copies in use always stay.
 // 00:15, after the midnight roster run.
 Schedule::call(fn () => Artisan::call('campbuddy:clear-social-cache'))
     ->dailyAt('00:15')
