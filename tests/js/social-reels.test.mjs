@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { reelList, _internals } = await import('../../resources/js/social-reels.js');
+const { reelList, lookFor, _internals } = await import('../../resources/js/social-reels.js');
 
 const person = (id, role, extra = {}) => ({ id, name: `Person ${id}`, photo: null, roles: [role], role_labels: [role], talk: null, card: null, ...extra });
 const kit = (people) => ({ event: { name: 'WordCamp Test 2026', hashtags: '#WCTest' }, short: 'WordCamp Test', people });
@@ -64,3 +64,31 @@ test('no reel is shorter than 30 seconds', () => {
   assert.equal(_internals.MIN_SECONDS, 30);
 });
 
+
+test('no two reels of an event look or sound the same, and neighbours share no part', () => {
+  const people = Array.from({ length: 40 }, (_, i) => person(i, ['organizer', 'speaker', 'volunteer'][i % 3]));
+  const list = reelList(kit(people), posts);
+  assert.deepEqual(list.map((r) => r.variant), list.map((_, i) => i), 'each reel knows its place');
+  for (const seed of [0, 7, 123456]) {
+    const looks = Array.from({ length: 60 }, (_, i) => lookFor(i, seed));
+    const whole = new Set(looks.map((l) => JSON.stringify(l)));
+    assert.equal(whole.size, 60, `seed ${seed}: sixty different reels`);
+    looks.slice(1).forEach((l, i) => {
+      const prev = looks[i];
+      for (const part of ['backdrop', 'particles', 'motion', 'frame']) assert.notEqual(l[part], prev[part], part);
+      assert.notEqual(l.music.key, prev.music.key, 'key');
+      assert.notEqual(l.music.progression, prev.music.progression, 'chords');
+      assert.notEqual(l.music.groove, prev.music.groove, 'groove');
+    });
+  }
+});
+
+test('each reel keeps its own tempo, still on a steady beat', () => {
+  for (const mood of Object.values(_internals.MOODS)) {
+    for (let i = 0; i < 12; i++) {
+      const bpm = _internals.reelBpm(mood, lookFor(i));
+      assert.ok(bpm >= 80 && bpm <= 130, String(bpm));
+    }
+  }
+  assert.ok(_internals.PROGRESSIONS.every((p) => p.length === 4));
+});

@@ -10,6 +10,11 @@
 // the event's look: its colours, fonts, pattern and skyline (social-kit.js).
 // Nothing is ever cropped: photos, cards and artwork are drawn whole.
 //
+// No two reels of an event look or sound alike: each gets its own look from
+// its place in the list (lookFor): background, particles, transitions, how
+// cards and photos come in, photo frame, header side, and its own music
+// (key, tempo, chords, arpeggio, lead sound, groove).
+//
 // Music is made here too (no copyright claims): a short track whose beats
 // land on the cuts, its mood picked per reel; or the admin's own track.
 //
@@ -121,15 +126,23 @@ function pillAt(ctx, text, cx, y, bg, fg, size = 34, p = 1) {
 }
 
 /** A photo whole in a rounded frame (contain, never cropped); initials when there is none. */
-function photoFrame(ctx, img, name, x, y, size, ring, fill, ink, reveal = 1) {
+function photoFrame(ctx, img, name, x, y, size, ring, fill, ink, reveal = 1, shape = 'rounded') {
+  // The reel's frame: rounded (the default), softer corners, or a ticket with a second ring.
+  const r = shape === 'soft' ? size * 0.2 : shape === 'ticket' ? 18 : 44;
   ctx.save();
+  if (shape === 'ticket') {
+    ctx.strokeStyle = ring;
+    ctx.lineWidth = 6;
+    T.roundRect(ctx, x - 26, y - 26, size + 52, size + 52, r + 22);
+    ctx.stroke();
+  }
   ctx.fillStyle = ring;
-  T.roundRect(ctx, x - 10, y - 10, size + 20, size + 20, 52);
+  T.roundRect(ctx, x - 10, y - 10, size + 20, size + 20, r + 8);
   ctx.fill();
   ctx.fillStyle = fill;
-  T.roundRect(ctx, x, y, size, size, 44);
+  T.roundRect(ctx, x, y, size, size, r);
   ctx.fill();
-  T.roundRect(ctx, x, y, size, size, 44);
+  T.roundRect(ctx, x, y, size, size, r);
   ctx.clip();
   if (reveal < 1) {
     ctx.beginPath();
@@ -171,7 +184,9 @@ function backdrop(ctx, time, reel) {
   ctx.fillStyle = pal.paper;
   ctx.fillRect(0, 0, W, H);
 
-  if (art.patternTile) {
+  const kind = reel.look?.backdrop ?? 'pattern';
+  if (kind !== 'pattern') backdropShapes(ctx, time, reel, kind);
+  else if (art.patternTile) {
     const pattern = ctx.createPattern(art.patternTile, 'repeat');
     pattern.setTransform(new DOMMatrix().translate(-(time * 8) % art.patternTile.width, (time * 14) % art.patternTile.height));
     ctx.save();
@@ -206,24 +221,112 @@ function backdrop(ctx, time, reel) {
   }
 }
 
+/** The backgrounds a reel can have besides the site's own pattern: soft, in the event's colours, always moving. */
+function backdropShapes(ctx, time, reel, kind) {
+  const { pal } = reel;
+  const tones = [pal.primary, pal.secondary, ...(pal.extras ?? [])];
+  ctx.save();
+  if (kind === 'aurora') {
+    // Three large glows wandering slowly.
+    tones.slice(0, 3).forEach((c, i) => {
+      const x = W * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(time * 0.23 + i * 2.1)));
+      const y = H * (0.2 + 0.3 * i + Math.cos(time * 0.17 + i) * 0.08);
+      const r = 520 + i * 90;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, T.mix(c, pal.paper, 0.55));
+      g.addColorStop(1, pal.paper);
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    });
+  } else if (kind === 'stripes') {
+    // Wide diagonal bands sliding across.
+    ctx.translate(W / 2, H / 2);
+    ctx.rotate(-Math.PI / 5);
+    const gap = 180;
+    const shift = (time * 40) % (gap * 2);
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = pal.primary;
+    for (let x = -H * 1.2 - shift; x < H * 1.2; x += gap * 2) ctx.fillRect(x, -H * 1.2, gap, H * 2.4);
+  } else if (kind === 'rings') {
+    // Rings breathing out from behind the middle, one after another.
+    ctx.lineWidth = 18;
+    for (let i = 0; i < 6; i++) {
+      const q = (time * 0.18 + i / 6) % 1;
+      ctx.globalAlpha = 0.09 * (1 - q);
+      ctx.strokeStyle = tones[i % tones.length];
+      ctx.beginPath();
+      ctx.arc(W / 2, H * 0.42, 120 + q * 1100, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  } else if (kind === 'dotwave') {
+    // A dot grid with a wave rolling through it.
+    const step = 72;
+    ctx.fillStyle = pal.primary;
+    ctx.globalAlpha = 0.1;
+    for (let y = step / 2; y < H; y += step) {
+      for (let x = step / 2; x < W; x += step) {
+        const r = 4 + 7 * (0.5 + 0.5 * Math.sin(x * 0.006 + y * 0.004 - time * 1.6));
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  ctx.restore();
+}
+
 function header(ctx, reel, t, label) {
   const p = ease(span(t, 0, 0.5));
+  // Some reels keep the logo on the right and the label on the left.
+  const mirror = reel.look?.mirror ?? false;
   ctx.save();
   ctx.globalAlpha *= p;
-  if (reel.logo) logoCard(ctx, reel, 64, 72, 170, 30);
+  if (reel.logo) logoCard(ctx, reel, mirror ? W - 64 - 170 : 64, 72, 170, 30);
   if (label) {
     const { text } = T.fonts();
     ctx.font = `800 30px ${text}`;
     const w = ctx.measureText(label).width + 48;
+    const x = mirror ? 64 : W - 64 - w;
     ctx.fillStyle = reel.pal.primary;
-    T.roundRect(ctx, W - 64 - w, 126, w, 62, 31);
+    T.roundRect(ctx, x, 126, w, 62, 31);
     ctx.fill();
     ctx.fillStyle = reel.pal.onPrimary;
-    ctx.textAlign = 'right';
-    ctx.fillText(label, W - 88, 168);
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x + w / 2, 168);
     ctx.textAlign = 'left';
   }
   ctx.restore();
+}
+
+/**
+ * How a card or photo comes in, about the point it is drawn around. p runs
+ * 0 → 1; dir is the side it comes from. Every kind ends at rest (identity).
+ */
+function entrance(ctx, kind, p, dir = 1) {
+  const e = ease(p);
+  if (kind === 'slide') {
+    ctx.translate((1 - e) * 760 * dir, 0);
+    ctx.rotate((1 - e) * 0.06 * dir);
+  } else if (kind === 'flip') {
+    // Turns to face the viewer, like a card flipped over.
+    ctx.scale(Math.max(0.02, e), 1);
+    ctx.rotate((1 - e) * -0.05);
+  } else if (kind === 'zoom') {
+    const k = 1 + (1 - e) * 0.5;
+    ctx.scale(k, k);
+  } else if (kind === 'rise') {
+    const b = back(p);
+    ctx.translate(0, (1 - b) * 280);
+    ctx.rotate((1 - b) * -4 * (Math.PI / 180));
+    const k = 0.72 + 0.28 * b;
+    ctx.scale(k, k);
+  } else {
+    // pop
+    const b = back(p);
+    const k = 0.6 + 0.4 * b;
+    ctx.scale(k, k);
+  }
 }
 
 /** The scene's words leave in its last moments (the backdrop stays: it runs through the whole reel). */
@@ -239,6 +342,8 @@ function introScene(kicker) {
   return {
     beats: 6,
     draw(ctx, t, dur, reel) {
+      const layout = reel.look?.intro ?? 'center';
+      if (layout !== 'center') return introLayout(ctx, t, dur, reel, kicker, layout);
       const { pal, kit } = reel;
       const { head, text } = T.fonts();
       ctx.save();
@@ -271,6 +376,62 @@ function introScene(kicker) {
       ctx.restore();
     },
   };
+}
+
+/**
+ * The intro's other layouts: 'left' (logo and words down the left, like a
+ * poster) and 'band' (a colour band drops in with the logo on it, the name
+ * beneath).
+ */
+function introLayout(ctx, t, dur, reel, kicker, layout) {
+  const { pal, kit } = reel;
+  const { head, text } = T.fonts();
+  const line = [kit.event.dates, kit.event.place].filter(Boolean).join(' · ');
+  ctx.save();
+  leaving(ctx, t, dur);
+
+  if (layout === 'band') {
+    const drop = ease(span(t, 0, 0.6));
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(0, 0, W, 860 * drop);
+    ctx.fillStyle = pal.secondary;
+    ctx.fillRect(0, 860 * drop, W * ease(span(t, 0.3, 0.5)), 18);
+    const pop = back(span(t, 0.25, 0.6));
+    ctx.save();
+    ctx.globalAlpha *= clamp(pop);
+    ctx.translate(W / 2, 470);
+    ctx.rotate((1 - clamp(pop)) * -0.2);
+    ctx.scale(0.4 + 0.6 * pop, 0.4 + 0.6 * pop);
+    if (reel.logo) logoCard(ctx, reel, -170, -170, 340, 50);
+    ctx.restore();
+    let y = pillAt(ctx, kicker, W / 2, 940, pal.secondary, pal.onSecondary, 36, ease(span(t, 0.45, 0.4)));
+    const name = fitAll(ctx, kit.event.name, W - 160, 124, 70, 3, 900, head);
+    y = risingLines(ctx, name, y + 20, pal.ink, t, 0.55, { weight: 900, family: head });
+    const sub = fitAll(ctx, line, W - 200, 46, 30, 2, 600, text);
+    risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.9, { weight: 600, family: text, lh: 1.25 });
+  } else {
+    // left
+    const x = 90;
+    const slide = ease(span(t, 0.05, 0.6));
+    ctx.save();
+    ctx.globalAlpha *= slide;
+    ctx.translate(-(1 - slide) * 300, 0);
+    if (reel.logo) logoCard(ctx, reel, x, 300, 300, 46);
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(x, 660, 14, 640 * ease(span(t, 0.3, 0.8)));
+    ctx.restore();
+    const { text: font } = T.fonts();
+    ctx.font = `800 36px ${font}`;
+    const pw = Math.min(W - 120, ctx.measureText(kicker).width + 36 * 1.4);
+    let y = pillAt(ctx, kicker, x + 44 + pw / 2, 680, pal.primary, pal.onPrimary, 36, ease(span(t, 0.35, 0.4)));
+    const name = fitAll(ctx, kit.event.name, W - x - 160, 132, 70, 4, 900, head);
+    y = risingLines(ctx, name, y + 10, pal.ink, t, 0.45, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: W - x - 120 });
+    const sub = fitAll(ctx, line, W - x - 160, 44, 30, 3, 600, text);
+    risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.9, { weight: 600, family: text, lh: 1.25, align: 'left', x: x + 44, maxWidth: W - x - 120 });
+  }
+
+  partnersBadge(ctx, reel, H - 330, ease(span(t, 1.1, 0.5)));
+  ctx.restore();
 }
 
 function partnersBadge(ctx, reel, y, p) {
@@ -308,15 +469,31 @@ function cardScene(card, index, total, last) {
       const s = 0.84;
       const w = W * s;
       const h = H * s;
-      const enter = back(span(t, 0, 0.75));
+      const look = reel.look ?? {};
+      const dir = index % 2 ? -(look.side ?? 1) : (look.side ?? 1);
       const out = last ? 0 : ease(span(t, dur - 0.4, 0.4));
       // Held for a while: it drifts a touch closer over the hold (0.84 → 0.88 of the frame, never past it).
-      const scale = (0.72 + (1 - 0.72) * enter) * (1 + 0.05 * ease(span(t, 0.8, Math.max(1, dur - 1.2))));
+      const scale = 1 + 0.05 * ease(span(t, 0.8, Math.max(1, dur - 1.2)));
       ctx.save();
       ctx.globalAlpha = clamp(span(t, 0, 0.25)) * (last ? 1 - span(t, dur - 0.3, 0.3) : 1);
-      ctx.translate(W / 2 - out * 1300, H / 2 + 34 + (1 - enter) * 280 + Math.sin(t * 1.6) * 6);
-      ctx.rotate(((1 - enter) * -4 + out * 6) * (Math.PI / 180));
+      // It leaves to one side; the next card comes in from the other.
+      ctx.translate(W / 2 + out * 1300 * dir, H / 2 + 34 + Math.sin(t * 1.6) * 6);
+      ctx.rotate(out * 6 * dir * (Math.PI / 180));
+      entrance(ctx, (look.motion ?? 'pop') === 'pop' ? 'rise' : look.motion, span(t, 0, 0.75), dir);
       ctx.scale(scale, scale);
+      if (look.mat === 'tilt' || look.mat === 'stack') {
+        // A colour panel behind the card (two, for a stack), turned a little.
+        const turns = look.mat === 'stack' ? [5, -3] : [-4];
+        turns.forEach((deg, k) => {
+          ctx.save();
+          ctx.rotate(deg * dir * (Math.PI / 180));
+          ctx.fillStyle = k ? reel.pal.secondary : reel.pal.primary;
+          ctx.globalAlpha *= 0.9;
+          T.roundRect(ctx, -w / 2 - 6, -h / 2 - 6, w + 12, h + 12, 34);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
       ctx.shadowColor = 'rgba(0,0,0,0.28)';
       ctx.shadowBlur = 60;
       ctx.shadowOffsetY = 24;
@@ -382,12 +559,12 @@ function personScene(person, index, total, long, role) {
       leaving(ctx, t, dur);
 
       const size = long ? 600 : 640;
-      const pop = back(span(t, 0, 0.6));
+      const look = reel.look ?? {};
       ctx.save();
       ctx.globalAlpha *= clamp(span(t, 0, 0.2));
       ctx.translate(W / 2, 320 + size / 2);
-      ctx.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
-      photoFrame(ctx, img, person.name, -size / 2, -size / 2, size, tone, T.mix(tone, pal.paper, 0.82), tone, span(t, 0.1, 0.6));
+      entrance(ctx, look.motion, span(t, 0, 0.6), index % 2 ? -1 : 1);
+      photoFrame(ctx, img, person.name, -size / 2, -size / 2, size, tone, T.mix(tone, pal.paper, 0.82), tone, span(t, 0.1, 0.6), look.frame);
       ctx.restore();
 
       let y = 320 + size + 40;
@@ -438,13 +615,12 @@ function gridScene(people, first, total, role) {
         const alone = row === rows - 1 && people.length % cols === 1;
         const cx = alone ? W / 2 : W / 2 + (col - 0.5) * (cellW + 40);
         const y = top + row * rowH;
-        const p = back(span(t, 0.1 + i * 0.12, 0.55));
         const tone = T.roleColor({ ...person, roles: [role] }, colors);
         ctx.save();
         ctx.globalAlpha *= clamp(span(t, 0.1 + i * 0.12, 0.2));
         ctx.translate(cx, y + photo / 2);
-        ctx.scale(0.5 + 0.5 * p, 0.5 + 0.5 * p);
-        photoFrame(ctx, reel.photos.get(person.id), person.name, -photo / 2, -photo / 2, photo, tone, T.mix(tone, pal.paper, 0.82), tone);
+        entrance(ctx, reel.look?.motion, span(t, 0.1 + i * 0.12, 0.55), col ? 1 : -1);
+        photoFrame(ctx, reel.photos.get(person.id), person.name, -photo / 2, -photo / 2, photo, tone, T.mix(tone, pal.paper, 0.82), tone, 1, reel.look?.frame);
         ctx.restore();
         ctx.save();
         ctx.globalAlpha *= ease(span(t, 0.3 + i * 0.12, 0.4));
@@ -585,7 +761,7 @@ function howScene() {
 // ---- Transitions between scenes ------------------------------------------------
 
 const TRANSITION = 0.36;
-const TRANSITIONS = ['wipe', 'iris', 'diagonal', 'shutter'];
+const TRANSITIONS = ['wipe', 'iris', 'diagonal', 'shutter', 'split', 'stack'];
 
 /**
  * Over every cut: a panel in the event's colours covers the frame and opens
@@ -596,7 +772,9 @@ function transition(ctx, reel, time) {
   const cut = reel.scenes.find((s, i) => i > 0 && Math.abs(time - s.start) < TRANSITION);
   if (!cut) return;
   const index = reel.scenes.indexOf(cut);
-  const kind = TRANSITIONS[(index + reel.kit.event.seed) % TRANSITIONS.length];
+  // Each reel walks the kinds in its own order (a step coprime to six, from its own start).
+  const look = reel.look ?? { transitionStart: reel.kit.event.seed, transitionStep: 1 };
+  const kind = TRANSITIONS[(index * look.transitionStep + look.transitionStart) % TRANSITIONS.length];
   const p = (time - (cut.start - TRANSITION)) / (2 * TRANSITION); // 0 → 1 across the cut
   const cover = p < 0.5 ? ease(p * 2) : 1 - ease((p - 0.5) * 2); // in, then out
   const { pal } = reel;
@@ -628,6 +806,25 @@ function transition(ctx, reel, time) {
     ctx.fillRect(-w / 2 - 40, -H, w + 80, H * 2);
     ctx.fillStyle = pal.primary;
     ctx.fillRect(-w / 2, -H, w, H * 2);
+  } else if (kind === 'split') {
+    // Two halves slide in from the sides, meet in the middle, part again.
+    const w = (W / 2) * cover;
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(0, 0, w, H);
+    ctx.fillStyle = pal.secondary;
+    ctx.fillRect(W - w, 0, w, H);
+    ctx.fillStyle = T.mix(pal.primary, pal.ink, 0.35);
+    ctx.fillRect(Math.max(0, w - 14), 0, 14 * cover, H);
+  } else if (kind === 'stack') {
+    // Three panels rise from the foot one after another, then lift away.
+    colors.forEach((c, i) => {
+      const lag = i * 0.1;
+      const q = clamp((p - lag * 0.5) / (1 - lag));
+      const top = q < 0.5 ? H * (1 - ease(q * 2)) : 0;
+      const bottom = q < 0.5 ? H : H * (1 - ease((q - 0.5) * 2));
+      ctx.fillStyle = c;
+      ctx.fillRect(0, top, W, bottom - top);
+    });
   } else {
     // Shutters: horizontal slats closing and opening.
     const slats = 8;
@@ -653,6 +850,8 @@ function transition(ctx, reel, time) {
 
 /** Small shapes in the event's colours, drifting up across every frame (behind the words). */
 function particles(ctx, reel, time) {
+  const kind = reel.look?.particles ?? 'sparks';
+  if (kind !== 'sparks') return particleShapes(ctx, reel, time, kind);
   ctx.save();
   reel.sparks.forEach((s) => {
     const y = ((s.y - time * s.v * 60) % (H + 120) + H + 120) % (H + 120) - 60;
@@ -667,6 +866,46 @@ function particles(ctx, reel, time) {
       ctx.stroke();
     } else {
       ctx.arc(x, y, s.r * 0.45, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+  ctx.restore();
+}
+
+/** The other particle kinds: confetti falling, stars twinkling, soft bokeh circling. */
+function particleShapes(ctx, reel, time, kind) {
+  ctx.save();
+  reel.sparks.forEach((s, i) => {
+    ctx.fillStyle = s.c;
+    if (kind === 'confetti') {
+      const y = ((s.y + time * s.v * 90) % (H + 120) + H + 120) % (H + 120) - 60;
+      const x = s.x + Math.sin(time * s.s + s.p) * 50;
+      ctx.save();
+      ctx.globalAlpha = s.a + 0.08;
+      ctx.translate(x, y);
+      ctx.rotate(time * s.s * 2 + s.p);
+      ctx.scale(1, Math.cos(time * 3 * s.s + s.p));
+      ctx.fillRect(-s.r * 0.5, -s.r * 0.25, s.r, s.r * 0.5);
+      ctx.restore();
+    } else if (kind === 'twinkle') {
+      const glow = 0.5 + 0.5 * Math.sin(time * (1.5 + s.s * 2) + s.p);
+      const r = s.r * (0.5 + 0.5 * glow);
+      ctx.globalAlpha = (s.a + 0.1) * glow;
+      ctx.beginPath();
+      // A four-point star.
+      for (let k = 0; k < 8; k++) {
+        const a = (k * Math.PI) / 4 + time * 0.3;
+        const d = k % 2 ? r * 0.28 : r;
+        ctx.lineTo(s.x + Math.cos(a) * d, s.y + Math.sin(a) * d);
+      }
+      ctx.closePath();
+      ctx.fill();
+    } else {
+      // bokeh: large soft circles, each on its own slow orbit.
+      const a = time * 0.25 * s.s + s.p;
+      ctx.globalAlpha = s.a * 0.6;
+      ctx.beginPath();
+      ctx.arc(s.x + Math.cos(a) * 60, s.y + Math.sin(a) * 90, s.r * 2.6 + (i % 4) * 10, 0, Math.PI * 2);
       ctx.fill();
     }
   });
@@ -798,7 +1037,44 @@ export function reelList(kit, posts) {
       });
     });
   }
+  list.forEach((item, i) => { item.variant = i; });
   return list;
+}
+
+const BACKDROPS = ['pattern', 'aurora', 'stripes', 'rings', 'dotwave'];
+const PARTICLES = ['sparks', 'confetti', 'twinkle', 'bokeh'];
+const MOTIONS = ['pop', 'slide', 'flip', 'zoom'];
+const FRAMES = ['rounded', 'soft', 'ticket'];
+
+/**
+ * A reel's own look and sound, from its place in the event's list (and the
+ * event's seed, so two events differ too). Each part turns at its own rate,
+ * so neighbouring reels never share a background, particles, motion or key,
+ * and no two of the first sixty share all of them.
+ */
+export function lookFor(variant, seed = 0) {
+  const v = variant + ((Number(seed) >>> 0) % 60);
+  return {
+    backdrop: BACKDROPS[v % BACKDROPS.length],
+    particles: PARTICLES[v % PARTICLES.length],
+    motion: MOTIONS[(v + 1) % MOTIONS.length],
+    frame: FRAMES[v % FRAMES.length],
+    intro: ['center', 'left', 'band'][(v + 1) % 3],
+    mat: ['none', 'tilt', 'stack'][v % 3],
+    mirror: v % 2 === 1,
+    side: v % 2 ? -1 : 1,
+    transitionStart: v % 6,
+    transitionStep: v % 2 ? 5 : 1,
+    music: {
+      key: 50 + ((v * 5) % 12),
+      tempo: [0, 6, -6, 10, -4, 3][v % 6],
+      progression: v % PROGRESSIONS.length,
+      arp: ['up', 'down', 'updown', 'skip'][v % 4],
+      lead: ['triangle', 'square', 'sine', 'saw'][(v + 2) % 4],
+      groove: ['straight', 'offbeat', 'shuffle', 'break'][(v + 1) % 4],
+      pad: v % 3 === 2 ? 'soft' : 'saw',
+    },
+  };
 }
 
 function chunk(list, n) {
@@ -826,7 +1102,7 @@ function groupCaption(role, kit, group) {
 async function prepare(item, kit, colors, style) {
   const spec = item.build(style, colors);
   const pal = T.paletteOf(colors);
-  const reel = { item, kit, colors, pal, scenes: [], photos: new Map(), art: {}, dots: [] };
+  const reel = { item, kit, colors, pal, scenes: [], photos: new Map(), art: {}, dots: [], look: lookFor(item.variant ?? 0, kit.event.seed) };
 
   const [logo, campbuddy, wps] = await Promise.all([
     T.loadImage(kit.event.logo || kit.event.mark),
@@ -851,7 +1127,8 @@ async function prepare(item, kit, colors, style) {
     const info = T.artInfo(skyline);
     reel.art.skyline = info.mono || info.opaque ? T.recolour(skyline, pal.primary) : skyline;
   }
-  const rnd = T.seeded(kit.event.seed);
+  // The reel's own scatter of shapes: same event, different per reel.
+  const rnd = T.seeded((kit.event.seed >>> 0) + (item.variant ?? 0) * 7919);
   const tones = [pal.primary, pal.secondary, ...(pal.extras ?? [])];
   reel.sparks = Array.from({ length: 18 }, (_, i) => ({ x: rnd() * W, y: rnd() * H, r: 10 + rnd() * 26, a: 0.1 + rnd() * 0.12, c: tones[i % tones.length], s: 0.4 + rnd(), p: rnd() * 6, v: 0.3 + rnd() * 0.8, ring: i % 3 === 0 }));
   for (let i = 0; i < 14; i++) {
@@ -888,7 +1165,8 @@ async function prepare(item, kit, colors, style) {
 
   // Every scene lasts whole beats, so the cuts fall on the music.
   const mood = MOODS[item.mood] ?? MOODS.bright;
-  const beat = 60 / mood.bpm;
+  reel.bpm = reelBpm(mood, reel.look);
+  const beat = 60 / reel.bpm;
   // At least MIN_SECONDS: a short reel holds its cards and people a little longer, a beat at a time, in turn.
   const stretchable = reel.scenes.filter((s) => s.stretch);
   let beats = reel.scenes.reduce((n, s) => n + s.beats, 0);
@@ -926,7 +1204,22 @@ const MOODS = {
   soft: { bpm: 84, chords: [[0, 'maj'], [4, 'min'], [5, 'maj'], [7, 'maj']], kick: 'one', snare: false, hats: 0 },
 };
 
-const KEYS = [57, 55, 53, 60, 62, 58];
+// Chord progressions a reel can be built on (steps from the key, chord kind).
+const PROGRESSIONS = [
+  [[0, 'maj'], [7, 'maj'], [9, 'min'], [5, 'maj']],
+  [[9, 'min'], [5, 'maj'], [0, 'maj'], [7, 'maj']],
+  [[0, 'maj'], [9, 'min'], [5, 'maj'], [7, 'maj']],
+  [[0, 'maj'], [4, 'min'], [5, 'maj'], [7, 'maj']],
+  [[0, 'maj'], [5, 'maj'], [9, 'min'], [7, 'maj']],
+  [[9, 'min'], [7, 'maj'], [5, 'maj'], [7, 'maj']],
+  [[0, 'maj'], [2, 'min'], [5, 'maj'], [7, 'maj']],
+  [[5, 'maj'], [7, 'maj'], [4, 'min'], [9, 'min']],
+];
+
+/** The reel's tempo: its mood's, nudged by its look, kept within 80–130. */
+function reelBpm(mood, look) {
+  return Math.min(130, Math.max(80, mood.bpm + (look?.music?.tempo ?? 0)));
+}
 
 function hz(midi) {
   return 440 * 2 ** ((midi - 69) / 12);
@@ -944,7 +1237,9 @@ function chordNotes(root, kind) {
  */
 async function makeMusic(reel) {
   const mood = MOODS[reel.mood] ?? MOODS.bright;
-  const beat = 60 / mood.bpm;
+  const sound = reel.look?.music ?? lookFor(0, reel.kit.event.seed).music;
+  const chords = PROGRESSIONS[sound.progression] ?? mood.chords;
+  const beat = 60 / (reel.bpm ?? reelBpm(mood, reel.look));
   const length = Math.ceil(reel.duration * RATE);
   const ctx = new OfflineAudioContext(2, length, RATE);
   const master = ctx.createGain();
@@ -959,10 +1254,10 @@ async function makeMusic(reel) {
 
   const noise = ctx.createBuffer(1, RATE * 2, RATE);
   const nd = noise.getChannelData(0);
-  const rnd = T.seeded(reel.kit.event.seed);
+  const rnd = T.seeded((reel.kit.event.seed >>> 0) + (reel.item?.variant ?? 0) * 7919);
   for (let i = 0; i < nd.length; i++) nd[i] = rnd() * 2 - 1;
 
-  const key = KEYS[(reel.kit.event.seed >>> 0) % KEYS.length] - 12;
+  const key = sound.key - 12;
   const intro = reel.scenes[0].dur;
   const end = reel.scenes.at(-1).start;
   const beats = Math.ceil(reel.duration / beat);
@@ -1019,28 +1314,46 @@ async function makeMusic(reel) {
     if (at >= reel.duration) break;
     const bar = Math.floor(b / 4);
     const inBar = b % 4;
-    const [step, kind] = mood.chords[bar % mood.chords.length];
+    const [step, kind] = chords[bar % chords.length];
     const notes = chordNotes(key + 12 + step, kind);
     const playing = at >= intro - 0.01 && at < end - 0.01;
+    // A shuffle plays the second eighth late.
+    const half = sound.groove === 'shuffle' ? beat * 0.62 : beat / 2;
 
-    // Pad: the chord, held for the bar.
+    // Pad: the chord, held for the bar (a buzzy pair of saws, or a soft sine pad).
     if (inBar === 0) {
       notes.forEach((n) => {
-        tone('sawtooth', hz(n), at, beat * 4.2, 0.022, { attack: 0.35, cutoff: 1300, detune: -7 });
-        tone('sawtooth', hz(n), at, beat * 4.2, 0.022, { attack: 0.35, cutoff: 1300, detune: 7 });
+        if (sound.pad === 'soft') {
+          tone('sine', hz(n), at, beat * 4.2, 0.05, { attack: 0.6 });
+          tone('triangle', hz(n + 12), at, beat * 4.2, 0.012, { attack: 0.8, cutoff: 2000 });
+        } else {
+          tone('sawtooth', hz(n), at, beat * 4.2, 0.022, { attack: 0.35, cutoff: 1300, detune: -7 });
+          tone('sawtooth', hz(n), at, beat * 4.2, 0.022, { attack: 0.35, cutoff: 1300, detune: 7 });
+        }
       });
     }
     // Bass on the beat (on every beat when it drives), from the drop on.
     if (playing && (mood.kick === 'four' || inBar % 2 === 0)) tone('triangle', hz(key + step - 12 + 12), at, beat * 0.9, 0.2, { cutoff: 500 });
-    // A plucked arpeggio in eighths.
+    // The arpeggio in eighths, in the reel's own pattern and sound.
     for (let e = 0; e < 2; e++) {
-      const n = notes[(inBar * 2 + e) % 3] + 12 + (e && inBar === 3 ? 12 : 0);
-      tone('triangle', hz(n), at + e * beat / 2, 0.28, at < intro ? 0.05 : 0.065);
+      const i = inBar * 2 + e;
+      const order = { up: i % 3, down: 2 - (i % 3), updown: [0, 1, 2, 1][i % 4], skip: [0, 2, 1, 2][i % 4] }[sound.arp] ?? i % 3;
+      const n = notes[order] + 12 + (e && inBar === 3 ? 12 : 0);
+      const buzzy = sound.lead === 'square' || sound.lead === 'saw';
+      const level = (at < intro ? 0.05 : 0.065) * (buzzy ? 0.45 : sound.lead === 'sine' ? 1.3 : 1);
+      tone(sound.lead === 'saw' ? 'sawtooth' : sound.lead, hz(n), at + e * half, 0.28, level, buzzy ? { cutoff: 2400 } : {});
     }
     if (playing) {
       if (mood.kick === 'four' || (mood.kick === 'half' && inBar % 2 === 0) || (mood.kick === 'one' && inBar === 0)) kick(at, mood.kick === 'one' ? 0.5 : 0.85);
-      if (mood.snare && inBar % 2 === 1) hit(at, 0.18, 0.3, 'bandpass', 1800, 0.8);
-      for (let h = 0; h < mood.hats / 4; h++) hit(at + (h * beat * 4) / mood.hats, 0.05, 0.08, 'highpass', 7000);
+      // A broken beat adds a kick on the "and" of two.
+      if (sound.groove === 'break' && inBar === 1 && mood.kick !== 'one') kick(at + half, 0.6);
+      if (mood.snare && inBar % 2 === 1) hit(at, 0.18, 0.3, 'bandpass', sound.groove === 'offbeat' ? 1400 : 1800, 0.8);
+      if (sound.groove === 'offbeat') {
+        // Open hats on the off-beats instead of the even run.
+        if (mood.hats) hit(at + half, 0.12, 0.09, 'highpass', 6000);
+      } else {
+        for (let h = 0; h < mood.hats / 4; h++) hit(at + (mood.hats === 8 && h % 2 ? half : (h * beat * 4) / mood.hats), 0.05, 0.08, 'highpass', 7000);
+      }
     }
   }
 
@@ -1064,7 +1377,7 @@ async function makeMusic(reel) {
   });
   kick(end, 0.8);
   hit(end, 1.4, 0.12, 'highpass', 3000);
-  chordNotes(key + 12, 'maj').forEach((n) => tone('sine', hz(n + 12), end, Math.max(1, reel.duration - end), 0.05, { attack: 0.05 }));
+  chordNotes(key + 12 + chords[0][0], chords[0][1]).forEach((n) => tone('sine', hz(n + 12), end, Math.max(1, reel.duration - end), 0.05, { attack: 0.05 }));
 
   return ctx.startRendering();
 }
@@ -1368,4 +1681,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, MIN_SECONDS, context: C, tools: T, postContent };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, context: C, tools: T, postContent };
