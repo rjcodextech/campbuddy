@@ -1,0 +1,167 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Motion and type polish, on top of the components above. Additive only:
+// no layout, colour or size changes. Every entrance plays once per page
+// load on markup the server renders (logo, active tab), never on lists
+// JS re-renders, so polling can't make anything flicker. Hover motion is
+// for real hover devices only, and reduced-motion turns all of it off.
+
+$ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// ---- Typography --------------------------------------------------------
+// Headings break into even lines instead of leaving one word alone.
+h1,
+h2,
+h3 {
+    text-wrap: balance;
+}
+
+h1,
+h2 {
+    letter-spacing: v.$letter-spacing-tight;
+}
+
+// Body copy avoids a lone last word too.
+p {
+    text-wrap: pretty;
+}
+
+// Counters and times line up digit for digit.
+.progress,
+.schedule-item__time {
+    font-variant-numeric: tabular-nums;
+}
+
+// ---- Logo --------------------------------------------------------------
+.brand__logo--wordmark {
+    animation: cb-logo-in 0.6s $ease-out both;
+    transform-origin: left center;
+    transition: transform 0.25s $ease-spring;
+}
+
+.brand {
+    @include m.hover {
+        .brand__logo--wordmark {
+            transform: scale(1.04) rotate(-1.5deg);
+        }
+    }
+}
+
+@keyframes cb-logo-in {
+    from {
+        opacity: 0;
+        transform: translateX(-8px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+// ---- Tab bar -----------------------------------------------------------
+// The current tab's icon pops onto its pill when the page opens.
+.bottom-nav__item--active .bottom-nav__icon {
+    animation: cb-tab-pop 0.45s $ease-spring both;
+}
+
+.bottom-nav__icon {
+    transition: transform 0.2s $ease-out, opacity 0.15s ease;
+}
+
+.bottom-nav__item:not(.bottom-nav__item--active) {
+    @include m.hover {
+        .bottom-nav__icon {
+            transform: translateY(-2px);
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes cb-tab-pop {
+    0% {
+        transform: scale(0.7);
+    }
+
+    60% {
+        transform: scale(1.12);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+// ---- Icons in cards ----------------------------------------------------
+// The icon nods when its card is hovered; the card lifts a little.
+.action-card__icon,
+.quest-card__icon,
+.guide-step__icon,
+.guide-tip__icon,
+.useful-link__icon {
+    transition: transform 0.3s $ease-spring;
+}
+
+.action-card,
+.quest-card,
+.useful-link {
+    @include m.hover {
+        .action-card__icon,
+        .quest-card__icon,
+        .useful-link__icon {
+            transform: translateY(-2px) rotate(-6deg) scale(1.08);
+        }
+    }
+}
+
+.action-card {
+    transition: transform 0.12s ease, box-shadow 0.2s ease;
+
+    @include m.hover {
+        box-shadow: v.$shadow-raised;
+    }
+}
+
+// A session's star: colour and fill ease in instead of snapping.
+.schedule-item__star .line-icon {
+    transition: fill 0.2s ease, transform 0.25s $ease-spring;
+}
+
+.schedule-item__star--saved .line-icon {
+    transform: scale(1.06);
+}
+
+// Arrows inside buttons and rows nudge toward where they lead.
+.info-row__chevron .line-icon {
+    transition: transform 0.2s $ease-out;
+}
+
+.info-row {
+    @include m.hover {
+        .info-row__chevron .line-icon {
+            transform: translateX(3px);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .brand__logo--wordmark,
+    .bottom-nav__item--active .bottom-nav__icon {
+        animation: none;
+    }
+
+    .brand__logo--wordmark,
+    .bottom-nav__icon,
+    .action-card__icon,
+    .quest-card__icon,
+    .guide-step__icon,
+    .guide-tip__icon,
+    .useful-link__icon,
+    .schedule-item__star .line-icon,
+    .info-row__chevron .line-icon {
+        transition: none;
+        transform: none !important;
+    }
+}
