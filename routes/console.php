@@ -114,6 +114,13 @@ Schedule::call(fn () => FetchLogRetention::prune())
     ->dailyAt('03:20')
     ->name('prune-fetch-log')
     ->withoutOverlapping(30);
+// The Social media page's kept copies of logos, artwork and fonts: anything
+// older than a day goes every night (fetched again when a page needs it).
+// 00:15, after the midnight roster run.
+Schedule::call(fn () => Artisan::call('campbuddy:clear-social-cache'))
+    ->dailyAt('00:15')
+    ->name('clear-social-cache')
+    ->withoutOverlapping(30);
 // Tell search engines about new and changed pages (IndexNow) once a day. Run
 // in-process (Artisan::call) like the queue drain below — hosts often disable
 // proc_open. The command itself does nothing outside production.

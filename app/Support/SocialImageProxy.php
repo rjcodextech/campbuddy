@@ -37,6 +37,42 @@ class SocialImageProxy
         return false;
     }
 
+    /** Copies older than this are removed every night (`campbuddy:clear-social-cache`). */
+    public const KEEP_HOURS = 24;
+
+    /**
+     * Removes kept copies (and their type files) older than `$hours`: the
+     * next Social media page that needs one fetches it again. A copy made
+     * in the last day stays, so a page open at midnight keeps working.
+     *
+     * @return array{files: int, bytes: int} what was (or, with $dryRun, would be) removed
+     */
+    public static function prune(int $hours = self::KEEP_HOURS, bool $dryRun = false): array
+    {
+        $disk = Storage::disk('local');
+        $cutoff = now()->subHours($hours)->getTimestamp();
+        $files = 0;
+        $bytes = 0;
+        foreach ($disk->files('social-cache') as $path) {
+            if (str_ends_with($path, '.type') || $disk->lastModified($path) >= $cutoff) {
+                continue;
+            }
+            $bytes += $disk->size($path);
+            $files++;
+            if (! $dryRun) {
+                $disk->delete([$path, $path.'.type']);
+            }
+        }
+        // A type file whose copy is already gone.
+        foreach ($disk->files('social-cache') as $path) {
+            if (str_ends_with($path, '.type') && ! $disk->exists(substr($path, 0, -5)) && ! $dryRun) {
+                $disk->delete($path);
+            }
+        }
+
+        return ['files' => $files, 'bytes' => $bytes];
+    }
+
     public static function respond(string $url): Response
     {
         abort_unless(self::allowed($url), 404);
