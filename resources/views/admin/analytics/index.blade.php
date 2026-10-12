@@ -93,6 +93,8 @@
         </div>
     </form>
 
+    @include('admin.analytics._usage-post')
+
     @if ($filters['invalid'])
         <x-alert type="warning" title="Those dates didn't work" class="mb-6">
             Pick a start date on or before the end date, no later than today and not older than 14 months. Showing the {{ strtolower($periods[$filters['period']]) }} instead.

@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\QuestController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\Admin\ScheduleDelayController;
 use App\Http\Controllers\Admin\SocialController;
+use App\Http\Controllers\Admin\UsagePostController;
 use App\Http\Controllers\CalendarFileController;
 use App\Http\Controllers\EventMemoriesPageController;
 use App\Http\Controllers\EventPageController;
@@ -130,6 +131,8 @@ Route::prefix('admin')->group(function () {
 
         // Google Analytics, read here (one GA stream at a time; cached an hour).
         Route::get('analytics', AnalyticsController::class)->middleware('throttle:30,1')->name('admin.analytics.index');
+        // A social media post about how one WordCamp used CampBuddy (numbers as JSON; drawn in the browser).
+        Route::get('analytics/usage-post', UsagePostController::class)->middleware('throttle:20,1')->name('admin.analytics.usage-post');
         // What attendees said on the after-event thank-you card.
         Route::get('feedback', FeedbackController::class)->name('admin.feedback.index');
         // CampBuddy's artisan commands: what each does, and a Run form (one at a time).

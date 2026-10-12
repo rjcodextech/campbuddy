@@ -189,6 +189,31 @@ class AnalyticsReport
     }
 
     /**
+     * Runs named Data API reports (as built by a caller, e.g. UsagePost) in
+     * batches of five, and gives back each one's rows.
+     *
+     * @param  array<string, array>  $requests
+     * @return array<string, list<array<string, string|float>>>
+     */
+    public static function runReports(array $requests): array
+    {
+        $client = self::client();
+        $property = config('analytics.property_id');
+        $reports = [];
+        foreach (array_chunk($requests, 5, true) as $chunk) {
+            $results = $client
+                ->post("https://analyticsdata.googleapis.com/v1beta/properties/{$property}:batchRunReports", ['requests' => array_values($chunk)])
+                ->throw()
+                ->json('reports', []);
+            foreach (array_keys($chunk) as $i => $name) {
+                $reports[$name] = self::rows($results[$i] ?? []);
+            }
+        }
+
+        return $reports;
+    }
+
+    /**
      * The reports the page shows. dims/metrics are GA4 API names; `events`
      * narrows a report to those event names; `order` sorts by a metric (desc)
      * or by date.

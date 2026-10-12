@@ -44,6 +44,10 @@ class AnalyticsController extends Controller
             'report' => $report,
             'error' => $error,
             'eventNames' => Event::pluck('display_name', 'slug')->all(),
+            // Usage post: WordCamps whose numbers have begun (3 days before their first day), newest first.
+            'usageEvents' => Event::whereIn('status', ['active', 'archived'])->whereNotNull('starts_on')
+                ->where('starts_on', '<=', today()->addDays(\App\Support\UsagePost::DAYS_AROUND)->toDateString())
+                ->orderByDesc('starts_on')->limit(200)->pluck('display_name', 'slug')->all(),
         ]);
     }
 }
