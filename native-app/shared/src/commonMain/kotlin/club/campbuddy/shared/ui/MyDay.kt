@@ -167,6 +167,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                 }
             }
         }
+        item(key = "data-controls") { DataControls(event.slug) }
     }
 }
 

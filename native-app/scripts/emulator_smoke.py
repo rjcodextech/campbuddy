@@ -150,7 +150,7 @@ scroll_down(2)
 # ---- the event ------------------------------------------------------------------------------------------------
 tap_text("WordCamp Demo 2026")
 step("event Home: what is happening now", wait("NOW", 20) is not None)
-step("event Home: up next with the clash noted", find("at the same time") is not None or find("Up next") is not None)
+step("event Home: up next with the clash noted", find("Up next") is not None or find("Happening now") is not None)
 adb("shell", "input", "swipe", "1070", "1700", "1070", "700", "400")
 time.sleep(1)
 step("event Home: start-here card for a first-timer", find("Read the guide") is not None)
@@ -237,6 +237,14 @@ step("the preview follows the typing", find("Asha Rao") is not None)
 shot("08-camp-card")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")  # close the keyboard
 time.sleep(1)
+
+# ---- Your data -------------------------------------------------------------------------------------------------------------
+tap_text("My Day", exact=True)
+scroll_down(4)
+step("My Day offers to clear your data", wait("Clear my data on this phone", 8) is not None)
+tap_text("Clear my data on this phone")
+tap_text("Clear", exact=True)
+step("clearing says so", wait("Cleared. Nothing of yours is left", 8) is not None)
 
 # ---- Guide ------------------------------------------------------------------------------------------------------------------
 tap_text("Home", exact=True)
