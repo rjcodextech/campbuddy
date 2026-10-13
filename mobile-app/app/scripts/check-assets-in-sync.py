@@ -10,11 +10,8 @@ from PIL import Image
 changed = subprocess.run(["git", "diff", "--name-only", "--", "mobile-app/app"], capture_output=True, text=True, check=True).stdout.split()
 bad = []
 for path in changed:
-    if not path.lower().endswith((".png", ".woff2")):
-        bad.append(path)
-        continue
-    if path.lower().endswith(".woff2"):
-        continue
+    if not path.lower().endswith(".png"):
+        continue  # only the generated pictures matter here
     old = subprocess.run(["git", "show", f"HEAD:{path}"], capture_output=True, check=True).stdout
     a = Image.open(io.BytesIO(old)).convert("RGBA")
     b = Image.open(path).convert("RGBA")

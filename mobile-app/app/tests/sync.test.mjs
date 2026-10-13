@@ -71,3 +71,55 @@ test('every icon the stores need exists', () => {
     assert.ok(readFileSync(new URL(file, app)).length > 500, file);
   }
 });
+
+// ---- Android and iOS must offer the same things ---------------------------------------------
+
+const pluginsIn = (text, pattern) => [...text.matchAll(pattern)].map((m) => m[1].toLowerCase().replace(/[^a-z]/g, '')).sort();
+
+test('Android and iOS carry the same native plugins as package.json', () => {
+  const declared = Object.keys(pkg.dependencies)
+    .filter((n) => !/@capacitor\/(android|ios|core)$/.test(n))
+    .map((n) => n.split('/').pop().toLowerCase().replace(/[^a-z]/g, ''))
+    .sort();
+  const android = pluginsIn(read(app, 'android/capacitor.settings.gradle'), /^include ':([a-z-]+)'$/gm).filter((n) => n !== 'capacitorandroid');
+  const ios = pluginsIn(read(app, 'ios/App/CapApp-SPM/Package.swift'), /\.package\(name: "([A-Za-z]+)", path/g);
+
+  const bare = (list) => list.map((n) => n.replace(/^capgo/, '').replace(/^capacitor/, '')).sort();
+  assert.deepEqual(bare(android), bare(declared));
+  assert.deepEqual(bare(ios), bare(declared));
+});
+
+test('both stores get the same permissions and capabilities', () => {
+  const manifest = read(app, 'android/app/src/main/AndroidManifest.xml');
+  const plist = read(app, 'ios/App/App/Info.plist');
+  const entitlements = read(app, 'ios/App/App/App.entitlements');
+
+  // Notifications and background push
+  assert.match(manifest, /POST_NOTIFICATIONS/);
+  assert.match(plist, /remote-notification/);
+  assert.match(entitlements, /aps-environment/);
+  // Face ID / fingerprint for the organizer lock
+  assert.match(plist, /NSFaceIDUsageDescription/);
+  // Links that open in the app
+  assert.match(manifest, /autoVerify="true"/);
+  assert.match(entitlements, /associated-domains/);
+  // Only the live site, over https, in both
+  assert.match(plist, /WKAppBoundDomains/);
+  assert.match(manifest, /usesCleartextTraffic="false"/);
+  // Nothing tracks across apps
+  assert.match(read(app, 'ios/App/App/PrivacyInfo.xcprivacy'), /NSPrivacyTracking<\/key>\s*<false\/>/);
+});
+
+test('both projects use the same brand colours, and the offline page exists once for both', () => {
+  assert.match(read(app, 'android/app/src/main/res/values/ic_launcher_background.xml'), /#60121C/i);
+  assert.equal(config.plugins.LocalNotifications.iconColor, '#60121c');
+  assert.match(read(app, 'www/offline.html'), /--maroon: #60121c/);
+});
+
+test('both Firebase hooks are in place (the files themselves are never committed)', () => {
+  assert.match(read(app, 'android/app/build.gradle'), /google-services/);
+  assert.match(read(app, 'ios/App/App/AppDelegate.swift'), /FirebaseMessaging/);
+  const ignore = read(app, '.gitignore');
+  assert.match(ignore, /google-services\.json/);
+  assert.match(ignore, /GoogleService-Info\.plist/);
+});

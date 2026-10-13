@@ -103,4 +103,37 @@ class AppSyncTest extends TestCase
         $this->assertSame($pwa['short_name'], $shell['appName']);
         $this->assertFileExists(public_path('media/favicon.png'), 'the app icons are made from this file (scripts/make-assets.py)');
     }
+
+    public function test_every_bottom_tab_of_the_panel_in_the_app_is_a_real_page(): void
+    {
+        $node = trim((string) shell_exec(PHP_OS_FAMILY === 'Windows' ? 'where node 2>NUL' : 'command -v node'));
+        if ($node === '') {
+            $this->markTestSkipped('node is not installed');
+        }
+
+        $json = shell_exec('node '.escapeshellarg(base_path('tools/organizer-tabs.mjs')));
+        $pages = json_decode((string) $json, true);
+        $this->assertIsArray($pages, 'tools/organizer-tabs.mjs must print JSON');
+
+        $hrefs = collect($pages)->flatten()->unique()->values();
+        $this->assertGreaterThan(8, $hrefs->count());
+
+        foreach ($hrefs as $href) {
+            try {
+                Route::getRoutes()->match(\Illuminate\Http\Request::create($href, 'GET'));
+            } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+                $this->fail("The app shows a tab to {$href}, but the website has no such page.");
+            }
+        }
+    }
+
+    public function test_the_attendee_bottom_navigation_only_names_real_pages(): void
+    {
+        preg_match_all("/'route' => '([a-z.-]+)'/", file_get_contents(resource_path('views/attendee/partials/nav.blade.php')), $names);
+
+        $this->assertNotEmpty($names[1]);
+        foreach ($names[1] as $name) {
+            $this->assertTrue(Route::has($name), "The attendee bottom bar links to route {$name}, which does not exist.");
+        }
+    }
 }
