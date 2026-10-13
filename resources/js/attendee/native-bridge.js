@@ -337,7 +337,7 @@ function showUpdateScreen(storeUrl) {
   screen.id = 'app-update-screen';
   screen.setAttribute('role', 'alertdialog');
   screen.setAttribute('aria-modal', 'true');
-  screen.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#fffaf4;color:#2a1a14;font:16px system-ui,sans-serif';
+  screen.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#fcf1db;color:#2a1a14;font:16px system-ui,sans-serif';
 
   const heading = document.createElement('h1');
   heading.textContent = 'Please update CampBuddy';
@@ -351,7 +351,7 @@ function showUpdateScreen(storeUrl) {
     const button = document.createElement('a');
     button.href = storeUrl;
     button.textContent = 'Update';
-    button.style.cssText = 'min-height:48px;min-width:160px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:#c33a19;color:#fff;font-weight:600;text-decoration:none';
+    button.style.cssText = 'min-height:48px;min-width:160px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:#60121c;color:#fff;font-weight:600;text-decoration:none';
     screen.append(button);
   }
 

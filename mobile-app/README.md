@@ -16,3 +16,4 @@ Planning docs + `app/` (Capacitor shell, branch `app`; last sync: **13 Oct 2026*
 - Web: P0 A + B ban chuke; ab 30-din retention, day 7/15 push, Memories, Notifications tab, GA tracking bhi (sab `v2_dev`, deploy baaki).
 - App: plan taiyaar, **owner ke 7 faisle baaki** → [02-hybrid-app/11-owner-decisions.md](02-hybrid-app/11-owner-decisions.md).
 - Naya blocker mila: Discovery mein **report/block web mein hai hi nahi** → Apple 1.2 ke liye zaroori.
+- **[SETUP.md](SETUP.md) — accounts, Firebase, signing, server `.env`: aapki ek saath configuration list.**

@@ -130,7 +130,7 @@ class NativePush
                 'priority' => 'HIGH',
                 'ttl' => $ttl.'s',
                 'collapse_key' => $kind,
-                'notification' => ['channel_id' => 'announcements', 'icon' => 'ic_stat_campbuddy', 'color' => '#c33a19'],
+                'notification' => ['channel_id' => 'announcements', 'icon' => 'ic_stat_campbuddy', 'color' => '#60121c'],
             ],
             'apns' => [
                 'headers' => ['apns-expiration' => (string) (time() + $ttl), 'apns-collapse-id' => substr($kind, 0, 64)],

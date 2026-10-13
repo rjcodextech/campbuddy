@@ -21,7 +21,7 @@
   "plugins": {
     "LocalNotifications": {
       "smallIcon": "ic_stat_campbuddy",
-      "iconColor": "#c33a19"
+      "iconColor": "#60121c"
     },
     "PushNotifications": {
       "presentationOptions": ["badge", "sound", "alert"]

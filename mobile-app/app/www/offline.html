@@ -4,25 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
+<meta name="theme-color" content="#fcf1db">
 <title>CampBuddy</title>
 <style>
-  :root { --brand: #c33a19; --bg: #fffaf4; --ink: #2a1a14; --muted: #6b574d; }
+  /* Inter, the same text font as the website, bundled so it is here with no signal. */
+  @font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/inter-400.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; font-weight: 600; font-style: normal; font-display: swap; src: url('fonts/inter-600.woff2') format('woff2'); }
+  @font-face { font-family: 'Inter'; font-weight: 700; font-style: normal; font-display: swap; src: url('fonts/inter-700.woff2') format('woff2'); }
+
+  :root { --maroon: #60121c; --orange: #da7f01; --cream: #fcf1db; --ink: #2b1014; --muted: #6e5a54; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px 16px; text-align: center; padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
-  img { width: 88px; height: 88px; border-radius: 20px; }
-  h1 { margin: 0; font-size: 1.35rem; }
-  p { margin: 0; max-width: 28rem; color: var(--muted); line-height: 1.5; }
-  button { appearance: none; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font: inherit; font-weight: 600; min-height: 48px; min-width: 160px; padding: 0 22px; }
+  html, body { margin: 0; height: 100%; background: var(--cream); color: var(--ink); font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; -webkit-text-size-adjust: 100%; }
+  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px 20px; text-align: center; padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  .wordmark { width: min(280px, 72vw); height: auto; margin-bottom: 8px; }
+  h1 { margin: 0; font-size: 1.375rem; line-height: 1.25; font-weight: 700; letter-spacing: -0.01em; }
+  p { margin: 0; max-width: 24rem; color: var(--muted); font-size: 1rem; line-height: 1.5; }
+  button { appearance: none; border: 0; border-radius: 12px; background: var(--maroon); color: #fff; font: inherit; font-weight: 600; min-height: 48px; min-width: 176px; padding: 0 24px; cursor: pointer; }
+  button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
   button:active { transform: scale(0.97); }
-  .status { min-height: 1.5em; font-size: 0.9rem; }
+  .status { min-height: 1.5em; font-size: 0.875rem; }
+  @media (prefers-reduced-motion: reduce) { button:active { transform: none; } }
 </style>
 </head>
 <body>
 <main>
-  <img src="icon.png" alt="" width="88" height="88">
-  <h1>No internet right now</h1>
-  <p>CampBuddy needs a connection to open. Pages you opened before stay available once you are back online or when they were saved on this phone.</p>
+  <img class="wordmark" src="wordmark.png" alt="CampBuddy">
+  <h1>You are offline</h1>
+  <p>CampBuddy needs a connection to open this page. Pages you opened before stay available, and your saved session reminders still ring.</p>
   <button id="retry" type="button">Try again</button>
   <p class="status" role="status" aria-live="polite" id="status"></p>
 </main>

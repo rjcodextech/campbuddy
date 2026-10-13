@@ -16,3 +16,4 @@
 12. [12-one-codebase-offline-speed.md](12-one-codebase-offline-speed.md) — ek code, offline, fast: kaise
 13. [13-industry-standards.md](13-industry-standards.md) — security, privacy, accessibility, CI/CD, store requirements
 14. [14-implementation-status.md](14-implementation-status.md) — kya ban gaya, kya baaki (branch `app`)
+15. [15-admin-and-manager-in-app.md](15-admin-and-manager-in-app.md) — organizer / admin ko app mein kaise laayein (plan)
