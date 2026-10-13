@@ -96,7 +96,7 @@ fun EventScreen(slug: String, onBack: () -> Unit) {
                         "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
                         "explore" -> ExploreTab(slug)
-                        "camp-card" -> CampCardTab()
+                        "camp-card" -> CampCardTab(e.value.name)
                         "memories" -> MemoriesTab(slug)
                         else -> Unit
                     }

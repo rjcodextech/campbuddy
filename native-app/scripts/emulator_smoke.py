@@ -205,7 +205,7 @@ shot("06b-contribute")
 
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
 tap_text("Camp Card", exact=True)
-step("camp card form", wait("Save my card", 10) is not None)
+step("camp card form", wait("Ticket", 10) is not None)
 type_into("Your name", "Asha Rao")
 step("the preview follows the typing", find("Asha Rao") is not None)
 shot("08-camp-card")

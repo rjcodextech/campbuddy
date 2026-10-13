@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import org.jetbrains.compose.resources.painterResource
+import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.Res
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.Image
 import club.campbuddy.shared.model.ContributorTable
 import club.campbuddy.shared.domain.ContribTeam
 import club.campbuddy.shared.domain.CONTRIB_TEAMS
@@ -606,33 +612,65 @@ private val CARD_FIELDS = listOf(
     "name" to "Your name",
     "role" to "Role",
     "company" to "Company or community",
+    "interests" to "Interests (separate with commas)",
     "wordpressOrg" to "WordPress.org username",
     "linkedin" to "LinkedIn link",
     "website" to "Website",
 )
 
+private val TICKET_RED = Color(0xFF6E1111)
+private val INK_DARK = Color(0xFF1F1B1C)
+
+/** The tags typed in the interests box: tidy, no repeats, at most five. */
+private fun interestTags(text: String?): List<String> =
+    text.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }.take(5)
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CampCardTab() {
+fun CampCardTab(eventName: String = "WordCamp") {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
     val saved = env.user.card()
     val profile = env.user.profile
-    var fields by remember { mutableStateOf(CARD_FIELDS.associate { (key, _) -> key to (saved[key] ?: if (key == "role") profile.profession.orEmpty() else if (key == "wordpressOrg") profile.wporg.orEmpty() else "") }) }
+    var fields by remember {
+        mutableStateOf(
+            CARD_FIELDS.associate { (key, _) ->
+                key to (saved[key] ?: if (key == "role") profile.profession.orEmpty() else if (key == "wordpressOrg") profile.wporg.orEmpty() else "")
+            },
+        )
+    }
     var message by remember { mutableStateOf<String?>(null) }
+    val name = fields["name"].orEmpty()
+    val role = listOf("role", "company").mapNotNull { fields[it]?.takeIf(String::isNotBlank) }.joinToString(" · ")
+    val tags = interestTags(fields["interests"])
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(words("tabs.camp_card"), style = MaterialTheme.typography.headlineSmall) }
-        item { Text("Your card stays on this phone until you choose to share it.", style = MaterialTheme.typography.bodyMedium) }
         item {
-            Column(
-                Modifier.fillMaxWidth().background(brand.primary, RoundedCornerShape(brand.radius.dp)).padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(fields["name"].orEmpty().ifBlank { "Your name" }, style = MaterialTheme.typography.titleLarge.copy(color = androidx.compose.ui.graphics.Color.White))
-                listOf("role", "company").mapNotNull { fields[it]?.takeIf(String::isNotBlank) }.takeIf { it.isNotEmpty() }
-                    ?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.background)) }
-                profile.interests.takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · ") { t -> t.replaceFirstChar { c -> c.uppercase() } }, style = MaterialTheme.typography.bodySmall.copy(color = brand.accent)) }
+            Text(
+                if (name.isBlank()) "This is a preview. Fill in the form below to make it yours." else "Your card stays on this phone until you choose to share it.",
+                style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
+            )
+        }
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                item {
+                    Card(Modifier.fillParentMaxWidth(0.92f)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Ticket", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
+                            TicketArt(eventName, name, role, tags)
+                        }
+                    }
+                }
+                item {
+                    Card(Modifier.fillParentMaxWidth(0.92f)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("Classic", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
+                            ClassicArt(eventName, name, role, tags)
+                        }
+                    }
+                }
             }
         }
         CARD_FIELDS.forEach { (key, label) ->
@@ -651,6 +689,77 @@ fun CampCardTab() {
         item {
             PrimaryButton("Save my card", { env.user.saveCard(fields); message = "Saved on this phone." }, Modifier.fillMaxWidth())
             message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
+        }
+    }
+}
+
+/** The "Ticket" layout: a deep-red header with the event, then the person's name on a cream ticket. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TicketArt(event: String, name: String, role: String, tags: List<String>) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(16.dp)
+    Column(Modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
+        Box(Modifier.fillMaxWidth().height(160.dp).background(TICKET_RED), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(
+                    Modifier.size(76.dp).background(Color.White, RoundedCornerShape(18.dp)).border(3.dp, brand.accent, RoundedCornerShape(18.dp)),
+                    contentAlignment = Alignment.Center,
+                ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(56.dp)) }
+                Text(
+                    event.uppercase(),
+                    style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFFF4E4C8), letterSpacing = 3.sp, fontWeight = FontWeight.Bold),
+                    textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(2.dp).background(brand.line))
+        Column(
+            Modifier.fillMaxWidth().heightIn(min = 280.dp).padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+        ) {
+            Text("HI, I'M", style = MaterialTheme.typography.labelLarge.copy(color = brand.accent, letterSpacing = 4.sp, fontWeight = FontWeight.Bold))
+            Text(
+                name.ifBlank { "Your name" },
+                style = MaterialTheme.typography.headlineSmall.copy(color = TICKET_RED, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold),
+                textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
+            )
+            Box(Modifier.padding(vertical = 12.dp).size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
+            if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = brand.muted, fontWeight = FontWeight.Normal), textAlign = TextAlign.Center)
+            if (tags.isNotEmpty()) {
+                FlowRow(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    tags.forEach { tag ->
+                        Text(
+                            tag, style = MaterialTheme.typography.labelLarge.copy(color = TICKET_RED),
+                            modifier = Modifier.background(brand.peach.copy(alpha = 0.6f), RoundedCornerShape(50)).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The "Classic" layout: dark card, gold accent. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun ClassicArt(event: String, name: String, role: String, tags: List<String>) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(16.dp)
+    Column(
+        Modifier.fillMaxWidth().clip(shape).background(INK_DARK).heightIn(min = 400.dp).padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Text(event.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.accent, letterSpacing = 2.sp, fontWeight = FontWeight.Bold))
+        Box(Modifier.size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
+        Text(name.ifBlank { "Your name" }, style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 80.dp))
+        if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD9CFC6), fontWeight = FontWeight.Normal))
+        if (tags.isNotEmpty()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                tags.forEach { tag ->
+                    Text(tag, style = MaterialTheme.typography.labelLarge.copy(color = brand.accent), modifier = Modifier.border(1.dp, brand.accent, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp))
+                }
+            }
         }
     }
 }
