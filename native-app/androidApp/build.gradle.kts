@@ -24,6 +24,13 @@ val firebase: Map<String, String> = run {
     )
 }
 
+// The upload key for the store build lives next to the Firebase file (not in git). Without it the release build is unsigned.
+val signing: Map<String, String> = run {
+    val file = rootProject.file("../storage/app/analytics/android-signing.txt")
+    if (!file.exists()) return@run emptyMap()
+    file.readLines().mapNotNull { line -> line.substringBefore("=", "").takeIf { it.isNotBlank() && !line.startsWith("NOTE") }?.let { it to line.substringAfter("=") } }.toMap()
+}
+
 android {
     namespace = "club.campbuddy.app"
     compileSdk = 36
@@ -42,6 +49,16 @@ android {
             buildConfigField("String", key, "\"${firebase[key].orEmpty()}\"")
         }
     }
+    signingConfigs {
+        if (signing["keystore"] != null) {
+            create("upload") {
+                storeFile = rootProject.file("../storage/app/analytics/" + signing.getValue("keystore"))
+                keyAlias = signing["alias"]
+                storePassword = signing["storepass"]
+                keyPassword = signing["keypass"]
+            }
+        }
+    }
     buildTypes {
         // The debug build installs next to the store app (Capacitor, same id) for side-by-side testing.
         debug {
@@ -52,6 +69,7 @@ android {
             buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
         }
         release {
+            signingConfigs.findByName("upload")?.let { signingConfig = it }
             isMinifyEnabled = false
             buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
         }

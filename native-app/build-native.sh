@@ -19,6 +19,6 @@ GRADLE="$(ls -d "$BUILD"/gradle-*/bin/gradle.bat | head -1)"
 cd "$HERE"
 case "$MODE" in
   test)    "$GRADLE" :shared:testDebugUnitTest --no-daemon ;;
-  release) "$GRADLE" :androidApp:assembleRelease --no-daemon ;;
+  release) "$GRADLE" :androidApp:assembleRelease :androidApp:bundleRelease --no-daemon ;;
   *)       "$GRADLE" :androidApp:assembleDebug --no-daemon ;;
 esac
