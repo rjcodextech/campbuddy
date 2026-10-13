@@ -45,6 +45,8 @@ Jo **nahi** chahiye: Google Maps key, payment SDK, login/SSO, analytics SDK (GA 
    - `.env`: `FCM_CREDENTIALS_PATH=/home/<user>/secrets/campbuddy-fcm.json` (project id file se aa jata hai; chaho to `FCM_PROJECT_ID=` bhi).
 6. **iOS Firebase SDK (ek baar, Mac / Codemagic par):** Xcode → File → *Add Package Dependencies* → `https://github.com/firebase/firebase-ios-sdk` → products **FirebaseMessaging** (FirebaseCore saath aa jata hai) → target **App**. Commit karo (`project.pbxproj` + `Package.resolved`). `AppDelegate.swift` ka code pehle se `#if canImport(FirebaseMessaging)` ke andar hai, isliye package jodte hi chalu.
 
+**Files check karne ka tool (upload se pehle):** `cd mobile-app/app && node scripts/check-fcm.mjs --key C:/path/service-account.json` — package/bundle id, project match aur Google se asli token milta hai ya nahi, sab check karke `.env` lines print karta hai.
+
 ## 3. Android signing aur App Links
 
 1. **Upload key banao** (apne laptop par, file kahin safe rakho, git mein kabhi nahi):
