@@ -407,4 +407,10 @@ export async function initNativeBridge() {
 
   checkMinimumVersion();
   resyncReminders().catch(() => {});
+
+  // A "running late" change reaches the saved sessions when My Day or Home refreshes
+  // them; while the app is open, the reminders follow within two minutes.
+  setInterval(() => {
+    if (document.visibilityState === 'visible') resyncReminders().catch(() => {});
+  }, 2 * 60 * 1000);
 }

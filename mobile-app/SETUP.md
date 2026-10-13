@@ -88,7 +88,7 @@ FCM_CREDENTIALS_PATH=/home/<user>/secrets/campbuddy-fcm.json
 ```
 Deploy ke baad:
 1. Naye files upload (DEPLOYMENT.md jaisa) + `public/build/`.
-2. `php artisan migrate --force` — do naye table: `native_push_tokens`, `discovery_reports`.
+2. `php artisan migrate --force` — teen naye table: `native_push_tokens`, `discovery_reports`, `organizer_push_tokens`.
 3. `php artisan config:clear` (agar config cached ho).
 4. Test: `curl https://campbuddy.club/api/v1/app-config` → JSON; dono `.well-known` URL.
 5. Push test (ek event par, kam logon par): `php artisan campbuddy:upcoming-push --dry-run`.
@@ -102,6 +102,20 @@ Deploy ke baad:
 - Icons/splash dobara banane ho: `pip install pillow && python mobile-app/app/scripts/make-assets.py`.
 - Version badhana ho: `mobile-app/app/package.json` + `capacitor.config.json` ka `appendUserAgent` + `android/app/build.gradle` (`versionCode`, `versionName`) + Xcode `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` — sab ek saath.
 
+## 6b. Release builds
+
+- **Android:** GitHub → Actions → **App release (Android)** → Run workflow → `version_code` (pichhle upload se bada number). Secrets chahiye: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `GOOGLE_SERVICES_JSON`. Artifact `.aab` Play Console → Internal testing mein upload karo.
+- **iOS:** `codemagic.yaml` (repo root). Codemagic mein App Store Connect integration `campbuddy_asc` aur env group `campbuddy_ios` (`GOOGLE_SERVICE_INFO_PLIST` base64) banao; workflow **iOS to TestFlight** manual start karo.
+- Dono se pehle: `npm test` (shell config) chalta hai; version number sab jagah ek jaisa rakho (neeche 6).
+
+## 6c. Organizer (admin / event manager) app mein
+
+Code ready hai; aapko kuch alag configure nahi karna (wahi Firebase). Dhyan:
+- **Face ID:** iOS permission text pehle se Info.plist mein hai.
+- **Alerts:** organizer pehli baar sign-in karke "Get an alert…" popup par Allow kare; naye report par ek push aata hai (admin ko sab events, manager ko apne events ke).
+- **Review demo account:** ek alag **event manager** account banao (sirf demo event assigned), credentials review notes mein do, review ke baad password badlo. Asli admin account kabhi nahi.
+- Production `.env` mein `SESSION_SECURE_COOKIE=true` hona chahiye.
+
 ## 7. Store listing
 
 | Chahiye | Kahan se |
@@ -109,7 +123,7 @@ Deploy ke baad:
 | App icon 512 (Play) | `mobile-app/app/store/play-icon-512.png` (bana hua) |
 | Feature graphic 1024×500 | `mobile-app/app/store/play-feature-1024x500.png` (bana hua, chaho to design badlo) |
 | Screenshots | phone se: Android 2–8 (min 2), iPhone 6.9" aur 6.5" ke set — Home, Schedule, My Day, People, Camp Card |
-| Description (EN + HI) | website ke about text se; "Free, no sign-up, no download of data" |
+| Description (EN + HI) | `mobile-app/app/store/listing-en.md` aur `listing-hi.md` (bana hua) |
 | Privacy policy URL | `https://campbuddy.club/privacy` |
 | Support email / abuse contact | owner decide kare (report/block ke liye zaroori) |
 | Play **Data safety** | Collected: device/app IDs (push token), app interactions (analytics); sab "not linked to identity", encrypted in transit, delete request: in-app "Leave discovery / delete my data" |

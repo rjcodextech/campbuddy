@@ -1,6 +1,6 @@
 # Admin aur Event manager ko app mein laana — plan
 
-**Status:** sirf plan (13 Oct 2026). Code abhi nahi.
+**Status:** O1 (entry), O2 (phone fit), O3 (alerts), O4 (Face ID lock) bane hue hain (branch `app`, commit `d6f9a85`). O5 (quick actions) abhi nahi. Details: spec/24-mobile-app.md.
 
 ## Faisla (recommendation)
 **Ek hi app**, jisme chhoti si "Organizer sign in" entry ho. Alag "CampBuddy Organizer" app tabhi jab store review sawal kare ya organizers ko alag icon chahiye.

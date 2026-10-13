@@ -13,11 +13,13 @@ Kuch bhi push/deploy nahi hua. Har package ek alag commit.
 | 5 | FCM push | `1533ad8` | `NativePush` (FCM HTTP v1, bina extra package), thank-you / Memories / day-7 / upcoming / export push app installs ko bhi; day-15 (`needs` profile) web-only; bridge mein token register; iOS Firebase hook (`#if canImport`) |
 | 6 | Report + block | `a619592` | Match par Report sheet (reason + note) + hide, `discovery_reports`, Admin → Event → **Reports** tab (Remove profile / Dismiss), 7 tests |
 | 7 | Brand assets | `30dc005` | Icons (Android adaptive + legacy, iOS 1024), splash (Android all densities, iOS), offline page with bundled Inter + wordmark, store icon/feature image; `scripts/make-assets.py` se dobara ban sakte hain |
+| 8 | Admin + event manager in app | `d6f9a85` | Staff sign-in links (app only), `/manager` + sign-in pages ab SW cache se bahar (security fix), organizer push tokens + report alert, manager Reports tab, Face ID / fingerprint lock, phone fit |
+| 9 | Release plumbing + store text | is commit | Android signed AAB workflow, `codemagic.yaml` (iOS TestFlight), listing EN/HI, spec §24, reminder resync har 2 min |
 
 **Aapke karne ka sab kuch ek jagah:** [../SETUP.md](../SETUP.md). **Admin / Event manager app mein:** [15-admin-and-manager-in-app.md](15-admin-and-manager-in-app.md) (plan).
 
 ## Abhi nahi (aage ke packages)
-1. Organizer entry + organizer push (O1–O5) — plan ready, build nahi.
+1. Organizer quick actions (O5) — chhota, maang par.
 2. **Server-side per-session delay:** "running late" delay ke baad local reminder ka time purana rehta hai; bridge app khulne par resync karta hai, par live delay ke liye FCM ya schedule data se resync chahiye.
 3. **Store screenshots + listing text** (icons/splash ban chuke).
 4. **Signing + release workflow:** Play App Signing, Apple certificates, TestFlight — accounts ke baad.
