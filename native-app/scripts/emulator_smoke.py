@@ -178,9 +178,9 @@ if stars:
 
 # ---- Quest ---------------------------------------------------------------------------------------------------------
 tap_text("Quest", exact=True)
-step("quests load", wait("Say hi to a speaker", 15) is not None)
-tap_text("Say hi to a speaker")
-step("quest progress counts", wait("1 of ", 6) is not None and find("done") is not None)
+step("quests load", wait("First Hello", 15) is not None)
+tap_text("Mark done", exact=True)
+step("quest progress counts", wait("1/", 6) is not None and find("complete") is not None)
 shot("06-quest")
 
 # ---- Explore ---------------------------------------------------------------------------------------------------------

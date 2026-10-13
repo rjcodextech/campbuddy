@@ -93,7 +93,7 @@ fun EventScreen(slug: String, onBack: () -> Unit) {
                     when (selected) {
                         "home" -> HomeTab(e.value, list, offline, onBack, onTab = { selected = it }, onGuide = { guide = true })
                         "my-day" -> MyDayTab(e.value, list, offline)
-                        "quest" -> QuestTab(slug)
+                        "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
                         "explore" -> ExploreTab(slug)
                         "camp-card" -> CampCardTab()

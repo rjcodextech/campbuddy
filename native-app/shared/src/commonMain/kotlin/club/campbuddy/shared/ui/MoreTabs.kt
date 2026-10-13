@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -69,35 +70,132 @@ private fun <T> Listing(
 
 // ---- Quest -----------------------------------------------------------------------------------------
 
+/** The quests the website shows as "Things to do" cards, by title: icon and where the extra button goes. */
+private class QuestMeta(val icon: String, val tab: String? = null, val label: String = "Open")
+
+private val QUEST_META = mapOf(
+    "First Hello" to QuestMeta("hand"),
+    "Beyond My City" to QuestMeta("globe"),
+    "Speaker Hello" to QuestMeta("mic"),
+    "Contribution Curious" to QuestMeta("wrench", "contribute", "Go to Contribute"),
+    "Sponsor Explore" to QuestMeta("tag", "explore", "View sponsors"),
+    "Asked Something" to QuestMeta("help-circle"),
+    "Keep The Connection" to QuestMeta("users", "explore", "Find people"),
+    "Share Camp Card" to QuestMeta("id-card", "camp-card", "Open Camp Card"),
+    "Career Chat" to QuestMeta("briefcase", "explore", "See who's here"),
+)
+
 @Composable
-fun QuestTab(slug: String) {
+fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
     val loader = rememberLoader("quests:$slug") { env.repository.quests(slug) }
     val done = env.user.completedQuests(slug)
-    val total = (loader.state.value as? LoadState.Ready)?.value?.size ?: 0
+    val state by loader.state
 
-    Listing(words("tabs.quest"), loader, "No quests yet.", header = {
-        if (total > 0) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("${done.size} of $total done", style = MaterialTheme.typography.labelMedium)
-                LinearProgressIndicator(progress = { if (total == 0) 0f else done.size.toFloat() / total }, color = brand.accent, trackColor = brand.line, modifier = Modifier.fillMaxWidth().height(8.dp))
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        when (val st = state) {
+            LoadState.Loading -> {
+                item { Text(words("tabs.quest"), style = MaterialTheme.typography.headlineSmall) }
+                item { Loading() }
+            }
+            is LoadState.Failed -> {
+                item { Text(words("tabs.quest"), style = MaterialTheme.typography.headlineSmall) }
+                item { ErrorState(st.message, loader.reload) }
+            }
+            is LoadState.Ready -> {
+                val quests = st.value
+                val total = quests.size
+                val count = quests.count { it.id in done }
+                val things = quests.filter { QUEST_META.containsKey(it.title) }
+                val checklist = quests.filter { !QUEST_META.containsKey(it.title) }
+
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+                            Text(words("tabs.quest"), style = MaterialTheme.typography.headlineSmall)
+                            if (total > 0) Text("$count/$total complete", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        }
+                        if (total > 0) {
+                            LinearProgressIndicator(
+                                progress = { count.toFloat() / total },
+                                color = brand.accent, trackColor = brand.line,
+                                modifier = Modifier.fillMaxWidth().height(12.dp),
+                            )
+                        }
+                    }
+                }
+                if (st.fromCache) item { OfflineNote() }
+                if (total == 0) item { Text("No quests yet.", style = MaterialTheme.typography.bodyMedium) }
+
+                if (things.isNotEmpty()) {
+                    item { Text("Things to do", style = MaterialTheme.typography.titleLarge) }
+                    items(things.size, key = { things[it].id }) { i ->
+                        val quest = things[i]
+                        val meta = QUEST_META.getValue(quest.title)
+                        val checked = quest.id in done
+                        Card {
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+                                Box(
+                                    Modifier.size(52.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)),
+                                    contentAlignment = Alignment.Center,
+                                ) { LineIcon(meta.icon, brand.primary, size = 28.dp) }
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(quest.title, style = MaterialTheme.typography.titleLarge)
+                                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted)) }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        ActionButton(if (checked) "Done ✓" else "Mark done", filled = !checked) { env.user.toggleQuest(slug, quest.id) }
+                                        meta.tab?.let { tab -> ActionButton(meta.label, filled = false) { onTab(tab) } }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (checklist.isNotEmpty()) {
+                    item { Text("Checklist", style = MaterialTheme.typography.titleLarge) }
+                    items(checklist.size, key = { checklist[it].id }) { i ->
+                        val quest = checklist[i]
+                        val checked = quest.id in done
+                        Card(onClick = { env.user.toggleQuest(slug, quest.id) }) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top,
+                                modifier = Modifier.semantics { role = Role.Checkbox; contentDescription = quest.title + if (checked) ", done" else "" },
+                            ) {
+                                Box(
+                                    Modifier.size(24.dp).background(if (checked) brand.primary else brand.surface, RoundedCornerShape(6.dp))
+                                        .border(1.5.dp, if (checked) brand.primary else brand.muted, RoundedCornerShape(6.dp)),
+                                    contentAlignment = Alignment.Center,
+                                ) { if (checked) Text("✓", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White)) }
+                                Column(Modifier.weight(1f)) {
+                                    Text(quest.title, style = MaterialTheme.typography.titleMedium)
+                                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
-    }) { quest ->
-        val checked = quest.id in done
-        Card(onClick = { env.user.toggleQuest(slug, quest.id) }) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top, modifier = Modifier.semantics { role = Role.Checkbox; contentDescription = quest.title + if (checked) ", done" else "" }) {
-                Box(Modifier.size(24.dp).background(if (checked) brand.primary else brand.surface, RoundedCornerShape(6.dp)).border(1.5.dp, if (checked) brand.primary else brand.muted, RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
-                    if (checked) Text("✓", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White))
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(quest.title, style = MaterialTheme.typography.titleMedium)
-                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                }
-            }
-        }
+    }
+}
+
+/** The website's square-cornered button: filled brand colour, or an outline once the thing is done. */
+@Composable
+fun ActionButton(text: String, filled: Boolean, onClick: () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(brand.radius.dp)
+    Box(
+        Modifier.heightIn(min = 48.dp)
+            .background(if (filled) brand.primary else androidx.compose.ui.graphics.Color.Transparent, shape)
+            .border(1.dp, if (filled) brand.primary else brand.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, style = MaterialTheme.typography.labelLarge.copy(color = if (filled) androidx.compose.ui.graphics.Color.White else brand.ink))
     }
 }
 
