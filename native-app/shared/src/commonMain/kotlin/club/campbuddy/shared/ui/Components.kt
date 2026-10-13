@@ -37,11 +37,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.model.BannerConfig
 
 /** Line icons (24x24, round 1.8 strokes) - the same drawings the website uses; unknown names draw a star. */
-private val ICON_PATHS = mapOf(
+private val ICON_PATHS: Map<String, String> = WEBSITE_ICON_PATHS + mapOf(
     "home" to "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
     "dashboard" to "M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10",
     "calendar" to "M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z",
@@ -196,5 +197,25 @@ fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit
 fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     TextButton(onClick = onClick, modifier = modifier.heightIn(min = 48.dp)) {
         Text(text, style = MaterialTheme.typography.labelLarge.copy(color = LocalBrand.current.primary))
+    }
+}
+
+/** The website's rounded choice button: the chosen one is gold with a tick, the others have a thin border. */
+@Composable
+fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(50)
+    Row(
+        Modifier.heightIn(min = 48.dp)
+            .background(if (selected) brand.accent else brand.surface, shape)
+            .border(1.dp, if (selected) brand.accent else brand.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .semantics { this.selected = selected }
+            .padding(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
     }
 }

@@ -108,4 +108,30 @@ class NativeKotlinSyncTest extends TestCase
             $this->assertFileExists(base_path('native-app/shared/src/commonMain/composeResources/drawable/nav_'.str_replace('-', '_', $name).'.png'));
         }
     }
+
+    public function test_the_apps_copy_of_the_website_icons_is_current(): void
+    {
+        $file = str_replace("
+", "
+", file_get_contents(base_path(\App\Console\Commands\ExportAppIconsCommand::PATH)));
+
+        $this->assertSame(\App\Console\Commands\ExportAppIconsCommand::source(), $file, 'Run: php artisan campbuddy:app-icons');
+    }
+
+    public function test_the_apps_contribute_teams_are_the_websites_teams(): void
+    {
+        $js = file_get_contents(base_path('resources/js/attendee/contrib-teams.js'));
+        $kotlin = $this->kotlin('domain/ContribTeams.kt');
+
+        preg_match_all("/^\s{4}id: '([a-z-]+)',\n\s+name: '([^']+)'/m", $js, $teams, PREG_SET_ORDER);
+        $this->assertGreaterThanOrEqual(10, count($teams));
+        foreach ($teams as [$all, $id, $name]) {
+            $this->assertStringContainsString("ContribTeam(\"{$id}\", \"{$name}\"", $kotlin, "Team {$id} is missing: run node native-app/scripts/gen-contrib-teams.mjs");
+        }
+
+        preg_match_all("/key: '([a-z]+)'/", $js, $tags);
+        foreach ($tags[1] as $key) {
+            $this->assertStringContainsString("ContribTag(\"{$key}\"", $kotlin, "Tag {$key} is missing: run node native-app/scripts/gen-contrib-teams.mjs");
+        }
+    }
 }

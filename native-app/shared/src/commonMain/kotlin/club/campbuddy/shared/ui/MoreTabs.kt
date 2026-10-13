@@ -11,6 +11,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import club.campbuddy.shared.model.ContributorTable
+import club.campbuddy.shared.domain.ContribTeam
+import club.campbuddy.shared.domain.CONTRIB_TEAMS
+import club.campbuddy.shared.domain.CONTRIB_QUESTION_TAGS
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
@@ -206,38 +218,168 @@ fun ActionButton(text: String, filled: Boolean, onClick: () -> Unit) {
 
 // ---- Contribute ----------------------------------------------------------------------------------------
 
+private val CONTRIBUTOR_DAY_NOTES = mapOf(
+    "yes" to "Nice. Pick what you enjoy below to see which tables to head for. Many WordCamps ask you to register for Contributor Day separately, so check that you have.",
+    "no" to "No problem. Have a look anyway: most teams also work online, any time you like.",
+    "" to "It's a hands-on day improving WordPress. You don't need to code, and every table welcomes beginners.",
+)
+
+/** "Floor 2 · Hall B · Leads: Asha, Ravi" for one team's tables (the website's wording). */
+private fun whereText(tables: List<ContributorTable>): String =
+    tables.map { t -> listOfNotNull(t.place.takeIf { it.isNotBlank() }, t.leads.takeIf { it.isNotEmpty() }?.let { "Leads: " + it.joinToString(", ") }).joinToString(" · ") }
+        .filter { it.isNotBlank() }.joinToString(" | ")
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ContributeTab(slug: String) {
     val env = LocalEnv.current
-    val words = LocalWords.current
-    val loader = rememberLoader("tables:$slug") { env.repository.tables(slug) }
+    val brand = LocalBrand.current
     val profile = env.user.profile
+    val tablesLoader = rememberLoader("tables:$slug") { env.repository.tables(slug) }
+    val questsLoader = rememberLoader("quests:$slug") { env.repository.quests(slug) }
+    val tables = (tablesLoader.state.value as? LoadState.Ready)?.value.orEmpty()
+    val questId = (questsLoader.state.value as? LoadState.Ready)?.value
+        ?.firstOrNull { it.source == "contributor_day" || (it.source == "default" && it.title == "Contribution Curious") }?.id
+    val byTeam = tables.filter { it.team != null && it.team != "other" }.groupBy { it.team }
 
-    Listing(words("tabs.contribute"), loader, "Contributor Day tables are not announced yet.", header = {
-        Card {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Joining Contributor Day?", style = MaterialTheme.typography.titleMedium)
-                Text("A hands-on day improving WordPress. Beginners welcome.", style = MaterialTheme.typography.bodyMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("yes" to "Yes", "no" to "Not this time").forEach { (value, label) ->
-                        CbChip(
-                            selected = profile.attendingContributorDay == value,
-                            onClick = { env.user.saveProfile(profile.copy(attendingContributorDay = if (profile.attendingContributorDay == value) null else value)) },
-                            label = { Text(label) },
-                        )
+    var selected by rememberSaveable { mutableStateOf(setOf<String>()) }
+    var results by rememberSaveable { mutableStateOf<List<String>?>(null) }
+    var open by remember { mutableStateOf<ContribTeam?>(null) }
+    val day = profile.attendingContributorDay ?: ""
+
+    fun show(team: ContribTeam) {
+        open = team
+        if (questId != null && questId !in env.user.completedQuests(slug)) env.user.toggleQuest(slug, questId)
+    }
+
+    @Composable
+    fun TeamCard(team: ContribTeam) {
+        val where = whereText(byTeam[team.id].orEmpty())
+        Card(onClick = { show(team) }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                Box(Modifier.size(48.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) {
+                    LineIcon(team.icon, brand.primary, size = 26.dp)
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(team.name, style = MaterialTheme.typography.titleLarge)
+                    Text(team.description, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                    if (where.isNotBlank()) Text("Table: $where", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.SemiBold))
+                }
+            }
+        }
+    }
+
+    open?.let { team ->
+        val where = whereText(byTeam[team.id].orEmpty())
+        AlertDialog(
+            onDismissRequest = { open = null },
+            confirmButton = { LinkButton("Got it", { open = null }) },
+            title = { Text(team.name) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(if (team.technical) "TECHNICAL BACKGROUND HELPS" else "NO TECHNICAL BACKGROUND NEEDED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                    Text(team.description, style = MaterialTheme.typography.bodyLarge)
+                    Text("Who it suits", style = MaterialTheme.typography.titleMedium)
+                    Text(team.whoItSuits, style = MaterialTheme.typography.bodyMedium)
+                    Text("A beginner-friendly task", style = MaterialTheme.typography.titleMedium)
+                    Text(team.beginnerTask, style = MaterialTheme.typography.bodyMedium)
+                    Text("At their table", style = MaterialTheme.typography.titleMedium)
+                    Text(team.atTheTable, style = MaterialTheme.typography.bodyMedium)
+                    if (where.isNotBlank()) {
+                        Text("Find the table", style = MaterialTheme.typography.titleMedium)
+                        Text(where, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            },
+        )
+    }
+
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        item {
+            Card {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        "CONTRIBUTE",
+                        style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+                        modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp),
+                    )
+                    Text("Where could you help?", style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp))
+                    Text(
+                        buildAnnotatedString {
+                            append("You don't need to code. Writers, designers, translators and people who are just curious all have a table. Answer a few quick questions to find your team. ")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Students:") }
+                            append(" your contributions show on your WordPress.org profile, which you can put on your CV.")
+                        },
+                        style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
+                    )
+                }
+            }
+        }
+        item {
+            Card {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Going to Contributor Day?", style = MaterialTheme.typography.titleLarge)
+                    Text(CONTRIBUTOR_DAY_NOTES.getValue(if (day in CONTRIBUTOR_DAY_NOTES) day else ""), style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("yes" to "Yes", "" to "Not sure yet", "no" to "Not this time").forEach { (value, label) ->
+                            ChoicePill(label, selected = day == value) { env.user.saveProfile(profile.copy(attendingContributorDay = value.ifEmpty { null })) }
+                        }
                     }
                 }
             }
         }
-    }) { table ->
-        Card {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(table.name.ifBlank { table.team ?: "Table" }, style = MaterialTheme.typography.titleMedium)
-                if (table.place.isNotBlank()) Text(table.place, style = MaterialTheme.typography.bodyMedium)
-                if (table.leads.isNotEmpty()) Text("Led by " + table.leads.joinToString(", "), style = MaterialTheme.typography.bodySmall)
-                table.note?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+
+        val shown = results
+        if (shown == null) {
+            item {
+                Card {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("What kind of work do you enjoy?", style = MaterialTheme.typography.titleLarge)
+                        Text("Pick as many as you like, or skip straight to the matches.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            CONTRIB_QUESTION_TAGS.forEach { tag ->
+                                ChoicePill(tag.label, selected = tag.key in selected) { selected = if (tag.key in selected) selected - tag.key else selected + tag.key }
+                            }
+                        }
+                        PrimaryButton("See my matches", { results = selected.toList() }, Modifier.fillMaxWidth())
+                    }
+                }
+            }
+        } else {
+            item {
+                Card {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Your opening line. Really, this is enough:", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                        Text("\"Hi, this is my first Contributor Day. Can you help me get started?\"", style = MaterialTheme.typography.titleLarge)
+                    }
+                }
+            }
+            val ranked = CONTRIB_TEAMS.sortedByDescending { t -> t.matches.count { it in shown } }
+            items((if (shown.isNotEmpty()) ranked else CONTRIB_TEAMS).take(3), key = { "match-" + it.id }) { TeamCard(it) }
+            item { QuietButton("Answer again", { results = null }, Modifier.fillMaxWidth()) }
+        }
+
+        if (tables.isNotEmpty()) {
+            item {
+                Card {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Tables at this WordCamp", style = MaterialTheme.typography.titleLarge)
+                        Text("Where each team sits on Contributor Day, and who to say hi to.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                        tables.forEach { table ->
+                            Column {
+                                Text(table.name.ifBlank { table.team ?: "Table" }, style = MaterialTheme.typography.titleMedium)
+                                if (table.place.isNotBlank()) Text(table.place, style = MaterialTheme.typography.bodyMedium)
+                                if (table.leads.isNotEmpty()) Text((if (table.leads.size == 1) "Table lead: " else "Table leads: ") + table.leads.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                                table.note?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                            }
+                        }
+                    }
+                }
             }
         }
+
+        item { Text("All contributor teams", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 10.dp)) }
+        items(CONTRIB_TEAMS, key = { "team-" + it.id }) { TeamCard(it) }
     }
 }
 

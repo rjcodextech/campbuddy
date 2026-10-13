@@ -193,6 +193,16 @@ tap_text("Free Steals", exact=True)
 step("free steals", wait("A free forms plugin", 10) is not None)
 shot("07-explore")
 
+# ---- Contribute -----------------------------------------------------------------------------------------------------------
+tap_text("Contribute", exact=True)
+step("contribute asks where you could help", wait("Where could you help?", 10) is not None and find("Going to Contributor Day?") is not None)
+tap_text("Writing code")
+adb("shell", "input", "swipe", "1070", "1700", "1070", "700", "400")
+time.sleep(1)
+tap_text("See my matches")
+step("contribute shows matches with an opening line", wait("Your opening line", 8) is not None and find("Core") is not None)
+shot("06b-contribute")
+
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
 tap_text("Camp Card", exact=True)
 step("camp card form", wait("Save my card", 10) is not None)
