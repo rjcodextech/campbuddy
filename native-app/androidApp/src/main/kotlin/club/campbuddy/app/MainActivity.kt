@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".take(80),
                     openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
                     reminders = reminders,
+                    push = AndroidPush(applicationContext),
                     apiBase = apiBase(prefs),
                 )
             )

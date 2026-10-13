@@ -44,6 +44,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -73,6 +74,13 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false)
     val sessionsLoader = rememberLoader("sessions:$slug") { env.repository.sessions(slug) }
     val event by eventLoader.state
     val sessions by sessionsLoader.state
+
+    // Once notifications are on, tell the server this phone's push token for this event (so organizers can reach it).
+    LaunchedEffect(slug, env.user.notifications.enabled) {
+        if (!env.user.notifications.enabled) return@LaunchedEffect
+        val token = runCatching { env.deps.push.token() }.getOrNull() ?: return@LaunchedEffect
+        runCatching { env.api.registerPush(slug, token, env.user.deviceId()) }
+    }
     val tabs = words.config.enabledTabs()
     var selected by rememberSaveable(slug) { mutableStateOf(tabs.firstOrNull()?.key ?: "home") }
     var guide by rememberSaveable(slug) { mutableStateOf(startInGuide) }

@@ -5,6 +5,25 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+// Firebase (push) is set up from the same google-services.json the website project keeps (not in git). Without the
+// file the app builds and runs, it just has no push. The values go into BuildConfig; no Google plugin is needed.
+val firebase: Map<String, String> = run {
+    val file = rootProject.file("../storage/app/analytics/google-services.json")
+    if (!file.exists()) return@run emptyMap()
+    @Suppress("UNCHECKED_CAST")
+    val json = groovy.json.JsonSlurper().parse(file) as Map<String, Any>
+    val info = json["project_info"] as Map<String, Any>
+    val client = (json["client"] as List<Map<String, Any>>).firstOrNull {
+        ((it["client_info"] as Map<String, Any>)["android_client_info"] as Map<String, Any>)["package_name"] == "club.campbuddy.app"
+    } ?: return@run emptyMap()
+    mapOf(
+        "FIREBASE_PROJECT_ID" to info["project_id"].toString(),
+        "FIREBASE_SENDER_ID" to info["project_number"].toString(),
+        "FIREBASE_APP_ID" to (client["client_info"] as Map<String, Any>)["mobilesdk_app_id"].toString(),
+        "FIREBASE_API_KEY" to ((client["api_key"] as List<Map<String, Any>>).first()["current_key"]).toString(),
+    )
+}
+
 android {
     namespace = "club.campbuddy.app"
     compileSdk = 36
@@ -17,10 +36,19 @@ android {
         versionName = "2.0.0"
     }
     buildFeatures { buildConfig = true }
+    defaultConfig {
+        // Push only works for the store id (the debug build has another id, which Firebase does not know).
+        listOf("FIREBASE_PROJECT_ID", "FIREBASE_SENDER_ID", "FIREBASE_APP_ID", "FIREBASE_API_KEY").forEach { key ->
+            buildConfigField("String", key, "\"${firebase[key].orEmpty()}\"")
+        }
+    }
     buildTypes {
         // The debug build installs next to the store app (Capacitor, same id) for side-by-side testing.
         debug {
             applicationIdSuffix = ".native"
+            listOf("FIREBASE_PROJECT_ID", "FIREBASE_SENDER_ID", "FIREBASE_APP_ID", "FIREBASE_API_KEY").forEach { key ->
+                buildConfigField("String", key, "\"\"")
+            }
             buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
         }
         release {
@@ -39,7 +67,10 @@ dependencies {
     implementation(project(":shared"))
     implementation(libs.androidx.activity.compose)
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.fragment:fragment-ktx:1.8.5") // a current Fragment (the activity-result API needs 1.3+)
     implementation(compose.runtime)
     implementation(compose.foundation)
     implementation(compose.material3)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
 }

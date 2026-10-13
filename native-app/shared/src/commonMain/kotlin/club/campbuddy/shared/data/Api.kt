@@ -55,6 +55,14 @@ val AppJson = Json {
     isLenient = true
 }
 
+@kotlinx.serialization.Serializable
+internal data class PushRegistration(
+    val token: String,
+    @kotlinx.serialization.SerialName("device_id") val deviceId: String,
+    val platform: String,
+    @kotlinx.serialization.SerialName("app_version") val appVersion: String,
+)
+
 /** An answer the server gave that was not a success (the message is the server own, in plain words). */
 class ApiException(val status: Int, override val message: String) : Exception(message)
 
@@ -142,6 +150,12 @@ class ApiClient(
 
     suspend fun reportDiscovery(slug: String, id: String, request: ReportRequest) {
         write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/discovery/$id/report", null, request)
+    }
+
+    /** Tells the server this phone's push token for one event (asked for only after the person said yes to notifications). */
+    suspend fun registerPush(slug: String, token: String, deviceId: String) {
+        write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/push/native-subscribe", null,
+            PushRegistration(token = token, deviceId = deviceId, platform = platform, appVersion = appVersion))
     }
 
     // ---- organizer ----

@@ -48,6 +48,7 @@ class AppDeps(
     val apiBase: String = "https://campbuddy.club/api/v1",
     val openUrl: (String) -> Unit,
     val reminders: club.campbuddy.shared.domain.ReminderPlatform = club.campbuddy.shared.domain.NoReminders,
+    val push: club.campbuddy.shared.domain.PushPlatform = club.campbuddy.shared.domain.NoPush,
 )
 
 private sealed interface Screen {
