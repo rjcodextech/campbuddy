@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
 use App\Http\Controllers\Api\DataVersionController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Api\DiscoveryController;
 use App\Http\Controllers\Api\DiscoveryWaveController;
 use App\Http\Controllers\Api\EventFeedbackController;
 use App\Http\Controllers\Api\FreeStealSuggestionController;
+use App\Http\Controllers\Api\NativePushTokenController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
 use App\Http\Controllers\Api\RosterController;
@@ -28,6 +30,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::get('/health', HealthController::class)->name('api.health');
     Route::get('/cache-version', CacheVersionController::class)->name('api.cache-version');
+    // The native app start-up check: minimum build, store link, feature switches.
+    Route::get('/app-config', AppConfigController::class)->name('api.app-config');
 
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');
@@ -45,6 +49,9 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
 
         Route::middleware('throttle:api-writes')->group(function () {
             Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');
+            // Native app (FCM) token, kept apart from the Web Push table.
+            Route::post('/push/native-subscribe', [NativePushTokenController::class, 'store'])->name('api.push.native-subscribe');
+            Route::delete('/push/native-subscribe', [NativePushTokenController::class, 'destroy'])->name('api.push.native-unsubscribe');
             Route::post('/discovery', [DiscoveryController::class, 'store'])->name('api.discovery.store');
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');

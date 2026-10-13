@@ -32,6 +32,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicStorageController;
 use App\Http\Controllers\RosterRemovalController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\WellKnownController;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -78,6 +79,10 @@ Route::withoutMiddleware([
 
     // PWA manifest for the picker page and any page without an event of its own.
     Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
+
+    // Links that open in the native app when it is installed (Android App Links, iOS Universal Links).
+    Route::get('/.well-known/assetlinks.json', [WellKnownController::class, 'assetLinks'])->name('well-known.assetlinks');
+    Route::get('/.well-known/apple-app-site-association', [WellKnownController::class, 'appleAppSiteAssociation'])->name('well-known.aasa');
 
     // Serves the public disk when the web server doesn't do it itself (no
     // public/storage symlink — see PublicStorageController). Files that exist on
