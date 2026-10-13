@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\App\ConfigController as AppSettingsController;
 use App\Http\Controllers\Api\App\EventController as AppEventController;
+use App\Http\Controllers\Api\App\OrganizerController as AppOrganizerController;
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
@@ -38,7 +39,23 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     // The native app's server-driven settings (Admin > Mobile app).
     Route::get('/app/config', AppSettingsController::class)->name('api.app.config');
 
-    // The native app's read-only event data (same sources as the website pages).
+    // The native app organizer endpoints (admins and event managers, bearer token).
+    Route::post('/app/auth/login', [AppOrganizerController::class, 'login'])->middleware('throttle:20,1')->name('api.app.auth.login');
+    Route::middleware(\App\Http\Middleware\AppOrganizerAuth::class)->prefix('app')->group(function () {
+        Route::post('/auth/logout', [AppOrganizerController::class, 'logout'])->name('api.app.auth.logout');
+        Route::get('/organizer/me', [AppOrganizerController::class, 'me'])->name('api.app.organizer.me');
+        Route::get('/organizer/events', [AppOrganizerController::class, 'events'])->name('api.app.organizer.events');
+        Route::prefix('/organizer/events/{id}')->whereNumber('id')->group(function () {
+            Route::get('/reports', [AppOrganizerController::class, 'reports'])->name('api.app.organizer.reports');
+            Route::post('/reports/{discoveryId}/remove', [AppOrganizerController::class, 'removeReported'])->where('discoveryId', '[a-f0-9]{64}')->name('api.app.organizer.reports.remove');
+            Route::post('/reports/{discoveryId}/dismiss', [AppOrganizerController::class, 'dismissReported'])->where('discoveryId', '[a-f0-9]{64}')->name('api.app.organizer.reports.dismiss');
+            Route::get('/delay', [AppOrganizerController::class, 'delay'])->name('api.app.organizer.delay');
+            Route::post('/delay', [AppOrganizerController::class, 'setDelay'])->name('api.app.organizer.delay.set');
+            Route::post('/delay/clear', [AppOrganizerController::class, 'clearDelay'])->name('api.app.organizer.delay.clear');
+        });
+    });
+
+    // The native app read-only event data (same sources as the website pages).
     Route::get('/app/events', [AppEventController::class, 'index'])->name('api.app.events');
     Route::prefix('app/events/{event:slug}')->group(function () {
         Route::get('/memories', [AppEventController::class, 'memories'])->name('api.app.events.memories');
