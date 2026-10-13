@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\App\ConfigController as AppSettingsController;
+use App\Http\Controllers\Api\App\EventController as AppEventController;
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
@@ -36,6 +37,27 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::get('/app-config', AppConfigController::class)->name('api.app-config');
     // The native app's server-driven settings (Admin > Mobile app).
     Route::get('/app/config', AppSettingsController::class)->name('api.app.config');
+
+    // The native app's read-only event data (same sources as the website pages).
+    Route::get('/app/events', [AppEventController::class, 'index'])->name('api.app.events');
+    Route::prefix('app/events/{event:slug}')->group(function () {
+        Route::get('/memories', [AppEventController::class, 'memories'])->name('api.app.events.memories');
+
+        Route::middleware('event.public')->group(function () {
+            Route::get('/', [AppEventController::class, 'show'])->name('api.app.events.show');
+            Route::get('/sessions', [AppEventController::class, 'sessions'])->name('api.app.events.sessions');
+            Route::get('/speakers', [AppEventController::class, 'speakers'])->name('api.app.events.speakers');
+            Route::get('/sponsors', [AppEventController::class, 'sponsors'])->name('api.app.events.sponsors');
+            Route::get('/organizers', [AppEventController::class, 'organizers'])->name('api.app.events.organizers');
+            Route::get('/deals', [AppEventController::class, 'deals'])->name('api.app.events.deals');
+            Route::get('/free-steals', [AppEventController::class, 'freeSteals'])->name('api.app.events.free-steals');
+            Route::get('/quests', [AppEventController::class, 'quests'])->name('api.app.events.quests');
+            Route::get('/contributor-tables', [AppEventController::class, 'tables'])->name('api.app.events.tables');
+            Route::get('/guide', [AppEventController::class, 'guide'])->name('api.app.events.guide');
+            Route::get('/delay', [AppEventController::class, 'delay'])->name('api.app.events.delay');
+            Route::get('/bundle', [AppEventController::class, 'bundle'])->name('api.app.events.bundle');
+        });
+    });
 
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');

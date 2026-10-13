@@ -81,6 +81,8 @@ class EveryPageAndAccessTest extends TestCase
             'name' => 'campbuddy:prune-fetch-log',
             'kind' => 'photos',
             'discoveryId' => str_repeat('a', 64),
+            'version' => 1,
+            'section' => 'text',
             // Breeze's e-mail verification link.
             'id' => 1,
             'hash' => sha1('x'),
