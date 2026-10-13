@@ -50,6 +50,7 @@ const EVENTS = {
 
   // Onboarding — outcome only, never the answers
   onboarding_complete: [],
+  onboarding_start: [], // "Let's go" on the Make CampBuddy yours card
   onboarding_skip: [],
 
   // My Day
