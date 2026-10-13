@@ -257,6 +257,8 @@
             @include('attendee.partials.about-campbuddy', ['part' => 'more'])
         </main>
 
+        {{-- Shown by native-bridge.js, in the store app only: event staff sign in to the panel there. --}}
+        <p class="footer-note landing-footer" data-app-only hidden>Event staff: <a href="{{ route('manager.login') }}">Event manager sign in</a> &middot; <a href="{{ route('login') }}">Admin sign in</a></p>
         <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>
 
         @if (($events ?? collect())->isNotEmpty())

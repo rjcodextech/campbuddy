@@ -7,7 +7,9 @@ use App\Models\DiscoveryProfile;
 use App\Models\DiscoveryReport;
 use App\Models\Event;
 use Illuminate\Http\JsonResponse;
+use App\Support\NativePush;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * POST /api/v1/events/{event}/discovery/{discoveryId}/report — "Report" on a
@@ -30,7 +32,7 @@ class DiscoveryReportController extends Controller
 
         $card = $profile->publicCard();
 
-        DiscoveryReport::updateOrCreate(
+        $report = DiscoveryReport::updateOrCreate(
             ['discovery_id' => $discoveryId, 'reporter_device_id' => $data['device_id']],
             [
                 'event_id' => $event->id,
@@ -46,6 +48,14 @@ class DiscoveryReportController extends Controller
                 'resolved_at' => null,
             ]
         );
+
+        // A phone alert for the organizers, at most one per profile an hour (a pile-on is one alert).
+        if ($report->wasRecentlyCreated && Cache::add("report-alert:{$event->id}:{$discoveryId}", 1, 3600)) {
+            NativePush::toOrganizers($event, [
+                'title' => 'A profile was reported',
+                'body' => "{$event->display_name}: review it in Reports.",
+            ], 'report-'.$event->id);
+        }
 
         return response()->json(null, 201);
     }

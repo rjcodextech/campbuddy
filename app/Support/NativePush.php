@@ -3,7 +3,10 @@
 namespace App\Support;
 
 use App\Models\Event;
+use App\Models\EventManager;
 use App\Models\NativePushToken;
+use App\Models\OrganizerPushToken;
+use App\Models\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;
@@ -59,7 +62,29 @@ class NativePush
     }
 
     /**
-     * @param  Collection<int, NativePushToken>  $tokens
+     * An alert for the people running the event: every admin, and the active
+     * event managers assigned to it, who signed in on the app. `$path` is the
+     * page inside the panel, relative to "/admin/events/{id}/" or "/manager/events/{id}/".
+     *
+     * @param  array{title: string, body: string}  $payload
+     * @return int phones the alert was handed to
+     */
+    public static function toOrganizers(Event $event, array $payload, string $kind, string $path = 'reports', int $ttl = 86400): int
+    {
+        if (! self::enabled()) {
+            return 0;
+        }
+
+        $managerIds = EventManager::where('is_active', true)->whereHas('events', fn ($q) => $q->whereKey($event->id))->pluck('id');
+        $admins = OrganizerPushToken::where('role', 'admin')->whereIn('user_id', User::pluck('id'))->get();
+        $managers = OrganizerPushToken::where('role', 'manager')->whereIn('user_id', $managerIds)->get();
+
+        return self::toTokens($admins, $payload + ['url' => "/admin/events/{$event->id}/{$path}"], $kind, $ttl)['sent']
+            + self::toTokens($managers, $payload + ['url' => "/manager/events/{$event->id}/{$path}"], $kind, $ttl)['sent'];
+    }
+
+    /**
+     * @param  Collection<int, NativePushToken|OrganizerPushToken>  $tokens
      * @param  array{title: string, body: string, url: string}  $payload
      * @return array{sent: int, expired: int}
      */
@@ -102,6 +127,7 @@ class NativePush
                     $result['sent']++;
                 } elseif ($status === 404 || ($status === 400 && str_contains((string) $response->getBody(), 'INVALID_ARGUMENT'))) {
                     NativePushToken::where('token', $list[$index]->token)->delete();
+                    OrganizerPushToken::where('token', $list[$index]->token)->delete();
                     $result['expired']++;
                 } elseif ($status === 401) {
                     Cache::forget(self::TOKEN_CACHE_KEY);

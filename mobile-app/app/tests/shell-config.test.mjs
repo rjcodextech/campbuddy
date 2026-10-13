@@ -47,6 +47,7 @@ test('iOS: app-bound domain, Universal Links, privacy manifest, no tracking', ()
   const plist = read('ios/App/App/Info.plist');
   assert.match(plist, /WKAppBoundDomains[\s\S]*campbuddy\.club/);
   assert.match(plist, /remote-notification/);
+  assert.match(plist, /NSFaceIDUsageDescription/);
   assert.match(read('ios/App/App/App.entitlements'), /applinks:campbuddy\.club/);
   assert.match(read('ios/App/App/PrivacyInfo.xcprivacy'), /<key>NSPrivacyTracking<\/key>\s*<false\/>/);
   assert.match(read('ios/App/App.xcodeproj/project.pbxproj'), /PrivacyInfo\.xcprivacy in Resources/);

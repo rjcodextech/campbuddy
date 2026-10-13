@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DiscoveryProfile;
-use App\Models\DiscoveryReport;
 use App\Models\Event;
-use App\Http\Controllers\Api\DiscoveryController;
+use App\Support\DiscoveryReports;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
@@ -24,15 +21,7 @@ class ReportsController extends Controller
     {
         Gate::authorize('viewAny', Event::class);
 
-        $open = DiscoveryReport::where('event_id', $event->id)->where('status', 'open')->latest()->get()->groupBy('discovery_id');
-        $closed = DiscoveryReport::where('event_id', $event->id)->where('status', '!=', 'open')->latest('resolved_at')->limit(30)->get();
-
-        return view('admin.events.reports', [
-            'event' => $event,
-            'open' => $open,
-            'closed' => $closed,
-            'stillThere' => DiscoveryProfile::where('event_id', $event->id)->whereIn('discovery_id', $open->keys())->pluck('discovery_id')->all(),
-        ]);
+        return view('admin.events.reports', ['event' => $event] + DiscoveryReports::forEvent($event));
     }
 
     /** Takes the reported profile down and closes its reports. */
@@ -40,9 +29,7 @@ class ReportsController extends Controller
     {
         Gate::authorize('update', $event);
 
-        DiscoveryProfile::where('event_id', $event->id)->where('discovery_id', $discoveryId)->delete();
-        Cache::forget(DiscoveryController::listKey($event));
-        $this->close($event, $discoveryId, 'removed');
+        DiscoveryReports::remove($event, $discoveryId);
 
         return back()->with('status', 'Profile removed.');
     }
@@ -52,14 +39,8 @@ class ReportsController extends Controller
     {
         Gate::authorize('update', $event);
 
-        $this->close($event, $discoveryId, 'dismissed');
+        DiscoveryReports::dismiss($event, $discoveryId);
 
         return back()->with('status', 'Reports dismissed.');
-    }
-
-    private function close(Event $event, string $discoveryId, string $status): void
-    {
-        DiscoveryReport::where('event_id', $event->id)->where('discovery_id', $discoveryId)->where('status', 'open')
-            ->update(['status' => $status, 'resolved_at' => now()]);
     }
 }

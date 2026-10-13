@@ -22,6 +22,10 @@ test('it ignores what it must not touch: non-GET, other origins, /api, /admin, /
     ['/api/v1/events/wc-test/roster', {}],
     ['/admin', {}],
     ['/admin/events', {}],
+    ['/manager', {}],
+    ['/manager/events/3/reports', {}],
+    ['/login', {}],
+    ['/profile', {}],
     ['/up', {}],
   ]) {
     assert.equal((await sw.request(url, options)).handled, false, `${options.method ?? 'GET'} ${url}`);
@@ -156,9 +160,9 @@ test('activating deletes no cache and no saved page of the event', async () => {
   assert.equal((await caches.match(`${ORIGIN}/event/wc-old`)).status, 200);
 });
 
-test('the only thing activating removes is a signed-in /admin page an older worker may have saved', async () => {
+test('the only thing activating removes is a signed-in /admin or /manager page a worker may have saved', async () => {
   const caches = fakeCacheStorage({
-    [CACHE]: { [HOME]: page('home'), [`${ORIGIN}/admin`]: page('admin'), [`${ORIGIN}/admin/events/1/edit`]: page('admin edit') },
+    [CACHE]: { [HOME]: page('home'), [`${ORIGIN}/admin`]: page('admin'), [`${ORIGIN}/admin/events/1/edit`]: page('admin edit'), [`${ORIGIN}/manager/events/1`]: page('manager'), [`${ORIGIN}/event/wc-manager-days`]: page('an event whose name starts with manager') },
     'campbuddy-v2': { [`${ORIGIN}/admin/dashboard`]: page('old admin') },
   });
   const sw = loadServiceWorker({ caches });
@@ -168,6 +172,7 @@ test('the only thing activating removes is a signed-in /admin page an older work
   assert.deepEqual(caches.log.deletedEntries.sort(), [
     `${CACHE}:${ORIGIN}/admin`,
     `${CACHE}:${ORIGIN}/admin/events/1/edit`,
+    `${CACHE}:${ORIGIN}/manager/events/1`,
     `campbuddy-v2:${ORIGIN}/admin/dashboard`,
   ].sort());
   assert.equal((await caches.match(HOME)).status, 200);

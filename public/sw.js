@@ -7,8 +7,9 @@
 // safe to cache indefinitely.
 //
 // What is deliberately NOT cached or intercepted:
-//   - /admin — signed-in, per-user pages; they must never be stored in a
-//     browser cache, least of all on a shared device.
+//   - /admin, /manager and the sign-in pages (/login, /profile, password and
+//     e-mail screens) — signed-in, per-user pages; they must never be stored
+//     in a browser cache, least of all on a shared device.
 //   - /api/ — live data, or a deliberate "you're offline" state the page
 //     handles itself.
 //   - Any response that isn't a plain 200: caching a 404/500 would keep
@@ -21,7 +22,7 @@
 // browser runs short of space — activating a new version drops no cache, and
 // saved pages are only ever replaced by fresh ones (saved-copies.js does that
 // from the page; offline-warmup.js adds the pages nobody opened yet). The one
-// exception is a signed-in /admin page an older worker may have saved, removed
+// exception is a signed-in /admin or /manager page a worker may have saved, removed
 // on activation because it should never have been stored.
 //
 // Stale-while-revalidate for page opens is built in but OFF: the worker reads
@@ -86,7 +87,14 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(removeSavedAdminPages().then(() => self.clients.claim()));
 });
 
-// An older worker could save signed-in /admin pages; they must not stay on a
+// Paths that belong to a signed-in person (organizers) or to signing in.
+const PRIVATE_PATHS = ['/admin', '/manager', '/login', '/profile', '/forgot-password', '/reset-password', '/verify-email', '/confirm-password'];
+
+function isPrivatePath(path) {
+  return PRIVATE_PATHS.some((base) => path === base || path.startsWith(base + '/'));
+}
+
+// A worker could save signed-in /admin or /manager pages; they must not stay on a
 // shared device. Only those entries go — never a cache, never event content.
 async function removeSavedAdminPages() {
   try {
@@ -96,7 +104,7 @@ async function removeSavedAdminPages() {
       for (const request of await cache.keys()) {
         const path = new URL(request.url).pathname;
 
-        if (path === '/admin' || path.startsWith('/admin/')) await cache.delete(request);
+        if (isPrivatePath(path)) await cache.delete(request);
       }
     }
   } catch (err) {
@@ -119,8 +127,7 @@ self.addEventListener('fetch', (event) => {
 
   if (
     url.pathname.startsWith('/api/') ||
-    url.pathname === '/admin' ||
-    url.pathname.startsWith('/admin/') ||
+    isPrivatePath(url.pathname) ||
     url.pathname === '/up' ||
     url.pathname === FLAGS_URL
   ) {

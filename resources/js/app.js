@@ -6,6 +6,11 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
+// Inside the Android / iOS app only: phone fit, organizer alerts and the lock on the panel.
+if (/^\/(admin|manager)(\/|$)/.test(location.pathname) && /CampBuddyApp\//.test(navigator.userAgent)) {
+    import('./organizer-native').then((m) => m.initOrganizerNative()).catch(() => {});
+}
+
 // Only the "QR codes" pages have [data-qr-kit] cards; the QR library is loaded just there.
 if (document.querySelector('[data-qr-kit]')) import('./qr-kit').then((kit) => kit.initQrKit());
 

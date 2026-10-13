@@ -367,6 +367,11 @@ function openInApp(url) {
 export async function initNativeBridge() {
   track('app_open', { platform: `app_${nativePlatform()}` });
 
+  // Organizer sign-in links (picker footer) exist only for the app.
+  document.querySelectorAll('[data-app-only]').forEach((el) => {
+    el.hidden = false;
+  });
+
   const app = plugin('App');
   if (app) {
     // Android back: one page back, and leave the app from the first page.

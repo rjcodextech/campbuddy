@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\Admin\ScheduleDelayController;
 use App\Http\Controllers\Admin\SocialController;
 use App\Http\Controllers\Admin\UsagePostController;
+use App\Http\Controllers\AppPushController;
 use App\Http\Controllers\CalendarFileController;
 use App\Http\Controllers\EventMemoriesPageController;
 use App\Http\Controllers\EventPageController;
@@ -131,6 +132,9 @@ Route::middleware('event.public')->group(function () {
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
+        // The store app: this admin's phone for alerts (reports on a profile).
+        Route::post('app-push', [AppPushController::class, 'store'])->name('admin.app-push.store');
+        Route::delete('app-push', [AppPushController::class, 'destroy'])->name('admin.app-push.destroy');
 
         // Everything that is failing, in one place (the dashboard only summarises it).
         Route::get('errors', ErrorsController::class)->name('admin.errors.index');
