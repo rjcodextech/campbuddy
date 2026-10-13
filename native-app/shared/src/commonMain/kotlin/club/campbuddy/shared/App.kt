@@ -52,7 +52,7 @@ class AppDeps(
 
 private sealed interface Screen {
     data object Picker : Screen
-    data class Event(val slug: String) : Screen
+    data class Event(val slug: String, val guide: Boolean = false) : Screen
     data object OrganizerLogin : Screen
     data object OrganizerHome : Screen
     data class OrganizerEvent(val event: club.campbuddy.shared.model.OrganizerEvent) : Screen
@@ -99,9 +99,10 @@ fun App(deps: AppDeps) {
                     }
                 },
                 onOpen = { push(Screen.Event(it.slug)) },
+                onFirstTimer = { push(Screen.Event(it.slug, guide = true)) },
                 onOrganizer = { push(if (repository.organizerToken() != null) Screen.OrganizerHome else Screen.OrganizerLogin) },
             )
-            is Screen.Event -> EventScreen(screen.slug, onBack = ::pop)
+            is Screen.Event -> EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide)
             Screen.OrganizerLogin -> OrganizerLoginScreen(api, repository, deps.deviceName, onSignedIn = { stack.removeAt(stack.lastIndex); push(Screen.OrganizerHome) }, onBack = ::pop)
             Screen.OrganizerHome -> OrganizerHomeScreen(api, repository, onEvent = { push(Screen.OrganizerEvent(it)) }, onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) }, onBack = ::pop)
             is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop)

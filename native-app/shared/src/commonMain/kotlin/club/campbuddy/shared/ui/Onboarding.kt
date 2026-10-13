@@ -2,6 +2,8 @@ package club.campbuddy.shared.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -83,6 +85,7 @@ fun OnboardingCard(onDone: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StepBody(step: Int, draft: Profile, change: (Profile) -> Unit) {
     val brand = LocalBrand.current
@@ -93,15 +96,10 @@ private fun StepBody(step: Int, draft: Profile, change: (Profile) -> Unit) {
         1 -> Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("What describes you?", style = MaterialTheme.typography.titleMedium)
             Text("We use this to suggest talks, Contributor Day teams and people to meet.", style = MaterialTheme.typography.bodySmall)
-            // A wrapping set of chips: rows of three.
-            Onboarding.TAGS.chunked(3).forEach { rowTags ->
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    rowTags.forEach { tag ->
-                        CbChip(
-                            selected = tag in draft.interests,
-                            onClick = { change(draft.copy(interests = Onboarding.toggleTag(draft.interests, tag))) },
-                            label = { Text(tag.replaceFirstChar { it.uppercase() }, maxLines = 1) },
-                        )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Onboarding.TAGS.forEach { tag ->
+                    ChoicePill(tag.replaceFirstChar { it.uppercase() }, selected = tag in draft.interests) {
+                        change(draft.copy(interests = Onboarding.toggleTag(draft.interests, tag)))
                     }
                 }
             }
@@ -122,14 +120,15 @@ private fun StepBody(step: Int, draft: Profile, change: (Profile) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Choice(title: String, why: String, options: List<Pair<String, String>>, selected: String?, pick: (String?) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Text(why, style = MaterialTheme.typography.bodySmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { (value, label) ->
-                CbChip(selected = selected == value, onClick = { pick(if (selected == value) null else value) }, label = { Text(label) })
+                ChoicePill(label, selected = selected == value) { pick(if (selected == value) null else value) }
             }
         }
     }

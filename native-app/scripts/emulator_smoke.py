@@ -107,6 +107,12 @@ def type_into(label, value):
     return True
 
 
+def scroll_down(times=1):
+    for _ in range(times):
+        adb("shell", "input", "swipe", "1070", "1800", "1070", "600", "400")
+        time.sleep(0.8)
+
+
 # ---- start fresh ------------------------------------------------------------------------------------
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
 adb("shell", "pm", "clear", PKG)
@@ -117,6 +123,7 @@ time.sleep(6)
 shot("01-picker")
 
 step("picker shows the server banner (config from the API)", wait("WordCamp Demo is on", 25) is not None)
+scroll_down(2)
 step("the event list comes from the API", find("WordCamp Demo 2026") is not None)
 step("onboarding card is offered", find("Make CampBuddy yours") is not None)
 
@@ -125,6 +132,8 @@ tap_text("Let's go")
 step("step 1 asks if it is the first WordCamp", wait("Is this your first WordCamp?") is not None)
 tap_text("Yes, first one!")
 step("a tap moves nothing by itself, Next does", tap_text("Next") and wait("What describes you?") is not None)
+scroll_down(1)
+shot("02a-tags")
 tap_text("Developer")
 tap_text("Speaker")
 step("tags are counted", wait("2 of 5 picked") is not None)
@@ -135,6 +144,8 @@ step("last step can finish", tap_text("Finish"))
 step("the closing screen says what the answers do", wait("You are set") is not None and find("Beginner-friendly") is not None)
 shot("02-onboarding-done")
 tap_text("Choose your WordCamp", exact=True)
+
+scroll_down(2)
 
 # ---- the event ------------------------------------------------------------------------------------------------
 tap_text("WordCamp Demo 2026")
@@ -223,6 +234,7 @@ time.sleep(1.5)
 
 # ---- organizer ------------------------------------------------------------------------------------------------------------------
 step("back to the picker", wait("Choose your WordCamp", 10) is not None)
+scroll_down(4)
 tap_text("Event staff: sign in")
 step("sign-in screen", wait("Event staff sign-in", 8) is not None)
 type_into("E-mail", "mgr@example.com")
