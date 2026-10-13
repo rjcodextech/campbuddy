@@ -53,13 +53,14 @@ private val ICON_PATHS = mapOf(
 )
 
 @Composable
-fun LineIcon(name: String, tint: Color, size: Dp = 24.dp) {
+fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = false) {
     val path = ICON_PATHS[name] ?: ICON_PATHS.getValue("star")
     Canvas(Modifier.size(size)) {
         val scale = this.size.width / 24f
         val parsed = PathParser().parsePathString(path).toPath()
         drawContext.canvas.save()
         drawContext.canvas.scale(scale, scale)
+        if (filled) drawPath(parsed, tint)
         drawPath(parsed, tint, style = Stroke(width = 1.8f, cap = StrokeCap.Round, join = StrokeJoin.Round))
         drawContext.canvas.restore()
     }

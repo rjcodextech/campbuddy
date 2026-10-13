@@ -18,6 +18,7 @@ data class AppConfig(
     val tabs: List<TabConfig> = emptyList(),
     val home: HomeConfig = HomeConfig(),
     val organizer: OrganizerConfig = OrganizerConfig(),
+    val onboarding: OnboardingConfig = OnboardingConfig(),
     val strings: Map<String, Map<String, String>> = emptyMap(),
 ) {
     fun flag(name: String): Boolean = flags[name] ?: true
@@ -81,3 +82,6 @@ data class SectionConfig(
 
 @Serializable
 data class OrganizerConfig(val tabs: List<TabConfig> = emptyList())
+
+@Serializable
+data class OnboardingConfig(val enabled: Boolean = true)

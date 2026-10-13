@@ -36,6 +36,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
             language = language,
             deviceName = UIDevice.currentDevice.name,
             openUrl = { url -> NSURL.URLWithString(url)?.let { UIApplication.sharedApplication.openURL(it) } },
+            reminders = IosReminders(),
         )
     )
 }

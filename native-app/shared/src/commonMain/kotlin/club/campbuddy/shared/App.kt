@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -21,6 +22,10 @@ import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.data.ApiClient
 import club.campbuddy.shared.data.KeyValueStore
 import club.campbuddy.shared.data.Repository
+import club.campbuddy.shared.data.UserData
+import club.campbuddy.shared.ui.Env
+import club.campbuddy.shared.ui.LocalEnv
+import club.campbuddy.shared.ui.ReminderSync
 import club.campbuddy.shared.domain.compareVersions
 import club.campbuddy.shared.model.OrganizerEvent
 import club.campbuddy.shared.ui.CampBuddyTheme
@@ -41,6 +46,7 @@ class AppDeps(
     val language: String, // "en" | "hi"
     val deviceName: String,
     val openUrl: (String) -> Unit,
+    val reminders: club.campbuddy.shared.domain.ReminderPlatform = club.campbuddy.shared.domain.NoReminders,
 )
 
 private sealed interface Screen {
@@ -56,6 +62,8 @@ private sealed interface Screen {
 fun App(deps: AppDeps) {
     val api = remember { ApiClient(appVersion = deps.appVersion, platform = deps.platform) }
     val repository = remember { Repository(api, deps.store) }
+    val user = remember { UserData(deps.store) }
+    val env = remember { Env(deps, api, repository, user) }
     var config by remember { mutableStateOf(repository.cachedConfig()) }
     val stack = remember { mutableStateListOf<Screen>(Screen.Picker) }
 
@@ -66,9 +74,11 @@ fun App(deps: AppDeps) {
     val minimum = if (deps.platform == "ios") config.minApp.ios else config.minApp.android
 
     CampBuddyTheme(words) {
+      CompositionLocalProvider(LocalEnv provides env) {
+        ReminderSync()
         if (compareVersions(deps.appVersion, minimum) < 0) {
             UpdateScreen(words, deps)
-            return@CampBuddyTheme
+            return@CompositionLocalProvider
         }
 
         fun push(screen: Screen) = stack.add(screen)
@@ -90,11 +100,12 @@ fun App(deps: AppDeps) {
                 onOpen = { push(Screen.Event(it.slug)) },
                 onOrganizer = { push(if (repository.organizerToken() != null) Screen.OrganizerHome else Screen.OrganizerLogin) },
             )
-            is Screen.Event -> EventScreen(repository, screen.slug, onBack = ::pop)
+            is Screen.Event -> EventScreen(screen.slug, onBack = ::pop)
             Screen.OrganizerLogin -> OrganizerLoginScreen(api, repository, deps.deviceName, onSignedIn = { stack.removeAt(stack.lastIndex); push(Screen.OrganizerHome) }, onBack = ::pop)
             Screen.OrganizerHome -> OrganizerHomeScreen(api, repository, onEvent = { push(Screen.OrganizerEvent(it)) }, onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) }, onBack = ::pop)
             is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop)
         }
+      }
     }
 }
 

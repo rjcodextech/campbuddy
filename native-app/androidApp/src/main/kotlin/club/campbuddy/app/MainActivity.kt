@@ -8,12 +8,23 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import club.campbuddy.shared.App
 import club.campbuddy.shared.AppDeps
 import club.campbuddy.shared.data.KeyValueStore
 import java.util.Locale
+import kotlin.coroutines.resume
+import kotlinx.coroutines.CancellableContinuation
 
 class MainActivity : ComponentActivity() {
+    private var waiting: CancellableContinuation<Boolean>? = null
+
+    // Registered before the screen starts, as Android requires; answers the one notification question.
+    private val notificationQuestion = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        waiting?.resume(granted)
+        waiting = null
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -25,6 +36,10 @@ class MainActivity : ComponentActivity() {
             override fun remove(key: String) = prefs.edit().remove(key).apply()
         }
         val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "2.0.0"
+        val reminders = AndroidReminders(applicationContext) { continuation ->
+            waiting = continuation
+            notificationQuestion.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         setContent {
             App(
@@ -35,6 +50,7 @@ class MainActivity : ComponentActivity() {
                     language = if (Locale.getDefault().language == "hi") "hi" else "en",
                     deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".take(80),
                     openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
+                    reminders = reminders,
                 )
             )
         }

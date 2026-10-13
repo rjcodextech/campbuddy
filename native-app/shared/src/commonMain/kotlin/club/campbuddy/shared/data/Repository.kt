@@ -1,6 +1,14 @@
 package club.campbuddy.shared.data
 
 import club.campbuddy.shared.model.AppConfig
+import club.campbuddy.shared.model.ContributorTable
+import club.campbuddy.shared.model.Deal
+import club.campbuddy.shared.model.FreeSteal
+import club.campbuddy.shared.model.Guide
+import club.campbuddy.shared.model.Memories
+import club.campbuddy.shared.model.Quest
+import club.campbuddy.shared.model.RosterEntry
+import club.campbuddy.shared.model.Sponsor
 import club.campbuddy.shared.model.EventCard
 import club.campbuddy.shared.model.EventDetail
 import club.campbuddy.shared.model.Session
@@ -40,6 +48,22 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     suspend fun event(slug: String): Loaded<EventDetail> = cached("event:$slug", EventDetail.serializer()) { api.event(slug) }
 
     suspend fun sessions(slug: String): Loaded<List<Session>> = cached("sessions:$slug", ListSerializer(Session.serializer())) { api.sessions(slug) }
+
+    suspend fun sponsors(slug: String): Loaded<List<Sponsor>> = cached("sponsors:$slug", ListSerializer(Sponsor.serializer())) { api.sponsors(slug) }
+
+    suspend fun deals(slug: String): Loaded<List<Deal>> = cached("deals:$slug", ListSerializer(Deal.serializer())) { api.deals(slug) }
+
+    suspend fun freeSteals(slug: String): Loaded<List<FreeSteal>> = cached("steals:$slug", ListSerializer(FreeSteal.serializer())) { api.freeSteals(slug) }
+
+    suspend fun quests(slug: String): Loaded<List<Quest>> = cached("quests:$slug", ListSerializer(Quest.serializer())) { api.quests(slug) }
+
+    suspend fun tables(slug: String): Loaded<List<ContributorTable>> = cached("tables:$slug", ListSerializer(ContributorTable.serializer())) { api.tables(slug) }
+
+    suspend fun guide(slug: String): Loaded<Guide> = cached("guide:$slug", Guide.serializer()) { api.guide(slug) }
+
+    suspend fun memories(slug: String): Loaded<Memories> = cached("memories:$slug", Memories.serializer()) { api.memories(slug) }
+
+    suspend fun roster(slug: String): Loaded<List<RosterEntry>> = cached("roster:$slug", ListSerializer(RosterEntry.serializer())) { api.roster(slug) }
 
     private suspend fun <T> cached(key: String, serializer: kotlinx.serialization.KSerializer<T>, fetch: suspend () -> T): Loaded<T> =
         try {

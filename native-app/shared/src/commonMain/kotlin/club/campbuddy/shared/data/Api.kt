@@ -1,6 +1,14 @@
 package club.campbuddy.shared.data
 
 import club.campbuddy.shared.model.AppConfig
+import club.campbuddy.shared.model.ContributorTable
+import club.campbuddy.shared.model.Deal
+import club.campbuddy.shared.model.FreeSteal
+import club.campbuddy.shared.model.Guide
+import club.campbuddy.shared.model.Memories
+import club.campbuddy.shared.model.Quest
+import club.campbuddy.shared.model.RosterPage
+import club.campbuddy.shared.model.Sponsor
 import club.campbuddy.shared.model.Data
 import club.campbuddy.shared.model.DelayData
 import club.campbuddy.shared.model.DelayRequest
@@ -61,6 +69,33 @@ class ApiClient(
     suspend fun event(slug: String): EventDetail = get<Data<EventDetail>>("/app/events/$slug").data
 
     suspend fun sessions(slug: String): List<Session> = get<Data<List<Session>>>("/app/events/$slug/sessions").data
+
+    suspend fun sponsors(slug: String): List<Sponsor> = get<Data<List<Sponsor>>>("/app/events/$slug/sponsors").data
+
+    suspend fun deals(slug: String): List<Deal> = get<Data<List<Deal>>>("/app/events/$slug/deals").data
+
+    suspend fun freeSteals(slug: String): List<FreeSteal> = get<Data<List<FreeSteal>>>("/app/events/$slug/free-steals").data
+
+    suspend fun quests(slug: String): List<Quest> = get<Data<List<Quest>>>("/app/events/$slug/quests").data
+
+    suspend fun tables(slug: String): List<ContributorTable> = get<Data<List<ContributorTable>>>("/app/events/$slug/contributor-tables").data
+
+    suspend fun guide(slug: String): Guide = get<Data<Guide>>("/app/events/$slug/guide").data
+
+    suspend fun memories(slug: String): Memories = get<Data<Memories>>("/app/events/$slug/memories").data
+
+    /** The attendee list is paged (200 a page); this fetches every page. */
+    suspend fun roster(slug: String): List<club.campbuddy.shared.model.RosterEntry> {
+        val all = mutableListOf<club.campbuddy.shared.model.RosterEntry>()
+        var page = 1
+        do {
+            val result = get<RosterPage>("/events/$slug/roster?page=$page")
+            all += result.data
+            page++
+        } while (page <= result.lastPage && page <= 25)
+
+        return all
+    }
 
     // ---- organizer ----
 

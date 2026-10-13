@@ -14,6 +14,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.data.Repository
@@ -35,6 +38,8 @@ fun PickerScreen(
 ) {
     val words = LocalWords.current
     val brand = LocalBrand.current
+    val env = LocalEnv.current
+    var showOnboarding by remember { mutableStateOf(!env.user.onboardingDone && words.config.onboarding.enabled) }
     val loader = rememberLoader("events") { repository.events() }
     val state by loader.state
 
@@ -67,6 +72,10 @@ fun PickerScreen(
                 if (s.value.isEmpty()) item { Text(words("picker.empty"), style = MaterialTheme.typography.bodyMedium) }
                 items(s.value, key = { it.slug }) { event -> EventRow(event) { onOpen(event) } }
             }
+        }
+
+        if (showOnboarding) {
+            item { OnboardingCard(onDone = { showOnboarding = false }) }
         }
 
         if (organizerEnabled) {

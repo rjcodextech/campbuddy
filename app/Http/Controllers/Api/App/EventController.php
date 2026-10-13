@@ -85,7 +85,10 @@ class EventController extends Controller
     {
         abort_unless($event->is_visible && $event->status !== 'draft' && EventMemories::pageIsPublic($event), 404);
 
-        return $this->json($request, ['data' => EventMemories::links($event)]);
+        $links = EventMemories::links($event);
+
+        // An object even when empty, so the apps read it as one.
+        return $this->json($request, ['data' => $links === [] ? (object) [] : $links]);
     }
 
     /**
