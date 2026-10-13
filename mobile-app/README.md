@@ -1,6 +1,6 @@
 # mobile-app
 
-Sirf planning docs (last sync: **13 Oct 2026**, branch `v2_dev`). App ka koi code abhi nahi bana. Har file chhoti hai — ek file, ek topic.
+Planning docs + `app/` (Capacitor shell, branch `app`; last sync: **13 Oct 2026**, branch `v2_dev`). App ka koi code abhi nahi bana. Har file chhoti hai — ek file, ek topic.
 
 ## Padhne ka order
 

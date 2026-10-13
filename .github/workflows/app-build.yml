@@ -1,0 +1,115 @@
+name: App build
+
+# Builds the Android and iOS shells (mobile-app/app) and runs the web tests the
+# shell depends on. Unsigned: store signing happens in a separate release
+# workflow once the Play / Apple accounts exist (secrets never live in git).
+
+on:
+  pull_request:
+    paths:
+      - 'mobile-app/app/**'
+      - 'resources/js/attendee/**'
+      - 'tests/js/**'
+      - '.github/workflows/app-build.yml'
+  push:
+    branches: [app]
+    paths:
+      - 'mobile-app/app/**'
+      - 'resources/js/attendee/**'
+      - 'tests/js/**'
+      - '.github/workflows/app-build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: app-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-js:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:js
+
+  shell-config:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: mobile-app/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/app/package-lock.json
+      - run: npm ci
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+
+  android:
+    needs: [web-js, shell-config]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile-app/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npx cap sync android
+      - name: Lint
+        run: ./gradlew lintRelease
+        working-directory: mobile-app/app/android
+      - name: Debug build (signed with the debug key)
+        run: ./gradlew assembleDebug
+        working-directory: mobile-app/app/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: campbuddy-debug-apk
+          path: mobile-app/app/android/app/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+  ios:
+    needs: [web-js, shell-config]
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile-app/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/app/package-lock.json
+      - run: npm ci
+      - run: npx cap sync ios
+      - name: Build for the simulator (no signing)
+        run: |
+          xcodebuild build \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
