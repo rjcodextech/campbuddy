@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>CampBuddy</title>
+<style>
+  :root { --brand: #c33a19; --bg: #fffaf4; --ink: #2a1a14; --muted: #6b574d; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px 16px; text-align: center; padding-top: max(24px, env(safe-area-inset-top)); padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+  img { width: 88px; height: 88px; border-radius: 20px; }
+  h1 { margin: 0; font-size: 1.35rem; }
+  p { margin: 0; max-width: 28rem; color: var(--muted); line-height: 1.5; }
+  button { appearance: none; border: 0; border-radius: 12px; background: var(--brand); color: #fff; font: inherit; font-weight: 600; min-height: 48px; min-width: 160px; padding: 0 22px; }
+  button:active { transform: scale(0.97); }
+  .status { min-height: 1.5em; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<main>
+  <img src="icon.png" alt="" width="88" height="88">
+  <h1>No internet right now</h1>
+  <p>CampBuddy needs a connection to open. Pages you opened before stay available once you are back online or when they were saved on this phone.</p>
+  <button id="retry" type="button">Try again</button>
+  <p class="status" role="status" aria-live="polite" id="status"></p>
+</main>
+<script>
+  (function () {
+    var status = document.getElementById('status');
+    function go() {
+      status.textContent = 'Checking…';
+      fetch('https://campbuddy.club/api/v1/health', { cache: 'no-store' })
+        .then(function (r) { if (r.ok || r.status === 503) { location.replace('https://campbuddy.club/'); } else { throw new Error('bad'); } })
+        .catch(function () { status.textContent = 'Still offline. Try again in a moment.'; });
+    }
+    document.getElementById('retry').addEventListener('click', go);
+    window.addEventListener('online', go);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">CampBuddy</string>
+    <string name="title_activity_main">CampBuddy</string>
+    <string name="package_name">club.campbuddy.app</string>
+    <string name="custom_url_scheme">club.campbuddy.app</string>
+</resources>

@@ -1,0 +1,30 @@
+{
+  "appId": "club.campbuddy.app",
+  "appName": "CampBuddy",
+  "webDir": "www",
+  "appendUserAgent": "CampBuddyApp/1.0.0",
+  "server": {
+    "url": "https://campbuddy.club",
+    "cleartext": false,
+    "allowNavigation": ["campbuddy.club"],
+    "errorPath": "offline.html"
+  },
+  "ios": {
+    "contentInset": "never",
+    "limitsNavigationsToAppBoundDomains": true,
+    "scheme": "CampBuddy"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_campbuddy",
+      "iconColor": "#c33a19"
+    },
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}
