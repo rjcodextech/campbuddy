@@ -17,3 +17,4 @@ Planning docs + `app/` (Capacitor shell, branch `app`; last sync: **13 Oct 2026*
 - App: plan taiyaar, **owner ke 7 faisle baaki** → [02-hybrid-app/11-owner-decisions.md](02-hybrid-app/11-owner-decisions.md).
 - Naya blocker mila: Discovery mein **report/block web mein hai hi nahi** → Apple 1.2 ke liye zaroori.
 - **[SETUP.md](SETUP.md) — accounts, Firebase, signing, server `.env`: aapki ek saath configuration list.**
+- **[native/README.md](native/README.md) — Kotlin native app (bina WebView) ka plan: KMP + Compose, API + server-driven config + admin config editor, attendee + organizer.**
