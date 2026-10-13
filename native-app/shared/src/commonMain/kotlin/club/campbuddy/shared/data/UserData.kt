@@ -23,6 +23,10 @@ data class Profile(
     val completedAt: Long = 0,
 )
 
+/** This phone's own discovery profile for one event: its public id and the secret that proves it is ours. */
+@Serializable
+data class MyDiscovery(val discoveryId: String, val ownerToken: String)
+
 /** A saved session; the title and start are kept so reminders and My schedule work offline. */
 @Serializable
 data class Bookmark(val sessionId: Long, val title: String = "", val startsAt: String? = null, val endsAt: String? = null)
@@ -44,6 +48,10 @@ class UserData(private val store: KeyValueStore) {
     private var questMap by mutableStateOf(load("quests", MapSerializer(String.serializer(), ListSerializer(Long.serializer()))) ?: emptyMap())
 
     private var cardMap by mutableStateOf(load("campcard", MapSerializer(String.serializer(), String.serializer())) ?: emptyMap())
+
+    private var discoveryMap by mutableStateOf(load("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer())) ?: emptyMap())
+
+    private var blockedMap by mutableStateOf(load("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer()))) ?: emptyMap())
 
     /** Goes up on every change to the saved sessions (so reminders can be planned again). */
     var revision by mutableStateOf(0)
@@ -125,6 +133,30 @@ class UserData(private val store: KeyValueStore) {
         save("campcard", MapSerializer(String.serializer(), String.serializer()), cardMap)
     }
 
+    // ---- attendee discovery (this phone's own profile, its secret token and who it hid) ----
+
+    fun discovery(slug: String): MyDiscovery? = discoveryMap[slug]
+
+    fun saveDiscovery(slug: String, mine: MyDiscovery) {
+        discoveryMap = discoveryMap + (slug to mine)
+        save("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer()), discoveryMap)
+    }
+
+    fun forgetDiscovery(slug: String) {
+        discoveryMap = discoveryMap - slug
+        save("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer()), discoveryMap)
+    }
+
+    fun blocked(slug: String): Set<String> = blockedMap[slug].orEmpty().toSet()
+
+    fun block(slug: String, discoveryId: String) {
+        blockedMap = blockedMap + (slug to (blocked(slug) + discoveryId).toList())
+        save("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer())), blockedMap)
+    }
+
+    /** A random id for this phone; reports carry it so one phone reports a profile once. */
+    fun deviceId(): String = store.get("user:device") ?: List(32) { "0123456789abcdef".random() }.joinToString("").also { store.put("user:device", it) }
+
     // ---- storage ----
 
     private fun <T> load(key: String, serializer: kotlinx.serialization.KSerializer<T>): T? =
@@ -135,12 +167,14 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()
         questMap = emptyMap()
         cardMap = emptyMap()
+        discoveryMap = emptyMap()
+        blockedMap = emptyMap()
     }
 
     @Suppress("FunctionName")

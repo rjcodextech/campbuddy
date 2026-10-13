@@ -9,6 +9,15 @@ import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
 import club.campbuddy.shared.model.RosterPage
 import club.campbuddy.shared.model.Sponsor
+import club.campbuddy.shared.model.DiscoveryCard
+import club.campbuddy.shared.model.DiscoveryForm
+import club.campbuddy.shared.model.DiscoveryJoined
+import club.campbuddy.shared.model.MessageRequest
+import club.campbuddy.shared.model.ReportRequest
+import club.campbuddy.shared.model.WaveRequest
+import club.campbuddy.shared.model.WaveState
+import io.ktor.client.request.delete
+import io.ktor.client.request.request
 import club.campbuddy.shared.model.Data
 import club.campbuddy.shared.model.DelayData
 import club.campbuddy.shared.model.DelayInfo
@@ -103,6 +112,38 @@ class ApiClient(
         return all
     }
 
+    // ---- attendee discovery (the owner token is the only credential) ----
+
+    suspend fun discovery(slug: String): List<DiscoveryCard> = get<Data<List<DiscoveryCard>>>("/events/$slug/discovery").data
+
+    suspend fun joinDiscovery(slug: String, form: DiscoveryForm): DiscoveryJoined =
+        write<DiscoveryJoined>(io.ktor.http.HttpMethod.Post, "/events/$slug/discovery", null, form)
+
+    suspend fun updateDiscovery(slug: String, id: String, token: String, form: DiscoveryForm) {
+        write<DiscoveryCard>(io.ktor.http.HttpMethod.Patch, "/events/$slug/discovery/$id", token, form)
+    }
+
+    suspend fun leaveDiscovery(slug: String, id: String, token: String) {
+        checked(http.delete("$baseUrl/events/$slug/discovery/$id") { common(); bearerAuth(token) })
+    }
+
+    suspend fun waves(slug: String, id: String, token: String): WaveState = get("/events/$slug/discovery/$id/waves", token)
+
+    suspend fun wave(slug: String, id: String, token: String, request: WaveRequest): WaveState =
+        write(io.ktor.http.HttpMethod.Post, "/events/$slug/discovery/$id/waves", token, request)
+
+    suspend fun message(slug: String, id: String, token: String, request: MessageRequest): WaveState =
+        write(io.ktor.http.HttpMethod.Post, "/events/$slug/discovery/$id/messages", token, request)
+
+    suspend fun takeBackWave(slug: String, id: String, token: String, target: String): WaveState {
+        val response = http.delete("$baseUrl/events/$slug/discovery/$id/waves/$target") { common(); bearerAuth(token) }
+        return checked(response).body()
+    }
+
+    suspend fun reportDiscovery(slug: String, id: String, request: ReportRequest) {
+        write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/discovery/$id/report", null, request)
+    }
+
     // ---- organizer ----
 
     suspend fun login(email: String, password: String, role: String, device: String): LoginResponse {
@@ -150,6 +191,20 @@ class ApiClient(
         return checked(response).body()
     }
 
+    /** A JSON write (POST/PATCH) that may answer with a body. */
+    private suspend inline fun <reified T> write(method: io.ktor.http.HttpMethod, path: String, token: String?, payload: Any): T {
+        val response = http.request("$baseUrl$path") {
+            this.method = method
+            common()
+            if (token != null) bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(payload)
+        }
+        checked(response)
+        @Suppress("UNCHECKED_CAST")
+        return if (T::class == Unit::class) Unit as T else response.body()
+    }
+
     private suspend fun send(path: String, token: String) {
         checked(http.post("$baseUrl$path") {
             common()
@@ -169,7 +224,18 @@ class ApiClient(
 
         // The server answers { "error": { "message": "…" } } or Laravel's { "message": "…" }.
         val text = runCatching { response.bodyAsText() }.getOrDefault("")
-        val message = Regex("\"message\"\\s*:\\s*\"([^\"]+)\"").find(text)?.groupValues?.get(1) ?: "Something went wrong (${response.status.value})."
-        throw ApiException(response.status.value, message)
+        throw ApiException(response.status.value, errorMessage(text) ?: "Something went wrong (${response.status.value}).")
     }
 }
+
+/** The plain-words reason in a server error body: the first validation message, else its own message. */
+internal fun errorMessage(body: String): String? = runCatching {
+    val root = AppJson.parseToJsonElement(body) as? kotlinx.serialization.json.JsonObject ?: return null
+    val errors = (root["errors"] as? kotlinx.serialization.json.JsonObject)?.values
+        ?.firstNotNullOfOrNull { (it as? kotlinx.serialization.json.JsonArray)?.firstOrNull() as? kotlinx.serialization.json.JsonPrimitive }
+        ?.content
+    val error = ((root["error"] as? kotlinx.serialization.json.JsonObject)?.get("message") as? kotlinx.serialization.json.JsonPrimitive)?.content
+    val message = (root["message"] as? kotlinx.serialization.json.JsonPrimitive)?.content
+
+    errors ?: error ?: message
+}.getOrNull()?.takeIf { it.isNotBlank() }

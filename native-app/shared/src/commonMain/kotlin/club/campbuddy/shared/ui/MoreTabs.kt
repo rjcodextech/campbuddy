@@ -450,13 +450,16 @@ private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier
 @Composable
 private fun PeopleList(slug: String) {
     val env = LocalEnv.current
+    val scope = rememberCoroutineScope()
     val brand = LocalBrand.current
     val loader = rememberLoader("roster:$slug") { env.repository.roster(slug) }
     val state by loader.state
     var query by rememberSaveable { mutableStateOf("") }
     var role by rememberSaveable { mutableStateOf("") }
+    val model = remember(slug) { DiscoveryModel(slug, env, scope) }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        discoveryItems(model, (state as? LoadState.Ready)?.value.orEmpty())
         when (val s = state) {
             LoadState.Loading -> item { Loading() }
             is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
@@ -465,8 +468,6 @@ private fun PeopleList(slug: String) {
                 val roles = s.value.flatMap { it.roles }.distinct().sorted()
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Who's attending", style = MaterialTheme.typography.titleLarge)
-                        Text("From the event's own Attendees page", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
                         SearchField(query, "Search attendees…") { query = it }
                         if (roles.isNotEmpty()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

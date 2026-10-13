@@ -47,15 +47,15 @@ class NativeKotlinSyncTest extends TestCase
 
     public function test_every_api_path_the_app_calls_is_a_real_route(): void
     {
-        preg_match_all('#"\$baseUrl(/app/[^"]+)"|"(/app/[^"]+)"#', $this->kotlin('data/Api.kt'), $found);
+        preg_match_all('#"\$baseUrl(/(?:app|events)/[^"?]+)[^"]*"|"(/(?:app|events)/[^"?]+)[^"]*"#', $this->kotlin('data/Api.kt'), $found);
         $paths = array_values(array_filter(array_merge($found[1], $found[2])));
         $this->assertGreaterThan(8, count($paths));
 
         foreach (array_unique($paths) as $path) {
             // Kotlin string templates become sample values.
-            $url = '/api/v1'.preg_replace(['#\$\{?slug\}?#', '#\$\{?eventId\}?#', '#\$\{?discoveryId\}?#'], ['wordcamp-test', '7', str_repeat('a', 64)], $path);
+            $url = '/api/v1'.preg_replace(['#\$\{?slug\}?#', '#\$\{?eventId\}?#', '#\$\{?(?:discoveryId|id|target)\}?#'], ['wordcamp-test', '7', str_repeat('a', 64)], $path);
             $matched = false;
-            foreach (['GET', 'POST'] as $method) {
+            foreach (['GET', 'POST', 'PATCH', 'DELETE'] as $method) {
                 try {
                     Route::getRoutes()->match(Request::create($url, $method));
                     $matched = true;
