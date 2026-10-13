@@ -9,6 +9,7 @@ debugging on and the phone unlocked.
 """
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -31,8 +32,12 @@ args = parser.parse_args()
 results = []
 
 
+ADB_HOME = str(APP.parent / "Tools/adb-home")  # adb keeps its key inside the project (adb-home/.android), not in the user folder
+ENV = {**os.environ, "USERPROFILE": ADB_HOME, "HOME": ADB_HOME}
+
+
 def adb(*a, check=True, binary=False):
-    p = subprocess.run([args.adb, *a], capture_output=True, timeout=120)
+    p = subprocess.run([args.adb, *a], capture_output=True, timeout=120, env=ENV)
     if check and p.returncode != 0:
         raise RuntimeError(p.stderr.decode(errors="replace"))
     return p.stdout if binary else p.stdout.decode(errors="replace")
