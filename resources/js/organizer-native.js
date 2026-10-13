@@ -11,6 +11,7 @@
 // The attendee side never loads this file.
 
 import { appVersion, nativePlatform } from './attendee/platform.js';
+import { installDownloads } from './attendee/native-downloads.js';
 import { pushSupported } from './attendee/native-env.js';
 
 const ALERTS_KEY = 'campbuddy:organizer-alerts'; // 'on' | 'declined'
@@ -326,6 +327,7 @@ export function initOrganizerNative() {
   if (!role) return;
 
   fitToPhone();
+  installDownloads();
 
   // Only a signed-in page has a sign-out form; the sign-in page needs nothing more.
   if (!document.querySelector('form[action$="/logout"]')) return;

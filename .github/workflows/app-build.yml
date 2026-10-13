@@ -7,16 +7,28 @@ name: App build
 on:
   pull_request:
     paths:
-      - 'mobile-app/app/**'
-      - 'resources/js/attendee/**'
-      - 'tests/js/**'
+      - 'mobile-app/**'
+      - 'resources/js/**'
+      - 'public/sw.js'
+      - 'public/media/favicon.png'
+      - 'public/media/logo.png'
+      - 'app/**'
+      - 'config/**'
+      - 'routes/**'
+      - 'tests/**'
       - '.github/workflows/app-build.yml'
   push:
     branches: [app]
     paths:
-      - 'mobile-app/app/**'
-      - 'resources/js/attendee/**'
-      - 'tests/js/**'
+      - 'mobile-app/**'
+      - 'resources/js/**'
+      - 'public/sw.js'
+      - 'public/media/favicon.png'
+      - 'public/media/logo.png'
+      - 'app/**'
+      - 'config/**'
+      - 'routes/**'
+      - 'tests/**'
       - '.github/workflows/app-build.yml'
 
 permissions:
@@ -38,6 +50,37 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:js
+
+  # The website, the PWA and the app share one code base: these fail when one side
+  # moves without the others (versions, ids, link paths, what the service worker may cache).
+  web-php-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, openssl, gd
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan test --filter='AppSyncTest|NativeAppBackendTest|NativePushTest|DiscoveryReportTest|OrganizerAppTest'
+
+  brand-assets-in-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/app/package-lock.json
+      - run: cd mobile-app/app && npm ci
+      - run: pip install pillow
+      - run: python mobile-app/app/scripts/make-assets.py
+      - name: Icons and splash must match the website logo
+        run: python mobile-app/app/scripts/check-assets-in-sync.py
 
   shell-config:
     runs-on: ubuntu-latest

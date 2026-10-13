@@ -19,6 +19,7 @@ import { track } from './analytics.js';
 import { getDeviceId } from './device.js';
 import { getBookmarks, kvGet, kvSet, setBookmark } from './db.js';
 import { nativePlatform, appVersion } from './platform.js';
+import { installDownloads } from './native-downloads.js';
 import { pushSupported } from './native-env.js';
 
 const CHANNEL_ID = 'session-reminders';
@@ -368,6 +369,7 @@ function openInApp(url) {
 /** Wires the app-only behaviour. Called once, from app.js, when running inside the shell. */
 export async function initNativeBridge() {
   track('app_open', { platform: `app_${nativePlatform()}` });
+  installDownloads();
 
   // Organizer sign-in links (picker footer) exist only for the app.
   document.querySelectorAll('[data-app-only]').forEach((el) => {

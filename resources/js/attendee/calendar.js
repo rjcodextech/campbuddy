@@ -13,6 +13,7 @@
 // the file on their own device (and, on iOS, through that echo endpoint).
 
 import { eventDayKey } from './eventtime.js';
+import { isNativeApp } from './platform.js';
 
 const PRODID = '-//CampBuddy//Day planner//EN';
 
@@ -109,6 +110,12 @@ export function googleCalendarUrl(item) {
 /** Hands the file to the device's calendar the way that device supports. */
 export function deliverIcs(filename, ics) {
   const safeName = `${String(filename).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'campbuddy'}.ics`;
+
+  // The store app: the phone share sheet offers the Calendar app (native-bridge.js saveFile).
+  if (isNativeApp()) {
+    import('./native-bridge.js').then((bridge) => bridge.saveFile(new Blob([ics], { type: 'text/calendar;charset=utf-8' }), safeName, 'Add to calendar')).catch(() => {});
+    return;
+  }
 
   if (isAppleMobile() && navigator.onLine !== false) {
     const form = document.createElement('form');
