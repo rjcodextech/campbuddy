@@ -47,6 +47,14 @@ Jo **nahi** chahiye: Google Maps key, payment SDK, login/SSO, analytics SDK (GA 
 
 **Files check karne ka tool (upload se pehle):** `cd mobile-app/app && node scripts/check-fcm.mjs --key C:/path/service-account.json` — package/bundle id, project match aur Google se asli token milta hai ya nahi, sab check karke `.env` lines print karta hai.
 
+## 2b. Build files kaise bante hain (ready-made)
+
+- Android debug APK: `bash mobile-app/app/scripts/build-android.sh`
+- Android release APK + AAB (signed): `bash mobile-app/app/scripts/build-android.sh release` — key `storage/app/analytics/campbuddy-upload.jks`, passwords `android-signing.txt` (dono ka **backup** rakho).
+- iOS Xcode project zip: `python mobile-app/app/scripts/package-ios.py` (ipa sirf Mac/Codemagic par banta hai).
+- Sab output: `mobile-app/app/release/`. Release se pehle: `npm run check:sync`.
+- App Links ke liye local upload key ka SHA-256: `5A:C6:0E:F1:88:B5:7E:98:31:45:8E:BA:41:8F:D0:A6:CD:20:28:BD:C4:15:7F:71:40:63:B7:A1:24:65:6D:A2` (server `.env` `MOBILE_ANDROID_SHA256` mein; Play App Signing ka SHA-256 bhi jodna).
+
 ## 3. Android signing aur App Links
 
 1. **Upload key banao** (apne laptop par, file kahin safe rakho, git mein kabhi nahi):
