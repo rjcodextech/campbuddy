@@ -11,6 +11,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -244,11 +249,16 @@ fun ExploreTab(slug: String) {
     var section by rememberSaveable(slug) { mutableStateOf("people") }
 
     Column(Modifier.fillMaxSize()) {
-        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp)) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(words("tabs.explore"), style = MaterialTheme.typography.headlineSmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                listOf("people" to "People", "sponsors" to "Sponsors", "deals" to "Deals", "steals" to "Free steals").forEach { (key, label) ->
-                    CbChip(selected = section == key, onClick = { section = key }, label = { Text(label) })
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    Triple("people", "People", "users"),
+                    Triple("sponsors", "Sponsors", "heart"),
+                    Triple("deals", "Deals", "tag"),
+                    Triple("steals", "Free Steals", "sparkles"),
+                ).forEach { (key, label, icon) ->
+                    ExploreTile(label, icon, selected = section == key, modifier = Modifier.weight(1f)) { section = key }
                 }
             }
         }
@@ -260,6 +270,25 @@ fun ExploreTab(slug: String) {
                 else -> StealList(slug)
             }
         }
+    }
+}
+
+/** One of the website's Explore tiles: an icon over its name; the open one is peach. */
+@Composable
+private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(brand.radius.dp)
+    Column(
+        modifier.heightIn(min = 76.dp)
+            .background(if (selected) brand.peach else brand.surface, shape)
+            .border(1.dp, if (selected) brand.peach else brand.line, shape)
+            .clickable(role = Role.Tab, onClick = onClick)
+            .padding(horizontal = 4.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+    ) {
+        LineIcon(icon, brand.ink, size = 26.dp)
+        Text(label, style = MaterialTheme.typography.labelMedium.copy(color = brand.ink, fontWeight = FontWeight.SemiBold), textAlign = TextAlign.Center, maxLines = 2)
     }
 }
 
@@ -281,8 +310,9 @@ private fun PeopleList(slug: String) {
                 val roles = s.value.flatMap { it.roles }.distinct().sorted()
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("${s.value.size} attendees", style = MaterialTheme.typography.labelMedium)
-                        OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), placeholder = { Text("Search attendees") }, singleLine = true, shape = RoundedCornerShape(brand.radius.dp))
+                        Text("Who's attending", style = MaterialTheme.typography.titleLarge)
+                        Text("From the event's own Attendees page", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        SearchField(query, "Search attendees…") { query = it }
                         if (roles.isNotEmpty()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 CbChip(selected = role == "", onClick = { role = "" }, label = { Text("All") })
@@ -319,8 +349,8 @@ private fun SponsorList(slug: String) {
     Listing("", loader, "No sponsors listed yet.") { sponsor ->
         Card(onClick = sponsor.website?.let { site -> { env.deps.openUrl(site) } }) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(sponsor.name, style = MaterialTheme.typography.titleMedium)
-                if (sponsor.tierNames.isNotEmpty()) Text(sponsor.tierNames.joinToString(" · "), style = MaterialTheme.typography.labelMedium)
+                Text(sponsor.name, style = MaterialTheme.typography.titleLarge)
+                if (sponsor.tierNames.isNotEmpty()) Text(sponsor.tierNames.joinToString(" · ").uppercase(), style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
                 sponsor.description?.takeIf { it.isNotBlank() }?.let { Text(it.take(220), style = MaterialTheme.typography.bodySmall) }
             }
         }
@@ -335,18 +365,52 @@ private fun DealList(slug: String) {
     var copied by remember { mutableStateOf<String?>(null) }
     val loader = rememberLoader("deals:$slug") { env.repository.deals(slug) }
 
-    Listing("", loader, "No deals right now.") { deal ->
+    Listing("", loader, "No deals right now.", header = {
+        Text("Special offers for this WordCamp's attendees, from its sponsors and friends of the community.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+    }) { deal ->
+        var open by remember { mutableStateOf(false) }
+        val hasMore = !deal.description.isNullOrBlank() || !deal.terms.isNullOrBlank()
         Card {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.labelMedium)
-                Text(deal.title, style = MaterialTheme.typography.titleMedium)
-                deal.highlight?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) }
-                deal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                deal.couponCode?.takeIf { it.isNotBlank() }?.let { code ->
-                    QuietButton(if (copied == code) "Copied: $code" else "Copy code $code", { clipboard.setText(AnnotatedString(code)); copied = code })
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier.size(56.dp).background(Color.White, RoundedCornerShape(brand.radius.dp)).border(1.dp, brand.line, RoundedCornerShape(brand.radius.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
+                    Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                 }
-                deal.url?.let { url -> PrimaryButton(deal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Open deal", { env.deps.openUrl(url) }) }
-                deal.terms?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                Text(deal.highlight?.takeIf { it.isNotBlank() } ?: deal.title, style = MaterialTheme.typography.headlineSmall)
+                if (hasMore) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                        val pill = RoundedCornerShape(50)
+                        Row(
+                            Modifier.heightIn(min = 48.dp).background(brand.surface, pill).border(1.dp, brand.line, pill)
+                                .clickable(role = Role.Button) { open = !open }.padding(horizontal = 24.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text("Details", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+                            LineIcon("chevron", brand.primary, size = 18.dp)
+                        }
+                    }
+                }
+                if (open) {
+                    deal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
+                    deal.terms?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                }
+                deal.couponCode?.takeIf { it.isNotBlank() }?.let { code ->
+                    val box = RoundedCornerShape(brand.radius.dp)
+                    Row(
+                        Modifier.fillMaxWidth().background(brand.peach.copy(alpha = 0.5f), box).border(1.dp, brand.line, box).padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Code", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        Text(code, style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold), modifier = Modifier.weight(1f))
+                        ActionButton(if (copied == code) "Copied" else "Copy", filled = false) { clipboard.setText(AnnotatedString(code)); copied = code }
+                    }
+                }
+                deal.url?.let { url ->
+                    PrimaryButton((deal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get the deal") + " →", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+                }
             }
         }
     }
@@ -355,15 +419,16 @@ private fun DealList(slug: String) {
 @Composable
 private fun StealList(slug: String) {
     val env = LocalEnv.current
+    val brand = LocalBrand.current
     val loader = rememberLoader("steals:$slug") { env.repository.freeSteals(slug) }
 
     Listing("", loader, "Nothing here yet.") { steal ->
-        Card(onClick = steal.url?.let { url -> { env.deps.openUrl(url) } }) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(steal.name, style = MaterialTheme.typography.titleMedium)
-                listOfNotNull(steal.maker, steal.category).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.labelMedium) }
-                steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                Text(steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free", style = MaterialTheme.typography.labelMedium.copy(color = LocalBrand.current.primary))
+        Card {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(steal.name, style = MaterialTheme.typography.titleLarge)
+                listOfNotNull(steal.maker, steal.category).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold)) }
+                steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
+                steal.url?.let { url -> PrimaryButton((steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free") + " →", { env.deps.openUrl(url) }, Modifier.fillMaxWidth()) }
             }
         }
     }

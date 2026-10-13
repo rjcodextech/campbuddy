@@ -55,6 +55,8 @@ private val ICON_PATHS = mapOf(
     "help-circle" to "M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01",
     "briefcase" to "M4 7h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16",
     "sparkles" to "M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2zM19 3v4M17 5h4",
+    "heart" to "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z",
+    "ticket" to "M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1zM13 5v2M13 11v2M13 17v2",
     "star" to "M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.8 6.2 20.9l1.1-6.5L2.6 9.8l6.5-.9z",
     "wrench" to "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",
     "compass" to "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM15.5 8.5l-2 5-5 2 2-5z",
@@ -88,6 +90,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.heightIn(min = 48.dp),
+        shape = RoundedCornerShape(brand.radius.dp),
         colors = ButtonDefaults.buttonColors(containerColor = brand.primary, contentColor = Color.White),
     ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = Color.White)) }
 }
@@ -98,6 +101,7 @@ fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
     OutlinedButton(
         onClick = onClick,
         modifier = modifier.heightIn(min = 48.dp),
+        shape = RoundedCornerShape(brand.radius.dp),
         border = BorderStroke(1.dp, brand.line),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = brand.ink),
     ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink)) }

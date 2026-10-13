@@ -193,7 +193,7 @@ private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SearchField(value: String, onChange: (String) -> Unit) {
+internal fun SearchField(value: String, hint: String = "Search sessions or speakers…", onChange: (String) -> Unit) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
     Row(
@@ -203,14 +203,14 @@ private fun SearchField(value: String, onChange: (String) -> Unit) {
     ) {
         LineIcon("search", brand.ink, size = 22.dp)
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) Text("Search sessions or speakers…", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+            if (value.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
             BasicTextField(
                 value = value,
                 onValueChange = onChange,
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge,
                 cursorBrush = SolidColor(brand.primary),
-                modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Search sessions or speakers" },
+                modifier = Modifier.fillMaxWidth().semantics { contentDescription = hint.removeSuffix("…") },
             )
         }
     }
