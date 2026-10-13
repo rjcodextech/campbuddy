@@ -11,6 +11,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import kotlinx.coroutines.launch
+import campbuddy_native.shared.generated.resources.wordmark
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.horizontalScroll
 import org.jetbrains.compose.resources.painterResource
 import campbuddy_native.shared.generated.resources.app_icon
 import campbuddy_native.shared.generated.resources.Res
@@ -766,42 +773,150 @@ private fun ClassicArt(event: String, name: String, role: String, tags: List<Str
 
 // ---- Guide ---------------------------------------------------------------------------------------------------------------------
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GuideScreen(slug: String, onBack: () -> Unit) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
     val loader = rememberLoader("guide:$slug") { env.repository.guide(slug) }
+    val eventLoader = rememberLoader("event:$slug") { env.repository.event(slug) }
     val state by loader.state
+    val tag = (eventLoader.state.value as? LoadState.Ready)?.value?.shortName?.takeIf { it.isNotBlank() }?.let { if (it.startsWith("#")) it else "#$it" }
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     club.campbuddy.shared.PlatformBackHandler(true, onBack)
 
-    LazyColumn(
-        Modifier.fillMaxSize().background(brand.background).statusBarsPadding(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        item {
-            Text("First WordCamp? Start here", style = MaterialTheme.typography.headlineSmall)
-            QuietButton("Back", onBack, Modifier.padding(top = 8.dp))
+    Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
+            Box(
+                Modifier.size(44.dp).background(brand.primary, CircleShape).clickable(role = Role.Button, onClickLabel = "Back", onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) { Text("✕", style = MaterialTheme.typography.titleMedium.copy(color = Color.White)) }
         }
-        when (val s = state) {
-            LoadState.Loading -> item { Loading() }
-            is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
-            is LoadState.Ready -> {
-                val guide = s.value
-                if (s.fromCache) item { OfflineNote() }
-                item { SectionTitle("How the day runs") }
-                items(guide.day.size) { i -> guide.day[i].let { d -> Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(d.title, style = MaterialTheme.typography.titleMedium); Text(d.what, style = MaterialTheme.typography.bodyMedium); if (d.tip.isNotBlank()) Text("Tip: " + d.tip, style = MaterialTheme.typography.bodySmall) } } } }
-                item { SectionTitle("Good to know") }
-                items(guide.tips.size) { i -> guide.tips[i].let { t -> Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(t.title, style = MaterialTheme.typography.titleMedium); Text(t.text, style = MaterialTheme.typography.bodyMedium) } } } }
-                if (guide.bring.isNotEmpty()) {
-                    item { SectionTitle("What to bring") }
-                    item { Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { guide.bring.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) } } } }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+
+        LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            item {
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                        .background(Brush.linearGradient(listOf(Color(0xFF5B1212), Color(0xFF7A2A16), Color(0xFF4F1313))))
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    Row(
+                        Modifier.background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(50)).padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp).clip(CircleShape))
+                        Text("WORDCAMP 101", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
+                    }
+                    Text(
+                        "New to ${tag ?: "WordCamp"}? Start here.",
+                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold),
+                    )
+                    Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFF1DFD2)))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf("clock" to "5-minute read", "wifi" to "Works offline").forEach { (icon, label) ->
+                            Row(
+                                Modifier.background(brand.accent, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                LineIcon(icon, Color(0xFF3A1A00), size = 16.dp)
+                                Text(label, style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF3A1A00), fontWeight = FontWeight.Bold))
+                            }
+                        }
+                    }
                 }
-                item { SectionTitle("Words you will hear") }
-                items(guide.glossary.size) { i -> guide.glossary[i].let { g -> Card { Column { Text(g.term, style = MaterialTheme.typography.titleMedium); Text(g.meaning, style = MaterialTheme.typography.bodyMedium) } } } }
-                item { SectionTitle("Questions") }
-                items(guide.faq.size) { i -> guide.faq[i].let { f -> Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(f.q, style = MaterialTheme.typography.titleMedium); Text(f.a, style = MaterialTheme.typography.bodyMedium) } } } }
+            }
+            when (val s = state) {
+                LoadState.Loading -> item { Loading() }
+                is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
+                is LoadState.Ready -> {
+                    val guide = s.value
+                    val sections = buildList {
+                        add("Your day")
+                        if (guide.tips.isNotEmpty()) add("Good to know")
+                        if (guide.bring.isNotEmpty()) add("What to bring")
+                        if (guide.glossary.isNotEmpty()) add("Words you'll hear")
+                        if (guide.faq.isNotEmpty()) add("Questions")
+                    }
+                    // list positions: 0 hero, 1 pills, then each section is a heading followed by its cards
+                    val starts = mutableMapOf<String, Int>()
+                    var at = 2
+                    sections.forEach { name ->
+                        starts[name] = at
+                        at += 1 + when (name) {
+                            "Your day" -> guide.day.size
+                            "Good to know" -> guide.tips.size
+                            "What to bring" -> 1
+                            "Words you'll hear" -> guide.glossary.size
+                            else -> guide.faq.size
+                        }
+                    }
+                    item {
+                        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            sections.forEach { name ->
+                                val pill = RoundedCornerShape(50)
+                                Text(
+                                    name, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink),
+                                    modifier = Modifier.background(brand.surface, pill).border(1.dp, brand.line, pill)
+                                        .clickable(role = Role.Button) { scope.launch { listState.animateScrollToItem(starts.getValue(name) + if (s.fromCache) 1 else 0) } }
+                                        .padding(horizontal = 22.dp, vertical = 14.dp),
+                                )
+                            }
+                        }
+                    }
+                    if (s.fromCache) item { OfflineNote() }
+                    item { Text("How the day runs", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                    items(guide.day.size) { i ->
+                        val d = guide.day[i]
+                        Card {
+                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                                Box(Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) { LineIcon(d.icon, brand.primary, size = 24.dp) }
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(d.title, style = MaterialTheme.typography.titleLarge)
+                                    Text(d.what, style = MaterialTheme.typography.bodyLarge)
+                                    if (d.tip.isNotBlank()) Text("Tip: " + d.tip, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                                }
+                            }
+                        }
+                    }
+                    if (guide.tips.isNotEmpty()) {
+                        item { Text("Good to know", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                        items(guide.tips.size) { i ->
+                            val t = guide.tips[i]
+                            Card {
+                                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                                    Box(Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) { LineIcon(t.icon, brand.primary, size = 24.dp) }
+                                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text(t.title, style = MaterialTheme.typography.titleLarge)
+                                        Text(t.text, style = MaterialTheme.typography.bodyLarge)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (guide.bring.isNotEmpty()) {
+                        item { Text("What to bring", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                        item { Card { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { guide.bring.forEach { Text("• $it", style = MaterialTheme.typography.bodyLarge) } } } }
+                    }
+                    if (guide.glossary.isNotEmpty()) {
+                        item { Text("Words you'll hear", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                        items(guide.glossary.size) { i ->
+                            val g = guide.glossary[i]
+                            Card { Column(verticalArrangement = Arrangement.spacedBy(2.dp)) { Text(g.term, style = MaterialTheme.typography.titleLarge); Text(g.meaning, style = MaterialTheme.typography.bodyLarge) } }
+                        }
+                    }
+                    if (guide.faq.isNotEmpty()) {
+                        item { Text("Questions", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                        items(guide.faq.size) { i ->
+                            val f = guide.faq[i]
+                            Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(f.q, style = MaterialTheme.typography.titleLarge); Text(f.a, style = MaterialTheme.typography.bodyLarge) } }
+                        }
+                    }
+                }
             }
         }
     }
