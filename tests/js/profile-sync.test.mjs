@@ -40,7 +40,7 @@ test('the onboarding form offers exactly the tags discovery offers, in the same 
 
 test('every onboarding field is read somewhere', () => {
   const welcome = read('resources/views/welcome.blade.php');
-  const onboardingSection = welcome.slice(welcome.indexOf('id="onboarding-welcome"'), welcome.indexOf('id="find-your-camp"'));
+  const onboardingSection = welcome.slice(welcome.indexOf('id="onboarding-welcome"'), welcome.indexOf("about-campbuddy', ['part' => 'steps']"));
   const fields = [...onboardingSection.matchAll(/data-field="([a-zA-Z]+)"|'dataField' => '([a-zA-Z]+)'/g)].map((m) => m[1] ?? m[2]);
   assert.deepEqual(fields.sort(), ['attendingContributorDay', 'firstWordCamp', 'profession', 'whoToMeet', 'wporg'].sort());
 

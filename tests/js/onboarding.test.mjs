@@ -9,7 +9,7 @@ globalThis.localStorage = { getItem: () => null, setItem() {} };
 
 const { summaryFor, stepAfter } = await import('../../resources/js/attendee/onboarding.js');
 const welcome = readFileSync(new URL('../../resources/views/welcome.blade.php', import.meta.url), 'utf8');
-const section = welcome.slice(welcome.indexOf('id="onboarding-welcome"'), welcome.indexOf('id="find-your-camp"'));
+const section = welcome.slice(welcome.indexOf('id="onboarding-welcome"'), welcome.indexOf("about-campbuddy', ['part' => 'steps']"));
 
 test('the closing screen says what each answer will do, and is never empty', () => {
   const all = summaryFor({ interests: ['developer', 'speaker'], firstWordCamp: 'yes', attendingContributorDay: 'yes', whoToMeet: 'x' });
@@ -50,4 +50,10 @@ test('the answers keep the same keys, so Home, Contribute, discovery and the Cam
   for (const key of ['firstWordCamp', 'interests', 'profession', 'whoToMeet', 'wporg', 'attendingContributorDay', 'completedAt']) {
     assert.ok(js.includes(key), key);
   }
+});
+
+test('on the picker, the events come straight after the hero and personalising follows them', () => {
+  const order = ['landing-hero"', 'id="find-your-camp"', 'id="onboarding-welcome"', "part' => 'steps'", "part' => 'more'"].map((marker) => welcome.indexOf(marker));
+  assert.ok(order.every((at) => at > 0), 'every block is on the page');
+  assert.deepEqual([...order].sort((a, b) => a - b), order, 'hero, events, personalise, how it helps, the rest');
 });

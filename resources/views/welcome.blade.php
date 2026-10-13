@@ -95,109 +95,8 @@
                 </div>
             </section>
 
-            {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
-            (the stepper, Skip / Next and the profile it saves are wired there). One
-            question at a time; every step can be skipped. The answers go to the same
-            kv 'onboarding' record as always, so Home, Contribute, discovery and the
-            Camp Card read them unchanged (profile-sync.js). --}}
-            <section id="onboarding-welcome" class="ob" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
-                <div class="onboarding-card">
-                    {{-- Before it starts: a short invitation, never a wall of questions. --}}
-                    <div class="ob__intro" data-ob-intro>
-                        <p class="onboarding-card__badge">Optional · 30 seconds</p>
-                        <h2 class="form-group__title" id="onboarding-welcome-heading">Make CampBuddy yours</h2>
-                        <p class="form-group__desc">Five quick taps and CampBuddy points you to the right talks and people. It all stays on this phone.</p>
-                        <div class="onboarding-card__actions">
-                            <button type="button" class="btn btn--outline" data-action="skip-all">Not now</button>
-                            <button type="button" class="btn btn--primary" data-action="start">Let's go <x-attendee.line-icon name="arrow-right" /></button>
-                        </div>
-                    </div>
-
-                    <div class="ob__flow" data-ob-flow hidden>
-                        <div class="ob__top">
-                            <ol class="ob__dots" aria-hidden="true" data-ob-dots>
-                                @foreach (range(1, 5) as $n)
-                                    <li class="ob__dot"></li>
-                                @endforeach
-                            </ol>
-                            <p class="ob__count" data-ob-count role="status" aria-live="polite">Step 1 of 5</p>
-                        </div>
-
-                        <div class="ob__steps">
-                            <div class="ob__step" data-step hidden>
-                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="sprout" /></span>
-                                <h3 class="ob__q" tabindex="-1">Is this your first WordCamp?</h3>
-                                <p class="ob__why">First-timers get beginner-friendly talks flagged and a short start-here guide.</p>
-                                <input type="hidden" data-field="firstWordCamp" value="">
-                                <div class="ob__choices" role="group" aria-label="Is this your first WordCamp?">
-                                    <button type="button" class="ob__choice" data-choice="yes" aria-pressed="false"><x-attendee.line-icon name="sprout" /><span>Yes, first one!</span></button>
-                                    <button type="button" class="ob__choice" data-choice="no" aria-pressed="false"><x-attendee.line-icon name="compass" /><span>No, I've been before</span></button>
-                                </div>
-                            </div>
-
-                            {{-- The same questions attendee discovery asks (same tags, same limit), so
-                            these answers fill in the discovery form and the Camp Card later
-                            (profile-sync.js). The tag list is DESCRIBE_TAGS there; a test keeps
-                            the two equal. --}}
-                            <div class="ob__step" data-step hidden>
-                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="sparkles" /></span>
-                                <h3 class="ob__q" id="ob-interests-label" tabindex="-1">What describes you?</h3>
-                                <p class="ob__why">We use this to suggest talks, Contributor Day teams and people to meet.</p>
-                                <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
-                                    @foreach (['developer', 'designer', 'content creator', 'site builder', 'community organizer', 'marketer', 'business owner', 'blogger', 'translator', 'speaker', 'student', 'mentor'] as $tag)
-                                        <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ ucfirst($tag) }}</button>
-                                    @endforeach
-                                </div>
-                                <p class="ob__hint"><span data-ob-picked>0</span> of 5 picked</p>
-                            </div>
-
-                            <div class="ob__step" data-step hidden>
-                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="wrench" /></span>
-                                <h3 class="ob__q" tabindex="-1">Joining Contributor Day?</h3>
-                                <p class="ob__why">A hands-on day improving WordPress. Beginners welcome. We will set up the Contribute page for you.</p>
-                                <input type="hidden" data-field="attendingContributorDay" value="">
-                                <div class="ob__choices" role="group" aria-label="Joining Contributor Day?">
-                                    <button type="button" class="ob__choice" data-choice="yes" aria-pressed="false"><x-attendee.line-icon name="wrench" /><span>Yes</span></button>
-                                    <button type="button" class="ob__choice" data-choice="no" aria-pressed="false"><x-attendee.line-icon name="coffee" /><span>Not this time</span></button>
-                                </div>
-                            </div>
-
-                            <div class="ob__step" data-step hidden>
-                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="users" /></span>
-                                <h3 class="ob__q" tabindex="-1">Who would you like to meet?</h3>
-                                <p class="ob__why">It pre-fills your attendee profile and Camp Card. Nothing is shared unless you join discovery.</p>
-                                @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Looking to meet', 'placeholder' => 'e.g. other plugin developers', 'dataField' => 'whoToMeet', 'maxlength' => 255, 'errorLine' => false])
-                                @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Your profession', 'placeholder' => 'e.g. WordPress Engineer', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
-                            </div>
-
-                            <div class="ob__step" data-step hidden>
-                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span>
-                                <h3 class="ob__q" tabindex="-1">Your WordPress.org name</h3>
-                                <p class="ob__why">So people can find your profile from your Camp Card. Pasting the profile link works too.</p>
-                                @include('attendee.partials.form-field', ['id' => 'ob-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'dataField' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
-                            </div>
-                        </div>
-
-                        <div class="ob__nav">
-                            <button type="button" class="btn btn--outline ob__back" data-action="back" hidden><x-attendee.line-icon name="chevron-left" /> Back</button>
-                            <button type="button" class="ob__skip" data-action="skip">Skip</button>
-                            <button type="button" class="btn btn--primary ob__next" data-action="next">Next <x-attendee.line-icon name="chevron-right" /></button>
-                        </div>
-                        <button type="button" class="ob__quit" data-action="skip-all">Skip all questions</button>
-                    </div>
-
-                    {{-- After the last step: what the answers will do. --}}
-                    <div class="ob__done" data-ob-done hidden>
-                        <span class="ob__icon ob__icon--done" aria-hidden="true"><x-attendee.line-icon name="party" /></span>
-                        <h3 class="ob__q" tabindex="-1">You are set</h3>
-                        <ul class="ob__summary" data-ob-summary></ul>
-                        <button type="button" class="btn btn--primary btn--full" data-action="done">Choose my WordCamp <x-attendee.line-icon name="arrow-right" /></button>
-                    </div>
-                </div>
-            </section>
-
-            @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
-
+            {{-- Choosing the event is the one job of this page, so it comes right after the
+            hero. Personalising is optional and follows it. --}}
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
                     <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
@@ -302,6 +201,110 @@
                     <script type="application/json" id="picker-countries">{!! json_encode(['names' => (object) ($countryNames ?? []), 'zones' => (object) ($countryZones ?? [])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
                 @endif
             </section>
+
+            {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
+            (the stepper, Skip / Next and the profile it saves are wired there). One
+            question at a time; every step can be skipped. The answers go to the same
+            kv 'onboarding' record as always, so Home, Contribute, discovery and the
+            Camp Card read them unchanged (profile-sync.js). --}}
+            <section id="onboarding-welcome" class="ob" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
+                <div class="onboarding-card">
+                    {{-- Before it starts: a short invitation, never a wall of questions. --}}
+                    <div class="ob__intro" data-ob-intro>
+                        <p class="onboarding-card__badge">Optional · 30 seconds</p>
+                        <h2 class="form-group__title" id="onboarding-welcome-heading">Make CampBuddy yours</h2>
+                        <p class="form-group__desc">Five quick taps and CampBuddy points you to the right talks and people. It all stays on this phone.</p>
+                        <div class="onboarding-card__actions">
+                            <button type="button" class="btn btn--outline" data-action="skip-all">Not now</button>
+                            <button type="button" class="btn btn--primary" data-action="start">Let's go <x-attendee.line-icon name="arrow-right" /></button>
+                        </div>
+                    </div>
+
+                    <div class="ob__flow" data-ob-flow hidden>
+                        <div class="ob__top">
+                            <ol class="ob__dots" aria-hidden="true" data-ob-dots>
+                                @foreach (range(1, 5) as $n)
+                                    <li class="ob__dot"></li>
+                                @endforeach
+                            </ol>
+                            <p class="ob__count" data-ob-count role="status" aria-live="polite">Step 1 of 5</p>
+                        </div>
+
+                        <div class="ob__steps">
+                            <div class="ob__step" data-step hidden>
+                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="sprout" /></span>
+                                <h3 class="ob__q" tabindex="-1">Is this your first WordCamp?</h3>
+                                <p class="ob__why">First-timers get beginner-friendly talks flagged and a short start-here guide.</p>
+                                <input type="hidden" data-field="firstWordCamp" value="">
+                                <div class="ob__choices" role="group" aria-label="Is this your first WordCamp?">
+                                    <button type="button" class="ob__choice" data-choice="yes" aria-pressed="false"><x-attendee.line-icon name="sprout" /><span>Yes, first one!</span></button>
+                                    <button type="button" class="ob__choice" data-choice="no" aria-pressed="false"><x-attendee.line-icon name="compass" /><span>No, I've been before</span></button>
+                                </div>
+                            </div>
+
+                            {{-- The same questions attendee discovery asks (same tags, same limit), so
+                            these answers fill in the discovery form and the Camp Card later
+                            (profile-sync.js). The tag list is DESCRIBE_TAGS there; a test keeps
+                            the two equal. --}}
+                            <div class="ob__step" data-step hidden>
+                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="sparkles" /></span>
+                                <h3 class="ob__q" id="ob-interests-label" tabindex="-1">What describes you?</h3>
+                                <p class="ob__why">We use this to suggest talks, Contributor Day teams and people to meet.</p>
+                                <div class="chip-group" role="group" aria-labelledby="ob-interests-label">
+                                    @foreach (['developer', 'designer', 'content creator', 'site builder', 'community organizer', 'marketer', 'business owner', 'blogger', 'translator', 'speaker', 'student', 'mentor'] as $tag)
+                                        <button type="button" class="chip" aria-pressed="false" data-tag="{{ $tag }}">{{ ucfirst($tag) }}</button>
+                                    @endforeach
+                                </div>
+                                <p class="ob__hint"><span data-ob-picked>0</span> of 5 picked</p>
+                            </div>
+
+                            <div class="ob__step" data-step hidden>
+                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="wrench" /></span>
+                                <h3 class="ob__q" tabindex="-1">Joining Contributor Day?</h3>
+                                <p class="ob__why">A hands-on day improving WordPress. Beginners welcome. We will set up the Contribute page for you.</p>
+                                <input type="hidden" data-field="attendingContributorDay" value="">
+                                <div class="ob__choices" role="group" aria-label="Joining Contributor Day?">
+                                    <button type="button" class="ob__choice" data-choice="yes" aria-pressed="false"><x-attendee.line-icon name="wrench" /><span>Yes</span></button>
+                                    <button type="button" class="ob__choice" data-choice="no" aria-pressed="false"><x-attendee.line-icon name="coffee" /><span>Not this time</span></button>
+                                </div>
+                            </div>
+
+                            <div class="ob__step" data-step hidden>
+                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="users" /></span>
+                                <h3 class="ob__q" tabindex="-1">Who would you like to meet?</h3>
+                                <p class="ob__why">It pre-fills your attendee profile and Camp Card. Nothing is shared unless you join discovery.</p>
+                                @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Looking to meet', 'placeholder' => 'e.g. other plugin developers', 'dataField' => 'whoToMeet', 'maxlength' => 255, 'errorLine' => false])
+                                @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Your profession', 'placeholder' => 'e.g. WordPress Engineer', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
+                            </div>
+
+                            <div class="ob__step" data-step hidden>
+                                <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="link" /></span>
+                                <h3 class="ob__q" tabindex="-1">Your WordPress.org name</h3>
+                                <p class="ob__why">So people can find your profile from your Camp Card. Pasting the profile link works too.</p>
+                                @include('attendee.partials.form-field', ['id' => 'ob-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'dataField' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
+                            </div>
+                        </div>
+
+                        <div class="ob__nav">
+                            <button type="button" class="btn btn--outline ob__back" data-action="back" hidden><x-attendee.line-icon name="chevron-left" /> Back</button>
+                            <button type="button" class="ob__skip" data-action="skip">Skip</button>
+                            <button type="button" class="btn btn--primary ob__next" data-action="next">Next <x-attendee.line-icon name="chevron-right" /></button>
+                        </div>
+                        <button type="button" class="ob__quit" data-action="skip-all">Skip all questions</button>
+                    </div>
+
+                    {{-- After the last step: what the answers will do. --}}
+                    <div class="ob__done" data-ob-done hidden>
+                        <span class="ob__icon ob__icon--done" aria-hidden="true"><x-attendee.line-icon name="party" /></span>
+                        <h3 class="ob__q" tabindex="-1">You are set</h3>
+                        <ul class="ob__summary" data-ob-summary></ul>
+                        <button type="button" class="btn btn--primary btn--full" data-action="done">Choose my WordCamp <x-attendee.line-icon name="arrow-right" /></button>
+                    </div>
+                </div>
+            </section>
+
+            @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
+
 
             @include('attendee.partials.about-campbuddy', ['part' => 'more'])
         </main>
