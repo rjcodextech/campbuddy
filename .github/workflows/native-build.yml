@@ -1,0 +1,64 @@
+name: Native app build
+
+# The Kotlin Multiplatform app (native-app/): shared tests, the Android APK, and the iOS framework
+# compiled on macOS (Kotlin/Native for iOS cannot be built on Windows).
+
+on:
+  pull_request:
+    paths: ['native-app/**', 'app/Support/MobileApp*.php', 'schema/**', '.github/workflows/native-build.yml']
+  push:
+    branches: [app]
+    paths: ['native-app/**', 'app/Support/MobileApp*.php', 'schema/**', '.github/workflows/native-build.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3
+      - run: gradle :shared:testDebugUnitTest :androidApp:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: campbuddy-native-debug-apk
+          path: native-app/androidApp/build/outputs/apk/debug/*.apk
+          retention-days: 7
+
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.14.3
+      - name: Compile the shared code for iOS and run its tests
+        run: gradle :shared:iosSimulatorArm64Test :shared:linkDebugFrameworkIosSimulatorArm64 --no-daemon
+      - name: Generate the Xcode project and build the app for the simulator
+        run: |
+          brew install xcodegen
+          cd iosApp && xcodegen
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO

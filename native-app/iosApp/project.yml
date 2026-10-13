@@ -1,0 +1,31 @@
+# XcodeGen spec: `brew install xcodegen && xcodegen` (on a Mac or the macOS CI runner) writes iosApp.xcodeproj.
+# The Kotlin code is built into the Shared framework by the pre-build script below.
+name: iosApp
+options:
+  bundleIdPrefix: club.campbuddy
+  deploymentTarget:
+    iOS: "15.0"
+targets:
+  iosApp:
+    type: application
+    platform: iOS
+    sources:
+      - iosApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: club.campbuddy.app
+        MARKETING_VERSION: "2.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_CFBundleDisplayName: CampBuddy
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
+        OTHER_LDFLAGS: "$(inherited) -framework Shared"
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      - name: Build the Kotlin framework
+        script: |
+          cd "$SRCROOT/.."
+          if [ -x ./gradlew ]; then ./gradlew :shared:embedAndSignAppleFrameworkForXcode; else gradle :shared:embedAndSignAppleFrameworkForXcode; fi
+        basedOnDependencyAnalysis: false
