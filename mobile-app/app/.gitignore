@@ -18,3 +18,4 @@ ios/capacitor-cordova-ios-plugins/
 google-services.json
 GoogleService-Info.plist
 release/
+scripts/device-smoke-out/
