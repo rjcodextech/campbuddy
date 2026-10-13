@@ -203,6 +203,12 @@ function renderHappeningNow(ctx) {
         quest: { attrs: { href: urls.quest } },
       })
     );
+
+    // The "New to WordCamp? Start here" card is on this page and says the same thing:
+    // don't offer the guide twice.
+    if (document.getElementById('start-here')?.hidden === false) {
+      el.querySelector('[data-slot="guide"]')?.closest('li')?.remove();
+    }
     return;
   }
 

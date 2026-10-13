@@ -57,3 +57,18 @@ test('on the picker, the events come straight after the hero and personalising f
   assert.ok(order.every((at) => at > 0), 'every block is on the page');
   assert.deepEqual([...order].sort((a, b) => a - b), order, 'hero, events, personalise, how it helps, the rest');
 });
+
+test('event Home: what is happening and what is next come before the start-here card and the suggestions', () => {
+  const home = readFileSync(new URL('../../resources/views/attendee/home.blade.php', import.meta.url), 'utf8');
+  const at = (marker) => home.indexOf(marker);
+  const order = ['id="starting-soon-banner"', 'id="happening-now"', 'id="up-next"', 'id="start-here"', 'id="suggested-action-title"', 'id="people-discovery-home"', 'id="progress-track"'].map(at);
+
+  assert.ok(order.every((n) => n > 0), 'every block is on the page');
+  assert.deepEqual([...order].sort((a, b) => a - b), order);
+});
+
+test('the guide is offered once: the prep list drops its guide link while the start-here card shows', () => {
+  const js = readFileSync(new URL('../../resources/js/attendee/home.js', import.meta.url), 'utf8');
+  assert.match(js, /getElementById\('start-here'\)\?\.hidden === false/);
+  assert.match(js, /\[data-slot="guide"\]/);
+});

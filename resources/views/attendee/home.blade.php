@@ -37,21 +37,6 @@
         {{-- "Bring it from your last WordCamp" (bring-data.js): a profile and people met at a WordCamp in the last month. --}}
         <div id="bring-data" class="home-section" hidden></div>
 
-        {{-- Shown by default — first-timers are who CampBuddy is for — and
-        hidden by home.js for someone who told onboarding it isn't their first
-        WordCamp, or who dismissed it. --}}
-        <div class="start-here" id="start-here">
-            <span class="start-here__art" aria-hidden="true"><img src="/media/icons/icon-192.png" alt="" width="64" height="64"></span>
-            <div>
-                <a class="start-here__link" href="{{ route('event.guide', $event) }}" data-track="guide_open" data-track-surface="home_start_here">
-                    <span class="start-here__title">New to WordCamp? Start here</span>
-                </a>
-                <span class="start-here__desc">How the day runs, the words you'll hear, and how to meet people. A 5-minute read.</span>
-                <span class="start-here__cta" aria-hidden="true">Read the guide →</span>
-            </div>
-            <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss"><x-attendee.line-icon name="x" /></button>
-        </div>
-
         <section aria-labelledby="happening-now-heading">
             <div class="section-head">
                 <h2 id="happening-now-heading" class="section-head__title">Happening now</h2>
@@ -68,6 +53,23 @@
             </div>
             <div id="up-next" class="card"></div>
         </section>
+
+        {{-- Below what is happening and what is next (those matter first, and most on the day),
+        above the suggestions. --}}
+        {{-- Shown by default — first-timers are who CampBuddy is for — and
+        hidden by home.js for someone who told onboarding it isn't their first
+        WordCamp, or who dismissed it. --}}
+        <div class="start-here" id="start-here">
+            <span class="start-here__art" aria-hidden="true"><img src="/media/icons/icon-192.png" alt="" width="64" height="64"></span>
+            <div>
+                <a class="start-here__link" href="{{ route('event.guide', $event) }}" data-track="guide_open" data-track-surface="home_start_here">
+                    <span class="start-here__title">New to WordCamp? Start here</span>
+                </a>
+                <span class="start-here__desc">How the day runs, the words you'll hear, and how to meet people. A 5-minute read.</span>
+                <span class="start-here__cta" aria-hidden="true">Read the guide →</span>
+            </div>
+            <button type="button" class="start-here__dismiss" id="start-here-dismiss" aria-label="Hide this guide card" data-track="start_here_dismiss"><x-attendee.line-icon name="x" /></button>
+        </div>
 
         <section aria-labelledby="suggested-action-heading" class="home-section">
             <div class="section-head">
