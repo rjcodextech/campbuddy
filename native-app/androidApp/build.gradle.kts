@@ -16,10 +16,17 @@ android {
         versionCode = 1
         versionName = "2.0.0"
     }
+    buildFeatures { buildConfig = true }
     buildTypes {
         // The debug build installs next to the store app (Capacitor, same id) for side-by-side testing.
-        debug { applicationIdSuffix = ".native" }
-        release { isMinifyEnabled = false }
+        debug {
+            applicationIdSuffix = ".native"
+            buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
+        }
+        release {
+            isMinifyEnabled = false
+            buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

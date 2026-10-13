@@ -28,13 +28,16 @@ val LocalBrand = compositionLocalOf { Brand(ThemeConfig()) }
 
 /** Colours from the server-driven theme (a bad value falls back to the brand colour, never a crash). */
 class Brand(theme: ThemeConfig) {
-    val primary = color(theme.primary, 0xFF60121C)
-    val accent = color(theme.accent, 0xFFDA7F01)
-    val background = color(theme.background, 0xFFFCF1DB)
-    val ink = color(theme.ink, 0xFF2B1014)
-    val muted = color(theme.muted, 0xFF6E5A54)
-    val surface = Color.White
-    val line = Color(0xFFE6DCCB)
+    val primary = color(theme.primary, 0xFFC33A19)
+    val accent = color(theme.accent, 0xFFE39D1C)
+    val background = color(theme.background, 0xFFFFF0DF)
+    val surface = color(theme.surface, 0xFFFFFAF4)
+    val peach = color(theme.peach, 0xFFFFE4C4)
+    val line = color(theme.line, 0xFFEADFD6)
+    val ink = color(theme.ink, 0xFF231F20)
+    val muted = color(theme.muted, 0xFF6B625E)
+    val danger = color(theme.danger, 0xFFB3261E)
+    val success = color(theme.success, 0xFF1F7A4D)
     val radius = theme.radius.coerceIn(0, 28)
 
     private fun color(hex: String, fallback: Long): Color {
@@ -75,7 +78,7 @@ fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
         bodyLarge = style(16, FontWeight.Normal, 24, brand.ink),
         bodyMedium = style(14, FontWeight.Normal, 21, brand.ink),
         bodySmall = style(12, FontWeight.Normal, 18, brand.muted),
-        labelLarge = style(15, FontWeight.SemiBold, 20, Color.White),
+        labelLarge = style(15, FontWeight.SemiBold, 20, Color.Unspecified),
         labelMedium = style(12, FontWeight.SemiBold, 16, brand.muted),
     )
 

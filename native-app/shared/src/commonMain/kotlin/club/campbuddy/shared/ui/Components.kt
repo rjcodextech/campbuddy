@@ -3,6 +3,7 @@ package club.campbuddy.shared.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +17,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -74,7 +79,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
         enabled = enabled,
         modifier = modifier.heightIn(min = 48.dp),
         colors = ButtonDefaults.buttonColors(containerColor = brand.primary, contentColor = Color.White),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge) }
+    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = Color.White)) }
 }
 
 @Composable
@@ -94,7 +99,9 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
     val shape = RoundedCornerShape(brand.radius.dp)
     val base = modifier
         .fillMaxWidth()
+        .shadow(2.dp, shape, clip = false, ambientColor = brand.ink.copy(alpha = 0.12f), spotColor = brand.ink.copy(alpha = 0.12f))
         .background(brand.surface, shape)
+        .border(1.dp, brand.line, shape)
         .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
         .padding(16.dp)
     Box(base) { content() }
@@ -149,5 +156,31 @@ fun BannerCard(banner: BannerConfig, language: String, onAction: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f, fill = true))
+    }
+}
+
+/** A choice chip: dark text on white, filled maroon with white text when chosen (readable on the cream page). */
+@Composable
+fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit) {
+    val brand = LocalBrand.current
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = label,
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = brand.surface,
+            labelColor = brand.ink,
+            selectedContainerColor = brand.primary,
+            selectedLabelColor = Color.White,
+        ),
+        border = FilterChipDefaults.filterChipBorder(enabled = true, selected = selected, borderColor = brand.line, selectedBorderColor = brand.primary),
+    )
+}
+
+/** A text button whose words are the brand colour (the default fades into the dialog). */
+@Composable
+fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    TextButton(onClick = onClick, modifier = modifier.heightIn(min = 48.dp)) {
+        Text(text, style = MaterialTheme.typography.labelLarge.copy(color = LocalBrand.current.primary))
     }
 }

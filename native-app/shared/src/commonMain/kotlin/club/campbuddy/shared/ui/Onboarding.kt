@@ -73,10 +73,10 @@ fun OnboardingCard(onDone: () -> Unit) {
                     StepBody(step, draft) { draft = it }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (step > 0) QuietButton(words("common.back"), { step-- })
-                        TextButton({ if (step == Onboarding.STEPS - 1) finish() else step++ }) { Text(words("common.skip"), style = MaterialTheme.typography.labelMedium) }
+                        LinkButton(words("common.skip"), { if (step == Onboarding.STEPS - 1) finish() else step++ })
                         PrimaryButton(if (step == Onboarding.STEPS - 1) "Finish" else words("common.next"), { if (step == Onboarding.STEPS - 1) finish() else step++ })
                     }
-                    TextButton({ finish(skipAll = true) }, Modifier.fillMaxWidth()) { Text("Skip all questions", style = MaterialTheme.typography.labelMedium) }
+                    LinkButton("Skip all questions", { finish(skipAll = true) }, Modifier.fillMaxWidth())
                 }
             }
         }
@@ -97,7 +97,7 @@ private fun StepBody(step: Int, draft: Profile, change: (Profile) -> Unit) {
             Onboarding.TAGS.chunked(3).forEach { rowTags ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     rowTags.forEach { tag ->
-                        FilterChip(
+                        CbChip(
                             selected = tag in draft.interests,
                             onClick = { change(draft.copy(interests = Onboarding.toggleTag(draft.interests, tag))) },
                             label = { Text(tag.replaceFirstChar { it.uppercase() }, maxLines = 1) },
@@ -129,7 +129,7 @@ private fun Choice(title: String, why: String, options: List<Pair<String, String
         Text(why, style = MaterialTheme.typography.bodySmall)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { (value, label) ->
-                FilterChip(selected = selected == value, onClick = { pick(if (selected == value) null else value) }, label = { Text(label) })
+                CbChip(selected = selected == value, onClick = { pick(if (selected == value) null else value) }, label = { Text(label) })
             }
         }
     }

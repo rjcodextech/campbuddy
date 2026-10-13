@@ -28,11 +28,16 @@
     },
     "theme": {
       "type": "object",
-      "required": ["primary", "accent", "background", "ink", "muted", "radius"],
+      "required": ["primary", "accent", "background", "surface", "peach", "line", "ink", "muted", "danger", "success", "radius"],
       "properties": {
         "primary": { "$ref": "#/definitions/color" },
         "accent": { "$ref": "#/definitions/color" },
         "background": { "$ref": "#/definitions/color" },
+        "surface": { "$ref": "#/definitions/color" },
+        "peach": { "$ref": "#/definitions/color" },
+        "line": { "$ref": "#/definitions/color" },
+        "danger": { "$ref": "#/definitions/color" },
+        "success": { "$ref": "#/definitions/color" },
         "ink": { "$ref": "#/definitions/color" },
         "muted": { "$ref": "#/definitions/color" },
         "radius": { "type": "integer", "minimum": 0, "maximum": 28 },

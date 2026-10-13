@@ -18,12 +18,17 @@ internal const val DEFAULT_CONFIG_JSON = """
         "report_block": true
     },
     "theme": {
-        "primary": "#60121C",
-        "accent": "#DA7F01",
-        "background": "#FCF1DB",
-        "ink": "#2B1014",
-        "muted": "#6E5A54",
-        "radius": 12,
+        "primary": "#C33A19",
+        "accent": "#E39D1C",
+        "background": "#FFF0DF",
+        "surface": "#FFFAF4",
+        "peach": "#FFE4C4",
+        "line": "#EADFD6",
+        "ink": "#231F20",
+        "muted": "#6B625E",
+        "danger": "#B3261E",
+        "success": "#1F7A4D",
+        "radius": 5,
         "logo": null,
         "splash_text": "WordCamp companion"
     },

@@ -184,7 +184,7 @@ class MobileAppConfig
         }
 
         // Theme: colours, and text that stays readable.
-        foreach (['primary', 'accent', 'background', 'ink', 'muted'] as $token) {
+        foreach (['primary', 'accent', 'background', 'surface', 'peach', 'line', 'ink', 'muted', 'danger', 'success'] as $token) {
             if (! preg_match('/^#[0-9A-Fa-f]{6}$/', (string) ($c['theme'][$token] ?? ''))) {
                 $e[] = "Colour \"{$token}\" must be like #60121C.";
             }

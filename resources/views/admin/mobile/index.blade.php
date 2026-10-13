@@ -147,7 +147,7 @@
                 @csrf
                 <x-card title="Colours and logo" description="Text must stay readable: the editor checks contrast and refuses colours that are too faint.">
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        @foreach (['primary' => 'Main colour (buttons)', 'accent' => 'Accent', 'background' => 'Background', 'ink' => 'Text', 'muted' => 'Quiet text'] as $token => $label)
+                        @foreach (['primary' => 'Main colour (buttons)', 'accent' => 'Accent (stars, highlights)', 'background' => 'Page background', 'surface' => 'Cards', 'peach' => 'Soft highlight', 'line' => 'Borders', 'ink' => 'Text', 'muted' => 'Quiet text', 'danger' => 'Warnings', 'success' => 'Success'] as $token => $label)
                             <label class="text-sm font-medium">{{ $label }}
                                 <span class="mt-1 flex items-center gap-2">
                                     <input type="color" value="{{ $config['theme'][$token] }}" oninput="this.nextElementSibling.value = this.value.toUpperCase()" class="h-9 w-12 rounded border-line">

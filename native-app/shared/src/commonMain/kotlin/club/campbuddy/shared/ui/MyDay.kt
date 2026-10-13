@@ -83,16 +83,16 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
             title = { Text("Reminders") },
             text = { Text("Want CampBuddy to remind you a few minutes before the sessions you save start?") },
             confirmButton = {
-                TextButton(onClick = {
+                LinkButton("Remind me", onClick = {
                     askFor = false
                     scope.launch {
                         val granted = env.deps.reminders.requestPermission()
                         user.saveNotifications(if (granted) NotificationState(enabled = true) else NotificationState(denied = true))
                     }
-                }) { Text("Remind me") }
+                })
             },
             dismissButton = {
-                TextButton(onClick = { askFor = false; user.saveNotifications(NotificationState(declined = true)) }) { Text("No thanks") }
+                LinkButton("No thanks", onClick = { askFor = false; user.saveNotifications(NotificationState(declined = true)) })
             },
         )
     }
@@ -102,8 +102,8 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         if (offline) item { OfflineNote() }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = !mine, onClick = { mine = false }, label = { Text("Full schedule") })
-                FilterChip(selected = mine, onClick = { mine = true }, label = { Text("My schedule (${savedIds.size})") })
+                CbChip(selected = !mine, onClick = { mine = false }, label = { Text("Full schedule") })
+                CbChip(selected = mine, onClick = { mine = true }, label = { Text("My schedule (${savedIds.size})") })
             }
         }
         item {

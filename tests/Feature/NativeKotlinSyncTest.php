@@ -88,4 +88,24 @@ class NativeKotlinSyncTest extends TestCase
         }
         $this->assertContains('hero', $drawn[1]);
     }
+
+    public function test_the_apps_copies_of_the_websites_artwork_are_current(): void
+    {
+        $map = [
+            'logo-wordmark-sm.png' => 'wordmark.png', 'icons/icon-192.png' => 'app_icon.png',
+        ];
+
+        foreach ($map as $web => $app) {
+            $copy = base_path('native-app/shared/src/commonMain/composeResources/drawable/'.$app);
+            $this->assertFileExists($copy);
+            $this->assertSame(md5_file(public_path('media/'.$web)), md5_file($copy), "{$app} is out of date: run python native-app/scripts/sync-web-assets.py");
+        }
+
+        // The tab drawings are rendered to PNG (Android cannot draw SVG); the hash of each source SVG is recorded.
+        $recorded = json_decode(file_get_contents(base_path('native-app/web-art.json')), true);
+        foreach (['home', 'my-day', 'quest', 'contribute', 'explore', 'camp-card'] as $name) {
+            $this->assertSame(md5_file(public_path("media/{$name}.svg")), $recorded[$name] ?? null, "The website's {$name}.svg changed: run python native-app/scripts/sync-web-assets.py");
+            $this->assertFileExists(base_path('native-app/shared/src/commonMain/composeResources/drawable/nav_'.str_replace('-', '_', $name).'.png'));
+        }
+    }
 }

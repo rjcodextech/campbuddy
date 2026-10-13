@@ -25,6 +25,21 @@ class MainActivity : ComponentActivity() {
         waiting = null
     }
 
+    /**
+     * The server to talk to. Release builds always use campbuddy.club. A debug build can be pointed at a
+     * development server once: adb shell am start -n club.campbuddy.app.native/club.campbuddy.app.MainActivity --es api http://10.0.2.2:8099/api/v1
+     * (and back with --es api reset).
+     */
+    private fun apiBase(prefs: android.content.SharedPreferences): String {
+        if (!BuildConfig.DEBUG) return BuildConfig.API_BASE
+
+        intent?.getStringExtra("api")?.let { given ->
+            if (given == "reset") prefs.edit().remove("dev.api").apply() else prefs.edit().putString("dev.api", given).apply()
+        }
+
+        return prefs.getString("dev.api", null) ?: BuildConfig.API_BASE
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -51,6 +66,7 @@ class MainActivity : ComponentActivity() {
                     deviceName = "${Build.MANUFACTURER} ${Build.MODEL}".take(80),
                     openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
                     reminders = reminders,
+                    apiBase = apiBase(prefs),
                 )
             )
         }

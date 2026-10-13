@@ -45,6 +45,7 @@ class AppDeps(
     val platform: String, // "android" | "ios"
     val language: String, // "en" | "hi"
     val deviceName: String,
+    val apiBase: String = "https://campbuddy.club/api/v1",
     val openUrl: (String) -> Unit,
     val reminders: club.campbuddy.shared.domain.ReminderPlatform = club.campbuddy.shared.domain.NoReminders,
 )
@@ -60,7 +61,7 @@ private sealed interface Screen {
 /** The whole app. Both platform shells call this and nothing else. */
 @Composable
 fun App(deps: AppDeps) {
-    val api = remember { ApiClient(appVersion = deps.appVersion, platform = deps.platform) }
+    val api = remember { ApiClient(baseUrl = deps.apiBase, appVersion = deps.appVersion, platform = deps.platform) }
     val repository = remember { Repository(api, deps.store) }
     val user = remember { UserData(deps.store) }
     val env = remember { Env(deps, api, repository, user) }

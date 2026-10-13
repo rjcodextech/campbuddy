@@ -13,6 +13,16 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import campbuddy_native.shared.generated.resources.Res
+import campbuddy_native.shared.generated.resources.nav_camp_card
+import campbuddy_native.shared.generated.resources.nav_contribute
+import campbuddy_native.shared.generated.resources.nav_explore
+import campbuddy_native.shared.generated.resources.nav_home
+import campbuddy_native.shared.generated.resources.nav_my_day
+import campbuddy_native.shared.generated.resources.nav_quest
+import org.jetbrains.compose.resources.painterResource
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -84,9 +94,9 @@ fun EventScreen(slug: String, onBack: () -> Unit) {
                 NavigationBarItem(
                     selected = tab.key == selected,
                     onClick = { selected = tab.key },
-                    icon = { LineIcon(tab.icon, if (tab.key == selected) brand.primary else brand.muted) },
+                    icon = { TabIcon(tab.key, tab.icon, tab.key == selected) },
                     label = { Text(words(tab.title), style = MaterialTheme.typography.labelMedium, maxLines = 1) },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = brand.background),
+                    colors = NavigationBarItemDefaults.colors(indicatorColor = brand.peach, selectedTextColor = brand.primary, unselectedTextColor = brand.muted),
                 )
             }
         }
@@ -270,5 +280,25 @@ private fun Progress(section: SectionConfig, slug: String) {
             Text("$done of $total quests done", style = MaterialTheme.typography.bodyMedium)
             LinearProgressIndicator(progress = { done.toFloat() / total }, color = brand.accent, trackColor = brand.line, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+/** The website's own coloured tab drawings where it has one for the tab, else the plain line icon. */
+@Composable
+private fun TabIcon(key: String, icon: String, selected: Boolean) {
+    val brand = LocalBrand.current
+    val art = when (key) {
+        "home" -> Res.drawable.nav_home
+        "my-day" -> Res.drawable.nav_my_day
+        "quest" -> Res.drawable.nav_quest
+        "contribute" -> Res.drawable.nav_contribute
+        "explore" -> Res.drawable.nav_explore
+        "camp-card" -> Res.drawable.nav_camp_card
+        else -> null
+    }
+    if (art != null) {
+        Image(painterResource(art), contentDescription = null, modifier = Modifier.size(28.dp))
+    } else {
+        LineIcon(icon, if (selected) brand.primary else brand.muted)
     }
 }

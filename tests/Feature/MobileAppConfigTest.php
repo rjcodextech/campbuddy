@@ -119,7 +119,7 @@ class MobileAppConfigTest extends TestCase
         $admin = $this->admin();
 
         // Text nearly the same colour as the background.
-        $this->actingAs($admin)->post('/admin/mobile-app/look', ['primary' => '#60121C', 'accent' => '#DA7F01', 'background' => '#FCF1DB', 'ink' => '#FAF0D8', 'muted' => '#6E5A54', 'radius' => 12, 'splash_text' => 'x'])
+        $this->actingAs($admin)->post('/admin/mobile-app/look', ['primary' => '#C33A19', 'accent' => '#E39D1C', 'background' => '#FFF0DF', 'surface' => '#FFFAF4', 'peach' => '#FFE4C4', 'line' => '#EADFD6', 'danger' => '#B3261E', 'success' => '#1F7A4D', 'ink' => '#FFF0DF', 'muted' => '#6E5A54', 'radius' => 12, 'splash_text' => 'x'])
             ->assertSessionHas('config_errors');
         // Fewer than two tabs.
         $tabs = collect(MobileAppDefaults::config()['tabs'])->mapWithKeys(fn ($t) => [$t['key'] => ['order' => $t['order'], 'icon' => $t['icon']]])->all();

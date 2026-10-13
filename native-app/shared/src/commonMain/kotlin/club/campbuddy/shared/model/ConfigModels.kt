@@ -37,12 +37,17 @@ data class MinApp(val android: String = "1.0.0", val ios: String = "1.0.0")
 
 @Serializable
 data class ThemeConfig(
-    val primary: String = "#60121C",
-    val accent: String = "#DA7F01",
-    val background: String = "#FCF1DB",
-    val ink: String = "#2B1014",
-    val muted: String = "#6E5A54",
-    val radius: Int = 12,
+    val primary: String = "#C33A19",
+    val accent: String = "#E39D1C",
+    val background: String = "#FFF0DF",
+    val surface: String = "#FFFAF4",
+    val peach: String = "#FFE4C4",
+    val line: String = "#EADFD6",
+    val ink: String = "#231F20",
+    val muted: String = "#6B625E",
+    val danger: String = "#B3261E",
+    val success: String = "#1F7A4D",
+    val radius: Int = 5,
     val logo: String? = null,
     @SerialName("splash_text") val splashText: String = "",
 )

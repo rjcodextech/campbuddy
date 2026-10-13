@@ -56,8 +56,8 @@ fun OrganizerLoginScreen(api: ApiClient, repository: Repository, deviceName: Str
         Text("Event staff sign-in", style = MaterialTheme.typography.headlineSmall)
         Text("For organizers and event managers. Attendees do not need to sign in.", style = MaterialTheme.typography.bodyMedium)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = role == "manager", onClick = { role = "manager" }, label = { Text("Event manager") })
-            FilterChip(selected = role == "admin", onClick = { role = "admin" }, label = { Text("Admin") })
+            CbChip(selected = role == "manager", onClick = { role = "manager" }, label = { Text("Event manager") })
+            CbChip(selected = role == "admin", onClick = { role = "admin" }, label = { Text("Admin") })
         }
         OutlinedTextField(email, { email = it }, Modifier.fillMaxWidth(), label = { Text("E-mail") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), shape = RoundedCornerShape(brand.radius.dp))
         OutlinedTextField(password, { password = it }, Modifier.fillMaxWidth(), label = { Text("Password") }, singleLine = true, visualTransformation = PasswordVisualTransformation(), keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), shape = RoundedCornerShape(brand.radius.dp))

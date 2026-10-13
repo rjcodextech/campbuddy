@@ -1,6 +1,7 @@
 package club.campbuddy.shared.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,7 +89,7 @@ fun QuestTab(slug: String) {
         val checked = quest.id in done
         Card(onClick = { env.user.toggleQuest(slug, quest.id) }) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top, modifier = Modifier.semantics { role = Role.Checkbox; contentDescription = quest.title + if (checked) ", done" else "" }) {
-                Box(Modifier.size(24.dp).background(if (checked) brand.primary else brand.surface, RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
+                Box(Modifier.size(24.dp).background(if (checked) brand.primary else brand.surface, RoundedCornerShape(6.dp)).border(1.5.dp, if (checked) brand.primary else brand.muted, RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
                     if (checked) Text("✓", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White))
                 }
                 Column(Modifier.weight(1f)) {
@@ -116,7 +117,7 @@ fun ContributeTab(slug: String) {
                 Text("A hands-on day improving WordPress. Beginners welcome.", style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("yes" to "Yes", "no" to "Not this time").forEach { (value, label) ->
-                        FilterChip(
+                        CbChip(
                             selected = profile.attendingContributorDay == value,
                             onClick = { env.user.saveProfile(profile.copy(attendingContributorDay = if (profile.attendingContributorDay == value) null else value)) },
                             label = { Text(label) },
@@ -149,7 +150,7 @@ fun ExploreTab(slug: String) {
             Text(words("tabs.explore"), style = MaterialTheme.typography.headlineSmall)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
                 listOf("people" to "People", "sponsors" to "Sponsors", "deals" to "Deals", "steals" to "Free steals").forEach { (key, label) ->
-                    FilterChip(selected = section == key, onClick = { section = key }, label = { Text(label) })
+                    CbChip(selected = section == key, onClick = { section = key }, label = { Text(label) })
                 }
             }
         }
@@ -186,8 +187,8 @@ private fun PeopleList(slug: String) {
                         OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), placeholder = { Text("Search attendees") }, singleLine = true, shape = RoundedCornerShape(brand.radius.dp))
                         if (roles.isNotEmpty()) {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                FilterChip(selected = role == "", onClick = { role = "" }, label = { Text("All") })
-                                roles.take(4).forEach { r -> FilterChip(selected = role == r, onClick = { role = r }, label = { Text(r.replaceFirstChar { it.uppercase() }) }) }
+                                CbChip(selected = role == "", onClick = { role = "" }, label = { Text("All") })
+                                roles.take(4).forEach { r -> CbChip(selected = role == r, onClick = { role = r }, label = { Text(r.replaceFirstChar { it.uppercase() }) }) }
                             }
                         }
                     }
