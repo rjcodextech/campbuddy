@@ -128,7 +128,14 @@ shot("01-launch")
 
 # ---- the picker ------------------------------------------------------------------
 step("app is running", bool(adb("shell", "pidof", PKG, check=False).strip()))
-step("picker shows", wait_for("Choose your WordCamp", 25) is not None)
+picker = wait_for("Choose your WordCamp", 20)
+if picker is None:
+    # The WebView exposes its accessibility tree lazily; one fresh start usually settles it.
+    adb("shell", "am", "force-stop", PKG)
+    adb("shell", "monkey", "-p", PKG, "-c", "android.intent.category.LAUNCHER", "1", check=False)
+    time.sleep(6)
+    picker = wait_for("Choose your WordCamp", 25)
+step("picker shows", picker is not None)
 
 # ---- open an event --------------------------------------------------------------------
 if tap_text("Choose your WordCamp", shot_name="02-choose"):
