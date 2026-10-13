@@ -83,8 +83,13 @@ data class GuideTip(val icon: String = "star", val title: String, val text: Stri
 @Serializable
 data class GuideQuestion(val q: String, val a: String)
 
+/** What to do right now while a session of this kind is on (the same lines the website shows on Home). */
+@Serializable
+data class GuideMoment(val match: List<String> = emptyList(), val now: String = "")
+
 @Serializable
 data class Guide(
+    val moments: List<GuideMoment> = emptyList(),
     val day: List<GuideDay> = emptyList(),
     val glossary: List<GuideTerm> = emptyList(),
     val tips: List<GuideTip> = emptyList(),

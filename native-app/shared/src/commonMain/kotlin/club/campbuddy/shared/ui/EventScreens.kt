@@ -23,6 +23,20 @@ import campbuddy_native.shared.generated.resources.nav_home
 import campbuddy_native.shared.generated.resources.nav_my_day
 import campbuddy_native.shared.generated.resources.nav_quest
 import org.jetbrains.compose.resources.painterResource
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.wordmark
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.daysUntil
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -67,8 +81,9 @@ fun EventScreen(slug: String, onBack: () -> Unit) {
     }
     PlatformBackHandler(enabled = true, onBack = onBack)
 
-    Column(Modifier.fillMaxSize().background(brand.background)) {
-        Box(Modifier.weight(1f).statusBarsPadding()) {
+    Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
+        TopBar(onGuide = { guide = true }, onRefresh = { eventLoader.reload(); sessionsLoader.reload() })
+        Box(Modifier.weight(1f)) {
             when (val e = event) {
                 LoadState.Loading -> Loading()
                 is LoadState.Failed -> ErrorState(e.message) { eventLoader.reload(); sessionsLoader.reload() }
@@ -136,7 +151,7 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
                 "hero" -> HeroCard(event, phase, zone, now, sessions, onBack)
                 "starting_soon" -> StartingSoon(sessions, saved.map { it.sessionId }.toSet(), now, zone)
                 "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event)
-                "up_next" -> UpNext(section, phase, sessions, now, zone)
+                "up_next" -> UpNext(section, phase, sessions, now, zone) { onTab("my-day") }
                 "start_here" -> {
                     SectionTitle(section.title?.let(words::invoke) ?: "New to WordCamp? Start here")
                     Card(onClick = onGuide) {
@@ -176,15 +191,50 @@ private fun visible(section: SectionConfig, phase: Phase, firstWordCamp: String?
 
 @Composable
 private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>, onBack: () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(brand.radius.dp)
     Card {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(event.shortName ?: "WordCamp", style = MaterialTheme.typography.labelMedium)
-            Text(event.name, style = MaterialTheme.typography.headlineSmall)
-            datesText(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-            Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.titleMedium)
-            QuietButton("All WordCamps", onBack, Modifier.padding(top = 8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(88.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
+                    contentAlignment = Alignment.Center,
+                ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(64.dp)) }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
+                    Text(event.name, style = MaterialTheme.typography.headlineSmall)
+                    datesText(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                }
+            }
+            StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During)
+            LinkButton("All WordCamps", onBack)
         }
     }
+}
+
+@Composable
+private fun StatusPill(text: String, live: Boolean) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(50)
+    Row(
+        Modifier.background(brand.background, shape).border(1.dp, brand.line, shape).padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(10.dp).background(if (live) brand.success else brand.muted, CircleShape))
+        Text(text, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+    }
+}
+
+/** "Day 1 of 2 · happening now" while it runs, else the plain status. */
+private fun statusPillText(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>): String {
+    if (phase != Phase.During) return statusText(event, phase, zone, now, sessions)
+    val first = runCatching { LocalDate.parse(event.firstDay.orEmpty()) }.getOrNull() ?: return "Happening now"
+    val last = runCatching { LocalDate.parse(event.lastDay.orEmpty()) }.getOrNull() ?: return "Happening now"
+    val total = first.daysUntil(last) + 1
+    val day = (first.daysUntil(EventClock.day(now, zone)) + 1).coerceIn(1, total)
+
+    return "Day $day of $total · happening now"
 }
 
 private fun statusText(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>): String = when (phase) {
@@ -218,29 +268,64 @@ private fun StartingSoon(sessions: List<Session>, savedIds: Set<Long>, now: Inst
 @Composable
 private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, event: EventDetail) {
     val words = LocalWords.current
+    val brand = LocalBrand.current
+    val env = LocalEnv.current
+    val current = EventClock.current(sessions, now)
+    val guide = rememberLoader("guide:${event.slug}") { env.repository.guide(event.slug) }.state.value as? LoadState.Ready
+    val shape = RoundedCornerShape(brand.radius.dp)
+
     SectionTitle(section.title?.let(words::invoke) ?: "Happening now")
-    Card {
-        val current = EventClock.current(sessions, now)
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    if (phase != Phase.During || current.isEmpty()) {
+        Card {
             when {
                 phase == Phase.After -> Text("That is a wrap. Thanks for coming!", style = MaterialTheme.typography.bodyLarge)
                 phase == Phase.Before -> Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.bodyLarge)
-                current.isEmpty() -> Text("Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth.", style = MaterialTheme.typography.bodyMedium)
-                else -> current.forEach { SessionLine(it, zone) }
+                else -> Text("Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth.", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        return
+    }
+
+    val moment = current.firstNotNullOfOrNull { s -> guide?.value?.moments?.firstOrNull { m -> m.match.any { s.title.contains(it, ignoreCase = true) } } }
+    Column(
+        Modifier.fillMaxWidth().background(brand.peach, shape).border(1.5.dp, brand.primary, shape).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "NOW",
+            style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
+            modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 4.dp),
+        )
+        current.forEachIndexed { i, session ->
+            if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.primary.copy(alpha = 0.25f)))
+            Column {
+                Text(session.title, style = MaterialTheme.typography.titleMedium)
+                val end = EventClock.endOf(session)
+                val meta = listOfNotNull(session.trackNames.firstOrNull(), end?.let { "until ${EventClock.time(it, zone)}" }).joinToString(" · ")
+                if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            }
+        }
+        moment?.takeIf { it.now.isNotBlank() }?.let {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("→", style = MaterialTheme.typography.bodyLarge.copy(color = brand.primary))
+                Text(it.now, style = MaterialTheme.typography.bodyLarge)
             }
         }
     }
 }
 
 @Composable
-private fun UpNext(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone) {
+private fun UpNext(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, onSchedule: () -> Unit) {
     val words = LocalWords.current
     if (phase == Phase.After) return
     val next = EventClock.upNext(sessions, now) ?: return
     val start = EventClock.startOf(next) ?: return
     val alternatives = EventClock.alternatives(sessions, next).size
 
-    SectionTitle(section.title?.let(words::invoke) ?: "Up next")
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+        SectionTitle(section.title?.let(words::invoke) ?: "Up next")
+        LinkButton("Full schedule →", onSchedule)
+    }
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(next.title, style = MaterialTheme.typography.titleMedium)
@@ -301,4 +386,31 @@ private fun TabIcon(key: String, icon: String, selected: Boolean) {
     } else {
         LineIcon(icon, if (selected) brand.primary else brand.muted)
     }
+}
+
+/** The website's header: the CampBuddy wordmark, the guide and a refresh. */
+@Composable
+private fun TopBar(onGuide: () -> Unit, onRefresh: () -> Unit) {
+    val brand = LocalBrand.current
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            RoundTool("?", "Guide", onGuide)
+            RoundTool("↻", "Refresh", onRefresh)
+        }
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+}
+
+@Composable
+private fun RoundTool(glyph: String, label: String, onClick: () -> Unit) {
+    val brand = LocalBrand.current
+    Box(
+        Modifier.size(44.dp).background(brand.peach, CircleShape).clickable(role = Role.Button, onClickLabel = label, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { Text(glyph, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink)) }
 }

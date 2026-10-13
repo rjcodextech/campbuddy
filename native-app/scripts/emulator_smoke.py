@@ -53,7 +53,7 @@ def nodes():
     for n in root.iter("node"):
         m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", n.get("bounds", ""))
         if m:
-            out.append({"text": n.get("text", ""), "desc": n.get("content-desc", ""), "box": tuple(map(int, m.groups())), "focusable": n.get("focusable") == "true"})
+            out.append({"text": n.get("text", ""), "desc": n.get("content-desc", ""), "box": tuple(map(int, m.groups())), "focusable": n.get("focusable") == "true", "cls": n.get("class", "")})
     return out
 
 
@@ -96,10 +96,12 @@ def tap_text(text, seconds=15, exact=False):
 
 
 def type_into(label, value):
-    n = find(label)
+    # the last match: a field label comes after any card that previews the same words
+    n = next((x for x in reversed(nodes()) if label.lower() in x["text"].lower()), None)
     if not n:
         return False
     tap(n)
+    time.sleep(1.2)
     adb("shell", "input", "text", value.replace(" ", "%s"))
     time.sleep(0.6)
     return True
@@ -136,9 +138,13 @@ tap_text("Choose your WordCamp", exact=True)
 
 # ---- the event ------------------------------------------------------------------------------------------------
 tap_text("WordCamp Demo 2026")
-step("event Home: what is happening now", wait("Keynote: Ten years of WordPress in India", 20) is not None)
+step("event Home: what is happening now", wait("NOW", 20) is not None)
 step("event Home: up next with the clash noted", find("at the same time") is not None or find("Up next") is not None)
+adb("shell", "input", "swipe", "1070", "1700", "1070", "700", "400")
+time.sleep(1)
 step("event Home: start-here card for a first-timer", find("Read the guide") is not None)
+adb("shell", "input", "swipe", "1070", "700", "1070", "1700", "400")
+time.sleep(1)
 shot("03-home")
 
 # ---- My Day ------------------------------------------------------------------------------------------------------
