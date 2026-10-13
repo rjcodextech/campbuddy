@@ -17,3 +17,4 @@ ios/capacitor-cordova-ios-plugins/
 *.mobileprovision
 google-services.json
 GoogleService-Info.plist
+release/

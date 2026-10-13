@@ -40,7 +40,8 @@ test('Android: verified App Links, no cleartext, no backup', () => {
   assert.match(manifest, /android:usesCleartextTraffic="false"/);
   assert.match(manifest, /android:allowBackup="false"/);
   assert.match(manifest, /POST_NOTIFICATIONS/);
-  assert.doesNotMatch(manifest, /SCHEDULE_EXACT_ALARM|USE_EXACT_ALARM/, 'exact alarms need a Play justification we do not have');
+  assert.match(manifest, /SCHEDULE_EXACT_ALARM" tools:node="remove"/, 'exact alarms need a Play justification we do not have: removed from the merged manifest');
+  assert.doesNotMatch(manifest, /USE_EXACT_ALARM/);
 });
 
 test('iOS: app-bound domain, Universal Links, privacy manifest, no tracking', () => {
