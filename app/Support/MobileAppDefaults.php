@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Support;
+
+/**
+ * The native app's built-in settings: what it shows before any admin edits
+ * anything, and what the app itself also carries as its bundled fallback
+ * (native-app/.../DefaultConfig). The admin editor can change the values of
+ * these keys; it can not add keys, sections or tabs the app does not know.
+ */
+class MobileAppDefaults
+{
+    public const SCHEMA = 1;
+
+    /** Tabs the app knows how to draw. */
+    public const TAB_KEYS = ['home', 'my-day', 'quest', 'contribute', 'explore', 'camp-card', 'memories'];
+
+    /** Home blocks the app knows how to draw. */
+    public const SECTION_TYPES = ['hero', 'memories', 'starting_soon', 'bring_data', 'happening_now', 'up_next', 'start_here', 'suggested_action', 'people_cta', 'progress', 'banner', 'custom_card'];
+
+    /** The few conditions a section may depend on (no expressions). */
+    public const VISIBLE_IF = ['first_timer', 'returning', 'not_returning', 'phase:before', 'phase:during', 'phase:after', 'has_saved'];
+
+    public const FLAGS = ['native_push', 'local_reminders', 'discovery', 'organizer_login', 'report_block'];
+
+    public const LOCALES = ['en', 'hi'];
+
+    public const ORGANIZER_TAB_KEYS = ['dashboard', 'events', 'reports', 'alerts', 'delay', 'more'];
+
+    public const ACTION_TYPES = ['event', 'tab', 'url', 'share'];
+
+    /** @return array<string, mixed> */
+    public static function config(): array
+    {
+        return [
+            'schema' => self::SCHEMA,
+            'min_app' => ['android' => '1.0.0', 'ios' => '1.0.0'],
+            'flags' => ['native_push' => true, 'local_reminders' => true, 'discovery' => true, 'organizer_login' => true, 'report_block' => true],
+            'theme' => [
+                'primary' => '#60121C',
+                'accent' => '#DA7F01',
+                'background' => '#FCF1DB',
+                'ink' => '#2B1014',
+                'muted' => '#6E5A54',
+                'radius' => 12,
+                'logo' => null,
+                'splash_text' => 'WordCamp companion',
+            ],
+            'banner' => null,
+            'tabs' => [
+                ['key' => 'home', 'icon' => 'home', 'title' => 'tabs.home', 'enabled' => true, 'order' => 1],
+                ['key' => 'my-day', 'icon' => 'calendar', 'title' => 'tabs.my_day', 'enabled' => true, 'order' => 2],
+                ['key' => 'quest', 'icon' => 'star', 'title' => 'tabs.quest', 'enabled' => true, 'order' => 3],
+                ['key' => 'contribute', 'icon' => 'wrench', 'title' => 'tabs.contribute', 'enabled' => true, 'order' => 4],
+                ['key' => 'explore', 'icon' => 'compass', 'title' => 'tabs.explore', 'enabled' => true, 'order' => 5],
+                ['key' => 'camp-card', 'icon' => 'id-card', 'title' => 'tabs.camp_card', 'enabled' => true, 'order' => 6],
+                ['key' => 'memories', 'icon' => 'camera', 'title' => 'tabs.memories', 'enabled' => false, 'order' => 7],
+            ],
+            'home' => ['sections' => [
+                ['type' => 'hero', 'title' => null, 'enabled' => true, 'order' => 1, 'visible_if' => null],
+                ['type' => 'memories', 'title' => null, 'enabled' => true, 'order' => 2, 'visible_if' => 'phase:after'],
+                ['type' => 'starting_soon', 'title' => null, 'enabled' => true, 'order' => 3, 'visible_if' => null],
+                ['type' => 'bring_data', 'title' => null, 'enabled' => true, 'order' => 4, 'visible_if' => null],
+                ['type' => 'happening_now', 'title' => 'home.happening_now', 'enabled' => true, 'order' => 5, 'visible_if' => null],
+                ['type' => 'up_next', 'title' => 'home.up_next', 'enabled' => true, 'order' => 6, 'visible_if' => null],
+                ['type' => 'start_here', 'title' => 'home.start_here', 'enabled' => true, 'order' => 7, 'visible_if' => 'not_returning'],
+                ['type' => 'suggested_action', 'title' => 'home.one_thing', 'enabled' => true, 'order' => 8, 'visible_if' => null],
+                ['type' => 'people_cta', 'title' => 'home.meet_people', 'enabled' => true, 'order' => 9, 'visible_if' => null],
+                ['type' => 'progress', 'title' => 'home.your_progress', 'enabled' => true, 'order' => 10, 'visible_if' => null],
+            ]],
+            'organizer' => ['tabs' => [
+                ['key' => 'dashboard', 'icon' => 'home', 'title' => 'org.dashboard', 'enabled' => true, 'order' => 1],
+                ['key' => 'events', 'icon' => 'calendar', 'title' => 'org.events', 'enabled' => true, 'order' => 2],
+                ['key' => 'reports', 'icon' => 'siren', 'title' => 'org.reports', 'enabled' => true, 'order' => 3],
+                ['key' => 'delay', 'icon' => 'clock', 'title' => 'org.delay', 'enabled' => true, 'order' => 4],
+                ['key' => 'more', 'icon' => 'columns', 'title' => 'org.more', 'enabled' => true, 'order' => 5],
+            ]],
+            'onboarding' => ['enabled' => true],
+            'strings' => ['en' => self::strings('en'), 'hi' => self::strings('hi')],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public static function strings(string $locale): array
+    {
+        $en = [
+            'tabs.home' => 'Home',
+            'tabs.my_day' => 'My Day',
+            'tabs.quest' => 'Quest',
+            'tabs.contribute' => 'Contribute',
+            'tabs.explore' => 'Explore',
+            'tabs.camp_card' => 'Camp Card',
+            'tabs.memories' => 'Memories',
+            'home.happening_now' => 'Happening now',
+            'home.up_next' => 'Up next',
+            'home.start_here' => 'New to WordCamp? Start here',
+            'home.one_thing' => 'One thing to try',
+            'home.meet_people' => 'Meet people',
+            'home.your_progress' => 'Your progress',
+            'picker.title' => 'Make the most of your WordCamp',
+            'picker.lead' => "See what's on, plan your talks and meet people who share your interests. All on your phone.",
+            'picker.choose' => 'Choose your WordCamp',
+            'picker.first_timer' => 'First WordCamp? Read this first',
+            'picker.empty' => 'No WordCamp is open yet. Events show up here a few weeks before they start.',
+            'picker.free' => 'Free',
+            'picker.no_signup' => 'No sign-up',
+            'picker.works_offline' => 'Works offline',
+            'onboarding.title' => 'Make CampBuddy yours',
+            'onboarding.lead' => 'Five quick taps and CampBuddy points you to the right talks and people. It all stays on this phone.',
+            'onboarding.start' => "Let's go",
+            'onboarding.not_now' => 'Not now',
+            'common.next' => 'Next',
+            'common.back' => 'Back',
+            'common.skip' => 'Skip',
+            'common.retry' => 'Try again',
+            'common.offline' => 'You are offline. Showing what is saved on this phone.',
+            'common.loading' => 'Loading…',
+            'common.update_title' => 'Please update CampBuddy',
+            'common.update_text' => 'This version is too old to open. A quick update and you are back.',
+            'org.dashboard' => 'Dashboard',
+            'org.events' => 'Events',
+            'org.reports' => 'Reports',
+            'org.delay' => 'Running late',
+            'org.more' => 'More',
+        ];
+
+        if ($locale === 'en') {
+            return $en;
+        }
+
+        return [
+            'tabs.home' => 'होम',
+            'tabs.my_day' => 'मेरा दिन',
+            'tabs.quest' => 'क्वेस्ट',
+            'tabs.contribute' => 'योगदान',
+            'tabs.explore' => 'खोजें',
+            'tabs.camp_card' => 'कैंप कार्ड',
+            'tabs.memories' => 'यादें',
+            'home.happening_now' => 'अभी चल रहा है',
+            'home.up_next' => 'आगे',
+            'home.start_here' => 'WordCamp में पहली बार? यहाँ से शुरू करें',
+            'home.one_thing' => 'आज़माने के लिए एक चीज़',
+            'home.meet_people' => 'लोगों से मिलें',
+            'home.your_progress' => 'आपकी प्रगति',
+            'picker.title' => 'अपने WordCamp का पूरा फ़ायदा उठाइए',
+            'picker.lead' => 'देखिए क्या चल रहा है, अपने टॉक चुनिए और अपनी रुचि वाले लोगों से मिलिए। सब कुछ आपके फ़ोन पर।',
+            'picker.choose' => 'अपना WordCamp चुनिए',
+            'picker.first_timer' => 'पहला WordCamp? पहले यह पढ़िए',
+            'picker.empty' => 'अभी कोई WordCamp खुला नहीं है। इवेंट शुरू होने से कुछ हफ़्ते पहले यहाँ दिखते हैं।',
+            'picker.free' => 'मुफ़्त',
+            'picker.no_signup' => 'साइन-अप नहीं',
+            'picker.works_offline' => 'ऑफ़लाइन चलता है',
+            'onboarding.title' => 'CampBuddy को अपना बनाइए',
+            'onboarding.lead' => 'पाँच छोटे टैप और CampBuddy आपको सही टॉक और लोगों तक पहुँचाएगा। सब आपके फ़ोन पर ही रहता है।',
+            'onboarding.start' => 'शुरू करें',
+            'onboarding.not_now' => 'अभी नहीं',
+            'common.next' => 'आगे',
+            'common.back' => 'पीछे',
+            'common.skip' => 'छोड़ें',
+            'common.retry' => 'फिर कोशिश करें',
+            'common.offline' => 'आप ऑफ़लाइन हैं। इस फ़ोन में सेव किया हुआ दिख रहा है।',
+            'common.loading' => 'लोड हो रहा है…',
+            'common.update_title' => 'कृपया CampBuddy अपडेट कीजिए',
+            'common.update_text' => 'यह वर्ज़न खुलने के लिए बहुत पुराना है। एक छोटा अपडेट और आप वापस।',
+            'org.dashboard' => 'डैशबोर्ड',
+            'org.events' => 'इवेंट',
+            'org.reports' => 'रिपोर्ट',
+            'org.delay' => 'देरी',
+            'org.more' => 'और',
+        ];
+    }
+}

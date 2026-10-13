@@ -9,6 +9,7 @@
         ['label' => 'Analytics', 'icon' => 'eye', 'href' => route('admin.analytics.index'), 'active' => request()->routeIs('admin.analytics.*')],
         ['label' => 'Errors', 'icon' => 'exclamation-triangle', 'href' => route('admin.errors.index'), 'active' => request()->routeIs('admin.errors.*')],
         ['label' => 'Commands', 'icon' => 'refresh', 'href' => route('admin.commands.index'), 'active' => request()->routeIs('admin.commands.*')],
+        ['label' => 'Mobile app', 'icon' => 'refresh', 'href' => route('admin.mobile.index'), 'active' => request()->routeIs('admin.mobile.*')],
         ['label' => 'Media Library', 'icon' => 'photo', 'href' => route('admin.media.index'), 'active' => request()->routeIs('admin.media.*')],
     ];
 

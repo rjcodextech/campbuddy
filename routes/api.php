@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\App\ConfigController as AppSettingsController;
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
@@ -33,6 +34,8 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::get('/cache-version', CacheVersionController::class)->name('api.cache-version');
     // The native app start-up check: minimum build, store link, feature switches.
     Route::get('/app-config', AppConfigController::class)->name('api.app-config');
+    // The native app's server-driven settings (Admin > Mobile app).
+    Route::get('/app/config', AppSettingsController::class)->name('api.app.config');
 
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');

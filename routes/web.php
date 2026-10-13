@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\EventManagerController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MobileAppController;
 use App\Http\Controllers\Admin\MemoriesController;
 use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\OfferController;
@@ -135,6 +136,13 @@ Route::prefix('admin')->group(function () {
         // The store app: this admin's phone for alerts (reports on a profile).
         Route::post('app-push', [AppPushController::class, 'store'])->name('admin.app-push.store');
         Route::delete('app-push', [AppPushController::class, 'destroy'])->name('admin.app-push.destroy');
+
+        // The native app's server-driven settings: tabs, Home layout, texts, colours, banner, switches.
+        Route::get('mobile-app', [MobileAppController::class, 'index'])->name('admin.mobile.index');
+        Route::post('mobile-app/publish', [MobileAppController::class, 'publish'])->name('admin.mobile.publish');
+        Route::post('mobile-app/discard', [MobileAppController::class, 'discard'])->name('admin.mobile.discard');
+        Route::post('mobile-app/rollback/{version}', [MobileAppController::class, 'rollback'])->whereNumber('version')->name('admin.mobile.rollback');
+        Route::post('mobile-app/{section}', [MobileAppController::class, 'save'])->whereIn('section', ['navigation', 'home', 'text', 'look', 'banner', 'switches'])->name('admin.mobile.save');
 
         // Everything that is failing, in one place (the dashboard only summarises it).
         Route::get('errors', ErrorsController::class)->name('admin.errors.index');

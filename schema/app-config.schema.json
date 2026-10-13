@@ -1,0 +1,126 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CampBuddy app config (GET /api/v1/app/config)",
+  "description": "The server-driven settings the native app reads. The server validates every publish against the same rules (MobileAppConfig::validate in the Laravel app); tests keep this file and the PHP lists equal.",
+  "type": "object",
+  "required": ["schema", "version", "min_app", "flags", "theme", "tabs", "home", "organizer", "strings"],
+  "properties": {
+    "schema": { "const": 1 },
+    "version": { "type": "integer", "minimum": 0 },
+    "min_app": {
+      "type": "object",
+      "required": ["android", "ios"],
+      "properties": {
+        "android": { "$ref": "#/definitions/semver" },
+        "ios": { "$ref": "#/definitions/semver" }
+      }
+    },
+    "flags": {
+      "type": "object",
+      "properties": {
+        "native_push": { "type": "boolean" },
+        "local_reminders": { "type": "boolean" },
+        "discovery": { "type": "boolean" },
+        "organizer_login": { "type": "boolean" },
+        "report_block": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "theme": {
+      "type": "object",
+      "required": ["primary", "accent", "background", "ink", "muted", "radius"],
+      "properties": {
+        "primary": { "$ref": "#/definitions/color" },
+        "accent": { "$ref": "#/definitions/color" },
+        "background": { "$ref": "#/definitions/color" },
+        "ink": { "$ref": "#/definitions/color" },
+        "muted": { "$ref": "#/definitions/color" },
+        "radius": { "type": "integer", "minimum": 0, "maximum": 28 },
+        "logo": { "type": ["string", "null"], "pattern": "^https://" },
+        "splash_text": { "type": "string", "maxLength": 60 }
+      }
+    },
+    "banner": {
+      "type": ["object", "null"],
+      "required": ["text"],
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "object", "required": ["en"], "properties": { "en": { "type": "string", "maxLength": 200 }, "hi": { "type": "string", "maxLength": 200 } } },
+        "style": { "enum": ["info", "warning", "success"] },
+        "action": {
+          "type": ["object", "null"],
+          "required": ["type"],
+          "properties": {
+            "type": { "enum": ["event", "tab", "url", "share"] },
+            "url": { "type": "string", "pattern": "^https://" },
+            "slug": { "type": "string" },
+            "tab": { "type": "string" }
+          }
+        },
+        "until": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "tabs": { "type": "array", "items": { "$ref": "#/definitions/tab" }, "minItems": 2 },
+    "home": {
+      "type": "object",
+      "required": ["sections"],
+      "properties": { "sections": { "type": "array", "items": { "$ref": "#/definitions/section" } } }
+    },
+    "organizer": {
+      "type": "object",
+      "required": ["tabs"],
+      "properties": { "tabs": { "type": "array", "items": { "$ref": "#/definitions/organizerTab" } } }
+    },
+    "onboarding": { "type": "object", "properties": { "enabled": { "type": "boolean" } } },
+    "strings": {
+      "type": "object",
+      "required": ["en"],
+      "properties": {
+        "en": { "$ref": "#/definitions/texts" },
+        "hi": { "$ref": "#/definitions/texts" }
+      }
+    }
+  },
+  "definitions": {
+    "semver": { "type": "string", "pattern": "^[0-9]+[.][0-9]+[.][0-9]+$" },
+    "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "tabKey": { "enum": ["home", "my-day", "quest", "contribute", "explore", "camp-card", "memories"] },
+    "organizerTabKey": { "enum": ["dashboard", "events", "reports", "alerts", "delay", "more"] },
+    "sectionType": { "enum": ["hero", "memories", "starting_soon", "bring_data", "happening_now", "up_next", "start_here", "suggested_action", "people_cta", "progress", "banner", "custom_card"] },
+    "visibleIf": { "enum": ["first_timer", "returning", "not_returning", "phase:before", "phase:during", "phase:after", "has_saved"] },
+    "tab": {
+      "type": "object",
+      "required": ["key", "icon", "title", "enabled", "order"],
+      "properties": {
+        "key": { "$ref": "#/definitions/tabKey" },
+        "icon": { "type": "string" },
+        "title": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "order": { "type": "integer" }
+      }
+    },
+    "organizerTab": {
+      "type": "object",
+      "required": ["key", "icon", "title", "enabled", "order"],
+      "properties": {
+        "key": { "$ref": "#/definitions/organizerTabKey" },
+        "icon": { "type": "string" },
+        "title": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "order": { "type": "integer" }
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": ["type", "enabled", "order"],
+      "properties": {
+        "type": { "$ref": "#/definitions/sectionType" },
+        "title": { "type": ["string", "null"] },
+        "enabled": { "type": "boolean" },
+        "order": { "type": "integer" },
+        "visible_if": { "oneOf": [{ "type": "null" }, { "$ref": "#/definitions/visibleIf" }] }
+      }
+    },
+    "texts": { "type": "object", "additionalProperties": { "type": "string", "maxLength": 300 } }
+  }
+}
