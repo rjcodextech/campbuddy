@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        $email = env('ADMIN_EMAIL', 'admin@campbuddy.test');
+        $email = env('ADMIN_EMAIL', 'hello@wpsimplified.in');
 
         if (User::where('email', $email)->exists()) {
             $this->command->warn("Admin user {$email} already exists — skipping.");
@@ -29,7 +29,7 @@ class AdminUserSeeder extends Seeder
         User::create([
             'name' => 'CampBuddy Admin',
             'email' => $email,
-            'password' => $password,
+            'password' => 'Hello@123', // bcrypt($password),
             'email_verified_at' => now(),
         ]);
 
