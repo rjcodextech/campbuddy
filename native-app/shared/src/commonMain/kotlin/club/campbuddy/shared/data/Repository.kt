@@ -12,6 +12,7 @@ import club.campbuddy.shared.model.Sponsor
 import club.campbuddy.shared.model.EventCard
 import club.campbuddy.shared.model.EventDetail
 import club.campbuddy.shared.model.Session
+import club.campbuddy.shared.model.Speaker
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 
@@ -58,6 +59,8 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     suspend fun quests(slug: String): Loaded<List<Quest>> = cached("quests:$slug", ListSerializer(Quest.serializer())) { api.quests(slug) }
 
     suspend fun tables(slug: String): Loaded<List<ContributorTable>> = cached("tables:$slug", ListSerializer(ContributorTable.serializer())) { api.tables(slug) }
+
+    suspend fun speakers(slug: String): Loaded<List<Speaker>> = cached("speakers:$slug", ListSerializer(Speaker.serializer())) { api.speakers(slug) }
 
     suspend fun guide(slug: String): Loaded<Guide> = cached("guide:$slug", Guide.serializer()) { api.guide(slug) }
 

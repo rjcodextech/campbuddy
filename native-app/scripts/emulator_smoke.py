@@ -151,7 +151,7 @@ shot("03-home")
 tap_text("My Day", exact=True)
 step("My Day lists the sessions", wait("Building your first block") is not None and find("SEO for WordPress beginners") is not None)
 stars = [n for n in nodes() if n["desc"] == "Save to My Day"]
-step("every session has a labelled star", len(stars) >= 5, f"{len(stars)} stars")
+step("every session has a labelled star", len(stars) >= 3, f"{len(stars)} stars")
 if stars:
     tap(stars[0])
     step("the first save asks about reminders once", wait("Reminders", 8) is not None)

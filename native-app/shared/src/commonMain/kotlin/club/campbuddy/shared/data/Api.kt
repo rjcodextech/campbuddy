@@ -20,6 +20,7 @@ import club.campbuddy.shared.model.OrganizerEvent
 import club.campbuddy.shared.model.Person
 import club.campbuddy.shared.model.ReportsData
 import club.campbuddy.shared.model.Session
+import club.campbuddy.shared.model.Speaker
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -79,6 +80,8 @@ class ApiClient(
     suspend fun quests(slug: String): List<Quest> = get<Data<List<Quest>>>("/app/events/$slug/quests").data
 
     suspend fun tables(slug: String): List<ContributorTable> = get<Data<List<ContributorTable>>>("/app/events/$slug/contributor-tables").data
+
+    suspend fun speakers(slug: String): List<Speaker> = get<Data<List<Speaker>>>("/app/events/$slug/speakers").data
 
     suspend fun guide(slug: String): Guide = get<Data<Guide>>("/app/events/$slug/guide").data
 
