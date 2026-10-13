@@ -4,6 +4,7 @@ import club.campbuddy.shared.model.AppConfig
 import club.campbuddy.shared.model.ContributorTable
 import club.campbuddy.shared.model.Deal
 import club.campbuddy.shared.model.FreeSteal
+import club.campbuddy.shared.model.DelayInfo
 import club.campbuddy.shared.model.Guide
 import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
@@ -59,6 +60,8 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     suspend fun quests(slug: String): Loaded<List<Quest>> = cached("quests:$slug", ListSerializer(Quest.serializer())) { api.quests(slug) }
 
     suspend fun tables(slug: String): Loaded<List<ContributorTable>> = cached("tables:$slug", ListSerializer(ContributorTable.serializer())) { api.tables(slug) }
+
+    suspend fun delays(slug: String): Loaded<List<DelayInfo>> = cached("delay:$slug", ListSerializer(DelayInfo.serializer())) { api.eventDelays(slug) }
 
     suspend fun speakers(slug: String): Loaded<List<Speaker>> = cached("speakers:$slug", ListSerializer(Speaker.serializer())) { api.speakers(slug) }
 

@@ -27,6 +27,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
@@ -83,6 +85,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false)
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
         TopBar(onGuide = { guide = true }, onRefresh = { eventLoader.reload(); sessionsLoader.reload() })
+        if (selected == "home" || selected == "my-day") RunningLate(slug)
         Box(Modifier.weight(1f)) {
             when (val e = event) {
                 LoadState.Loading -> Loading()
@@ -413,4 +416,32 @@ private fun RoundTool(glyph: String, label: String, onClick: () -> Unit) {
         Modifier.size(44.dp).background(brand.peach, CircleShape).clickable(role = Role.Button, onClickLabel = label, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) { Text(glyph, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink)) }
+}
+
+/** The website's "Running late" notice: shown while organizers have moved the schedule; the times already include it. */
+@Composable
+private fun RunningLate(slug: String) {
+    val env = LocalEnv.current
+    val brand = LocalBrand.current
+    val state = rememberLoader("delay:$slug") { env.repository.delays(slug) }.state.value as? LoadState.Ready ?: return
+    val active = state.value.filter { it.minutes != 0 && !it.text.isNullOrBlank() }
+    if (active.isEmpty()) return
+    val shape = RoundedCornerShape(brand.radius.dp)
+
+    Row(
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp)
+            .background(brand.danger.copy(alpha = 0.10f), shape).border(1.dp, brand.danger.copy(alpha = 0.35f), shape)
+            .padding(start = 0.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        Box(Modifier.width(5.dp).heightIn(min = 96.dp).background(brand.primary, RoundedCornerShape(topStart = brand.radius.dp, bottomStart = brand.radius.dp)))
+        Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            LineIcon("clock", brand.danger, size = 30.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("Running late", style = MaterialTheme.typography.titleLarge)
+                active.forEach { Text(it.text.orEmpty(), style = MaterialTheme.typography.bodyLarge) }
+                Text("The times in CampBuddy already include this.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            }
+        }
+    }
 }

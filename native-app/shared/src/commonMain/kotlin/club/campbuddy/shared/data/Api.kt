@@ -11,6 +11,7 @@ import club.campbuddy.shared.model.RosterPage
 import club.campbuddy.shared.model.Sponsor
 import club.campbuddy.shared.model.Data
 import club.campbuddy.shared.model.DelayData
+import club.campbuddy.shared.model.DelayInfo
 import club.campbuddy.shared.model.DelayRequest
 import club.campbuddy.shared.model.EventCard
 import club.campbuddy.shared.model.EventDetail
@@ -80,6 +81,8 @@ class ApiClient(
     suspend fun quests(slug: String): List<Quest> = get<Data<List<Quest>>>("/app/events/$slug/quests").data
 
     suspend fun tables(slug: String): List<ContributorTable> = get<Data<List<ContributorTable>>>("/app/events/$slug/contributor-tables").data
+
+    suspend fun eventDelays(slug: String): List<DelayInfo> = get<Data<List<DelayInfo>>>("/app/events/$slug/delay").data
 
     suspend fun speakers(slug: String): List<Speaker> = get<Data<List<Speaker>>>("/app/events/$slug/speakers").data
 

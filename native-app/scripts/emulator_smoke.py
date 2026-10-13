@@ -229,8 +229,10 @@ tap_text("Read the guide", 10)
 step("guide opens with the day", wait("How the day runs", 15) is not None)
 shot("09-guide")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
-adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1.5)
+if find("Choose your WordCamp") is None:  # still inside the event: one more back goes to the picker
+    adb("shell", "input", "keyevent", "KEYCODE_BACK")
+    time.sleep(1.5)
 
 # ---- organizer ------------------------------------------------------------------------------------------------------------------
 step("back to the picker", wait("Choose your WordCamp", 10) is not None)
