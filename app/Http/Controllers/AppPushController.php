@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrganizerPushToken;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -45,7 +46,7 @@ class AppPushController extends Controller
         return response()->json(null, 204);
     }
 
-    /** @return array{0: string, 1: \Illuminate\Contracts\Auth\Authenticatable} */
+    /** @return array{0: string, 1: Authenticatable} */
     private function who(Request $request): array
     {
         return $request->routeIs('manager.*')

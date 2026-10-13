@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscoveryProfile;
 use App\Models\DiscoveryReport;
 use App\Models\Event;
-use Illuminate\Http\JsonResponse;
 use App\Support\NativePush;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 

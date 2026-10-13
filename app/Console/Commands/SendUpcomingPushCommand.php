@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\Event;
-use App\Models\PushSubscription;
 use App\Models\NativePushToken;
+use App\Models\PushSubscription;
 use App\Support\ConcurrentWebPush;
 use App\Support\EventCountry;
 use App\Support\EventTime;
@@ -69,7 +69,7 @@ class SendUpcomingPushCommand extends Command
         // Each phone: its country, the WordCamps it already follows, its endpoints.
         $targets = [];
         $nativeTargets = [];
-    $assign = function ($subs, array &$into) use ($upcoming, $country) {
+        $assign = function ($subs, array &$into) use ($upcoming, $country) {
             $home = $subs->reverse()->map(fn ($s) => $s->event ? EventCountry::code($s->event) : null)->filter()->first();
 
             if ($home === null || ($country && $home !== $country) || ! $upcoming->has($home)) {
@@ -83,7 +83,7 @@ class SendUpcomingPushCommand extends Command
                 foreach ($subs as $sub) {
                     $into[$next['event']->id][] = $sub;
                 }
-                }
+            }
         };
 
         PushSubscription::with('event')->orderBy('updated_at')->orderBy('id')->get()

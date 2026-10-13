@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DiscoveryController;
 use App\Models\DiscoveryProfile;
 use App\Models\DiscoveryReport;
 use App\Models\Event;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class DiscoveryReports
 {
-    /** @return array{open: \Illuminate\Support\Collection, closed: \Illuminate\Support\Collection, stillThere: list<string>} */
+    /** @return array{open: Collection, closed: Collection, stillThere: list<string>} */
     public static function forEvent(Event $event): array
     {
         $open = DiscoveryReport::where('event_id', $event->id)->where('status', 'open')->latest()->get()->groupBy('discovery_id');
