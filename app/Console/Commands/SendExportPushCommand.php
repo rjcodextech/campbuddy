@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Models\Event;
+use App\Models\NativePushToken;
 use App\Models\PushSubscription;
 use App\Support\ConcurrentWebPush;
 use App\Support\EventTime;
+use App\Support\NativePush;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -63,7 +65,17 @@ class SendExportPushCommand extends Command
             $this->line(sprintf('  %-40s ended %d day(s) ago  %d phone(s)', $event->slug, $days, $rows->count()));
         }
 
-        $total = $targets->flatten()->count();
+        // The app installs: the same rule, from their own tokens.
+        $nativeTargets = collect();
+        if (NativePush::enabled()) {
+            $native = NativePushToken::whereIn('event_id', $events->keys())->orderBy('id')->get();
+            $nativeLatest = $native->groupBy('device_id')->map(fn ($rows) => $rows->min(fn ($t) => $events[$t->event_id][1]));
+            $nativeTargets = $native
+                ->filter(fn ($t) => $events[$t->event_id][1] === $nativeLatest[$t->device_id])
+                ->groupBy('event_id');
+        }
+
+        $total = $targets->flatten()->count() + $nativeTargets->flatten()->count();
 
         if ($total === 0) {
             $this->info('No phones with reminders on for those WordCamps.');
@@ -122,6 +134,17 @@ class SendExportPushCommand extends Command
                     Log::warning('Export push batch failed', ['error' => $e->getMessage()]);
                 }
             }
+        }
+
+        foreach ($nativeTargets as $eventId => $tokens) {
+            $event = $events[$eventId][0];
+            $result = NativePush::toTokens($tokens, [
+                'title' => "Save your {$event->display_name} data",
+                'body' => 'Your schedule, notes and people stay on this phone for a few more days. Save them as a PDF.',
+                'url' => route('event.home', $event, absolute: false).'?export=1',
+            ], 'export-'.$event->id, 86400);
+            $sent += $result['sent'];
+            $expired += $result['expired'];
         }
 
         Log::info('Export push sent', ['sent' => $sent, 'expired' => $expired, 'targets' => $total]);

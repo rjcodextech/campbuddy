@@ -14,7 +14,9 @@
 // Native plugins come from the shell (window.Capacitor.Plugins): the page
 // does not bundle any Capacitor code.
 
+import { apiMutate } from './api.js';
 import { track } from './analytics.js';
+import { getDeviceId } from './device.js';
 import { getBookmarks, kvGet, kvSet, setBookmark } from './db.js';
 import { nativePlatform, appVersion } from './platform.js';
 
@@ -189,6 +191,7 @@ export async function offerReminder(eventSlug, eventId, sessionId) {
   await kvSet('notificationState', { ...((await kvGet('notificationState')) ?? {}), enabled: true });
   await rememberSlug(eventId, eventSlug);
   await resyncReminders();
+  registerPush(eventSlug);
 
   if (!alreadyOn) track('reminder_offer', { result: 'enabled' });
 
@@ -206,6 +209,64 @@ export async function cancelReminder(eventId, sessionId) {
   } catch {
     // Nothing was pending.
   }
+}
+
+// --- announcements (FCM) ----------------------------------------------------
+
+let registering = null;
+
+/** Slug of the event page being viewed, or null (picker, guide…). */
+export function eventSlugFromPath(pathname) {
+  return pathname.match(/^\/event\/([a-z0-9-]+)/)?.[1] ?? null;
+}
+
+/**
+ * Tells the server this install's push token for the event, so thank-you,
+ * Memories and next-WordCamp pushes reach the app. Only after the person said
+ * yes to notifications (offerReminder) — never on launch — and only when the
+ * server has native push switched on.
+ */
+export async function registerPush(eventSlug) {
+  const push = plugin('PushNotifications');
+  if (!push || !eventSlug || registering) return registering;
+
+  registering = (async () => {
+    try {
+      const config = await appConfig();
+      if (config && config.features?.native_push === false) return;
+
+      const permission = await push.checkPermissions();
+      if (permission.receive !== 'granted') return;
+
+      await push.createChannel?.({ id: 'announcements', name: 'WordCamp news', description: 'Thank-you, photos and talks, the next WordCamp', importance: 3 });
+
+      const token = await new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('push token timeout')), 15000);
+        push.addListener('registration', (result) => {
+          clearTimeout(timer);
+          resolve(result.value);
+        });
+        push.addListener('registrationError', (error) => {
+          clearTimeout(timer);
+          reject(new Error(error?.error ?? 'push registration failed'));
+        });
+        push.register();
+      });
+
+      await apiMutate(eventSlug, '/push/native-subscribe', 'POST', {
+        device_id: getDeviceId(),
+        platform: nativePlatform(),
+        token,
+        app_version: appVersion(),
+      });
+    } catch {
+      // No Firebase set up, offline, or refused: reminders still work locally.
+    } finally {
+      registering = null;
+    }
+  })();
+
+  return registering;
 }
 
 // --- files and sharing ------------------------------------------------------
@@ -243,15 +304,24 @@ export async function saveFile(blob, filename, title = 'CampBuddy') {
 
 // --- app level --------------------------------------------------------------
 
+let configPromise = null;
+
+/** The server's app settings (once per launch); null when offline. */
+function appConfig() {
+  configPromise ??= fetch('/api/v1/app-config', { headers: { Accept: 'application/json' } })
+    .then((response) => (response.ok ? response.json() : null))
+    .catch(() => null);
+
+  return configPromise;
+}
+
 async function checkMinimumVersion() {
   const current = appVersion();
   if (!current) return;
 
   try {
-    const response = await fetch('/api/v1/app-config', { headers: { Accept: 'application/json' } });
-    if (!response.ok) return;
-
-    const config = await response.json();
+    const config = await appConfig();
+    if (!config) return;
     const platform = nativePlatform();
     const minimum = config.min_version?.[platform];
     if (minimum && compareVersions(current, minimum) < 0) showUpdateScreen(config.store_url?.[platform]);
@@ -312,6 +382,18 @@ export async function initNativeBridge() {
   notifications?.addListener('localNotificationActionPerformed', ({ notification }) => {
     const path = safeInternalPath(notification?.extra?.url ?? '', location.origin);
     if (path) location.assign(path);
+  });
+
+  // An announcement tapped (app closed or in the background): open its page.
+  const push = plugin('PushNotifications');
+  push?.addListener('pushNotificationActionPerformed', ({ notification }) => {
+    const path = safeInternalPath(notification?.data?.url ?? '', location.origin);
+    if (path) location.assign(path);
+  });
+
+  // Already said yes before: keep this install's token fresh for the event being viewed.
+  kvGet('notificationState').then((state) => {
+    if (state?.enabled) registerPush(eventSlugFromPath(location.pathname));
   });
 
   document.addEventListener('visibilitychange', () => {

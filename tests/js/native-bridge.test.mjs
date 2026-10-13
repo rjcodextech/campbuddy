@@ -81,3 +81,9 @@ test('a link or notification can only open pages of this site', () => {
   assert.equal(bridge.safeInternalPath('javascript:alert(1)', origin), null);
   assert.equal(bridge.safeInternalPath('//evil.example/x', origin), null);
 });
+
+test('the event being viewed is read from the page path', () => {
+  assert.equal(bridge.eventSlugFromPath('/event/wordcamp-delhi-2026/my-day'), 'wordcamp-delhi-2026');
+  assert.equal(bridge.eventSlugFromPath('/'), null);
+  assert.equal(bridge.eventSlugFromPath('/guide'), null);
+});

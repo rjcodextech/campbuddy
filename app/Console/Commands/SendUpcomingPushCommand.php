@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use App\Models\Event;
 use App\Models\PushSubscription;
+use App\Models\NativePushToken;
 use App\Support\ConcurrentWebPush;
 use App\Support\EventCountry;
 use App\Support\EventTime;
+use App\Support\NativePush;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Client;
 use Illuminate\Console\Command;
@@ -66,26 +68,40 @@ class SendUpcomingPushCommand extends Command
 
         // Each phone: its country, the WordCamps it already follows, its endpoints.
         $targets = [];
+        $nativeTargets = [];
+    $assign = function ($subs, array &$into) use ($upcoming, $country) {
+            $home = $subs->reverse()->map(fn ($s) => $s->event ? EventCountry::code($s->event) : null)->filter()->first();
+
+            if ($home === null || ($country && $home !== $country) || ! $upcoming->has($home)) {
+                return;
+            }
+
+            $following = $subs->pluck('event_id')->all();
+            $next = $upcoming[$home]->first(fn ($row) => ! in_array($row['event']->id, $following, true));
+
+            if ($next) {
+                foreach ($subs as $sub) {
+                    $into[$next['event']->id][] = $sub;
+                }
+                }
+        };
+
         PushSubscription::with('event')->orderBy('updated_at')->orderBy('id')->get()
             ->groupBy('device_id')
-            ->each(function ($subs) use ($upcoming, $country, &$targets) {
-                $home = $subs->reverse()->map(fn ($s) => $s->event ? EventCountry::code($s->event) : null)->filter()->first();
-
-                if ($home === null || ($country && $home !== $country) || ! $upcoming->has($home)) {
-                    return;
-                }
-
-                $following = $subs->pluck('event_id')->all();
-                $next = $upcoming[$home]->first(fn ($row) => ! in_array($row['event']->id, $following, true));
-
-                if ($next) {
-                    foreach ($subs as $sub) {
-                        $targets[$next['event']->id][] = $sub;
-                    }
-                }
+            ->each(function ($subs) use ($assign, &$targets) {
+                $assign($subs, $targets);
             });
 
-        if ($targets === []) {
+        // The app installs get the same push, by the same rule (their country, not yet following it).
+        if (NativePush::enabled()) {
+            NativePushToken::with('event')->orderBy('updated_at')->orderBy('id')->get()
+                ->groupBy('device_id')
+                ->each(function ($subs) use ($assign, &$nativeTargets) {
+                    $assign($subs, $nativeTargets);
+                });
+        }
+
+        if ($targets === [] && $nativeTargets === []) {
             $this->info('No phones to tell (none in those countries, or they already follow it).');
 
             return self::SUCCESS;
@@ -97,6 +113,12 @@ class SendUpcomingPushCommand extends Command
         foreach ($targets as $eventId => $subs) {
             $row = $events[$eventId];
             $this->line(sprintf('  %s  %-40s starts %s  %d phone(s)', $row['country'], $row['event']->slug, $row['first'], count($subs)));
+            $total += count($subs);
+        }
+
+        foreach ($nativeTargets as $eventId => $subs) {
+            $row = $events[$eventId];
+            $this->line(sprintf('  %s  %-40s starts %s  %d app install(s)', $row['country'], $row['event']->slug, $row['first'], count($subs)));
             $total += count($subs);
         }
 
@@ -151,6 +173,17 @@ class SendUpcomingPushCommand extends Command
                     Log::warning('Upcoming push batch failed', ['error' => $e->getMessage()]);
                 }
             }
+        }
+
+        foreach ($nativeTargets as $eventId => $tokens) {
+            $event = $events[$eventId]['event'];
+            $result = NativePush::toTokens(collect($tokens), [
+                'title' => "{$event->display_name} is coming up",
+                'body' => 'On '.$this->dates($event).'. See the schedule and plan your day.',
+                'url' => route('event.home', $event, absolute: false),
+            ], 'upcoming-'.$event->id, self::TTL_SECONDS);
+            $sent += $result['sent'];
+            $expired += $result['expired'];
         }
 
         Log::info('Upcoming push sent', ['sent' => $sent, 'expired' => $expired, 'targets' => $total]);

@@ -90,6 +90,8 @@ class SendThankYouPushJob implements ShouldQueue
             }
         });
 
+        $sent += \App\Support\NativePush::toEvent($event, json_decode($payload, true), 'thank-you', self::TTL_SECONDS);
+
         \App\Support\EventPush::log($event, 'thank-you', $sent);
         Log::info('Thank-you push sent', ['event' => $event->slug, 'subscriptions' => $sent]);
     }

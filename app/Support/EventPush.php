@@ -51,6 +51,9 @@ class EventPush
             }
         });
 
+        // The same message to the people using the store app (FCM), when it is set up.
+        $sent += NativePush::toEvent($event, $payload, $topic, $ttl);
+
         return $sent;
     }
 

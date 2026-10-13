@@ -75,6 +75,8 @@ class SendMemoriesPushJob implements ShouldQueue
             }
         });
 
+        $sent += \App\Support\NativePush::toEvent($event, json_decode($payload, true), 'memories-'.$this->kind, self::TTL_SECONDS);
+
         \App\Support\EventPush::log($event, $this->kind, $sent);
         Log::info('Memories push sent', ['event' => $event->slug, 'kind' => $this->kind, 'subscriptions' => $sent]);
     }

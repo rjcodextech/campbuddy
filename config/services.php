@@ -35,6 +35,13 @@ return [
         ],
     ],
 
+    // Firebase Cloud Messaging, for pushes to the native app (App\Support\NativePush).
+    // Unset = no native push, nothing else changes. See mobile-app/SETUP.md.
+    'fcm' => [
+        'credentials_path' => env('FCM_CREDENTIALS_PATH'),
+        'project_id' => env('FCM_PROJECT_ID'),
+    ],
+
     'vapid' => [
         'public_key' => env('VAPID_PUBLIC_KEY'),
         'private_key' => env('VAPID_PRIVATE_KEY'),
