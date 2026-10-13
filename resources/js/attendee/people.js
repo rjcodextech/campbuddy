@@ -18,6 +18,7 @@ import { DESCRIBE_TAGS, MAX_DESCRIBE_TAGS, discoveryPrefill, onboardingAfterDisc
 import { onPeopleChanged } from './people-sync.js';
 import { createRosterStore, sameRoster, savedWhen } from './roster-store.js';
 import { openPersonSheet } from './person-card.js';
+import { openReportSheet, sendReport } from './report.js';
 import { ALL, ROLE_FILTER_LABELS, ROLE_LABELS, effectiveRoleFilter, matchesRole, roleCounts, rolesOf, visibleRoleFilters } from './roster-roles.js';
 import { render, renderFragment } from './template.js';
 import { iconText, lineIcon } from './line-icon.js';
@@ -781,8 +782,24 @@ async function renderMatches(el, eventSlug, eventId, discoveryKey, mine, options
     showToast(LABELS.hiddenToast);
     rerender();
   };
+  // Report: tells the organizers (report.js), and hides them like the ✕ does.
+  const reportCard = async (p) => {
+    const answer = await openReportSheet(p.revealed_name || p.name || null);
+    if (!answer) return;
+
+    try {
+      await sendReport(eventSlug, p.discovery_id, answer);
+    } catch {
+      showToast("Couldn't send the report. Check your connection and try again.");
+      return;
+    }
+    await peopleStatus.hide(eventId, cardPerson(p));
+    showToast('Reported and hidden. The organizers will take a look.');
+    rerender();
+  };
   const card = (p, isMet) => matchCard(p, isMet, eventId, {
     onHide: () => hideCard(p),
+    onReport: () => reportCard(p),
     onUndoMet: () => tryAgain(p),
     onWave: () => waveAt(p, mine, eventSlug, rerender, chat),
     convo: p.convo
@@ -857,7 +874,7 @@ async function leaveDiscovery(el, eventSlug, eventId, discoveryKey, mine, option
   showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
 }
 
-function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, onHide = null, convo = null } = {}) {
+function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, onHide = null, onReport = null, convo = null } = {}) {
   const { tags, profession, who_to_meet: whoToMeet } = profile.fields;
   const common = new Set(profile.common ?? []);
   const isWeb = (url) => /^https?:\/\//i.test(url ?? '');
@@ -922,6 +939,16 @@ function matchCard(profile, isMet, eventId, { onWave = null, onUndoMet = null, o
     }
   } else {
     wireMeetButton(meetBtn, eventId, cardPerson(profile));
+  }
+
+  if (onReport) {
+    const report = document.createElement('button');
+    report.type = 'button';
+    report.className = 'person-card__report';
+    report.textContent = 'Report';
+    report.setAttribute('aria-label', `Report ${profile.revealed_name || profile.name || 'this person'}`);
+    report.addEventListener('click', onReport);
+    card.append(report);
   }
 
   if (onHide && !isMet) {

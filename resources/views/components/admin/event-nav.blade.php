@@ -5,13 +5,14 @@
 
       <x-admin.event-nav :event="$event" current="quests" />
 
-    current: details | quests | offers | roster | leads | tables | delay | social | memories | notifications
+    current: details | quests | offers | roster | leads | tables | delay | social | memories | notifications | reports
 --}}
 @props(['event', 'current'])
 
 @php
     // The three lists an event owns in one query, its deal leads in another.
     $event->loadCount(['quests', 'offers', 'attendeeRoster']);
+    $reportCount = \App\Models\DiscoveryReport::where('event_id', $event->id)->where('status', 'open')->distinct('discovery_id')->count('discovery_id');
     $leadCount = \App\Models\OfferLead::where('event_id', $event->id)->count();
 
     $tabs = [
@@ -25,6 +26,7 @@
         'social' => ['Social media', route('admin.events.social', $event), null],
         'memories' => ['Memories', route('admin.events.memories', $event), null],
         'notifications' => ['Notifications', route('admin.events.notifications', $event), null],
+        'reports' => ['Reports', route('admin.events.reports', $event), $reportCount ?: null],
     ];
 
     $timing = \App\Support\EventListing::timing($event);

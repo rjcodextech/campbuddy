@@ -202,6 +202,40 @@
     </dialog>
 </template>
 
+{{-- Report and block someone (report.js, from the Report button on a match).
+    The reasons go to the organizers' Reports tab; the person is hidden at once. --}}
+<template id="tpl-report-sheet">
+    <dialog class="meet-sheet" aria-labelledby="report-sheet-title">
+        <form class="meet-sheet__card" method="dialog">
+            <div class="meet-sheet__head">
+                <div class="meet-sheet__who">
+                    <p class="meet-sheet__eyebrow">Report and block</p>
+                    <h2 class="meet-sheet__name" id="report-sheet-title" data-slot="title"></h2>
+                </div>
+                <button type="button" class="meet-sheet__close" data-report-close aria-label="Close"><x-attendee.line-icon name="x" /></button>
+            </div>
+            <p class="meet-sheet__sub" style="font-size:.875rem">They disappear from your lists right away. The organizers look at every report, usually within a day.</p>
+
+            <fieldset class="report-reasons">
+                <legend class="meet-sheet__label">What is wrong?</legend>
+                <label><input type="radio" name="report-reason" value="spam" checked> Spam or selling</label>
+                <label><input type="radio" name="report-reason" value="abusive"> Rude or abusive</label>
+                <label><input type="radio" name="report-reason" value="impersonation"> Pretending to be someone</label>
+                <label><input type="radio" name="report-reason" value="other"> Something else</label>
+            </fieldset>
+
+            <label class="meet-sheet__label" for="report-note">Anything we should know? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+            <input type="text" id="report-note" maxlength="300" autocomplete="off">
+
+            <p class="meet-sheet__privacy" data-report-error hidden style="color:var(--danger)"></p>
+
+            <div class="meet-sheet__actions">
+                <button type="button" class="btn btn--primary" data-report-send>Report and block</button>
+            </div>
+        </form>
+    </dialog>
+</template>
+
 {{-- The few messages two matches may exchange (people.js): three each,
     taking turns — a way to agree where to meet, not a chat app. --}}
 <template id="tpl-convo">

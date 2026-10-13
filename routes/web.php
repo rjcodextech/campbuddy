@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\MemoriesController;
 use App\Http\Controllers\Admin\NotificationsController;
 use App\Http\Controllers\Admin\OfferController;
 use App\Http\Controllers\Admin\QuestController;
+use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\RosterController;
 use App\Http\Controllers\Admin\ScheduleDelayController;
 use App\Http\Controllers\Admin\SocialController;
@@ -202,6 +203,9 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
         Route::get('events/{event}/memories', [MemoriesController::class, 'index'])->name('admin.events.memories');
         Route::get('events/{event}/notifications', NotificationsController::class)->name('admin.events.notifications');
+        Route::get('events/{event}/reports', [ReportsController::class, 'index'])->name('admin.events.reports');
+        Route::post('events/{event}/reports/{discoveryId}/remove', [ReportsController::class, 'remove'])->where('discoveryId', '[a-f0-9]{64}')->name('admin.events.reports.remove');
+        Route::post('events/{event}/reports/{discoveryId}/dismiss', [ReportsController::class, 'dismiss'])->where('discoveryId', '[a-f0-9]{64}')->name('admin.events.reports.dismiss');
         Route::post('events/{event}/memories', [MemoriesController::class, 'store'])->name('admin.events.memories.store');
         Route::post('events/{event}/memories/notify/{kind}', [MemoriesController::class, 'notify'])->whereIn('kind', ['photos', 'videos'])->middleware('throttle:10,1')->name('admin.events.memories.notify');
         Route::get('events/{event}/tables', [ContributorTableController::class, 'index'])->name('admin.events.tables.index');

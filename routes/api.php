@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\CacheVersionController;
 use App\Http\Controllers\Api\DataVersionController;
 use App\Http\Controllers\Api\DeviceTransferController;
 use App\Http\Controllers\Api\DiscoveryController;
+use App\Http\Controllers\Api\DiscoveryReportController;
 use App\Http\Controllers\Api\DiscoveryWaveController;
 use App\Http\Controllers\Api\EventFeedbackController;
 use App\Http\Controllers\Api\FreeStealSuggestionController;
@@ -56,6 +57,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::patch('/discovery/{discoveryId}', [DiscoveryController::class, 'update'])->name('api.discovery.update');
             Route::delete('/discovery/{discoveryId}', [DiscoveryController::class, 'destroy'])->name('api.discovery.destroy');
             Route::post('/discovery/{discoveryId}/waves', [DiscoveryWaveController::class, 'store'])->name('api.discovery.waves.store');
+            Route::post('/discovery/{discoveryId}/report', [DiscoveryReportController::class, 'store'])->name('api.discovery.report');
             Route::post('/discovery/{discoveryId}/messages', [DiscoveryWaveController::class, 'message'])->name('api.discovery.messages.store');
             Route::delete('/discovery/{discoveryId}/waves/{targetId}', [DiscoveryWaveController::class, 'destroy'])->name('api.discovery.waves.destroy');
 

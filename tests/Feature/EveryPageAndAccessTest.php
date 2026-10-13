@@ -80,6 +80,7 @@ class EveryPageAndAccessTest extends TestCase
             'tableId' => $table->id,
             'name' => 'campbuddy:prune-fetch-log',
             'kind' => 'photos',
+            'discoveryId' => str_repeat('a', 64),
             // Breeze's e-mail verification link.
             'id' => 1,
             'hash' => sha1('x'),
