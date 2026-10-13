@@ -192,6 +192,18 @@ class MobileAppConfigTest extends TestCase
         $this->assertCount(3, MobileAppConfig::history());
     }
 
+    public function test_a_draft_can_be_thrown_away_and_the_live_version_stays(): void
+    {
+        $admin = $this->admin();
+        $this->actingAs($admin)->post('/admin/mobile-app/text', ['strings' => ['en' => ['picker.choose' => 'Draft only']]]);
+        $this->assertTrue(MobileAppConfig::hasDraft());
+
+        $this->actingAs($admin)->post(route('admin.mobile.discard'))->assertRedirect()->assertSessionHas('status');
+
+        $this->assertFalse(MobileAppConfig::hasDraft());
+        $this->assertSame('Choose your WordCamp', $this->text('en', 'picker.choose'));
+    }
+
     public function test_every_change_is_written_to_the_audit_trail(): void
     {
         $admin = $this->admin();
