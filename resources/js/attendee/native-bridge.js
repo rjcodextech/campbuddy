@@ -19,6 +19,7 @@ import { track } from './analytics.js';
 import { getDeviceId } from './device.js';
 import { getBookmarks, kvGet, kvSet, setBookmark } from './db.js';
 import { nativePlatform, appVersion } from './platform.js';
+import { pushSupported } from './native-env.js';
 
 const CHANNEL_ID = 'session-reminders';
 const LEAD_MS = 10 * 60 * 1000;
@@ -234,6 +235,7 @@ export async function registerPush(eventSlug) {
     try {
       const config = await appConfig();
       if (config && config.features?.native_push === false) return;
+      if (!(await pushSupported())) return;
 
       const permission = await push.checkPermissions();
       if (permission.receive !== 'granted') return;

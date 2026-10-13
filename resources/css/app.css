@@ -263,3 +263,50 @@ html.is-native-app body {
 html.is-native-app main {
     overflow-x: auto;
 }
+
+
+/* Bottom tabs of the panel in the store app (organizer-native.js). */
+html.has-app-tabbar body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+}
+
+.app-tabbar {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    background: #fff;
+    border-top: 1px solid #e6dccb;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-tabbar__item {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #6e5a54;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.app-tabbar__item span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.app-tabbar__item--active {
+    color: #60121c;
+}
+
+.app-tabbar__item:focus-visible {
+    outline: 2px solid #da7f01;
+    outline-offset: -3px;
+}

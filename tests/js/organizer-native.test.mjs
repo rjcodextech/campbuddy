@@ -6,7 +6,7 @@ import { test } from 'node:test';
 globalThis.window = {};
 Object.defineProperty(globalThis, 'navigator', { value: { userAgent: 'x', platform: 'Linux', maxTouchPoints: 5 }, configurable: true });
 
-const { roleFromPath, shouldLock, LOCK_AFTER_MS } = await import('../../resources/js/organizer-native.js');
+const { roleFromPath, shouldLock, tabsFor, LOCK_AFTER_MS } = await import('../../resources/js/organizer-native.js');
 
 test('only the panel counts, and which panel', () => {
   assert.equal(roleFromPath('/admin'), 'admin');
@@ -37,4 +37,30 @@ test('the picker has the staff links, hidden until the app shows them', () => {
   const blade = readFileSync(new URL('../../resources/views/welcome.blade.php', import.meta.url), 'utf8');
   assert.match(blade, /data-app-only hidden/);
   assert.match(blade, /manager\.login/);
+});
+
+test('admin pages get the five main tabs, with the open one marked', () => {
+  const tabs = tabsFor('/admin/analytics');
+  assert.deepEqual(tabs.map((t) => t.key), ['dashboard', 'events', 'analytics', 'errors', 'feedback']);
+  assert.equal(tabs.filter((t) => t.active).map((t) => t.key).join(), 'analytics');
+  assert.equal(tabsFor('/admin').find((t) => t.active).key, 'dashboard');
+  assert.equal(tabsFor('/admin/events/create').find((t) => t.active).key, 'events');
+});
+
+test('inside an event the tabs become the sections of that event', () => {
+  const admin = tabsFor('/admin/events/7/reports');
+  assert.deepEqual(admin.map((t) => t.key), ['dashboard', 'events', 'details', 'reports', 'notifications']);
+  assert.equal(admin.find((t) => t.active).key, 'reports');
+  assert.equal(admin.find((t) => t.key === 'details').href, '/admin/events/7/edit');
+
+  const manager = tabsFor('/manager/events/7/notifications');
+  assert.deepEqual(manager.map((t) => t.key), ['events', 'details', 'attendees', 'reports', 'notifications']);
+  assert.equal(manager.find((t) => t.active).key, 'notifications');
+  assert.equal(tabsFor('/manager/events/7').find((t) => t.active).key, 'details');
+});
+
+test('no bar where there is only one place, or outside the panel', () => {
+  assert.deepEqual(tabsFor('/manager'), []);
+  assert.deepEqual(tabsFor('/event/wordcamp-test'), []);
+  assert.deepEqual(tabsFor('/'), []);
 });

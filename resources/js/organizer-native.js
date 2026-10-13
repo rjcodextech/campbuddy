@@ -11,6 +11,7 @@
 // The attendee side never loads this file.
 
 import { appVersion, nativePlatform } from './attendee/platform.js';
+import { pushSupported } from './attendee/native-env.js';
 
 const ALERTS_KEY = 'campbuddy:organizer-alerts'; // 'on' | 'declined'
 const TOKEN_KEY = 'campbuddy:organizer-token';
@@ -34,6 +35,54 @@ export function shouldLock({ unlockedThisLaunch, hiddenAt, now }) {
   if (!unlockedThisLaunch) return true;
 
   return hiddenAt !== null && now - hiddenAt >= LOCK_AFTER_MS;
+}
+
+/**
+ * The bottom tabs for a panel page: the panel's main places, or - inside one
+ * event - that event's own sections. Manager pages outside an event have a
+ * single place, so no bar. Each tab: { key, label, href, active }.
+ */
+export function tabsFor(pathname) {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  const tab = (key, label, href, active) => ({ key, label, href, active });
+  const admin = path.match(/^\/admin\/events\/(\d+)(\/|$)/);
+  const manager = path.match(/^\/manager\/events\/(\d+)(\/|$)/);
+
+  if (admin) {
+    const base = `/admin/events/${admin[1]}`;
+
+    return [
+      tab('dashboard', 'Dashboard', '/admin', false),
+      tab('events', 'Events', '/admin/events', false),
+      tab('details', 'Details', `${base}/edit`, path === `${base}/edit`),
+      tab('reports', 'Reports', `${base}/reports`, path.startsWith(`${base}/reports`)),
+      tab('notifications', 'Alerts', `${base}/notifications`, path.startsWith(`${base}/notifications`)),
+    ];
+  }
+
+  if (/^\/admin(\/|$)/.test(path)) {
+    return [
+      tab('dashboard', 'Dashboard', '/admin', path === '/admin'),
+      tab('events', 'Events', '/admin/events', path === '/admin/events' || path.startsWith('/admin/events/')),
+      tab('analytics', 'Analytics', '/admin/analytics', path.startsWith('/admin/analytics')),
+      tab('errors', 'Errors', '/admin/errors', path.startsWith('/admin/errors')),
+      tab('feedback', 'Feedback', '/admin/feedback', path.startsWith('/admin/feedback')),
+    ];
+  }
+
+  if (manager) {
+    const base = `/manager/events/${manager[1]}`;
+
+    return [
+      tab('events', 'My events', '/manager', false),
+      tab('details', 'Details', base, path === base),
+      tab('attendees', 'People', `${base}/attendees`, path.startsWith(`${base}/attendees`)),
+      tab('reports', 'Reports', `${base}/reports`, path.startsWith(`${base}/reports`)),
+      tab('notifications', 'Alerts', `${base}/notifications`, path.startsWith(`${base}/notifications`)),
+    ];
+  }
+
+  return [];
 }
 
 // --- plugins ----------------------------------------------------------------
@@ -73,6 +122,60 @@ function fitToPhone() {
   if (viewport && !viewport.content.includes('viewport-fit')) viewport.content += ', viewport-fit=cover';
 }
 
+// --- bottom tabs --------------------------------------------------------------
+
+const ICONS = {
+  dashboard: 'M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
+  events: 'M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z',
+  details: 'M5 4h14v16H5zM8 9h8M8 13h8M8 17h5',
+  analytics: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  errors: 'M12 3l10 18H2zM12 10v5M12 18v.5',
+  feedback: 'M4 5h16v11H9l-5 4z',
+  reports: 'M5 21V4M5 4h11l-2 4 2 4H5',
+  notifications: 'M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4',
+  attendees: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M16 11a2.5 2.5 0 1 0 0-5M17 14a5 5 0 0 1 4 6',
+};
+
+function showTabs() {
+  const tabs = tabsFor(location.pathname);
+  if (tabs.length < 2 || document.getElementById('app-tabbar')) return;
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const bar = document.createElement('nav');
+  bar.id = 'app-tabbar';
+  bar.className = 'app-tabbar';
+  bar.setAttribute('aria-label', 'Panel');
+
+  for (const t of tabs) {
+    const link = document.createElement('a');
+    link.href = t.href;
+    link.className = 'app-tabbar__item' + (t.active ? ' app-tabbar__item--active' : '');
+    if (t.active) link.setAttribute('aria-current', 'page');
+
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '22');
+    svg.setAttribute('height', '22');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '1.8');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', ICONS[t.key]);
+    svg.append(path);
+
+    const label = document.createElement('span');
+    label.textContent = t.label;
+    link.append(svg, label);
+    bar.append(link);
+  }
+
+  document.body.append(bar);
+  document.documentElement.classList.add('has-app-tabbar');
+}
+
 // --- alerts -----------------------------------------------------------------
 
 async function send(role, method, body) {
@@ -104,7 +207,7 @@ function pushToken(push) {
 async function registerAlerts(role) {
   const push = plugin('PushNotifications');
   const choice = recall(ALERTS_KEY);
-  if (!push || choice === 'declined') return;
+  if (!push || choice === 'declined' || !(await pushSupported())) return;
 
   try {
     if (choice !== 'on') {
@@ -227,6 +330,7 @@ export function initOrganizerNative() {
   // Only a signed-in page has a sign-out form; the sign-in page needs nothing more.
   if (!document.querySelector('form[action$="/logout"]')) return;
 
+  showTabs();
   wireSignOut(role);
   wireLock();
   registerAlerts(role);
