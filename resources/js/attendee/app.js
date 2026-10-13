@@ -9,6 +9,7 @@ import { initDataFreshness } from './data-freshness.js';
 import { initDesktopNotice } from './desktop-notice.js';
 import { initImageFallbacks } from './image-fallback.js';
 import { initInstallPrompt } from './install.js';
+import { isNativeApp } from './platform.js';
 
 // First, so data-track markup and error reporting are live before any
 // other module wires itself up.
@@ -22,6 +23,10 @@ installPreloadRecovery();
 // beforeinstallprompt at any point after this listens for it, and
 // missing that event means no install button for the rest of the visit.
 initInstallPrompt();
+
+// Inside the Android / iOS app only (a separate chunk the website never loads):
+// local reminders, share sheet, back button, links that open the app.
+if (isNativeApp()) import('./native-bridge.js').then((bridge) => bridge.initNativeBridge()).catch(() => {});
 
 // On every page (event pages and the WordCamp picker alike): points
 // laptop/desktop visitors at their phone.

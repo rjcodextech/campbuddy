@@ -17,6 +17,7 @@ import { kvGet, kvSet } from './db.js';
 import { campCardPrefill, onboardingAfterCampCard } from './profile-sync.js';
 import { cardContent, cardPng, paintCard, saveBlob, tapStillCounts } from './camp-card-paint.js';
 import { initCardShare } from './card-share.js';
+import { isNativeApp } from './platform.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
 
@@ -296,6 +297,13 @@ async function downloadBlob(blob, layout) {
 }
 
 async function shareBlob(blob, layout) {
+  // The app's share sheet (native-bridge.js saveFile) is the share action.
+  if (isNativeApp()) {
+    saveBlob(blob, filenameFor(layout));
+    track('share', { method: 'native_sheet', content_type: 'camp_card', item_id: layout });
+    return;
+  }
+
   const file = new File([blob], filenameFor(layout), { type: 'image/png' });
 
   try {

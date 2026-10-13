@@ -3,6 +3,7 @@
 // (camp-card.js) and a person's card on the attendee list (person-card.js),
 // so both are the same design at the same 900 DPI.
 
+import { isNativeApp } from './platform.js';
 import { withPngDpi } from './png-dpi.js';
 import { render } from './template.js';
 
@@ -72,6 +73,12 @@ export async function cardPng(cardEl, content, qr) {
 }
 
 export function saveBlob(blob, filename) {
+  // The store app has no browser downloads: the phone's share sheet saves or sends it.
+  if (isNativeApp()) {
+    import('./native-bridge.js').then((bridge) => bridge.saveFile(blob, filename, 'My Camp Card')).catch(() => {});
+    return;
+  }
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.download = filename;

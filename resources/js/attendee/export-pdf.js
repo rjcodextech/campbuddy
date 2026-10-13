@@ -5,6 +5,7 @@
 
 import { exportAll } from './db.js';
 import { formatInEventZone } from './eventtime.js';
+import { isNativeApp } from './platform.js';
 
 const STATUS = { attended: 'Attended', missed: "Couldn't make it", met: 'Met' };
 
@@ -91,7 +92,7 @@ export async function exportPdf(event) {
   // itself and they go in as pictures — every language right, text not selectable.
   if (needsPictures(model)) {
     await drawAsPictures(doc, model);
-    doc.save(fileName(event));
+    await savePdf(doc, fileName(event));
     return true;
   }
 
@@ -165,7 +166,7 @@ export async function exportPdf(event) {
     doc.text(`campbuddy.club  ·  ${i} / ${pages}`, page.m, page.h - 24);
   }
 
-  doc.save(fileName(event));
+  await savePdf(doc, fileName(event));
   return true;
 }
 
@@ -276,4 +277,15 @@ export function hasEventData(dump, eventId) {
   const id = Number(eventId);
   const any = (rows) => (rows ?? []).some((r) => Number(r.eventId) === id);
   return any(dump.bookmarks) || any(dump.questProgress) || any(dump.meetings) || any(dump.metHistory) || Boolean(dump.kv?.[`discovery:${id}`]);
+}
+
+// A browser downloads the PDF; the store app hands it to the phone's share sheet.
+async function savePdf(doc, name) {
+  if (isNativeApp()) {
+    const { saveFile } = await import('./native-bridge.js');
+    await saveFile(doc.output('blob'), name, 'My CampBuddy');
+    return;
+  }
+
+  doc.save(name);
 }

@@ -12,6 +12,7 @@
 import QRCode from 'qrcode-generator';
 import { track } from './analytics.js';
 import { cardContent, cardPng, paintCard, saveBlob, tapStillCounts } from './camp-card-paint.js';
+import { isNativeApp } from './platform.js';
 import { ROLE_LABELS, rolesOf } from './roster-roles.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
@@ -235,6 +236,13 @@ function downloadCard(blob, entry) {
 }
 
 async function shareCard(blob, entry) {
+  // The app's share sheet (native-bridge.js saveFile) is the share action.
+  if (isNativeApp()) {
+    saveBlob(blob, cardFilename(entry.name));
+    track('person_card', { result: 'share' });
+    return;
+  }
+
   const file = new File([blob], cardFilename(entry.name), { type: 'image/png' });
 
   try {

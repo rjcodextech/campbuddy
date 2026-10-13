@@ -6,7 +6,7 @@ import { apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { kvGet, kvSet, setBookmark } from './db.js';
 import { createOutbox, isPermanentFailure } from './outbox.js';
-import { isIos, isStandalone } from './platform.js';
+import { isIos, isNativeApp, isStandalone } from './platform.js';
 import { render } from './template.js';
 import { getDeviceId } from './device.js';
 
@@ -36,6 +36,11 @@ export function offerReminder(eventSlug, eventId, sessionId) {
 }
 
 async function offerReminderNow(eventSlug, eventId, sessionId) {
+  // In the app a reminder is a local notification on the phone, not a Web Push.
+  if (isNativeApp()) {
+    return (await import('./native-bridge.js')).offerReminder(eventSlug, eventId, sessionId);
+  }
+
   const state = (await kvGet('notificationState')) ?? {};
 
   // N4: a prior denial is permanent — never re-prompt automatically.
@@ -165,6 +170,11 @@ export async function syncReminder(eventSlug, eventId, sessionId) {
  * would still get a push for a session they took off their day.
  */
 export async function cancelReminder(eventSlug, bookmark) {
+  if (isNativeApp()) {
+    if (bookmark?.sessionId != null) await (await import('./native-bridge.js')).cancelReminder(bookmark.eventId, bookmark.sessionId);
+    return;
+  }
+
   // Whatever was still waiting to be sent for this session no longer means anything.
   if (bookmark?.sessionId != null) await outbox.drop(eventSlug, bookmark.sessionId);
 

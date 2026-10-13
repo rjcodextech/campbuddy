@@ -28,6 +28,7 @@ const EVENTS = {
   install_prompt_open: ['platform'], // native | ios | android_firefox | in_app_browser
   install_prompt_result: ['outcome'], // accepted | dismissed
   install_complete: [],
+  app_open: ['platform'], // the store app was opened: app_ios | app_android
   desktop_notice_view: ['via'], // auto | button
   desktop_notice_dismiss: [],
 

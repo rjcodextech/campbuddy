@@ -8,7 +8,7 @@
 
 import { track } from './analytics.js';
 import { openInstallSteps } from './install.js';
-import { isIos, isStandalone } from './platform.js';
+import { isIos, isNativeApp, isStandalone } from './platform.js';
 import { render } from './template.js';
 
 export const DISMISS_KEY = 'campbuddy:ios-reminder-hint-dismissed';
@@ -28,7 +28,8 @@ export function syncIosReminderHint(beforeEl, savedCount) {
   if (!beforeEl) return;
 
   const existing = document.getElementById(HINT_ID);
-  const show = shouldShowIosHint({ ios: isIos(), standalone: isStandalone(), savedCount, dismissed: isDismissed() });
+  // In the app, reminders are local notifications: there is nothing to install.
+  const show = shouldShowIosHint({ ios: isIos() && !isNativeApp(), standalone: isStandalone(), savedCount, dismissed: isDismissed() });
 
   if (!show) {
     existing?.remove();

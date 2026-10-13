@@ -38,7 +38,7 @@ mock.module(`${DIR}api.js`, {
 });
 mock.module(`${DIR}analytics.js`, { exports: { track: (name, params) => tracked.push([name, params]) } });
 mock.module(`${DIR}device.js`, { exports: { getDeviceId: () => 'device-1' } });
-mock.module(`${DIR}platform.js`, { exports: { isIos: () => false, isStandalone: () => false } });
+mock.module(`${DIR}platform.js`, { exports: { isIos: () => false, isStandalone: () => false, isNativeApp: () => false } });
 mock.module(`${DIR}template.js`, { exports: { render: () => ({ querySelector: () => ({ addEventListener() {} }), showModal() {} }) } });
 
 const push = await import(`${DIR}push.js`);

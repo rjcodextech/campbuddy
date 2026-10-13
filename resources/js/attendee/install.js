@@ -16,7 +16,7 @@
 // simply never appears.
 
 import { track } from './analytics.js';
-import { isIos, isStandalone } from './platform.js';
+import { isIos, isNativeApp, isStandalone } from './platform.js';
 import { render } from './template.js';
 
 const IN_APP_BROWSER = /FBAN|FBAV|FBIOS|FB_IAB|Instagram|LinkedInApp|Snapchat|MicroMessenger|\bLine\/|Twitter|Pinterest|TikTok|musical_ly|; wv\)/;
@@ -38,7 +38,8 @@ const STEPS = { ios: 'ios', in_app_browser: 'in-app', android_firefox: 'menu', n
 
 export function initInstallPrompt() {
   const btn = document.getElementById('install-app-btn');
-  if (!btn || isStandalone()) return;
+  // Already the app (from a store): nothing to install.
+  if (!btn || isStandalone() || isNativeApp()) return;
 
   const platform = detectPlatform();
   let deferredPrompt = null;
