@@ -577,7 +577,7 @@ private fun SponsorList(slug: String) {
                                     }
                                     Box(
                                         Modifier.weight(1f).heightIn(min = 54.dp).background(bg, RoundedCornerShape(4.dp)).border(1.dp, border, RoundedCornerShape(4.dp))
-                                            .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { env.deps.openUrl(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                            .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
                                         RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(28.dp)) {

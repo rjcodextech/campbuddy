@@ -85,6 +85,7 @@ dependencies {
     implementation(project(":shared"))
     implementation(libs.androidx.activity.compose)
     implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.browser:browser:1.8.0") // Custom Tabs: sponsor links open inside the app
     implementation("androidx.fragment:fragment-ktx:1.8.5") // a current Fragment (the activity-result API needs 1.3+)
     implementation(compose.runtime)
     implementation(compose.foundation)

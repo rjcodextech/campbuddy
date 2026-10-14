@@ -57,6 +57,8 @@ class AppDeps(
     /** Saves the card picture to the phone's gallery; false when that is not possible. */
     val saveImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Boolean = { _, _ -> false },
     /** Draws "my day" as PDF pages; null when this phone cannot (the app then shares plain text). */
+    /** Opens a web page inside the app (a sponsor site) instead of leaving for another app; falls back to [openUrl]. */
+    val openInApp: ((String) -> Unit)? = null,
     val makePdf: (club.campbuddy.shared.domain.DayPdf) -> ByteArray? = { null },
 )
 

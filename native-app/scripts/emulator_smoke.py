@@ -144,19 +144,27 @@ step("onboarding card is offered", find("Make CampBuddy yours") is not None)
 tap_text("Let's go")
 step("step 1 asks if it is the first WordCamp", wait("Is this your first WordCamp?") is not None)
 tap_text("Yes, first one!")
-step("a tap moves nothing by itself, Next does", tap_text("Next") and wait("What describes you?") is not None)
-scroll_down(1)
+
+
+def tap_visible(text, exact=False):
+    """The card is taller than the screen: bring the button into view first."""
+    scroll_until(text, 4)
+    return tap_text(text, 5, exact)
+
+
+step("a tap moves nothing by itself, Next does", tap_visible("Next") and wait("What describes you?") is not None)
+scroll_until("Developer", 3)
 shot("02a-tags")
 tap_text("Developer")
 tap_text("Speaker")
 step("tags are counted", wait("2 of 5 picked") is not None)
-tap_text("Next", exact=True)
-tap_text("Skip", exact=True)  # Contributor Day skipped
-tap_text("Skip", exact=True)  # who to meet skipped
-step("last step can finish", tap_text("Finish"))
+tap_visible("Next")
+tap_visible("Skip", exact=True)  # Contributor Day skipped
+tap_visible("Skip", exact=True)  # who to meet skipped
+step("last step can finish", tap_visible("Finish"))
 step("the closing screen says what the answers do", wait("You are set") is not None and find("Beginner-friendly") is not None)
 shot("02-onboarding-done")
-tap_text("Choose your WordCamp", exact=True)
+tap_visible("Choose your WordCamp")
 
 scroll_down(2)
 

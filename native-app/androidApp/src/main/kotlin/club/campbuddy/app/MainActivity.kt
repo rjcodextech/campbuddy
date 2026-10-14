@@ -89,6 +89,15 @@ class MainActivity : ComponentActivity() {
                     saveImage = cardExport::save,
                     shareFile = cardExport::shareFile,
                     makePdf = AndroidDayPdf::render,
+                    openInApp = { url ->
+                        val tab = androidx.browser.customtabs.CustomTabsIntent.Builder()
+                            .setShowTitle(true)
+                            .setUrlBarHidingEnabled(false)
+                            .setShareState(androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_ON)
+                            .setDefaultColorSchemeParams(androidx.browser.customtabs.CustomTabColorSchemeParams.Builder().setToolbarColor(0xFFFFF0DF.toInt()).build())
+                            .build()
+                        runCatching { tab.launchUrl(this@MainActivity, Uri.parse(url)) }.onFailure { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                    },
                     apiBase = apiBase(prefs),
                 )
             )

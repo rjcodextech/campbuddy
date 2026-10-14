@@ -12,6 +12,30 @@ import kotlinx.datetime.TimeZone
 import androidx.compose.runtime.saveable.rememberSaveable
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.StartOffset
+import androidx.compose.animation.core.StartOffsetType
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.offset
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.graphicsLayer
+import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.sin
 import campbuddy_native.shared.generated.resources.wordmark
 import campbuddy_native.shared.generated.resources.app_icon
 import campbuddy_native.shared.generated.resources.Res
@@ -167,28 +191,82 @@ fun PickerScreen(
     }
 }
 
-/** The website's hero: the app mark in the middle with four feature pills around it. */
+/**
+ * The website's hero, with its motion: a dashed ring turns slowly round the app mark, the mark breathes and sends out two
+ * signal ripples, a coffee cup and a map pin travel round the inner ring, and the four pills pop in one after another and
+ * then float. (The website's hero-orbit animation, same timings.) Phones set to no animations show it still.
+ */
 @Composable
 private fun HeroOrbit(talks: String, people: String, reminders: String, campCard: String) {
     val brand = LocalBrand.current
+    val motion = rememberInfiniteTransition(label = "orbit")
+    val turn by motion.animateFloat(0f, 360f, infiniteRepeatable(tween(60_000, easing = LinearEasing)), label = "turn")
+    val travel by motion.animateFloat(0f, 360f, infiniteRepeatable(tween(16_000, easing = LinearEasing)), label = "travel")
+    val breathe by motion.animateFloat(1f, 1.045f, infiniteRepeatable(tween(2_000, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "breathe")
+    val rippleA by motion.animateFloat(0f, 1f, infiniteRepeatable(tween(3_200, easing = LinearOutSlowInEasing)), label = "rippleA")
+    val rippleB by motion.animateFloat(0f, 1f, infiniteRepeatable(tween(3_200, easing = LinearOutSlowInEasing), initialStartOffset = StartOffset(1_600, StartOffsetType.FastForward)), label = "rippleB")
+    val outer = Color(0xFFC33A19).copy(alpha = 0.28f)
+    val inner = Color(0xFFF4A629).copy(alpha = 0.35f)
+    val ringRadius = 72.dp
+
     Box(Modifier.fillMaxWidth().height(250.dp), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(230.dp)) {
+            val stroke = 1.5.dp.toPx()
+            rotate(turn) {
+                drawCircle(outer, radius = size.minDimension / 2 - stroke, style = Stroke(stroke, pathEffect = PathEffect.dashPathEffect(floatArrayOf(7.dp.toPx(), 6.dp.toPx()))))
+            }
+        }
+        Canvas(Modifier.size(145.dp)) { drawCircle(inner, radius = size.minDimension / 2 - 1.5.dp.toPx(), style = Stroke(1.5.dp.toPx())) }
+        listOf(rippleA, rippleB).forEach { p ->
+            Box(
+                Modifier.size(100.dp)
+                    .graphicsLayer { scaleX = 1f + 0.7f * p; scaleY = 1f + 0.7f * p; alpha = 0.9f * (1f - p) }
+                    .border(2.dp, Color(0xFFC33A19).copy(alpha = 0.35f), RoundedCornerShape(24.dp)),
+            )
+        }
         Box(
-            Modifier.size(100.dp).background(Color.White, RoundedCornerShape(24.dp)).border(2.dp, brand.peach, RoundedCornerShape(24.dp)),
+            Modifier.size(100.dp).graphicsLayer { scaleX = breathe; scaleY = breathe }
+                .shadow(8.dp, RoundedCornerShape(24.dp), clip = false).background(Color.White, RoundedCornerShape(24.dp)).border(2.dp, brand.peach, RoundedCornerShape(24.dp)),
             contentAlignment = Alignment.Center,
         ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(76.dp)) }
-        FeaturePill(talks, "calendar", Modifier.align(Alignment.TopStart).padding(top = 8.dp))
-        FeaturePill(people, "users", Modifier.align(Alignment.TopEnd).padding(top = 40.dp))
-        FeaturePill(reminders, "bell", Modifier.align(Alignment.BottomStart).padding(bottom = 40.dp))
-        FeaturePill(campCard, "id-card", Modifier.align(Alignment.BottomEnd).padding(bottom = 4.dp))
+        listOf(Triple("coffee", Color(0xFFE39D1C), 0f), Triple("map-pin", Color(0xFF049395), 180f)).forEach { (icon, tint, offset) ->
+            val angle = (travel + offset) * (PI.toFloat() / 180f)
+            Box(
+                Modifier.offset(ringRadius * cos(angle), ringRadius * sin(angle)).size(30.dp).shadow(3.dp, CircleShape, clip = false).background(Color.White, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) { LineIcon(icon, tint, size = 18.dp) }
+        }
+        FeaturePill(talks, "calendar", Modifier.align(Alignment.TopStart).padding(top = 8.dp), popAfter = 100, phase = 650)
+        FeaturePill(people, "users", Modifier.align(Alignment.TopEnd).padding(top = 40.dp), popAfter = 250, phase = 2_100)
+        FeaturePill(reminders, "bell", Modifier.align(Alignment.BottomStart).padding(bottom = 40.dp), popAfter = 400, phase = 900)
+        FeaturePill(campCard, "id-card", Modifier.align(Alignment.BottomEnd).padding(bottom = 4.dp), popAfter = 550, phase = 1_700)
     }
 }
 
+/** One pill: pops in (springy) after [popAfter] ms, then floats up and down on its own beat ([phase] ms into the cycle). */
 @Composable
-private fun FeaturePill(label: String, icon: String, modifier: Modifier) {
+private fun FeaturePill(label: String, icon: String, modifier: Modifier, popAfter: Int = 0, phase: Int = 0) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
+    val pop = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        delay(popAfter.toLong())
+        pop.animateTo(1f, spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow))
+    }
+    val float by rememberInfiniteTransition(label = "float").animateFloat(
+        0f, 1f, infiniteRepeatable(tween(2_500, easing = FastOutSlowInEasing), RepeatMode.Reverse, StartOffset(phase, StartOffsetType.FastForward)), label = "float",
+    )
     Row(
-        modifier.shadow(3.dp, shape, clip = false).background(Color.White, shape).padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
+        modifier
+            .graphicsLayer {
+                val grow = 0.6f + 0.4f * pop.value
+                scaleX = grow; scaleY = grow
+                alpha = pop.value.coerceIn(0f, 1f)
+                translationX = 2.dp.toPx() * float
+                translationY = -6.dp.toPx() * float + (1f - pop.value) * 8.dp.toPx()
+                rotationZ = -1.5f * float
+            }
+            .shadow(3.dp, shape, clip = false).background(Color.White, shape).padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(34.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 18.dp) }
