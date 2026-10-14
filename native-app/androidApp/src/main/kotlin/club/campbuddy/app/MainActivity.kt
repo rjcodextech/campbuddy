@@ -87,6 +87,7 @@ class MainActivity : ComponentActivity() {
                     link = link,
                     shareImage = cardExport::share,
                     saveImage = cardExport::save,
+                    shareFile = cardExport::shareFile,
                     apiBase = apiBase(prefs),
                 )
             )

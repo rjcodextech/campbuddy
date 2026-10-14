@@ -25,6 +25,19 @@ class AndroidCardExport(private val context: Context) {
         context.startActivity(Intent.createChooser(send, "Share your Camp Card").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
+    /** A file to the share sheet (a calendar file opens in the calendar app). */
+    fun shareFile(name: String, mime: String, bytes: ByteArray) {
+        val file = File(File(context.cacheDir, "shared").apply { mkdirs() }, name)
+        file.writeBytes(bytes)
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
+        val view = Intent(Intent.ACTION_SEND).apply {
+            type = mime
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(view, "Add to calendar").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
     /** Pictures/CampBuddy on Android 10+; older phones would need a storage permission, so they use Share instead. */
     fun save(image: ImageBitmap, name: String): Boolean {
         if (Build.VERSION.SDK_INT < 29) return false

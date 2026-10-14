@@ -30,6 +30,15 @@ internal object IosCardExport {
         controller.presentViewController(UIActivityViewController(listOf(picture), null), true, null)
     }
 
+    /** A calendar file to the share sheet: written to the temporary folder first. */
+    fun shareFile(name: String, bytes: ByteArray) {
+        val path = platform.Foundation.NSTemporaryDirectory() + name
+        val data = bytes.usePinned { NSData.create(bytes = it.addressOf(0), length = bytes.size.toULong()) }
+        data.writeToFile(path, true)
+        val controller = UIApplication.sharedApplication.keyWindow?.rootViewController ?: return
+        controller.presentViewController(UIActivityViewController(listOf(platform.Foundation.NSURL.fileURLWithPath(path)), null), true, null)
+    }
+
     fun save(image: ImageBitmap): Boolean {
         val picture = uiImage(image) ?: return false
         UIImageWriteToSavedPhotosAlbum(picture, null, null, null)

@@ -52,6 +52,8 @@ class AppDeps(
     val link: club.campbuddy.shared.domain.DeepLink? = null,
     /** Opens the share sheet with the card picture. */
     val shareImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Unit = { _, _ -> },
+    /** Opens the share sheet with a file (a calendar file for a meeting or the plan): name, MIME type, contents. */
+    val shareFile: (String, String, ByteArray) -> Unit = { _, _, _ -> },
     /** Saves the card picture to the phone's gallery; false when that is not possible. */
     val saveImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Boolean = { _, _ -> false },
 )

@@ -39,6 +39,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
             reminders = IosReminders(),
             shareImage = { image, _ -> IosCardExport.share(image) },
             saveImage = { image, _ -> IosCardExport.save(image) },
+            shareFile = { name, _, bytes -> IosCardExport.shareFile(name, bytes) },
         )
     )
 }

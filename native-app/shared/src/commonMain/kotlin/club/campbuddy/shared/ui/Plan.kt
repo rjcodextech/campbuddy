@@ -41,6 +41,8 @@ import campbuddy_native.shared.generated.resources.Res
 import campbuddy_native.shared.generated.resources.art_avatar
 import campbuddy_native.shared.generated.resources.art_people
 import club.campbuddy.shared.data.Meeting
+import club.campbuddy.shared.domain.Ics
+import club.campbuddy.shared.domain.IcsItem
 import club.campbuddy.shared.model.RosterEntry
 import org.jetbrains.compose.resources.painterResource
 
@@ -72,7 +74,7 @@ fun MeetButton(person: RosterEntry, slug: String) {
 }
 
 /** "Add to people to meet": a note, when, and where it goes (this phone only). */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, sub: String, existing: Meeting?, onClose: () -> Unit) {
     val env = LocalEnv.current
@@ -82,13 +84,33 @@ fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, su
     var date by remember { mutableStateOf(existing?.at?.substringBefore('T').orEmpty()) }
     var time by remember { mutableStateOf(existing?.at?.substringAfter('T', "")?.take(5).orEmpty()) }
     var error by remember { mutableStateOf<String?>(null) }
+    var pickDate by remember { mutableStateOf(false) }
+    var pickTime by remember { mutableStateOf(false) }
 
     fun at(): String? = if (timed) "$date" + "T" + time else null
 
     fun save() {
-        if (timed && !(Regex("\\d{4}-\\d{2}-\\d{2}").matches(date) && Regex("\\d{2}:\\d{2}").matches(time))) { error = "Use a date like 2026-10-03 and a time like 14:30."; return }
+        if (timed && Ics.local(date, time) == null) { error = "Pick the day and the time."; return }
         env.user.saveMeeting(slug, Meeting(rosterId, name, avatarUrl, sub, note.trim(), at(), existing?.status?.takeIf { it != "skipped" }))
         onClose()
+    }
+
+    if (pickDate) {
+        val state = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = date.takeIf { it.length == 10 }?.let { runCatching { kotlinx.datetime.LocalDate.parse(it).toEpochDays() * 86_400_000L }.getOrNull() })
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = { pickDate = false },
+            confirmButton = { LinkButton("OK", { state.selectedDateMillis?.let { date = kotlinx.datetime.LocalDate.fromEpochDays((it / 86_400_000L).toInt()).toString() }; pickDate = false }) },
+            dismissButton = { LinkButton("Cancel", { pickDate = false }) },
+        ) { androidx.compose.material3.DatePicker(state) }
+    }
+    if (pickTime) {
+        val state = androidx.compose.material3.rememberTimePickerState(initialHour = time.take(2).toIntOrNull() ?: 10, initialMinute = time.drop(3).toIntOrNull() ?: 0, is24Hour = false)
+        AlertDialog(
+            onDismissRequest = { pickTime = false },
+            confirmButton = { LinkButton("OK", { time = state.hour.toString().padStart(2, '0') + ":" + state.minute.toString().padStart(2, '0'); pickTime = false }) },
+            dismissButton = { LinkButton("Cancel", { pickTime = false }) },
+            text = { androidx.compose.material3.TimePicker(state) },
+        )
     }
 
     AlertDialog(
@@ -117,14 +139,20 @@ fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, su
                     ChoicePill("At a set time", timed) { timed = true }
                 }
                 if (timed) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedTextField(date, { date = it.take(10) }, label = { Text("Date") }, placeholder = { Text("2026-10-03") }, singleLine = true, modifier = Modifier.weight(1f), keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Number))
-                        OutlinedTextField(time, { time = it.take(5) }, label = { Text("Time") }, placeholder = { Text("14:30") }, singleLine = true, modifier = Modifier.weight(1f))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        ActionButton(if (date.isBlank()) "Pick a day" else prettyDate(date), filled = false) { pickDate = true }
+                        ActionButton(if (time.isBlank()) "Pick a time" else time, filled = false) { pickTime = true }
                     }
-                    if (Regex("\\d{4}-\\d{2}-\\d{2}").matches(date) && Regex("\\d{2}:\\d{2}").matches(time)) {
-                        val start = date.replace("-", "") + "T" + time.replace(":", "") + "00"
+                }
+                if (timed && Ics.local(date, time) != null) {
+                    val start = Ics.local(date, time)!!
+                    val end = Ics.local(date, time, 30)!!
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ActionButton("Add to calendar", filled = false) {
+                            env.deps.shareFile("meet-$name.ics".replace(' ', '-'), "text/calendar", Ics.build(listOf(IcsItem("meet-$slug-$rosterId", "Meet $name", start, end, note))).encodeToByteArray())
+                        }
                         ActionButton("Google Calendar  ↗", filled = false) {
-                            env.deps.openUrl("https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeUrl("Meet $name") + "&dates=$start/$start&details=" + encodeUrl(note))
+                            env.deps.openUrl("https://calendar.google.com/calendar/render?action=TEMPLATE&text=" + encodeUrl("Meet $name") + "&dates=$start/$end&details=" + encodeUrl(note))
                         }
                     }
                 }
@@ -154,7 +182,7 @@ private fun encodeUrl(text: String): String = buildString {
 
 /** The plan's progress card at the top of My schedule. */
 @Composable
-fun PlanSummary(done: Int, total: Int) {
+fun PlanSummary(done: Int, total: Int, onCalendar: () -> Unit = {}) {
     val brand = LocalBrand.current
     val pct = if (total == 0) 0 else done * 100 / total
     val shape = RoundedCornerShape(brand.radius.dp)
@@ -171,6 +199,10 @@ fun PlanSummary(done: Int, total: Int) {
         }
         Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
             if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
+        }
+        Row(Modifier.clickable(role = Role.Button, onClick = onCalendar).padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            LineIcon("calendar", brand.primary, size = 16.dp)
+            Text("Add all to calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
         }
     }
 }
@@ -250,4 +282,25 @@ fun PlanEmpty(title: String, text: String) {
         Text(title, style = MaterialTheme.typography.titleMedium)
         Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
+}
+
+private fun prettyDate(iso: String): String {
+    val d = runCatching { kotlinx.datetime.LocalDate.parse(iso) }.getOrNull() ?: return iso
+    return d.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() } + ", " + d.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() } + " " + d.dayOfMonth
+}
+
+/** Every saved session with a time, and every person with a set time, as one calendar file. */
+fun planCalendar(slug: String, sessions: List<club.campbuddy.shared.model.Session>, meetings: List<Meeting>): ByteArray {
+    fun utc(instant: kotlinx.datetime.Instant): String = instant.toString().replace("-", "").replace(":", "").substringBefore('.').removeSuffix("Z") + "Z"
+    val items = sessions.mapNotNull { s ->
+        val start = club.campbuddy.shared.domain.EventClock.startOf(s) ?: return@mapNotNull null
+        val end = club.campbuddy.shared.domain.EventClock.endOf(s)?.takeIf { it > start } ?: kotlinx.datetime.Instant.fromEpochSeconds(start.epochSeconds + 30 * 60)
+        IcsItem("session-$slug-${s.id}", s.title, utc(start), utc(end), "", s.trackNames.firstOrNull().orEmpty())
+    } + meetings.filter { it.status == null && it.at != null }.mapNotNull { m ->
+        val date = m.at!!.substringBefore('T'); val time = m.at.substringAfter('T').take(5)
+        val start = Ics.local(date, time) ?: return@mapNotNull null
+        IcsItem("meet-$slug-${m.rosterId}", "Meet ${m.name}", start, Ics.local(date, time, 30)!!, m.note)
+    }
+
+    return Ics.build(items).encodeToByteArray()
 }

@@ -205,7 +205,13 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
             }
         }
         if (mine && planTotal + hiddenPeople.size > 0) {
-            if (planTotal > 0) item(key = "plan-summary") { PlanSummary(planDone, planTotal) }
+            if (planTotal > 0) item(key = "plan-summary") {
+                PlanSummary(planDone, planTotal) {
+                    val file = planCalendar(event.slug, savedSessions, planPeople)
+                    if (file.size > 80 && savedSessions.any { EventClock.startOf(it) != null } || planPeople.any { it.at != null }) env.deps.shareFile("${event.slug}-my-plan.ics", "text/calendar", file)
+                    else message = "Nothing with a time yet. Save a session or add someone to meet first."
+                }
+            }
             item(key = "plan-filters") { PlanFilters(counts, planFilter) { planFilter = it } }
         }
         if (shown.isEmpty() && !(mine && planPeople.isNotEmpty())) {
