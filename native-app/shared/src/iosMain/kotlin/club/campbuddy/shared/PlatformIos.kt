@@ -37,6 +37,8 @@ fun MainViewController(): UIViewController = ComposeUIViewController {
             deviceName = UIDevice.currentDevice.name,
             openUrl = { url -> NSURL.URLWithString(url)?.let { UIApplication.sharedApplication.openURL(it) } },
             reminders = IosReminders(),
+            shareImage = { image, _ -> IosCardExport.share(image) },
+            saveImage = { image, _ -> IosCardExport.save(image) },
         )
     )
 }

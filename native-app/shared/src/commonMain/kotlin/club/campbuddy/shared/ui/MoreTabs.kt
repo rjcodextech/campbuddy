@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.rememberGraphicsLayer
+import androidx.compose.ui.graphics.layer.drawLayer
+import androidx.compose.ui.draw.drawWithContent
 import kotlinx.coroutines.launch
 import campbuddy_native.shared.generated.resources.wordmark
 import androidx.compose.ui.graphics.Brush
@@ -703,6 +706,11 @@ fun CampCardTab(eventName: String = "WordCamp") {
     }
     var message by remember { mutableStateOf<String?>(null) }
     val name = fields["name"].orEmpty()
+    val link = cardLink(fields)
+    val ticketLayer = rememberGraphicsLayer()
+    val classicLayer = rememberGraphicsLayer()
+    val scope = rememberCoroutineScope()
+    var exportNote by remember { mutableStateOf<String?>(null) }
     val role = listOf("role", "company").mapNotNull { fields[it]?.takeIf(String::isNotBlank) }.joinToString(" · ")
     val tags = interestTags(fields["interests"])
 
@@ -720,7 +728,11 @@ fun CampCardTab(eventName: String = "WordCamp") {
                     Card(Modifier.fillParentMaxWidth(0.92f)) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("Ticket", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
-                            TicketArt(eventName, name, role, tags)
+                            TicketArt(eventName, name, role, tags, link, Modifier.captureTo(ticketLayer))
+                            ExportButtons(
+                                onShare = { scope.launch { env.deps.shareImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png") } },
+                                onSave = { scope.launch { exportNote = if (env.deps.saveImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png")) "Saved to your photos." else "Could not save. Use Share instead." } },
+                            )
                         }
                     }
                 }
@@ -728,12 +740,17 @@ fun CampCardTab(eventName: String = "WordCamp") {
                     Card(Modifier.fillParentMaxWidth(0.92f)) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("Classic", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
-                            ClassicArt(eventName, name, role, tags)
+                            ClassicArt(eventName, name, role, tags, link, Modifier.captureTo(classicLayer))
+                            ExportButtons(
+                                onShare = { scope.launch { env.deps.shareImage(classicLayer.toImageBitmap(), "campbuddy-classic.png") } },
+                                onSave = { scope.launch { exportNote = if (env.deps.saveImage(classicLayer.toImageBitmap(), "campbuddy-classic.png")) "Saved to your photos." else "Could not save. Use Share instead." } },
+                            )
                         }
                     }
                 }
             }
         }
+        exportNote?.let { note -> item { Text(note, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) } }
         CARD_FIELDS.forEach { (key, label) ->
             item(key = key) {
                 OutlinedTextField(
@@ -757,10 +774,10 @@ fun CampCardTab(eventName: String = "WordCamp") {
 /** The "Ticket" layout: a deep-red header with the event, then the person's name on a cream ticket. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TicketArt(event: String, name: String, role: String, tags: List<String>) {
+private fun TicketArt(event: String, name: String, role: String, tags: List<String>, link: String?, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(16.dp)
-    Column(Modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
+    Column(modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
         Box(Modifier.fillMaxWidth().height(160.dp).background(TICKET_RED), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
@@ -787,6 +804,7 @@ private fun TicketArt(event: String, name: String, role: String, tags: List<Stri
             )
             Box(Modifier.padding(vertical = 12.dp).size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
             if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = brand.muted, fontWeight = FontWeight.Normal), textAlign = TextAlign.Center)
+            link?.let { QrBadge(it) }
             if (tags.isNotEmpty()) {
                 FlowRow(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     tags.forEach { tag ->
@@ -804,17 +822,18 @@ private fun TicketArt(event: String, name: String, role: String, tags: List<Stri
 /** The "Classic" layout: dark card, gold accent. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ClassicArt(event: String, name: String, role: String, tags: List<String>) {
+private fun ClassicArt(event: String, name: String, role: String, tags: List<String>, link: String?, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(16.dp)
     Column(
-        Modifier.fillMaxWidth().clip(shape).background(INK_DARK).heightIn(min = 400.dp).padding(24.dp),
+        modifier.fillMaxWidth().clip(shape).background(INK_DARK).heightIn(min = 400.dp).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(event.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.accent, letterSpacing = 2.sp, fontWeight = FontWeight.Bold))
         Box(Modifier.size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
         Text(name.ifBlank { "Your name" }, style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 80.dp))
         if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD9CFC6), fontWeight = FontWeight.Normal))
+        link?.let { QrBadge(it) }
         if (tags.isNotEmpty()) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 tags.forEach { tag ->
@@ -976,3 +995,27 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
     }
 }
 
+
+/** The card's QR (white tile so it scans on either layout) with what it opens. */
+@Composable
+private fun QrBadge(link: String) {
+    val brand = LocalBrand.current
+    Column(Modifier.padding(top = 14.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Box(Modifier.clip(RoundedCornerShape(8.dp)).background(Color.White).padding(4.dp)) { QrCodeView(link, 104.dp) }
+        Text("Scan to connect", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted))
+    }
+}
+
+@Composable
+private fun ExportButtons(onShare: () -> Unit, onSave: () -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        QuietButton("Share", onShare, Modifier.weight(1f))
+        QuietButton("Download", onSave, Modifier.weight(1f))
+    }
+}
+
+/** Records what is drawn into [layer] as well, so the card can be turned into a picture on demand. */
+private fun Modifier.captureTo(layer: androidx.compose.ui.graphics.layer.GraphicsLayer): Modifier = this.drawWithContent {
+    layer.record { this@drawWithContent.drawContent() }
+    drawLayer(layer)
+}

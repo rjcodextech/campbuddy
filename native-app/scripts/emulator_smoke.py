@@ -240,11 +240,36 @@ shot("06b-contribute")
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
 tap_text("Camp Card", exact=True)
 step("camp card form", wait("Ticket", 10) is not None)
+
+
+def to_top():
+    for _ in range(5):
+        adb("shell", "input", "swipe", "1070", "700", "1070", "1800", "300")
+        time.sleep(0.5)
+
+
+def small_scroll(px=700):
+    adb("shell", "input", "swipe", "1070", str(1700), "1070", str(1700 - px), "400")
+    time.sleep(0.8)
+
+
+small_scroll(1100)
 type_into("Your name", "Asha Rao")
-step("the preview follows the typing", find("Asha Rao") is not None)
-shot("08-camp-card")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")  # close the keyboard
 time.sleep(1)
+scroll_down(1)
+type_into("Website", "asha.dev")
+adb("shell", "input", "keyevent", "KEYCODE_BACK")
+time.sleep(1)
+to_top()
+step("the preview follows the typing", find("Asha Rao") is not None)
+shot("08-camp-card")
+small_scroll(800)
+step("the card shows a QR once there is a link", wait("Scan to connect", 8) is not None)
+shot("08b-card-qr")
+small_scroll(600)
+tap_text("Download", exact=True)
+step("Download saves the card picture", wait("Saved to your photos.", 8) is not None)
 
 # ---- Your data -------------------------------------------------------------------------------------------------------------
 tap_text("My Day", exact=True)
