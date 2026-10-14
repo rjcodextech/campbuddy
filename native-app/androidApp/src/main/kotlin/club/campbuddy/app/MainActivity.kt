@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
                     shareImage = cardExport::share,
                     saveImage = cardExport::save,
                     shareFile = cardExport::shareFile,
+                    makePdf = AndroidDayPdf::render,
                     apiBase = apiBase(prefs),
                 )
             )

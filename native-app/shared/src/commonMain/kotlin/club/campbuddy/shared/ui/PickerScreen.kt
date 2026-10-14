@@ -208,7 +208,7 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     val divider = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.22f) else brand.line
     val cta = if (done) androidx.compose.ui.graphics.lerp(brand.ink, teal, 0.70f) else brand.primary
     Column(
-        Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).background(fill, shape).border(1.dp, edge, shape)
+        Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).clip(shape).background(fill, shape).border(1.dp, edge, shape)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
         Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -239,6 +239,23 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
         Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = cta), modifier = Modifier.padding(16.dp))
+        if (done) {
+            // The website's joined "Save your WordCamp Data" bar: the PDF of what this phone kept for the event.
+            val env = LocalEnv.current
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            var busy by remember { mutableStateOf(false) }
+            var said by remember { mutableStateOf<String?>(null) }
+            Row(
+                Modifier.fillMaxWidth().background(cta).clickable(role = Role.Button) {
+                    if (!busy) scope.launch { busy = true; said = saveMyDay(env, event.slug); busy = false }
+                }.padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LineIcon("download", Color.White, size = 16.dp)
+                Text(if (busy) "  Making your PDF…" else "  Save your WordCamp Data", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold))
+            }
+            said?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(color = cta), modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) }
+        }
     }
 }
 

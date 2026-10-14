@@ -273,10 +273,21 @@ adb("shell", "input", "text", "asha.dev")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1)
 scroll_down(2)
-tap_text("Save Camp Card", exact=True)
-time.sleep(1.5)
 saved_note = False
-for _ in range(12):
+for attempt in range(2):  # the first tap can land while the keyboard is still closing
+    if attempt:
+        scroll_down(8)
+    tap_text("Save Camp Card", exact=True)
+    time.sleep(1.5)
+    for _ in range(12):
+        if find("Camp Card saved on this phone.") is not None:
+            saved_note = True
+            break
+        adb("shell", "input", "swipe", "1070", "700", "1070", "1900", "400")  # the note sits at the top of the page
+        time.sleep(0.8)
+    if saved_note:
+        break
+for _ in range(0):
     if find("Camp Card saved on this phone.") is not None:
         saved_note = True
         break
@@ -289,6 +300,11 @@ shot("08-camp-card")
 tap_text("My Day", exact=True)
 scroll_down(4)
 step("My Day offers to clear your data", wait("Clear my data on this phone", 8) is not None)
+tap_text("Save my day as PDF")
+step("save my day as PDF opens the share sheet", wait("my-day.pdf", 10) is not None or find("Your day is ready") is not None)
+shot("08b-pdf")
+adb("shell", "input", "keyevent", "KEYCODE_BACK")
+time.sleep(1)
 tap_text("Clear my data on this phone")
 tap_text("Clear", exact=True)
 step("clearing says so", wait("Cleared. Nothing of yours is left", 8) is not None)

@@ -56,6 +56,8 @@ class AppDeps(
     val shareFile: (String, String, ByteArray) -> Unit = { _, _, _ -> },
     /** Saves the card picture to the phone's gallery; false when that is not possible. */
     val saveImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Boolean = { _, _ -> false },
+    /** Draws "my day" as PDF pages; null when this phone cannot (the app then shares plain text). */
+    val makePdf: (club.campbuddy.shared.domain.DayPdf) -> ByteArray? = { null },
 )
 
 private sealed interface Screen {

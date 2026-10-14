@@ -1,6 +1,6 @@
 # Native app: kya ban gaya (14 Oct 2026, branch `app`)
 
-Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta hai (emulator par 45 checks pass); iOS ka code aur CI hai, par Windows par compile nahi ho sakta (macOS CI chahiye).
+Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta hai (emulator par 46 checks pass); iOS ka code aur CI hai, par Windows par compile nahi ho sakta (macOS CI chahiye).
 
 ## Server (M0) — ho gaya, tests ke saath
 | Cheez | Kahan | Tests |
@@ -24,11 +24,22 @@ Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta 
 ## Artifacts (`mobile-app/app/release/`)
 `CampBuddy-native-2.0.0-release.apk` / `.aab` (upload key se signed), `CampBuddy-native-2.0.0-debug.apk` (id `club.campbuddy.app.native`, store app ke saath chalta hai).
 
+## 14 Oct ke baad jo aur ban gaya
+- **Popups**: har popup website jaisa bottom sheet (`ui/Sheet.kt`): paper rang, X button, outline + primary buttons. Meet note, Free Steal sheet, lead form, wave/report/chat, reminders, clear data, Contribute team.
+- **My schedule**: People to meet (note, kab, Met / Couldn't meet, hide), session Attended / Missed, plan progress, filters, "Add all to calendar" (.ics), date/time pickers.
+- **Save my day as PDF** (My Day → Your data, aur Completed WordCamp card par "Save your WordCamp Data"): phone par hi bannta hai (Hindi bhi theek), share sheet se save. Same sections website jaise.
+- Completed WordCamp ka card picker me teal + "Completed" pill. App portrait me locked.
+- Production par `/api/v1/app/*` deployed (Free Steal `host`/`made_here`, event `venue` ke saath).
+- Accessibility audit: har clickable par role, sirf decoration wali images par `contentDescription = null`.
+
+## Jaan-bujhkar nahi banaya
+- **Outbox (offline writes)**: website me ye sirf reminder on/off ko queue karta hai. Native app reminders phone par hi lagata hai (AlarmManager), server ko nahi bhejta, isliye zaroorat nahi.
+- **Deals ka FREE badge**: website ke deals me hai hi nahi.
+
 ## Abhi baaki
-- Deals ka FREE badge aur logos (Coil). Camp Card: 900 DPI export, link chunne ka option.
-- Contribute: onboarding interests se pre-fill.
-- Outbox (offline writes), device transfer, organizer extras (dashboard, roster, quests/tables CRUD, QR kit, analytics), Hindi UI ke baaki texts, accessibility pass (TalkBack), iOS compile + APNs.
-- **Owner steps**: Play Console par app listing, `assetlinks.json` (https deep links verify ke liye, upload key nahi Play signing key ka SHA-256), server par `/api/v1/app/*` deploy (abhi production par nahi hai), phone par test (USB debugging dobara allow).
+- **Device transfer** (encrypted data ek phone se doosre par) aur **organizer extras** (dashboard, roster, quests/tables CRUD, QR kit, analytics): bade alag kaam hain, web admin se chalte hain.
+- Hindi UI ke baaki texts, iOS compile + APNs (macOS CI chahiye; iOS par PDF abhi plain text file banata hai).
+- **Owner steps**: Play Console par app listing, `assetlinks.json` (Play signing key ka SHA-256).
 
 ## Chalane ke commands
 - Server tests: `npm run check:sync`

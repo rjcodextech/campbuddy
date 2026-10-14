@@ -27,6 +27,7 @@ fun DataControls(slug: String) {
     val scope = rememberCoroutineScope()
     var asking by remember { mutableStateOf(false) }
     var note by remember { mutableStateOf<String?>(null) }
+    var saving by remember { mutableStateOf(false) }
     val discoverable = env.user.discovery(slug) != null
 
     Card {
@@ -36,6 +37,7 @@ fun DataControls(slug: String) {
                 "Your saved sessions, quests, Camp Card and answers live only on this phone. Clearing them cannot be undone.",
                 style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
             )
+            QuietButton(if (saving) "Making your PDF…" else "Save my day as PDF", { if (!saving) scope.launch { saving = true; note = saveMyDay(env, slug); saving = false } }, Modifier.fillMaxWidth())
             QuietButton("Clear my data on this phone", { asking = true }, Modifier.fillMaxWidth())
             note?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) }
         }
@@ -67,4 +69,22 @@ fun DataControls(slug: String) {
             )
         }
     }
+}
+
+/**
+ * "Save my day as PDF": the saved sessions, people to meet, quests and Camp Card for one WordCamp, built on this phone and
+ * handed to the share sheet. Returns what to tell the person.
+ */
+suspend fun saveMyDay(env: Env, slug: String): String {
+    val event = (runCatching { env.repository.event(slug) }.getOrNull())?.value ?: return "Couldn't open this WordCamp to make the PDF. Check your connection and try again."
+    val quests = runCatching { env.repository.quests(slug).value }.getOrDefault(emptyList())
+    val pdf = club.campbuddy.shared.domain.DayExport.build(
+        event.name, club.campbuddy.shared.domain.EventClock.zone(event.timezone), env.user.bookmarks(slug), env.user.meetings(slug),
+        quests.associate { it.id to it.title }, env.user.completedQuests(slug), env.user.card(),
+    )
+    if (pdf.sections.isEmpty()) return "Nothing saved for this WordCamp on this phone yet, so there is nothing to put in a PDF."
+    val bytes = env.deps.makePdf(pdf)
+    if (bytes != null) env.deps.shareFile(club.campbuddy.shared.domain.DayExport.fileName(event.name), "application/pdf", bytes)
+    else env.deps.shareFile(club.campbuddy.shared.domain.DayExport.fileName(event.name).removeSuffix(".pdf") + ".txt", "text/plain", club.campbuddy.shared.domain.DayExport.asText(pdf).encodeToByteArray())
+    return "Your day is ready. Choose where to save it."
 }

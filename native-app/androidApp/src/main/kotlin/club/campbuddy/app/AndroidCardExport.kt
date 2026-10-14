@@ -35,7 +35,7 @@ class AndroidCardExport(private val context: Context) {
             putExtra(Intent.EXTRA_STREAM, uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(view, "Add to calendar").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        context.startActivity(Intent.createChooser(view, if (mime == "text/calendar") "Add to calendar" else "Save or share").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     }
 
     /** Pictures/CampBuddy on Android 10+; older phones would need a storage permission, so they use Share instead. */
