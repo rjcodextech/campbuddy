@@ -151,11 +151,9 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
                             if (total > 0) Text("$count/$total complete", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
                         }
                         if (total > 0) {
-                            LinearProgressIndicator(
-                                progress = { count.toFloat() / total },
-                                color = brand.accent, trackColor = brand.line,
-                                modifier = Modifier.fillMaxWidth().height(12.dp),
-                            )
+                            Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
+                                if (count > 0) Box(Modifier.fillMaxWidth(count.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
+                            }
                         }
                     }
                 }
@@ -169,14 +167,14 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
                         val meta = QUEST_META.getValue(quest.title)
                         val checked = quest.id in done
                         Card {
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
                                 Box(
-                                    Modifier.size(52.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)),
+                                    Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)),
                                     contentAlignment = Alignment.Center,
-                                ) { LineIcon(meta.icon, brand.primary, size = 28.dp) }
+                                ) { LineIcon(meta.icon, brand.primary, size = 22.dp) }
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(quest.title, style = MaterialTheme.typography.titleLarge)
-                                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted)) }
+                                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                                         ActionButton(if (checked) "Done ✓" else "Mark done", filled = !checked) { env.user.toggleQuest(slug, quest.id) }
                                         meta.tab?.let { tab -> ActionButton(meta.label, filled = false) { onTab(tab) } }
@@ -215,17 +213,17 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
     }
 }
 
-/** The website's square-cornered button: filled brand colour, or an outline once the thing is done. */
+/** The website's compact button: 44 high, 4px corners, 14 bold; filled brand colour, or an outline once the thing is done. */
 @Composable
 fun ActionButton(text: String, filled: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(4.dp)
     Box(
-        Modifier.heightIn(min = 48.dp)
+        Modifier.heightIn(min = 44.dp)
             .background(if (filled) brand.primary else androidx.compose.ui.graphics.Color.Transparent, shape)
             .border(1.dp, if (filled) brand.primary else brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge.copy(color = if (filled) androidx.compose.ui.graphics.Color.White else brand.ink))
@@ -317,16 +315,16 @@ fun ContributeTab(slug: String) {
                     Text(
                         "CONTRIBUTE",
                         style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                        modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp),
+                        modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 4.dp),
                     )
-                    Text("Where could you help?", style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp))
+                    Text("Where could you help?", style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp, lineHeight = 27.6.sp, letterSpacing = (-0.48).sp))
                     Text(
                         buildAnnotatedString {
                             append("You don't need to code. Writers, designers, translators and people who are just curious all have a table. Answer a few quick questions to find your team. ")
                             withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append("Students:") }
                             append(" your contributions show on your WordPress.org profile, which you can put on your CV.")
                         },
-                        style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
                     )
                 }
             }
@@ -335,7 +333,7 @@ fun ContributeTab(slug: String) {
             Card {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Going to Contributor Day?", style = MaterialTheme.typography.titleLarge)
-                    Text(CONTRIBUTOR_DAY_NOTES.getValue(if (day in CONTRIBUTOR_DAY_NOTES) day else ""), style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                    Text(CONTRIBUTOR_DAY_NOTES.getValue(if (day in CONTRIBUTOR_DAY_NOTES) day else ""), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("yes" to "Yes", "" to "Not sure yet", "no" to "Not this time").forEach { (value, label) ->
                             ChoicePill(label, selected = day == value) { env.user.saveProfile(profile.copy(attendingContributorDay = value.ifEmpty { null })) }
@@ -351,7 +349,7 @@ fun ContributeTab(slug: String) {
                 Card {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text("What kind of work do you enjoy?", style = MaterialTheme.typography.titleLarge)
-                        Text("Pick as many as you like, or skip straight to the matches.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        Text("Pick as many as you like, or skip straight to the matches.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
                         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             CONTRIB_QUESTION_TAGS.forEach { tag ->
                                 ChoicePill(tag.label, selected = tag.key in selected) { selected = if (tag.key in selected) selected - tag.key else selected + tag.key }
@@ -409,7 +407,7 @@ fun ExploreTab(slug: String) {
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(words("tabs.explore"), style = MaterialTheme.typography.headlineSmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf(
                     Triple("people", "People", "users"),
                     Triple("sponsors", "Sponsors", "heart"),
@@ -439,19 +437,20 @@ private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
     Column(
-        modifier.heightIn(min = 76.dp)
-            .background(if (selected) brand.peach else brand.surface, shape)
-            .border(1.dp, if (selected) brand.peach else brand.line, shape)
+        modifier.heightIn(min = 65.dp)
+            .background(if (selected) brand.peach else Color.Transparent, RoundedCornerShape(4.dp))
+            .border(1.dp, if (selected) Color.Transparent else brand.line, RoundedCornerShape(4.dp))
             .clickable(role = Role.Tab, onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 10.dp),
+            .padding(horizontal = 2.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
     ) {
-        LineIcon(icon, brand.ink, size = 26.dp)
-        Text(label, style = MaterialTheme.typography.labelMedium.copy(color = brand.ink, fontWeight = FontWeight.SemiBold), textAlign = TextAlign.Center, maxLines = 2)
+        LineIcon(icon, brand.ink, size = 23.dp)
+        Text(label, style = MaterialTheme.typography.labelMedium.copy(color = brand.ink, lineHeight = 13.8.sp), textAlign = TextAlign.Center, maxLines = 2)
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PeopleList(slug: String) {
     val env = LocalEnv.current
@@ -472,28 +471,47 @@ private fun PeopleList(slug: String) {
                 if (s.fromCache) item { OfflineNote() }
                 val roles = s.value.flatMap { it.roles }.distinct().sorted()
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         SearchField(query, "Search attendees…") { query = it }
                         if (roles.isNotEmpty()) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                CbChip(selected = role == "", onClick = { role = "" }, label = { Text("All") })
-                                roles.take(4).forEach { r -> CbChip(selected = role == r, onClick = { role = r }, label = { Text(r.replaceFirstChar { it.uppercase() }) }) }
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                ChoicePill("All ${s.value.size}", role == "") { role = "" }
+                                roles.take(4).forEach { r ->
+                                    ChoicePill(r.replaceFirstChar { it.uppercase() } + "s " + s.value.count { r in it.roles }, role == r) { role = r }
+                                }
                             }
                         }
                     }
                 }
                 val shown = s.value.filter { (query.isBlank() || it.name.contains(query, ignoreCase = true)) && (role.isBlank() || role in it.roles) }
                 if (shown.isEmpty()) item { Text("Nobody matches.", style = MaterialTheme.typography.bodyMedium) }
-                items(shown.take(300).size) { index ->
-                    val person = shown[index]
-                    Card {
-                        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Column(Modifier.weight(1f)) {
-                                Text(person.name, style = MaterialTheme.typography.titleMedium)
-                                if (person.roles.isNotEmpty()) Text(person.roles.joinToString(" · ") { it.replaceFirstChar { c -> c.uppercase() } }, style = MaterialTheme.typography.bodySmall)
-                                person.talks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                item {
+                    Card(Modifier.padding(top = 4.dp)) {
+                        Column {
+                            shown.take(300).forEachIndexed { index, person ->
+                                Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Box(Modifier.size(44.dp).clip(CircleShape).background(brand.peach).border(2.dp, brand.peach, CircleShape), contentAlignment = Alignment.Center) {
+                                        RemoteImage(person.avatarUrl, Modifier.size(44.dp)) { Text(person.name.take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primary)) }
+                                    }
+                                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(person.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                        if (person.roles.isNotEmpty()) {
+                                            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                person.roles.forEach { r ->
+                                                    val bg = if (r == "organizer") brand.primary else brand.accent
+                                                    Text(
+                                                        r.replaceFirstChar { it.uppercase() },
+                                                        style = MaterialTheme.typography.labelMedium.copy(color = if (r == "organizer") Color.White else brand.ink),
+                                                        modifier = Modifier.background(bg, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 1.dp),
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        person.talks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                                    }
+                                }
+                                if (index < shown.take(300).lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
                             }
-                            if (person.openToMeet) Text("Open to meet", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary))
                         }
                     }
                 }
@@ -858,6 +876,8 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
     val brand = LocalBrand.current
     val loader = rememberLoader("guide:$slug") { env.repository.guide(slug) }
     val eventLoader = rememberLoader("event:$slug") { env.repository.event(slug) }
+    val infoGroups = (rememberLoader("info:$slug") { env.repository.info(slug) }.state.value as? LoadState.Ready)?.value.orEmpty()
+    val eventName = (eventLoader.state.value as? LoadState.Ready)?.value?.name
     val state by loader.state
     val tag = (eventLoader.state.value as? LoadState.Ready)?.value?.shortName?.takeIf { it.isNotBlank() }?.let { if (it.startsWith("#")) it else "#$it" }
     val listState = rememberLazyListState()
@@ -892,7 +912,7 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
                     }
                     Text(
                         "New to ${tag ?: "WordCamp"}? Start here.",
-                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold),
+                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold),
                     )
                     Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFF1DFD2)))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -913,7 +933,9 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
                 is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
                 is LoadState.Ready -> {
                     val guide = s.value
+                    val atEvent = infoGroups.filter { it.title != "Links" }.flatMap { it.rows }.filter { it.title in setOf("Venue", "Registration", "Emergency contact", "Wifi") }
                     val sections = buildList {
+                        if (atEvent.isNotEmpty()) add("At this event")
                         add("Your day")
                         if (guide.tips.isNotEmpty()) add("Good to know")
                         if (guide.bring.isNotEmpty()) add("What to bring")
@@ -926,6 +948,7 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
                     sections.forEach { name ->
                         starts[name] = at
                         at += 1 + when (name) {
+                            "At this event" -> 1
                             "Your day" -> guide.day.size
                             "Good to know" -> guide.tips.size
                             "What to bring" -> 1
@@ -947,6 +970,24 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
                         }
                     }
                     if (s.fromCache) item { OfflineNote() }
+                    if (atEvent.isNotEmpty()) {
+                        item { Text("At ${eventName ?: "this event"}", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
+                        item {
+                            Card {
+                                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                                    atEvent.forEach { row ->
+                                        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                                            Box(Modifier.size(24.dp).padding(top = 2.dp), contentAlignment = Alignment.Center) { LineIcon(row.icon, brand.primary, size = 22.dp) }
+                                            Column(Modifier.weight(1f)) {
+                                                Text(if (row.title == "Emergency contact") "Need help?" else row.title, style = MaterialTheme.typography.titleMedium)
+                                                row.text?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     item { Text("How the day runs", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
                     items(guide.day.size) { i ->
                         val d = guide.day[i]
@@ -1014,8 +1055,8 @@ private fun QrBadge(link: String) {
 @Composable
 private fun ExportButtons(onShare: () -> Unit, onSave: () -> Unit) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        QuietButton("Share", onShare, Modifier.weight(1f))
-        QuietButton("Download", onSave, Modifier.weight(1f))
+        IconButton("share", "Share", onShare, Modifier.weight(1f))
+        IconButton("download", "Download", onSave, Modifier.weight(1f))
     }
 }
 
@@ -1023,4 +1064,17 @@ private fun ExportButtons(onShare: () -> Unit, onSave: () -> Unit) {
 private fun Modifier.captureTo(layer: androidx.compose.ui.graphics.layer.GraphicsLayer): Modifier = this.drawWithContent {
     layer.record { this@drawWithContent.drawContent() }
     drawLayer(layer)
+}
+
+/** The website's outline button with an icon in front (Share, Download). */
+@Composable
+private fun IconButton(icon: String, text: String, onClick: () -> Unit, modifier: Modifier) {
+    val brand = LocalBrand.current
+    Row(
+        modifier.heightIn(min = 50.dp).border(1.dp, brand.line, RoundedCornerShape(4.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically,
+    ) {
+        LineIcon(icon, brand.ink, size = 20.dp)
+        Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink))
+    }
 }

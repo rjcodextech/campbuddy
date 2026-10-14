@@ -34,7 +34,8 @@ class ExportAppIconsCommand extends Command
 
             if ($tag === 'path') {
                 // A path's first moveto is absolute even when written "m"; joined to another path it would turn relative.
-                $parts[] = preg_replace('/^\s*m/', 'M', $a['d']);
+                // Pairs that follow it are relative line-tos, so they become an explicit "l" (as an absolute M they would be absolute).
+                $parts[] = preg_replace_callback('/^\s*m\s*(-?[\d.]+)[\s,]*(-?[\d.]+)(.*)$/s', fn ($m) => 'M'.$m[1].' '.$m[2].(preg_match('/^\s*[-\d.]/', $m[3]) ? 'l' : '').$m[3], $a['d']);
             } elseif ($tag === 'circle') {
                 [$cx, $cy, $r] = [(float) $a['cx'], (float) $a['cy'], (float) $a['r']];
                 $parts[] = sprintf('M%s %sa%s %s 0 1 0 %s 0 %s %s 0 1 0 %s 0z', self::n($cx - $r), self::n($cy), self::n($r), self::n($r), self::n(2 * $r), self::n($r), self::n($r), self::n(-2 * $r));

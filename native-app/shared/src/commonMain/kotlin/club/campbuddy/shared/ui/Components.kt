@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -38,6 +39,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.model.BannerConfig
 
@@ -68,13 +70,14 @@ private val ICON_PATHS: Map<String, String> = WEBSITE_ICON_PATHS + mapOf(
     "clock" to "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2",
     "columns" to "M4 5h16v14H4zM12 5v14",
     "users" to "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3 20a6 6 0 0 1 12 0M16 11a2.5 2.5 0 1 0 0-5M17 14a5 5 0 0 1 4 6",
+    "refresh" to "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5",
     "lock" to "M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3",
 )
 
 @Composable
 fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = false) {
     val path = ICON_PATHS[name] ?: ICON_PATHS.getValue("star")
-    Canvas(Modifier.size(size)) {
+    Canvas(Modifier.requiredSize(size)) {
         val scale = this.size.width / 24f
         val parsed = PathParser().parsePathString(path).toPath()
         drawContext.canvas.save()
@@ -85,28 +88,31 @@ fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = fals
     }
 }
 
+/** The website's button: 50 high, 4px corners, 16 bold (the compact one, [ActionButton], is 44 high and 14). */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val brand = LocalBrand.current
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.heightIn(min = 48.dp),
-        shape = RoundedCornerShape(brand.radius.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = brand.primary, contentColor = Color.White),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = Color.White)) }
+    val shape = RoundedCornerShape(4.dp)
+    Box(
+        modifier.heightIn(min = 50.dp)
+            .background(if (enabled) brand.primary else brand.primary.copy(alpha = 0.4f), shape)
+            .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) { Text(text, style = MaterialTheme.typography.titleMedium.copy(color = Color.White), textAlign = TextAlign.Center) }
 }
 
 @Composable
 fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
-    OutlinedButton(
-        onClick = onClick,
-        modifier = modifier.heightIn(min = 48.dp),
-        shape = RoundedCornerShape(brand.radius.dp),
-        border = BorderStroke(1.dp, brand.line),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = brand.ink),
-    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink)) }
+    val shape = RoundedCornerShape(4.dp)
+    Box(
+        modifier.heightIn(min = 50.dp)
+            .border(1.dp, brand.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) { Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink), textAlign = TextAlign.Center) }
 }
 
 @Composable
@@ -115,7 +121,7 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
     val shape = RoundedCornerShape(brand.radius.dp)
     val base = modifier
         .fillMaxWidth()
-        .shadow(2.dp, shape, clip = false, ambientColor = brand.ink.copy(alpha = 0.12f), spotColor = brand.ink.copy(alpha = 0.12f))
+        .shadow(3.dp, shape, clip = false, ambientColor = brand.primary.copy(alpha = 0.10f), spotColor = brand.primary.copy(alpha = 0.10f))
         .background(brand.surface, shape)
         .border(1.dp, brand.line, shape)
         .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
@@ -125,7 +131,7 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
 
 @Composable
 fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+    Text(text, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
 }
 
 @Composable
@@ -196,7 +202,7 @@ fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit
 /** A text button whose words are the brand colour (the default fades into the dialog). */
 @Composable
 fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    TextButton(onClick = onClick, modifier = modifier.heightIn(min = 48.dp)) {
+    TextButton(onClick = onClick, modifier = modifier.heightIn(min = 44.dp)) {
         Text(text, style = MaterialTheme.typography.labelLarge.copy(color = LocalBrand.current.primary))
     }
 }
@@ -207,16 +213,16 @@ fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.heightIn(min = 48.dp)
+        Modifier.heightIn(min = 44.dp)
             .background(if (selected) brand.accent else brand.surface, shape)
             .border(1.dp, if (selected) brand.accent else brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { this.selected = selected }
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
-        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+        if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
+        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
     }
 }

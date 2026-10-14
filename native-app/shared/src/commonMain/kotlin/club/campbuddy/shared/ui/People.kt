@@ -190,10 +190,10 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
         } else if (mine == null) {
             Card {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Find people who match your interests", style = MaterialTheme.typography.titleLarge)
+                    Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium)
                     Text(
                         "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",
-                        style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
                     )
                     PrimaryButton("Join attendee discovery", { joining = true }, Modifier.fillMaxWidth().padding(top = 4.dp))
                 }
@@ -262,8 +262,8 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
             }
         }
 
-        Text("Who's attending", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 8.dp))
-        Text("From the event's own Attendees page", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+        Text("Who's attending", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp))
+        Text("From the event's own Attendees page", style = MaterialTheme.typography.bodySmall)
     }
 
     if (confirmLeave) {

@@ -4,7 +4,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -125,7 +127,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Segment("Full schedule", selected = !mine) { mine = false }
-                Segment("My schedule (${savedIds.size})", selected = mine) { mine = true }
+                Segment("My schedule", selected = mine) { mine = true }
             }
         }
         item { SearchField(query) { query = it } }
@@ -150,16 +152,19 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         byDay.forEach { (day, list) ->
             item(key = "day-$day") {
                 Card {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column {
                         Text(
                             (day?.let { fullDayLabel(it) } ?: "Time to be announced").uppercase(),
-                            style = MaterialTheme.typography.labelLarge.copy(color = brand.muted, letterSpacing = 1.sp),
+                            style = MaterialTheme.typography.labelLarge.copy(color = brand.muted, letterSpacing = 0.84.sp),
+                            modifier = Modifier.padding(bottom = 8.dp),
                         )
-                        list.sortedBy { EventClock.startOf(it) }.forEach { session ->
+                        val ordered = list.sortedBy { EventClock.startOf(it) }
+                        ordered.forEachIndexed { i, session ->
                             SessionRow(
                                 session, zone, now,
                                 speakers = session.speakerIds.mapNotNull { speakerNames[it] },
                                 saved = session.id in savedIds,
+                                last = i == ordered.lastIndex,
                                 onStar = { star(session) },
                             )
                         }
@@ -182,13 +187,12 @@ private fun fullDayLabel(date: kotlinx.datetime.LocalDate): String {
 @Composable
 private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
     Box(
-        Modifier.heightIn(min = 48.dp)
-            .background(if (selected) brand.peach else Color.Transparent, shape)
-            .border(1.dp, if (selected) brand.peach else brand.line, shape)
+        Modifier.heightIn(min = 44.dp)
+            .background(if (selected) brand.peach else Color.Transparent, RoundedCornerShape(4.dp))
+            .border(1.dp, if (selected) Color.Transparent else brand.line, RoundedCornerShape(4.dp))
             .clickable(role = Role.Tab, onClick = onClick)
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) { Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink)) }
 }
@@ -196,9 +200,9 @@ private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 internal fun SearchField(value: String, hint: String = "Search sessions or speakers…", onChange: (String) -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(4.dp)
     Row(
-        Modifier.fillMaxWidth().heightIn(min = 52.dp).background(Color.White, shape).border(1.dp, brand.line, shape).padding(horizontal = 14.dp),
+        Modifier.fillMaxWidth().heightIn(min = 46.dp).background(Color.White, shape).border(1.dp, brand.line, shape).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -236,51 +240,51 @@ private fun DayPill(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: kotlinx.datetime.Instant, speakers: List<String>, saved: Boolean, onStar: () -> Unit) {
+private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: kotlinx.datetime.Instant, speakers: List<String>, saved: Boolean, last: Boolean, onStar: () -> Unit) {
     val brand = LocalBrand.current
     var open by remember { mutableStateOf(false) }
     val start = EventClock.startOf(session)
     val end = EventClock.endOf(session)
     val live = start != null && end != null && now >= start && now < end
-    val shape = RoundedCornerShape(brand.radius.dp)
     val hasMore = !session.description.isNullOrBlank()
+    val type = when (session.sessionType) { "session" -> "Talk"; "custom" -> "Activity"; null -> null; else -> session.sessionType.replaceFirstChar { it.uppercase() } }
 
-    Column(
-        Modifier.fillMaxWidth()
-            .background(if (live) brand.peach else Color.Transparent, shape)
-            .clickable(enabled = hasMore, role = Role.Button) { open = !open }
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+    Column(Modifier.fillMaxWidth().background(if (live) brand.peach else Color.Transparent)) {
+        Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
             Text(
                 start?.let { EventClock.time(it, zone) } ?: "TBA",
-                style = MaterialTheme.typography.labelMedium.copy(color = brand.muted),
-                modifier = Modifier.padding(top = 4.dp).width(64.dp),
+                style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(top = 2.dp).width(64.dp),
             )
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(session.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Normal), modifier = Modifier.weight(1f, fill = false))
-                    if (hasMore) Box(Modifier.padding(top = 6.dp)) { LineIcon("chevron", brand.muted, size = 16.dp) }
+            Column(Modifier.weight(1f)) {
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 21.dp).clickable(enabled = hasMore, role = Role.Button) { open = !open },
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        session.title,
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 20.8.sp, textDecoration = TextDecoration.Underline),
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (hasMore) LineIcon("chevron-down", brand.muted, size = 14.dp)
                 }
-                if (speakers.isNotEmpty()) Text(speakers.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                val tags = listOfNotNull(session.trackNames.firstOrNull(), session.sessionType).joinToString(" · ").uppercase()
+                if (speakers.isNotEmpty()) Text(speakers.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp))
+                val tags = listOfNotNull(session.trackNames.firstOrNull(), type).joinToString(" · ").uppercase()
                 if (live || tags.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
-                        if (tags.isNotEmpty()) Text(tags, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
+                    Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                        if (tags.isNotEmpty()) Text(tags, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp, fontWeight = FontWeight.SemiBold))
                     }
                 }
+                if (open && hasMore) Text(session.description.orEmpty(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
             }
             Box(
-                Modifier.size(48.dp).clickable(role = Role.Button, onClick = onStar)
+                Modifier.size(44.dp).clickable(role = Role.Button, onClick = onStar)
                     .semantics { contentDescription = if (saved) "Remove from My Day" else "Save to My Day"; role = Role.Button },
                 contentAlignment = Alignment.Center,
-            ) { LineIcon("star", if (saved) brand.accent else brand.muted, size = 28.dp, filled = saved) }
+            ) { LineIcon("star", if (saved) brand.accent else brand.muted, size = 22.dp, filled = saved) }
         }
-        if (open && hasMore) {
-            Text(session.description.orEmpty(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(start = 76.dp, top = 4.dp))
-        }
+        if (!last) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
     }
 }
 

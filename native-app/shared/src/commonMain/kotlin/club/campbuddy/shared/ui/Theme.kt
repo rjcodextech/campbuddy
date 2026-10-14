@@ -86,15 +86,17 @@ fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
     )
     val shape = RoundedCornerShape(brand.radius.dp)
     val family = interFamily()
+    // The website's own sizes (measured on the live site): section/page title 16.8 w800, card title 18 w700,
+    // body 16 / 14, small 13.12, badge 12 w700. Buttons are 16 w700 (compact 14 w700).
     val typography = Typography(
-        headlineSmall = style(family, 24, FontWeight.Bold, 30, brand.ink),
-        titleLarge = style(family, 20, FontWeight.Bold, 26, brand.ink),
-        titleMedium = style(family, 17, FontWeight.SemiBold, 24, brand.ink),
+        headlineSmall = style(family, 17, FontWeight.ExtraBold, 22, brand.ink).copy(fontSize = 16.8.sp, lineHeight = 21.84.sp, letterSpacing = (-0.336).sp),
+        titleLarge = style(family, 18, FontWeight.Bold, 24, brand.ink).copy(letterSpacing = (-0.36).sp),
+        titleMedium = style(family, 16, FontWeight.Bold, 24, brand.ink),
         bodyLarge = style(family, 16, FontWeight.Normal, 24, brand.ink),
         bodyMedium = style(family, 14, FontWeight.Normal, 21, brand.ink),
-        bodySmall = style(family, 12, FontWeight.Normal, 18, brand.muted),
-        labelLarge = style(family, 15, FontWeight.SemiBold, 20, Color.Unspecified),
-        labelMedium = style(family, 12, FontWeight.SemiBold, 16, brand.muted),
+        bodySmall = style(family, 13, FontWeight.Normal, 20, brand.muted).copy(fontSize = 13.12.sp, lineHeight = 19.68.sp),
+        labelLarge = style(family, 14, FontWeight.Bold, 21, Color.Unspecified),
+        labelMedium = style(family, 12, FontWeight.Bold, 18, brand.muted),
     )
 
     CompositionLocalProvider(LocalWords provides words, LocalBrand provides brand) {

@@ -27,6 +27,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -39,6 +40,8 @@ import campbuddy_native.shared.generated.resources.app_icon
 import campbuddy_native.shared.generated.resources.wordmark
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -92,7 +95,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
     PlatformBackHandler(enabled = true, onBack = onBack)
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        TopBar(onGuide = { guide = true }, onRefresh = { eventLoader.reload(); sessionsLoader.reload() })
+        TopBar(onGuide = { guide = true }, onRefresh = { eventLoader.reload(); sessionsLoader.reload() }, onBack = if (env.deps.platform == "ios") onBack else null)
         if (selected == "home" || selected == "my-day") RunningLate(slug)
         Box(Modifier.weight(1f)) {
             when (val e = event) {
@@ -115,17 +118,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
             }
         }
 
-        NavigationBar(containerColor = brand.surface, modifier = Modifier.navigationBarsPadding()) {
-            tabs.forEach { tab ->
-                NavigationBarItem(
-                    selected = tab.key == selected,
-                    onClick = { selected = tab.key },
-                    icon = { TabIcon(tab.key, tab.icon, tab.key == selected) },
-                    label = { Text(words(tab.title), style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp), maxLines = 1, softWrap = false) },
-                    colors = NavigationBarItemDefaults.colors(indicatorColor = brand.peach, selectedTextColor = brand.primary, unselectedTextColor = brand.muted),
-                )
-            }
-        }
+        BottomBar(tabs, selected) { selected = it }
     }
 }
 
@@ -152,39 +145,127 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
     val profile = env.user.profile
     val saved = env.user.bookmarks(event.slug)
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
         if (offline) item { OfflineNote() }
 
         val sections = words.config.enabledSections().filter { visible(it, phase, profile.firstWordCamp, saved.isNotEmpty()) }
         items(sections.size) { index ->
             val section = sections[index]
             when (section.type) {
-                "hero" -> HeroCard(event, phase, zone, now, sessions, onBack)
+                "hero" -> HeroCard(event, phase, zone, now, sessions)
                 "starting_soon" -> StartingSoon(sessions, saved.map { it.sessionId }.toSet(), now, zone)
-                "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event)
-                "up_next" -> UpNext(section, phase, sessions, now, zone) { onTab("my-day") }
-                "start_here" -> {
-                    SectionTitle(section.title?.let(words::invoke) ?: "New to WordCamp? Start here")
-                    Card(onClick = onGuide) {
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text("How the day runs, the words you will hear, and how to meet people. A 5-minute read.", style = MaterialTheme.typography.bodyMedium)
-                            Text("Read the guide →", style = MaterialTheme.typography.labelMedium.copy(color = LocalBrand.current.primary))
-                        }
-                    }
-                }
-                "suggested_action" -> {
-                    SectionTitle(section.title?.let(words::invoke) ?: "One thing to try")
-                    Card(onClick = { onTab(if (saved.size < 3) "my-day" else "quest") }) {
-                        Text(if (saved.size < 3) "Save 3 sessions you would enjoy." else "Tick off a quest.", style = MaterialTheme.typography.bodyLarge)
-                    }
-                }
-                "people_cta" -> {
-                    SectionTitle(section.title?.let(words::invoke) ?: "Meet people")
-                    Card(onClick = { onTab("explore") }) { Text("See who is attending and find people to meet.", style = MaterialTheme.typography.bodyLarge) }
-                }
-                "progress" -> Progress(section, event.slug)
+                "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event, onTab)
+                "up_next" -> UpNext(section, phase, sessions, now, zone, onSchedule = { onTab("my-day") })
+                "start_here" -> StartHere(section.title?.let(words::invoke) ?: "New to WordCamp? Start here", onGuide)
+                "suggested_action" -> SuggestedAction(section.title?.let(words::invoke) ?: "One thing to try", event.slug, saved.size, onTab)
+                "people_cta" -> PeoplePrompt { onTab("explore") }
+                "progress" -> Progress(section, event.slug, saved.size)
                 else -> Unit // blocks the app does not draw yet are skipped, never an error
             }
+        }
+    }
+}
+
+/** A section's heading line: the title, and a small link on the right. */
+@Composable
+private fun SectionHead(title: String, link: String? = null, onLink: () -> Unit = {}, desc: String? = null) {
+    val brand = LocalBrand.current
+    Column(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.headlineSmall)
+            if (link != null) Text(link, style = MaterialTheme.typography.bodySmall.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.clickable(role = Role.Button, onClick = onLink).padding(vertical = 8.dp))
+        }
+        desc?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+    }
+}
+
+/** The "now" look: peach with a brand-coloured border. */
+@Composable
+private fun NowCard(content: @Composable () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(brand.radius.dp)
+    Column(Modifier.fillMaxWidth().background(brand.peach, shape).border(1.dp, brand.primary, shape).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
+}
+
+/** "→ a line of guidance" the way the website writes it. */
+@Composable
+private fun Guidance(text: String) {
+    val brand = LocalBrand.current
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+        Text(text, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun LinkBullet(text: String, onClick: () -> Unit) {
+    val brand = LocalBrand.current
+    Row(Modifier.padding(start = 4.dp, top = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text("•", style = MaterialTheme.typography.bodyMedium)
+        Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline), modifier = Modifier.clickable(role = Role.Button, onClick = onClick))
+    }
+}
+
+@Composable
+private fun StartHere(title: String, onGuide: () -> Unit) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(brand.radius.dp)
+    Row(
+        Modifier.padding(top = 20.dp).fillMaxWidth().border(1.dp, brand.accent, shape).clickable(role = Role.Button, onClick = onGuide).padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(64.dp)) {
+            Box(Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFFFBEFD9)), contentAlignment = Alignment.Center) {
+                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(52.dp))
+            }
+            Text(
+                "101", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontSize = 11.sp),
+                modifier = Modifier.align(Alignment.BottomEnd).background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 1.dp),
+            )
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
+            Text("How the day runs, the words you'll hear, and how to meet people. A 5-minute read.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            Text("Read the guide →", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 4.dp))
+        }
+    }
+}
+
+@Composable
+private fun SuggestedAction(title: String, slug: String, savedCount: Int, onTab: (String) -> Unit) {
+    val env = LocalEnv.current
+    val brand = LocalBrand.current
+    val loader = rememberLoader("quests:$slug") { env.repository.quests(slug) }
+    val quests = (loader.state.value as? LoadState.Ready)?.value.orEmpty()
+    val done = env.user.completedQuests(slug)
+    val next = quests.firstOrNull { it.id !in done }
+
+    Column {
+        SectionHead(title, "All quests →", { onTab("quest") })
+        Card(onClick = { onTab(if (next != null) "quest" else "my-day") }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(22.dp).border(2.dp, brand.primary, CircleShape))
+                Text(
+                    next?.title ?: if (savedCount < 3) "Save 3 sessions you'd enjoy" else "You've done them all. Nice.",
+                    style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PeoplePrompt(onJoin: () -> Unit) {
+    val brand = LocalBrand.current
+    Card(Modifier.padding(top = 20.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Box(Modifier.size(width = 64.dp, height = 48.dp), contentAlignment = Alignment.CenterStart) { LineIcon("users", brand.primary, size = 40.dp) }
+            Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp))
+            Text(
+                "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",
+                style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(bottom = 8.dp),
+            )
+            PrimaryButton("Join attendee discovery", onJoin, Modifier.fillMaxWidth())
         }
     }
 }
@@ -201,26 +282,21 @@ private fun visible(section: SectionConfig, phase: Phase, firstWordCamp: String?
 }
 
 @Composable
-private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>, onBack: () -> Unit) {
+private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
     Card {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier.size(88.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    RemoteImage(event.logo, Modifier.size(72.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(64.dp)) }
-                }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
-                    Text(event.name, style = MaterialTheme.typography.headlineSmall)
-                    datesText(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.size(104.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
+                contentAlignment = Alignment.Center,
+            ) { RemoteImage(event.logo, Modifier.size(96.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(72.dp)) } }
+            Column(Modifier.weight(1f)) {
+                Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
+                Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
+                datesText(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
+                Box(Modifier.padding(top = 8.dp)) { StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During) }
             }
-            StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During)
-            LinkButton("All WordCamps", onBack)
         }
     }
 }
@@ -230,12 +306,12 @@ private fun StatusPill(text: String, live: Boolean) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.background(brand.background, shape).border(1.dp, brand.line, shape).padding(horizontal = 12.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Modifier.background(brand.background, shape).border(1.dp, brand.line, shape).padding(horizontal = 8.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(Modifier.size(10.dp).background(if (live) brand.success else brand.muted, CircleShape))
-        Text(text, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+        if (live) Box(Modifier.size(8.dp).background(brand.success, CircleShape))
+        Text(text, style = MaterialTheme.typography.labelMedium.copy(color = brand.ink))
     }
 }
 
@@ -269,7 +345,7 @@ private fun StartingSoon(sessions: List<Session>, savedIds: Set<Long>, now: Inst
         s.id in savedIds && start > now && (start.epochSeconds - now.epochSeconds) <= 15 * 60
     } ?: return
 
-    Card {
+    Card(Modifier.padding(top = 20.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text("Starting soon", style = MaterialTheme.typography.labelMedium)
             Text(soon.title, style = MaterialTheme.typography.titleMedium)
@@ -279,35 +355,34 @@ private fun StartingSoon(sessions: List<Session>, savedIds: Set<Long>, now: Inst
 }
 
 @Composable
-private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, event: EventDetail) {
+private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, event: EventDetail, onTab: (String) -> Unit) {
     val words = LocalWords.current
     val brand = LocalBrand.current
     val env = LocalEnv.current
     val current = EventClock.current(sessions, now)
     val guide = rememberLoader("guide:${event.slug}") { env.repository.guide(event.slug) }.state.value as? LoadState.Ready
-    val shape = RoundedCornerShape(brand.radius.dp)
 
-    SectionTitle(section.title?.let(words::invoke) ?: "Happening now")
+    SectionHead(section.title?.let(words::invoke) ?: "Happening now")
     if (phase != Phase.During || current.isEmpty()) {
-        Card {
-            when {
-                phase == Phase.After -> Text("That is a wrap. Thanks for coming!", style = MaterialTheme.typography.bodyLarge)
-                phase == Phase.Before -> Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.bodyLarge)
-                else -> Text("Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth.", style = MaterialTheme.typography.bodyMedium)
+        when {
+            phase == Phase.After -> Card { Text("That is a wrap. Thanks for coming!", style = MaterialTheme.typography.titleMedium) }
+            phase == Phase.Before -> NowCard {
+                Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.titleMedium)
+                Guidance("A few minutes now makes the day much easier:")
+                LinkBullet("Save 3 sessions you'd enjoy") { onTab("my-day") }
+                LinkBullet("Tick off the \"get ready\" checklist") { onTab("quest") }
             }
+            else -> Card { Text("Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth.", style = MaterialTheme.typography.bodyMedium) }
         }
         return
     }
 
     val moment = current.firstNotNullOfOrNull { s -> guide?.value?.moments?.firstOrNull { m -> m.match.any { s.title.contains(it, ignoreCase = true) } } }
-    Column(
-        Modifier.fillMaxWidth().background(brand.peach, shape).border(1.5.dp, brand.primary, shape).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
+    NowCard {
         Text(
             "NOW",
-            style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-            modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelMedium.copy(color = Color.White, letterSpacing = 0.72.sp),
+            modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 3.dp),
         )
         current.forEachIndexed { i, session ->
             if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.primary.copy(alpha = 0.25f)))
@@ -315,30 +390,40 @@ private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Se
                 Text(session.title, style = MaterialTheme.typography.titleMedium)
                 val end = EventClock.endOf(session)
                 val meta = listOfNotNull(session.trackNames.firstOrNull(), end?.let { "until ${EventClock.time(it, zone)}" }).joinToString(" · ")
-                if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodySmall)
             }
         }
-        moment?.takeIf { it.now.isNotBlank() }?.let {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("→", style = MaterialTheme.typography.bodyLarge.copy(color = brand.primary))
-                Text(it.now, style = MaterialTheme.typography.bodyLarge)
-            }
-        }
+        moment?.takeIf { it.now.isNotBlank() }?.let { Guidance(it.now) }
     }
 }
 
 @Composable
 private fun UpNext(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, onSchedule: () -> Unit) {
     val words = LocalWords.current
+    val brand = LocalBrand.current
     if (phase == Phase.After) return
-    val next = EventClock.upNext(sessions, now) ?: return
-    val start = EventClock.startOf(next) ?: return
+    val next = EventClock.upNext(sessions, now)
+    val start = next?.let { EventClock.startOf(it) }
+
+    if (next == null || start == null) {
+        // Sessions announced but no times yet: say so, and point at the list (the website does the same).
+        if (sessions.isEmpty() || sessions.any { EventClock.startOf(it) != null }) return
+        SectionHead(section.title?.let(words::invoke) ?: "Up next", "Full schedule →", onSchedule)
+        Card {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("${sessions.size} sessions announced, times still to come", style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                    Text("Browse them now and star the ones you'd enjoy: ", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f, fill = false))
+                }
+                Text("see the sessions.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.clickable(role = Role.Button, onClick = onSchedule))
+            }
+        }
+        return
+    }
     val alternatives = EventClock.alternatives(sessions, next).size
 
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-        SectionTitle(section.title?.let(words::invoke) ?: "Up next")
-        LinkButton("Full schedule →", onSchedule)
-    }
+    SectionHead(section.title?.let(words::invoke) ?: "Up next", "Full schedule →", onSchedule)
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(next.title, style = MaterialTheme.typography.titleMedium)
@@ -360,9 +445,9 @@ private fun SessionLine(session: Session, zone: TimeZone) {
     }
 }
 
-/** Quests done out of all of this event's quests (the count the website shows). */
+/** Quests done out of all of this event's quests, and saved sessions (the line the website shows). */
 @Composable
-private fun Progress(section: SectionConfig, slug: String) {
+private fun Progress(section: SectionConfig, slug: String, savedCount: Int) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
@@ -372,11 +457,10 @@ private fun Progress(section: SectionConfig, slug: String) {
     if (total == 0) return
     val done = env.user.completedQuests(slug).count { id -> ready.value.any { it.id == id } }
 
-    SectionTitle(section.title?.let(words::invoke) ?: "Your progress")
-    Card {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("$done of $total quests done", style = MaterialTheme.typography.bodyMedium)
-            LinearProgressIndicator(progress = { done.toFloat() / total }, color = brand.accent, trackColor = brand.line, modifier = Modifier.fillMaxWidth())
+    Column {
+        SectionHead(section.title?.let(words::invoke) ?: "Your progress", desc = "$done/$total quests · $savedCount saved sessions")
+        Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
+            Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
         }
     }
 }
@@ -395,37 +479,41 @@ private fun TabIcon(key: String, icon: String, selected: Boolean) {
         else -> null
     }
     if (art != null) {
-        Image(painterResource(art), contentDescription = null, modifier = Modifier.size(28.dp))
+        Image(painterResource(art), contentDescription = null, modifier = Modifier.size(20.dp))
     } else {
         LineIcon(icon, if (selected) brand.primary else brand.muted)
     }
 }
 
-/** The website's header: the CampBuddy wordmark, the guide and a refresh. */
+/** The website's header: the CampBuddy wordmark, the guide and a refresh (32dp peach circles). */
 @Composable
-private fun TopBar(onGuide: () -> Unit, onRefresh: () -> Unit) {
+private fun TopBar(onGuide: () -> Unit, onRefresh: () -> Unit, onBack: (() -> Unit)? = null) {
     val brand = LocalBrand.current
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // iOS has no back button of its own, so the events list is one tap away.
+            onBack?.let { RoundTool("chevron-left", "All WordCamps", it) }
+            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(32.dp))
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            RoundTool("?", "Guide", onGuide)
-            RoundTool("↻", "Refresh", onRefresh)
+            RoundTool("help-circle", "Guide", onGuide)
+            RoundTool("refresh", "Refresh", onRefresh)
         }
     }
     Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
 }
 
 @Composable
-private fun RoundTool(glyph: String, label: String, onClick: () -> Unit) {
+private fun RoundTool(icon: String, label: String, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    Box(
-        Modifier.size(44.dp).background(brand.peach, CircleShape).clickable(role = Role.Button, onClickLabel = label, onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) { Text(glyph, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink)) }
+    // 32dp to look like the website's, with the touch area kept to 44dp around it.
+    Box(Modifier.size(44.dp).clickable(role = Role.Button, onClickLabel = label, onClick = onClick), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(32.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.ink, size = 16.dp) }
+    }
 }
 
 /** The website's "Running late" notice: shown while organizers have moved the schedule; the times already include it. */
@@ -451,6 +539,36 @@ private fun RunningLate(slug: String) {
                 Text("Running late", style = MaterialTheme.typography.titleLarge)
                 active.forEach { Text(it.text.orEmpty(), style = MaterialTheme.typography.bodyLarge) }
                 Text("The times in CampBuddy already include this.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            }
+        }
+    }
+}
+
+/** The website's bottom bar: 64 high, a thin line on top, each tab an icon in a 48x26 pill (peach when open) over a small label. */
+@Composable
+private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selected: String, onSelect: (String) -> Unit) {
+    val brand = LocalBrand.current
+    val words = LocalWords.current
+    Column(Modifier.fillMaxWidth().background(brand.surface).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+        Row(Modifier.fillMaxWidth().height(64.dp)) {
+            tabs.forEach { tab ->
+                val on = tab.key == selected
+                Column(
+                    Modifier.weight(1f).fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(tab.key) }),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Box(
+                        Modifier.size(width = 48.dp, height = 26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)),
+                        contentAlignment = Alignment.Center,
+                    ) { TabIcon(tab.key, tab.icon, on) }
+                    Text(
+                        words(tab.title),
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.4.sp, lineHeight = 11.5.sp, color = if (on) brand.primary else brand.muted),
+                        maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp),
+                    )
+                }
             }
         }
     }

@@ -92,7 +92,7 @@ fun PickerScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(words("picker.kicker").uppercase(), style = MaterialTheme.typography.labelLarge.copy(color = brand.primary, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold))
-                    Text(words("picker.title"), style = MaterialTheme.typography.headlineSmall.copy(fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.ExtraBold))
+                    Text(words("picker.title"), style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, lineHeight = 32.2.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.28).sp))
                     Text(words("picker.lead"), style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("picker.free", "picker.no_signup", "picker.works_offline").forEach { key ->
