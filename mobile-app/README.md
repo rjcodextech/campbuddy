@@ -6,10 +6,9 @@ Planning docs + `app/` (Capacitor shell, branch `app`; last sync: **13 Oct 2026*
 
 | Folder | Kya hai |
 |---|---|
-| [00-web-today/](00-web-today/README.md) | Web app mein abhi kya-kya live/ready hai (app ko isi par baithna hai) |
-| [01-ga-report/](01-ga-report/README.md) | GA report (26 Sep – 5 Oct) se seekh, P0/P1/P2 improvements, GA setup |
 | [02-hybrid-app/](02-hybrid-app/README.md) | Android + iOS hybrid app (Capacitor) ka plan, 13 chhoti files (ek code, offline, speed, industry standards bhi) |
-| [03-p0-packages/](03-p0-packages/README.md) | P0 packages A (iPhone reminder card) aur B (QR kit) — ho chuke |
+
+Purane planning folders (00-web-today, 01-ga-report, 03-p0-packages) aur mockups ab `E:\Sites\InHouse\campbuddyackup6-10-14-cleanup\` mein hain.
 
 ## Ek line mein status
 
