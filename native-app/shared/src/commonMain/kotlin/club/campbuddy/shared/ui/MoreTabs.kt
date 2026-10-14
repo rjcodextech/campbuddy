@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.draw.drawWithContent
@@ -23,6 +24,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.horizontalScroll
 import org.jetbrains.compose.resources.painterResource
 import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.art_avatar
+import campbuddy_native.shared.generated.resources.art_first_badge
 import campbuddy_native.shared.generated.resources.Res
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyRow
@@ -491,7 +494,7 @@ private fun PeopleList(slug: String) {
                             shown.take(300).forEachIndexed { index, person ->
                                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Box(Modifier.size(44.dp).clip(CircleShape).background(brand.peach).border(2.dp, brand.peach, CircleShape), contentAlignment = Alignment.Center) {
-                                        RemoteImage(person.avatarUrl, Modifier.size(44.dp)) { Text(person.name.take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primary)) }
+                                        RemoteImage(person.avatarUrl, Modifier.size(44.dp)) { Image(painterResource(Res.drawable.art_avatar), contentDescription = null, modifier = Modifier.size(44.dp)) }
                                     }
                                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                         Text(person.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
@@ -910,11 +913,16 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
                         Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp).clip(CircleShape))
                         Text("WORDCAMP 101", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
                     }
-                    Text(
-                        "New to ${tag ?: "WordCamp"}? Start here.",
-                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold),
-                    )
-                    Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFF1DFD2)))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                            Text(
+                                "New to ${tag ?: "WordCamp"}? Start here.",
+                                style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold),
+                            )
+                            Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFF1DFD2)))
+                        }
+                        Image(painterResource(Res.drawable.art_first_badge), contentDescription = null, modifier = Modifier.width(96.dp).padding(start = 8.dp))
+                    }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf("clock" to "5-minute read", "wifi" to "Works offline").forEach { (icon, label) ->
                             Row(

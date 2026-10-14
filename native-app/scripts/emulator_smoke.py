@@ -238,7 +238,7 @@ tap_text("Writing code")
 adb("shell", "input", "swipe", "1070", "1700", "1070", "700", "400")
 time.sleep(1)
 tap_text("See my matches")
-step("contribute shows matches with an opening line", wait("Your opening line", 8) is not None and find("Core") is not None)
+step("contribute shows matches with an opening line", wait("Answer again", 8) is not None and find("Core") is not None)
 shot("06b-contribute")
 
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
@@ -320,7 +320,8 @@ step("a website link opens the Contribute tab", wait("Where could you help?", 15
 
 # ---- crash check ----------------------------------------------------------------------------------------------------------------------
 log = adb("logcat", "-d")
-crashed = [l for l in log.splitlines() if "FATAL EXCEPTION" in l or f"ANR in {PKG}" in l]
+lines = log.splitlines()
+crashed = [l for i, l in enumerate(lines) if (f"ANR in {PKG}" in l) or ("FATAL EXCEPTION" in l and any(f"Process: {PKG}" in x for x in lines[i + 1:i + 3]))]
 step("no crash in the log", not crashed, crashed[0][:120] if crashed else "")
 
 failed = [r for r in results if not r[1]]

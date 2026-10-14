@@ -1,6 +1,10 @@
 package club.campbuddy.shared.ui
 
 import androidx.compose.foundation.background
+import org.jetbrains.compose.resources.painterResource
+import campbuddy_native.shared.generated.resources.art_people
+import campbuddy_native.shared.generated.resources.Res
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -190,6 +194,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
         } else if (mine == null) {
             Card {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Image(painterResource(Res.drawable.art_people), contentDescription = null, modifier = Modifier.size(width = 64.dp, height = 48.dp))
                     Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium)
                     Text(
                         "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",

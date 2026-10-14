@@ -107,6 +107,10 @@ class NativeKotlinSyncTest extends TestCase
             $this->assertSame(md5_file(public_path("media/{$name}.svg")), $recorded[$name] ?? null, "The website's {$name}.svg changed: run python native-app/scripts/sync-web-assets.py");
             $this->assertFileExists(base_path('native-app/shared/src/commonMain/composeResources/drawable/nav_'.str_replace('-', '_', $name).'.png'));
         }
+        foreach (['people' => 'art_people', 'first-badge' => 'art_first_badge', 'avatar' => 'art_avatar'] as $name => $file) {
+            $this->assertSame(md5_file(public_path("media/illustrations/{$name}.svg")), $recorded["illustrations/{$name}"] ?? null, "illustrations/{$name}.svg changed: run python native-app/scripts/sync-web-assets.py");
+            $this->assertFileExists(base_path("native-app/shared/src/commonMain/composeResources/drawable/{$file}.png"));
+        }
     }
 
     public function test_the_apps_copy_of_the_website_icons_is_current(): void

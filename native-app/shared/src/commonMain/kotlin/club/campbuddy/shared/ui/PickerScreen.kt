@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import kotlinx.datetime.TimeZone
+import androidx.compose.runtime.saveable.rememberSaveable
 import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch
 import campbuddy_native.shared.generated.resources.wordmark
@@ -71,6 +73,8 @@ fun PickerScreen(
     val loader = rememberLoader("events") { repository.events() }
     val state by loader.state
     val events = (state as? LoadState.Ready)?.value.orEmpty()
+    var picked by rememberSaveable { mutableStateOf<String?>(null) }
+    var shownCount by rememberSaveable { mutableStateOf(5) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
@@ -128,7 +132,25 @@ fun PickerScreen(
                 is LoadState.Ready -> {
                     if (s.fromCache) item { OfflineNote() }
                     if (s.value.isEmpty()) item { Text(words("picker.empty"), style = MaterialTheme.typography.bodyMedium) }
-                    items(s.value, key = { it.slug }) { event -> EventRow(event, words("picker.open_event")) { onOpen(event) } }
+                    val countries = s.value.mapNotNull { it.country }.distinct().sortedBy { countryName(it) }
+                    // Start on the phone's own country when a WordCamp is there (found from the time zone), else on everything.
+                    val mine = s.value.firstOrNull { it.country != null && it.timezone == TimeZone.currentSystemDefault().id }?.country
+                    val chosen = picked ?: mine ?: "all"
+                    val inCountry = if (chosen == "all") s.value else s.value.filter { it.country == chosen }
+                    if (countries.size > 1) {
+                        item { CountryFilter(countries, s.value, chosen, onPick = { picked = it; shownCount = 5 }) }
+                        item {
+                            Text(
+                                if (chosen == "all") "Showing ${minOf(shownCount, inCountry.size)} of ${inCountry.size} WordCamps"
+                                else "Showing ${minOf(shownCount, inCountry.size)} of ${inCountry.size} WordCamps in ${countryName(chosen)}",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                    }
+                    items(inCountry.take(shownCount), key = { it.slug }) { event -> EventRow(event, words("picker.open_event")) { onOpen(event) } }
+                    if (inCountry.size > shownCount) {
+                        item { QuietButton("Load ${minOf(5, inCountry.size - shownCount)} more", { shownCount += 5 }, Modifier.fillMaxWidth()) }
+                    }
                 }
             }
 
@@ -190,14 +212,14 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 datesText(event.startsOn, event.endsOn)?.let {
-                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 1.sp, fontWeight = FontWeight.Bold))
+                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.67.sp, fontSize = 11.2.sp))
                 }
-                Text(event.name, style = MaterialTheme.typography.titleLarge)
+                Text(event.name, style = MaterialTheme.typography.titleMedium)
                 if (event.completed) Text("Completed", style = MaterialTheme.typography.labelMedium)
             }
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-        Text(openLabel, style = MaterialTheme.typography.titleMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.padding(20.dp))
+        Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = brand.primary), modifier = Modifier.padding(16.dp))
     }
 }
 
@@ -207,3 +229,51 @@ internal fun datesText(starts: String?, ends: String?): String? {
 
     return if (b == null || b == a) EventClock.dayLabel(a) + " " + a.year else EventClock.dayLabel(a) + " – " + EventClock.dayLabel(b) + " " + b.year
 }
+
+/** The website's country filter: a dropdown pill (with counts) and, when filtered, a "Show all" pill. */
+@Composable
+private fun CountryFilter(countries: List<String>, events: List<EventCard>, chosen: String, onPick: (String) -> Unit) {
+    val brand = LocalBrand.current
+    var open by remember { mutableStateOf(false) }
+    val pill = RoundedCornerShape(50)
+    val label = if (chosen == "all") "All countries (${events.size})" else "${countryName(chosen)} (${events.count { it.country == chosen }})"
+
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box {
+            Row(
+                Modifier.heightIn(min = 44.dp).background(brand.surface, pill).border(1.dp, brand.primary, pill).clickable(role = Role.Button) { open = true }.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LineIcon("map-pin", brand.primary, size = 16.dp)
+                Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+                LineIcon("chevron-down", brand.ink, size = 16.dp)
+            }
+            androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                androidx.compose.material3.DropdownMenuItem(text = { Text("All countries (${events.size})") }, onClick = { open = false; onPick("all") })
+                countries.forEach { c ->
+                    androidx.compose.material3.DropdownMenuItem(text = { Text("${countryName(c)} (${events.count { it.country == c }})") }, onClick = { open = false; onPick(c) })
+                }
+            }
+        }
+        if (chosen != "all") {
+            Row(
+                Modifier.heightIn(min = 44.dp).border(1.dp, brand.line, pill).clickable(role = Role.Button) { onPick("all") }.padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LineIcon("x", brand.primary, size = 14.dp)
+                Text("Show all", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+            }
+        }
+    }
+}
+
+private val COUNTRY_NAMES = mapOf(
+    "IN" to "India", "US" to "United States", "GB" to "United Kingdom", "CA" to "Canada", "DE" to "Germany", "FR" to "France", "NL" to "Netherlands",
+    "ZA" to "South Africa", "PK" to "Pakistan", "BG" to "Bulgaria", "AU" to "Australia", "SG" to "Singapore", "JP" to "Japan", "AE" to "United Arab Emirates",
+    "ES" to "Spain", "IT" to "Italy", "BR" to "Brazil", "MX" to "Mexico", "NG" to "Nigeria", "KE" to "Kenya", "ID" to "Indonesia", "PH" to "Philippines",
+    "MY" to "Malaysia", "TH" to "Thailand", "LK" to "Sri Lanka", "NP" to "Nepal", "BD" to "Bangladesh", "PT" to "Portugal", "PL" to "Poland", "CH" to "Switzerland",
+    "SE" to "Sweden", "NO" to "Norway", "DK" to "Denmark", "FI" to "Finland", "IE" to "Ireland", "AT" to "Austria", "BE" to "Belgium", "GR" to "Greece",
+    "TR" to "Turkey", "EG" to "Egypt", "NZ" to "New Zealand", "KR" to "South Korea", "CN" to "China", "HK" to "Hong Kong", "AR" to "Argentina", "CO" to "Colombia", "CL" to "Chile",
+)
+
+private fun countryName(code: String): String = COUNTRY_NAMES[code] ?: code
