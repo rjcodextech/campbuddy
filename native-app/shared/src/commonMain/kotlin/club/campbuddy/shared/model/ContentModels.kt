@@ -64,6 +64,7 @@ data class RosterEntry(
     val links: List<RosterLink> = emptyList(),
     val roles: List<String> = emptyList(),
     val talks: List<String> = emptyList(),
+    @SerialName("camp_card") val campCard: kotlinx.serialization.json.JsonElement? = null,
 )
 
 @Serializable
@@ -72,7 +73,7 @@ data class RosterPage(val data: List<RosterEntry> = emptyList(), @SerialName("la
 // ---- the first-timer guide ----
 
 @Serializable
-data class GuideDay(val icon: String = "star", val title: String, val what: String, val tip: String = "")
+data class GuideDay(val icon: String = "star", val title: String, val what: String, val tip: String = "", val match: List<String> = emptyList(), val talk: Boolean = false)
 
 @Serializable
 data class GuideTerm(val term: String, val meaning: String)
@@ -85,7 +86,7 @@ data class GuideQuestion(val q: String, val a: String)
 
 /** What to do right now while a session of this kind is on (the same lines the website shows on Home). */
 @Serializable
-data class GuideMoment(val match: List<String> = emptyList(), val now: String = "")
+data class GuideMoment(val match: List<String> = emptyList(), val now: String = "", val key: Boolean = false, val talk: Boolean = false)
 
 @Serializable
 data class Guide(
@@ -95,7 +96,11 @@ data class Guide(
     val tips: List<GuideTip> = emptyList(),
     val bring: List<String> = emptyList(),
     val faq: List<GuideQuestion> = emptyList(),
+    val students: GuideStudents = GuideStudents(),
 )
+
+@Serializable
+data class GuideStudents(val intro: String = "", val points: List<GuideTip> = emptyList())
 
 /** Photo album and WordPress.tv links once an organizer adds them. */
 @Serializable

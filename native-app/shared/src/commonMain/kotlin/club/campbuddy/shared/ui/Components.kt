@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -256,4 +261,21 @@ fun Modifier.patternBackground(pattern: org.jetbrains.compose.resources.Drawable
             drawRect(androidx.compose.ui.graphics.Brush.horizontalGradient(0.3f to fade, 0.6f to fade.copy(alpha = 0.7f), 0.9f to fade.copy(alpha = 0f), startX = 0f, endX = size.width))
         }
     }
+}
+
+/** Text with the website's quiet underline: a thin line in a soft colour under every line (a normal underline is as dark as the text). */
+@Composable
+fun SoftUnderlineText(text: String, style: androidx.compose.ui.text.TextStyle, modifier: Modifier = Modifier, lineColor: Color = LocalBrand.current.muted.copy(alpha = 0.4f)) {
+    var layout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
+    Text(
+        text, style = style, onTextLayout = { layout = it },
+        modifier = modifier.drawBehind {
+            layout?.let { l ->
+                for (i in 0 until l.lineCount) {
+                    val y = l.getLineBottom(i) - 1.dp.toPx()
+                    drawLine(lineColor, Offset(l.getLineLeft(i), y), Offset(l.getLineRight(i), y), 1.dp.toPx())
+                }
+            }
+        },
+    )
 }

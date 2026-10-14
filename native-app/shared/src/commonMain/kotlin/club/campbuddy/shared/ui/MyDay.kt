@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.graphics.Color
@@ -136,6 +137,17 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         }
         item { SearchField(query) { query = it } }
         message?.let { text -> item { Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) } }
+        if (days.size > 1) {
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("DAY", style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        DayPill("All days", selected = dayFilter == null) { dayFilter = null }
+                        days.forEach { d -> DayPill(dayChip(d), selected = dayFilter == d.toString()) { dayFilter = d.toString() } }
+                    }
+                }
+            }
+        }
         item {
             val tracks = sessions.flatMap { it.trackNames }.distinct().sorted()
             val types = sessions.mapNotNull { it.sessionType }.distinct().sorted()
@@ -164,17 +176,6 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                                 types.forEach { t -> DayPill(when (t) { "session" -> "Talk"; "custom" -> "Activity"; else -> t.replaceFirstChar { it.uppercase() } }, selected = typeFilter == t) { typeFilter = t } }
                             }
                         }
-                    }
-                }
-            }
-        }
-        if (days.size > 1) {
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("DAY", style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        DayPill("All days", selected = dayFilter == null) { dayFilter = null }
-                        days.forEach { d -> DayPill(EventClock.dayLabel(d), selected = dayFilter == d.toString()) { dayFilter = d.toString() } }
                     }
                 }
             }
@@ -297,9 +298,9 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
                     Modifier.fillMaxWidth().heightIn(min = 21.dp).clickable(enabled = hasMore, role = Role.Button) { open = !open },
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(
+                    SoftUnderlineText(
                         session.title,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 20.8.sp, textDecoration = TextDecoration.Underline),
+                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 20.8.sp),
                         modifier = Modifier.weight(1f, fill = false),
                     )
                     if (hasMore) LineIcon("chevron-down", brand.muted, size = 14.dp)
@@ -315,7 +316,7 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
                 if (open && hasMore) Text(session.description.orEmpty(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
             }
             Box(
-                Modifier.size(44.dp).clickable(role = Role.Button, onClick = onStar)
+                Modifier.offset(x = 10.dp).size(44.dp).clickable(role = Role.Button, onClick = onStar)
                     .semantics { contentDescription = if (saved) "Remove from My Day" else "Save to My Day"; role = Role.Button },
                 contentAlignment = Alignment.Center,
             ) { LineIcon("star", if (saved) brand.accent else brand.muted, size = 22.dp, filled = saved) }
@@ -343,4 +344,11 @@ fun ReminderSync() {
         }
         env.deps.reminders.replaceAll(Reminders.soonest(planned))
     }
+}
+
+private fun dayChip(date: kotlinx.datetime.LocalDate): String {
+    val weekday = date.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+    val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+
+    return "$weekday, $month ${date.dayOfMonth}"
 }

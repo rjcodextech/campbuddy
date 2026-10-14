@@ -169,7 +169,7 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
                 if (total == 0) item { Text("No quests yet.", style = MaterialTheme.typography.bodyMedium) }
 
                 if (things.isNotEmpty()) {
-                    item { Text("Things to do", style = MaterialTheme.typography.titleLarge) }
+                    item { Text("Things to do", style = MaterialTheme.typography.headlineSmall) }
                     items(things.size, key = { things[it].id }) { i ->
                         val quest = things[i]
                         val meta = QUEST_META.getValue(quest.title)
@@ -183,9 +183,9 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                     Text(quest.title, style = MaterialTheme.typography.titleLarge)
                                     quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        meta.tab?.let { tab -> ActionButton(meta.label + "  →", filled = false) { onTab(tab) } }
                                         ActionButton(if (checked) "Done ✓" else "Mark done", filled = !checked) { env.user.toggleQuest(slug, quest.id) }
-                                        meta.tab?.let { tab -> ActionButton(meta.label, filled = false) { onTab(tab) } }
                                     }
                                 }
                             }
@@ -194,24 +194,23 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
                 }
 
                 if (checklist.isNotEmpty()) {
-                    item { Text("Checklist", style = MaterialTheme.typography.titleLarge) }
+                    item { Text("Checklist", style = MaterialTheme.typography.headlineSmall) }
                     items(checklist.size, key = { checklist[it].id }) { i ->
                         val quest = checklist[i]
                         val checked = quest.id in done
-                        Card(onClick = { env.user.toggleQuest(slug, quest.id) }) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top,
-                                modifier = Modifier.semantics { role = Role.Checkbox; contentDescription = quest.title + if (checked) ", done" else "" },
-                            ) {
-                                Box(
-                                    Modifier.size(24.dp).background(if (checked) brand.primary else brand.surface, RoundedCornerShape(6.dp))
-                                        .border(1.5.dp, if (checked) brand.primary else brand.muted, RoundedCornerShape(6.dp)),
-                                    contentAlignment = Alignment.Center,
-                                ) { if (checked) Text("✓", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White)) }
-                                Column(Modifier.weight(1f)) {
-                                    Text(quest.title, style = MaterialTheme.typography.titleMedium)
-                                    quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-                                }
+                        Row(
+                            Modifier.fillMaxWidth().background(brand.surface, RoundedCornerShape(brand.radius.dp)).border(1.dp, brand.line, RoundedCornerShape(brand.radius.dp))
+                                .clickable(role = Role.Checkbox) { env.user.toggleQuest(slug, quest.id) }.padding(horizontal = 16.dp, vertical = 12.dp)
+                                .semantics { contentDescription = quest.title + if (checked) ", done" else "" },
+                            horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top,
+                        ) {
+                            Box(
+                                Modifier.padding(top = 3.dp).size(18.dp).background(if (checked) brand.primary else Color.White, RoundedCornerShape(3.dp)).border(1.5.dp, if (checked) brand.primary else brand.muted, RoundedCornerShape(3.dp)),
+                                contentAlignment = Alignment.Center,
+                            ) { if (checked) Text("✓", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontSize = 12.sp)) }
+                            Column(Modifier.weight(1f)) {
+                                Text(quest.title, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold))
+                                quest.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                             }
                         }
                     }
@@ -278,13 +277,11 @@ fun ContributeTab(slug: String) {
     fun TeamCard(team: ContribTeam) {
         val where = whereText(byTeam[team.id].orEmpty())
         Card(onClick = { show(team) }) {
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-                Box(Modifier.size(48.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) {
-                    LineIcon(team.icon, brand.primary, size = 26.dp)
-                }
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                LineIcon(team.icon, brand.primary, size = 24.dp)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(team.name, style = MaterialTheme.typography.titleLarge)
-                    Text(team.description, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                    Text(team.name, style = MaterialTheme.typography.titleMedium)
+                    Text(team.description, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
                     if (where.isNotBlank()) Text("Table: $where", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.SemiBold))
                 }
             }
@@ -400,7 +397,7 @@ fun ContributeTab(slug: String) {
             }
         }
 
-        item { Text("All contributor teams", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 10.dp)) }
+        item { Text("All contributor teams", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 10.dp)) }
         items(CONTRIB_TEAMS, key = { "team-" + it.id }) { TeamCard(it) }
     }
 }
@@ -477,15 +474,15 @@ private fun PeopleList(slug: String) {
             is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
             is LoadState.Ready -> {
                 if (s.fromCache) item { OfflineNote() }
-                val roles = s.value.flatMap { it.roles }.distinct().sorted()
+                val roles = ROLE_ORDER.filter { r -> s.value.any { r in it.roles } }
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         SearchField(query, "Search attendees…") { query = it }
                         if (roles.isNotEmpty()) {
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 ChoicePill("All ${s.value.size}", role == "") { role = "" }
-                                roles.take(4).forEach { r ->
-                                    ChoicePill(r.replaceFirstChar { it.uppercase() } + "s " + s.value.count { r in it.roles }, role == r) { role = r }
+                                roles.forEach { r ->
+                                    ChoicePill((ROLE_FILTER_LABELS[r] ?: r) + " " + s.value.count { r in it.roles }, role == r) { role = r }
                                 }
                             }
                         }
@@ -511,21 +508,25 @@ private fun PeopleList(slug: String) {
                                                         contentAlignment = Alignment.Center,
                                                     ) {
                                                         if (link.type == "linkedin") Text("in", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.ExtraBold))
+                                                        else if (link.type == "twitter" || link.type == "x") Text("𝕏", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.ExtraBold))
                                                         else LineIcon("globe", brand.ink, size = 14.dp)
                                                     }
                                                 }
                                             }
                                         }
-                                        if (person.roles.isNotEmpty()) {
-                                            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                                person.roles.forEach { r ->
-                                                    val bg = if (r == "organizer") brand.primary else brand.accent
-                                                    Text(
-                                                        r.replaceFirstChar { it.uppercase() },
-                                                        style = MaterialTheme.typography.labelMedium.copy(color = if (r == "organizer") Color.White else brand.ink),
-                                                        modifier = Modifier.background(bg, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 1.dp),
-                                                    )
-                                                }
+                                        if (person.openToMeet) {
+                                            Row(
+                                                Modifier.background(Color(0x1A049395), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically,
+                                            ) {
+                                                LineIcon("hand", Color(0xFF03676A), size = 14.dp)
+                                                Text("Open to meet", style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF03676A)))
+                                            }
+                                        }
+                                        val badges = ROLE_ORDER.filter { it in person.roles } + if (person.campCard != null && person.campCard !is kotlinx.serialization.json.JsonNull) listOf("camp_card") else emptyList()
+                                        if (badges.isNotEmpty()) {
+                                            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                badges.forEach { r -> RoleBadge(r) }
                                             }
                                         }
                                         person.talks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
@@ -1126,4 +1127,37 @@ private fun IconButton(icon: String, text: String, onClick: () -> Unit, modifier
         LineIcon(icon, brand.ink, size = 20.dp)
         Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink))
     }
+}
+
+private val ROLE_ORDER = listOf("organizer", "speaker", "volunteer", "microsponsor", "sponsor", "media_partner", "table_lead")
+
+private val ROLE_LABELS = mapOf(
+    "organizer" to "Organizer", "speaker" to "Speaker", "volunteer" to "Volunteer", "microsponsor" to "Microsponsor", "sponsor" to "Sponsor",
+    "media_partner" to "Media Partner", "table_lead" to "Table Lead", "camp_card" to "Camp Card",
+)
+
+private val ROLE_FILTER_LABELS = mapOf(
+    "organizer" to "Organizers", "speaker" to "Speakers", "volunteer" to "Volunteers", "microsponsor" to "Microsponsors", "sponsor" to "Sponsors",
+    "media_partner" to "Media Partners", "table_lead" to "Table Leads",
+)
+
+/** One role mark in the website's colours (roster-roles / .role-badge--*). */
+@Composable
+private fun RoleBadge(role: String) {
+    val brand = LocalBrand.current
+    val (bg, border, ink) = when (role) {
+        "organizer" -> Triple(brand.primary, Color.Transparent, Color.White)
+        "speaker" -> Triple(brand.accent, Color.Transparent, brand.ink)
+        "volunteer" -> Triple(Color(0xFFE3F3E9), Color(0xFF9FD3B2), Color(0xFF14532D))
+        "microsponsor" -> Triple(brand.peach, brand.accent, brand.ink)
+        "sponsor" -> Triple(Color(0xFFE8F0FB), Color(0xFFA9C2E8), Color(0xFF1D3A66))
+        "media_partner" -> Triple(Color(0xFFF3E8FB), Color(0xFFCFA9E8), Color(0xFF4A1D66))
+        "table_lead" -> Triple(Color.White, brand.accent, Color(0xFF7A4B00))
+        else -> Triple(Color.White, brand.primary, brand.primary)
+    }
+    Text(
+        ROLE_LABELS[role] ?: role,
+        style = MaterialTheme.typography.labelMedium.copy(color = ink),
+        modifier = Modifier.background(bg, RoundedCornerShape(50)).border(1.dp, border, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 1.dp),
+    )
 }

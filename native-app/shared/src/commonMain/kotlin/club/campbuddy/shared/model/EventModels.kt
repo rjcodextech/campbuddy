@@ -55,6 +55,7 @@ data class Session(
     @SerialName("speaker_ids") val speakerIds: List<Long> = emptyList(),
     val description: String? = null,
     @SerialName("session_type") val sessionType: String? = null,
+    @SerialName("category_names") val categoryNames: List<String> = emptyList(),
 )
 
 @Serializable

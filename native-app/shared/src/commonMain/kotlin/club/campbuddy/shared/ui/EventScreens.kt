@@ -43,6 +43,14 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.daysUntil
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import club.campbuddy.shared.domain.Moments
+import campbuddy_native.shared.generated.resources.art_people
+import campbuddy_native.shared.generated.resources.pattern_people
+import androidx.compose.runtime.remember
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -145,6 +153,7 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
     val phase = EventClock.phase(sessions, event.firstDay, event.lastDay, zone, now)
     val profile = env.user.profile
     val saved = env.user.bookmarks(event.slug)
+    val startHereShown = startHereVisible(env.deps.store, event.slug, profile.firstWordCamp)
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
         if (offline) item { OfflineNote() }
@@ -155,11 +164,11 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
             when (section.type) {
                 "hero" -> HeroCard(event, phase, zone, now, sessions)
                 "starting_soon" -> StartingSoon(sessions, saved.map { it.sessionId }.toSet(), now, zone)
-                "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event, onTab)
-                "up_next" -> UpNext(section, phase, sessions, now, zone, onSchedule = { onTab("my-day") })
-                "start_here" -> StartHere(section.title?.let(words::invoke) ?: "New to WordCamp? Start here", onGuide)
+                "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event, startHereShown, onTab, onGuide)
+                "up_next" -> UpNext(section, sessions, now, zone, event.slug, saved.map { it.sessionId }.toSet(), onSchedule = { onTab("my-day") })
+                "start_here" -> StartHere(section.title?.let(words::invoke) ?: "New to WordCamp? Start here", event.slug, onGuide)
                 "suggested_action" -> SuggestedAction(section.title?.let(words::invoke) ?: "One thing to try", event.slug, saved.size, onTab)
-                "people_cta" -> PeoplePrompt { onTab("explore") }
+                "people_cta" -> PeoplePrompt(event.slug) { onTab("explore") }
                 "progress" -> Progress(section, event.slug, saved.size)
                 else -> Unit // blocks the app does not draw yet are skipped, never an error
             }
@@ -208,27 +217,38 @@ private fun LinkBullet(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun StartHere(title: String, onGuide: () -> Unit) {
+private fun StartHere(title: String, slug: String, onGuide: () -> Unit) {
+    val env = LocalEnv.current
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
-    Row(
-        Modifier.padding(top = 20.dp).fillMaxWidth().border(1.dp, brand.accent, shape).clickable(role = Role.Button, onClick = onGuide).padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(64.dp)) {
-            Box(Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFFFBEFD9)), contentAlignment = Alignment.Center) {
-                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(52.dp))
+    var hidden by remember(slug) { mutableStateOf(!startHereVisible(env.deps.store, slug, env.user.profile.firstWordCamp)) }
+    if (hidden) return
+
+    Box(Modifier.padding(top = 20.dp).fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth().background(Brush.linearGradient(listOf(brand.peach, brand.surface)), shape).border(1.dp, brand.accent, shape)
+                .clickable(role = Role.Button, onClick = onGuide).padding(start = 16.dp, top = 16.dp, bottom = 16.dp, end = 40.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.size(64.dp)) {
+                Box(Modifier.size(64.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFFFBEFD9)), contentAlignment = Alignment.Center) {
+                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(52.dp))
+                }
+                Text(
+                    "101", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontSize = 11.sp),
+                    modifier = Modifier.align(Alignment.BottomEnd).background(brand.primary, RoundedCornerShape(50)).border(2.dp, brand.surface, RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 1.dp),
+                )
             }
-            Text(
-                "101", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontSize = 11.sp),
-                modifier = Modifier.align(Alignment.BottomEnd).background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 1.dp),
-            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
+                Text("How the day runs, the words you'll hear, and how to meet people. A 5-minute read.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                Text("Read the guide →", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 4.dp))
+            }
         }
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
-            Text("How the day runs, the words you'll hear, and how to meet people. A 5-minute read.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-            Text("Read the guide →", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 4.dp))
-        }
+        Box(
+            Modifier.align(Alignment.TopEnd).size(40.dp).clickable(role = Role.Button, onClickLabel = "Hide this guide card") { env.deps.store.put("ui:startHere:$slug", "dismissed"); hidden = true },
+            contentAlignment = Alignment.Center,
+        ) { LineIcon("x", brand.ink, size = 20.dp) }
     }
 }
 
@@ -239,38 +259,49 @@ private fun SuggestedAction(title: String, slug: String, savedCount: Int, onTab:
     val loader = rememberLoader("quests:$slug") { env.repository.quests(slug) }
     val quests = (loader.state.value as? LoadState.Ready)?.value.orEmpty()
     val done = env.user.completedQuests(slug)
-    val next = quests.firstOrNull { it.id !in done }
+    val incomplete = quests.filter { it.id !in done }
+    val pool = if (incomplete.isNotEmpty()) incomplete.map { it.title to it.description.orEmpty() } else listOf(
+        "Visit the sponsor area" to "Sponsors pay for a big part of WordCamp. Say hello and ask what they make.",
+        "Introduce yourself to someone new" to "Ask what brought them to this WordCamp.",
+        "Add a link to your Camp Card" to "So people you meet have a way to stay in touch.",
+    )
+    // One suggestion at a time, the same for a whole hour so it does not flicker.
+    val pick = pool[((Clock.System.now().epochSeconds / 3600) % pool.size).toInt()]
 
     Column {
         SectionHead(title, "All quests →", { onTab("quest") })
-        Card(onClick = { onTab(if (next != null) "quest" else "my-day") }) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(22.dp).border(2.dp, brand.primary, CircleShape))
-                Text(
-                    next?.title ?: if (savedCount < 3) "Save 3 sessions you'd enjoy" else "You've done them all. Nice.",
-                    style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
-                )
+        Card(onClick = { onTab("quest") }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                Box(Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) { LineIcon("lightbulb", brand.primary, size = 22.dp) }
+                Column(Modifier.weight(1f)) {
+                    Text(pick.first, style = MaterialTheme.typography.titleMedium)
+                    if (pick.second.isNotBlank()) Text(pick.second, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp))
+                }
             }
         }
     }
 }
-
 @Composable
-private fun PeoplePrompt(onJoin: () -> Unit) {
+private fun PeoplePrompt(slug: String, onJoin: () -> Unit) {
+    val env = LocalEnv.current
     val brand = LocalBrand.current
-    Card(Modifier.padding(top = 20.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Box(Modifier.size(width = 64.dp, height = 48.dp), contentAlignment = Alignment.CenterStart) { LineIcon("users", brand.primary, size = 40.dp) }
-            Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp))
-            Text(
-                "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",
-                style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(bottom = 8.dp),
-            )
-            PrimaryButton("Join attendee discovery", onJoin, Modifier.fillMaxWidth())
+    val joined = env.user.discovery(slug) != null
+    Column {
+        SectionHead("Meet people")
+        Card(Modifier.clip(RoundedCornerShape(brand.radius.dp)).patternBackground(Res.drawable.pattern_people, brand.surface)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Image(painterResource(Res.drawable.art_people), contentDescription = null, modifier = Modifier.size(width = 64.dp, height = 48.dp))
+                Text(if (joined) "You are in attendee discovery" else "Find people who match your interests", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 4.dp))
+                Text(
+                    if (joined) "See who shares your interests, and wave at the people you would like to meet."
+                    else "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",
+                    style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(bottom = 8.dp),
+                )
+                PrimaryButton(if (joined) "See my matches" else "Join attendee discovery", onJoin, Modifier.fillMaxWidth())
+            }
         }
     }
 }
-
 private fun visible(section: SectionConfig, phase: Phase, firstWordCamp: String?, hasSaved: Boolean): Boolean = when (section.visibleIf) {
     "phase:before" -> phase == Phase.Before
     "phase:during" -> phase == Phase.During
@@ -295,7 +326,7 @@ private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Inst
             Column(Modifier.weight(1f)) {
                 Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
                 Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
-                datesText(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
+                heroDates(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
                 Box(Modifier.padding(top = 8.dp)) { StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During) }
             }
         }
@@ -338,104 +369,161 @@ private fun statusText(event: EventDetail, phase: Phase, zone: TimeZone, now: In
     Phase.After -> "This WordCamp has finished"
 }
 
-/** A saved session that starts in the next 15 minutes gets a banner right on Home. */
 @Composable
 private fun StartingSoon(sessions: List<Session>, savedIds: Set<Long>, now: Instant, zone: TimeZone) {
+    val brand = LocalBrand.current
     val soon = sessions.firstOrNull { s ->
         val start = EventClock.startOf(s) ?: return@firstOrNull false
         s.id in savedIds && start > now && (start.epochSeconds - now.epochSeconds) <= 15 * 60
     } ?: return
+    val start = EventClock.startOf(soon) ?: return
+    val minutes = maxOf(1, ((start.epochSeconds - now.epochSeconds) / 60).toInt())
+    val shape = RoundedCornerShape(brand.radius.dp)
 
-    Card(Modifier.padding(top = 20.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("Starting soon", style = MaterialTheme.typography.labelMedium)
-            Text(soon.title, style = MaterialTheme.typography.titleMedium)
-            EventClock.startOf(soon)?.let { Text(EventClock.when_(it, now, zone) + (soon.trackNames.firstOrNull()?.let { t -> " · $t" } ?: ""), style = MaterialTheme.typography.bodyMedium) }
-        }
-    }
+    Text(
+        buildAnnotatedString {
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(soon.title) }
+            append(" starts in $minutes min")
+            soon.trackNames.firstOrNull()?.let { append(" in $it") }
+            append(". You saved this one.")
+        },
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.padding(top = 20.dp).fillMaxWidth().background(brand.peach, shape).border(1.dp, brand.accent, shape).padding(12.dp),
+    )
 }
-
 @Composable
-private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, event: EventDetail, onTab: (String) -> Unit) {
+private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, event: EventDetail, startHereShown: Boolean, onTab: (String) -> Unit, onGuide: () -> Unit) {
     val words = LocalWords.current
     val brand = LocalBrand.current
     val env = LocalEnv.current
-    val current = EventClock.current(sessions, now)
-    val guide = rememberLoader("guide:${event.slug}") { env.repository.guide(event.slug) }.state.value as? LoadState.Ready
+    val timed = sessions.filter { EventClock.startOf(it) != null }
+    // A session with no length counts as "now" for its first 30 minutes, rather than never.
+    val current = timed.filter { s ->
+        val start = EventClock.startOf(s) ?: return@filter false
+        val end = EventClock.endOf(s)?.takeIf { it > start } ?: Instant.fromEpochSeconds(start.epochSeconds + 30 * 60)
+        start <= now && now < end
+    }
+    val guide = (rememberLoader("guide:${event.slug}") { env.repository.guide(event.slug) }.state.value as? LoadState.Ready)?.value
+    val moments = guide?.moments.orEmpty()
 
     SectionHead(section.title?.let(words::invoke) ?: "Happening now")
-    if (phase != Phase.During || current.isEmpty()) {
-        when {
-            phase == Phase.After -> Card { Text("That is a wrap. Thanks for coming!", style = MaterialTheme.typography.titleMedium) }
-            phase == Phase.Before -> NowCard {
-                Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.titleMedium)
-                Guidance("A few minutes now makes the day much easier:")
-                LinkBullet("Save 3 sessions you'd enjoy") { onTab("my-day") }
-                LinkBullet("Tick off the \"get ready\" checklist") { onTab("quest") }
-            }
-            else -> Card { Text("Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth.", style = MaterialTheme.typography.bodyMedium) }
+    when {
+        phase == Phase.Before -> NowCard {
+            Text(statusText(event, phase, zone, now, sessions), style = MaterialTheme.typography.titleMedium)
+            Guidance("A few minutes now makes the day much easier:")
+            if (!startHereShown) LinkBullet("Read the 5-minute first-timer guide", onGuide)
+            LinkBullet("Save 3 sessions you'd enjoy") { onTab("my-day") }
+            LinkBullet("Tick off the \"get ready\" checklist") { onTab("quest") }
         }
-        return
-    }
-
-    val moment = current.firstNotNullOfOrNull { s -> guide?.value?.moments?.firstOrNull { m -> m.match.any { s.title.contains(it, ignoreCase = true) } } }
-    NowCard {
-        Text(
-            "NOW",
-            style = MaterialTheme.typography.labelMedium.copy(color = Color.White, letterSpacing = 0.72.sp),
-            modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 3.dp),
-        )
-        current.forEachIndexed { i, session ->
-            if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.primary.copy(alpha = 0.25f)))
-            Column {
-                Text(session.title, style = MaterialTheme.typography.titleMedium)
-                val end = EventClock.endOf(session)
-                val meta = listOfNotNull(session.trackNames.firstOrNull(), end?.let { "until ${EventClock.time(it, zone)}" }).joinToString(" · ")
-                if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.bodySmall)
+        current.isEmpty() && phase == Phase.After -> NowCard {
+            Text("That's a wrap. Thanks for coming!", style = MaterialTheme.typography.titleMedium)
+            Guidance("Connect with the people you met while it's fresh, look up your local WordPress meetup, and watch for talk recordings on WordPress.tv.")
+        }
+        current.isEmpty() -> {
+            val next = timed.firstOrNull { (EventClock.startOf(it) ?: now) > now }
+            NowCard {
+                Text("Nothing's on stage right this minute.", style = MaterialTheme.typography.titleMedium)
+                Guidance(
+                    "Nothing on stage right now. Talk to someone nearby, or go see a sponsor booth." +
+                        (next?.let { n -> " Next up: ${n.title} ${EventClock.when_(EventClock.startOf(n)!!, now, zone)}." } ?: ""),
+                )
             }
         }
-        moment?.takeIf { it.now.isNotBlank() }?.let { Guidance(it.now) }
+        else -> NowCard {
+            Text(
+                "NOW",
+                style = MaterialTheme.typography.labelMedium.copy(color = Color.White, letterSpacing = 0.72.sp),
+                modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 3.dp),
+            )
+            current.forEachIndexed { i, session ->
+                if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.primary.copy(alpha = 0.18f)))
+                Column {
+                    Text(session.title, style = MaterialTheme.typography.titleMedium)
+                    val start = EventClock.startOf(session)!!
+                    val end = EventClock.endOf(session)?.takeIf { it > start } ?: Instant.fromEpochSeconds(start.epochSeconds + 30 * 60)
+                    val meta = listOfNotNull(session.trackNames.firstOrNull(), "until ${EventClock.time(end, zone)}").joinToString(" · ")
+                    Text(meta, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp))
+                }
+            }
+            val moment = current.firstNotNullOfOrNull { Moments.momentFor(it, moments) }
+            Guidance(
+                moment?.now?.takeIf { it.isNotBlank() }
+                    ?: if (current.size > 1) "Pick the one that sounds most useful. If it isn't for you, it's fine to switch rooms."
+                    else "If it has already started, slip in quietly. There's usually room at the back.",
+            )
+        }
     }
 }
-
 @Composable
-private fun UpNext(section: SectionConfig, phase: Phase, sessions: List<Session>, now: Instant, zone: TimeZone, onSchedule: () -> Unit) {
+private fun UpNext(section: SectionConfig, sessions: List<Session>, now: Instant, zone: TimeZone, slug: String, savedIds: Set<Long>, onSchedule: () -> Unit) {
     val words = LocalWords.current
     val brand = LocalBrand.current
-    if (phase == Phase.After) return
-    val next = EventClock.upNext(sessions, now)
-    val start = next?.let { EventClock.startOf(it) }
+    val env = LocalEnv.current
+    val guide = (rememberLoader("guide:$slug") { env.repository.guide(slug) }.state.value as? LoadState.Ready)?.value
+    val moments = guide?.moments.orEmpty()
+    val profile = env.user.profile
+    val timed = sessions.filter { EventClock.startOf(it) != null }.sortedBy { EventClock.startOf(it) }
+    val upcoming = timed.filter { (EventClock.startOf(it) ?: now) > now }
+    val untimed = sessions.count { EventClock.startOf(it) == null }
 
-    if (next == null || start == null) {
-        // Sessions announced but no times yet: say so, and point at the list (the website does the same).
-        if (sessions.isEmpty() || sessions.any { EventClock.startOf(it) != null }) return
-        SectionHead(section.title?.let(words::invoke) ?: "Up next", "Full schedule →", onSchedule)
+    SectionHead(section.title?.let(words::invoke) ?: "Up next", "Full schedule →", onSchedule)
+    if (upcoming.isEmpty()) {
         Card {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("${sessions.size} sessions announced, times still to come", style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
-                    Text("Browse them now and star the ones you'd enjoy: ", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f, fill = false))
+            if (untimed > 0) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("$untimed sessions announced, times still to come", style = MaterialTheme.typography.titleMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                        Text(
+                            buildAnnotatedString {
+                                append("Browse them now and star the ones you'd enjoy: ")
+                                withStyle(SpanStyle(color = brand.primary, fontWeight = FontWeight.Bold)) { append("see the sessions") }
+                                append(".")
+                            },
+                            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.clickable(role = Role.Button, onClick = onSchedule),
+                        )
+                    }
                 }
-                Text("see the sessions.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.clickable(role = Role.Button, onClick = onSchedule))
+            } else {
+                Text("That's everything on the schedule for now.", style = MaterialTheme.typography.bodyLarge)
             }
         }
         return
     }
-    val alternatives = EventClock.alternatives(sessions, next).size
 
-    SectionHead(section.title?.let(words::invoke) ?: "Up next", "Full schedule →", onSchedule)
+    // Priority: your own saved sessions, then moments for everyone (the keynote, lunch), then what you said you are into;
+    // each only among what starts soon, so lunch in an hour does not hide the talks starting in ten minutes.
+    val soonest = EventClock.startOf(upcoming.first())!!.epochSeconds
+    fun within(minutes: Int) = upcoming.filter { EventClock.startOf(it)!!.epochSeconds <= soonest + minutes * 60 }
+    val interests = profile.interests.map { it.lowercase() }
+    val firstTimer = profile.firstWordCamp == "yes"
+    val savedPick = within(120).firstOrNull { it.id in savedIds }
+    val keyPick = within(30).firstOrNull { Moments.momentFor(it, moments)?.key == true }
+    val interesting = within(60)
+        .map { it to (Moments.interestScore(it, interests) + if (firstTimer && Moments.isBeginnerFriendly(it)) 1 else 0) }
+        .filter { it.second > 0 }
+        .sortedWith(compareByDescending<Pair<Session, Int>> { it.second }.thenBy { EventClock.startOf(it.first)!!.epochSeconds })
+        .firstOrNull()?.first
+    val next = savedPick ?: keyPick ?: interesting ?: upcoming.first()
+    val reason = when {
+        savedPick != null -> "You've saved this one"
+        keyPick == next -> "For everyone"
+        interesting == next -> if (Moments.isBeginnerFriendly(next) && firstTimer) "Beginner-friendly" else "Matches what you said you're into"
+        else -> "Next on the schedule"
+    }
+    val start = EventClock.startOf(next)!!
+    val alternatives = upcoming.count { EventClock.startOf(it) == start && it.id != next.id }
+    val guidance = Moments.momentFor(next, moments)?.now?.takeIf { it.isNotBlank() }
+        ?: if (alternatives > 0) (if (alternatives == 1) "Another session runs" else "$alternatives other sessions run") + " at the same time. Compare them in My Day." else null
+
     Card {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(next.title, style = MaterialTheme.typography.titleMedium)
-            Text(EventClock.when_(start, now, zone) + (next.trackNames.firstOrNull()?.let { " · $it" } ?: ""), style = MaterialTheme.typography.bodyMedium)
-            if (alternatives > 0) {
-                Text((if (alternatives == 1) "Another session runs" else "$alternatives other sessions run") + " at the same time.", style = MaterialTheme.typography.bodySmall)
-            }
+            Text("$reason, starts ${EventClock.when_(start, now, zone)}" + (next.trackNames.firstOrNull()?.let { " · $it" } ?: "") + ".", style = MaterialTheme.typography.bodySmall)
+            guidance?.let { Guidance(it) }
         }
     }
 }
-
 @Composable
 private fun SessionLine(session: Session, zone: TimeZone) {
     Column {
@@ -446,7 +534,6 @@ private fun SessionLine(session: Session, zone: TimeZone) {
     }
 }
 
-/** Quests done out of all of this event's quests, and saved sessions (the line the website shows). */
 @Composable
 private fun Progress(section: SectionConfig, slug: String, savedCount: Int) {
     val env = LocalEnv.current
@@ -459,13 +546,15 @@ private fun Progress(section: SectionConfig, slug: String, savedCount: Int) {
     val done = env.user.completedQuests(slug).count { id -> ready.value.any { it.id == id } }
 
     Column {
-        SectionHead(section.title?.let(words::invoke) ?: "Your progress", desc = "$done/$total quests · $savedCount saved sessions")
+        Row(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+            Text(section.title?.let(words::invoke) ?: "Your progress", style = MaterialTheme.typography.headlineSmall)
+            Text("$done/$total quests · $savedCount saved session${if (savedCount == 1) "" else "s"}", style = MaterialTheme.typography.bodySmall)
+        }
         Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
-            Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
+            if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
         }
     }
 }
-
 /** The website's own coloured tab drawings where it has one for the tab, else the plain line icon. */
 @Composable
 private fun TabIcon(key: String, icon: String, selected: Boolean) {
@@ -574,3 +663,16 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
         }
     }
 }
+
+/** "21 Nov 2026 – 22 Nov 2026": the dates line on the website's event card and Memories page. */
+internal fun heroDates(starts: String?, ends: String?): String? {
+    val a = starts?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: return null
+    val b = ends?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+    fun text(d: LocalDate) = "${d.dayOfMonth} ${d.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${d.year}"
+
+    return if (b == null || b == a) text(a) else text(a) + " – " + text(b)
+}
+
+/** The guide card shows until it is dismissed, and never to someone who said it is not their first WordCamp. */
+private fun startHereVisible(store: club.campbuddy.shared.data.KeyValueStore, slug: String, firstWordCamp: String?): Boolean =
+    store.get("ui:startHere:$slug") == null && firstWordCamp != "no"
