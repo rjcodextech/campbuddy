@@ -25,7 +25,10 @@ OUT = HERE / "emulator-smoke-out"
 parser = argparse.ArgumentParser()
 parser.add_argument("--adb", default=str(TOOLS / "android-build/sdk/platform-tools/adb.exe"))
 parser.add_argument("--serial", default=None)
+parser.add_argument("--api", default=None, help="the dev server as the device sees it (a phone over USB: http://127.0.0.1:8099/api/v1 after adb reverse tcp:8099 tcp:8099)")
 args = parser.parse_args()
+if args.api:
+    API = args.api
 
 ENV = {**os.environ, "USERPROFILE": str(TOOLS / "adb-home"), "HOME": str(TOOLS / "adb-home")}
 results = []
@@ -115,7 +118,8 @@ def scroll_down(times=1):
 
 # ---- start fresh ------------------------------------------------------------------------------------
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
-adb("shell", "settings", "put", "global", "hide_error_dialogs", "1")  # a slow emulator image must not cover the app with its own "isn't responding" boxes
+if (args.serial or "").startswith("emulator") or not args.serial:
+    adb("shell", "settings", "put", "global", "hide_error_dialogs", "1")  # a slow emulator image must not cover the app with its own "isn't responding" boxes
 adb("shell", "pm", "clear", PKG)
 adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS")
 adb("logcat", "-c")

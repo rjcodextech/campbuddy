@@ -10,12 +10,19 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import club.campbuddy.shared.model.AppConfig
 import club.campbuddy.shared.model.ThemeConfig
+import campbuddy_native.shared.generated.resources.Res
+import campbuddy_native.shared.generated.resources.inter_bold
+import campbuddy_native.shared.generated.resources.inter_extrabold
+import campbuddy_native.shared.generated.resources.inter_medium
+import campbuddy_native.shared.generated.resources.inter_regular
+import campbuddy_native.shared.generated.resources.inter_semibold
 
 /** The config and the phone language every screen reads its words from. */
 class Words(val config: AppConfig, val language: String) {
@@ -48,13 +55,20 @@ class Brand(theme: ThemeConfig) {
 }
 
 /**
- * Typography is fixed in the app (design, not content). Inter is the site text font; until it is
- * bundled as a resource the platform default sans-serif is used with the same sizes and weights.
+ * Typography is fixed in the app (design, not content). Inter is the website's UI font, bundled so the app reads the
+ * same on every phone (the system font can be anything, even a serif a person picked).
  */
-private val Family = FontFamily.Default
+@Composable
+private fun interFamily(): FontFamily = FontFamily(
+    Font(Res.font.inter_regular, FontWeight.Normal),
+    Font(Res.font.inter_medium, FontWeight.Medium),
+    Font(Res.font.inter_semibold, FontWeight.SemiBold),
+    Font(Res.font.inter_bold, FontWeight.Bold),
+    Font(Res.font.inter_extrabold, FontWeight.ExtraBold),
+)
 
-private fun style(size: Int, weight: FontWeight, line: Int, color: Color) =
-    TextStyle(fontFamily = Family, fontSize = size.sp, fontWeight = weight, lineHeight = line.sp, color = color)
+private fun style(family: FontFamily, size: Int, weight: FontWeight, line: Int, color: Color) =
+    TextStyle(fontFamily = family, fontSize = size.sp, fontWeight = weight, lineHeight = line.sp, color = color)
 
 @Composable
 fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
@@ -71,15 +85,16 @@ fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
         onSurfaceVariant = brand.muted,
     )
     val shape = RoundedCornerShape(brand.radius.dp)
+    val family = interFamily()
     val typography = Typography(
-        headlineSmall = style(24, FontWeight.Bold, 30, brand.ink),
-        titleLarge = style(20, FontWeight.Bold, 26, brand.ink),
-        titleMedium = style(17, FontWeight.SemiBold, 24, brand.ink),
-        bodyLarge = style(16, FontWeight.Normal, 24, brand.ink),
-        bodyMedium = style(14, FontWeight.Normal, 21, brand.ink),
-        bodySmall = style(12, FontWeight.Normal, 18, brand.muted),
-        labelLarge = style(15, FontWeight.SemiBold, 20, Color.Unspecified),
-        labelMedium = style(12, FontWeight.SemiBold, 16, brand.muted),
+        headlineSmall = style(family, 24, FontWeight.Bold, 30, brand.ink),
+        titleLarge = style(family, 20, FontWeight.Bold, 26, brand.ink),
+        titleMedium = style(family, 17, FontWeight.SemiBold, 24, brand.ink),
+        bodyLarge = style(family, 16, FontWeight.Normal, 24, brand.ink),
+        bodyMedium = style(family, 14, FontWeight.Normal, 21, brand.ink),
+        bodySmall = style(family, 12, FontWeight.Normal, 18, brand.muted),
+        labelLarge = style(family, 15, FontWeight.SemiBold, 20, Color.Unspecified),
+        labelMedium = style(family, 12, FontWeight.SemiBold, 16, brand.muted),
     )
 
     CompositionLocalProvider(LocalWords provides words, LocalBrand provides brand) {
