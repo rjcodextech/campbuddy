@@ -298,27 +298,20 @@ fun ContributeTab(slug: String) {
 
     open?.let { team ->
         val where = whereText(byTeam[team.id].orEmpty())
-        AlertDialog(
-            onDismissRequest = { open = null },
-            confirmButton = { LinkButton("Got it", { open = null }) },
-            title = { Text(team.name) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(if (team.technical) "TECHNICAL BACKGROUND HELPS" else "NO TECHNICAL BACKGROUND NEEDED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
-                    Text(team.description, style = MaterialTheme.typography.bodyLarge)
-                    Text("Who it suits", style = MaterialTheme.typography.titleMedium)
-                    Text(team.whoItSuits, style = MaterialTheme.typography.bodyMedium)
-                    Text("A beginner-friendly task", style = MaterialTheme.typography.titleMedium)
-                    Text(team.beginnerTask, style = MaterialTheme.typography.bodyMedium)
-                    Text("At their table", style = MaterialTheme.typography.titleMedium)
-                    Text(team.atTheTable, style = MaterialTheme.typography.bodyMedium)
-                    if (where.isNotBlank()) {
-                        Text("Find the table", style = MaterialTheme.typography.titleMedium)
-                        Text(where, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            },
-        )
+        Sheet(team.name, onClose = { open = null }, actions = { SheetActions("Got it", { open = null }) }) {
+            Text(if (team.technical) "TECHNICAL BACKGROUND HELPS" else "NO TECHNICAL BACKGROUND NEEDED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+            Text(team.description, style = MaterialTheme.typography.bodyLarge)
+            Text("Who it suits", style = MaterialTheme.typography.titleMedium)
+            Text(team.whoItSuits, style = MaterialTheme.typography.bodyMedium)
+            Text("A beginner-friendly task", style = MaterialTheme.typography.titleMedium)
+            Text(team.beginnerTask, style = MaterialTheme.typography.bodyMedium)
+            Text("At their table", style = MaterialTheme.typography.titleMedium)
+            Text(team.atTheTable, style = MaterialTheme.typography.bodyMedium)
+            if (where.isNotBlank()) {
+                Text("Find the table", style = MaterialTheme.typography.titleMedium)
+                Text(where, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
     }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -719,31 +712,26 @@ private fun LeadDialog(slug: String, deal: Deal, onDone: () -> Unit, onCancel: (
         }
     }
 
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onCancel,
-        title = { Text(deal.brand.ifBlank { deal.title }) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                form.intro?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                shown.forEach { (key, f) ->
-                    OutlinedTextField(
-                        values[key].orEmpty(), { values[key] = it.take(120) }, label = { Text(f.label + if (f.mode == "required") " *" else "") }, singleLine = true,
-                        supportingText = f.hint?.let { { Text(it) } }, modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(keyboardType = when (key) { "email" -> KeyboardType.Email; "mobile" -> KeyboardType.Phone; else -> KeyboardType.Text }),
-                    )
-                }
-                form.choices?.takeIf { it.mode != "off" && it.options.isNotEmpty() }?.let { c ->
-                    Text(c.label + if (c.mode == "required") " *" else "", style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp))
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        c.options.forEach { o -> ChoicePill(o, o in picked) { picked = if (c.multiple) (if (o in picked) picked - o else picked + o) else setOf(o) } }
-                    }
-                }
-                error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
+    Sheet(
+        deal.brand.ifBlank { deal.title }, onClose = onCancel,
+        actions = { SheetActions(if (busy) "Sending…" else (deal.ctaLabel ?: "Continue") + " →", { if (!busy) submit() }, "Cancel", onCancel) },
+    ) {
+        form.intro?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+        shown.forEach { (key, f) ->
+            OutlinedTextField(
+                values[key].orEmpty(), { values[key] = it.take(120) }, label = { Text(f.label + if (f.mode == "required") " *" else "") }, singleLine = true,
+                supportingText = f.hint?.let { { Text(it) } }, modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(keyboardType = when (key) { "email" -> KeyboardType.Email; "mobile" -> KeyboardType.Phone; else -> KeyboardType.Text }),
+            )
+        }
+        form.choices?.takeIf { it.mode != "off" && it.options.isNotEmpty() }?.let { c ->
+            Text(c.label + if (c.mode == "required") " *" else "", style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                c.options.forEach { o -> ChoicePill(o, o in picked) { picked = if (c.multiple) (if (o in picked) picked - o else picked + o) else setOf(o) } }
             }
-        },
-        confirmButton = { LinkButton(if (busy) "Sending…" else (deal.ctaLabel ?: "Continue") + " →", { if (!busy) submit() }) },
-        dismissButton = { LinkButton("Cancel", onCancel) },
-    )
+        }
+        error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
+    }
 }
 
 @Composable
@@ -877,39 +865,35 @@ private fun FeaturedTag() {
 private fun StealSheet(steal: FreeSteal, onClose: () -> Unit) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
-    androidx.compose.material3.AlertDialog(
-        onDismissRequest = onClose,
-        confirmButton = {},
-        title = {
+    Sheet(
+        onClose,
+        grab = true,
+        head = {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                StealLogo(steal, 48.dp)
+                StealLogo(steal, 60.dp)
                 Column(Modifier.weight(1f)) {
                     Text(steal.name, style = MaterialTheme.typography.titleMedium)
                     Text("by ${steal.maker.orEmpty()}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp))
                 }
-                Box(Modifier.size(44.dp).clickable(role = Role.Button, onClickLabel = "Close", onClick = onClose), contentAlignment = Alignment.Center) { LineIcon("x", brand.ink, size = 20.dp) }
             }
         },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (steal.featured || steal.madeHere) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (steal.featured) FeaturedTag()
-                        if (steal.madeHere) Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                            LineIcon("map-pin", brand.success, size = 14.dp)
-                            Text("Made by someone attending this WordCamp", style = MaterialTheme.typography.bodySmall.copy(color = brand.success, fontWeight = FontWeight.SemiBold))
-                        }
-                    }
-                }
-                steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-                steal.category?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp)) }
-                steal.url?.let { url ->
-                    PrimaryButton((steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free") + " ↗", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
-                    if (steal.host.isNotBlank()) Text("Opens ${steal.host}", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    ) {
+        if (steal.featured || steal.madeHere) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                if (steal.featured) FeaturedTag()
+                if (steal.madeHere) Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon("map-pin", brand.success, size = 14.dp)
+                    Text("Made by someone attending this WordCamp", style = MaterialTheme.typography.bodySmall.copy(color = brand.success, fontWeight = FontWeight.SemiBold))
                 }
             }
-        },
-    )
+        }
+        steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        steal.category?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp)) }
+        steal.url?.let { url ->
+            PrimaryButton((steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free") + " ↗", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+            if (steal.host.isNotBlank()) Text("Opens ${steal.host}", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        }
+    }
 }
 
 // ---- Memories ------------------------------------------------------------------------------------------------------

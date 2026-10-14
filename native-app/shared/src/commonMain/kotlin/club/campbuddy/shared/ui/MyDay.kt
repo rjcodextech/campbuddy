@@ -127,23 +127,22 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     }
 
     if (askFor) {
-        AlertDialog(
-            onDismissRequest = { askFor = false },
-            title = { Text("Reminders") },
-            text = { Text("Want CampBuddy to remind you a few minutes before the sessions you save start?") },
-            confirmButton = {
-                LinkButton("Remind me", onClick = {
-                    askFor = false
-                    scope.launch {
-                        val granted = env.deps.reminders.requestPermission()
-                        user.saveNotifications(if (granted) NotificationState(enabled = true) else NotificationState(denied = true))
-                    }
-                })
+        Sheet(
+            "Reminders", onClose = { askFor = false },
+            actions = {
+                SheetActions(
+                    "Remind me",
+                    {
+                        askFor = false
+                        scope.launch {
+                            val granted = env.deps.reminders.requestPermission()
+                            user.saveNotifications(if (granted) NotificationState(enabled = true) else NotificationState(denied = true))
+                        }
+                    },
+                    "No thanks", { askFor = false; user.saveNotifications(NotificationState(declined = true)) },
+                )
             },
-            dismissButton = {
-                LinkButton("No thanks", onClick = { askFor = false; user.saveNotifications(NotificationState(declined = true)) })
-            },
-        )
+        ) { Text("Want CampBuddy to remind you a few minutes before the sessions you save start?", style = MaterialTheme.typography.bodyLarge) }
     }
 
     val speakerNames = names

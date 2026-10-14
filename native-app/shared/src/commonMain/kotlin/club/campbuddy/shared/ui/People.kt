@@ -274,13 +274,10 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
     }
 
     if (confirmLeave) {
-        AlertDialog(
-            onDismissRequest = { confirmLeave = false },
-            title = { Text("Leave attendee discovery?") },
-            text = { Text("Your profile and waves are removed. You can join again any time.") },
-            confirmButton = { LinkButton("Leave", { confirmLeave = false; model.leave() }) },
-            dismissButton = { LinkButton("Stay", { confirmLeave = false }) },
-        )
+        Sheet(
+            "Leave attendee discovery?", onClose = { confirmLeave = false },
+            actions = { SheetActions("Leave", { confirmLeave = false; model.leave() }, "Stay", { confirmLeave = false }) },
+        ) { Text("Your profile and waves are removed. You can join again any time.", style = MaterialTheme.typography.bodyLarge) }
     }
 
     waveFor?.let { target ->
@@ -365,64 +362,46 @@ private fun MatchCard(
 private fun WaveDialog(needsName: Boolean, onSend: (String?, String?) -> Unit, onCancel: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = { Text("Send a wave") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("They only see that a match would like to meet. If they wave back, you both see each other's name.")
-                if (needsName) OutlinedTextField(name, { name = it.take(60) }, label = { Text("Your first name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(text, { text = it.take(140) }, label = { Text("A first message (optional)") }, modifier = Modifier.fillMaxWidth())
-            }
-        },
-        confirmButton = { LinkButton("Wave", { onSend(name, text) }) },
-        dismissButton = { LinkButton("Cancel", onCancel) },
-    )
+    Sheet("Send a wave", onClose = onCancel, actions = { SheetActions("Wave", { onSend(name, text) }, "Cancel", onCancel) }) {
+        Text("They only see that a match would like to meet. If they wave back, you both see each other's name.", style = MaterialTheme.typography.bodyLarge)
+        if (needsName) OutlinedTextField(name, { name = it.take(60) }, label = { Text("Your first name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(text, { text = it.take(140) }, label = { Text("A first message (optional)") }, modifier = Modifier.fillMaxWidth())
+    }
 }
 
 @Composable
 private fun ReportDialog(onSend: (String, String?) -> Unit, onCancel: () -> Unit) {
     var reason by remember { mutableStateOf("spam") }
     var note by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = { Text("Report this profile") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("An organizer will review it. The profile is hidden on this phone from now on.")
-                Discovery.REPORT_REASONS.forEach { (key, label) -> ChoicePill(label, selected = reason == key) { reason = key } }
-                OutlinedTextField(note, { note = it.take(300) }, label = { Text("Anything to add? (optional)") }, modifier = Modifier.fillMaxWidth())
-            }
-        },
-        confirmButton = { LinkButton("Report", { onSend(reason, note) }) },
-        dismissButton = { LinkButton("Cancel", onCancel) },
-    )
+    Sheet("Report this profile", onClose = onCancel, actions = { SheetActions("Report", { onSend(reason, note) }, "Cancel", onCancel) }) {
+        Text("An organizer will review it. The profile is hidden on this phone from now on.", style = MaterialTheme.typography.bodyLarge)
+        Discovery.REPORT_REASONS.forEach { (key, label) -> ChoicePill(label, selected = reason == key) { reason = key } }
+        OutlinedTextField(note, { note = it.take(300) }, label = { Text("Anything to add? (optional)") }, modifier = Modifier.fillMaxWidth())
+    }
 }
 
 @Composable
 private fun ChatDialog(thread: MutualWave, max: Int, busy: Boolean, error: String?, onSend: (String) -> Unit, onClose: () -> Unit) {
     val brand = LocalBrand.current
     var body by remember(thread.messages.size) { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = { Text(thread.name ?: "Chat") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (thread.messages.isEmpty()) Text("You both waved. Agree where to meet.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                thread.messages.forEach { m ->
-                    Text(
-                        (if (m.mine) "You: " else "${thread.name ?: "They"}: ") + m.body,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (m.mine) FontWeight.Normal else FontWeight.SemiBold),
-                    )
-                }
-                Discovery.whyNot(thread.reason, max)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                if (thread.canSend) OutlinedTextField(body, { body = it.take(140) }, label = { Text("Message") }, modifier = Modifier.fillMaxWidth())
-                error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
-            }
+    Sheet(
+        thread.name ?: "Chat", onClose = onClose,
+        actions = {
+            if (thread.canSend) SheetActions(if (busy) "Sending…" else "Send", { if (body.isNotBlank() && !busy) onSend(body) }, "Close", onClose)
+            else SheetActions("Close", onClose)
         },
-        confirmButton = { if (thread.canSend) LinkButton(if (busy) "Sending…" else "Send", { if (body.isNotBlank() && !busy) onSend(body) }) else LinkButton("Close", onClose) },
-        dismissButton = { if (thread.canSend) LinkButton("Close", onClose) },
-    )
+    ) {
+        if (thread.messages.isEmpty()) Text("You both waved. Agree where to meet.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+        thread.messages.forEach { m ->
+            Text(
+                (if (m.mine) "You: " else "${thread.name ?: "They"}: ") + m.body,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (m.mine) FontWeight.Normal else FontWeight.SemiBold),
+            )
+        }
+        Discovery.whyNot(thread.reason, max)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+        if (thread.canSend) OutlinedTextField(body, { body = it.take(140) }, label = { Text("Message") }, modifier = Modifier.fillMaxWidth())
+        error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
+    }
 }
 
 /** Join, or edit, the discovery profile: who is shown, which interests (up to five) and a line or two. */

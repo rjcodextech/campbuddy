@@ -42,27 +42,29 @@ fun DataControls(slug: String) {
     }
 
     if (asking) {
-        AlertDialog(
-            onDismissRequest = { asking = false },
-            title = { Text("Clear everything on this phone?") },
-            text = {
-                Text(
-                    if (discoverable) "You are still in attendee discovery, so you will leave it first. Then your saved sessions, quests, Camp Card and answers are removed from this phone."
-                    else "Your saved sessions, quests, Camp Card and answers are removed from this phone.",
+        Sheet(
+            "Clear everything on this phone?", onClose = { asking = false },
+            actions = {
+                SheetActions(
+                    "Clear",
+                    {
+                        asking = false
+                        scope.launch {
+                            env.user.discovery(slug)?.let { mine -> runCatching { env.api.leaveDiscovery(slug, mine.discoveryId, mine.ownerToken) } }
+                            runCatching { env.deps.reminders.replaceAll(emptyList()) }
+                            env.user.eraseAll()
+                            note = "Cleared. Nothing of yours is left on this phone."
+                        }
+                    },
+                    "Keep it", { asking = false },
                 )
             },
-            confirmButton = {
-                LinkButton("Clear", {
-                    asking = false
-                    scope.launch {
-                        env.user.discovery(slug)?.let { mine -> runCatching { env.api.leaveDiscovery(slug, mine.discoveryId, mine.ownerToken) } }
-                        runCatching { env.deps.reminders.replaceAll(emptyList()) }
-                        env.user.eraseAll()
-                        note = "Cleared. Nothing of yours is left on this phone."
-                    }
-                })
-            },
-            dismissButton = { LinkButton("Keep it", { asking = false }) },
-        )
+        ) {
+            Text(
+                if (discoverable) "You are still in attendee discovery, so you will leave it first. Then your saved sessions, quests, Camp Card and answers are removed from this phone."
+                else "Your saved sessions, quests, Camp Card and answers are removed from this phone.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
     }
 }

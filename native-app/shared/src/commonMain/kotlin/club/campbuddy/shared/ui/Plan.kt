@@ -97,38 +97,60 @@ fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, su
 
     if (pickDate) {
         val state = androidx.compose.material3.rememberDatePickerState(initialSelectedDateMillis = date.takeIf { it.length == 10 }?.let { runCatching { kotlinx.datetime.LocalDate.parse(it).toEpochDays() * 86_400_000L }.getOrNull() })
-        androidx.compose.material3.DatePickerDialog(
-            onDismissRequest = { pickDate = false },
-            confirmButton = { LinkButton("OK", { state.selectedDateMillis?.let { date = kotlinx.datetime.LocalDate.fromEpochDays((it / 86_400_000L).toInt()).toString() }; pickDate = false }) },
-            dismissButton = { LinkButton("Cancel", { pickDate = false }) },
-        ) { androidx.compose.material3.DatePicker(state) }
+        Sheet(
+            "Pick a day", onClose = { pickDate = false },
+            actions = {
+                SheetActions("OK", { state.selectedDateMillis?.let { date = kotlinx.datetime.LocalDate.fromEpochDays((it / 86_400_000L).toInt()).toString() }; pickDate = false }, "Cancel", { pickDate = false })
+            },
+        ) {
+            androidx.compose.material3.DatePicker(
+                state, title = null, headline = null, showModeToggle = false,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.Transparent, selectedDayContainerColor = brand.primary, todayDateBorderColor = brand.primary, todayContentColor = brand.primary),
+            )
+        }
     }
     if (pickTime) {
         val state = androidx.compose.material3.rememberTimePickerState(initialHour = time.take(2).toIntOrNull() ?: 10, initialMinute = time.drop(3).toIntOrNull() ?: 0, is24Hour = false)
-        AlertDialog(
-            onDismissRequest = { pickTime = false },
-            confirmButton = { LinkButton("OK", { time = state.hour.toString().padStart(2, '0') + ":" + state.minute.toString().padStart(2, '0'); pickTime = false }) },
-            dismissButton = { LinkButton("Cancel", { pickTime = false }) },
-            text = { androidx.compose.material3.TimePicker(state) },
-        )
+        Sheet(
+            "Pick a time", onClose = { pickTime = false },
+            actions = { SheetActions("OK", { time = state.hour.toString().padStart(2, '0') + ":" + state.minute.toString().padStart(2, '0'); pickTime = false }, "Cancel", { pickTime = false }) },
+        ) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                androidx.compose.material3.TimePicker(
+                    state,
+                    colors = androidx.compose.material3.TimePickerDefaults.colors(
+                        clockDialSelectedContentColor = Color.White, clockDialColor = brand.peach, selectorColor = brand.primary,
+                        timeSelectorSelectedContainerColor = brand.primary.copy(alpha = 0.14f), timeSelectorSelectedContentColor = brand.primary,
+                        periodSelectorSelectedContainerColor = brand.primary.copy(alpha = 0.14f), periodSelectorSelectedContentColor = brand.primary,
+                    ),
+                )
+            }
+        }
     }
 
-    AlertDialog(
-        onDismissRequest = onClose,
-        title = {
+    Sheet(
+        onClose,
+        head = {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(48.dp).clip(CircleShape).background(brand.peach), contentAlignment = Alignment.Center) {
                     RemoteImage(avatarUrl, Modifier.size(48.dp)) { Image(painterResource(Res.drawable.art_avatar), null, Modifier.size(48.dp)) }
                 }
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text("ADD TO PEOPLE TO MEET", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
-                    Text(name, style = MaterialTheme.typography.titleLarge)
-                    if (sub.isNotBlank()) Text(sub, style = MaterialTheme.typography.bodySmall)
+                    Text(name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp))
+                    if (sub.isNotBlank()) Text(sub, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = brand.muted))
                 }
             }
         },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        actions = {
+            SheetActions(
+                "Save to My schedule", { save() },
+                if (existing != null) "Remove" else null, { env.user.removeMeeting(slug, rosterId); onClose() },
+            )
+        },
+    ) {
+        run {
+            run {
                 OutlinedTextField(
                     note, { note = it.take(280) }, label = { Text("Your note") }, placeholder = { Text("Why meet them? e.g. Ask about their WooCommerce plugin") },
                     minLines = 3, modifier = Modifier.fillMaxWidth(),
@@ -162,15 +184,8 @@ fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, su
                 }
                 error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
             }
-        },
-        confirmButton = { LinkButton("Save to My schedule", { save() }) },
-        dismissButton = {
-            Row {
-                if (existing != null) LinkButton("Remove", { env.user.removeMeeting(slug, rosterId); onClose() })
-                LinkButton("Close", onClose)
-            }
-        },
-    )
+        }
+    }
 }
 
 private fun encodeUrl(text: String): String = buildString {

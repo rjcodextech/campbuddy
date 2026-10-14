@@ -200,8 +200,15 @@ private fun FeaturePill(label: String, icon: String, modifier: Modifier) {
 private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
+    // A finished WordCamp gets the website's cool teal wash and a "Completed" pill, so it reads as done.
+    val done = event.completed
+    val teal = Color(0xFF049395)
+    val fill = if (done) androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.07f) else brand.surface
+    val edge = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.30f) else brand.line
+    val divider = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.22f) else brand.line
+    val cta = if (done) androidx.compose.ui.graphics.lerp(brand.ink, teal, 0.70f) else brand.primary
     Column(
-        Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).background(brand.surface, shape).border(1.dp, brand.line, shape)
+        Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).background(fill, shape).border(1.dp, edge, shape)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
         Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -215,7 +222,13 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
                     Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.67.sp, fontSize = 11.2.sp))
                 }
                 Text(event.name, style = MaterialTheme.typography.titleMedium)
-                if (event.completed) Text("Completed", style = MaterialTheme.typography.labelMedium)
+                if (done) Row(
+                    Modifier.padding(top = 4.dp).background(androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.14f), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LineIcon("party", cta, size = 13.dp)
+                    Text("Completed", style = MaterialTheme.typography.labelMedium.copy(color = cta, fontWeight = FontWeight.Bold))
+                }
             }
         }
         event.venue?.let { venue ->
@@ -224,8 +237,8 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
                 Text(venue, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
             }
         }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-        Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = brand.primary), modifier = Modifier.padding(16.dp))
+        Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
+        Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = cta), modifier = Modifier.padding(16.dp))
     }
 }
 
