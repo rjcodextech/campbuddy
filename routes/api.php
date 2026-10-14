@@ -70,6 +70,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::get('/free-steals', [AppEventController::class, 'freeSteals'])->name('api.app.events.free-steals');
             Route::get('/quests', [AppEventController::class, 'quests'])->name('api.app.events.quests');
             Route::get('/contributor-tables', [AppEventController::class, 'tables'])->name('api.app.events.tables');
+            Route::get('/info', [AppEventController::class, 'info'])->name('api.app.events.info');
             Route::get('/guide', [AppEventController::class, 'guide'])->name('api.app.events.guide');
             Route::get('/delay', [AppEventController::class, 'delay'])->name('api.app.events.delay');
             Route::get('/bundle', [AppEventController::class, 'bundle'])->name('api.app.events.bundle');

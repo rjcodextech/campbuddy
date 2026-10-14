@@ -9,15 +9,29 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import club.campbuddy.shared.App
 import club.campbuddy.shared.AppDeps
 import club.campbuddy.shared.data.KeyValueStore
+import club.campbuddy.shared.domain.DeepLink
 import java.util.Locale
 import kotlin.coroutines.resume
 import kotlinx.coroutines.CancellableContinuation
 
 class MainActivity : ComponentActivity() {
     private var waiting: CancellableContinuation<Boolean>? = null
+    private var link by androidx.compose.runtime.mutableStateOf<DeepLink?>(null)
+    private var linkCount = 0
+
+    private fun linkFrom(intent: Intent?): DeepLink? =
+        intent?.data?.let { DeepLink.parse(it.scheme, it.host, it.path, ++linkCount) }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        linkFrom(intent)?.let { link = it }
+    }
 
     // Registered before the screen starts, as Android requires; answers the one notification question.
     private val notificationQuestion = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -43,6 +57,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        link = linkFrom(intent)
 
         val prefs = getSharedPreferences("campbuddy", Context.MODE_PRIVATE)
         val store = object : KeyValueStore {
@@ -67,6 +82,7 @@ class MainActivity : ComponentActivity() {
                     openUrl = { url -> startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) },
                     reminders = reminders,
                     push = AndroidPush(applicationContext),
+                    link = link,
                     apiBase = apiBase(prefs),
                 )
             )

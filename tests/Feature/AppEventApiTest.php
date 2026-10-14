@@ -135,6 +135,34 @@ class AppEventApiTest extends TestCase
         $this->getJson($this->url('/contributor-tables'))->assertOk()->assertJsonPath('data', []);
     }
 
+    public function test_info_comes_as_groups_and_only_real_links_become_actions(): void
+    {
+        $this->event->update(['info' => [
+            'venue' => 'Main Hall, Pune', 'wifi' => 'cb-guest / pass123', 'emergency_contact' => '+91 98765 43210',
+            'code_of_conduct_url' => 'javascript:alert(1)', 'registration_info' => 'Desk opens at 8',
+            'important_links' => "Tickets: https://x.wordcamp.org/2026/tickets/\nBring your own mug",
+        ]]);
+
+        $groups = collect($this->getJson($this->url('/info'))->assertOk()->json('data'))->keyBy('title');
+
+        $this->assertSame(['At the venue', 'Help', 'Links'], $groups->keys()->all());
+        $venue = collect($groups['At the venue']['rows'])->keyBy('title');
+        $this->assertStringContainsString('google.com/maps', $venue['Venue']['action']['value']);
+        $this->assertSame('copy', $venue['Wifi']['action']['type']);
+        $help = collect($groups['Help']['rows'])->keyBy('title');
+        $this->assertSame('tel:+919876543210', $help['Emergency contact']['action']['value']);
+        $this->assertArrayNotHasKey('Code of Conduct', $help->all(), 'a javascript: address is never offered');
+        $links = $groups['Links']['rows'];
+        $this->assertSame('Tickets', $links[0]['title']);
+        $this->assertSame('https://x.wordcamp.org/2026/tickets/', $links[0]['action']['value']);
+        $this->assertArrayNotHasKey('action', $links[1]);
+    }
+
+    public function test_an_event_without_info_has_no_groups(): void
+    {
+        $this->assertSame([], $this->getJson($this->url('/info'))->assertOk()->json('data'));
+    }
+
     public function test_the_bundle_has_everything_and_a_current_phone_gets_304(): void
     {
         $bundle = $this->getJson($this->url('/bundle'))->assertOk()->json('data');

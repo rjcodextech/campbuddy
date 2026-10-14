@@ -70,6 +70,11 @@ class EventController extends Controller
         return $this->json($request, ['data' => AppEventApi::tables($event)]);
     }
 
+    public function info(Request $request, Event $event): JsonResponse
+    {
+        return $this->json($request, ['data' => AppEventApi::info($event)]);
+    }
+
     public function guide(Request $request, Event $event): JsonResponse
     {
         return $this->json($request, ['data' => AppEventApi::guide()]);

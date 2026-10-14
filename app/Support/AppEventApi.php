@@ -85,6 +85,81 @@ class AppEventApi
         ];
     }
 
+    /**
+     * Explore → Info as ready-to-draw groups (the same three the website shows: venue, help, links), so the
+     * app never repeats the website's rules. Only real web addresses, phone numbers and e-mails become links.
+     *
+     * @return list<array{title: string, rows: list<array<string, mixed>>}>
+     */
+    public static function info(Event $event): array
+    {
+        $info = $event->info ?? [];
+        $web = fn (?string $v) => preg_match('#^https?://\S+$#i', trim((string) $v)) === 1 ? trim((string) $v) : null;
+        $contact = function (?string $v): ?string {
+            if (blank($v)) {
+                return null;
+            }
+            if (filter_var($v, FILTER_VALIDATE_EMAIL)) {
+                return "mailto:{$v}";
+            }
+            $digits = preg_replace('/[^\d+]/', '', (string) $v);
+
+            return strlen(preg_replace('/\D/', '', $digits)) >= 7 ? "tel:{$digits}" : null;
+        };
+        $row = fn (string $icon, string $title, ?string $text = null, ?array $action = null, bool $alert = false, bool $mono = false) => array_filter(
+            ['icon' => $icon, 'title' => $title, 'text' => $text, 'action' => $action, 'alert' => $alert ?: null, 'mono' => $mono ?: null],
+            fn ($v) => $v !== null
+        );
+
+        $venue = [];
+        if (filled($info['venue'] ?? null)) {
+            $venue[] = $row('map-pin', 'Venue', $info['venue'], ['label' => 'Open in Maps', 'type' => 'url', 'value' => 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($info['venue'])]);
+        }
+        if (filled($info['wifi'] ?? null)) {
+            $venue[] = $row('wifi', 'Wifi', $info['wifi'], ['label' => 'Copy', 'type' => 'copy', 'value' => $info['wifi']], mono: true);
+        }
+        foreach ([['contributor_day_location', 'wrench', 'Contributor Day'], ['social_event_info', 'party', 'Social event'], ['nearby_venue_info', 'map', 'Nearby']] as [$key, $icon, $title]) {
+            if (filled($info[$key] ?? null)) {
+                $venue[] = $row($icon, $title, $info[$key]);
+            }
+        }
+
+        $help = [];
+        if (filled($info['emergency_contact'] ?? null)) {
+            $href = $contact($info['emergency_contact']);
+            $help[] = $row('siren', 'Emergency contact', $info['emergency_contact'], $href ? ['label' => 'Call', 'type' => 'url', 'value' => $href] : null, alert: true);
+        }
+        if (filled($info['registration_info'] ?? null)) {
+            $help[] = $row('ticket', 'Registration', $info['registration_info']);
+        }
+        if ($coc = $web($info['code_of_conduct_url'] ?? null)) {
+            $help[] = $row('clipboard', 'Code of Conduct', null, ['label' => 'Open', 'type' => 'url', 'value' => $coc]);
+        }
+
+        $links = [];
+        foreach (preg_split('/\r?\n/', trim((string) ($info['important_links'] ?? ''))) as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            if (preg_match('#https?://\S+#i', $line, $m)) {
+                $label = trim(preg_replace('#\s*:?\s*https?://\S+#i', '', $line));
+                $parts = array_values(array_filter(explode('/', (string) parse_url($m[0], PHP_URL_PATH)), 'strlen'));
+                $last = end($parts);
+                $fallback = $last === false || preg_match('/^\d{4}$/', $last) ? 'Event website' : \Illuminate\Support\Str::ucfirst(str_replace(['-', '_'], ' ', urldecode($last)));
+                $links[] = $row('link', $label !== '' ? $label : $fallback, preg_replace('#^https?://(www\.)?#i', '', rtrim($m[0], '/')), ['label' => 'Open', 'type' => 'url', 'value' => $m[0]]);
+            } else {
+                $links[] = $row('link', $line);
+            }
+        }
+
+        return array_values(array_filter([
+            ['title' => 'At the venue', 'rows' => $venue],
+            ['title' => 'Help', 'rows' => $help],
+            ['title' => 'Links', 'rows' => $links],
+        ], fn ($g) => $g['rows'] !== []));
+    }
+
     /** The "running late" notices that apply now. */
     public static function delay(Event $event): array
     {

@@ -5,6 +5,7 @@ import club.campbuddy.shared.model.ContributorTable
 import club.campbuddy.shared.model.Deal
 import club.campbuddy.shared.model.FreeSteal
 import club.campbuddy.shared.model.Guide
+import club.campbuddy.shared.model.InfoGroup
 import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
 import club.campbuddy.shared.model.RosterPage
@@ -102,6 +103,8 @@ class ApiClient(
     suspend fun eventDelays(slug: String): List<DelayInfo> = get<Data<List<DelayInfo>>>("/app/events/$slug/delay").data
 
     suspend fun speakers(slug: String): List<Speaker> = get<Data<List<Speaker>>>("/app/events/$slug/speakers").data
+
+    suspend fun info(slug: String): List<InfoGroup> = get<Data<List<InfoGroup>>>("/app/events/$slug/info").data
 
     suspend fun guide(slug: String): Guide = get<Data<Guide>>("/app/events/$slug/guide").data
 

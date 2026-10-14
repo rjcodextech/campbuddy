@@ -115,6 +115,7 @@ def scroll_down(times=1):
 
 # ---- start fresh ------------------------------------------------------------------------------------
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
+adb("shell", "settings", "put", "global", "hide_error_dialogs", "1")  # a slow emulator image must not cover the app with its own "isn't responding" boxes
 adb("shell", "pm", "clear", PKG)
 adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS")
 adb("logcat", "-c")
@@ -208,6 +209,10 @@ tap_text("Developer")
 tap_text("Speaker")
 scroll_down(2)
 tap_text("Save", exact=True)
+time.sleep(2)
+for _ in range(3):
+    adb("shell", "input", "swipe", "1070", "700", "1070", "1800", "300")
+    time.sleep(0.6)
 step("joined: profile card shows", wait("You are in attendee discovery", 12) is not None)
 shot("07a-people")
 tap_text("Leave", exact=True)
@@ -218,6 +223,9 @@ step("deals with a coupon", wait("20% off yearly plans", 10) is not None and fin
 tap_text("Free Steals", exact=True)
 step("free steals", wait("A free forms plugin", 10) is not None)
 shot("07-explore")
+tap_text("Info", exact=True)
+step("Info shows the venue group", wait("At the venue", 10) is not None and find("Open in Maps") is not None)
+shot("07b-info")
 
 # ---- Contribute -----------------------------------------------------------------------------------------------------------
 tap_text("Contribute", exact=True)
@@ -274,6 +282,12 @@ step("organizer event: reports and running late", wait("Running late", 10) is no
 tap_text("Set delay")
 step("setting a delay is accepted", wait("Saved. Every phone sees the new times.", 10) is not None)
 shot("11-delay")
+
+# ---- links from outside --------------------------------------------------------------------------------------------------------------
+adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "campbuddy://event/wordcamp-demo-2026/quest", PKG)
+step("a campbuddy:// link opens the event on its Quest tab", wait("Things to do", 15) is not None)
+adb("shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", "https://campbuddy.club/event/wordcamp-demo-2026/contribute", PKG)
+step("a website link opens the Contribute tab", wait("Where could you help?", 15) is not None)
 
 # ---- crash check ----------------------------------------------------------------------------------------------------------------------
 log = adb("logcat", "-d")

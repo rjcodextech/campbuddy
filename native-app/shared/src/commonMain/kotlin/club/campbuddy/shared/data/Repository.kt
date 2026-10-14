@@ -7,6 +7,7 @@ import club.campbuddy.shared.model.FreeSteal
 import club.campbuddy.shared.model.DelayInfo
 import club.campbuddy.shared.model.DiscoveryCard
 import club.campbuddy.shared.model.Guide
+import club.campbuddy.shared.model.InfoGroup
 import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
 import club.campbuddy.shared.model.RosterEntry
@@ -67,6 +68,8 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     suspend fun discovery(slug: String): Loaded<List<DiscoveryCard>> = cached("discovery:$slug", ListSerializer(DiscoveryCard.serializer())) { api.discovery(slug) }
 
     suspend fun speakers(slug: String): Loaded<List<Speaker>> = cached("speakers:$slug", ListSerializer(Speaker.serializer())) { api.speakers(slug) }
+
+    suspend fun info(slug: String): Loaded<List<InfoGroup>> = cached("info:$slug", ListSerializer(InfoGroup.serializer())) { api.info(slug) }
 
     suspend fun guide(slug: String): Loaded<Guide> = cached("guide:$slug", Guide.serializer()) { api.guide(slug) }
 

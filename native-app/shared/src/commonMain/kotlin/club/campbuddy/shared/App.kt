@@ -49,11 +49,12 @@ class AppDeps(
     val openUrl: (String) -> Unit,
     val reminders: club.campbuddy.shared.domain.ReminderPlatform = club.campbuddy.shared.domain.NoReminders,
     val push: club.campbuddy.shared.domain.PushPlatform = club.campbuddy.shared.domain.NoPush,
+    val link: club.campbuddy.shared.domain.DeepLink? = null,
 )
 
 private sealed interface Screen {
     data object Picker : Screen
-    data class Event(val slug: String, val guide: Boolean = false) : Screen
+    data class Event(val slug: String, val guide: Boolean = false, val tab: String? = null, val stamp: Int = 0) : Screen
     data object OrganizerLogin : Screen
     data object OrganizerHome : Screen
     data class OrganizerEvent(val event: club.campbuddy.shared.model.OrganizerEvent) : Screen
@@ -71,6 +72,14 @@ fun App(deps: AppDeps) {
 
     // The saved (or bundled) config draws the first frame; the fresh one replaces it when it arrives.
     LaunchedEffect(Unit) { repository.freshConfig()?.let { config = it } }
+
+    // A link from outside (a message, a QR code, a notification) opens that event, on top of the picker.
+    LaunchedEffect(deps.link?.id, deps.link?.slug) {
+        deps.link?.let { link ->
+            while (stack.size > 1) stack.removeAt(stack.lastIndex)
+            stack.add(Screen.Event(link.slug, tab = link.tab, stamp = link.id))
+        }
+    }
 
     val words = Words(config, deps.language)
     val minimum = if (deps.platform == "ios") config.minApp.ios else config.minApp.android
@@ -103,7 +112,7 @@ fun App(deps: AppDeps) {
                 onFirstTimer = { push(Screen.Event(it.slug, guide = true)) },
                 onOrganizer = { push(if (repository.organizerToken() != null) Screen.OrganizerHome else Screen.OrganizerLogin) },
             )
-            is Screen.Event -> EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide)
+            is Screen.Event -> androidx.compose.runtime.key(screen) { EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide, startTab = screen.tab) }
             Screen.OrganizerLogin -> OrganizerLoginScreen(api, repository, deps.deviceName, onSignedIn = { stack.removeAt(stack.lastIndex); push(Screen.OrganizerHome) }, onBack = ::pop)
             Screen.OrganizerHome -> OrganizerHomeScreen(api, repository, onEvent = { push(Screen.OrganizerEvent(it)) }, onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) }, onBack = ::pop)
             is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop)

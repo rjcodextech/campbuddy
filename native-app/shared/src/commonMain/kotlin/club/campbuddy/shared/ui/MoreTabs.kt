@@ -412,6 +412,7 @@ fun ExploreTab(slug: String) {
                     Triple("sponsors", "Sponsors", "heart"),
                     Triple("deals", "Deals", "tag"),
                     Triple("steals", "Free Steals", "sparkles"),
+                    Triple("info", "Info", "ticket"),
                 ).forEach { (key, label, icon) ->
                     ExploreTile(label, icon, selected = section == key, modifier = Modifier.weight(1f)) { section = key }
                 }
@@ -422,6 +423,7 @@ fun ExploreTab(slug: String) {
                 "people" -> PeopleList(slug)
                 "sponsors" -> SponsorList(slug)
                 "deals" -> DealList(slug)
+                "info" -> InfoList(slug)
                 else -> StealList(slug)
             }
         }
@@ -566,6 +568,57 @@ private fun DealList(slug: String) {
                 }
                 deal.url?.let { url ->
                     PrimaryButton((deal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get the deal") + " →", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InfoList(slug: String) {
+    val env = LocalEnv.current
+    val brand = LocalBrand.current
+    val clipboard = LocalClipboardManager.current
+    var copied by remember { mutableStateOf<String?>(null) }
+    val loader = rememberLoader("info:$slug") { env.repository.info(slug) }
+    val state by loader.state
+
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        when (val s = state) {
+            LoadState.Loading -> item { Loading() }
+            is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
+            is LoadState.Ready -> {
+                if (s.fromCache) item { OfflineNote() }
+                if (s.value.isEmpty()) item { Text("Event information hasn't been added yet.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted)) }
+                items(s.value.size) { i ->
+                    val group = s.value[i]
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(group.title, style = MaterialTheme.typography.titleLarge)
+                        Card {
+                            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                                group.rows.forEach { row ->
+                                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
+                                        Box(
+                                            Modifier.size(44.dp).background(if (row.alert) brand.danger.copy(alpha = 0.12f) else brand.peach, RoundedCornerShape(brand.radius.dp)),
+                                            contentAlignment = Alignment.Center,
+                                        ) { LineIcon(row.icon, if (row.alert) brand.danger else brand.primary, size = 24.dp) }
+                                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text(row.title, style = MaterialTheme.typography.titleMedium)
+                                            row.text?.let {
+                                                Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted, fontFamily = if (row.mono) FontFamily.Monospace else FontFamily.Default))
+                                            }
+                                            row.action?.let { action ->
+                                                val shown = if (action.type == "copy" && copied == action.value) "Copied" else action.label
+                                                ActionButton(shown, filled = false) {
+                                                    if (action.type == "copy") { clipboard.setText(AnnotatedString(action.value)); copied = action.value } else env.deps.openUrl(action.value)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

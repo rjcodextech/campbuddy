@@ -100,3 +100,21 @@ data class Guide(
 /** Photo album and WordPress.tv links once an organizer adds them. */
 @Serializable
 data class Memories(val photos: String? = null, val videos: String? = null)
+
+// ---- Explore -> Info (the server decides what shows and which rows are links) ----
+
+@Serializable
+data class InfoAction(val label: String = "", val type: String = "url", val value: String = "")
+
+@Serializable
+data class InfoRow(
+    val icon: String = "link",
+    val title: String,
+    val text: String? = null,
+    val action: InfoAction? = null,
+    val alert: Boolean = false,
+    val mono: Boolean = false,
+)
+
+@Serializable
+data class InfoGroup(val title: String, val rows: List<InfoRow> = emptyList())
