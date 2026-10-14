@@ -50,6 +50,10 @@ class AppDeps(
     val reminders: club.campbuddy.shared.domain.ReminderPlatform = club.campbuddy.shared.domain.NoReminders,
     val push: club.campbuddy.shared.domain.PushPlatform = club.campbuddy.shared.domain.NoPush,
     val link: club.campbuddy.shared.domain.DeepLink? = null,
+    /** Opens the share sheet with the card picture. */
+    val shareImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Unit = { _, _ -> },
+    /** Saves the card picture to the phone's gallery; false when that is not possible. */
+    val saveImage: (androidx.compose.ui.graphics.ImageBitmap, String) -> Boolean = { _, _ -> false },
 )
 
 private sealed interface Screen {

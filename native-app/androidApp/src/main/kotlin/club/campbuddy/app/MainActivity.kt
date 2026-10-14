@@ -71,6 +71,8 @@ class MainActivity : ComponentActivity() {
             notificationQuestion.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
 
+        val cardExport = AndroidCardExport(this)
+
         setContent {
             App(
                 AppDeps(
@@ -83,6 +85,8 @@ class MainActivity : ComponentActivity() {
                     reminders = reminders,
                     push = AndroidPush(applicationContext),
                     link = link,
+                    shareImage = cardExport::share,
+                    saveImage = cardExport::save,
                     apiBase = apiBase(prefs),
                 )
             )

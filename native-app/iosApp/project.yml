@@ -19,6 +19,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_CFBundleDisplayName: CampBuddy
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "Saves your Camp Card picture to your photos."
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         OTHER_LDFLAGS: "$(inherited) -framework Shared"

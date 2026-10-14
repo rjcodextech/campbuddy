@@ -36,6 +36,7 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            implementation(libs.qrcode)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
