@@ -1,6 +1,6 @@
 # Native app: kya ban gaya (14 Oct 2026, branch `app`)
 
-Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta hai (emulator par 42 checks pass); iOS ka code aur CI hai, par Windows par compile nahi ho sakta (macOS CI chahiye).
+Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta hai (emulator par 45 checks pass); iOS ka code aur CI hai, par Windows par compile nahi ho sakta (macOS CI chahiye).
 
 ## Server (M0) — ho gaya, tests ke saath
 | Cheez | Kahan | Tests |
@@ -13,7 +13,7 @@ Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta 
 | Native app jo website ke discovery/push endpoints bhi use karta hai (`/events/{slug}/discovery…`, `/push/native-subscribe`) | `Api\Discovery*`, `NativePushTokenController` | `NativeKotlinSyncTest` (har path ek asli route) |
 
 ## Android app — ye sab ban gaya
-- **Website jaisa UI** (PWA ke rang, 5dp corners, border+shadow cards, rang wale tab icons peach pill ke saath): Picker (orbit pills), Home (hero, Day N of M pill, peach Happening-now, Up next, Running late), My Day (switch, search, day pills, LIVE NOW, speakers), Quest (Things to do + Checklist), Explore (tiles, deals Details/Code/Copy, free steals), Contribute (Contributor Day, questions, team matches, tables, team detail → quest tick), Camp Card (Ticket + Classic preview), Guide (hero, pills).
+- **Website jaisa UI** (PWA ke rang, 5dp corners, border+shadow cards, rang wale tab icons peach pill ke saath): Picker (orbit pills), Home (hero, Day N of M pill, peach Happening-now, Up next, Running late), My Day (switch, search, day pills, LIVE NOW, speakers), Quest (Things to do + Checklist), Explore (tiles, deals Details/Code/Copy, free steals), Contribute (Contributor Day, questions, team matches, tables, team detail → quest tick), Camp Card (Ticket + Classic, QR, Share, Download), Explore Info (venue, help, links), Guide (hero, pills).
 - **People / discovery**: join, edit, leave, best matches (shared tags), wave / wave back / take back, chats (3 messages, turn-taking, window), report, hide.
 - My Day: save + reminders (AlarmManager), overlap warning; onboarding stepper; "Your data" (clear everything, discovery chhodkar).
 - Organizer: sign-in (admin/manager), events, reports, running late.
@@ -25,8 +25,7 @@ Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta 
 `CampBuddy-native-2.0.0-release.apk` / `.aab` (upload key se signed), `CampBuddy-native-2.0.0-debug.apk` (id `club.campbuddy.app.native`, store app ke saath chalta hai).
 
 ## Abhi baaki
-- Camp Card: QR, Share, Download (card ko image banana + share — platform code).
-- Explore → Info tab (venue, wifi, help) — API mein data nahi aata; server par expose karna padega. Deals ka FREE badge, logos (Coil).
+- Deals ka FREE badge aur logos (Coil). Camp Card: 900 DPI export, link chunne ka option.
 - Contribute: onboarding interests se pre-fill.
 - Outbox (offline writes), device transfer, organizer extras (dashboard, roster, quests/tables CRUD, QR kit, analytics), Hindi UI ke baaki texts, accessibility pass (TalkBack), iOS compile + APNs.
 - **Owner steps**: Play Console par app listing, `assetlinks.json` (https deep links verify ke liye, upload key nahi Play signing key ka SHA-256), server par `/api/v1/app/*` deploy (abhi production par nahi hai), phone par test (USB debugging dobara allow).
