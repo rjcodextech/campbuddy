@@ -218,6 +218,12 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
                 if (event.completed) Text("Completed", style = MaterialTheme.typography.labelMedium)
             }
         }
+        event.venue?.let { venue ->
+            Row(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
+                Box(Modifier.padding(top = 3.dp)) { LineIcon("map-pin", brand.primary, size = 14.dp) }
+                Text(venue, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            }
+        }
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
         Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = brand.primary), modifier = Modifier.padding(16.dp))
     }

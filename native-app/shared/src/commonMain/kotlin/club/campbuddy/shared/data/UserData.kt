@@ -51,6 +51,8 @@ class UserData(private val store: KeyValueStore) {
 
     private var discoveryMap by mutableStateOf(load("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer())) ?: emptyMap())
 
+    private var metMap by mutableStateOf(load("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer()))) ?: emptyMap())
+
     private var blockedMap by mutableStateOf(load("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer()))) ?: emptyMap())
 
     /** Goes up on every change to the saved sessions (so reminders can be planned again). */
@@ -147,6 +149,15 @@ class UserData(private val store: KeyValueStore) {
         save("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer()), discoveryMap)
     }
 
+    /** The attendees this person marked "+ Meet" at one event (kept on this phone only). */
+    fun met(slug: String): Set<Long> = metMap[slug].orEmpty().toSet()
+
+    fun toggleMet(slug: String, rosterId: Long) {
+        val now = met(slug)
+        metMap = metMap + (slug to (if (rosterId in now) now - rosterId else now + rosterId).toList())
+        save("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer())), metMap)
+    }
+
     fun blocked(slug: String): Set<String> = blockedMap[slug].orEmpty().toSet()
 
     fun block(slug: String, discoveryId: String) {
@@ -167,7 +178,7 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meet").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()
@@ -175,6 +186,7 @@ class UserData(private val store: KeyValueStore) {
         cardMap = emptyMap()
         discoveryMap = emptyMap()
         blockedMap = emptyMap()
+        metMap = emptyMap()
     }
 
     @Suppress("FunctionName")

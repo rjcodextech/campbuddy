@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -224,5 +225,35 @@ fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
     ) {
         if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
         Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
+    }
+}
+
+/**
+ * The website's faint line-icon background: a 200dp tile repeated from the top-right corner, fading out
+ * towards the text (the way .home-hero / .discovery-prompt do it).
+ */
+@Composable
+fun Modifier.patternBackground(pattern: org.jetbrains.compose.resources.DrawableResource, fade: Color?, alpha: Float = 1f): Modifier {
+    val image = org.jetbrains.compose.resources.imageResource(pattern)
+
+    return this.drawBehind {
+        val tile = 200.dp.toPx()
+        val startX = size.width - tile + 30.dp.toPx()
+        val startY = -40.dp.toPx()
+        var y = startY
+        while (y < size.height) {
+            var x = startX
+            while (x > -tile) {
+                drawImage(
+                    image, srcSize = androidx.compose.ui.unit.IntSize(image.width, image.height),
+                    dstOffset = androidx.compose.ui.unit.IntOffset(x.toInt(), y.toInt()), dstSize = androidx.compose.ui.unit.IntSize(tile.toInt(), tile.toInt()), alpha = alpha,
+                )
+                x -= tile
+            }
+            y += tile
+        }
+        if (fade != null) {
+            drawRect(androidx.compose.ui.graphics.Brush.horizontalGradient(0.3f to fade, 0.6f to fade.copy(alpha = 0.7f), 0.9f to fade.copy(alpha = 0f), startX = 0f, endX = size.width))
+        }
     }
 }

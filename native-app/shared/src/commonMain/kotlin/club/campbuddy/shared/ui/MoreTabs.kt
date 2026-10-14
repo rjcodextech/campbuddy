@@ -24,6 +24,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.horizontalScroll
 import org.jetbrains.compose.resources.painterResource
 import campbuddy_native.shared.generated.resources.app_icon
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import campbuddy_native.shared.generated.resources.pattern_guide
+import campbuddy_native.shared.generated.resources.pattern_contribute
+import campbuddy_native.shared.generated.resources.pattern_icons
 import campbuddy_native.shared.generated.resources.art_avatar
 import campbuddy_native.shared.generated.resources.art_first_badge
 import campbuddy_native.shared.generated.resources.Res
@@ -313,7 +318,7 @@ fun ContributeTab(slug: String) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
-            Card {
+            Card(Modifier.clip(RoundedCornerShape(brand.radius.dp)).patternBackground(Res.drawable.pattern_contribute, brand.surface)) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         "CONTRIBUTE",
@@ -498,6 +503,19 @@ private fun PeopleList(slug: String) {
                                     }
                                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                         Text(person.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                                        if (person.links.isNotEmpty()) {
+                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                                                person.links.take(4).forEach { link ->
+                                                    Box(
+                                                        Modifier.size(28.dp).background(brand.peach, CircleShape).clickable(role = Role.Button, onClickLabel = link.type ?: "Link") { env.deps.openUrl(link.url) },
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
+                                                        if (link.type == "linkedin") Text("in", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.ExtraBold))
+                                                        else LineIcon("globe", brand.ink, size = 14.dp)
+                                                    }
+                                                }
+                                            }
+                                        }
                                         if (person.roles.isNotEmpty()) {
                                             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                                 person.roles.forEach { r ->
@@ -512,6 +530,13 @@ private fun PeopleList(slug: String) {
                                         }
                                         person.talks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                                     }
+                                    val met = person.id in env.user.met(slug)
+                                    Text(
+                                        if (met) "✓ Meeting" else "+ Meet",
+                                        style = MaterialTheme.typography.labelLarge.copy(color = if (met) Color.White else brand.primary),
+                                        modifier = Modifier.background(if (met) brand.primary else Color.White, RoundedCornerShape(50)).border(1.dp, brand.primary, RoundedCornerShape(50))
+                                            .clickable(role = Role.Button, onClickLabel = "Want to meet ${person.name}") { env.user.toggleMet(slug, person.id) }.padding(horizontal = 14.dp, vertical = 5.dp),
+                                    )
                                 }
                                 if (index < shown.take(300).lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
                             }
@@ -802,7 +827,18 @@ private fun TicketArt(event: String, name: String, role: String, tags: List<Stri
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(16.dp)
     Column(modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
-        Box(Modifier.fillMaxWidth().height(160.dp).background(TICKET_RED), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier.fillMaxWidth().height(160.dp).background(TICKET_RED).patternBackground(Res.drawable.pattern_icons, null, alpha = 0.5f)
+                .drawWithContent {
+                    drawContent()
+                    // The tear line: a dashed rule along the bottom of the band with a bite out of each side.
+                    val y = size.height - 1.dp.toPx()
+                    drawLine(Color.White.copy(alpha = 0.55f), Offset(24.dp.toPx(), y), Offset(size.width - 24.dp.toPx(), y), strokeWidth = 1.5.dp.toPx(), pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 8f)))
+                    drawCircle(brand.surface, radius = 10.dp.toPx(), center = Offset(0f, size.height))
+                    drawCircle(brand.surface, radius = 10.dp.toPx(), center = Offset(size.width, size.height))
+                },
+            contentAlignment = Alignment.Center,
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
                     Modifier.size(76.dp).background(Color.White, RoundedCornerShape(18.dp)).border(3.dp, brand.accent, RoundedCornerShape(18.dp)),
@@ -902,7 +938,12 @@ fun GuideScreen(slug: String, onBack: () -> Unit) {
             item {
                 Column(
                     Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF5B1212), Color(0xFF7A2A16), Color(0xFF4F1313))))
+                        .background(Brush.linearGradient(listOf(Color(0xFF6D2021), Color(0xFF4A1415))))
+                        .patternBackground(Res.drawable.pattern_guide, null, alpha = 0.9f)
+                        .drawBehind {
+                            drawRect(Brush.radialGradient(listOf(Color(0x59F4A629), Color.Transparent), center = Offset(size.width * 0.92f, size.height * 0.12f), radius = size.width * 0.45f))
+                            drawRect(Brush.radialGradient(listOf(Color(0x8CC33A19), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
+                        }
                         .padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp),
                 ) {

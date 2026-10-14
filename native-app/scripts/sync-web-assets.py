@@ -26,8 +26,11 @@ for source, target in FILES:
 # Android cannot draw SVG files, so the tab drawings are rendered to PNG; their SVG hashes are recorded for the sync test.
 SVGS = ["home", "my-day", "quest", "contribute", "explore", "camp-card"]
 ART = ["people", "first-badge", "avatar"]
+PATTERNS = ["event", "guide", "people", "contribute", "icons", "schedule"]
 subprocess.run(["node", str(Path(__file__).with_name("render-nav-icons.mjs")), str(MEDIA), str(OUT)], check=True)
 hashes = {name: hashlib.md5((MEDIA / f"{name}.svg").read_bytes()).hexdigest() for name in SVGS}
 hashes.update({"illustrations/" + name: hashlib.md5((MEDIA / "illustrations" / f"{name}.svg").read_bytes()).hexdigest() for name in ART})
+(REPO / "native-app" / "web-art.json").write_text(json.dumps(hashes, indent=2) + chr(10))
+hashes.update({"pattern-" + name: hashlib.md5((MEDIA / f"pattern-{name}.svg").read_bytes()).hexdigest() for name in PATTERNS})
 (REPO / "native-app" / "web-art.json").write_text(json.dumps(hashes, indent=2) + chr(10))
 print(f"{len(FILES)} files copied and {len(SVGS)} icons rendered to {OUT}")

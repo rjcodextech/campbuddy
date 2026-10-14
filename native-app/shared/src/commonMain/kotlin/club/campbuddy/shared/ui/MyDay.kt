@@ -71,6 +71,9 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     var query by rememberSaveable { mutableStateOf("") }
     var mine by rememberSaveable { mutableStateOf(false) }
     var dayFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var trackFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var typeFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    var moreOpen by rememberSaveable { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var askFor by remember { mutableStateOf<Boolean>(false) }
 
@@ -84,7 +87,8 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     val shown = pool.filter { s ->
         (query.isBlank() || s.title.contains(query, ignoreCase = true) || s.trackNames.any { t -> t.contains(query, ignoreCase = true) } ||
             s.speakerIds.any { names[it]?.contains(query, ignoreCase = true) == true }) &&
-            (dayFilter == null || EventClock.startOf(s)?.let { EventClock.day(it, zone).toString() } == dayFilter)
+            (dayFilter == null || EventClock.startOf(s)?.let { EventClock.day(it, zone).toString() } == dayFilter) &&
+            (trackFilter == null || trackFilter in s.trackNames) && (typeFilter == null || s.sessionType == typeFilter)
     }
     val byDay = shown.groupBy { s -> EventClock.startOf(s)?.let { EventClock.day(it, zone) } }
         .toList().sortedBy { it.first?.toEpochDays() ?: Int.MAX_VALUE }
@@ -132,6 +136,38 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         }
         item { SearchField(query) { query = it } }
         message?.let { text -> item { Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) } }
+        item {
+            val tracks = sessions.flatMap { it.trackNames }.distinct().sorted()
+            val types = sessions.mapNotNull { it.sessionType }.distinct().sorted()
+            if (tracks.size + types.size > 1) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val pill = RoundedCornerShape(50)
+                    Row(
+                        Modifier.heightIn(min = 44.dp).background(brand.surface, pill).border(1.dp, brand.line, pill).clickable(role = Role.Button) { moreOpen = !moreOpen }.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LineIcon("filter", brand.ink, size = 16.dp)
+                        Text("More filters", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+                    }
+                    if (moreOpen) {
+                        if (tracks.size > 1) {
+                            Text("TRACK", style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp))
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                DayPill("All tracks", selected = trackFilter == null) { trackFilter = null }
+                                tracks.forEach { t -> DayPill(t, selected = trackFilter == t) { trackFilter = t } }
+                            }
+                        }
+                        if (types.size > 1) {
+                            Text("TYPE", style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp))
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                DayPill("All types", selected = typeFilter == null) { typeFilter = null }
+                                types.forEach { t -> DayPill(when (t) { "session" -> "Talk"; "custom" -> "Activity"; else -> t.replaceFirstChar { it.uppercase() } }, selected = typeFilter == t) { typeFilter = t } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if (days.size > 1) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

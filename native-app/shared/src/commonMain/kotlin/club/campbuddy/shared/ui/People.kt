@@ -1,6 +1,8 @@
 package club.campbuddy.shared.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import campbuddy_native.shared.generated.resources.pattern_people
 import org.jetbrains.compose.resources.painterResource
 import campbuddy_native.shared.generated.resources.art_people
 import campbuddy_native.shared.generated.resources.Res
@@ -192,7 +194,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
         if (joining) {
             JoinForm(model, roster, env.user.profile.interests, onClose = { joining = false })
         } else if (mine == null) {
-            Card {
+            Card(Modifier.clip(RoundedCornerShape(brand.radius.dp)).patternBackground(Res.drawable.pattern_people, brand.surface)) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Image(painterResource(Res.drawable.art_people), contentDescription = null, modifier = Modifier.size(width = 64.dp, height = 48.dp))
                     Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium)

@@ -22,6 +22,7 @@ data class EventCard(
     val country: String? = null,
     val completed: Boolean = false,
     val website: String? = null,
+    val venue: String? = null,
 )
 
 @Serializable
