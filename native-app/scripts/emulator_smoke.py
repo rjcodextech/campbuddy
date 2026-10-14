@@ -116,6 +116,14 @@ def scroll_down(times=1):
         time.sleep(0.8)
 
 
+def scroll_until(text, tries=8):
+    for _ in range(tries):
+        if find(text) is not None:
+            return True
+        scroll_down(1)
+    return find(text) is not None
+
+
 # ---- start fresh ------------------------------------------------------------------------------------
 adb("shell", "input", "keyevent", "KEYCODE_WAKEUP")
 if (args.serial or "").startswith("emulator") or not args.serial:
@@ -244,22 +252,37 @@ shot("06b-contribute")
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
 tap_text("Camp Card", exact=True)
 step("camp card shows the layouts", wait("Ticket", 12) is not None or wait("Camp Card", 5) is not None)
-scroll_down(1)
-step("the form has a Name field", wait("e.g. Sunil Kumar Sharma", 8) is not None)
-tap_text("e.g. Sunil Kumar Sharma")
+step("the form has a Name field", scroll_until("Name *", 10))
+label = find("Name *", exact=True)
+if label:
+    x0, y0, x1, y1 = label["box"]
+    adb("shell", "input", "tap", str(x0 + 300), str(y1 + 90))
+adb("shell", "input", "keyevent", "KEYCODE_MOVE_END")
+for _ in range(40):
+    adb("shell", "input", "keyevent", "KEYCODE_DEL")
 time.sleep(1)
 adb("shell", "input", "text", "Asha%sRao")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1)
 scroll_down(2)
-tap_text("yoursite.com")
+if scroll_until("Personal website", 4):
+    w = find("Personal website", exact=True)
+    adb("shell", "input", "tap", str(w["box"][0] + 300), str(w["box"][3] + 90))
 time.sleep(1)
 adb("shell", "input", "text", "asha.dev")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1)
 scroll_down(2)
 tap_text("Save Camp Card", exact=True)
-step("saving the card says so", wait("Camp Card saved on this phone.", 8) is not None or find("saved on this phone") is not None)
+time.sleep(1.5)
+saved_note = False
+for _ in range(12):
+    if find("Camp Card saved on this phone.") is not None:
+        saved_note = True
+        break
+    adb("shell", "input", "swipe", "1070", "700", "1070", "1900", "400")  # the note sits at the top of the page
+    time.sleep(0.8)
+step("saving the card says so", saved_note)
 shot("08-camp-card")
 
 # ---- Your data -------------------------------------------------------------------------------------------------------------
@@ -274,8 +297,7 @@ step("clearing says so", wait("Cleared. Nothing of yours is left", 8) is not Non
 tap_text("Home", exact=True)
 tap_text("Read the guide", 10)
 step("guide opens", wait("WORDCAMP 101", 15) is not None)
-scroll_down(3)
-step("the guide has the day", find("How the day usually goes") is not None or find("Registration") is not None)
+step("the guide has the day", scroll_until("How the day usually goes", 8) or find("Registration") is not None)
 shot("09-guide")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1.5)
