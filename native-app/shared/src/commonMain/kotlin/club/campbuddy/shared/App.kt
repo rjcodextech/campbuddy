@@ -71,6 +71,9 @@ fun App(deps: AppDeps) {
     val repository = remember { Repository(api, deps.store) }
     val user = remember { UserData(deps.store) }
     val env = remember { Env(deps, api, repository, user) }
+    coil3.compose.setSingletonImageLoaderFactory { context ->
+        coil3.ImageLoader.Builder(context).components { add(coil3.network.ktor3.KtorNetworkFetcherFactory()) }.build()
+    }
     var config by remember { mutableStateOf(repository.cachedConfig()) }
     val stack = remember { mutableStateListOf<Screen>(Screen.Picker) }
 

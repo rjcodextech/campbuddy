@@ -510,6 +510,7 @@ private fun SponsorList(slug: String) {
     Listing("", loader, "No sponsors listed yet.") { sponsor ->
         Card(onClick = sponsor.website?.let { site -> { env.deps.openUrl(site) } }) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                RemoteImage(sponsor.logoUrl, Modifier.heightIn(max = 56.dp).padding(bottom = 4.dp)) { }
                 Text(sponsor.name, style = MaterialTheme.typography.titleLarge)
                 if (sponsor.tierNames.isNotEmpty()) Text(sponsor.tierNames.joinToString(" · ").uppercase(), style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
                 sponsor.description?.takeIf { it.isNotBlank() }?.let { Text(it.take(220), style = MaterialTheme.typography.bodySmall) }
@@ -537,7 +538,9 @@ private fun DealList(slug: String) {
                     Box(
                         Modifier.size(56.dp).background(Color.White, RoundedCornerShape(brand.radius.dp)).border(1.dp, brand.line, RoundedCornerShape(brand.radius.dp)),
                         contentAlignment = Alignment.Center,
-                    ) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
+                    ) {
+                        RemoteImage(deal.logo, Modifier.size(48.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
+                    }
                     Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                 }
                 Text(deal.highlight?.takeIf { it.isNotBlank() } ?: deal.title, style = MaterialTheme.typography.headlineSmall)
@@ -691,7 +694,7 @@ private fun interestTags(text: String?): List<String> =
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun CampCardTab(eventName: String = "WordCamp") {
+fun CampCardTab(eventName: String = "WordCamp", logo: String? = null) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
@@ -728,7 +731,7 @@ fun CampCardTab(eventName: String = "WordCamp") {
                     Card(Modifier.fillParentMaxWidth(0.92f)) {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("Ticket", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
-                            TicketArt(eventName, name, role, tags, link, Modifier.captureTo(ticketLayer))
+                            TicketArt(eventName, name, role, tags, link, logo, Modifier.captureTo(ticketLayer))
                             ExportButtons(
                                 onShare = { scope.launch { env.deps.shareImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png") } },
                                 onSave = { scope.launch { exportNote = if (env.deps.saveImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png")) "Saved to your photos." else "Could not save. Use Share instead." } },
@@ -774,7 +777,7 @@ fun CampCardTab(eventName: String = "WordCamp") {
 /** The "Ticket" layout: a deep-red header with the event, then the person's name on a cream ticket. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TicketArt(event: String, name: String, role: String, tags: List<String>, link: String?, modifier: Modifier = Modifier) {
+private fun TicketArt(event: String, name: String, role: String, tags: List<String>, link: String?, logo: String?, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(16.dp)
     Column(modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
@@ -783,7 +786,9 @@ private fun TicketArt(event: String, name: String, role: String, tags: List<Stri
                 Box(
                     Modifier.size(76.dp).background(Color.White, RoundedCornerShape(18.dp)).border(3.dp, brand.accent, RoundedCornerShape(18.dp)),
                     contentAlignment = Alignment.Center,
-                ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(56.dp)) }
+                ) {
+                    RemoteImage(logo, Modifier.size(60.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(56.dp)) }
+                }
                 Text(
                     event.uppercase(),
                     style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFFF4E4C8), letterSpacing = 3.sp, fontWeight = FontWeight.Bold),

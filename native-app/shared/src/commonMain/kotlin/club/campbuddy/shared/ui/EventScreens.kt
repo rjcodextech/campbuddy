@@ -107,7 +107,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
                         "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
                         "explore" -> ExploreTab(slug)
-                        "camp-card" -> CampCardTab(e.value.name)
+                        "camp-card" -> CampCardTab(e.value.name, e.value.logo)
                         "memories" -> MemoriesTab(slug)
                         else -> Unit
                     }
@@ -121,7 +121,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
                     selected = tab.key == selected,
                     onClick = { selected = tab.key },
                     icon = { TabIcon(tab.key, tab.icon, tab.key == selected) },
-                    label = { Text(words(tab.title), style = MaterialTheme.typography.labelMedium, maxLines = 1) },
+                    label = { Text(words(tab.title), style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp), maxLines = 1, softWrap = false) },
                     colors = NavigationBarItemDefaults.colors(indicatorColor = brand.peach, selectedTextColor = brand.primary, unselectedTextColor = brand.muted),
                 )
             }
@@ -210,7 +210,9 @@ private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Inst
                 Box(
                     Modifier.size(88.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
                     contentAlignment = Alignment.Center,
-                ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(64.dp)) }
+                ) {
+                    RemoteImage(event.logo, Modifier.size(72.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(64.dp)) }
+                }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
                     Text(event.name, style = MaterialTheme.typography.headlineSmall)

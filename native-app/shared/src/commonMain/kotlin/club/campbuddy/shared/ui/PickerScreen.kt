@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
@@ -183,7 +184,9 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     ) {
         Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(64.dp).background(Color.White, CircleShape).border(1.dp, brand.line, CircleShape), contentAlignment = Alignment.Center) {
-                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(46.dp))
+                RemoteImage(event.logo, Modifier.size(52.dp).clip(CircleShape)) {
+                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(46.dp))
+                }
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 datesText(event.startsOn, event.endsOn)?.let {
