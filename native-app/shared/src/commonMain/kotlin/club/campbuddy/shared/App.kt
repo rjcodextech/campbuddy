@@ -58,7 +58,7 @@ class AppDeps(
 
 private sealed interface Screen {
     data object Picker : Screen
-    data class Event(val slug: String, val guide: Boolean = false, val tab: String? = null, val stamp: Int = 0) : Screen
+    data class Event(val slug: String, val guide: Boolean = false, val tab: String? = null, val stamp: Int = 0, val sub: String? = null) : Screen
     data object OrganizerLogin : Screen
     data object OrganizerHome : Screen
     data class OrganizerEvent(val event: club.campbuddy.shared.model.OrganizerEvent) : Screen
@@ -84,7 +84,7 @@ fun App(deps: AppDeps) {
     LaunchedEffect(deps.link?.id, deps.link?.slug) {
         deps.link?.let { link ->
             while (stack.size > 1) stack.removeAt(stack.lastIndex)
-            stack.add(Screen.Event(link.slug, guide = link.tab == "guide", tab = link.tab?.takeIf { it != "guide" }, stamp = link.id))
+            stack.add(Screen.Event(link.slug, guide = link.tab == "guide", tab = link.tab?.takeIf { it != "guide" }, stamp = link.id, sub = link.sub))
         }
     }
 
@@ -119,7 +119,7 @@ fun App(deps: AppDeps) {
                 onFirstTimer = { push(Screen.Event(it.slug, guide = true)) },
                 onOrganizer = { push(if (repository.organizerToken() != null) Screen.OrganizerHome else Screen.OrganizerLogin) },
             )
-            is Screen.Event -> androidx.compose.runtime.key(screen) { EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide, startTab = screen.tab) }
+            is Screen.Event -> androidx.compose.runtime.key(screen) { EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide, startTab = screen.tab, startSub = screen.sub) }
             Screen.OrganizerLogin -> OrganizerLoginScreen(api, repository, deps.deviceName, onSignedIn = { stack.removeAt(stack.lastIndex); push(Screen.OrganizerHome) }, onBack = ::pop)
             Screen.OrganizerHome -> OrganizerHomeScreen(api, repository, onEvent = { push(Screen.OrganizerEvent(it)) }, onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) }, onBack = ::pop)
             is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop)

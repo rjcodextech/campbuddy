@@ -78,7 +78,7 @@ import kotlinx.datetime.TimeZone
 
 /** One WordCamp: the bottom tabs and the Home blocks come from the server config. */
 @Composable
-fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false, startTab: String? = null) {
+fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false, startTab: String? = null, startSub: String? = null) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
@@ -118,7 +118,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
                         "my-day" -> MyDayTab(e.value, list, offline)
                         "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
-                        "explore" -> ExploreTab(slug)
+                        "explore" -> ExploreTab(slug, startSub)
                         "camp-card" -> CampCardTab(slug, e.value.name, e.value.logo, e.value.mark)
                         "memories" -> MemoriesTab(slug) { selected = tabs.firstOrNull()?.key ?: "home" }
                         else -> Unit

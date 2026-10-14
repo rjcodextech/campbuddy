@@ -20,6 +20,7 @@ import club.campbuddy.shared.model.WaveState
 import io.ktor.client.request.delete
 import io.ktor.client.request.request
 import club.campbuddy.shared.model.Data
+import club.campbuddy.shared.model.LeadRequest
 import club.campbuddy.shared.model.DelayData
 import club.campbuddy.shared.model.DelayInfo
 import club.campbuddy.shared.model.DelayRequest
@@ -162,6 +163,11 @@ class ApiClient(
     suspend fun registerPush(slug: String, token: String, deviceId: String) {
         write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/push/native-subscribe", null,
             PushRegistration(token = token, deviceId = deviceId, platform = platform, appVersion = appVersion))
+    }
+
+    /** The contact form a deal asks for before it opens: one lead per e-mail, the sponsor gets it. */
+    suspend fun sendLead(slug: String, offerId: Long, request: LeadRequest) {
+        write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/offers/$offerId/leads", null, request)
     }
 
     // ---- the Camp Card on the attendee list (only its owner token can change or remove it) ----

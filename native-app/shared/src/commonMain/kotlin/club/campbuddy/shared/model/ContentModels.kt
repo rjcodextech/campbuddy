@@ -11,6 +11,7 @@ data class Sponsor(
     @SerialName("logo_url") val logoUrl: String? = null,
     @SerialName("tier_names") val tierNames: List<String> = emptyList(),
     val description: String? = null,
+    val link: String? = null,
 )
 
 @Serializable
@@ -25,7 +26,27 @@ data class Deal(
     val url: String? = null,
     @SerialName("cta_label") val ctaLabel: String? = null,
     val logo: String? = null,
+    val website: String? = null,
+    @SerialName("capture_leads") val captureLeads: Boolean = false,
+    @SerialName("lead_form") val leadForm: LeadForm? = null,
 )
+
+/** The short form a deal asks for before it opens (the website's DealForm): which fields, which are needed, and the choices. */
+@Serializable
+data class LeadField(val mode: String = "off", val label: String = "", val hint: String? = null)
+
+@Serializable
+data class LeadChoices(val mode: String = "off", val label: String = "", val multiple: Boolean = false, val options: List<String> = emptyList())
+
+@Serializable
+data class LeadForm(
+    val intro: String? = null,
+    val fields: Map<String, LeadField> = emptyMap(),
+    val choices: LeadChoices? = null,
+)
+
+@Serializable
+data class LeadRequest(val name: String? = null, val company: String? = null, val email: String, val mobile: String? = null, val choices: List<String> = emptyList())
 
 @Serializable
 data class FreeSteal(

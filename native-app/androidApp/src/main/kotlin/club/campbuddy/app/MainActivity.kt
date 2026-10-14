@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
     private var linkCount = 0
 
     private fun linkFrom(intent: Intent?): DeepLink? =
-        intent?.data?.let { DeepLink.parse(it.scheme, it.host, it.path, ++linkCount) }
+        intent?.data?.let { DeepLink.parse(it.scheme, it.host, it.path, ++linkCount, it.query) }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

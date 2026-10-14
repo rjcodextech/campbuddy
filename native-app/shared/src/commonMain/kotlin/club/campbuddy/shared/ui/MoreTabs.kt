@@ -11,6 +11,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import club.campbuddy.shared.model.LeadRequest
+import club.campbuddy.shared.model.Deal
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
@@ -406,9 +412,9 @@ fun ContributeTab(slug: String) {
 // ---- Explore: people, sponsors, deals, free steals ---------------------------------------------------------------
 
 @Composable
-fun ExploreTab(slug: String) {
+fun ExploreTab(slug: String, start: String? = null) {
     val words = LocalWords.current
-    var section by rememberSaveable(slug) { mutableStateOf("people") }
+    var section by rememberSaveable(slug) { mutableStateOf(start?.takeIf { it in setOf("people", "sponsors", "deals", "steals", "info") } ?: "people") }
 
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -550,18 +556,52 @@ private fun PeopleList(slug: String) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun SponsorList(slug: String) {
     val env = LocalEnv.current
+    val brand = LocalBrand.current
     val loader = rememberLoader("sponsors:$slug") { env.repository.sponsors(slug) }
+    val state by loader.state
 
-    Listing("", loader, "No sponsors listed yet.") { sponsor ->
-        Card(onClick = sponsor.website?.let { site -> { env.deps.openUrl(site) } }) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                RemoteImage(sponsor.logoUrl, Modifier.heightIn(max = 56.dp).padding(bottom = 4.dp)) { }
-                Text(sponsor.name, style = MaterialTheme.typography.titleLarge)
-                if (sponsor.tierNames.isNotEmpty()) Text(sponsor.tierNames.joinToString(" · ").uppercase(), style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.sp))
-                sponsor.description?.takeIf { it.isNotBlank() }?.let { Text(it.take(220), style = MaterialTheme.typography.bodySmall) }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        when (val st = state) {
+            LoadState.Loading -> item { Loading() }
+            is LoadState.Failed -> item { ErrorState(st.message, loader.reload) }
+            is LoadState.Ready -> {
+                if (st.fromCache) item { OfflineNote() }
+                item { Text("Sponsors help keep tickets cheap. Stop by their booths and say hi. You don't have to buy anything, and many have swag, demos or open jobs.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                if (st.value.isEmpty()) item { Text("No sponsors listed yet.", style = MaterialTheme.typography.bodyMedium) }
+                // Grouped by tier, in the order the website lists them.
+                val tiers = st.value.groupBy { it.tierNames.firstOrNull().orEmpty() }
+                tiers.forEach { (tier, list) ->
+                    item(key = "tier-$tier") {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (tier.isNotBlank()) Text(tier.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                            FlowRow(maxItemsInEachRow = 2, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                list.forEach { sponsor ->
+                                    val key = tier.lowercase()
+                                    val (bg, border) = when {
+                                        "platinum" in key -> brand.peach to brand.accent
+                                        "bronze" in key -> brand.surface to Color(0xFFC8905E)
+                                        "gold" in key -> brand.surface to brand.accent
+                                        else -> brand.surface to brand.line
+                                    }
+                                    Box(
+                                        Modifier.weight(1f).heightIn(min = 54.dp).background(bg, RoundedCornerShape(4.dp)).border(1.dp, border, RoundedCornerShape(4.dp))
+                                            .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { env.deps.openUrl(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(28.dp)) {
+                                            Text(sponsor.name, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+                                        }
+                                    }
+                                }
+                                if (list.size % 2 == 1) Box(Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -573,41 +613,64 @@ private fun DealList(slug: String) {
     val brand = LocalBrand.current
     val clipboard = LocalClipboardManager.current
     var copied by remember { mutableStateOf<String?>(null) }
+    var formFor by remember { mutableStateOf<Deal?>(null) }
     val loader = rememberLoader("deals:$slug") { env.repository.deals(slug) }
 
+    formFor?.let { deal -> LeadDialog(slug, deal, onDone = { formFor = null; deal.url?.let(env.deps.openUrl) }, onCancel = { formFor = null }) }
+
     Listing("", loader, "No deals right now.", header = {
-        Text("Special offers for this WordCamp's attendees, from its sponsors and friends of the community.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+        Text("Special offers for this WordCamp's attendees, from its sponsors and friends of the community.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
     }) { deal ->
         var open by remember { mutableStateOf(false) }
         val hasMore = !deal.description.isNullOrBlank() || !deal.terms.isNullOrBlank()
-        Card {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        Modifier.size(56.dp).background(Color.White, RoundedCornerShape(brand.radius.dp)).border(1.dp, brand.line, RoundedCornerShape(brand.radius.dp)),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        RemoteImage(deal.logo, Modifier.size(48.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
-                    }
-                    Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+        val cta = (deal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get the deal")
+        val shape = RoundedCornerShape(brand.radius.dp)
+        Column(Modifier.fillMaxWidth().background(brand.surface, shape).border(1.dp, brand.line, shape).clip(shape)) {
+            Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(48.dp).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(1.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    RemoteImage(deal.logo, Modifier.size(44.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
                 }
-                Text(deal.highlight?.takeIf { it.isNotBlank() } ?: deal.title, style = MaterialTheme.typography.headlineSmall)
+                Column(Modifier.weight(1f)) {
+                    Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.titleMedium)
+                    deal.website?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) }
+                }
+                deal.highlight?.takeIf { it.isNotBlank() }?.let { tag ->
+                    Text(
+                        tag.uppercase(), textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp, lineHeight = 14.sp),
+                        modifier = Modifier.widthIn(max = 130.dp).rotate(-3f).background(brand.surface, RoundedCornerShape(6.dp)).border(2.dp, brand.primary, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 3.dp),
+                    )
+                }
+            }
+            Text(deal.title, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold, lineHeight = 24.3.sp), modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 0.dp))
+            // The tear line with the Details pill sitting on it.
+            Box(
+                Modifier.fillMaxWidth().padding(top = 8.dp).drawBehind {
+                    val y = size.height / 2
+                    drawLine(brand.line, Offset(8.dp.toPx(), y), Offset(size.width - 8.dp.toPx(), y), 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f)))
+                    drawCircle(brand.background, 10.dp.toPx(), Offset(0f, y))
+                    drawCircle(brand.background, 10.dp.toPx(), Offset(size.width, y))
+                },
+                contentAlignment = Alignment.Center,
+            ) {
                 if (hasMore) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        val pill = RoundedCornerShape(50)
-                        Row(
-                            Modifier.heightIn(min = 48.dp).background(brand.surface, pill).border(1.dp, brand.line, pill)
-                                .clickable(role = Role.Button) { open = !open }.padding(horizontal = 24.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text("Details", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
-                            LineIcon("chevron", brand.primary, size = 18.dp)
-                        }
+                    val pill = RoundedCornerShape(50)
+                    Row(
+                        Modifier.heightIn(min = 40.dp).background(brand.surface, pill).border(1.dp, brand.line, pill).clickable(role = Role.Button) { open = !open }.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text("Details", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+                        Box(Modifier.rotate(if (open) 180f else 0f)) { LineIcon("chevron-down", brand.primary, size = 16.dp) }
                     }
-                }
+                } else Box(Modifier.height(24.dp))
+            }
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (open) {
-                    deal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
-                    deal.terms?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                    deal.description?.takeIf { it.isNotBlank() }?.let { Text(it.replace("\r\n", "\n"), style = MaterialTheme.typography.bodyMedium) }
+                    deal.terms?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp)) }
                 }
                 deal.couponCode?.takeIf { it.isNotBlank() }?.let { code ->
                     val box = RoundedCornerShape(brand.radius.dp)
@@ -615,17 +678,77 @@ private fun DealList(slug: String) {
                         Modifier.fillMaxWidth().background(brand.peach.copy(alpha = 0.5f), box).border(1.dp, brand.line, box).padding(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Code", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+                        Text("Code", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
                         Text(code, style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold), modifier = Modifier.weight(1f))
                         ActionButton(if (copied == code) "Copied" else "Copy", filled = false) { clipboard.setText(AnnotatedString(code)); copied = code }
                     }
                 }
                 deal.url?.let { url ->
-                    PrimaryButton((deal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get the deal") + " →", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+                    PrimaryButton(cta + " " + (if (deal.captureLeads) "→" else "↗"), { if (deal.captureLeads && deal.leadForm != null) formFor = deal else env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+                    if (deal.captureLeads) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
+                        LineIcon("clipboard", brand.muted, size = 14.dp)
+                        Text("Short form first", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         }
     }
+}
+
+/** The short form a deal asks for before it opens, built from the deal's own field list. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun LeadDialog(slug: String, deal: Deal, onDone: () -> Unit, onCancel: () -> Unit) {
+    val env = LocalEnv.current
+    val brand = LocalBrand.current
+    val scope = rememberCoroutineScope()
+    val form = deal.leadForm ?: return
+    val values = remember { mutableStateMapOf<String, String>() }
+    var picked by remember { mutableStateOf(setOf<String>()) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var busy by remember { mutableStateOf(false) }
+    val shown = listOf("name", "company", "email", "mobile").mapNotNull { key -> form.fields[key]?.takeIf { it.mode != "off" }?.let { key to it } }
+
+    fun submit() {
+        for ((key, f) in shown) if (f.mode == "required" && values[key].isNullOrBlank()) { error = "${f.label} is needed."; return }
+        val email = values["email"].orEmpty().trim()
+        if (email.isEmpty() || !Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$").matches(email)) { error = "Enter a valid email address."; return }
+        form.choices?.let { c -> if (c.mode == "required" && picked.isEmpty()) { error = "Pick at least one: ${c.label}."; return } }
+        scope.launch {
+            busy = true
+            try {
+                env.api.sendLead(slug, deal.id, LeadRequest(values["name"]?.trim()?.ifEmpty { null }, values["company"]?.trim()?.ifEmpty { null }, email, values["mobile"]?.trim()?.ifEmpty { null }, picked.toList()))
+                onDone()
+            } catch (e: club.campbuddy.shared.data.ApiException) { error = e.message } catch (_: Exception) { error = "Couldn't send it. Check your connection and try again." }
+            busy = false
+        }
+    }
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onCancel,
+        title = { Text(deal.brand.ifBlank { deal.title }) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                form.intro?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                shown.forEach { (key, f) ->
+                    OutlinedTextField(
+                        values[key].orEmpty(), { values[key] = it.take(120) }, label = { Text(f.label + if (f.mode == "required") " *" else "") }, singleLine = true,
+                        supportingText = f.hint?.let { { Text(it) } }, modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = when (key) { "email" -> KeyboardType.Email; "mobile" -> KeyboardType.Phone; else -> KeyboardType.Text }),
+                    )
+                }
+                form.choices?.takeIf { it.mode != "off" && it.options.isNotEmpty() }?.let { c ->
+                    Text(c.label + if (c.mode == "required") " *" else "", style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        c.options.forEach { o -> ChoicePill(o, o in picked) { picked = if (c.multiple) (if (o in picked) picked - o else picked + o) else setOf(o) } }
+                    }
+                }
+                error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
+            }
+        },
+        confirmButton = { LinkButton(if (busy) "Sending…" else (deal.ctaLabel ?: "Continue") + " →", { if (!busy) submit() }) },
+        dismissButton = { LinkButton("Cancel", onCancel) },
+    )
 }
 
 @Composable
@@ -635,9 +758,23 @@ private fun InfoList(slug: String) {
     val clipboard = LocalClipboardManager.current
     var copied by remember { mutableStateOf<String?>(null) }
     val loader = rememberLoader("info:$slug") { env.repository.info(slug) }
+    val event = (rememberLoader("event:$slug") { env.repository.event(slug) }.state.value as? LoadState.Ready)?.value
     val state by loader.state
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        event?.let { e ->
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(48.dp).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(4.dp), contentAlignment = Alignment.Center) {
+                        RemoteImage(e.logo, Modifier.size(40.dp)) { Image(painterResource(Res.drawable.app_icon), null, Modifier.size(36.dp)) }
+                    }
+                    Column {
+                        Text(e.name, style = MaterialTheme.typography.titleMedium)
+                        infoDates(e.startsOn, e.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                    }
+                }
+            }
+        }
         when (val s = state) {
             LoadState.Loading -> item { Loading() }
             is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
@@ -647,36 +784,54 @@ private fun InfoList(slug: String) {
                 items(s.value.size) { i ->
                     val group = s.value[i]
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(group.title, style = MaterialTheme.typography.titleLarge)
+                        Text(group.title.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, letterSpacing = 0.72.sp))
                         Card {
-                            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                group.rows.forEach { row ->
-                                    Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-                                        Box(
-                                            Modifier.size(44.dp).background(if (row.alert) brand.danger.copy(alpha = 0.12f) else brand.peach, RoundedCornerShape(brand.radius.dp)),
-                                            contentAlignment = Alignment.Center,
-                                        ) { LineIcon(row.icon, if (row.alert) brand.danger else brand.primary, size = 24.dp) }
-                                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Column {
+                                group.rows.forEachIndexed { r, row ->
+                                    val link = row.action?.takeIf { it.type == "url" && (row.title == "Emergency contact" || row.title == "Code of Conduct") }
+                                    val tint = if (row.alert) brand.danger else brand.primary
+                                    Row(
+                                        Modifier.fillMaxWidth().let { m -> if (link != null) m.clickable(role = Role.Button) { env.deps.openUrl(link.value) } else m }.padding(vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top,
+                                    ) {
+                                        Box(Modifier.padding(top = 2.dp).size(24.dp), contentAlignment = Alignment.Center) { LineIcon(row.icon, tint, size = 22.dp) }
+                                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                                             Text(row.title, style = MaterialTheme.typography.titleMedium)
                                             row.text?.let {
-                                                Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted, fontFamily = if (row.mono) FontFamily.Monospace else FontFamily.Default))
+                                                Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted).let { st -> if (row.mono) st.copy(fontFamily = FontFamily.Monospace) else st })
                                             }
-                                            row.action?.let { action ->
-                                                val shown = if (action.type == "copy" && copied == action.value) "Copied" else action.label
-                                                ActionButton(shown, filled = false) {
-                                                    if (action.type == "copy") { clipboard.setText(AnnotatedString(action.value)); copied = action.value } else env.deps.openUrl(action.value)
+                                            if (link == null) row.action?.let { action ->
+                                                Box(Modifier.padding(top = 8.dp)) {
+                                                    val shown = if (action.type == "copy" && copied == action.value) "Copied" else action.label
+                                                    ActionButton(if (action.type == "url") "$shown  ↗" else shown, filled = false) {
+                                                        if (action.type == "copy") { clipboard.setText(AnnotatedString(action.value)); copied = action.value } else env.deps.openUrl(action.value)
+                                                    }
                                                 }
                                             }
                                         }
+                                        if (link != null) LineIcon(if (row.title == "Code of Conduct") "external" else "chevron-right", brand.muted, size = 18.dp)
                                     }
+                                    if (r < group.rows.lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
                                 }
                             }
                         }
                     }
                 }
+                item { DataControls(slug) }
             }
         }
     }
+}
+
+/** "Sat 21 – Sun 22 Nov 2026" (the Info header's dates). */
+private fun infoDates(starts: String?, ends: String?): String? {
+    val a = starts?.let { runCatching { kotlinx.datetime.LocalDate.parse(it) }.getOrNull() } ?: return null
+    val b = ends?.let { runCatching { kotlinx.datetime.LocalDate.parse(it) }.getOrNull() }
+    fun day(d: kotlinx.datetime.LocalDate) = d.dayOfWeek.name.take(3).lowercase().replaceFirstChar { it.uppercase() } + " " + d.dayOfMonth
+    fun month(d: kotlinx.datetime.LocalDate) = d.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+    if (b == null || b == a) return day(a) + " " + month(a) + " " + a.year
+
+    return if (a.month == b.month) day(a) + " – " + day(b) + " " + month(b) + " " + b.year else day(a) + " " + month(a) + " – " + day(b) + " " + month(b) + " " + b.year
 }
 
 @Composable
