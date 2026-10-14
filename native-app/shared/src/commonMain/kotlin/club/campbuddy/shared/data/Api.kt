@@ -57,6 +57,9 @@ val AppJson = Json {
 }
 
 @kotlinx.serialization.Serializable
+data class ShareReply(@kotlinx.serialization.SerialName("share_id") val shareId: String, @kotlinx.serialization.SerialName("owner_token") val ownerToken: String)
+
+@kotlinx.serialization.Serializable
 internal data class PushRegistration(
     val token: String,
     @kotlinx.serialization.SerialName("device_id") val deviceId: String,
@@ -159,6 +162,19 @@ class ApiClient(
     suspend fun registerPush(slug: String, token: String, deviceId: String) {
         write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/push/native-subscribe", null,
             PushRegistration(token = token, deviceId = deviceId, platform = platform, appVersion = appVersion))
+    }
+
+    // ---- the Camp Card on the attendee list (only its owner token can change or remove it) ----
+
+    suspend fun shareCard(slug: String, payload: kotlinx.serialization.json.JsonObject): ShareReply =
+        write(io.ktor.http.HttpMethod.Post, "/events/$slug/camp-card-share", null, payload)
+
+    suspend fun updateSharedCard(slug: String, shareId: String, token: String, payload: kotlinx.serialization.json.JsonObject) {
+        write<Unit>(io.ktor.http.HttpMethod.Put, "/events/$slug/camp-card-share/$shareId", token, payload)
+    }
+
+    suspend fun removeSharedCard(slug: String, shareId: String, token: String) {
+        checked(http.delete("$baseUrl/events/$slug/camp-card-share/$shareId") { common(); bearerAuth(token) })
     }
 
     // ---- organizer ----

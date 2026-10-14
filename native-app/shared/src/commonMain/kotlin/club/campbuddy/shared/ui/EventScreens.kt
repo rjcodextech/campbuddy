@@ -98,7 +98,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
     var guide by rememberSaveable(slug) { mutableStateOf(startInGuide) }
 
     if (guide) {
-        GuideScreen(slug) { guide = false }
+        GuideScreen(slug, onBack = { guide = false }, onTab = { guide = false; selected = it })
         return
     }
     PlatformBackHandler(enabled = true, onBack = onBack)
@@ -119,8 +119,8 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
                         "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
                         "explore" -> ExploreTab(slug)
-                        "camp-card" -> CampCardTab(e.value.name, e.value.logo)
-                        "memories" -> MemoriesTab(slug)
+                        "camp-card" -> CampCardTab(slug, e.value.name, e.value.logo, e.value.mark)
+                        "memories" -> MemoriesTab(slug) { selected = tabs.firstOrNull()?.key ?: "home" }
                         else -> Unit
                     }
                 }
@@ -163,6 +163,7 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
             val section = sections[index]
             when (section.type) {
                 "hero" -> HeroCard(event, phase, zone, now, sessions)
+                "memories" -> MemoriesCard(event.slug, withHeading = true)
                 "starting_soon" -> StartingSoon(sessions, saved.map { it.sessionId }.toSet(), now, zone)
                 "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event, startHereShown, onTab, onGuide)
                 "up_next" -> UpNext(section, sessions, now, zone, event.slug, saved.map { it.sessionId }.toSet(), onSchedule = { onTab("my-day") })

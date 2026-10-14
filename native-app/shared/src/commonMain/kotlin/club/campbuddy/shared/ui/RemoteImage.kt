@@ -22,7 +22,7 @@ fun RemoteImage(url: String?, modifier: Modifier = Modifier, contentScale: Conte
     val env = LocalEnv.current
     var failed by remember(url) { mutableStateOf(false) }
 
-    if (url.isNullOrBlank() || failed || url.endsWith(".ico")) {
+    if (url.isNullOrBlank() || failed) {
         fallback()
     } else {
         AsyncImage(

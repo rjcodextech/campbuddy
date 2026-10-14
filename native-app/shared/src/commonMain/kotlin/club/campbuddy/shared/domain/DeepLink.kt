@@ -3,7 +3,7 @@ package club.campbuddy.shared.domain
 /** A link into the app: an event, and optionally one of its tabs. [id] changes with every new link so the same one can open twice. */
 class DeepLink(val slug: String, val tab: String?, val id: Int = 0) {
     companion object {
-        private val TABS = setOf("my-day", "quest", "contribute", "explore", "camp-card", "memories")
+        private val TABS = setOf("my-day", "quest", "contribute", "explore", "camp-card", "memories", "guide")
 
         /**
          * https://campbuddy.club/event/{slug}[/{tab}] and campbuddy://event/{slug}[/{tab}] open that event.

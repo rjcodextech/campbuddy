@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.horizontalScroll
 import org.jetbrains.compose.resources.painterResource
 import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.pattern_event
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
 import campbuddy_native.shared.generated.resources.pattern_guide
@@ -699,433 +700,70 @@ private fun StealList(slug: String) {
 // ---- Memories ------------------------------------------------------------------------------------------------------
 
 @Composable
-fun MemoriesTab(slug: String) {
-    val env = LocalEnv.current
-    val words = LocalWords.current
-    val loader = rememberLoader("memories:$slug") { env.repository.memories(slug) }
-    val state by loader.state
-
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        item { Text(words("tabs.memories"), style = MaterialTheme.typography.headlineSmall) }
-        when (val s = state) {
-            LoadState.Loading -> item { Loading() }
-            is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
-            is LoadState.Ready -> {
-                val memories = s.value
-                if (memories.photos == null && memories.videos == null) item { Text("Photos and talk recordings show up here after the event.", style = MaterialTheme.typography.bodyMedium) }
-                memories.photos?.let { url -> item { Card(onClick = { env.deps.openUrl(url) }) { Text("Photo album", style = MaterialTheme.typography.titleMedium) } } }
-                memories.videos?.let { url -> item { Card(onClick = { env.deps.openUrl(url) }) { Text("Talks on WordPress.tv", style = MaterialTheme.typography.titleMedium) } } }
-            }
-        }
-    }
-}
-
-// ---- Camp Card ----------------------------------------------------------------------------------------------------------
-
-private val CARD_FIELDS = listOf(
-    "name" to "Your name",
-    "role" to "Role",
-    "company" to "Company or community",
-    "interests" to "Interests (separate with commas)",
-    "wordpressOrg" to "WordPress.org username",
-    "linkedin" to "LinkedIn link",
-    "website" to "Website",
-)
-
-private val TICKET_RED = Color(0xFF6E1111)
-private val INK_DARK = Color(0xFF1F1B1C)
-
-/** The tags typed in the interests box: tidy, no repeats, at most five. */
-private fun interestTags(text: String?): List<String> =
-    text.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }.take(5)
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun CampCardTab(eventName: String = "WordCamp", logo: String? = null) {
-    val env = LocalEnv.current
-    val words = LocalWords.current
-    val brand = LocalBrand.current
-    val saved = env.user.card()
-    val profile = env.user.profile
-    var fields by remember {
-        mutableStateOf(
-            CARD_FIELDS.associate { (key, _) ->
-                key to (saved[key] ?: if (key == "role") profile.profession.orEmpty() else if (key == "wordpressOrg") profile.wporg.orEmpty() else "")
-            },
-        )
-    }
-    var message by remember { mutableStateOf<String?>(null) }
-    val name = fields["name"].orEmpty()
-    val link = cardLink(fields)
-    val ticketLayer = rememberGraphicsLayer()
-    val classicLayer = rememberGraphicsLayer()
-    val scope = rememberCoroutineScope()
-    var exportNote by remember { mutableStateOf<String?>(null) }
-    val role = listOf("role", "company").mapNotNull { fields[it]?.takeIf(String::isNotBlank) }.joinToString(" · ")
-    val tags = interestTags(fields["interests"])
-
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Text(words("tabs.camp_card"), style = MaterialTheme.typography.headlineSmall) }
-        item {
-            Text(
-                if (name.isBlank()) "This is a preview. Fill in the form below to make it yours." else "Your card stays on this phone until you choose to share it.",
-                style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
-            )
-        }
-        item {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                item {
-                    Card(Modifier.fillParentMaxWidth(0.92f)) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Ticket", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
-                            TicketArt(eventName, name, role, tags, link, logo, Modifier.captureTo(ticketLayer))
-                            ExportButtons(
-                                onShare = { scope.launch { env.deps.shareImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png") } },
-                                onSave = { scope.launch { exportNote = if (env.deps.saveImage(ticketLayer.toImageBitmap(), "campbuddy-ticket.png")) "Saved to your photos." else "Could not save. Use Share instead." } },
-                            )
-                        }
-                    }
-                }
-                item {
-                    Card(Modifier.fillParentMaxWidth(0.92f)) {
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("Classic", style = MaterialTheme.typography.titleMedium.copy(color = brand.muted))
-                            ClassicArt(eventName, name, role, tags, link, Modifier.captureTo(classicLayer))
-                            ExportButtons(
-                                onShare = { scope.launch { env.deps.shareImage(classicLayer.toImageBitmap(), "campbuddy-classic.png") } },
-                                onSave = { scope.launch { exportNote = if (env.deps.saveImage(classicLayer.toImageBitmap(), "campbuddy-classic.png")) "Saved to your photos." else "Could not save. Use Share instead." } },
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        exportNote?.let { note -> item { Text(note, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) } }
-        CARD_FIELDS.forEach { (key, label) ->
-            item(key = key) {
-                OutlinedTextField(
-                    value = fields[key].orEmpty(),
-                    onValueChange = { fields = fields + (key to it.take(120)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(label) },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = if (key == "linkedin" || key == "website") KeyboardType.Uri else KeyboardType.Text),
-                    shape = RoundedCornerShape(brand.radius.dp),
-                )
-            }
-        }
-        item {
-            PrimaryButton("Save my card", { env.user.saveCard(fields); message = "Saved on this phone." }, Modifier.fillMaxWidth())
-            message?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp)) }
-        }
-    }
-}
-
-/** The "Ticket" layout: a deep-red header with the event, then the person's name on a cream ticket. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TicketArt(event: String, name: String, role: String, tags: List<String>, link: String?, logo: String?, modifier: Modifier = Modifier) {
-    val brand = LocalBrand.current
-    val shape = RoundedCornerShape(16.dp)
-    Column(modifier.fillMaxWidth().clip(shape).background(brand.surface)) {
-        Box(
-            Modifier.fillMaxWidth().height(160.dp).background(TICKET_RED).patternBackground(Res.drawable.pattern_icons, null, alpha = 0.5f)
-                .drawWithContent {
-                    drawContent()
-                    // The tear line: a dashed rule along the bottom of the band with a bite out of each side.
-                    val y = size.height - 1.dp.toPx()
-                    drawLine(Color.White.copy(alpha = 0.55f), Offset(24.dp.toPx(), y), Offset(size.width - 24.dp.toPx(), y), strokeWidth = 1.5.dp.toPx(), pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(10f, 8f)))
-                    drawCircle(brand.surface, radius = 10.dp.toPx(), center = Offset(0f, size.height))
-                    drawCircle(brand.surface, radius = 10.dp.toPx(), center = Offset(size.width, size.height))
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Box(
-                    Modifier.size(76.dp).background(Color.White, RoundedCornerShape(18.dp)).border(3.dp, brand.accent, RoundedCornerShape(18.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    RemoteImage(logo, Modifier.size(60.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(56.dp)) }
-                }
-                Text(
-                    event.uppercase(),
-                    style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFFF4E4C8), letterSpacing = 3.sp, fontWeight = FontWeight.Bold),
-                    textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp),
-                )
-            }
-        }
-        Box(Modifier.fillMaxWidth().height(2.dp).background(brand.line))
-        Column(
-            Modifier.fillMaxWidth().heightIn(min = 280.dp).padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
-        ) {
-            Text("HI, I'M", style = MaterialTheme.typography.labelLarge.copy(color = brand.accent, letterSpacing = 4.sp, fontWeight = FontWeight.Bold))
-            Text(
-                name.ifBlank { "Your name" },
-                style = MaterialTheme.typography.headlineSmall.copy(color = TICKET_RED, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold),
-                textAlign = TextAlign.Center, modifier = Modifier.padding(top = 6.dp),
-            )
-            Box(Modifier.padding(vertical = 12.dp).size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
-            if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = brand.muted, fontWeight = FontWeight.Normal), textAlign = TextAlign.Center)
-            link?.let { QrBadge(it) }
-            if (tags.isNotEmpty()) {
-                FlowRow(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    tags.forEach { tag ->
-                        Text(
-                            tag, style = MaterialTheme.typography.labelLarge.copy(color = TICKET_RED),
-                            modifier = Modifier.background(brand.peach.copy(alpha = 0.6f), RoundedCornerShape(50)).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp),
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** The "Classic" layout: dark card, gold accent. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun ClassicArt(event: String, name: String, role: String, tags: List<String>, link: String?, modifier: Modifier = Modifier) {
-    val brand = LocalBrand.current
-    val shape = RoundedCornerShape(16.dp)
-    Column(
-        modifier.fillMaxWidth().clip(shape).background(INK_DARK).heightIn(min = 400.dp).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        Text(event.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.accent, letterSpacing = 2.sp, fontWeight = FontWeight.Bold))
-        Box(Modifier.size(width = 44.dp, height = 4.dp).background(brand.accent, RoundedCornerShape(2.dp)))
-        Text(name.ifBlank { "Your name" }, style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 30.sp, lineHeight = 36.sp, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 80.dp))
-        if (role.isNotBlank()) Text(role, style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFD9CFC6), fontWeight = FontWeight.Normal))
-        link?.let { QrBadge(it) }
-        if (tags.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                tags.forEach { tag ->
-                    Text(tag, style = MaterialTheme.typography.labelLarge.copy(color = brand.accent), modifier = Modifier.border(1.dp, brand.accent, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp))
-                }
-            }
-        }
-    }
-}
-
-// ---- Guide ---------------------------------------------------------------------------------------------------------------------
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun GuideScreen(slug: String, onBack: () -> Unit) {
+fun MemoriesTab(slug: String, onHome: () -> Unit = {}) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
-    val loader = rememberLoader("guide:$slug") { env.repository.guide(slug) }
     val eventLoader = rememberLoader("event:$slug") { env.repository.event(slug) }
-    val infoGroups = (rememberLoader("info:$slug") { env.repository.info(slug) }.state.value as? LoadState.Ready)?.value.orEmpty()
-    val eventName = (eventLoader.state.value as? LoadState.Ready)?.value?.name
-    val state by loader.state
-    val tag = (eventLoader.state.value as? LoadState.Ready)?.value?.shortName?.takeIf { it.isNotBlank() }?.let { if (it.startsWith("#")) it else "#$it" }
-    val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
+    val event = (eventLoader.state.value as? LoadState.Ready)?.value
 
-    club.campbuddy.shared.PlatformBackHandler(true, onBack)
-
-    Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
-            Box(
-                Modifier.size(44.dp).background(brand.primary, CircleShape).clickable(role = Role.Button, onClickLabel = "Back", onClick = onBack),
-                contentAlignment = Alignment.Center,
-            ) { Text("✕", style = MaterialTheme.typography.titleMedium.copy(color = Color.White)) }
-        }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-
-        LazyColumn(Modifier.fillMaxSize(), state = listState, contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        event?.let { e ->
             item {
-                Column(
-                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                        .background(Brush.linearGradient(listOf(Color(0xFF6D2021), Color(0xFF4A1415))))
-                        .patternBackground(Res.drawable.pattern_guide, null, alpha = 0.9f)
-                        .drawBehind {
-                            drawRect(Brush.radialGradient(listOf(Color(0x59F4A629), Color.Transparent), center = Offset(size.width * 0.92f, size.height * 0.12f), radius = size.width * 0.45f))
-                            drawRect(Brush.radialGradient(listOf(Color(0x8CC33A19), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
+                val shape = RoundedCornerShape(brand.radius.dp)
+                Card(Modifier.clip(shape).patternBackground(Res.drawable.pattern_event, brand.surface)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(104.dp).background(brand.background, shape).border(1.dp, brand.line, shape), contentAlignment = Alignment.Center) {
+                            RemoteImage(e.logo, Modifier.size(96.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(72.dp)) }
                         }
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    Row(
-                        Modifier.background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(50)).padding(start = 6.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp).clip(CircleShape))
-                        Text("WORDCAMP 101", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp))
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                            Text(
-                                "New to ${tag ?: "WordCamp"}? Start here.",
-                                style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 28.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold),
-                            )
-                            Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFFF1DFD2)))
-                        }
-                        Image(painterResource(Res.drawable.art_first_badge), contentDescription = null, modifier = Modifier.width(96.dp).padding(start = 8.dp))
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf("clock" to "5-minute read", "wifi" to "Works offline").forEach { (icon, label) ->
-                            Row(
-                                Modifier.background(brand.accent, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                LineIcon(icon, Color(0xFF3A1A00), size = 16.dp)
-                                Text(label, style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF3A1A00), fontWeight = FontWeight.Bold))
-                            }
-                        }
-                    }
-                }
-            }
-            when (val s = state) {
-                LoadState.Loading -> item { Loading() }
-                is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }
-                is LoadState.Ready -> {
-                    val guide = s.value
-                    val atEvent = infoGroups.filter { it.title != "Links" }.flatMap { it.rows }.filter { it.title in setOf("Venue", "Registration", "Emergency contact", "Wifi") }
-                    val sections = buildList {
-                        if (atEvent.isNotEmpty()) add("At this event")
-                        add("Your day")
-                        if (guide.tips.isNotEmpty()) add("Good to know")
-                        if (guide.bring.isNotEmpty()) add("What to bring")
-                        if (guide.glossary.isNotEmpty()) add("Words you'll hear")
-                        if (guide.faq.isNotEmpty()) add("Questions")
-                    }
-                    // list positions: 0 hero, 1 pills, then each section is a heading followed by its cards
-                    val starts = mutableMapOf<String, Int>()
-                    var at = 2
-                    sections.forEach { name ->
-                        starts[name] = at
-                        at += 1 + when (name) {
-                            "At this event" -> 1
-                            "Your day" -> guide.day.size
-                            "Good to know" -> guide.tips.size
-                            "What to bring" -> 1
-                            "Words you'll hear" -> guide.glossary.size
-                            else -> guide.faq.size
-                        }
-                    }
-                    item {
-                        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            sections.forEach { name ->
-                                val pill = RoundedCornerShape(50)
-                                Text(
-                                    name, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink),
-                                    modifier = Modifier.background(brand.surface, pill).border(1.dp, brand.line, pill)
-                                        .clickable(role = Role.Button) { scope.launch { listState.animateScrollToItem(starts.getValue(name) + if (s.fromCache) 1 else 0) } }
-                                        .padding(horizontal = 22.dp, vertical = 14.dp),
-                                )
-                            }
-                        }
-                    }
-                    if (s.fromCache) item { OfflineNote() }
-                    if (atEvent.isNotEmpty()) {
-                        item { Text("At ${eventName ?: "this event"}", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                        item {
-                            Card {
-                                Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                    atEvent.forEach { row ->
-                                        Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-                                            Box(Modifier.size(24.dp).padding(top = 2.dp), contentAlignment = Alignment.Center) { LineIcon(row.icon, brand.primary, size = 22.dp) }
-                                            Column(Modifier.weight(1f)) {
-                                                Text(if (row.title == "Emergency contact") "Need help?" else row.title, style = MaterialTheme.typography.titleMedium)
-                                                row.text?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    item { Text("How the day runs", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                    items(guide.day.size) { i ->
-                        val d = guide.day[i]
-                        Card {
-                            Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-                                Box(Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) { LineIcon(d.icon, brand.primary, size = 24.dp) }
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text(d.title, style = MaterialTheme.typography.titleLarge)
-                                    Text(d.what, style = MaterialTheme.typography.bodyLarge)
-                                    if (d.tip.isNotBlank()) Text("Tip: " + d.tip, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                                }
-                            }
-                        }
-                    }
-                    if (guide.tips.isNotEmpty()) {
-                        item { Text("Good to know", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                        items(guide.tips.size) { i ->
-                            val t = guide.tips[i]
-                            Card {
-                                Row(horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.Top) {
-                                    Box(Modifier.size(44.dp).background(brand.peach, RoundedCornerShape(brand.radius.dp)), contentAlignment = Alignment.Center) { LineIcon(t.icon, brand.primary, size = 24.dp) }
-                                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                        Text(t.title, style = MaterialTheme.typography.titleLarge)
-                                        Text(t.text, style = MaterialTheme.typography.bodyLarge)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (guide.bring.isNotEmpty()) {
-                        item { Text("What to bring", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                        item { Card { Column(verticalArrangement = Arrangement.spacedBy(6.dp)) { guide.bring.forEach { Text("• $it", style = MaterialTheme.typography.bodyLarge) } } } }
-                    }
-                    if (guide.glossary.isNotEmpty()) {
-                        item { Text("Words you'll hear", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                        items(guide.glossary.size) { i ->
-                            val g = guide.glossary[i]
-                            Card { Column(verticalArrangement = Arrangement.spacedBy(2.dp)) { Text(g.term, style = MaterialTheme.typography.titleLarge); Text(g.meaning, style = MaterialTheme.typography.bodyLarge) } }
-                        }
-                    }
-                    if (guide.faq.isNotEmpty()) {
-                        item { Text("Questions", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-                        items(guide.faq.size) { i ->
-                            val f = guide.faq[i]
-                            Card { Column(verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(f.q, style = MaterialTheme.typography.titleLarge); Text(f.a, style = MaterialTheme.typography.bodyLarge) } }
+                        Column(Modifier.weight(1f)) {
+                            Text("MEMORIES", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
+                            Text(e.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
+                            heroDates(e.startsOn, e.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
                         }
                     }
                 }
             }
         }
+        item { MemoriesCard(slug, withHeading = false, emptyNote = true) }
+        item { QuietButton("Back to ${event?.name ?: "the event"}", onHome, Modifier.fillMaxWidth()) }
     }
 }
 
-
-/** The card's QR (white tile so it scans on either layout) with what it opens. */
+/** The photo album and the talks on WordPress.tv, once the organizers added them (the website's memories-card). */
 @Composable
-private fun QrBadge(link: String) {
+fun MemoriesCard(slug: String, withHeading: Boolean, emptyNote: Boolean = false) {
+    val env = LocalEnv.current
     val brand = LocalBrand.current
-    Column(Modifier.padding(top = 14.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Box(Modifier.clip(RoundedCornerShape(8.dp)).background(Color.White).padding(4.dp)) { QrCodeView(link, 104.dp) }
-        Text("Scan to connect", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted))
+    val state = rememberLoader("memories:$slug") { env.repository.memories(slug) }.state.value
+    val memories = (state as? LoadState.Ready)?.value
+    val links = listOfNotNull(
+        memories?.photos?.let { Triple("camera", "Photo album" to "The official photos. Find yourself in them.", it) },
+        memories?.videos?.let { Triple("play", "Speaker sessions on WordPress.tv" to "Missed a talk, or want to watch one again? The recordings are here.", it) },
+    )
+    if (memories == null) return
+    if (links.isEmpty()) {
+        if (emptyNote) Card {
+            Column {
+                Text("Nothing here yet", style = MaterialTheme.typography.titleMedium)
+                Text("The photo album and the recorded talks show up here once the organizers share them. Talks usually reach WordPress.tv a few weeks after the event.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp))
+            }
+        }
+        return
     }
-}
-
-@Composable
-private fun ExportButtons(onShare: () -> Unit, onSave: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        IconButton("share", "Share", onShare, Modifier.weight(1f))
-        IconButton("download", "Download", onSave, Modifier.weight(1f))
-    }
-}
-
-/** Records what is drawn into [layer] as well, so the card can be turned into a picture on demand. */
-private fun Modifier.captureTo(layer: androidx.compose.ui.graphics.layer.GraphicsLayer): Modifier = this.drawWithContent {
-    layer.record { this@drawWithContent.drawContent() }
-    drawLayer(layer)
-}
-
-/** The website's outline button with an icon in front (Share, Download). */
-@Composable
-private fun IconButton(icon: String, text: String, onClick: () -> Unit, modifier: Modifier) {
-    val brand = LocalBrand.current
-    Row(
-        modifier.heightIn(min = 50.dp).border(1.dp, brand.line, RoundedCornerShape(4.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically,
-    ) {
-        LineIcon(icon, brand.ink, size = 20.dp)
-        Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink))
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (withHeading) Text("Memories", style = MaterialTheme.typography.headlineSmall)
+        links.forEach { (icon, copy, url) ->
+            Card(onClick = { env.deps.openUrl(url) }) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon(icon, brand.primary, size = 22.dp)
+                    Column(Modifier.weight(1f)) {
+                        Text(copy.first, style = MaterialTheme.typography.titleMedium)
+                        Text(copy.second, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp))
+                    }
+                    LineIcon("external", brand.muted, size = 18.dp)
+                }
+            }
+        }
     }
 }
 

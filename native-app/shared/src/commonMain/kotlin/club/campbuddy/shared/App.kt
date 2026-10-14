@@ -84,7 +84,7 @@ fun App(deps: AppDeps) {
     LaunchedEffect(deps.link?.id, deps.link?.slug) {
         deps.link?.let { link ->
             while (stack.size > 1) stack.removeAt(stack.lastIndex)
-            stack.add(Screen.Event(link.slug, tab = link.tab, stamp = link.id))
+            stack.add(Screen.Event(link.slug, guide = link.tab == "guide", tab = link.tab?.takeIf { it != "guide" }, stamp = link.id))
         }
     }
 

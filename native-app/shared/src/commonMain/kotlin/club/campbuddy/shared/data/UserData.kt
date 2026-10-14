@@ -27,6 +27,10 @@ data class Profile(
 @Serializable
 data class MyDiscovery(val discoveryId: String, val ownerToken: String)
 
+/** The shared Camp Card: its id, the secret that proves it is ours, and whose name it is shown under. */
+@Serializable
+data class MyShare(val shareId: String, val ownerToken: String, val rosterId: Long, val name: String)
+
 /** A saved session; the title and start are kept so reminders and My schedule work offline. */
 @Serializable
 data class Bookmark(val sessionId: Long, val title: String = "", val startsAt: String? = null, val endsAt: String? = null)
@@ -52,6 +56,8 @@ class UserData(private val store: KeyValueStore) {
     private var discoveryMap by mutableStateOf(load("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer())) ?: emptyMap())
 
     private var metMap by mutableStateOf(load("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer()))) ?: emptyMap())
+
+    private var shareMap by mutableStateOf(load("cardshare", MapSerializer(String.serializer(), MyShare.serializer())) ?: emptyMap())
 
     private var blockedMap by mutableStateOf(load("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer()))) ?: emptyMap())
 
@@ -158,6 +164,19 @@ class UserData(private val store: KeyValueStore) {
         save("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer())), metMap)
     }
 
+    /** This phone's Camp Card on one event's attendee list, if it was turned on. */
+    fun share(slug: String): MyShare? = shareMap[slug]
+
+    fun saveShare(slug: String, mine: MyShare) {
+        shareMap = shareMap + (slug to mine)
+        save("cardshare", MapSerializer(String.serializer(), MyShare.serializer()), shareMap)
+    }
+
+    fun forgetShare(slug: String) {
+        shareMap = shareMap - slug
+        save("cardshare", MapSerializer(String.serializer(), MyShare.serializer()), shareMap)
+    }
+
     fun blocked(slug: String): Set<String> = blockedMap[slug].orEmpty().toSet()
 
     fun block(slug: String, discoveryId: String) {
@@ -178,7 +197,7 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meet").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meet", "cardshare").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()
@@ -187,6 +206,7 @@ class UserData(private val store: KeyValueStore) {
         discoveryMap = emptyMap()
         blockedMap = emptyMap()
         metMap = emptyMap()
+        shareMap = emptyMap()
     }
 
     @Suppress("FunctionName")
