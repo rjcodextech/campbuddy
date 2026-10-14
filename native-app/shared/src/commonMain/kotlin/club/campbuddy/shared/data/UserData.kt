@@ -33,7 +33,11 @@ data class MyShare(val shareId: String, val ownerToken: String, val rosterId: Lo
 
 /** A saved session; the title and start are kept so reminders and My schedule work offline. */
 @Serializable
-data class Bookmark(val sessionId: Long, val title: String = "", val startsAt: String? = null, val endsAt: String? = null)
+data class Bookmark(val sessionId: Long, val title: String = "", val startsAt: String? = null, val endsAt: String? = null, val status: String? = null)
+
+/** Someone this person plans to meet at an event (kept on this phone only; they are not told). [at] is a local "YYYY-MM-DDTHH:MM" or null for any time. */
+@Serializable
+data class Meeting(val rosterId: Long, val name: String, val avatarUrl: String? = null, val sub: String = "", val note: String = "", val at: String? = null, val status: String? = null)
 
 /** The reminder question: asked once after the first save, a "no thanks" is final, a denial is final. */
 @Serializable
@@ -55,7 +59,7 @@ class UserData(private val store: KeyValueStore) {
 
     private var discoveryMap by mutableStateOf(load("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer())) ?: emptyMap())
 
-    private var metMap by mutableStateOf(load("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer()))) ?: emptyMap())
+    private var metMap by mutableStateOf(load("meetings", MapSerializer(String.serializer(), ListSerializer(Meeting.serializer()))) ?: emptyMap())
 
     private var shareMap by mutableStateOf(load("cardshare", MapSerializer(String.serializer(), MyShare.serializer())) ?: emptyMap())
 
@@ -101,7 +105,7 @@ class UserData(private val store: KeyValueStore) {
     fun refreshBookmarks(slug: String, sessions: List<Session>) {
         val byId = sessions.associateBy { it.id }
         val now = bookmarks(slug)
-        val next = now.map { b -> byId[b.sessionId]?.let { Bookmark(it.id, it.title, it.startsAt, it.endsAt) } ?: b }
+        val next = now.map { b -> byId[b.sessionId]?.let { Bookmark(it.id, it.title, it.startsAt, it.endsAt, b.status) } ?: b }
         if (next != now) {
             bookmarkMap = bookmarkMap + (slug to next)
             save("bookmarks", MapSerializer(String.serializer(), ListSerializer(Bookmark.serializer())), bookmarkMap)
@@ -155,13 +159,29 @@ class UserData(private val store: KeyValueStore) {
         save("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer()), discoveryMap)
     }
 
-    /** The attendees this person marked "+ Meet" at one event (kept on this phone only). */
-    fun met(slug: String): Set<Long> = metMap[slug].orEmpty().toSet()
+    /** The people planned (or marked met / not met / hidden) at one event. */
+    fun meetings(slug: String): List<Meeting> = metMap[slug].orEmpty()
 
-    fun toggleMet(slug: String, rosterId: Long) {
-        val now = met(slug)
-        metMap = metMap + (slug to (if (rosterId in now) now - rosterId else now + rosterId).toList())
-        save("meet", MapSerializer(String.serializer(), ListSerializer(Long.serializer())), metMap)
+    fun meeting(slug: String, rosterId: Long): Meeting? = meetings(slug).firstOrNull { it.rosterId == rosterId }
+
+    fun saveMeeting(slug: String, meeting: Meeting) {
+        metMap = metMap + (slug to (meetings(slug).filterNot { it.rosterId == meeting.rosterId } + meeting))
+        save("meetings", MapSerializer(String.serializer(), ListSerializer(Meeting.serializer())), metMap)
+        revision++
+    }
+
+    fun removeMeeting(slug: String, rosterId: Long) {
+        metMap = metMap + (slug to meetings(slug).filterNot { it.rosterId == rosterId })
+        save("meetings", MapSerializer(String.serializer(), ListSerializer(Meeting.serializer())), metMap)
+        revision++
+    }
+
+    /** Attended / Missed on a saved session (pressing the same one again clears it). */
+    fun setSessionStatus(slug: String, sessionId: Long, status: String?) {
+        val now = bookmarks(slug)
+        val next = now.map { if (it.sessionId == sessionId) it.copy(status = if (it.status == status) null else status) else it }
+        bookmarkMap = bookmarkMap + (slug to next)
+        save("bookmarks", MapSerializer(String.serializer(), ListSerializer(Bookmark.serializer())), bookmarkMap)
     }
 
     /** This phone's Camp Card on one event's attendee list, if it was turned on. */
@@ -197,7 +217,7 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meet", "cardshare").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meetings", "cardshare").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()

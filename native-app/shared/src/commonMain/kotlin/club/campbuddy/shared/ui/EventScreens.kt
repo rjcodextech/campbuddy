@@ -104,7 +104,7 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
     PlatformBackHandler(enabled = true, onBack = onBack)
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        TopBar(onGuide = { guide = true }, onRefresh = { eventLoader.reload(); sessionsLoader.reload() }, onBack = if (env.deps.platform == "ios") onBack else null)
+        TopBar(onGuide = { guide = true }, onSwitch = onBack)
         if (selected == "home" || selected == "my-day") RunningLate(slug)
         Box(Modifier.weight(1f)) {
             when (val e = event) {
@@ -578,7 +578,7 @@ private fun TabIcon(key: String, icon: String, selected: Boolean) {
 
 /** The website's header: the CampBuddy wordmark, the guide and a refresh (32dp peach circles). */
 @Composable
-private fun TopBar(onGuide: () -> Unit, onRefresh: () -> Unit, onBack: (() -> Unit)? = null) {
+private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit) {
     val brand = LocalBrand.current
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -586,13 +586,11 @@ private fun TopBar(onGuide: () -> Unit, onRefresh: () -> Unit, onBack: (() -> Un
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // iOS has no back button of its own, so the events list is one tap away.
-            onBack?.let { RoundTool("chevron-left", "All WordCamps", it) }
             Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(32.dp))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             RoundTool("help-circle", "Guide", onGuide)
-            RoundTool("refresh", "Refresh", onRefresh)
+            RoundTool("refresh", "Switch WordCamp", onSwitch)
         }
     }
     Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))

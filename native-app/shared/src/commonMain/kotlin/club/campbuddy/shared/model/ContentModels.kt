@@ -59,6 +59,9 @@ data class FreeSteal(
     @SerialName("cta_label") val ctaLabel: String? = null,
     val logo: String? = null,
     val featured: Boolean = false,
+    @SerialName("made_here") val madeHere: Boolean = false,
+    val icon: String = "sparkles",
+    val host: String = "",
 )
 
 @Serializable

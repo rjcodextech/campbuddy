@@ -248,6 +248,9 @@ class AppEventApi
             'cta_label' => $steal->cta_label,
             'logo' => $steal->mediaAsset?->url(),
             'featured' => (bool) $steal->is_featured,
+            'made_here' => (bool) $steal->made_here,
+            'icon' => $steal->icon(),
+            'host' => $steal->linkHost(),
         ])->values()->all();
     }
 

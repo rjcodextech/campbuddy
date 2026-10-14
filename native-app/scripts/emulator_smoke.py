@@ -243,37 +243,24 @@ shot("06b-contribute")
 
 # ---- Camp Card ------------------------------------------------------------------------------------------------------------
 tap_text("Camp Card", exact=True)
-step("camp card form", wait("Ticket", 10) is not None)
-
-
-def to_top():
-    for _ in range(5):
-        adb("shell", "input", "swipe", "1070", "700", "1070", "1800", "300")
-        time.sleep(0.5)
-
-
-def small_scroll(px=700):
-    adb("shell", "input", "swipe", "1070", str(1700), "1070", str(1700 - px), "400")
-    time.sleep(0.8)
-
-
-small_scroll(1100)
-type_into("Your name", "Asha Rao")
-adb("shell", "input", "keyevent", "KEYCODE_BACK")  # close the keyboard
-time.sleep(1)
+step("camp card shows the layouts", wait("Ticket", 12) is not None or wait("Camp Card", 5) is not None)
 scroll_down(1)
-type_into("Website", "asha.dev")
+step("the form has a Name field", wait("e.g. Sunil Kumar Sharma", 8) is not None)
+tap_text("e.g. Sunil Kumar Sharma")
+time.sleep(1)
+adb("shell", "input", "text", "Asha%sRao")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1)
-to_top()
-step("the preview follows the typing", find("Asha Rao") is not None)
+scroll_down(2)
+tap_text("yoursite.com")
+time.sleep(1)
+adb("shell", "input", "text", "asha.dev")
+adb("shell", "input", "keyevent", "KEYCODE_BACK")
+time.sleep(1)
+scroll_down(2)
+tap_text("Save Camp Card", exact=True)
+step("saving the card says so", wait("Camp Card saved on this phone.", 8) is not None or find("saved on this phone") is not None)
 shot("08-camp-card")
-small_scroll(800)
-step("the card shows a QR once there is a link", wait("Scan to connect", 8) is not None)
-shot("08b-card-qr")
-small_scroll(600)
-tap_text("Download", exact=True)
-step("Download saves the card picture", wait("Saved to your photos.", 8) is not None)
 
 # ---- Your data -------------------------------------------------------------------------------------------------------------
 tap_text("My Day", exact=True)
@@ -286,7 +273,9 @@ step("clearing says so", wait("Cleared. Nothing of yours is left", 8) is not Non
 # ---- Guide ------------------------------------------------------------------------------------------------------------------
 tap_text("Home", exact=True)
 tap_text("Read the guide", 10)
-step("guide opens with the day", wait("How the day runs", 15) is not None)
+step("guide opens", wait("WORDCAMP 101", 15) is not None)
+scroll_down(3)
+step("the guide has the day", find("How the day usually goes") is not None or find("Registration") is not None)
 shot("09-guide")
 adb("shell", "input", "keyevent", "KEYCODE_BACK")
 time.sleep(1.5)

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import club.campbuddy.shared.model.LeadRequest
 import club.campbuddy.shared.model.Deal
+import club.campbuddy.shared.model.FreeSteal
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.draw.rotate
@@ -538,13 +539,7 @@ private fun PeopleList(slug: String) {
                                         }
                                         person.talks.firstOrNull()?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                                     }
-                                    val met = person.id in env.user.met(slug)
-                                    Text(
-                                        if (met) "✓ Meeting" else "+ Meet",
-                                        style = MaterialTheme.typography.labelLarge.copy(color = if (met) Color.White else brand.primary),
-                                        modifier = Modifier.background(if (met) brand.primary else Color.White, RoundedCornerShape(50)).border(1.dp, brand.primary, RoundedCornerShape(50))
-                                            .clickable(role = Role.Button, onClickLabel = "Want to meet ${person.name}") { env.user.toggleMet(slug, person.id) }.padding(horizontal = 14.dp, vertical = 5.dp),
-                                    )
+                                    MeetButton(person, slug)
                                 }
                                 if (index < shown.take(300).lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
                             }
@@ -838,18 +833,83 @@ private fun infoDates(starts: String?, ends: String?): String? {
 private fun StealList(slug: String) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
+    var openId by remember { mutableStateOf<Long?>(null) }
     val loader = rememberLoader("steals:$slug") { env.repository.freeSteals(slug) }
 
-    Listing("", loader, "Nothing here yet.") { steal ->
-        Card {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(steal.name, style = MaterialTheme.typography.titleLarge)
-                listOfNotNull(steal.maker, steal.category).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold)) }
-                steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyLarge) }
-                steal.url?.let { url -> PrimaryButton((steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free") + " →", { env.deps.openUrl(url) }, Modifier.fillMaxWidth()) }
+    Listing("", loader, "Nothing here yet. Check back soon.", header = {
+        Text("Deals help you save on paid things. Free Steals are good WordPress plugins and tools that are already free, picked by the CampBuddy team, from big companies and from people in the community.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+    }) { steal ->
+        // A row on the shelf: logo (or a category icon), name, maker, Featured, chevron. Tapping opens its sheet.
+        Card(onClick = { openId = steal.id }) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                StealLogo(steal, 48.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(steal.name, style = MaterialTheme.typography.titleMedium)
+                    Text("by ${steal.maker.orEmpty()}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp))
+                }
+                if (steal.featured) FeaturedTag()
+                LineIcon("chevron-right", brand.muted, size = 18.dp)
             }
         }
+        if (openId == steal.id) StealSheet(steal) { openId = null }
     }
+}
+
+@Composable
+private fun StealLogo(steal: FreeSteal, size: androidx.compose.ui.unit.Dp) {
+    val brand = LocalBrand.current
+    Box(Modifier.size(size).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(1.dp), contentAlignment = Alignment.Center) {
+        RemoteImage(steal.logo, Modifier.size(size - 4.dp)) { LineIcon(steal.icon, brand.primary, size = size / 2) }
+    }
+}
+
+@Composable
+private fun FeaturedTag() {
+    val brand = LocalBrand.current
+    Text(
+        "FEATURED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp),
+        modifier = Modifier.rotate(-3f).background(brand.surface, RoundedCornerShape(6.dp)).border(2.dp, brand.primary, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 3.dp),
+    )
+}
+
+/** The Free Steal's sheet: what it does, the category, who made it, and one button. */
+@Composable
+private fun StealSheet(steal: FreeSteal, onClose: () -> Unit) {
+    val env = LocalEnv.current
+    val brand = LocalBrand.current
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onClose,
+        confirmButton = {},
+        title = {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                StealLogo(steal, 48.dp)
+                Column(Modifier.weight(1f)) {
+                    Text(steal.name, style = MaterialTheme.typography.titleMedium)
+                    Text("by ${steal.maker.orEmpty()}", style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp))
+                }
+                Box(Modifier.size(44.dp).clickable(role = Role.Button, onClickLabel = "Close", onClick = onClose), contentAlignment = Alignment.Center) { LineIcon("x", brand.ink, size = 20.dp) }
+            }
+        },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (steal.featured || steal.madeHere) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (steal.featured) FeaturedTag()
+                        if (steal.madeHere) Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            LineIcon("map-pin", brand.success, size = 14.dp)
+                            Text("Made by someone attending this WordCamp", style = MaterialTheme.typography.bodySmall.copy(color = brand.success, fontWeight = FontWeight.SemiBold))
+                        }
+                    }
+                }
+                steal.description?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+                steal.category?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp)) }
+                steal.url?.let { url ->
+                    PrimaryButton((steal.ctaLabel?.takeIf { it.isNotBlank() } ?: "Get it free") + " ↗", { env.deps.openUrl(url) }, Modifier.fillMaxWidth())
+                    if (steal.host.isNotBlank()) Text("Opens ${steal.host}", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                }
+            }
+        },
+    )
 }
 
 // ---- Memories ------------------------------------------------------------------------------------------------------

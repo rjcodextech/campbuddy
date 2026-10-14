@@ -75,6 +75,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     var trackFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var typeFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var moreOpen by rememberSaveable { mutableStateOf(false) }
+    var planFilter by rememberSaveable { mutableStateOf("all") }
     var message by remember { mutableStateOf<String?>(null) }
     var askFor by remember { mutableStateOf<Boolean>(false) }
 
@@ -82,7 +83,30 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     LaunchedEffect(sessions) { user.refreshBookmarks(event.slug, sessions) }
 
     val savedIds = user.bookmarks(event.slug).map { it.sessionId }.toSet()
-    val pool = if (mine) sessions.filter { it.id in savedIds } else sessions
+    val statusById = user.bookmarks(event.slug).associate { it.sessionId to it.status }
+    val nowInstant = Clock.System.now()
+    fun sessionDone(sx: Session): Boolean {
+        val start = EventClock.startOf(sx) ?: return statusById[sx.id] != null
+        val end = EventClock.endOf(sx)?.takeIf { it > start } ?: kotlinx.datetime.Instant.fromEpochSeconds(start.epochSeconds + 30 * 60)
+        return statusById[sx.id] != null || end <= nowInstant
+    }
+    val meetings = user.meetings(event.slug)
+    val planPeople = meetings.filter { it.status != "skipped" }
+    val hiddenPeople = meetings.filter { it.status == "skipped" }
+    val savedSessions = sessions.filter { it.id in savedIds }
+    val planTotal = savedSessions.size + planPeople.size
+    val planDone = savedSessions.count { sessionDone(it) } + planPeople.count { it.status != null }
+    val counts = mapOf(
+        "all" to planTotal,
+        "todo" to savedSessions.count { !sessionDone(it) } + planPeople.count { it.status == null },
+        "done" to savedSessions.count { sessionDone(it) && statusById[it.id] != "missed" } + planPeople.count { it.status == "met" },
+        "missed" to savedSessions.count { statusById[it.id] == "missed" } + planPeople.count { it.status == "missed" },
+        "hidden" to hiddenPeople.size,
+    )
+    fun inFilter(done: Boolean, missed: Boolean): Boolean = when (planFilter) {
+        "todo" -> !done; "done" -> done && !missed; "missed" -> missed; "hidden" -> false; else -> true
+    }
+    val pool = if (mine) savedSessions.filter { inFilter(sessionDone(it), statusById[it.id] == "missed") } else sessions
     val names = (rememberLoader("speakers:${event.slug}") { env.repository.speakers(event.slug) }.state.value as? LoadState.Ready)
         ?.value.orEmpty().associate { it.id to it.name }
     val shown = pool.filter { s ->
@@ -180,9 +204,16 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                 }
             }
         }
-        if (shown.isEmpty()) {
+        if (mine && planTotal + hiddenPeople.size > 0) {
+            if (planTotal > 0) item(key = "plan-summary") { PlanSummary(planDone, planTotal) }
+            item(key = "plan-filters") { PlanFilters(counts, planFilter) { planFilter = it } }
+        }
+        if (shown.isEmpty() && !(mine && planPeople.isNotEmpty())) {
             item {
-                Text(if (mine) "Nothing saved yet. Tap the star on a session to add it to your day." else "No sessions to show yet.", style = MaterialTheme.typography.bodyMedium)
+                if (mine && planTotal + hiddenPeople.size == 0) PlanEmpty("Your day is still empty", "Tap the ★ next to any session in Full schedule to save it here. Tip: pick three or four, and leave room for the hallway track.")
+                else if (mine) Text("Nothing in this filter.", style = MaterialTheme.typography.bodyMedium)
+                else if (sessions.isEmpty()) PlanEmpty("The schedule isn't published yet", "Organizers usually share it a few weeks before the event. It will show up here by itself once they do.")
+                else Text("No sessions match. Try clearing a filter or the search.", style = MaterialTheme.typography.bodyMedium)
             }
         }
 
@@ -203,11 +234,28 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                                 saved = session.id in savedIds,
                                 last = i == ordered.lastIndex,
                                 onStar = { star(session) },
+                                status = if (mine) statusById[session.id] else null,
+                                started = mine && (EventClock.startOf(session)?.let { it <= nowInstant } == true),
+                                onStatus = { st -> user.setSessionStatus(event.slug, session.id, st) },
                             )
                         }
                     }
                 }
             }
+        }
+        if (mine) {
+            val people = (if (planFilter == "hidden") hiddenPeople else planPeople.filter { inFilter(it.status != null, it.status == "missed") })
+                .sortedBy { it.at ?: "~" }
+            item(key = "people-title") { Text(if (planFilter == "hidden") "Hidden people" else "People to meet", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp)) }
+            if (people.isEmpty()) {
+                item(key = "people-empty") {
+                    Text(
+                        if (planPeople.isEmpty() && hiddenPeople.isEmpty()) "No one yet. In Explore → People, tap + Meet next to anyone and add a note." else "No one in this filter.",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
+                    )
+                }
+            }
+            people.forEach { m -> item(key = "person-${m.rosterId}") { PersonPlanCard(event.slug, m, hidden = planFilter == "hidden") } }
         }
         item(key = "data-controls") { DataControls(event.slug) }
     }
@@ -277,7 +325,7 @@ private fun DayPill(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: kotlinx.datetime.Instant, speakers: List<String>, saved: Boolean, last: Boolean, onStar: () -> Unit) {
+private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: kotlinx.datetime.Instant, speakers: List<String>, saved: Boolean, last: Boolean, onStar: () -> Unit, status: String? = null, started: Boolean = false, onStatus: (String) -> Unit = {}) {
     val brand = LocalBrand.current
     var open by remember { mutableStateOf(false) }
     val start = EventClock.startOf(session)
@@ -311,6 +359,12 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
                     Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
                         if (tags.isNotEmpty()) Text(tags, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp, fontWeight = FontWeight.SemiBold))
+                    }
+                }
+                if (started) {
+                    Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        StatusButton("✓ Attended", status == "attended", false) { onStatus("attended") }
+                        StatusButton("✗ Missed", status == "missed", true) { onStatus("missed") }
                     }
                 }
                 if (open && hasMore) Text(session.description.orEmpty(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
