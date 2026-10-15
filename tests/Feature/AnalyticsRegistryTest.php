@@ -96,10 +96,53 @@ class AnalyticsRegistryTest extends TestCase
         $this->get(route('home'))->assertSee('data-page-type="picker"', false);
     }
 
+    private const FALLBACK_TEST_KEY = "-----BEGIN PRIVATE KEY-----\n"
+        ."MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDC7879UmKgzX2a\n"
+        ."EqSRzm0UIptXh26VIbzuAXiMnCFeXfBo3q1Nc3DC+rQz46zd6f5Vz91k4BRzHo/t\n"
+        ."GhO6IrXlzSejo9fmvNs+lCDBRSMefZV1M4kFKp2m8DIyBeFAQbZ10hh2Gi/ExD0n\n"
+        ."5SuO8ZRZMB5gO1l9TuD30o1RI7CJqY+U8LLPAs2yM9Bu9jTYmTRCqO1Qh7zZpY/0\n"
+        ."0e0sbw8EGyrYdrSeMW7xsVYnboN8p2KSX/wkDV6GnpKhazjQjXqH2sr2glJCW3LS\n"
+        ."tTiHQ+CISSdDVJOy7cd0eo6M24ZoaWJKzgPEnSYLGkQEWVwDdLWzTKKcp66h4JMM\n"
+        ."4UWp6zi1AgMBAAECggEAAL3LPnzl+aEWcXPRMunDUfCIwTY3ZjNM5eXVCMneOZ7n\n"
+        ."V2rDY3hFLUSpU0oyIdzuNfLWr3fHtCFhYEA5Y3uW0AMt+6oXm93LgqsrDbke11KY\n"
+        ."cyvpQT8GfvhKZJTPpMArOrr8E1Tpqhip9+Ef/4jtLMKpVuna3wZiBidDmNOnK/ra\n"
+        ."qMNF2W9pE0qeljzzlFkav3t2F5DEu/Jfm0bfrWRCcK4xbJDBNiBsJejx/8NJ3pL5\n"
+        ."CbCQlFO4jgFWr6xVNLANTrJXOqBpN9HdwWkiulLwbEEXYriyB+nUfENaqJmZDQr2\n"
+        ."SB7M/5WtU7/k4cvUx0PlMovjwDiQ23yr5w7tBS7oYQKBgQDpgIrfB22PmklEKjF/\n"
+        ."j4g1eFMEBdqFMVISDZ+vXIVRLsqyOi2NqXC4Tf8w3OZHxyalq8Bc2woEuxuMmnjZ\n"
+        ."cf6RCfWkFM/lZX5fCreSFppgaFO9pc5wWJGmNcNNi9o6QBMRvtDxSioq2OYfnE4L\n"
+        ."zGbVYVuN1KSFCisRnBIq/GzD1QKBgQDVuAe78W0s8G4jpxJwrUZOCxVit28HKeJ1\n"
+        ."Rnpw5Ma8nG5n62PUJB4nBSw0e8sdS1ys0G+WJxFWe0CUhcWP4LuYWpDANQDmVbdB\n"
+        ."M7B6D25yUT5yy2cRAq/w4GOgkdEgXLR5CC5AC1gcZRLiOJRaIU6e50rm9mtUrP3F\n"
+        ."gWsjzzRxYQKBgQDJHJt/aKhmrN45xZWIZplMZGwr5NbHLSmgvvcwVKHGwGR4iT8+\n"
+        ."6hdZxmPrM/drDw4sVveBgm7okDc0LL+1mUdGqKtXPU2qKHZlaZeeTbV9H54wk6Rw\n"
+        ."gvg/jcK/AZtd3F4QRKc1i0kySko6I6fc5ZoUYpw2VlW0+IML0b6cI3mSWQKBgHJd\n"
+        ."XlYmZWPM7UNK3kVJk/ujVrhSrKlKspJLOq463laD51jYz7zv7uq2i+cx74knkNox\n"
+        ."V+Uj1tVOc0qHIydQ/VIT9K3GL0sSx1Ou01sd8t5dt2s6iVbC91+Q0/9SyHPm5/R0\n"
+        ."ejtvVqErPSWtXUW12RqTbrOVXe4b/Fi6Xpj1An1BAoGAHq7a/5Vk65aAQfOFPzPQ\n"
+        ."7bwypjVzPeib9ezylV6YpWq1aaxw4sadiYKQCHi8YDfu5f/dpUzZme2XcUHx3ECI\n"
+        ."RKNDKduQyBYteiBRyTlsFqUe47R/L3k/qzmxzlUR2fmMwhWT/6Bx2toXofgTPiOO\n"
+        ."Q6MOS1dxY9GPFRk9BwhevDo=\n"
+        ."-----END PRIVATE KEY-----\n";
+
     private function credentials(): string
     {
-        $key = openssl_pkey_new(['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA]);
-        openssl_pkey_export($key, $pem);
+        $cnf = dirname(PHP_BINARY) . '/extras/ssl/openssl.cnf';
+        $configArgs = ['private_key_bits' => 2048, 'private_key_type' => OPENSSL_KEYTYPE_RSA];
+        if (file_exists($cnf)) {
+            $configArgs['config'] = $cnf;
+        }
+
+        $pem = null;
+        $key = @openssl_pkey_new($configArgs);
+        if ($key) {
+            @openssl_pkey_export($key, $pem, null, file_exists($cnf) ? ['config' => $cnf] : []);
+        }
+
+        if (! $pem) {
+            $pem = self::FALLBACK_TEST_KEY;
+        }
+
         $path = tempnam(sys_get_temp_dir(), 'ga');
         file_put_contents($path, json_encode(['client_email' => 'setup@example.iam.gserviceaccount.com', 'private_key' => $pem]));
 
@@ -149,6 +192,7 @@ class AnalyticsRegistryTest extends TestCase
 
     public function test_setup_explains_missing_configuration(): void
     {
+        config(['analytics.property_id' => '']);
         $this->artisan('campbuddy:ga-setup')->expectsOutputToContain('GA_PROPERTY_ID')->assertFailed();
         $this->artisan('campbuddy:ga-setup', ['--property' => '123', '--credentials' => '/nope.json'])->expectsOutputToContain('GA_CREDENTIALS_PATH')->assertFailed();
     }

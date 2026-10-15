@@ -177,8 +177,10 @@ class SystemHealth
             return [];
         }
 
+        $feeds = EventData::getMany($events->pluck('id')->all(), 'sessions');
+
         return $events
-            ->filter(fn (Event $event) => EventData::get($event->id, 'sessions') === null)
+            ->filter(fn (Event $event) => ($feeds[$event->id] ?? null) === null)
             ->map(fn (Event $event) => [
                 'level' => 'warning',
                 'title' => "{$event->display_name} has no schedule data yet",
@@ -232,9 +234,11 @@ class SystemHealth
             return [];
         }
 
+        $feeds = EventData::getMany($events->pluck('id')->all(), 'sessions');
+
         return $events
-            ->map(function (Event $event) {
-                $days = self::sessionDays($event);
+            ->map(function (Event $event) use ($feeds) {
+                $days = self::sessionDays($event, $feeds[$event->id] ?? null);
                 if ($days === []) {
                     return null;
                 }
@@ -266,12 +270,13 @@ class SystemHealth
     }
 
     /** @return list<string> each day ("Y-m-d", at the venue) a scheduled session starts */
-    private static function sessionDays(Event $event): array
+    private static function sessionDays(Event $event, ?array $sessions = null): array
     {
         $zone = EventTime::known($event) ? $event->timezone : config('app.timezone');
         $days = [];
+        $sessions = $sessions ?? EventData::get($event->id, 'sessions') ?? [];
 
-        foreach (EventData::get($event->id, 'sessions') ?? [] as $session) {
+        foreach ($sessions as $session) {
             if (! is_array($session) || empty($session['starts_at'])) {
                 continue;
             }

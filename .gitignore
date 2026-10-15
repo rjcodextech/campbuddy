@@ -17,6 +17,12 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/app/analytics/*
+!/storage/app/analytics/.gitkeep
+*.jks
+*.keystore
+*.p8
+*signing*.txt
 /storage/pail
 /vendor
 Homestead.json

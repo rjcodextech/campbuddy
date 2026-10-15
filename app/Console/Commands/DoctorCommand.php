@@ -180,14 +180,26 @@ class DoctorCommand extends Command
         return ! in_array($log?->status, ['error'], true);
     }
 
-    /** Empties every log file, keeping the files (and their permissions). */
+    /** Empties every log file, keeping the files (and their permissions) while archiving historical logs in production. */
     private function clearLogs(): string
     {
         $freed = 0;
         $files = glob(storage_path('logs/*.log')) ?: [];
+        $archiveDir = storage_path('logs/archive');
+
+        if (app()->isProduction() && ! is_dir($archiveDir)) {
+            @mkdir($archiveDir, 0755, true);
+        }
 
         foreach ($files as $file) {
-            $freed += (int) @filesize($file);
+            $size = (int) @filesize($file);
+            $freed += $size;
+
+            if (app()->isProduction() && $size > 0) {
+                $archiveFile = $archiveDir.'/'.basename($file, '.log').'-'.date('Y-m-d-His').'.log';
+                @copy($file, $archiveFile);
+            }
+
             @file_put_contents($file, '');
         }
 

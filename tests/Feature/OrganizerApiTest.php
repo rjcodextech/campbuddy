@@ -146,7 +146,7 @@ class OrganizerApiTest extends TestCase
         $headers = $this->bearer('manager', $manager->id);
         $base = "/api/v1/app/organizer/events/{$this->mine->id}/delay";
 
-        $this->postJson($base, ['minutes' => 15, 'track' => '', 'from' => now()->subHour()->setTimezone('Asia/Kolkata')->format('Y-m-d\TH:i'), 'note' => 'Lunch ran over'], $headers)
+        $this->postJson($base, ['minutes' => 15, 'track' => '', 'from' => now()->setTimezone('Asia/Kolkata')->format('Y-m-d\TH:i'), 'note' => 'Lunch ran over'], $headers)
             ->assertOk()->assertJsonPath('data.active.0.minutes', 15);
         $this->getJson($base, $headers)->assertOk()->assertJsonPath('data.active.0.minutes', 15)->assertJsonPath('data.timezone', 'Asia/Kolkata');
 

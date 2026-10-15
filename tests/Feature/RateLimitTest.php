@@ -27,6 +27,8 @@ class RateLimitTest extends TestCase
             'slug' => 'wc-test', 'display_name' => 'WordCamp Test 2026', 'source_site_url' => 'https://test.wordcamp.org/2026',
             'status' => 'active', 'is_visible' => true,
         ]));
+
+        config(['campbuddy.rate_limits.device_reads' => 120]);
     }
 
     private function phone(?string $id = null): array

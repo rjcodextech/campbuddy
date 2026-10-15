@@ -32,6 +32,7 @@ class ScheduledTasks
         'clear-social-cache' => 'Removes Social media copies of logos, artwork and fonts no event uses any more.',
         'indexnow' => 'Tells search engines about new and changed pages (live site only).',
         'prune-device-transfers' => 'Deletes finished or expired "move to this device" requests.',
+        'erase-expired-personal-data' => 'Erases personal data from events past their retention period (DPDPA 2023).',
         'work-queue' => 'Works off the queue (fetches, pushes) that the tasks above put on it.',
     ];
 

@@ -37,12 +37,47 @@ class NotPrivateNetworkUrl implements ValidationRule
     public static function isPrivateHost(string $host): bool
     {
         $host = trim($host, '[]');
+
+        if (strtolower($host) === 'localhost') {
+            return true;
+        }
+
         $ip = filter_var($host, FILTER_VALIDATE_IP) ? $host : gethostbyname($host);
 
-        return filter_var(
+        // Handle IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1)
+        if (str_starts_with(strtolower($ip), '::ffff:')) {
+            $ip = substr($ip, 7);
+        }
+
+        $isPublic = filter_var(
             $ip,
             FILTER_VALIDATE_IP,
             FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
-        ) === false;
+        ) !== false;
+
+        if (! $isPublic) {
+            return true;
+        }
+
+        // Additional link-local (169.254.0.0/16) and 0.0.0.0/8 protection
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $long = ip2long($ip);
+            if ($long !== false) {
+                // 169.254.0.0/16 link-local
+                if (($long & 0xFFFF0000) === (int) 0xA9FE0000) {
+                    return true;
+                }
+                // 0.0.0.0/8
+                if (($long & 0xFF000000) === 0) {
+                    return true;
+                }
+                // 127.0.0.0/8
+                if (($long & 0xFF000000) === 0x7F000000) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

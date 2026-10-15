@@ -23,10 +23,13 @@ class OfferLead extends Model
         'email',
         'mobile',
         'choices',
+        'consented_at',
+        'consent_ip',
     ];
 
     protected $casts = [
         'choices' => 'array',
+        'consented_at' => 'datetime',
     ];
 
     public function event(): BelongsTo

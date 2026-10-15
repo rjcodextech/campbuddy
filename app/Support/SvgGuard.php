@@ -12,10 +12,31 @@ class SvgGuard
 {
     public static function isSafe(string $svg): bool
     {
-        if (! preg_match('/<svg[\s>]/i', $svg)) {
+        // Strip null bytes and control chars that can conceal payload tokens
+        $clean = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $svg);
+
+        if (! preg_match('/<svg[\s>]/i', $clean)) {
             return false;
         }
 
-        return ! preg_match('/<\s*(script|foreignObject|iframe|object|embed)\b|\son[a-z]+\s*=|javascript\s*:|<!ENTITY/i', $svg);
+        // Iteratively decode HTML & XML entities to catch obfuscation like &colon; or &#x61;
+        $decoded = $clean;
+        for ($i = 0; $i < 3; $i++) {
+            $prev = $decoded;
+            $decoded = html_entity_decode($decoded, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $decoded = rawurldecode($decoded);
+            if ($decoded === $prev) {
+                break;
+            }
+        }
+
+        // Block dangerous elements, protocols, event handlers, and XXE constructs across both raw and decoded forms
+        $dangerousPattern = '/<\s*(script|foreignObject|iframe|object|embed|animate|set)\b|\son[a-z0-9_-]+\s*=|javascript\s*:|vbscript\s*:|data\s*:\s*text\/html|<!(?:DOCTYPE|ENTITY)/i';
+
+        if (preg_match($dangerousPattern, $clean) || preg_match($dangerousPattern, $decoded)) {
+            return false;
+        }
+
+        return true;
     }
 }

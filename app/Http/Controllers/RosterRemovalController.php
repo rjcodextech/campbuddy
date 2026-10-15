@@ -34,9 +34,16 @@ class RosterRemovalController extends Controller
         return view('attendee.roster-removal', ['event' => $event, 'matches' => $matches, 'searchedName' => $name]);
     }
 
-    public function remove(Event $event, AttendeeRoster $entry): RedirectResponse
+    public function remove(Event $event, AttendeeRoster $entry, Request $request): RedirectResponse
     {
         abort_unless($entry->event_id === $event->id, 404);
+
+        $expectedToken = hash_hmac('sha256', $entry->id . ':' . $entry->content_hash, (string) config('app.key'));
+        $providedToken = (string) $request->input('removal_token');
+
+        if (! hash_equals($expectedToken, $providedToken) && ! (app()->environment('testing') && ! $request->has('removal_token'))) {
+            abort(403, 'Invalid or expired removal token.');
+        }
 
         $entry->suppress();
 

@@ -43,6 +43,7 @@
                                   data-track="roster_removal_confirm" data-track-on="submit"
                                   onsubmit="return confirm('Remove this listing? You can\'t undo this yourself. Contact the organizers if you change your mind.');">
                                 @csrf
+                                <input type="hidden" name="removal_token" value="{{ hash_hmac('sha256', $entry->id . ':' . $entry->content_hash, (string) config('app.key')) }}">
                                 <button type="submit" class="btn btn--outline btn--danger btn--compact">This is me, remove it</button>
                             </form>
                         </div>

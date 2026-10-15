@@ -59,7 +59,32 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         link = linkFrom(intent)
 
-        val prefs = getSharedPreferences("campbuddy", Context.MODE_PRIVATE)
+        val plainPrefs = getSharedPreferences("campbuddy", Context.MODE_PRIVATE)
+        val prefs: android.content.SharedPreferences = runCatching {
+            val masterKey = androidx.security.crypto.MasterKey.Builder(applicationContext)
+                .setKeyScheme(androidx.security.crypto.MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            val secure = androidx.security.crypto.EncryptedSharedPreferences.create(
+                applicationContext,
+                "campbuddy_secure",
+                masterKey,
+                androidx.security.crypto.EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                androidx.security.crypto.EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+            // One-time migration of plain preferences to encrypted storage
+            if (plainPrefs.all.isNotEmpty()) {
+                val editor = secure.edit()
+                for ((k, v) in plainPrefs.all) {
+                    if (v is String && !secure.contains(k)) {
+                        editor.putString(k, v)
+                    }
+                }
+                editor.apply()
+                plainPrefs.edit().clear().apply()
+            }
+            secure
+        }.getOrElse { plainPrefs }
+
         val store = object : KeyValueStore {
             override fun get(key: String): String? = prefs.getString(key, null)
             override fun put(key: String, value: String) = prefs.edit().putString(key, value).apply()

@@ -30,6 +30,7 @@ class PersonalDataErasure
         'native_push_tokens',
         'session_bookmarks',
         'offer_leads',
+        'consent_logs',
     ];
 
     /** The moment this event's shared data is erased, or null when it has no dates yet. */

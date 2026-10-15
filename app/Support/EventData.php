@@ -48,6 +48,60 @@ class EventData
         return $value;
     }
 
+    /**
+     * Bulk fetch feeds for multiple events in a single database query,
+     * checking cache first. Prevents N+1 database queries on dashboards.
+     *
+     * @param list<int> $eventIds
+     * @return array<int, array<int, mixed>|null>
+     */
+    public static function getMany(array $eventIds, string $kind): array
+    {
+        if ($eventIds === []) {
+            return [];
+        }
+
+        $results = [];
+        $missing = [];
+
+        foreach ($eventIds as $id) {
+            $cached = Cache::get(self::key($id, $kind));
+            if (is_array($cached)) {
+                $results[$id] = $cached;
+            } else {
+                $missing[] = $id;
+            }
+        }
+
+        if ($missing !== []) {
+            try {
+                $rows = DB::table('event_feeds')
+                    ->whereIn('event_id', $missing)
+                    ->where('kind', $kind)
+                    ->get(['event_id', 'payload', 'fetched_at'])
+                    ->keyBy('event_id');
+
+                foreach ($missing as $id) {
+                    $row = $rows->get($id);
+                    $value = $row ? json_decode($row->payload, true) : null;
+                    if (is_array($value)) {
+                        $results[$id] = $value;
+                        Cache::put(self::key($id, $kind), $value, now()->addDays(self::CACHE_DAYS));
+                        Cache::add("event:{$id}:fetched-at", Carbon::parse($row->fetched_at), now()->addDays(self::CACHE_DAYS));
+                    } else {
+                        $results[$id] = null;
+                    }
+                }
+            } catch (Throwable) {
+                foreach ($missing as $id) {
+                    $results[$id] = null;
+                }
+            }
+        }
+
+        return $results;
+    }
+
     /** @param array<int, mixed> $items */
     public static function put(int $eventId, string $kind, array $items): void
     {
