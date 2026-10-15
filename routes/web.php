@@ -80,6 +80,10 @@ Route::withoutMiddleware([
     // has its own copy (event.guide) that adds that event's venue and times.
     Route::view('/guide', 'attendee.guide-general')->name('guide');
 
+    // What CampBuddy does with personal data (DPDPA notice) and the rules of use.
+    Route::view('/privacy', 'attendee.legal.privacy')->name('privacy');
+    Route::view('/terms', 'attendee.legal.terms')->name('terms');
+
     // PWA manifest for the picker page and any page without an event of its own.
     Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 

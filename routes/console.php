@@ -134,6 +134,14 @@ Schedule::call(fn () => Artisan::call('campbuddy:indexnow'))
     ->name('indexnow')
     ->withoutOverlapping(30);
 
+// What attendees shared (discovery profiles, shared Camp Cards, push addresses, deal-form leads…) is only
+// hidden after an event's retention window; 60 days later it is really deleted (DPDPA: purpose served).
+// Nightly, after the other maintenance. `php artisan campbuddy:erase-expired-data --dry-run` only counts.
+Schedule::call(fn () => Artisan::call('campbuddy:erase-expired-data'))
+    ->dailyAt('03:40')
+    ->name('erase-expired-personal-data')
+    ->withoutOverlapping(30);
+
 // "Move my CampBuddy to this device" requests (DeviceTransfer) live minutes at
 // most; this deletes every one whose time is up, sealed data included.
 Schedule::call(fn () => DeviceTransfer::prune())

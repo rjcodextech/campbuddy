@@ -69,3 +69,18 @@ A second kind of signed-in person: someone an admin lets edit three sections of 
 - **Abuse of saving:** 60 saves a minute per manager; a time-zone change re-queues the schedule fetch at most once in five minutes; every save is written to the activity log, which the admin reads.
 - **Browsers and proxies:** manager pages are `Cache-Control: no-store, private`; the site-wide security headers apply; the Cloudflare cache rule covers only `/event/*` and must never be widened to `/manager` or `/admin`.
 - **Not covered / deliberate:** no manager self-service password reset (mail is log-only on the live host; the owner chose admin-only); no per-email lockout across *different* addresses (it would let anyone lock a manager out); a manager may change the slug of their own events (the form warns); `llms.txt` builds Markdown from event names without escaping (existing code — admin-typed names could break its formatting; managers can't type the characters that matter).
+
+## 8.8 DPDP Act 2023 (India) — what is in place *(added 15 Oct 2026)*
+CampBuddy is a "Data Fiduciary" only for what attendees choose to share; the owner named in the notice is **WPSimplified**, grievance address **hello@wpsimplified.in** (both in `config/campbuddy.php` → `legal`, overridable with `LEGAL_ENTITY` / `LEGAL_GRIEVANCE_EMAIL`).
+
+| DPDP requirement | How it is met |
+|---|---|
+| **Notice** (s.5): itemised, plain language | `/privacy` (`resources/views/attendee/legal/privacy.blade.php`): every kind of data, why, where, how long; sharing; rights; children; security; Hindi summary. A test keeps the list in step with what is stored. |
+| **Consent** (s.6): free, specific, clear action | Sharing is never a side effect: Join discovery, Camp Card list switch, deal form ("By tapping Continue you agree we pass these details to the sponsor", web and app), notification permission are each a separate action with the notice beside it. |
+| **Withdraw** as easily | Leave discovery (one tap), Camp Card switch off, notifications off in the phone's settings, Clear my data. |
+| **Access, correction, erasure, grievance, nomination** (s.11-14) | In-app: Your data (PDF, JSON copy, clear). By email within 30 days. Footer links on the picker, guide and the Your data cards go to the notice, terms and the data-request address. |
+| **Erase when the purpose is served** (s.8(7)) | `PersonalDataErasure` / `campbuddy:erase-expired-data` (nightly 03:40): 60 days after an event's retention window (about 90 days after the event) the discovery profiles with waves/messages/transfers, shared Camp Cards, push addresses, server-side bookmarks, deal-form leads and reports are deleted. Public attendee lists, ratings and the event are not. |
+| **Children** (s.9) | Owner decision (15 Oct): no age gate; the app is a general guide. The notice says it is not directed at under-18s, nothing is tracked or targeted, parents can ask for erasure. Legal risk accepted by the owner. |
+| **Security safeguards**, breach notice | HTTPS, hashed tokens, throttling; the notice promises breach notification as the law requires. |
+
+The native apps contain **no analytics SDK**; Google Analytics runs only on the website and is off for Do Not Track / Global Privacy Control.

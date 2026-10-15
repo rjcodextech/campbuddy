@@ -113,6 +113,12 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
                 is LoadState.Ready -> {
                     val list = (sessions as? LoadState.Ready)?.value.orEmpty()
                     val offline = e.fromCache || (sessions as? LoadState.Ready)?.fromCache == true
+                    var askedNow by rememberSaveable(slug) { mutableStateOf(false) }
+                    val lastDay = runCatching { kotlinx.datetime.LocalDate.parse(e.value.lastDay.orEmpty()) }.getOrNull()
+                    val zone = EventClock.zone(e.value.timezone)
+                    if (!askedNow && lastDay != null && env.user.dataChoice(slug) == null && env.user.hasEventData(slug) &&
+                        EventClock.phase(list, e.value.firstDay, e.value.lastDay, zone, kotlinx.datetime.Clock.System.now()) == Phase.After
+                    ) AfterEventChoice(slug, e.value.name, lastDay, zone) { askedNow = true }
                     when (selected) {
                         "home" -> HomeTab(e.value, list, offline, onBack, onTab = { selected = it }, onGuide = { guide = true })
                         "my-day" -> MyDayTab(e.value, list, offline)

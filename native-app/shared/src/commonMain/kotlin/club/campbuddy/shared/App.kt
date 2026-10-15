@@ -28,6 +28,7 @@ import club.campbuddy.shared.ui.LocalEnv
 import club.campbuddy.shared.ui.ReminderSync
 import club.campbuddy.shared.domain.compareVersions
 import club.campbuddy.shared.model.OrganizerEvent
+import club.campbuddy.shared.ui.DataSweep
 import club.campbuddy.shared.ui.CampBuddyTheme
 import club.campbuddy.shared.ui.EventScreen
 import club.campbuddy.shared.ui.LocalBrand
@@ -100,6 +101,7 @@ fun App(deps: AppDeps) {
     CampBuddyTheme(words) {
       CompositionLocalProvider(LocalEnv provides env) {
         ReminderSync()
+        DataSweep()
         if (compareVersions(deps.appVersion, minimum) < 0) {
             UpdateScreen(words, deps)
             return@CompositionLocalProvider

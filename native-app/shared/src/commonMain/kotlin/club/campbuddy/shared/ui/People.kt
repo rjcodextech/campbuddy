@@ -424,7 +424,7 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(if (model.mine == null) "Join attendee discovery" else "Edit your profile", style = MaterialTheme.typography.titleLarge)
-            Text("Only what you fill in here is shown, and only to other people in discovery.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+            Text("Only what you fill in here is shown, and only to other people in discovery. Joining is your choice: leave any time, and it is deleted about 90 days after the event.", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
 
             Text("How should you appear?", style = MaterialTheme.typography.titleMedium)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

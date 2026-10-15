@@ -70,6 +70,7 @@
                     <p class="form-field__hint" data-lead-hint></p>
                 </div>
                 <p class="form-field__error" role="alert" style="margin:0 0 12px" data-lead-error hidden></p>
+                <p class="form-field__hint" style="margin:0 0 12px">By tapping Continue you agree that we pass these details to the sponsor. <a href="{{ route('privacy') }}" target="_blank" rel="noopener">Privacy notice</a></p>
                 <div style="display:flex;gap:8px;margin-top:4px">
                     <button type="button" class="btn btn--outline" data-action="close" style="flex:1">Cancel</button>
                     <button type="submit" class="btn btn--primary" style="flex:1">Continue</button>

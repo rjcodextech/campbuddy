@@ -39,6 +39,13 @@ data class Bookmark(val sessionId: Long, val title: String = "", val startsAt: S
 @Serializable
 data class Meeting(val rosterId: Long, val name: String, val avatarUrl: String? = null, val sub: String = "", val note: String = "", val at: String? = null, val status: String? = null)
 
+/**
+ * What the person chose to happen to one finished WordCamp's data on this phone: [keep] it, or have it deleted
+ * automatically at [deleteAt] (epoch milliseconds, 90 days after the event, as on our servers).
+ */
+@Serializable
+data class DataChoice(val keep: Boolean, val deleteAt: Long = 0)
+
 /** The reminder question: asked once after the first save, a "no thanks" is final, a denial is final. */
 @Serializable
 data class NotificationState(val enabled: Boolean = false, val declined: Boolean = false, val denied: Boolean = false)
@@ -62,6 +69,8 @@ class UserData(private val store: KeyValueStore) {
     private var metMap by mutableStateOf(load("meetings", MapSerializer(String.serializer(), ListSerializer(Meeting.serializer()))) ?: emptyMap())
 
     private var shareMap by mutableStateOf(load("cardshare", MapSerializer(String.serializer(), MyShare.serializer())) ?: emptyMap())
+
+    private var choiceMap by mutableStateOf(load("retention", MapSerializer(String.serializer(), DataChoice.serializer())) ?: emptyMap())
 
     private var blockedMap by mutableStateOf(load("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer()))) ?: emptyMap())
 
@@ -204,6 +213,38 @@ class UserData(private val store: KeyValueStore) {
         save("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer())), blockedMap)
     }
 
+    /** The person's answer to "keep this WordCamp's data or delete it later?", or null while they have not answered. */
+    fun dataChoice(slug: String): DataChoice? = choiceMap[slug]
+
+    fun setDataChoice(slug: String, choice: DataChoice) {
+        choiceMap = choiceMap + (slug to choice)
+        save("retention", MapSerializer(String.serializer(), DataChoice.serializer()), choiceMap)
+    }
+
+    /** Whether this phone holds anything of the person's for one WordCamp (so it is worth asking what to do with it). */
+    fun hasEventData(slug: String): Boolean =
+        bookmarks(slug).isNotEmpty() || completedQuests(slug).isNotEmpty() || meetings(slug).isNotEmpty() || discovery(slug) != null || share(slug) != null
+
+    /** WordCamps whose data the person asked to have deleted and whose time has come. */
+    fun dueForDeletion(nowMillis: Long): List<String> = choiceMap.filter { (slug, c) -> !c.keep && c.deleteAt in 1..nowMillis && hasEventData(slug) }.keys.toList()
+
+    /** Deletes what this phone holds for one WordCamp (saved sessions, quests, people to meet, discovery and card-sharing codes). Not the profile or Camp Card, which belong to no single event. */
+    fun eraseEvent(slug: String) {
+        bookmarkMap = bookmarkMap - slug
+        questMap = questMap - slug
+        metMap = metMap - slug
+        discoveryMap = discoveryMap - slug
+        shareMap = shareMap - slug
+        blockedMap = blockedMap - slug
+        save("bookmarks", MapSerializer(String.serializer(), ListSerializer(Bookmark.serializer())), bookmarkMap)
+        save("quests", MapSerializer(String.serializer(), ListSerializer(Long.serializer())), questMap)
+        save("meetings", MapSerializer(String.serializer(), ListSerializer(Meeting.serializer())), metMap)
+        save("discovery", MapSerializer(String.serializer(), MyDiscovery.serializer()), discoveryMap)
+        save("cardshare", MapSerializer(String.serializer(), MyShare.serializer()), shareMap)
+        save("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer())), blockedMap)
+        revision++
+    }
+
     /** A random id for this phone; reports carry it so one phone reports a profile once. */
     fun deviceId(): String = store.get("user:device") ?: List(32) { "0123456789abcdef".random() }.joinToString("").also { store.put("user:device", it) }
 
@@ -217,7 +258,7 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meetings", "cardshare").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meetings", "cardshare", "retention").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()
@@ -227,6 +268,30 @@ class UserData(private val store: KeyValueStore) {
         blockedMap = emptyMap()
         metMap = emptyMap()
         shareMap = emptyMap()
+        choiceMap = emptyMap()
+    }
+
+    /**
+     * Everything this phone keeps for the person, as readable JSON (the website's "Download the raw data"): their right
+     * to a copy of their data. Secret codes that prove ownership of a discovery profile or a shared card are left out.
+     */
+    fun exportJson(): String {
+        val data = kotlinx.serialization.json.buildJsonObject {
+            put("exportedAt", kotlinx.serialization.json.JsonPrimitive(kotlinx.datetime.Clock.System.now().toString()))
+            put("about", kotlinx.serialization.json.JsonPrimitive("Everything CampBuddy keeps on this phone. Secret codes are left out."))
+            put("profile", AppJson.encodeToJsonElement(Profile.serializer(), profile))
+            put("notifications", AppJson.encodeToJsonElement(NotificationState.serializer(), notifications))
+            put("savedSessions", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), ListSerializer(Bookmark.serializer())), bookmarkMap))
+            put("questsDone", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), ListSerializer(Long.serializer())), questMap))
+            put("campCard", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), String.serializer()), cardMap))
+            put("peopleToMeet", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), ListSerializer(Meeting.serializer())), metMap))
+            put("inAttendeeDiscovery", kotlinx.serialization.json.JsonArray(discoveryMap.keys.map { kotlinx.serialization.json.JsonPrimitive(it) }))
+            put("campCardOnAttendeeList", kotlinx.serialization.json.JsonArray(shareMap.keys.map { kotlinx.serialization.json.JsonPrimitive(it) }))
+            put("afterEventChoice", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), DataChoice.serializer()), choiceMap))
+            put("hiddenProfiles", AppJson.encodeToJsonElement(MapSerializer(String.serializer(), ListSerializer(String.serializer())), blockedMap))
+        }
+
+        return kotlinx.serialization.json.Json { prettyPrint = true }.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), data)
     }
 
     @Suppress("FunctionName")

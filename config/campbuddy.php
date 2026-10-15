@@ -16,6 +16,19 @@ return [
 
     'name' => 'CampBuddy',
 
+    /*
+    | Who is responsible for attendees' personal data (the privacy notice and terms pages, DPDPA Act 2023).
+    | The grievance address is where anyone can ask to see, correct or erase their data, or complain.
+    */
+    'legal' => [
+        'entity' => env('LEGAL_ENTITY', 'WPSimplified'),
+        'grievance_email' => env('LEGAL_GRIEVANCE_EMAIL', 'hello@wpsimplified.in'),
+        // Promised time to answer a request or complaint.
+        'reply_days' => 30,
+        // The date the notice was last changed (shown on the page).
+        'updated' => '15 October 2026',
+    ],
+
     // <title> of the WordCamp picker ("/"): "CampBuddy | Your WordCamp companion".
     'tagline' => 'Your WordCamp companion',
 

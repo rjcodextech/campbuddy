@@ -187,6 +187,7 @@ fun PickerScreen(
                     QuietButton("Event staff: sign in", onOrganizer, Modifier.fillMaxWidth().padding(top = 8.dp))
                 }
             }
+            item { PrivacyLinks(Modifier.padding(top = 4.dp), centered = true) }
         }
     }
 }

@@ -731,6 +731,8 @@ private fun LeadDialog(slug: String, deal: Deal, onDone: () -> Unit, onCancel: (
             }
         }
         error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
+        Text("By tapping ${deal.ctaLabel ?: "Continue"} you agree that we pass these details to ${deal.brand.ifBlank { "the sponsor" }}. We delete our copy about 90 days after the event.", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+        PrivacyLinks()
     }
 }
 
