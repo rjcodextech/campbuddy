@@ -67,6 +67,7 @@ class AppEventApi
             'completed' => EventTime::isOver($event),
             'website' => $event->source_site_url,
             'venue' => filled($event->info['venue'] ?? null) ? (string) $event->info['venue'] : null,
+            'memories' => (object) EventMemories::links($event),
         ];
     }
 

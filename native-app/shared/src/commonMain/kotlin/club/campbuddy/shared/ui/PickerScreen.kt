@@ -57,6 +57,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
@@ -278,6 +279,7 @@ private fun FeaturePill(label: String, icon: String, modifier: Modifier, popAfte
 
 @Composable
 private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
+    val env = LocalEnv.current
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
     // A finished WordCamp gets the website's cool teal wash and a "Completed" pill, so it reads as done.
@@ -287,6 +289,8 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     val edge = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.30f) else brand.line
     val divider = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.22f) else brand.line
     val cta = if (done) androidx.compose.ui.graphics.lerp(brand.ink, teal, 0.70f) else brand.primary
+    val photos = event.memories?.photos?.takeIf { it.isNotBlank() }
+    val videos = event.memories?.videos?.takeIf { it.isNotBlank() }
     Column(
         Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).clip(shape).background(fill, shape).border(1.dp, edge, shape)
             .clickable(role = Role.Button, onClick = onClick),
@@ -319,9 +323,44 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
         Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = cta), modifier = Modifier.padding(16.dp))
+
+        // Photos and recorded talks on WordPress.tv (EventMemories)
+        if (photos != null || videos != null) {
+            Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
+            Row(
+                Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.08f)),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (photos != null) {
+                    Row(
+                        Modifier.weight(1f).heightIn(min = 44.dp).clickable(role = Role.Button) { env.deps.openUrl(photos) }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LineIcon("camera", cta, size = 16.dp)
+                        Text("  Photos", style = MaterialTheme.typography.labelLarge.copy(color = cta, fontWeight = FontWeight.Bold))
+                    }
+                }
+                if (photos != null && videos != null) {
+                    Box(Modifier.width(1.dp).height(24.dp).background(divider))
+                }
+                if (videos != null) {
+                    Row(
+                        Modifier.weight(1f).heightIn(min = 44.dp).clickable(role = Role.Button) { env.deps.openUrl(videos) }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        LineIcon("play", cta, size = 16.dp)
+                        Text("  Talks on WordPress.tv", style = MaterialTheme.typography.labelLarge.copy(color = cta, fontWeight = FontWeight.Bold))
+                    }
+                }
+            }
+        }
+
         if (done) {
             // The website's joined "Save your WordCamp Data" bar: the PDF of what this phone kept for the event.
-            val env = LocalEnv.current
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             var busy by remember { mutableStateOf(false) }
             var said by remember { mutableStateOf<String?>(null) }

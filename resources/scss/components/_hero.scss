@@ -135,12 +135,15 @@
     // A little more room per line, and each link's tap area filling it
     // (was a 17px-tall target).
     li {
-        padding: 7px 0;
+        padding: 6px 0;
         font-size: v.$font-size-sm;
     }
 
     a {
         position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
         color: var(--brand-primary);
         font-weight: v.$font-weight-bold;
         text-decoration: underline;
@@ -149,7 +152,7 @@
         &::after {
             content: '';
             position: absolute;
-            inset: -7px 0;
+            inset: -4px -8px;
         }
     }
 }

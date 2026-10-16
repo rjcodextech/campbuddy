@@ -155,15 +155,12 @@ class EventTime
 
     /**
      * Whether the event's data is still fetched from its site on a schedule:
-     * until FETCH_DAYS after its last day. A finished event listed for three
-     * months must not keep its site (and this host) busy every 15 minutes;
-     * nothing changes there any more.
+     * only live, upcoming and currently running events.
+     * Ended WordCamps do not need to be crawled again.
      */
     public static function refreshing(Event $event, ?\DateTimeInterface $now = null): bool
     {
-        $end = self::endPlus($event, self::FETCH_DAYS);
-
-        return $end === null || CarbonImmutable::instance($now ?? now())->lte($end);
+        return ! self::isOver($event, $now);
     }
 
     /** The end of the event's last day at the venue plus `$days` (in UTC−12 while the zone is unknown). */

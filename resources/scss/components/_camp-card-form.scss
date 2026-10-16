@@ -104,8 +104,8 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     flex: 1 1 7rem;
     width: auto;
     min-width: 0;
-    min-height: 34px;
-    padding: 4px 6px;
+    min-height: 44px;
+    padding: 8px 8px;
     border: 0;
     background: none;
     box-shadow: none;
@@ -128,7 +128,11 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
 
 .cc-tags__add {
     flex: 0 0 auto;
-    padding: 6px 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 16px;
     border-radius: v.$radius-full;
     background: var(--brand-primary);
     color: #fff;

@@ -28,4 +28,7 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/storage/ui-audit
+/storage/ui-audit*
+/storage/phone_*.png
+/storage/phone_current.png
+/sdcard/window_dump.xml

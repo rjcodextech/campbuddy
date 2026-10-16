@@ -59,7 +59,7 @@ class AppEventApiTest extends TestCase
     {
         $card = $this->getJson('/api/v1/app/events')->json('data.0');
 
-        $this->assertSame(['slug', 'name', 'short_name', 'logo', 'mark', 'starts_on', 'ends_on', 'first_day', 'last_day', 'timezone', 'country', 'completed', 'website', 'venue'], array_keys($card));
+        $this->assertSame(['slug', 'name', 'short_name', 'logo', 'mark', 'starts_on', 'ends_on', 'first_day', 'last_day', 'timezone', 'country', 'completed', 'website', 'venue', 'memories'], array_keys($card));
         $this->assertSame('IN', $card['country']);
         $this->assertSame('Asia/Kolkata', $card['timezone']);
         $this->assertFalse($card['completed']);

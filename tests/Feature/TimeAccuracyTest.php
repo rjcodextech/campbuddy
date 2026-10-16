@@ -355,10 +355,7 @@ class TimeAccuracyTest extends TestCase
         $this->assertSame('active', $la->fresh()->status);
         $this->withoutVite()->get('/')->assertSee('WordCamp Rajasthan 2026')->assertSee('event-card--completed', false);
 
-        // Retention runs to the end of the 17th in Los Angeles = 06:59:59 UTC on the 18th: refreshed until then.
-        $this->travelTo(CarbonImmutable::parse('2026-10-18T06:00:00Z'));
-        $this->assertTrue(EventTime::refreshing($la->fresh()));
-        $this->travelTo(CarbonImmutable::parse('2026-10-18T08:00:00Z'));
+        // Once the last day is over, ended events are not refreshed (live/upcoming only).
         $this->assertFalse(EventTime::refreshing($la->fresh()));
         EvaluateEventLifecycleJob::dispatchSync();
         $this->assertSame('active', $la->fresh()->status, 'still listed as Completed');
