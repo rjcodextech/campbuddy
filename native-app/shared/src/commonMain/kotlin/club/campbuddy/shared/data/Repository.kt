@@ -8,6 +8,7 @@ import club.campbuddy.shared.model.DelayInfo
 import club.campbuddy.shared.model.DiscoveryCard
 import club.campbuddy.shared.model.Guide
 import club.campbuddy.shared.model.InfoGroup
+import club.campbuddy.shared.model.LegalDoc
 import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
 import club.campbuddy.shared.model.RosterEntry
@@ -76,6 +77,8 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     suspend fun memories(slug: String): Loaded<Memories> = cached("memories:$slug", Memories.serializer()) { api.memories(slug) }
 
     suspend fun roster(slug: String): Loaded<List<RosterEntry>> = cached("roster:$slug", ListSerializer(RosterEntry.serializer())) { api.roster(slug) }
+
+    suspend fun legal(slug: String): Loaded<LegalDoc> = cached("legal:$slug", LegalDoc.serializer()) { api.legal(slug) }
 
     private suspend fun <T> cached(key: String, serializer: kotlinx.serialization.KSerializer<T>, fetch: suspend () -> T): Loaded<T> =
         try {

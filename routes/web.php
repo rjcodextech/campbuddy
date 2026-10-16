@@ -81,8 +81,8 @@ Route::withoutMiddleware([
     Route::view('/guide', 'attendee.guide-general')->name('guide');
 
     // What CampBuddy does with personal data (DPDPA notice) and the rules of use.
-    Route::view('/privacy', 'attendee.legal.privacy')->name('privacy');
-    Route::view('/terms', 'attendee.legal.terms')->name('terms');
+    Route::get('/privacy', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('privacy');
+    Route::get('/terms', [\App\Http\Controllers\LegalPageController::class, 'terms'])->name('terms');
 
     // PWA manifest for the picker page and any page without an event of its own.
     Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
@@ -160,6 +160,12 @@ Route::prefix('admin')->group(function () {
         // CampBuddy's artisan commands: what each does, and a Run form (one at a time).
         Route::get('commands', [CommandController::class, 'index'])->name('admin.commands.index');
         Route::post('commands/{name}', [CommandController::class, 'run'])->where('name', '[a-z0-9:-]+')->middleware('throttle:10,1')->name('admin.commands.run');
+
+        // Legal documents (Privacy notice and Terms of use).
+        Route::get('legal', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'index'])->name('admin.legal.index');
+        Route::get('legal/{slug}/edit', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'edit'])->name('admin.legal.edit');
+        Route::put('legal/{slug}', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'update'])->name('admin.legal.update');
+        Route::post('legal/{slug}/reset', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'reset'])->name('admin.legal.reset');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

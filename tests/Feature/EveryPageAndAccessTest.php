@@ -78,6 +78,7 @@ class EveryPageAndAccessTest extends TestCase
             'entryId' => $entry->id,
             'table' => $table->id,
             'tableId' => $table->id,
+            'slug' => 'privacy',
             'name' => 'campbuddy:prune-fetch-log',
             'kind' => 'photos',
             'discoveryId' => str_repeat('a', 64),

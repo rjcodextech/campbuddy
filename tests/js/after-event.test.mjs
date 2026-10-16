@@ -9,6 +9,7 @@ globalThis.document = { getElementById: () => null, querySelectorAll: () => [] }
 
 const { pdfModel, pdfSafe, hasEventData, needsPictures } = await import('../../resources/js/attendee/export-pdf.js');
 const { shouldOpen } = await import('../../resources/js/attendee/thank-you.js');
+const { isDueForSweep } = await import('../../resources/js/attendee/data-sweep.js');
 
 const dump = {
   bookmarks: [
@@ -81,4 +82,29 @@ test('Latin-only data stays a text PDF; any other script switches to the page-pi
   for (const text of ['मिलना है – Polyglots', 'বাংলা নোট', 'اردو نوٹ', 'தமிழ்', '中文', 'Great talk 🎉']) {
     assert.equal(needsPictures({ ...latin, sections: [{ heading: 'People', rows: [`Asha\nNote: ${text}`] }] }), true, text);
   }
+});
+
+test('the retention popup opens immediately from day 1 after event if data choice is not made yet', () => {
+  const unchosen = { daysSince: 1, fromDay: 3, forced: false, seen: false, hasData: true, hasChoice: false };
+  assert.equal(shouldOpen(unchosen), true);
+  // If user has already made their choice, regular fromDay applies
+  assert.equal(shouldOpen({ ...unchosen, hasChoice: true }), false);
+  // If user already saw it and made a choice, stays closed
+  assert.equal(shouldOpen({ ...unchosen, hasChoice: true, seen: true }), false);
+});
+
+test('isDueForSweep identifies expired event retention choices for automatic client-side purge', () => {
+  const now = 100000;
+  // Keep forever: never swept
+  assert.equal(isDueForSweep({ keep: true, deleteAt: 50000 }, now), false);
+  // Already erased: never swept again
+  assert.equal(isDueForSweep({ keep: false, deleteAt: 50000, erasedAt: 60000 }, now), false);
+  // Deletion time in future: not yet
+  assert.equal(isDueForSweep({ keep: false, deleteAt: 120000 }, now), false);
+  // Deletion time reached or passed: due for sweep
+  assert.equal(isDueForSweep({ keep: false, deleteAt: 90000 }, now), true);
+  assert.equal(isDueForSweep({ keep: false, deleteAt: 100000 }, now), true);
+  // Malformed or null: never throws, returns false
+  assert.equal(isDueForSweep(null, now), false);
+  assert.equal(isDueForSweep({}, now), false);
 });

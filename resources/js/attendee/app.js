@@ -51,6 +51,7 @@ const whenIdle = (fn) => ('requestIdleCallback' in window ? window.requestIdleCa
 const keepUp = () => {
   import('./offline-warmup.js').then(({ warmOfflineCache }) => warmOfflineCache()).catch(() => {});
   import('./push-sync.js').then(({ runPushSync }) => runPushSync()).catch(() => {});
+  import('./data-sweep.js').then(({ runDataSweep }) => runDataSweep()).catch(() => {});
 };
 
 if ('serviceWorker' in navigator) {

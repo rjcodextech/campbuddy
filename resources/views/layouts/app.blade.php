@@ -11,6 +11,7 @@
         ['label' => 'Commands', 'icon' => 'refresh', 'href' => route('admin.commands.index'), 'active' => request()->routeIs('admin.commands.*')],
         ['label' => 'Mobile app', 'icon' => 'refresh', 'href' => route('admin.mobile.index'), 'active' => request()->routeIs('admin.mobile.*')],
         ['label' => 'Media Library', 'icon' => 'photo', 'href' => route('admin.media.index'), 'active' => request()->routeIs('admin.media.*')],
+        ['label' => 'Legal documents', 'icon' => 'shield-check', 'href' => route('admin.legal.index'), 'active' => request()->routeIs('admin.legal.*')],
     ];
 
     $user = auth()->user();

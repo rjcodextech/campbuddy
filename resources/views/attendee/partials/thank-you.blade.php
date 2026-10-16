@@ -74,6 +74,46 @@
             </div>
         @endif
 
+        <div class="thank-you__retention" data-thank-you-retention>
+            <p class="thank-you__question">
+                <x-attendee.line-icon name="shield-check" /> Event data &amp; retention
+            </p>
+            <p class="thank-you__hint">
+                Your saved sessions, notes and quests are stored on this device. Under DPDPA 2023, what should happen to this event's data?
+            </p>
+
+            <div class="thank-you__retention-options">
+                <label class="thank-you__retention-option">
+                    <input type="radio" name="retention_choice_{{ $event->id }}" value="keep" class="thank-you__retention-radio">
+                    <div class="thank-you__retention-info">
+                        <strong>Keep my data in app</strong>
+                        <span>Stays on this device until you clear it yourself.</span>
+                    </div>
+                </label>
+
+                <label class="thank-you__retention-option">
+                    <input type="radio" name="retention_choice_{{ $event->id }}" value="auto_delete" class="thank-you__retention-radio">
+                    <div class="thank-you__retention-info">
+                        <strong>Delete after {{ \App\Support\EventTime::RETENTION_DAYS }} days</strong>
+                        <span>Automatically deleted from this device once the retention period ends.</span>
+                    </div>
+                </label>
+
+                <label class="thank-you__retention-option">
+                    <input type="radio" name="retention_choice_{{ $event->id }}" value="delete_now" class="thank-you__retention-radio">
+                    <div class="thank-you__retention-info">
+                        <strong>Delete my data now</strong>
+                        <span>Instantly removes this event's saved data from this device and leaves discovery.</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="thank-you__retention-actions">
+                <button type="button" class="btn btn--primary btn--full" data-retention-confirm disabled>Confirm preference</button>
+                <p class="thank-you__retention-status" data-retention-status hidden></p>
+            </div>
+        </div>
+
         <div class="thank-you__actions">
             <button type="button" class="btn btn--outline btn--full" data-thank-you-pdf>
                 <x-attendee.line-icon name="download" /> Save my day as PDF

@@ -12,7 +12,9 @@ dialog.thank-you {
     padding: 0;
     border: 0;
     border-radius: 18px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
     background: var(--paper);
     color: var(--ink);
     box-shadow: 0 40px 80px -30px rgba(35, 31, 32, 0.55);
@@ -361,5 +363,117 @@ a.move-data__option:hover,
 .thank-you__memories {
     display: grid;
     gap: v.$space-2;
-    margin-bottom: v.$space-4;
+    margin: 0;
 }
+
+// ---- After-Event Retention Options (DPDPA 2023) ----
+.thank-you__retention {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--paper) 95%, var(--ink));
+
+    .thank-you__question {
+        display: flex;
+        align-items: center;
+        gap: v.$space-2;
+        margin: 0;
+        font-size: v.$font-size-base;
+        font-weight: v.$font-weight-bold;
+
+        .line-icon {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            color: var(--teal);
+        }
+    }
+
+    .thank-you__hint {
+        margin: 0;
+        font-size: v.$font-size-xs;
+        line-height: v.$line-height-body;
+        color: var(--muted);
+    }
+}
+
+.thank-you__retention-options {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+}
+
+.thank-you__retention-option {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-3;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    min-height: 48px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+
+    &:hover {
+        border-color: var(--teal);
+    }
+
+    &:has(input:checked) {
+        border-color: var(--teal);
+        background: color-mix(in srgb, var(--teal) 8%, #fff);
+    }
+}
+
+.thank-you__retention-radio {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: var(--teal);
+}
+
+.thank-you__retention-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    font-size: v.$font-size-sm;
+
+    strong {
+        color: var(--ink);
+        font-weight: v.$font-weight-bold;
+    }
+
+    span {
+        color: var(--muted);
+        font-size: v.$font-size-xs;
+        line-height: v.$line-height-body;
+    }
+}
+
+.thank-you__retention-actions {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    margin-top: v.$space-1;
+}
+
+.thank-you__retention-status {
+    margin: 0;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    color: var(--teal);
+    line-height: v.$line-height-body;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+

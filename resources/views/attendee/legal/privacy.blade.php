@@ -1,18 +1,30 @@
-@extends('attendee.legal.layout', [
-    'pageTitle' => 'Privacy notice',
-    'pageDescription' => 'What personal data CampBuddy keeps, why, for how long, and how to see, correct or erase it. Written under India\'s Digital Personal Data Protection Act, 2023.',
-])
-
 @php
+    $document = $document ?? null;
+    $hasCustomContent = $document && !empty(trim($document->content ?? ''));
+    $pageTitle = $document?->title ?: 'Privacy notice';
+    $pageDescription = $document?->meta_description ?: 'What personal data CampBuddy keeps, why, for how long, and how to see, correct or erase it. Written under India\'s Digital Personal Data Protection Act, 2023.';
+    $updated = $document?->updated_at ? $document->updated_at->format('d F Y') : config('campbuddy.legal.updated');
     $entity = config('campbuddy.legal.entity');
     $mail = config('campbuddy.legal.grievance_email');
     $days = config('campbuddy.legal.reply_days');
     $mailto = fn (string $subject) => 'mailto:'.$mail.'?subject='.rawurlencode($subject);
 @endphp
 
+@extends('attendee.legal.layout', [
+    'pageTitle' => $pageTitle,
+    'pageDescription' => $pageDescription,
+])
+
 @section('content')
-    <h1>Privacy notice</h1>
-    <p class="legal__meta">Last updated {{ config('campbuddy.legal.updated') }} &middot; Written under India's Digital Personal Data Protection Act, 2023 (DPDP Act)</p>
+    @if ($hasCustomContent)
+        <h1>{{ $pageTitle }}</h1>
+        <p class="legal__meta">Last updated {{ $updated }} &middot; Written under India's Digital Personal Data Protection Act, 2023 (DPDP Act)</p>
+        <div class="legal__custom-content">
+            {!! $document->content !!}
+        </div>
+    @else
+        <h1>Privacy notice</h1>
+        <p class="legal__meta">Last updated {{ config('campbuddy.legal.updated') }} &middot; Written under India's Digital Personal Data Protection Act, 2023 (DPDP Act)</p>
 
     <div class="legal__box">
         <strong>The short version</strong>
@@ -126,4 +138,5 @@
 
     <h2>8. Hindi summary (सारांश)</h2>
     <p>CampBuddy के लिए आपको खाता नहीं बनाना पड़ता। आपके सेव किए सत्र, नोट्स, Camp Card और जवाब सिर्फ़ आपके फ़ोन में रहते हैं। हमारे सर्वर तक डेटा तभी पहुँचता है जब आप ख़ुद "Attendee discovery" जॉइन करें, Camp Card शेयर करें, किसी डील का फ़ॉर्म भरें या नोटिफ़िकेशन चालू करें। हम डेटा बेचते नहीं, विज्ञापन नहीं दिखाते। आप कभी भी अपना डेटा देख, सही करवा या मिटवा सकते हैं और सहमति वापस ले सकते हैं: ऐप के "Your data" में, या {{ $mail }} पर लिखकर। हम {{ $days }} दिन के भीतर जवाब देते हैं। कार्यक्रम के लगभग 90 दिन बाद सर्वर पर साझा किया गया सारा डेटा अपने-आप मिटा दिया जाता है।</p>
+    @endif
 @endsection

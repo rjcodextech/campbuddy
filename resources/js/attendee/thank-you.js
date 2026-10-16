@@ -15,12 +15,13 @@ import { showToast } from './toast.js';
 const seenKey = (eventId) => `thankYou:${eventId}`;
 
 /** Whether this dialog's card should open now. Pure, for tests. */
-export function shouldOpen({ daysSince, fromDay, forced, always = false, seen, hasData }) {
+export function shouldOpen({ daysSince, fromDay, forced, always = false, seen, hasData, hasChoice }) {
   // The "save your data" push (campbuddy:export-push, ?export=1) opens it
   // even when it was already seen: the PDF button is what that push is for.
   if (always) return true;
   if (seen) return false;
   if (forced) return true;
+  if (hasChoice === false && hasData && Number.isFinite(daysSince) && daysSince >= 1) return true;
   return hasData && Number.isFinite(daysSince) && daysSince >= fromDay;
 }
 
@@ -50,6 +51,13 @@ export async function initThankYou({ surface }) {
       // Treated as not seen.
     }
 
+    let choice = null;
+    try {
+      choice = await kvGet(`dataChoice:${eventId}`);
+    } catch {
+      // Treated as not chosen.
+    }
+
     const open = shouldOpen({
       daysSince: Number(dialog.dataset.daysSince),
       fromDay: Number(dialog.dataset.fromDay),
@@ -57,12 +65,15 @@ export async function initThankYou({ surface }) {
       always: always && surface === 'event',
       seen: Boolean(seen),
       hasData: hasEventData(dump, eventId),
+      hasChoice: Boolean(choice),
     });
 
     if (!open) continue;
 
     showWhenFree(dialog);
-    kvSet(seenKey(eventId), { seenAt: Date.now() }).catch(() => {});
+    if (choice) {
+      kvSet(seenKey(eventId), { seenAt: Date.now() }).catch(() => {});
+    }
     track('thank_you_view', { surface });
     break; // One card at a time.
   }
@@ -153,6 +164,105 @@ function wire(dialog, surface) {
   });
 
   dialog.querySelector('[data-thank-you-next]')?.addEventListener('click', () => track('thank_you_next_click', { surface }));
+
+  // DPDPA 2023 after-event data retention choice
+  const retentionConfirmBtn = dialog.querySelector('[data-retention-confirm]');
+  const retentionStatus = dialog.querySelector('[data-retention-status]');
+  const retentionRadios = dialog.querySelectorAll('input[type="radio"][name^="retention_choice_"]');
+
+  kvGet(`dataChoice:${event.id}`).then((choice) => {
+    if (!choice) return;
+    if (choice.deletedNow) {
+      if (retentionStatus) {
+        retentionStatus.textContent = 'All data for this event was deleted from this device.';
+        retentionStatus.hidden = false;
+      }
+      retentionRadios.forEach((r) => (r.disabled = true));
+      if (retentionConfirmBtn) retentionConfirmBtn.disabled = true;
+      return;
+    }
+
+    const val = choice.keep ? 'keep' : 'auto_delete';
+    const targetRadio = dialog.querySelector(`input[type="radio"][name^="retention_choice_"][value="${val}"]`);
+    if (targetRadio) targetRadio.checked = true;
+
+    if (retentionStatus) {
+      if (choice.keep) {
+        retentionStatus.textContent = 'Active preference: Kept on this device.';
+      } else if (choice.deleteAt) {
+        const d = new Date(choice.deleteAt).toLocaleDateString();
+        retentionStatus.textContent = `Active preference: Auto-deletes around ${d}.`;
+      }
+      retentionStatus.hidden = false;
+    }
+  }).catch(() => {});
+
+  retentionRadios.forEach((radio) => {
+    radio.addEventListener('change', () => {
+      if (retentionConfirmBtn) retentionConfirmBtn.disabled = false;
+    });
+  });
+
+  retentionConfirmBtn?.addEventListener('click', async () => {
+    const chosen = dialog.querySelector('input[type="radio"][name^="retention_choice_"]:checked')?.value;
+    if (!chosen) return;
+
+    retentionConfirmBtn.disabled = true;
+
+    if (chosen === 'delete_now') {
+      const ok = typeof window !== 'undefined' && typeof window.confirm === 'function'
+        ? window.confirm('Are you sure you want to delete all saved sessions, notes and quests for this event from this device now?')
+        : true;
+      if (!ok) {
+        retentionConfirmBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const disc = await kvGet(`discovery:${event.id}`);
+        if (disc?.discoveryId && disc?.ownerToken) {
+          await apiMutate(dialog.dataset.eventSlug, `/discovery/${disc.discoveryId}`, 'DELETE', null, disc.ownerToken);
+        }
+      } catch {}
+
+      const { eraseEventData } = await import('./db.js');
+      await eraseEventData(event.id);
+      await kvSet(`dataChoice:${event.id}`, { keep: false, deleteAt: Date.now(), chosenAt: Date.now(), deletedNow: true });
+      await kvSet(seenKey(event.id), { seenAt: Date.now() });
+      track('after_event_retention_choice', { surface, choice: 'delete_now' });
+
+      showToast('Saved data for this event has been erased.');
+      if (retentionStatus) {
+        retentionStatus.textContent = 'All data for this event was deleted from this device.';
+        retentionStatus.hidden = false;
+      }
+      retentionRadios.forEach((r) => (r.disabled = true));
+      return;
+    }
+
+    if (chosen === 'keep') {
+      await kvSet(`dataChoice:${event.id}`, { keep: true, chosenAt: Date.now() });
+      await kvSet(seenKey(event.id), { seenAt: Date.now() });
+      track('after_event_retention_choice', { surface, choice: 'keep' });
+      showToast('Preference saved: Data will stay on this device.');
+      if (retentionStatus) {
+        retentionStatus.textContent = 'Active preference: Kept on this device.';
+        retentionStatus.hidden = false;
+      }
+    } else if (chosen === 'auto_delete') {
+      const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+      const deleteAt = Date.now() + RETENTION_MS;
+      await kvSet(`dataChoice:${event.id}`, { keep: false, deleteAt, chosenAt: Date.now() });
+      await kvSet(seenKey(event.id), { seenAt: Date.now() });
+      track('after_event_retention_choice', { surface, choice: 'auto_delete' });
+      showToast('Preference saved: Will auto-delete after 30 days.');
+      if (retentionStatus) {
+        const d = new Date(deleteAt).toLocaleDateString();
+        retentionStatus.textContent = `Active preference: Auto-deletes around ${d}.`;
+        retentionStatus.hidden = false;
+      }
+    }
+  });
 }
 
 function readJson(el) {

@@ -214,6 +214,37 @@ export async function putRows(storeName, rows) {
 }
 
 /**
+ * Erases everything this phone holds for a specific WordCamp:
+ * saved sessions (bookmarks), quest progress, meetings (notes on people to meet),
+ * met history, and event-scoped discovery and camp-card-share entries from kv.
+ * Leaves the global onboarding profile and Camp Card intact.
+ */
+export async function eraseEventData(eventId) {
+  const numId = Number(eventId);
+  const strId = String(eventId);
+  const stores = ['bookmarks', 'questProgress', 'meetings', 'metHistory'];
+
+  for (const name of stores) {
+    await withStore(name, 'readwrite', async (store) => {
+      const allRows = await promisify(store.getAll());
+      for (const row of allRows) {
+        if (Number(row.eventId) === numId || String(row.eventId) === strId) {
+          const key = row.key ?? row.discoveryId;
+          if (key !== undefined) {
+            store.delete(key);
+          }
+        }
+      }
+    });
+  }
+
+  await kvDelete(`discovery:${numId}`).catch(() => {});
+  await kvDelete(`discovery:${strId}`).catch(() => {});
+  await kvDelete(`campCardShare:${numId}`).catch(() => {});
+  await kvDelete(`campCardShare:${strId}`).catch(() => {});
+}
+
+/**
  * Wipes every store — the "Clear My CampBuddy Data" action.
  */
 export async function clearAll() {

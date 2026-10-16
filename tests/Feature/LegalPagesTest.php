@@ -67,4 +67,85 @@ class LegalPagesTest extends TestCase
         $this->assertSame(60, \App\Support\PersonalDataErasure::ERASE_AFTER_DAYS);
         $this->assertSame(30, \App\Support\EventTime::RETENTION_DAYS);
     }
+
+    public function test_guest_cannot_access_admin_legal(): void
+    {
+        $this->get(route('admin.legal.index'))->assertRedirect(route('login'));
+        $this->get(route('admin.legal.edit', 'privacy'))->assertRedirect(route('login'));
+        $this->put(route('admin.legal.update', 'privacy'), ['title' => 'Test', 'content' => 'Custom'])->assertRedirect(route('login'));
+    }
+
+    public function test_admin_can_view_legal_index_and_edit_page(): void
+    {
+        $admin = \App\Models\User::factory()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.legal.index'))
+            ->assertOk()
+            ->assertSee('Legal documents')
+            ->assertSee('Privacy notice')
+            ->assertSee('Terms of use')
+            ->assertSee('Default template');
+
+        $this->actingAs($admin)
+            ->get(route('admin.legal.edit', 'privacy'))
+            ->assertOk()
+            ->assertSee('Edit Privacy notice')
+            ->assertSee('Save changes');
+    }
+
+    public function test_admin_can_customize_and_reset_legal_document(): void
+    {
+        $admin = \App\Models\User::factory()->create();
+
+        // 1. Update privacy policy
+        $this->actingAs($admin)
+            ->put(route('admin.legal.update', 'privacy'), [
+                'title' => 'Custom WordCamp Privacy Notice',
+                'meta_description' => 'Customized legal terms for this event',
+                'content' => '<p>This is a custom privacy disclosure approved by local organizers.</p>',
+            ])
+            ->assertRedirect(route('admin.legal.index'))
+            ->assertSessionHas('status', 'legal-updated');
+
+        // 2. Verify on public web page
+        $this->get(route('privacy'))
+            ->assertOk()
+            ->assertSee('Custom WordCamp Privacy Notice')
+            ->assertSee('This is a custom privacy disclosure approved by local organizers.', false);
+
+        // 3. Verify on API endpoint
+        $response = $this->getJson(route('api.legal.show', 'privacy'))->assertOk();
+        $response->assertJson([
+            'slug' => 'privacy',
+            'title' => 'Custom WordCamp Privacy Notice',
+            'has_custom_content' => true,
+        ]);
+        $this->assertStringContainsString('approved by local organizers', $response->json('content'));
+
+        // 4. Reset document back to default
+        $this->actingAs($admin)
+            ->post(route('admin.legal.reset', 'privacy'))
+            ->assertRedirect(route('admin.legal.index'))
+            ->assertSessionHas('status', 'legal-reset');
+
+        // 5. Verify restored default
+        $this->get(route('privacy'))
+            ->assertOk()
+            ->assertSee('Privacy notice')
+            ->assertSee('The short version');
+
+        $apiReset = $this->getJson(route('api.legal.show', 'privacy'))->assertOk();
+        $apiReset->assertJson([
+            'slug' => 'privacy',
+            'has_custom_content' => false,
+            'content' => null,
+        ]);
+    }
+
+    public function test_api_legal_returns_404_for_invalid_slug(): void
+    {
+        $this->getJson('/api/v1/legal/unknown-slug')->assertNotFound();
+        $this->getJson('/api/legal/unknown-slug')->assertNotFound();
+    }
 }

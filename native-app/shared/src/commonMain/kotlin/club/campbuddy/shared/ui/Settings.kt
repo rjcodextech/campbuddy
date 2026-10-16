@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -16,7 +17,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.domain.EventClock
 import kotlinx.coroutines.launch
@@ -103,20 +106,47 @@ fun DataControls(slug: String) {
 fun PrivacyLinks(modifier: Modifier = Modifier, centered: Boolean = false) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
-    val site = env.deps.apiBase.substringBefore("/api/")
-    val open = env.deps.openInApp ?: env.deps.openUrl
-    val style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
-    androidx.compose.foundation.layout.FlowRow(
-        modifier.fillMaxWidth(),
-        horizontalArrangement = if (centered) Arrangement.spacedBy(16.dp, androidx.compose.ui.Alignment.CenterHorizontally) else Arrangement.spacedBy(16.dp),
+    var sheetDoc by remember { mutableStateOf<String?>(null) }
+    val style = MaterialTheme.typography.bodyMedium.copy(
+        color = brand.primary,
+        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+    )
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = if (centered) Alignment.CenterHorizontally else Alignment.Start,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        listOf(
-            "Privacy notice" to { open("$site/privacy") },
-            "Terms of use" to { open("$site/terms") },
-            "Data request or complaint" to { env.deps.openUrl("mailto:$GRIEVANCE_EMAIL?subject=CampBuddy%20data%20request") },
-        ).forEach { (label, go) ->
-            Text(label, style = style, modifier = Modifier.heightIn(min = 44.dp).clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = go).wrapContentHeight(androidx.compose.ui.Alignment.CenterVertically))
+        androidx.compose.foundation.layout.FlowRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (centered) Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally) else Arrangement.spacedBy(16.dp),
+        ) {
+            listOf(
+                "Privacy notice" to { sheetDoc = "privacy" },
+                "Terms of use" to { sheetDoc = "terms" },
+                "Data request or complaint" to { env.deps.openUrl("mailto:$GRIEVANCE_EMAIL?subject=CampBuddy%20data%20request") },
+            ).forEach { (label, go) ->
+                Text(
+                    label,
+                    style = style,
+                    modifier = Modifier
+                        .heightIn(min = 44.dp)
+                        .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = go)
+                        .wrapContentHeight(Alignment.CenterVertically),
+                )
+            }
         }
+
+        Text(
+            "© 2026 CampBuddy. Made for the WordPress community.",
+            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+            textAlign = if (centered) TextAlign.Center else TextAlign.Start,
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+    }
+
+    sheetDoc?.let { slug ->
+        LegalSheet(slug = slug, onClose = { sheetDoc = null })
     }
 }
 

@@ -6,6 +6,7 @@ import club.campbuddy.shared.model.Deal
 import club.campbuddy.shared.model.FreeSteal
 import club.campbuddy.shared.model.Guide
 import club.campbuddy.shared.model.InfoGroup
+import club.campbuddy.shared.model.LegalDoc
 import club.campbuddy.shared.model.Memories
 import club.campbuddy.shared.model.Quest
 import club.campbuddy.shared.model.RosterPage
@@ -87,6 +88,8 @@ class ApiClient(
     }
 
     suspend fun config(): AppConfig = get("/app/config")
+
+    suspend fun legal(slug: String): LegalDoc = get("/legal/$slug")
 
     suspend fun events(): List<EventCard> = get<Data<List<EventCard>>>("/app/events").data
 

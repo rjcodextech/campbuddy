@@ -147,3 +147,15 @@ data class InfoRow(
 
 @Serializable
 data class InfoGroup(val title: String, val rows: List<InfoRow> = emptyList())
+
+@Serializable
+data class LegalDoc(
+    val slug: String = "",
+    val title: String = "",
+    val updated: String = "",
+    @SerialName("has_custom_content") val hasCustomContent: Boolean = false,
+    val content: String? = null,
+    val entity: String = "",
+    @SerialName("grievance_email") val grievanceEmail: String = "",
+    @SerialName("reply_days") val replyDays: Int = 30,
+)

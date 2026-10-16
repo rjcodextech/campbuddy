@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\DiscoveryReportController;
 use App\Http\Controllers\Api\DiscoveryWaveController;
 use App\Http\Controllers\Api\EventFeedbackController;
 use App\Http\Controllers\Api\FreeStealSuggestionController;
+use App\Http\Controllers\Api\LegalApiController;
 use App\Http\Controllers\Api\NativePushTokenController;
 use App\Http\Controllers\Api\OfferLeadController;
 use App\Http\Controllers\Api\PushSubscriptionController;
@@ -38,6 +39,9 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::get('/app-config', AppConfigController::class)->name('api.app-config');
     // The native app's server-driven settings (Admin > Mobile app).
     Route::get('/app/config', AppSettingsController::class)->name('api.app.config');
+
+    // Legal documents for direct in-app native rendering (Privacy notice & Terms of use)
+    Route::get('/legal/{slug}', [LegalApiController::class, 'show'])->whereIn('slug', ['privacy', 'terms'])->name('api.legal.show');
 
     // The native app organizer endpoints (admins and event managers, bearer token).
     Route::post('/app/auth/login', [AppOrganizerController::class, 'login'])->middleware('throttle:20,1')->name('api.app.auth.login');
@@ -128,3 +132,6 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
         });
     });
 });
+
+Route::middleware('throttle:api-general')->get('/legal/{slug}', [LegalApiController::class, 'show'])->whereIn('slug', ['privacy', 'terms']);
+
