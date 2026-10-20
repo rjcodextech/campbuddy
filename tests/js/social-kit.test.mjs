@@ -98,6 +98,8 @@ test('content that does not fit is split over cards, never cut or overlapped', (
   assert.deepEqual(pages.flatMap((p) => p.body.items.map((i) => i.title)), ['0', '1', '2', '3', '4', '5', '6'], 'nothing lost, nothing twice');
   const people = Array.from({ length: 10 }, (_, i) => ({ name: String(i) }));
   assert.deepEqual(paginate({ body: { type: 'photos', people } }, 430, 1350).map((p) => p.body.people.length), [8, 2], 'two rows of four');
+  const logos = Array.from({ length: 10 }, (_, i) => ({ name: String(i) }));
+  assert.deepEqual(paginate({ body: { type: 'logos', logos } }, 400, 1350).map((p) => p.body.logos.length), [6, 4], 'as even as the grid allows: never one lonely logo on the last card');
   assert.equal(paginate({ body: { type: 'none' } }, 10, 1350).length, 1);
   assert.equal(paginate({ body: { type: 'list', items: [] } }, 300, 1350)[0].body.type, 'none');
 });

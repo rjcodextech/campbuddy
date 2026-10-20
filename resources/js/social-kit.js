@@ -300,12 +300,62 @@ export function isLightImage(img) {
   return light;
 }
 
+const trims = new WeakMap();
+
+/**
+ * The image without its see-through margins (a logo or a sprig drawn small on
+ * a big empty canvas), so it fills the box it is given. Solid images and ones
+ * with little margin come back as they are.
+ */
+export function trimmed(img) {
+  if (!img) return img;
+  if (trims.has(img)) return trims.get(img);
+  let out = img;
+  try {
+    const w = img.naturalWidth || img.width;
+    const h = img.naturalHeight || img.height;
+    const k = Math.min(1, 400 / Math.max(w, h));
+    const c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(w * k));
+    c.height = Math.max(1, Math.round(h * k));
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    let [x0, y0, x1, y1] = [c.width, c.height, -1, -1];
+    for (let y = 0; y < c.height; y++) {
+      for (let x = 0; x < c.width; x++) {
+        if (d[(y * c.width + x) * 4 + 3] <= 12) continue;
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+    // Pad by one sample so nothing is clipped by the rounding.
+    const [sx, sy] = [Math.max(0, (x0 - 1) / k), Math.max(0, (y0 - 1) / k)];
+    const [sw, sh] = [Math.min(w - sx, (x1 - x0 + 3) / k), Math.min(h - sy, (y1 - y0 + 3) / k)];
+    if (x1 >= 0 && sw * sh < w * h * 0.85) {
+      const t = document.createElement('canvas');
+      t.width = Math.max(1, Math.round(sw));
+      t.height = Math.max(1, Math.round(sh));
+      t.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, t.width, t.height);
+      // recolour() and duotone() key their caches by src.
+      t.src = `${img.src}#trimmed`;
+      out = t;
+    }
+  } catch {
+    out = img;
+  }
+  trims.set(img, out);
+  return out;
+}
+
 /** A tile for a logo: the light colour, or the dark one when the logo itself is light. */
 function logoTile(ctx, img, x, y, w, h, pal, r = 24) {
   ctx.fillStyle = isLightImage(img) ? pal.ink : pal.paper;
   roundRect(ctx, x, y, w, h, r);
   ctx.fill();
-  if (img) drawContain(ctx, img, x + w * 0.07, y + h * 0.1, w * 0.86, h * 0.8);
+  if (img) drawContain(ctx, trimmed(img), x + w * 0.07, y + h * 0.1, w * 0.86, h * 0.8);
 }
 
 function roundRect(ctx, x, y, w, h, r) {
@@ -860,7 +910,10 @@ export function paginate(content, room, H) {
   if (!key) return [content];
   const all = content.body[key] ?? [];
   if (!all.length) return [{ ...content, body: { type: 'none' } }];
-  const perPage = Math.max(1, Math.floor(Math.max(room, 0) / ROWS[content.body.type](H)) * columns(content.body.type, H));
+  const cols = columns(content.body.type, H);
+  const most = Math.max(1, Math.floor(Math.max(room, 0) / ROWS[content.body.type](H)) * cols);
+  // As even as the grid allows, so the last card is never one lonely item.
+  const perPage = Math.min(most, Math.ceil(Math.ceil(all.length / Math.ceil(all.length / most)) / cols) * cols);
   const pages = [];
   for (let i = 0; i < all.length; i += perPage) pages.push({ ...content, body: { ...content.body, [key]: all.slice(i, i + perPage) } });
   return pages;
@@ -1464,6 +1517,15 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
     roundRect(ctx, L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30);
     ctx.fill();
     ctx.restore();
+    // The site's artwork on the panel too, below its words.
+    const inner = below({ x: L.panel.x, y: L.panel.y, w: L.panel.w, h: L.panel.h, on: pal.paper });
+    if (inner.h > 40) {
+      ctx.save();
+      roundRect(ctx, L.panel.x, L.panel.y, L.panel.w, L.panel.h, 30);
+      ctx.clip();
+      paintArtBackground(ctx, inner, pal);
+      ctx.restore();
+    }
   }
   if (L.ticket) {
     ctx.save();
@@ -2047,7 +2109,9 @@ async function setSiteArt(kit, enabled) {
     // a pattern repeats, so it may be small; an upload was chosen by someone, so it stays.
     const minSide = kind === 'pattern' ? 48 : 400;
     const loaded = await Promise.all(pieces.map((a) => loadImage(proxied(kit, a.url))));
-    SITE_ART[kind] = loaded.filter((img, i) => img && (pieces[i].uploaded || Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height) >= minSide));
+    const kept = loaded.filter((img, i) => img && (pieces[i].uploaded || Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height) >= minSide));
+    // An illustration without its empty margins, so it fills the room it gets (a pattern keeps its spacing, a photo is solid).
+    SITE_ART[kind] = kind === 'illustration' ? kept.map(trimmed) : kept;
   }
   useArt(0);
 }
@@ -2400,7 +2464,7 @@ export const socialContext = { kit: null, colors: null, style: null, posts: [] }
 
 export const reelTools = {
   loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo,
-  proxied, logoTile, isLightImage, roleColor, personCta, mix, textOn, seeded, alpha,
+  proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT }),
   siteArt: () => SITE_ART,
   features: FEATURES,
