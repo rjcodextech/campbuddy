@@ -418,6 +418,8 @@
     gap: v.$space-3;
     padding: v.$space-4;
     padding-right: v.$space-8;
+    // A gap above as well: it follows the "Up next" card, which has none below it.
+    margin-top: v.$space-5;
     margin-bottom: v.$space-5;
     background: linear-gradient(135deg, var(--peach), var(--paper));
     border-color: var(--gold);

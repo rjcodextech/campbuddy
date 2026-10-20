@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -56,23 +57,63 @@ import kotlinx.coroutines.launch
 // (share, save, copy the caption, or send to the Publish webhook), brand colours and the site's artwork,
 // the QR kit, and the webhook. The words, captions and links come from the server (SocialKit).
 
-/** "#7a1f2b" as a colour; [fallback] for anything else. */
-private fun hex(value: String, fallback: Color): Color {
-    val v = value.removePrefix("#").takeIf { it.length == 6 }?.toLongOrNull(16) ?: return fallback
-    return Color(0xFF000000 or v)
-}
-
 private fun Modifier.capture(layer: GraphicsLayer): Modifier = this.drawWithContent {
     layer.record { this@drawWithContent.drawContent() }
     drawLayer(layer)
 }
+
+/** What a person can change in a post before sharing it (the website's three fields), per post key. */
+private class PostWords(headline: String, line: String, caption: String) {
+    var headline by mutableStateOf(headline)
+    var line by mutableStateOf(line)
+    var caption by mutableStateOf(caption)
+}
+
+/** "?…&utm_content=x" on the event's QR link, as the website's qrLink(). */
+private fun withContent(qr: String, content: String) = qr + (if ('?' in qr) "&" else "?") + "utm_content=" + content
+
+/** Cards of a list post per picture, by size (the website's pages): more fit on a story. */
+private fun perPage(body: String, size: CardSize): Int = when (body) {
+    "photos" -> when (size) { CardSize.Square -> 6; CardSize.Portrait -> 8; CardSize.Story -> 12 }
+    "logos" -> when (size) { CardSize.Square -> 6; CardSize.Portrait -> 9; CardSize.Story -> 12 }
+    "list" -> when (size) { CardSize.Square -> 4; CardSize.Portrait -> 6; CardSize.Story -> 9 }
+    "tables" -> when (size) { CardSize.Square -> 4; CardSize.Portrait -> 5; CardSize.Story -> 8 }
+    else -> Int.MAX_VALUE
+}
+
+private fun todayCaption(kit: SocialKitData, day: String, list: List<club.campbuddy.shared.model.SocialSession>): String {
+    val label = kit.schedule.days.firstOrNull { it.key == day }?.text.orEmpty()
+    val lines = list.joinToString("\n") { s -> "${s.time}  ${s.title}" + if (s.speakers.isNotEmpty()) " (${s.speakers.joinToString(", ")})" else "" }
+    return "$label at ${kit.event.name}:\n\n$lines\n\nSave your picks and get a reminder before each talk in CampBuddy: ${withContent(kit.event.qr, "today")}\n\n${kit.event.hashtags} #CampBuddy"
+}
+
+private fun spotlightCaption(kit: SocialKitData, s: club.campbuddy.shared.model.SocialSession?): String {
+    if (s == null) return ""
+    val who = if (s.speakers.isNotEmpty()) " with ${s.speakers.joinToString(", ")}" else ""
+    val where = s.track?.let { " in $it" } ?: ""
+    return "Up next at ${kit.event.name}: \"${s.title}\"$who, ${s.time}$where.\n\nSave it in CampBuddy and get a reminder before it starts: ${withContent(kit.event.qr, "spotlight")}\n\n${kit.event.hashtags} #CampBuddy"
+}
+
+private val ROLE_NAMES = mapOf(
+    "organizer" to "Organizers", "speaker" to "Speakers", "volunteer" to "Volunteers", "microsponsor" to "Microsponsors",
+    "sponsor" to "Sponsors", "media_partner" to "Media Partners", "table_lead" to "Table Leads",
+)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun SocialTab(ctx: EventCtx) {
     var stamp by remember { mutableStateOf(0) }
     var section by remember { mutableStateOf("posts") }
+    var size by remember { mutableStateOf(CardSize.Portrait) }
+    var print by remember { mutableStateOf(false) }
+    var postDesign by remember { mutableStateOf("classic") }
+    var peopleDesign by remember { mutableStateOf("classic") }
+    var role by remember { mutableStateOf<String?>(null) }
+    var shown by remember { mutableStateOf(10) }
+    val words = remember { mutableStateMapOf<String, PostWords>() }
+    val picks = remember { mutableStateMapOf<String, String>() }
     val loader = rememberLoader("org-social:${ctx.eventId}:$stamp") { Loaded(ctx.api.socialKit(ctx.token, ctx.eventId), false) }
+    val exportWidth = if (print) size.w * 3 else size.w
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // All five sections in view at once (they wrap), not a row that hides the last ones.
@@ -83,6 +124,14 @@ internal fun SocialTab(ctx: EventCtx) {
                 }
             }
         }
+        if (section == "posts" || section == "people") item {
+            OrgSection("Format", "columns", "For every picture below; the website's sizes and designs") {
+                ChipGroup("Size", CardSize.entries.map { it to it.label }, size) { size = it }
+                ChipGroup("Quality", listOf(false to "Social (1080 px)", true to "Print (3×, ${size.w * 3} px)"), print) { print = it }
+                if (section == "posts") ChipGroup("Post design", POST_DESIGNS, postDesign) { postDesign = it }
+                else ChipGroup("People card design", PEOPLE_DESIGNS, peopleDesign) { peopleDesign = it }
+            }
+        }
         when (val s = loader.state.value) {
             LoadState.Loading -> item { Loading() }
             is LoadState.Failed -> item { OrgFailed(s.message, loader.reload, ctx.onExpired) }
@@ -90,9 +139,24 @@ internal fun SocialTab(ctx: EventCtx) {
                 val k = s.value
                 when (section) {
                     "people" -> {
-                        item { Text("Everyone on the attendee list with a role or a shared Camp Card — ${plural(k.people.size, "card")}.", style = MaterialTheme.typography.bodySmall) }
+                        val counts = ROLE_NAMES.keys.associateWith { r -> k.people.count { r in it.roleKeys } }.filterValues { it > 0 }
+                        val cards = k.people.count { it.hasCard }
+                        item {
+                            ChipGroup(
+                                "Who",
+                                listOf<Pair<String?, String>>(null to "Everyone (${k.people.size})") + counts.map { (r, n) -> r to "${ROLE_NAMES[r]} ($n)" } + (if (cards > 0) listOf<Pair<String?, String>>("card" to "Shared a Camp Card ($cards)") else emptyList()),
+                                role,
+                            ) { role = it; shown = 10 }
+                        }
+                        val list = k.people.filter { p -> role == null || (role == "card" && p.hasCard) || (role != "card" && role in p.roleKeys) }
                         if (k.people.isEmpty()) item { EmptyNote("No speakers, organizers or volunteers marked yet. Set roles in Attendees.", "users") }
-                        items(k.people, key = { "p-${it.id}" }) { p -> ShareableCard(ctx, k, "people-${p.id}", p.name, p.caption) { PersonCard(k, p) } }
+                        items(list.take(shown), key = { "p-${it.id}" }) { p ->
+                            val qr = p.link ?: withContent(k.event.qr, "people-" + (p.roleKeys.firstOrNull() ?: "camp-card").replace('_', '-'))
+                            ShareableCard(ctx, k, "people-${p.id}", p.name, p.caption, exportWidth, pages = 1, page = 1, onPage = {}) {
+                                PersonPicture(k, p, peopleDesign, size, qr)
+                            }
+                        }
+                        if (list.size > shown) item { OrgButton("Show ${minOf(10, list.size - shown)} more (${list.size - shown} left)", { shown += 10 }, Modifier.fillMaxWidth(), icon = "chevron-down") }
                     }
                     "look" -> {
                         item { ColoursEditor(ctx, k) { stamp++ } }
@@ -104,8 +168,11 @@ internal fun SocialTab(ctx: EventCtx) {
                     }
                     "publish" -> item { WebhookEditor(ctx, k) { stamp++ } }
                     else -> {
-                        item { Text("Drawn in the brand colours with a QR to the event. Share or save the picture, copy the caption, or send both to your Publish webhook.", style = MaterialTheme.typography.bodySmall) }
-                        items(k.posts, key = { "post-${it.key}" }) { p -> ShareableCard(ctx, k, p.key, p.label, p.caption) { PostCard(k, p) } }
+                        item { Text("Drawn in the brand colours with a QR to the event. Change the words, then share or save the picture, copy the caption, or send both to your Publish webhook.", style = MaterialTheme.typography.bodySmall) }
+                        items(k.posts.mapIndexed { i, p -> i to p }, key = { "post-${it.second.key}" }) { (index, post) ->
+                            val w = words.getOrPut(post.key) { PostWords(post.headline, post.line, post.caption) }
+                            PostItem(ctx, k, post, w, picks, size, postDesign, exportWidth, index)
+                        }
                     }
                 }
             }
@@ -113,9 +180,89 @@ internal fun SocialTab(ctx: EventCtx) {
     }
 }
 
-/** One card with its tools: share, save, copy caption, publish. */
+/** Choices that wrap onto more lines, so every size and design is in view (no sideways scrolling to find one). */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ShareableCard(ctx: EventCtx, kit: SocialKitData, kind: String, title: String, caption: String, card: @Composable () -> Unit) {
+private fun <K> ChipGroup(label: String, options: List<Pair<K, String>>, selected: K, onSelect: (K) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label.uppercase(), style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.5.sp, letterSpacing = 0.6.sp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            options.forEach { (key, text) -> CbChip(selected = key == selected, onClick = { onSelect(key) }, label = { Text(text) }) }
+        }
+    }
+}
+
+/** One post: its picker (Today: a day, Spotlight: a talk), its words, the picture (paged when long) and tools. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PostItem(
+    ctx: EventCtx, k: SocialKitData, post: club.campbuddy.shared.model.SocialPost, w: PostWords, picks: MutableMap<String, String>,
+    size: CardSize, design: String, exportWidth: Int, index: Int,
+) {
+    var page by remember(post.key, size) { mutableStateOf(1) }
+    var editing by remember { mutableStateOf(false) }
+    val schedule = k.schedule
+    val pick = picks[post.key] ?: when (post.picker) {
+        "day" -> schedule.days.firstOrNull()?.key
+        "session" -> schedule.next ?: schedule.sessions.firstOrNull()?.id
+        else -> null
+    }
+    val daySessions = if (post.picker == "day" && pick != null) schedule.sessions.filter { it.day == pick } else emptyList()
+    val session = if (post.picker == "session") schedule.sessions.firstOrNull { it.id == pick } else null
+    // The caption follows the picked day or talk (as on the website), unless the person typed their own.
+    fun pickAndCaption(value: String) {
+        picks[post.key] = value
+        if (post.picker == "day") w.caption = todayCaption(k, value, schedule.sessions.filter { it.day == value })
+        if (post.picker == "session") { w.caption = spotlightCaption(k, schedule.sessions.firstOrNull { it.id == value }); w.headline = ""; w.line = "" }
+    }
+    if (post.picker != null && pick != null && picks[post.key] == null) androidx.compose.runtime.LaunchedEffect(post.key) { pickAndCaption(pick) }
+
+    val qr = post.link.ifBlank { withContent(k.event.qr, post.key) }
+    val faces = when (post.body) { "photos" -> k.speakers.filter { it.photo != null }.ifEmpty { k.speakers }; "logos" -> k.sponsors; else -> emptyList() }
+    val listCount = when (post.body) { "photos", "logos" -> faces.size; "list" -> daySessions.size; "tables" -> k.tables.size; else -> 0 }
+    val per = perPage(post.body, size)
+    val pages = if (listCount > per) (listCount + per - 1) / per else 1
+    val current = page.coerceIn(1, pages)
+    fun <T> slice(list: List<T>) = if (pages > 1) list.drop((current - 1) * per).take(per) else list
+    val content = PostContent(
+        key = post.key,
+        kicker = if (post.picker == "day") schedule.days.firstOrNull { it.key == pick }?.text ?: post.kicker else post.kicker,
+        headline = w.headline.ifBlank { session?.title ?: post.headline },
+        line = w.line.ifBlank { session?.let { listOfNotNull(it.time, it.track).joinToString(" · ") } ?: "" },
+        body = if (post.picker == "day") "list" else post.body,
+        qr = qr,
+        days = post.days,
+        faces = slice(faces),
+        sessions = slice(daySessions),
+        tables = slice(k.tables),
+        session = session,
+        page = current,
+        pages = pages,
+    )
+
+    ShareableCard(ctx, k, post.key, post.label, w.caption, exportWidth, pages, current, onPage = { page = it }, header = {
+        if (post.picker == "day" && schedule.days.isNotEmpty()) OrgFilterRow("Day", schedule.days.map { it.key to it.text }, pick) { pickAndCaption(it!!) }
+        if (post.picker == "session" && schedule.sessions.isNotEmpty()) OrgFilterRow("Session", schedule.sessions.map { it.id to (it.time + " · " + it.title.take(36)) }, pick) { pickAndCaption(it!!) }
+        LinkButton(if (editing) "Done changing words" else "Change the words", { editing = !editing })
+        if (editing) {
+            OrgField("Headline on the image", w.headline, { w.headline = it }, max = 60, placeholder = session?.title ?: post.headline)
+            OrgField("Line under it", w.line, { w.line = it }, max = 90)
+            OrgField("Caption", w.caption, { w.caption = it }, lines = 6, max = 3000)
+            OrgButton("Back to CampBuddy's words", { w.headline = post.headline; w.line = post.line; w.caption = post.caption; if (pick != null) pickAndCaption(pick) }, icon = "refresh")
+        }
+    }) {
+        PostPicture(k, content, design, size, index)
+    }
+}
+
+/** One picture with its tools: share, save, copy caption, publish; a pager when the post needs several cards. */
+@Composable
+private fun ShareableCard(
+    ctx: EventCtx, kit: SocialKitData, kind: String, title: String, caption: String, exportWidth: Int,
+    pages: Int, page: Int, onPage: (Int) -> Unit,
+    header: (@Composable () -> Unit)? = null,
+    card: @Composable () -> Unit,
+) {
     val env = LocalEnv.current
     val toast = LocalOrgToast.current
     val clipboard = LocalClipboardManager.current
@@ -124,15 +271,22 @@ private fun ShareableCard(ctx: EventCtx, kit: SocialKitData, kind: String, title
     val layer = rememberGraphicsLayer()
     var showCaption by remember { mutableStateOf(false) }
     var askPublish by remember { mutableStateOf(false) }
-    val file = "campbuddy-${kit.event.slug}-$kind.png"
+    val file = "campbuddy-${kit.event.slug}-$kind" + (if (pages > 1) "-$page" else "") + ".png"
 
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(title, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp), modifier = Modifier.weight(1f))
                 if (kind.startsWith("people-")) OrgBadge("Person", Tone.Muted, "users")
+                if (pages > 1) OrgBadge("Card $page of $pages", Tone.Primary)
             }
-            Box(Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(8.dp)).capture(layer)) { card() }
+            header?.invoke()
+            Box(Modifier.fillMaxWidth().captureAt(layer, exportWidth)) { card() }
+            if (pages > 1) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OrgButton("Previous", { onPage(page - 1) }, enabled = page > 1, icon = "chevron-left")
+                Text("Card $page of $pages", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                OrgButton("Next", { onPage(page + 1) }, enabled = page < pages, icon = "chevron-right")
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OrgButton("Share", { scope.launch { env.deps.shareImage(layer.toImageBitmap(), file) } }, Modifier.weight(1f), kind = BtnKind.Primary, icon = "share")
                 OrgButton("Save", {
@@ -141,7 +295,8 @@ private fun ShareableCard(ctx: EventCtx, kit: SocialKitData, kind: String, title
             }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OrgButton("Copy caption", { clipboard.setText(AnnotatedString(caption)); toast.show("Caption copied.") }, Modifier.weight(1f), icon = "clipboard", enabled = caption.isNotBlank())
-                if (kit.webhook.set) OrgButton(if (actions.busy) "Sending…" else "Publish", { askPublish = true }, Modifier.weight(1f), icon = "megaphone", enabled = !actions.busy)
+                // Publish sends the social-size picture (a print-size one is too big for most webhooks).
+                if (kit.webhook.set) OrgButton(if (actions.busy) "Sending…" else if (exportWidth > 1080) "Publish (Social only)" else "Publish", { askPublish = true }, Modifier.weight(1f), icon = "megaphone", enabled = !actions.busy && exportWidth <= 1080)
             }
             if (caption.isNotBlank()) {
                 LinkButton(if (showCaption) "Hide caption" else "Show caption", { showCaption = !showCaption })
@@ -155,105 +310,6 @@ private fun ShareableCard(ctx: EventCtx, kit: SocialKitData, kind: String, title
             ctx.api.publishSocial(ctx.token, ctx.eventId, png, title, caption, kind).message
         })
     }, onClose = { askPublish = false })
-}
-
-// ---- the drawn cards ---------------------------------------------------------------------------------------
-
-@Composable
-private fun CardFrame(kit: SocialKitData, qr: String, content: @Composable () -> Unit) {
-    val primary = hex(kit.colors.primary, Color(0xFF7A1F2B))
-    val secondary = hex(kit.colors.secondary, Color(0xFFE0A11B))
-    val paper = hex(kit.colors.paper, Color(0xFFFFF8EE))
-    val ink = hex(kit.colors.ink, Color(0xFF231F20))
-    val art = kit.site.art.firstOrNull { it.kind == "pattern" || it.kind == "illustration" }
-
-    Box(Modifier.fillMaxSize().background(primary)) {
-        // The site's own pattern or illustration, faint behind; else two soft circles in the second colour.
-        if (art != null) {
-            RemoteImage(art.url, Modifier.fillMaxSize().background(Color.Transparent), contentScale = ContentScale.Crop) {}
-            Box(Modifier.fillMaxSize().background(primary.copy(alpha = 0.82f)))
-        } else {
-            Box(Modifier.size(220.dp).offset(x = 180.dp, y = (-70).dp).background(secondary.copy(alpha = 0.22f), CircleShape))
-            Box(Modifier.size(140.dp).offset(x = (-50).dp, y = 230.dp).background(secondary.copy(alpha = 0.16f), CircleShape))
-        }
-        Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(Modifier.size(34.dp).background(paper, CircleShape).padding(5.dp), contentAlignment = Alignment.Center) {
-                    RemoteImage(kit.event.mark ?: kit.event.logo, Modifier.size(24.dp)) { Text(kit.event.short.take(1), style = MaterialTheme.typography.titleMedium.copy(color = primary)) }
-                }
-                Text(kit.event.short.ifBlank { kit.event.name }, style = MaterialTheme.typography.titleMedium.copy(color = paper, fontSize = 14.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            Box(Modifier.weight(1f).fillMaxWidth()) { content() }
-            Row(
-                Modifier.fillMaxWidth().background(paper, RoundedCornerShape(10.dp)).padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                QrCodeView(qr, size = 58.dp, dark = ink)
-                Column(Modifier.weight(1f)) {
-                    Text("Open it in CampBuddy", style = MaterialTheme.typography.titleMedium.copy(color = ink, fontSize = 13.sp, lineHeight = 16.sp))
-                    Text("Free · no sign-up · works offline", style = MaterialTheme.typography.bodySmall.copy(color = ink.copy(alpha = 0.7f), fontSize = 10.5.sp, lineHeight = 13.sp))
-                    if (kit.event.hashtags.isNotBlank()) Text(kit.event.hashtags, style = MaterialTheme.typography.bodySmall.copy(color = primary, fontSize = 10.5.sp, lineHeight = 13.sp, fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PostCard(kit: SocialKitData, post: SocialPost) {
-    val paper = hex(kit.colors.paper, Color(0xFFFFF8EE))
-    val secondary = hex(kit.colors.secondary, Color(0xFFE0A11B))
-    val primary = hex(kit.colors.primary, Color(0xFF7A1F2B))
-    CardFrame(kit, post.link.ifBlank { kit.event.qr }) {
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically)) {
-            if (post.kicker.isNotBlank()) Text(post.kicker.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = secondary, fontSize = 12.sp, letterSpacing = 1.2.sp), maxLines = 2)
-            if (post.body == "countdown" && post.days != null) {
-                Text(post.days.toString(), style = MaterialTheme.typography.titleLarge.copy(color = secondary, fontSize = 72.sp, lineHeight = 74.sp, fontWeight = FontWeight.ExtraBold))
-            }
-            Text(post.headline, style = MaterialTheme.typography.titleLarge.copy(color = paper, fontSize = 27.sp, lineHeight = 31.sp, fontWeight = FontWeight.ExtraBold), maxLines = 3, overflow = TextOverflow.Ellipsis)
-            if (post.line.isNotBlank()) Text(post.line, style = MaterialTheme.typography.bodyMedium.copy(color = paper.copy(alpha = 0.88f), fontSize = 14.sp), maxLines = 2)
-            when (post.body) {
-                "photos" -> FlowRow(horizontalArrangement = Arrangement.spacedBy((-8).dp), modifier = Modifier.padding(top = 4.dp)) {
-                    kit.speakers.take(7).forEach { sp ->
-                        Box(Modifier.size(40.dp).clip(CircleShape).background(secondary).border(2.dp, paper, CircleShape), contentAlignment = Alignment.Center) {
-                            RemoteImage(sp.photo, Modifier.size(40.dp), contentScale = ContentScale.Crop) { Text(sp.name.take(1), style = MaterialTheme.typography.titleMedium.copy(color = primary)) }
-                        }
-                    }
-                }
-                "logos" -> FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 4.dp)) {
-                    kit.sponsors.take(6).forEach { sp ->
-                        Box(Modifier.size(width = 70.dp, height = 34.dp).background(paper, RoundedCornerShape(6.dp)).padding(4.dp), contentAlignment = Alignment.Center) {
-                            RemoteImage(sp.logo, Modifier.fillMaxSize()) { Text(sp.name, style = MaterialTheme.typography.bodySmall.copy(color = primary, fontSize = 9.sp), maxLines = 1) }
-                        }
-                    }
-                }
-                else -> Unit
-            }
-        }
-    }
-}
-
-@Composable
-private fun PersonCard(kit: SocialKitData, person: SocialPerson) {
-    val paper = hex(kit.colors.paper, Color(0xFFFFF8EE))
-    val secondary = hex(kit.colors.secondary, Color(0xFFE0A11B))
-    val primary = hex(kit.colors.primary, Color(0xFF7A1F2B))
-    CardFrame(kit, person.link ?: kit.event.qr) {
-        Row(Modifier.fillMaxSize(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            Box(Modifier.size(104.dp).clip(CircleShape).background(secondary).border(3.dp, paper, CircleShape), contentAlignment = Alignment.Center) {
-                RemoteImage(person.photo, Modifier.size(104.dp), contentScale = ContentScale.Crop) {
-                    Text(person.name.split(' ').mapNotNull { it.firstOrNull()?.uppercase() }.take(2).joinToString(""), style = MaterialTheme.typography.titleLarge.copy(color = primary, fontSize = 34.sp))
-                }
-            }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text((person.roles.firstOrNull() ?: "Attendee").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = secondary, fontSize = 12.sp, letterSpacing = 1.2.sp))
-                Text(person.name, style = MaterialTheme.typography.titleLarge.copy(color = paper, fontSize = 24.sp, lineHeight = 28.sp, fontWeight = FontWeight.ExtraBold), maxLines = 3)
-                person.talk?.let { Text("“$it”", style = MaterialTheme.typography.bodyMedium.copy(color = paper.copy(alpha = 0.9f)), maxLines = 3, overflow = TextOverflow.Ellipsis) }
-                if (person.talk == null) Text("Say hi at ${kit.event.short}!", style = MaterialTheme.typography.bodyMedium.copy(color = paper.copy(alpha = 0.9f)))
-            }
-        }
-    }
 }
 
 // ---- colours & artwork ---------------------------------------------------------------------------------------

@@ -12,6 +12,7 @@ Native = Kotlin Multiplatform + Compose (koi WebView nahi). Android pura chalta 
 | Organizer API: login (hashed bearer token), events, reports, running late | `Api\App\OrganizerController` | `OrganizerApiTest` |
 | Organizer poora (20 Oct): events filters, har event ke 13 tabs (details, information, running late, reports, attendees+roles+admin takedowns, quests, Contributor Day, memories, notifications, deals, deal leads, activity), admin Dashboard/Errors/Feedback/Managers/Activity/Maintenance | `OrganizerManageController`, `OrganizerAdminController` | `OrganizerAppManageTest` |
 | Social media tab (20 Oct): posts + people cards app mein draw hote hain (share/save/copy caption/Publish webhook), brand colours, site artwork use/remove/kind, QR kit, webhook | `OrganizerSocialController` | `OrganizerAppSocialTest` |
+| Social formats: 3 sizes, Social/Print quality, 7+7 designs, words edit, day/session picker, role filter; Analytics page (GA filters); deal leads CSV export | `OrganizerSocialController`, `OrganizerAdminController@analytics`, `OrganizerManageController@exportLeads` | `OrganizerAppSocialTest`, `OrganizerAppManageTest` |
 | Native app jo website ke discovery/push endpoints bhi use karta hai (`/events/{slug}/discovery…`, `/push/native-subscribe`) | `Api\Discovery*`, `NativePushTokenController` | `NativeKotlinSyncTest` (har path ek asli route) |
 
 ## Android app — ye sab ban gaya

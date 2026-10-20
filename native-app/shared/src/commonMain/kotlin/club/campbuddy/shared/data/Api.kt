@@ -375,6 +375,22 @@ class ApiClient(
     suspend fun orgLeads(token: String, eventId: Long, offerId: Long?, from: String?, to: String?, page: Int): LeadsPage =
         get("/app/organizer/events/$eventId/leads" + query("offer_id" to offerId?.toString(), "from" to from, "to" to to, "page" to page.toString()), token)
 
+    /** The deal leads as the website's CSV file (same filters), for the share sheet. */
+    suspend fun exportLeads(token: String, eventId: Long, offerId: Long?, from: String?, to: String?): ByteArray {
+        val response = http.get("$baseUrl/app/organizer/events/$eventId/leads/export" + query("offer_id" to offerId?.toString(), "from" to from, "to" to to)) {
+            common()
+            bearerAuth(token)
+        }
+        return checked(response).body()
+    }
+
+    /** Admin → Analytics (GA4): a period (or custom dates), a stream, bots hidden or not; [fresh] skips the hour's cache. */
+    suspend fun adminAnalytics(token: String, period: String, from: String?, to: String?, stream: String?, hideBots: Boolean, fresh: Boolean): club.campbuddy.shared.model.AnalyticsData =
+        get<Data<club.campbuddy.shared.model.AnalyticsData>>(
+            "/app/organizer/admin/analytics" + query("period" to period, "from" to from, "to" to to, "stream" to stream, "hide_bots" to (if (hideBots) "1" else "0"), "fresh" to (if (fresh) "1" else null)),
+            token,
+        ).data
+
     // ---- organizer: social media (OrganizerSocialController) ----
 
     suspend fun socialKit(token: String, eventId: Long): club.campbuddy.shared.model.SocialKitData =

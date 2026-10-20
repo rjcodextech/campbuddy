@@ -671,7 +671,8 @@ private fun RunningLate(slug: String) {
     val shape = RoundedCornerShape(brand.radius.dp)
 
     Row(
-        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp)
+        // A gap below too: the page scrolls under the notice, and a card cut off right at its edge looked stuck to it.
+        Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
             .background(brand.danger.copy(alpha = 0.10f), shape).border(1.dp, brand.danger.copy(alpha = 0.35f), shape)
             .padding(start = 0.dp),
         verticalAlignment = Alignment.Top,

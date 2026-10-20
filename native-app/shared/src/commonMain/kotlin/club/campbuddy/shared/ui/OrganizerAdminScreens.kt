@@ -237,13 +237,14 @@ internal fun AdminMorePage(api: ApiClient, token: String, onEvent: (OrganizerEve
         return
     }
     PageBody {
+        item { MoreRow("activity", "Analytics", "Google Analytics: visitors, WordCamps, pages, sources, devices, with date filters") { page = "analytics" } }
         item { MoreRow("alert", "Errors", "System checks and failed fetches, with filters") { page = "errors" } }
         item { MoreRow("heart", "Feedback", "Ratings and comments from the thank-you card") { page = "feedback" } }
         item { MoreRow("activity", "Manager activity", "Everything event managers changed, by manager or WordCamp") { page = "activity" } }
         item { MoreRow("settings", "Maintenance", "Refresh event data, clear the cache, discover WordCamps") { page = "maintenance" } }
         item {
             Text(
-                "The Mobile app settings, legal pages, media library, default deals, free steals, social art and commands stay on the website's admin panel (bigger screens, file uploads).",
+                "The Mobile app settings, legal pages, media library, default deals, free steals, commands, the usage post, reels and artwork uploads stay on the website's admin panel (bigger screens, file uploads, video).",
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -272,13 +273,14 @@ private fun MoreSubPage(api: ApiClient, token: String, page: String, onEvent: (O
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().background(brand.background).padding(start = 4.dp, top = 4.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             OrgIconButton("chevron-left", "Back", onBack, filled = false)
-            Text(when (page) { "errors" -> "Errors"; "feedback" -> "Feedback"; "activity" -> "Manager activity"; else -> "Maintenance" }, style = MaterialTheme.typography.titleLarge)
+            Text(when (page) { "errors" -> "Errors"; "feedback" -> "Feedback"; "activity" -> "Manager activity"; "analytics" -> "Analytics"; else -> "Maintenance" }, style = MaterialTheme.typography.titleLarge)
         }
         Box(Modifier.weight(1f)) {
             when (page) {
                 "errors" -> ErrorsPage(api, token, onEvent, onExpired)
                 "feedback" -> FeedbackPage(api, token, onExpired)
                 "activity" -> ActivityLogPage(api, token, onExpired)
+                "analytics" -> AnalyticsPage(api, token, onExpired)
                 else -> MaintenancePage(api, token, onExpired)
             }
         }
@@ -414,6 +416,129 @@ private fun ActivityLogPage(api: ApiClient, token: String, onExpired: () -> Unit
         }
     }
 }
+
+// ---- analytics -------------------------------------------------------------------------------------------
+
+/** What each GA report is called on the website's Analytics page, in its order. */
+private val REPORT_TITLES = linkedMapOf(
+    "daily" to "By day", "wordcamps" to "WordCamps", "new_returning" to "New and returning", "events" to "Events",
+    "source" to "Where visits came from", "first_source" to "Where new people came from", "country" to "Countries", "city" to "Cities",
+    "device" to "Devices", "os" to "Systems", "browser" to "Browsers", "pages" to "Pages", "hour" to "By hour", "weekday" to "By weekday",
+    "display_mode" to "App or browser", "nav_tab" to "Tabs opened", "explore_tab" to "Explore tabs", "saved_sessions" to "Saved sessions",
+    "quests" to "Quests done", "deals" to "Deals", "sponsors" to "Sponsors opened", "guide_sections" to "Guide sections", "faq" to "FAQ",
+    "install" to "Install", "reminder" to "Reminders", "vitals" to "Web vitals", "exceptions" to "Errors in the app", "api_errors" to "API errors",
+)
+
+private val COLUMN_NAMES = mapOf(
+    "activeUsers" to "Users", "newUsers" to "New", "sessions" to "Visits", "screenPageViews" to "Views", "eventCount" to "Count",
+    "totalUsers" to "Users", "userEngagementDuration" to "Time (s)", "engagedSessions" to "Engaged", "engagementRate" to "Engaged %",
+    "customEvent:event_slug" to "WordCamp", "sessionSourceMedium" to "Source / medium", "firstUserSourceMedium" to "Source / medium",
+    "pagePath" to "Page", "eventName" to "Event", "newVsReturning" to "Who", "deviceCategory" to "Device", "operatingSystem" to "System",
+    "dayOfWeek" to "Day", "customEvent:tab" to "Tab", "customEvent:session_title" to "Session", "customEvent:quest_title" to "Quest",
+    "customEvent:offer_title" to "Deal", "customEvent:sponsor_name" to "Sponsor", "customEvent:section" to "Section", "customEvent:question" to "Question",
+    "customEvent:platform" to "Platform", "customEvent:outcome" to "Outcome", "customEvent:result" to "Result", "customEvent:metric_name" to "Metric",
+    "customEvent:metric_rating" to "Rating", "customEvent:description" to "Error", "customEvent:endpoint" to "Endpoint", "customEvent:method" to "Method",
+    "customEvent:status" to "Status", "customEvent:display_mode" to "Mode",
+)
+
+/** Admin → Analytics in the app: the website page's GA4 reports, with its period, dates, stream and bots filters. */
+@Composable
+private fun AnalyticsPage(api: ApiClient, token: String, onExpired: () -> Unit) {
+    var period by remember { mutableStateOf("10") }
+    var from by remember { mutableStateOf("") }
+    var to by remember { mutableStateOf("") }
+    var stream by remember { mutableStateOf<String?>(null) }
+    var hideBots by remember { mutableStateOf(true) }
+    var fresh by remember { mutableStateOf(0) }
+    val custom = period == "custom"
+    // Custom dates are asked for only once both are picked.
+    val asked = if (custom && (from.isBlank() || to.isBlank())) "10" else period
+    val loader = rememberLoader("admin-analytics:$asked:$from:$to:$stream:$hideBots:$fresh") {
+        Loaded(api.adminAnalytics(token, asked, from.ifBlank { null }, to.ifBlank { null }, stream, hideBots, fresh > 0), false)
+    }
+    val data = (loader.state.value as? LoadState.Ready)?.value
+
+    PageBody {
+        item { OrgFilterRow("Period", (data?.periods ?: emptyList()).map { it.key to it.text }.ifEmpty { listOf("10" to "Last 10 days") }, period) { period = it } }
+        if (custom) item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OrgDateField("From", from, { from = it }, Modifier.weight(1f))
+                OrgDateField("To", to, { to = it }, Modifier.weight(1f))
+            }
+        }
+        if ((data?.streams?.size ?: 0) > 1) item { OrgFilterRow("Stream", data!!.streams.map { it.key to it.text }, data.filters.stream) { stream = it } }
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.weight(1f)) { OrgToggle("Hide bots", hideBots, { hideBots = it }) }
+                OrgButton("Fresh numbers", { fresh++ }, icon = "refresh")
+            }
+        }
+        loadedPage(loader.state.value, loader.reload, onExpired) { d ->
+            val problem = d.error
+            if (problem != null) {
+                item { EmptyNote(problem, "alert") }
+            } else {
+                item {
+                    Text(
+                        "${d.filters.from} – ${d.filters.to}" + (orgWhen(d.fetchedAt)?.let { " · read $it (kept an hour)" } ?: "") +
+                            if (d.filters.invalid) " · those dates cannot be read, showing the default" else "",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                d.reports["totals"]?.firstOrNull()?.let { t ->
+                    item {
+                        fun n(k: String) = t[k] ?: "0"
+                        val rate = (n("engagementRate").toDoubleOrNull() ?: 0.0) * 100
+                        val users = n("activeUsers").toDoubleOrNull() ?: 0.0
+                        val avg = if (users > 0) ((n("userEngagementDuration").toDoubleOrNull() ?: 0.0) / users).toInt() else 0
+                        StatGrid(listOf(
+                            Stat("Users", n("activeUsers"), "users", Tone.Primary),
+                            Stat("New users", n("newUsers"), "sparkles", Tone.Accent),
+                            Stat("Visits", n("sessions"), "compass", Tone.Primary),
+                            Stat("Engaged", "${rate.toInt()}%", "heart", Tone.Ok),
+                            Stat("Views", n("screenPageViews"), "eye", Tone.Muted),
+                            Stat("Avg time", "${avg / 60}m ${avg % 60}s", "clock", Tone.Muted),
+                        ))
+                    }
+                }
+                REPORT_TITLES.forEach { (key, title) ->
+                    val rows = d.reports[key].orEmpty()
+                    if (rows.isNotEmpty()) item(key = "r-$key") { ReportTable(title, rows, d.events) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReportTable(title: String, rows: List<Map<String, String>>, events: Map<String, String>) {
+    val brand = LocalBrand.current
+    var all by remember { mutableStateOf(false) }
+    val columns = rows.first().keys.toList()
+    OrgSection(title, null, plural(rows.size, "row")) {
+        Row(Modifier.fillMaxWidth()) {
+            columns.forEachIndexed { i, c ->
+                Text(COLUMN_NAMES[c] ?: c.substringAfter(':'), style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(if (i == 0) 2f else 1f), maxLines = 1)
+            }
+        }
+        (if (all) rows else rows.take(10)).forEach { row ->
+            Row(Modifier.fillMaxWidth().background(brand.background, RoundedCornerShape(4.dp)).padding(vertical = 4.dp, horizontal = 4.dp)) {
+                columns.forEachIndexed { i, c ->
+                    val raw = row[c].orEmpty()
+                    val shown = when {
+                        c == "customEvent:event_slug" -> events[raw] ?: raw.ifBlank { "(none)" }
+                        c == "date" && raw.length == 8 -> raw.substring(6) + "/" + raw.substring(4, 6)
+                        c == "engagementRate" -> "${((raw.toDoubleOrNull() ?: 0.0) * 100).toInt()}%"
+                        else -> raw.ifBlank { "(not set)" }
+                    }
+                    Text(shown, style = MaterialTheme.typography.bodySmall.copy(color = if (i == 0) brand.ink else brand.muted, fontSize = 12.sp), modifier = Modifier.weight(if (i == 0) 2f else 1f), maxLines = 2)
+                }
+            }
+        }
+        if (rows.size > 10) LinkButton(if (all) "Show top 10" else "Show all ${rows.size}", { all = !all })
+    }
+}
+
 
 // ---- maintenance -----------------------------------------------------------------------------------------
 

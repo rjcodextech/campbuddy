@@ -76,6 +76,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::get('/activity', [AppOrganizerManageController::class, 'activity'])->name('api.app.organizer.activity');
             Route::get('/deals', [AppOrganizerManageController::class, 'deals'])->name('api.app.organizer.deals');
             Route::get('/leads', [AppOrganizerManageController::class, 'leads'])->name('api.app.organizer.leads');
+            Route::get('/leads/export', [AppOrganizerManageController::class, 'exportLeads'])->middleware('throttle:20,1')->name('api.app.organizer.leads.export');
 
             Route::middleware('throttle:60,1')->group(function () {
                 Route::post('/details', [AppOrganizerManageController::class, 'updateDetails'])->name('api.app.organizer.details.update');
@@ -114,6 +115,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
         Route::get('/managers', [AppOrganizerAdminController::class, 'managers'])->name('api.app.admin.managers');
         Route::get('/activity', [AppOrganizerAdminController::class, 'activity'])->name('api.app.admin.activity');
         Route::get('/event-options', [AppOrganizerAdminController::class, 'eventOptions'])->name('api.app.admin.event-options');
+        Route::get('/analytics', [AppOrganizerAdminController::class, 'analytics'])->middleware('throttle:30,1')->name('api.app.admin.analytics');
 
         Route::middleware('throttle:60,1')->group(function () {
             Route::post('/managers', [AppOrganizerAdminController::class, 'storeManager'])->name('api.app.admin.managers.store');

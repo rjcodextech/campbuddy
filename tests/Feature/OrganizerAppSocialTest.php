@@ -62,6 +62,11 @@ class OrganizerAppSocialTest extends TestCase
         $this->assertSame(['primary', 'secondary', 'ink', 'paper'], array_keys($data['colors']));
         $this->assertSame(['badge', 'standee', 'slide', 'social'], collect($data['qr'])->pluck('key')->all());
         $this->assertFalse($data['webhook']['set']);
+        // Today / Spotlight pick from the schedule; people cards say their role keys.
+        // (Today and Spotlight only appear once sessions have times; this event has none.)
+        $this->assertTrue(collect($data['posts'])->every(fn ($p) => array_key_exists('picker', $p)));
+        $this->assertSame(['days', 'next', 'sessions'], array_keys($data['schedule']));
+        $this->assertIsArray($data['tables']);
 
         $this->getJson($this->url($this->theirs), $this->asManager())->assertNotFound();
     }

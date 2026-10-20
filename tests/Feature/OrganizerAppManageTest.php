@@ -233,6 +233,11 @@ class OrganizerAppManageTest extends TestCase
         $this->assertSame('one@example.org', $leads->json('data.0.email'));
         $this->assertSame(1, $leads->json('meta.total'));
 
+        // The same leads as the web page's CSV export, with the same filters.
+        $csv = $this->get($this->url($this->mine, "/leads/export?offer_id={$id}"), $admin)->assertOk();
+        $this->assertStringContainsString('one@example.org', $csv->streamedContent());
+        $this->get($this->url($this->mine, '/leads/export'), $this->asManager())->assertForbidden();
+
         $this->deleteJson($this->url($this->mine, "/deals/{$id}"), [], $admin)->assertOk();
         $this->assertNull(Offer::find($id));
         // An event's deal is only reached through its own event.
@@ -269,6 +274,18 @@ class OrganizerAppManageTest extends TestCase
         $this->assertEquals(4, $feedback->json('data.summary.0.average'));
         $this->assertSame([1, 0, 1, 0, 0], $feedback->json('data.summary.0.stars'));
         $this->assertCount(2, $feedback->json('data.items'));
+    }
+
+    public function test_analytics_says_what_is_missing_when_ga_is_not_set_up(): void
+    {
+        config(['analytics.property_id' => null]);
+
+        $this->getJson('/api/v1/app/organizer/admin/analytics?period=7&hide_bots=0', $this->asAdmin())->assertOk()
+            ->assertJsonPath('data.error', 'GA_PROPERTY_ID is not set in .env.')
+            ->assertJsonPath('data.filters.period', '7')
+            ->assertJsonPath('data.filters.bots', false)
+            ->assertJsonStructure(['data' => ['periods', 'streams', 'reports', 'events']]);
+        $this->getJson('/api/v1/app/organizer/admin/analytics', $this->asManager())->assertForbidden();
     }
 
     public function test_an_admin_manages_event_managers_and_a_switched_off_one_is_signed_out(): void

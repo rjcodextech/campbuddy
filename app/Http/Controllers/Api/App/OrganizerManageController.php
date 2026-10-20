@@ -434,6 +434,24 @@ class OrganizerManageController extends Controller
         ])->values(), 'offers' => $offers, 'meta' => $this->meta($leads)]);
     }
 
+    /** The same leads as a CSV file (the web page's Export, with the same filters). */
+    public function exportLeads(Request $request, int $id)
+    {
+        $this->adminOnly($request);
+        $event = $this->event($request, $id);
+        $request->validate(['offer_id' => ['nullable', 'integer'], 'from' => ['nullable', 'date'], 'to' => ['nullable', 'date']]);
+
+        $leads = OfferLead::where('event_id', $event->id)
+            ->with(['offer', 'event:id,display_name'])
+            ->when($request->filled('offer_id'), fn ($q) => $q->where('offer_id', $request->integer('offer_id')))
+            ->when($request->filled('from'), fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
+            ->when($request->filled('to'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')))
+            ->latest()
+            ->get();
+
+        return \App\Support\DealLeadCsv::download($leads, 'deal-leads-'.$event->slug.'-'.now()->format('Y-m-d').'.csv');
+    }
+
     // ---- shapes ------------------------------------------------------------------------------------
 
     /** @return array<string, mixed> */

@@ -923,6 +923,7 @@ internal fun LeadsTab(ctx: EventCtx) {
     var page by remember { mutableStateOf(1) }
     val loader = rememberLoader("org-leads:${ctx.eventId}:$offer:$from:$to:$page") { Loaded(ctx.api.orgLeads(ctx.token, ctx.eventId, offer, from.orNull(), to.orNull(), page), false) }
     val offers = (loader.state.value as? LoadState.Ready)?.value?.offers.orEmpty()
+    val exporting = rememberOrgActions()
 
     TabBody {
         if (offers.isNotEmpty() || offer != null) item { OrgFilterRow("Deal", listOf<Pair<Long?, String>>(null to "All deals") + offers.map { it.id to it.name }, offer) { offer = it; page = 1 } }
@@ -934,6 +935,15 @@ internal fun LeadsTab(ctx: EventCtx) {
         }
         loaded(loader.state.value, loader.reload, ctx.onExpired) { result ->
             item { Text(plural(result.meta.total, "lead") + " · personal data, handle with care", style = MaterialTheme.typography.bodySmall) }
+            if (result.meta.total > 0) item {
+                OrgButton(if (exporting.busy) "Making the file…" else "Export CSV (these filters)", {
+                    exporting.run({
+                        val csv = ctx.api.exportLeads(ctx.token, ctx.eventId, offer, from.orNull(), to.orNull())
+                        env.deps.shareFile("deal-leads-${ctx.slug}.csv", "text/csv", csv)
+                        "CSV ready to share."
+                    })
+                }, Modifier.fillMaxWidth(), icon = "download", enabled = !exporting.busy)
+            }
             if (result.data.isEmpty()) item { EmptyNote("No leads for these filters.", "inbox") }
             items(result.data, key = { it.id }) { lead ->
                 Card {

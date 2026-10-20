@@ -38,14 +38,26 @@ class OrganizerSocialController extends Controller
             'posts' => collect($kit['posts'])->map(fn (array $p) => [
                 'key' => $p['key'], 'label' => $p['label'] ?? $p['key'], 'kicker' => $p['kicker'] ?? '', 'headline' => $p['headline'] ?? '',
                 'line' => $p['line'] ?? '', 'body' => $p['body'] ?? 'none', 'caption' => $p['caption'] ?? '', 'days' => $p['days'] ?? null,
+                'picker' => $p['picker'] ?? null,
                 'link' => SocialKit::link($event, $p['key']),
             ])->values(),
             'people' => collect($kit['people'])->map(fn (array $p) => [
                 'id' => $p['id'], 'name' => $p['name'], 'photo' => $p['photo'], 'roles' => $p['role_labels'] ?? [],
+                'role_keys' => $p['roles'] ?? [], 'has_card' => ! empty($p['card']), 'card_role' => $p['card']['role'] ?? null,
                 'talk' => $p['talk'] ?? null, 'caption' => $p['caption'] ?? '', 'link' => $p['link'] ?? null,
             ])->values(),
-            'speakers' => array_slice($kit['speakers'], 0, 12),
-            'sponsors' => array_slice($kit['sponsors'], 0, 12),
+            'speakers' => $kit['speakers'],
+            'sponsors' => $kit['sponsors'],
+            // Today / Spotlight pick a day or a session; times are already at the venue.
+            'schedule' => [
+                'days' => $kit['schedule']['days'],
+                'next' => $kit['schedule']['next'] !== null ? (string) $kit['schedule']['next'] : null,
+                'sessions' => collect($kit['schedule']['sessions'])->map(fn ($x) => [
+                    'id' => (string) $x['id'], 'title' => $x['title'], 'day' => $x['day'], 'time' => $x['time'],
+                    'track' => $x['track'], 'speakers' => $x['speakers'], 'photos' => $x['photos'],
+                ])->values(),
+            ],
+            'tables' => $kit['tables'],
             'site' => [
                 'colors' => collect($site['colors'] ?? [])->map(fn ($c) => is_array($c) ? ($c['hex'] ?? null) : $c)->filter(fn ($c) => is_string($c) && preg_match('/^#[0-9a-f]{6}$/i', $c))->values(),
                 'tagline' => $site['tagline'] ?? null,

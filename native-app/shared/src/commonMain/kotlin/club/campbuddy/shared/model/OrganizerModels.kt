@@ -401,6 +401,8 @@ data class SocialPost(
     val caption: String = "",
     val days: Int? = null,
     val link: String = "",
+    /** "day" (Today: pick a day) or "session" (Spotlight: pick a talk). */
+    val picker: String? = null,
 )
 
 @Serializable
@@ -412,7 +414,27 @@ data class SocialPerson(
     val talk: String? = null,
     val caption: String = "",
     val link: String? = null,
+    @SerialName("role_keys") val roleKeys: List<String> = emptyList(),
+    @SerialName("has_card") val hasCard: Boolean = false,
+    @SerialName("card_role") val cardRole: String? = null,
 )
+
+@Serializable
+data class SocialSession(
+    val id: String,
+    val title: String = "",
+    val day: String = "",
+    val time: String = "",
+    val track: String? = null,
+    val speakers: List<String> = emptyList(),
+    val photos: List<String> = emptyList(),
+)
+
+@Serializable
+data class SocialSchedule(val days: List<KeyLabel> = emptyList(), val next: String? = null, val sessions: List<SocialSession> = emptyList())
+
+@Serializable
+data class SocialTableCard(val team: String = "", val name: String = "", val place: String = "", val leads: List<String> = emptyList(), val note: String? = null)
 
 @Serializable
 data class SocialFace(val name: String = "", val photo: String? = null, val logo: String? = null, val tier: String? = null)
@@ -447,6 +469,8 @@ data class SocialKitData(
     val site: SiteThemeData = SiteThemeData(),
     val qr: List<QrCodeRow> = emptyList(),
     val webhook: WebhookState = WebhookState(),
+    val schedule: SocialSchedule = SocialSchedule(),
+    val tables: List<SocialTableCard> = emptyList(),
 )
 
 /** The colours as sent (no default values: the JSON setup leaves defaults out, and the server needs all four). */
@@ -458,3 +482,27 @@ data class ArtBody(val piece: String, val kind: String? = null)
 
 @Serializable
 data class WebhookBody(val webhook: String? = null, val remove: Boolean = false)
+
+// ---- analytics (admin) -----------------------------------------------------------------------------------------
+
+@Serializable
+data class AnalyticsFilters(
+    val stream: String? = null,
+    val period: String = "10",
+    val from: String = "",
+    val to: String = "",
+    val bots: Boolean = true,
+    val invalid: Boolean = false,
+)
+
+/** Admin → Analytics: GA4 reports by name, each a list of rows (dimension and metric names → values as text). */
+@Serializable
+data class AnalyticsData(
+    val filters: AnalyticsFilters = AnalyticsFilters(),
+    val periods: List<KeyLabel> = emptyList(),
+    val streams: List<KeyLabel> = emptyList(),
+    val error: String? = null,
+    @SerialName("fetched_at") val fetchedAt: String? = null,
+    val reports: Map<String, List<Map<String, String>>> = emptyMap(),
+    val events: Map<String, String> = emptyMap(),
+)

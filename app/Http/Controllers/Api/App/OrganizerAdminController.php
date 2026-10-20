@@ -126,6 +126,43 @@ class OrganizerAdminController extends Controller
         ], 'meta' => $this->meta($feedback)]);
     }
 
+    /** Admin → Analytics: the GA4 report for a period and stream (AnalyticsReport, cached an hour). */
+    public function analytics(Request $request): JsonResponse
+    {
+        $filters = \App\Support\AnalyticsReport::filters($request);
+        // The app always says whether to hide bots (a web form leaves an unticked box out).
+        $filters['bots'] = $request->has('hide_bots') ? $request->boolean('hide_bots') : true;
+        $streams = [];
+        $report = null;
+        $error = \App\Support\AnalyticsReport::setupProblem();
+
+        if ($error === null) {
+            try {
+                $streams = \App\Support\AnalyticsReport::streams();
+                $filters['stream'] = array_key_exists((string) $filters['stream'], $streams) ? $filters['stream'] : array_key_first($streams);
+                if ($filters['stream'] === null) {
+                    $error = 'The GA property has no data streams.';
+                } else {
+                    $report = \App\Support\AnalyticsReport::build((string) $filters['stream'], $filters['from'], $filters['to'], $filters['bots'], $request->boolean('fresh'));
+                }
+            } catch (Throwable $e) {
+                report($e);
+                $error = \App\Support\AnalyticsReport::explain($e);
+            }
+        }
+
+        return response()->json(['data' => [
+            'filters' => $filters,
+            'periods' => collect(\App\Support\AnalyticsReport::PERIODS)->map(fn ($label, $key) => ['key' => (string) $key, 'label' => $label])->values(),
+            'streams' => collect($streams)->map(fn ($name, $id) => ['key' => (string) $id, 'label' => (string) $name])->values(),
+            'error' => $error,
+            'fetched_at' => $report['fetched_at'] ?? null,
+            // Each report: its rows, every value as text (the app shows them as tables).
+            'reports' => collect($report['reports'] ?? [])->map(fn ($rows) => collect($rows)->map(fn ($row) => collect($row)->map(fn ($v) => is_float($v) ? (floor($v) == $v ? (string) (int) $v : (string) round($v, 3)) : (string) $v)->all())->values())->all() ?: (object) [],
+            'events' => (object) Event::pluck('display_name', 'slug')->all(),
+        ]]);
+    }
+
     // ---- event managers ------------------------------------------------------------------------
 
     public function managers(Request $request): JsonResponse
