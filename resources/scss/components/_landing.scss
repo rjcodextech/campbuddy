@@ -345,6 +345,13 @@
 
 // The event list itself now renders via .card-grid + <x-attendee.event-card>
 // (components/_event-card.scss) rather than a bespoke list/card pair.
+#find-your-camp {
+    margin-bottom: v.$space-8;
+}
+
+#onboarding-welcome {
+    margin-bottom: v.$space-8;
+}
 
 // Country filter above the event list and "Load more" below it
 // (attendee/picker-filter.js). Both stay hidden without the script.

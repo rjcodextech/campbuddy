@@ -8,6 +8,7 @@ import campbuddy_native.shared.generated.resources.art_people
 import campbuddy_native.shared.generated.resources.Res
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -418,7 +419,13 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
     var search by remember { mutableStateOf("") }
     var tags by remember { mutableStateOf((mineCard?.fields?.tags ?: startTags).filter { t -> Discovery.TAGS.any { it.equals(t, true) } }.map { it.lowercase() }.take(Discovery.MAX_TAGS)) }
     var profession by remember { mutableStateOf(mineCard?.fields?.profession ?: profile.profession.orEmpty()) }
-    var toMeet by remember { mutableStateOf(mineCard?.fields?.whoToMeet ?: profile.whoToMeet.orEmpty()) }
+    var toMeetEntries by remember {
+        val initial = mineCard?.fields?.whoToMeet ?: profile.whoToMeet.orEmpty()
+        mutableStateOf(
+            if (initial.isBlank()) emptyList()
+            else initial.split(",").map { it.trim() }.filter { it.isNotBlank() }
+        )
+    }
     var wporg by remember { mutableStateOf(profile.wporg.orEmpty()) }
 
     Card {
@@ -449,7 +456,10 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
                 }
             }
             OutlinedTextField(profession, { profession = it.take(100) }, label = { Text("Your profession") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(toMeet, { toMeet = it.take(255) }, label = { Text("Looking to meet") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            WhoToMeetField(
+                selectedEntries = toMeetEntries,
+                onEntriesChanged = { toMeetEntries = it }
+            )
             OutlinedTextField(wporg, { wporg = it.take(120) }, label = { Text("WordPress.org username (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
 
             val ready = tags.isNotEmpty() && (how != "typed" || typed.trim().length >= 2) && (how != "list" || pick != null)
@@ -457,7 +467,8 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
                 PrimaryButton(if (model.busy) "Saving…" else "Save", {
                     if (ready && !model.busy) model.join(
                         DiscoveryForm(
-                            tags = tags, profession = profession.trim().ifEmpty { null }, whoToMeet = toMeet.trim().ifEmpty { null },
+                            tags = tags, profession = profession.trim().ifEmpty { null },
+                            whoToMeet = toMeetEntries.joinToString(", ").trim().ifEmpty { null },
                             displayName = if (how == "typed") typed.trim() else null,
                             wporgUsername = wporg.trim().ifEmpty { null },
                             attendeeRosterId = if (how == "list") pick else null,
@@ -466,6 +477,131 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
                     )
                 }, enabled = ready)
                 QuietButton("Cancel", onClose)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WhoToMeetField(
+    selectedEntries: List<String>,
+    onEntriesChanged: (List<String>) -> Unit,
+) {
+    val brand = LocalBrand.current
+    var input by remember { mutableStateOf("") }
+
+    val suggestions = listOf(
+        "Developers", "Designers", "Founders", "Freelancers", "Agencies",
+        "Core Contributors", "Mentors", "Job Opportunities", "Sponsors",
+        "Students / Beginners", "Content Creators", "Plugin Developers", "Theme Developers"
+    )
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Who would you like to meet?", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "Pick from suggestions or type custom roles (multiple allowed).",
+            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted)
+        )
+
+        if (selectedEntries.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(vertical = 2.dp)
+            ) {
+                selectedEntries.forEach { entry ->
+                    Row(
+                        modifier = Modifier
+                            .background(brand.peach, RoundedCornerShape(50))
+                            .border(1.dp, brand.primary.copy(alpha = 0.3f), RoundedCornerShape(50))
+                            .padding(start = 10.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            entry,
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = brand.ink,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(18.dp)
+                                .clip(CircleShape)
+                                .clickable {
+                                    onEntriesChanged(selectedEntries - entry)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("×", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                        }
+                    }
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = input,
+                onValueChange = { input = it.take(60) },
+                label = { Text("Add looking to meet") },
+                placeholder = { Text("e.g. Developers, Founders...") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(brand.radius.dp)
+            )
+            val canAdd = input.trim().length >= 2 && !selectedEntries.any { it.equals(input.trim(), ignoreCase = true) }
+            PrimaryButton(
+                "+ Add",
+                onClick = {
+                    if (canAdd) {
+                        onEntriesChanged(selectedEntries + input.trim())
+                        input = ""
+                    }
+                },
+                enabled = canAdd
+            )
+        }
+
+        val availableSuggestions = suggestions.filter { sugg ->
+            !selectedEntries.any { it.equals(sugg, ignoreCase = true) } &&
+            (input.isBlank() || sugg.contains(input.trim(), ignoreCase = true))
+        }
+
+        if (availableSuggestions.isNotEmpty()) {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(top = 2.dp)
+            ) {
+                availableSuggestions.take(6).forEach { sugg ->
+                    Box(
+                        modifier = Modifier
+                            .background(brand.surface, RoundedCornerShape(50))
+                            .border(1.dp, brand.line, RoundedCornerShape(50))
+                            .clickable {
+                                onEntriesChanged(selectedEntries + sugg)
+                                if (input.isNotBlank() && sugg.contains(input.trim(), ignoreCase = true)) {
+                                    input = ""
+                                }
+                            }
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            "+ $sugg",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = brand.muted,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
             }
         }
     }

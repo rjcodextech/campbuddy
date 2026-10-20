@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,13 +46,13 @@ fun Sheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val brand = LocalBrand.current
-    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(
             Modifier.fillMaxSize().clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose),
             contentAlignment = Alignment.BottomCenter,
         ) {
             Column(
-                Modifier.widthIn(max = 480.dp).fillMaxWidth().imePadding()
+                Modifier.widthIn(max = 480.dp).fillMaxWidth().statusBarsPadding().imePadding()
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .background(brand.surface)
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {})

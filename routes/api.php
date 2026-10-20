@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Api\App\ConfigController as AppSettingsController;
 use App\Http\Controllers\Api\App\EventController as AppEventController;
+use App\Http\Controllers\Api\App\OrganizerAdminController as AppOrganizerAdminController;
 use App\Http\Controllers\Api\App\OrganizerController as AppOrganizerController;
+use App\Http\Controllers\Api\App\OrganizerManageController as AppOrganizerManageController;
+use App\Http\Controllers\Api\App\OrganizerSocialController as AppOrganizerSocialController;
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
@@ -50,12 +53,76 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
         Route::get('/organizer/me', [AppOrganizerController::class, 'me'])->name('api.app.organizer.me');
         Route::get('/organizer/events', [AppOrganizerController::class, 'events'])->name('api.app.organizer.events');
         Route::prefix('/organizer/events/{id}')->whereNumber('id')->group(function () {
+            Route::get('/overview', [AppOrganizerController::class, 'overview'])->name('api.app.organizer.overview');
+            Route::post('/info', [AppOrganizerController::class, 'updateInfo'])->name('api.app.organizer.info.update');
             Route::get('/reports', [AppOrganizerController::class, 'reports'])->name('api.app.organizer.reports');
             Route::post('/reports/{discoveryId}/remove', [AppOrganizerController::class, 'removeReported'])->where('discoveryId', '[a-f0-9]{64}')->name('api.app.organizer.reports.remove');
             Route::post('/reports/{discoveryId}/dismiss', [AppOrganizerController::class, 'dismissReported'])->where('discoveryId', '[a-f0-9]{64}')->name('api.app.organizer.reports.dismiss');
             Route::get('/delay', [AppOrganizerController::class, 'delay'])->name('api.app.organizer.delay');
             Route::post('/delay', [AppOrganizerController::class, 'setDelay'])->name('api.app.organizer.delay.set');
             Route::post('/delay/clear', [AppOrganizerController::class, 'clearDelay'])->name('api.app.organizer.delay.clear');
+            Route::post('/memories', [AppOrganizerController::class, 'updateMemories'])->name('api.app.organizer.memories.update');
+            Route::post('/memories/notify/{kind}', [AppOrganizerController::class, 'notifyMemories'])->whereIn('kind', ['photos', 'videos'])->name('api.app.organizer.memories.notify');
+            Route::get('/attendees', [AppOrganizerController::class, 'attendees'])->name('api.app.organizer.attendees');
+            Route::post('/attendees/{entryId}/roles', [AppOrganizerController::class, 'setAttendeeRoles'])->whereNumber('entryId')->name('api.app.organizer.attendees.roles');
+
+            // The rest of the web panel's event tabs (OrganizerManageController): admins and the event's managers.
+            Route::get('/details', [AppOrganizerManageController::class, 'details'])->name('api.app.organizer.details');
+            Route::get('/information', [AppOrganizerManageController::class, 'information'])->name('api.app.organizer.information');
+            Route::get('/quests', [AppOrganizerManageController::class, 'quests'])->name('api.app.organizer.quests');
+            Route::get('/tables', [AppOrganizerManageController::class, 'tables'])->name('api.app.organizer.tables');
+            Route::get('/notifications', [AppOrganizerManageController::class, 'notifications'])->name('api.app.organizer.notifications');
+            // Admin only (the controller answers 403 to a manager).
+            Route::get('/activity', [AppOrganizerManageController::class, 'activity'])->name('api.app.organizer.activity');
+            Route::get('/deals', [AppOrganizerManageController::class, 'deals'])->name('api.app.organizer.deals');
+            Route::get('/leads', [AppOrganizerManageController::class, 'leads'])->name('api.app.organizer.leads');
+
+            Route::middleware('throttle:60,1')->group(function () {
+                Route::post('/details', [AppOrganizerManageController::class, 'updateDetails'])->name('api.app.organizer.details.update');
+                Route::post('/information', [AppOrganizerManageController::class, 'updateInformation'])->name('api.app.organizer.information.update');
+                Route::post('/quests', [AppOrganizerManageController::class, 'storeQuest'])->name('api.app.organizer.quests.store');
+                Route::patch('/quests/{itemId}', [AppOrganizerManageController::class, 'updateQuest'])->whereNumber('itemId')->name('api.app.organizer.quests.update');
+                Route::delete('/quests/{itemId}', [AppOrganizerManageController::class, 'destroyQuest'])->whereNumber('itemId')->name('api.app.organizer.quests.destroy');
+                Route::post('/tables', [AppOrganizerManageController::class, 'storeTable'])->name('api.app.organizer.tables.store');
+                Route::patch('/tables/{itemId}', [AppOrganizerManageController::class, 'updateTable'])->whereNumber('itemId')->name('api.app.organizer.tables.update');
+                Route::delete('/tables/{itemId}', [AppOrganizerManageController::class, 'destroyTable'])->whereNumber('itemId')->name('api.app.organizer.tables.destroy');
+                // Admin only.
+                Route::post('/attendees/{entryId}/{action}', [AppOrganizerManageController::class, 'attendeeAction'])->whereNumber('entryId')->whereIn('action', ['suppress', 'unsuppress', 'release-claim', 'remove-card'])->name('api.app.organizer.attendees.action');
+                Route::post('/fetch/{job}', [AppOrganizerManageController::class, 'fetch'])->whereIn('job', ['schedule', 'info', 'branding'])->middleware('throttle:10,1')->name('api.app.organizer.fetch');
+                Route::post('/deals', [AppOrganizerManageController::class, 'storeDeal'])->name('api.app.organizer.deals.store');
+                Route::patch('/deals/{itemId}', [AppOrganizerManageController::class, 'updateDeal'])->whereNumber('itemId')->name('api.app.organizer.deals.update');
+                Route::delete('/deals/{itemId}', [AppOrganizerManageController::class, 'destroyDeal'])->whereNumber('itemId')->name('api.app.organizer.deals.destroy');
+                Route::post('/deals/{itemId}/visibility', [AppOrganizerManageController::class, 'dealVisibility'])->whereNumber('itemId')->name('api.app.organizer.deals.visibility');
+                Route::delete('/', [AppOrganizerManageController::class, 'destroy'])->name('api.app.organizer.events.destroy');
+
+                // Social media (OrganizerSocialController): admins and the event's managers.
+                Route::post('/social/colors', [AppOrganizerSocialController::class, 'colors'])->name('api.app.organizer.social.colors');
+                Route::post('/social/site', [AppOrganizerSocialController::class, 'site'])->middleware('throttle:10,1')->name('api.app.organizer.social.site');
+                Route::post('/social/art/{action}', [AppOrganizerSocialController::class, 'art'])->whereIn('action', ['use', 'remove', 'kind'])->name('api.app.organizer.social.art');
+                Route::post('/social/webhook', [AppOrganizerSocialController::class, 'webhook'])->name('api.app.organizer.social.webhook');
+                Route::post('/social/publish', [AppOrganizerSocialController::class, 'publish'])->middleware('throttle:20,1')->name('api.app.organizer.social.publish');
+            });
+            Route::get('/social', [AppOrganizerSocialController::class, 'show'])->name('api.app.organizer.social');
+        });
+    });
+
+    // The admin's platform pages in the app (OrganizerAdminController): admins only.
+    Route::middleware(\App\Http\Middleware\AppOrganizerAuth::class.':admin')->prefix('app/organizer/admin')->group(function () {
+        Route::get('/dashboard', [AppOrganizerAdminController::class, 'dashboard'])->name('api.app.admin.dashboard');
+        Route::get('/errors', [AppOrganizerAdminController::class, 'errors'])->name('api.app.admin.errors');
+        Route::get('/feedback', [AppOrganizerAdminController::class, 'feedback'])->name('api.app.admin.feedback');
+        Route::get('/managers', [AppOrganizerAdminController::class, 'managers'])->name('api.app.admin.managers');
+        Route::get('/activity', [AppOrganizerAdminController::class, 'activity'])->name('api.app.admin.activity');
+        Route::get('/event-options', [AppOrganizerAdminController::class, 'eventOptions'])->name('api.app.admin.event-options');
+
+        Route::middleware('throttle:60,1')->group(function () {
+            Route::post('/managers', [AppOrganizerAdminController::class, 'storeManager'])->name('api.app.admin.managers.store');
+            Route::patch('/managers/{itemId}', [AppOrganizerAdminController::class, 'updateManager'])->whereNumber('itemId')->name('api.app.admin.managers.update');
+            Route::delete('/managers/{itemId}', [AppOrganizerAdminController::class, 'destroyManager'])->whereNumber('itemId')->name('api.app.admin.managers.destroy');
+            Route::post('/events', [AppOrganizerAdminController::class, 'storeEvent'])->name('api.app.admin.events.store');
+            Route::post('/events/discover', [AppOrganizerAdminController::class, 'discover'])->middleware('throttle:5,1')->name('api.app.admin.events.discover');
+            Route::post('/cache/purge', [AppOrganizerAdminController::class, 'purge'])->name('api.app.admin.cache.purge');
+            Route::post('/data/refresh', [AppOrganizerAdminController::class, 'refreshData'])->name('api.app.admin.data.refresh');
         });
     });
 

@@ -15,10 +15,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import club.campbuddy.shared.data.ApiClient
 import club.campbuddy.shared.data.KeyValueStore
 import club.campbuddy.shared.data.Repository
@@ -61,6 +63,8 @@ class AppDeps(
     /** Opens a web page inside the app (a sponsor site) instead of leaving for another app; falls back to [openUrl]. */
     val openInApp: ((String) -> Unit)? = null,
     val makePdf: (club.campbuddy.shared.domain.DayPdf) -> ByteArray? = { null },
+    /** A picture as PNG bytes (the Social media card sent to Publish); null where the phone cannot. */
+    val encodePng: (androidx.compose.ui.graphics.ImageBitmap) -> ByteArray? = { null },
 )
 
 private sealed interface Screen {
@@ -107,6 +111,7 @@ fun App(deps: AppDeps) {
             return@CompositionLocalProvider
         }
 
+        val scope = rememberCoroutineScope()
         fun push(screen: Screen) = stack.add(screen)
         fun pop() { if (stack.size > 1) stack.removeAt(stack.lastIndex) }
 
@@ -127,10 +132,39 @@ fun App(deps: AppDeps) {
                 onFirstTimer = { push(Screen.Event(it.slug, guide = true)) },
                 onOrganizer = { push(if (repository.organizerToken() != null) Screen.OrganizerHome else Screen.OrganizerLogin) },
             )
-            is Screen.Event -> androidx.compose.runtime.key(screen) { EventScreen(screen.slug, onBack = ::pop, startInGuide = screen.guide, startTab = screen.tab, startSub = screen.sub) }
+            is Screen.Event -> androidx.compose.runtime.key(screen) {
+                EventScreen(
+                    slug = screen.slug,
+                    onBack = ::pop,
+                    startInGuide = screen.guide,
+                    startTab = screen.tab,
+                    startSub = screen.sub,
+                    onStaff = if (repository.organizerToken() != null) {
+                        {
+                            val token = repository.organizerToken().orEmpty()
+                            scope.launch {
+                                val events = runCatching { api.organizerEvents(token) }.getOrNull().orEmpty()
+                                val target = events.firstOrNull { it.slug == screen.slug }
+                                if (target != null) {
+                                    push(Screen.OrganizerEvent(target))
+                                } else {
+                                    push(Screen.OrganizerHome)
+                                }
+                            }
+                        }
+                    } else null,
+                )
+            }
             Screen.OrganizerLogin -> OrganizerLoginScreen(api, repository, deps.deviceName, onSignedIn = { stack.removeAt(stack.lastIndex); push(Screen.OrganizerHome) }, onBack = ::pop)
-            Screen.OrganizerHome -> OrganizerHomeScreen(api, repository, onEvent = { push(Screen.OrganizerEvent(it)) }, onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) }, onBack = ::pop)
-            is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop)
+            Screen.OrganizerHome -> OrganizerHomeScreen(
+                api = api,
+                repository = repository,
+                onEvent = { push(Screen.OrganizerEvent(it)) },
+                onPreviewAttendee = { push(Screen.Event(it)) },
+                onSignedOut = { while (stack.size > 1) stack.removeAt(stack.lastIndex) },
+                onBack = ::pop,
+            )
+            is Screen.OrganizerEvent -> OrganizerEventScreen(api, repository, screen.event, onBack = ::pop, onPreviewAttendee = { push(Screen.Event(it)) })
         }
       }
     }

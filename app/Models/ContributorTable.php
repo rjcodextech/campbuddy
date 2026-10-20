@@ -36,8 +36,10 @@ class ContributorTable extends Model
     /** "Floor 2 · Hall B · Table 5" — whatever is filled in. */
     public function place(): string
     {
+        $floor = $this->floor ? (stripos($this->floor, 'floor') !== false ? $this->floor : 'Floor '.$this->floor) : null;
+
         return implode(' · ', array_filter([
-            $this->floor ? 'Floor '.$this->floor : null,
+            $floor,
             $this->track,
             $this->table_no ? 'Table '.$this->table_no : null,
         ]));
@@ -47,6 +49,39 @@ class ContributorTable extends Model
     public function leadNames(): array
     {
         return array_values(array_filter(array_map(fn ($lead) => $lead['name'] ?? null, $this->leads ?? [])));
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function leadDetails(): array
+    {
+        $rosterIds = array_values(array_filter(array_map(fn ($lead) => $lead['roster_id'] ?? null, $this->leads ?? [])));
+        $rosterEntries = $rosterIds !== []
+            ? AttendeeRoster::where('event_id', $this->event_id)->whereIn('id', $rosterIds)->get()->keyBy('id')
+            : collect();
+
+        $details = [];
+        foreach ($this->leads ?? [] as $lead) {
+            $name = $lead['name'] ?? null;
+            if (! $name) {
+                continue;
+            }
+            $roster = isset($lead['roster_id']) ? $rosterEntries->get($lead['roster_id']) : null;
+            if (! $roster) {
+                $roster = AttendeeRoster::where('event_id', $this->event_id)->where('name', $name)->first();
+            }
+
+            $details[] = [
+                'name' => $name,
+                'avatar' => $lead['avatar_url'] ?? $roster?->gravatar_url ?? null,
+                'designation' => $lead['designation'] ?? null,
+                'bio' => $lead['bio'] ?? null,
+                'url' => $lead['url'] ?? null,
+                'links' => $lead['links'] ?? $roster?->links ?? [],
+                'roster_id' => $lead['roster_id'] ?? $roster?->id,
+            ];
+        }
+
+        return $details;
     }
 
     /**
@@ -61,6 +96,7 @@ class ContributorTable extends Model
             'name' => $this->teamName(),
             'place' => $this->place(),
             'leads' => $this->leadNames(),
+            'lead_details' => $this->leadDetails(),
             'note' => $this->note,
         ];
     }

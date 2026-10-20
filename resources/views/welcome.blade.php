@@ -58,6 +58,8 @@
         </header>
 
         <main id="main-content" class="landing-main" tabindex="-1">
+            @include('attendee.partials.announcement-banner')
+
             {{-- The first screen answers "what is this, and what do I do?" before
             anything else: one plain sentence, the three promises people ask
             about most, and the two ways in. --}}
@@ -207,7 +209,7 @@
             question at a time; every step can be skipped. The answers go to the same
             kv 'onboarding' record as always, so Home, Contribute, discovery and the
             Camp Card read them unchanged (profile-sync.js). --}}
-            <section id="onboarding-welcome" class="ob" aria-labelledby="onboarding-welcome-heading" style="margin-bottom:20px" hidden>
+            <section id="onboarding-welcome" class="ob" aria-labelledby="onboarding-welcome-heading" hidden>
                 <div class="onboarding-card">
                     {{-- Before it starts: a short invitation, never a wall of questions. --}}
                     <div class="ob__intro" data-ob-intro>
@@ -273,7 +275,31 @@
                                 <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="users" /></span>
                                 <h3 class="ob__q" tabindex="-1">Who would you like to meet?</h3>
                                 <p class="ob__why">It pre-fills your attendee profile and Camp Card. Nothing is shared unless you join discovery.</p>
-                                @include('attendee.partials.form-field', ['id' => 'ob-who', 'label' => 'Looking to meet', 'placeholder' => 'e.g. other plugin developers', 'dataField' => 'whoToMeet', 'maxlength' => 255, 'errorLine' => false])
+                                <div class="form-field who-tags-field">
+                                    <label class="form-field__label" for="ob-who-text">Looking to meet</label>
+                                    <input type="hidden" id="ob-who" data-field="whoToMeet" value="">
+                                    <div class="who-tags">
+                                        <div class="who-tags__items"></div>
+                                        <div class="who-tags__input-row">
+                                            <input type="text" id="ob-who-text" class="who-tags__input" list="ob-who-datalist" placeholder="e.g. Plugin Developers, Agency Owners…" autocomplete="off">
+                                            <button type="button" class="btn btn--compact btn--outline who-tags__add-btn" aria-label="Add entry">Add</button>
+                                        </div>
+                                    </div>
+                                    <datalist id="ob-who-datalist">
+                                        @foreach (['Plugin Developers', 'Agency Owners', 'Core Contributors', 'Freelancers', 'Designers & UI/UX', 'Theme Developers', 'Content Creators & Bloggers', 'Marketers & SEO Experts', 'WooCommerce Builders', 'Beginners & First-Timers', 'Students & Learners', 'Community Organizers', 'Educators & Trainers', 'Potential Clients & Partners', 'Hiring Managers', 'Job Seekers', 'QA & Testers', 'Accessibility Advocates', 'Hosting Providers', 'WordPress Enthusiasts'] as $suggestion)
+                                            <option value="{{ $suggestion }}"></option>
+                                        @endforeach
+                                    </datalist>
+                                    <div class="who-suggestions">
+                                        <span class="who-suggestions__label">Quick suggestions:</span>
+                                        <div class="who-suggestions__list">
+                                            @foreach (['Plugin Developers', 'Agency Owners', 'Core Contributors', 'Designers & UI/UX', 'Freelancers', 'WooCommerce Builders', 'Job Seekers'] as $pill)
+                                                <button type="button" class="who-suggestion-pill" data-suggest="{{ $pill }}">+ {{ $pill }}</button>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <p class="form-field__hint">Pick suggestions or type your own. Press Enter, comma or Add to add multiple.</p>
+                                </div>
                                 @include('attendee.partials.form-field', ['id' => 'ob-profession', 'label' => 'Your profession', 'placeholder' => 'e.g. WordPress Engineer', 'dataField' => 'profession', 'maxlength' => 100, 'errorLine' => false])
                             </div>
 

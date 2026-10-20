@@ -39,10 +39,11 @@
     swallow it.
 --}}
 <template id="tpl-deal-lead-dialog">
-    <dialog>
-        <div class="dialog-card">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin:-8px -8px 0 0">
-                <p style="font-weight:700;margin:8px 0 4px" data-slot="title"></p>
+    <dialog class="steal-sheet deal-lead-dialog" aria-labelledby="deal-lead-dialog-title">
+        <div class="steal-sheet__card deal-lead-dialog__card dialog-card">
+            <span class="steal-sheet__grab" aria-hidden="true"></span>
+            <div class="deal-lead-dialog__header">
+                <p class="deal-lead-dialog__title" id="deal-lead-dialog-title" data-slot="title"></p>
                 <button type="button" class="topbar__icon-btn" data-action="close" aria-label="Close">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
                 </button>

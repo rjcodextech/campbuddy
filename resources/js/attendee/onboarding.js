@@ -13,6 +13,8 @@ import { track } from './analytics.js';
 import { kvGet, kvSet } from './db.js';
 import { MAX_DESCRIBE_TAGS, describeTags, wporgUsername } from './profile-sync.js';
 import { showToast } from './toast.js';
+import { initWhoToMeetInput } from './who-to-meet.js';
+
 
 /** What the answers will do, in plain words, for the closing screen. Pure: tested on its own. */
 export function summaryFor(profile) {
@@ -69,6 +71,7 @@ export async function renderOnboardingSection() {
   let index = 0;
 
   section.hidden = false;
+  const whoController = initWhoToMeetInput(section);
 
   // ---- the steps -------------------------------------------------------------
 
@@ -146,9 +149,11 @@ export async function renderOnboardingSection() {
   const save = async (outcome) => {
     track(outcome === 'skip' ? 'onboarding_skip' : 'onboarding_complete');
 
+    whoController.flush();
+
     // Read the fields as they are now: a text field someone is still typing
     // in hasn't fired "change" yet.
-    section.querySelectorAll('input[type="text"][data-field]').forEach((field) => {
+    section.querySelectorAll('input[data-field]').forEach((field) => {
       answers[field.dataset.field] = field.value.trim() || null;
     });
 

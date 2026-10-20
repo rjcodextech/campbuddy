@@ -74,6 +74,16 @@ class UserData(private val store: KeyValueStore) {
 
     private var blockedMap by mutableStateOf(load("blocked", MapSerializer(String.serializer(), ListSerializer(String.serializer()))) ?: emptyMap())
 
+    var dismissedBannerKey by mutableStateOf(store.get("user:dismissed_banner_key"))
+        private set
+
+    fun isBannerDismissed(key: String): Boolean = !key.isEmpty() && dismissedBannerKey == key
+
+    fun dismissBanner(key: String) {
+        dismissedBannerKey = key
+        store.put("user:dismissed_banner_key", key)
+    }
+
     /** Goes up on every change to the saved sessions (so reminders can be planned again). */
     var revision by mutableStateOf(0)
         private set
@@ -258,7 +268,7 @@ class UserData(private val store: KeyValueStore) {
 
     /** Everything on this phone goes (Settings > delete my data). */
     fun eraseAll() {
-        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meetings", "cardshare", "retention").forEach { store.remove("user:$it") }
+        listOf("profile", "notifications", "bookmarks", "quests", "campcard", "discovery", "blocked", "device", "meetings", "cardshare", "retention", "dismissed_banner_key").forEach { store.remove("user:$it") }
         profile = Profile()
         notifications = NotificationState()
         bookmarkMap = emptyMap()
@@ -269,6 +279,7 @@ class UserData(private val store: KeyValueStore) {
         metMap = emptyMap()
         shareMap = emptyMap()
         choiceMap = emptyMap()
+        dismissedBannerKey = null
     }
 
     /**

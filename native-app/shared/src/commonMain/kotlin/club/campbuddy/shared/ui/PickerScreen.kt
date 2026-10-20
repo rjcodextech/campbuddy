@@ -104,9 +104,52 @@ fun PickerScreen(
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
 
+    val staffToken = repository.organizerToken()
+    val staffRole = repository.organizerRole() ?: "manager"
+    val staffName = repository.organizerName()
+    val isStaff = staffToken != null
+    val isAdmin = staffRole == "admin"
+
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding().navigationBarsPadding()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
+            if (isStaff) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(if (isAdmin) brand.primary.copy(alpha = 0.12f) else brand.accent.copy(alpha = 0.22f))
+                        .border(1.dp, if (isAdmin) brand.primary.copy(alpha = 0.40f) else brand.accent.copy(alpha = 0.50f), RoundedCornerShape(50))
+                        .clickable(role = Role.Button, onClickLabel = "Staff Area", onClick = onOrganizer)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        if (isAdmin) "👑 Super Admin" else "👔 Event Manager",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (isAdmin) brand.primary else brand.ink,
+                        ),
+                    )
+                }
+            } else if (organizerEnabled) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(brand.peach)
+                        .clickable(role = Role.Button, onClickLabel = "Staff Login", onClick = onOrganizer)
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        "Staff Sign In",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                    )
+                }
+            }
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
 
@@ -115,7 +158,52 @@ fun PickerScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            if (banner != null) item { BannerCard(banner, language) { onBanner(banner) } }
+            if (banner != null && !env.user.isBannerDismissed(banner.dismissKey)) {
+                item {
+                    BannerCard(
+                        banner = banner,
+                        language = language,
+                        onAction = { onBanner(banner) },
+                        onDismiss = { env.user.dismissBanner(banner.dismissKey) },
+                    )
+                }
+            }
+
+            if (isStaff) {
+                item {
+                    val name = staffName?.takeIf { it.isNotBlank() } ?: (if (isAdmin) "Administrator" else "Event Manager")
+                    Card {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Text(if (isAdmin) "👑" else "👔", style = MaterialTheme.typography.titleLarge)
+                                    Column {
+                                        Text(
+                                            if (isAdmin) "Super Admin Console" else "Event Manager Hub",
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                        )
+                                        Text("Signed in as $name", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+                                    }
+                                }
+                            }
+                            Text(
+                                if (isAdmin) "Full platform access: manage schedules, announcements, reports, and volunteer roles across all WordCamps."
+                                else "Manager access: push real-time schedule delays, moderate attendee reports, and configure venue details for your assigned WordCamps.",
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            PrimaryButton(
+                                if (isAdmin) "Open Admin Console →" else "Open Event Manager Hub →",
+                                onClick = onOrganizer,
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                            )
+                        }
+                    }
+                }
+            }
 
             item { HeroOrbit(words("picker.pill_talks"), words("picker.pill_people"), words("picker.pill_reminders"), words("picker.pill_camp_card")) }
 
@@ -186,7 +274,13 @@ fun PickerScreen(
 
             if (organizerEnabled) {
                 item {
-                    QuietButton("Event staff: sign in", onOrganizer, Modifier.fillMaxWidth().padding(top = 8.dp))
+                    if (isStaff) {
+                        val name = staffName?.takeIf { it.isNotBlank() } ?: (if (isAdmin) "Admin" else "Manager")
+                        val roleTitle = if (isAdmin) "Super Admin" else "Event Manager"
+                        QuietButton("Signed in: $name ($roleTitle) · Open Staff Hub", onOrganizer, Modifier.fillMaxWidth().padding(top = 8.dp))
+                    } else {
+                        QuietButton("Event staff: sign in", onOrganizer, Modifier.fillMaxWidth().padding(top = 8.dp))
+                    }
                 }
             }
             item { PrivacyLinks(Modifier.padding(top = 4.dp), centered = true) }

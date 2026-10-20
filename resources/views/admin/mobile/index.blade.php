@@ -7,7 +7,7 @@
 
 <x-app-layout title="Mobile app" subtitle="Everything the CampBuddy app shows, without a store release"
               :breadcrumbs="[['Mobile app']]">
-    <div class="max-w-5xl space-y-6">
+    <div class="max-w-6xl space-y-6">
         @if (session('status'))
             <x-alert variant="success">{{ session('status') }}</x-alert>
         @endif
@@ -178,41 +178,589 @@
 
         {{-- Banner --}}
         @if ($tab === 'banner')
-            @php($banner = $config['banner'])
-            <form method="POST" action="{{ route('admin.mobile.save', 'banner') }}" class="space-y-6">
+            @php
+                $banner = $config['banner'];
+                $allEvents = \App\Models\Event::orderBy('starts_on', 'desc')->get(['slug', 'display_name']);
+                $initialStyle = old('style', $banner['style'] ?? 'info');
+                $initialActionType = old('action_type', $banner['action']['type'] ?? '');
+                $initialSlug = old('action_slug', $banner['action']['slug'] ?? '');
+                $initialUrl = old('action_url', $banner['action']['url'] ?? '');
+                $initialTextEn = old('text_en', $banner['text']['en'] ?? '');
+                $initialTextHi = old('text_hi', $banner['text']['hi'] ?? '');
+                $initialUntil = old('until', ! empty($banner['until']) ? \Illuminate\Support\Carbon::parse($banner['until'])->format('Y-m-d\TH:i') : '');
+                $bannerOn = (bool) old('banner_on', $banner ? true : false);
+            @endphp
+
+            <form method="POST" action="{{ route('admin.mobile.save', 'banner') }}" id="banner-form" class="space-y-6">
                 @csrf
-                <x-card title="Announcement banner" description="One banner at the top of the app. It disappears by itself after the end time.">
-                    <label class="flex items-center gap-2 text-sm font-medium"><input type="checkbox" name="banner_on" value="1" @checked($banner)> Show a banner</label>
-                    <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                        <label class="text-sm font-medium sm:col-span-2">English text <input name="text_en" maxlength="200" value="{{ old('text_en', $banner['text']['en'] ?? '') }}" class="mt-1 {{ $input }}"></label>
-                        <label class="text-sm font-medium sm:col-span-2">हिन्दी <input name="text_hi" maxlength="200" value="{{ old('text_hi', $banner['text']['hi'] ?? '') }}" class="mt-1 {{ $input }}"></label>
-                        <label class="text-sm font-medium">Style
-                            <select name="style" class="mt-1 {{ $input }}">
-                                @foreach (['info', 'warning', 'success'] as $style)
-                                    <option value="{{ $style }}" @selected(($banner['style'] ?? 'info') === $style)>{{ ucfirst($style) }}</option>
-                                @endforeach
+
+                <div class="grid gap-6 lg:grid-cols-12 items-start">
+                    {{-- Left column: Form Controls --}}
+                    <div class="lg:col-span-7 space-y-5">
+
+                        {{-- 1. Status Hero Card --}}
+                        <div class="rounded-xl border border-line bg-surface p-5 shadow-xs">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2.5">
+                                        <h3 class="font-semibold text-ink text-base">Announcement banner status</h3>
+                                        <span id="preview-status-pill" class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold {{ $bannerOn ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-line/40 text-muted' }}">
+                                            <span class="h-1.5 w-1.5 rounded-full {{ $bannerOn ? 'bg-[#16A34A] animate-pulse' : 'bg-muted' }}"></span>
+                                            <span id="preview-status-text">{{ $bannerOn ? 'Active on App' : 'Disabled / Hidden' }}</span>
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-muted">Displays a high-visibility announcement card at the top of the app across attendee screens.</p>
+                                </div>
+                                <label class="relative inline-flex cursor-pointer items-center">
+                                    <input type="checkbox" name="banner_on" id="banner_on" value="1" @checked($bannerOn) class="peer sr-only">
+                                    <div class="h-7 w-12 rounded-full bg-line peer-checked:bg-maroon peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-maroon/30 after:absolute after:left-[3px] after:top-[3px] after:h-5.5 after:w-5.5 after:rounded-full after:border after:border-line after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- 2. Bilingual Content Card --}}
+                        <x-card title="Announcement text" description="Provide your message in English and Hindi. Live preview updates immediately.">
+                            <div class="space-y-4">
+                                {{-- English Copy --}}
+                                <div>
+                                    <div class="flex items-center justify-between text-xs mb-1.5">
+                                        <label for="text_en" class="font-semibold text-ink">English text <span class="text-danger">*</span></label>
+                                        <span id="counter_en" class="text-muted font-mono">0 / 200</span>
+                                    </div>
+                                    <textarea name="text_en" id="text_en" rows="2" maxlength="200" class="{{ $input }}" placeholder="e.g. WordCamp Rajasthan 2026 is live! Check today's schedule and explore sessions.">{{ $initialTextEn }}</textarea>
+
+                                    {{-- Quick presets --}}
+                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                        <span class="text-[11px] text-muted font-medium mr-1">Presets:</span>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="WordCamp Rajasthan 2026 is live! Check schedule and sessions.">Live now</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Keynote session starts in 15 minutes in Main Auditorium.">Keynote starting</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Lunch & community networking is now open in Hall B.">Lunch served</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Official WordCamp photo album has been published! Find yourself.">Photos published</button>
+                                    </div>
+                                </div>
+
+                                {{-- Hindi Copy --}}
+                                <div>
+                                    <div class="flex items-center justify-between text-xs mb-1.5">
+                                        <label for="text_hi" class="font-semibold text-ink">हिन्दी (Hindi text)</label>
+                                        <span id="counter_hi" class="text-muted font-mono">0 / 200</span>
+                                    </div>
+                                    <textarea name="text_hi" id="text_hi" rows="2" maxlength="200" class="{{ $input }}" placeholder="उदा. WordCamp Rajasthan 2026 शुरू हो चुका है! आज का शेड्यूल देखें।">{{ $initialTextHi }}</textarea>
+
+                                    {{-- Hindi presets --}}
+                                    <div class="mt-2 flex flex-wrap items-center gap-1.5">
+                                        <span class="text-[11px] text-muted font-medium mr-1">सुझाव:</span>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="WordCamp Rajasthan शुरू हो चुका है! आज का शेड्यूल देखें।">शुरू हुआ</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="मुख्य सभागार में कीनोट सत्र 15 मिनट में शुरू हो रहा है।">कीनोट</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="हॉल बी में लंच और नेटवर्किंग शुरू हो चुकी है।">लंच</button>
+                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="आधिकारिक फ़ोटो एल्बम प्रकाशित हो चुका है! अपनी फ़ोटो देखें।">फ़ोटो</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </x-card>
+
+                        {{-- 3. Visual Style Selector Card --}}
+                        <x-card title="Visual style & tone" description="Select the mood and color palette for this announcement.">
+                            {{-- Synchronized select field for backend form submission and test compatibility --}}
+                            <select name="style" id="style_select" class="sr-only">
+                                <option value="info" @selected($initialStyle === 'info')>Info</option>
+                                <option value="warning" @selected($initialStyle === 'warning')>Warning</option>
+                                <option value="success" @selected($initialStyle === 'success')>Success</option>
                             </select>
-                        </label>
-                        <label class="text-sm font-medium">Ends (optional)
-                            <input type="datetime-local" name="until" value="{{ old('until', ! empty($banner['until']) ? \Illuminate\Support\Carbon::parse($banner['until'])->format('Y-m-d\TH:i') : '') }}" class="mt-1 {{ $input }}">
-                        </label>
-                        <label class="text-sm font-medium">Button does
-                            <select name="action_type" class="mt-1 {{ $input }}">
-                                <option value="">Nothing</option>
-                                <option value="event" @selected(($banner['action']['type'] ?? '') === 'event')>Open a WordCamp</option>
-                                <option value="url" @selected(($banner['action']['type'] ?? '') === 'url')>Open a web address</option>
-                            </select>
-                        </label>
-                        <label class="text-sm font-medium">WordCamp address name (slug) or https link
-                            <input name="action_slug" value="{{ old('action_slug', $banner['action']['slug'] ?? '') }}" class="mt-1 {{ $input }}" placeholder="wordcamp-delhi-2026">
-                        </label>
-                        <label class="text-sm font-medium sm:col-span-2">Web address (when the button opens a link)
-                            <input name="action_url" value="{{ old('action_url', $banner['action']['url'] ?? '') }}" class="mt-1 {{ $input }}" placeholder="https://…">
-                        </label>
+
+                            <div class="grid gap-3 sm:grid-cols-3" id="style-cards-group">
+                                {{-- Info --}}
+                                <div class="style-card relative flex flex-col justify-between rounded-xl border p-3.5 cursor-pointer transition-all {{ $initialStyle === 'info' ? 'border-primary ring-2 ring-primary/20 bg-[#FFF5EE]' : 'border-line hover:border-muted bg-white' }}" data-style="info">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" /></svg>
+                                        </span>
+                                        <div>
+                                            <p class="font-semibold text-sm text-ink">Info / General</p>
+                                            <p class="text-[11px] text-muted">Warm terracotta</p>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-muted">Schedules, general notices & updates.</p>
+                                </div>
+
+                                {{-- Warning --}}
+                                <div class="style-card relative flex flex-col justify-between rounded-xl border p-3.5 cursor-pointer transition-all {{ $initialStyle === 'warning' ? 'border-amber-500 ring-2 ring-amber-500/20 bg-[#FFFBEB]' : 'border-line hover:border-muted bg-white' }}" data-style="warning">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        </span>
+                                        <div>
+                                            <p class="font-semibold text-sm text-ink">Urgent Alert</p>
+                                            <p class="text-[11px] text-muted">Golden amber</p>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-muted">Delays, hall changes & urgent alerts.</p>
+                                </div>
+
+                                {{-- Success --}}
+                                <div class="style-card relative flex flex-col justify-between rounded-xl border p-3.5 cursor-pointer transition-all {{ $initialStyle === 'success' ? 'border-emerald-500 ring-2 ring-emerald-500/20 bg-[#F0FDF4]' : 'border-line hover:border-muted bg-white' }}" data-style="success">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                                        </span>
+                                        <div>
+                                            <p class="font-semibold text-sm text-ink">Celebration</p>
+                                            <p class="text-[11px] text-muted">Emerald mint</p>
+                                        </div>
+                                    </div>
+                                    <p class="mt-2 text-xs text-muted">Highlights, photo drops & wrap-ups.</p>
+                                </div>
+                            </div>
+                        </x-card>
+
+                        {{-- 4. Button Action (Call to Action) --}}
+                        <x-card title="Interactive button (action)" description="Attach a tap action to navigate attendees to an event or website.">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-ink mb-1.5">Action behavior</label>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === '' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="">
+                                            <span>None (Read-only)</span>
+                                        </div>
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'event' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="event">
+                                            <span>Open a WordCamp</span>
+                                        </div>
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'url' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="url">
+                                            <span>Open web link</span>
+                                        </div>
+                                    </div>
+                                    <select name="action_type" id="action_type" class="sr-only">
+                                        <option value="" @selected($initialActionType === '')>Nothing</option>
+                                        <option value="event" @selected($initialActionType === 'event')>Open a WordCamp</option>
+                                        <option value="url" @selected($initialActionType === 'url')>Open a web address</option>
+                                    </select>
+                                </div>
+
+                                {{-- Event Destination Details --}}
+                                <div id="action_event_panel" class="space-y-3 p-3.5 rounded-lg border border-line bg-peach/15 {{ $initialActionType === 'event' ? '' : 'hidden' }}">
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink mb-1">Choose WordCamp</label>
+                                            <select id="event_selector" class="{{ $input }}">
+                                                <option value="">-- Select from existing events --</option>
+                                                @foreach ($allEvents as $evt)
+                                                    <option value="{{ $evt->slug }}" @selected($initialSlug === $evt->slug)>{{ $evt->display_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink mb-1">Or enter event slug</label>
+                                            <input name="action_slug" id="action_slug" value="{{ $initialSlug }}" class="{{ $input }}" placeholder="e.g. wordcamp-delhi-2026">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- URL Destination Details --}}
+                                <div id="action_url_panel" class="space-y-2 p-3.5 rounded-lg border border-line bg-peach/15 {{ $initialActionType === 'url' ? '' : 'hidden' }}">
+                                    <label class="block text-xs font-semibold text-ink mb-1">Web address (must be https://)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input name="action_url" id="action_url" value="{{ $initialUrl }}" class="{{ $input }}" placeholder="https://photos.app.goo.gl/...">
+                                    </div>
+                                </div>
+                            </div>
+                        </x-card>
+
+                        {{-- 5. Expiration Schedule Card --}}
+                        <x-card title="Auto-expiration schedule" description="Optional. The banner disappears on its own once this time arrives.">
+                            <div class="space-y-3">
+                                <div class="max-w-xs">
+                                    <input type="datetime-local" name="until" id="until_input" value="{{ $initialUntil }}" class="{{ $input }}">
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs text-muted font-medium">Quick set:</span>
+                                    <button type="button" class="until-preset text-xs px-2.5 py-1 rounded border border-line bg-white hover:bg-peach/30 font-medium text-ink cursor-pointer" data-hours="2">+2 Hours</button>
+                                    <button type="button" class="until-preset text-xs px-2.5 py-1 rounded border border-line bg-white hover:bg-peach/30 font-medium text-ink cursor-pointer" data-hours="24">+1 Day</button>
+                                    <button type="button" class="until-preset text-xs px-2.5 py-1 rounded border border-line bg-white hover:bg-peach/30 font-medium text-ink cursor-pointer" data-hours="48">+2 Days</button>
+                                    <button type="button" class="until-clear text-xs px-2.5 py-1 rounded border border-line bg-white hover:bg-danger-soft font-medium text-danger cursor-pointer">Clear</button>
+                                </div>
+                            </div>
+                        </x-card>
+
+                        <div class="flex items-center gap-3 pt-2">
+                            <x-button>Save to draft</x-button>
+                        </div>
                     </div>
-                </x-card>
-                <x-button>Save to draft</x-button>
+
+                    {{-- Right column: Interactive Live App Preview --}}
+                    <div class="lg:col-span-5 lg:sticky lg:top-6 space-y-4">
+                        <div class="rounded-2xl border-2 border-line bg-surface p-4 shadow-md">
+                            <div class="flex items-center justify-between pb-3 border-b border-line mb-3">
+                                <div>
+                                    <h3 class="font-bold text-sm text-ink">Live Mobile Preview</h3>
+                                    <p class="text-[11px] text-muted">Preview exactly how attendees see this</p>
+                                </div>
+                                {{-- Language preview toggle --}}
+                                <div class="flex items-center rounded-lg border border-line bg-white p-0.5 text-xs font-semibold">
+                                    <button type="button" id="lang-btn-en" class="px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer">English</button>
+                                    <button type="button" id="lang-btn-hi" class="px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer">हिन्दी</button>
+                                </div>
+                            </div>
+
+                            {{-- Device Screen Simulation Frame --}}
+                            <div class="relative mx-auto rounded-[28px] border-4 border-ink bg-[#FFF0DF] p-3.5 shadow-inner overflow-hidden max-w-[340px] transition-all">
+                                {{-- Phone Notch / Status Bar --}}
+                                <div class="flex items-center justify-between px-3 pt-1 pb-2 text-[10px] font-semibold text-ink">
+                                    <span>9:41</span>
+                                    <div class="h-3 w-16 rounded-full bg-ink/80"></div>
+                                    <div class="flex items-center gap-1">
+                                        <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c5.076-5.077 13.308-5.077 18.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                                        <div class="h-2 w-4 rounded-sm border border-current p-0.5"><div class="h-full w-full bg-current rounded-xs"></div></div>
+                                    </div>
+                                </div>
+
+                                {{-- App Topbar Mockup --}}
+                                <div class="flex items-center justify-between px-2 py-1.5 mb-3 border-b border-line/60">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="/media/logo-wordmark-sm.png" alt="CampBuddy" class="h-6 w-auto">
+                                    </div>
+                                    <div class="flex items-center gap-1 text-muted">
+                                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-surface border border-line text-xs font-bold">?</span>
+                                    </div>
+                                </div>
+
+                                {{-- Inactive Overlay when banner_on is false --}}
+                                <div id="preview-inactive-overlay" class="absolute inset-0 bg-ink/40 backdrop-blur-[2px] z-20 flex flex-col items-center justify-center p-4 text-center transition-opacity {{ $bannerOn ? 'hidden' : '' }}">
+                                    <div class="rounded-xl bg-white p-4 shadow-xl border border-line max-w-[240px]">
+                                        <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-line/30 text-muted mb-2">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
+                                        </span>
+                                        <p class="font-bold text-ink text-sm">Banner is Hidden</p>
+                                        <p class="text-[11px] text-muted mt-1">Toggle "Show banner" ON to display it across attendee devices.</p>
+                                    </div>
+                                </div>
+
+                                {{-- Live Rendered Banner Card --}}
+                                <div id="preview-banner-card" class="relative rounded-xl border p-3.5 shadow-xs transition-all overflow-hidden bg-[#FFF5EE] border-[#F7D5C1]">
+                                    {{-- Accent Stripe --}}
+                                    <div id="preview-accent-stripe" class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+
+                                    <div class="space-y-2.5 pl-1.5">
+                                        {{-- Top Row: Icon + Kicker Badge + Close Button (✕) --}}
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <div id="preview-icon-box" class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                                    <svg id="preview-icon-svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                                                    </svg>
+                                                </div>
+                                                <span id="preview-kicker-badge" class="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-primary/10 text-primary">
+                                                    <span id="preview-kicker-dot" class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+                                                    <span id="preview-kicker-text">ANNOUNCEMENT</span>
+                                                </span>
+                                            </div>
+                                            <span id="preview-close-btn" class="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary" title="Attendee dismiss option in App & PWA">
+                                                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </span>
+                                        </div>
+
+                                        {{-- Message Body --}}
+                                        <p id="preview-text-body" class="text-xs font-medium text-ink leading-relaxed">
+                                            {{ $initialTextEn ?: 'No message entered yet. Type above to see live preview.' }}
+                                        </p>
+
+                                        {{-- CTA Action Button --}}
+                                        <div id="preview-action-row" class="flex justify-end pt-1 {{ $initialActionType === '' ? 'hidden' : '' }}">
+                                            <span id="preview-action-btn" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-bold text-primary shadow-2xs">
+                                                <span id="preview-action-btn-text">View Event →</span>
+                                                <svg id="preview-action-btn-icon" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Expiry Tag under banner --}}
+                                <div id="preview-expiry-chip" class="mt-2.5 text-center text-[10px] text-muted">
+                                    <span id="preview-expiry-text">{{ ! empty($banner['until']) ? 'Auto-expires: '.\Illuminate\Support\Carbon::parse($banner['until'])->format('j M Y, g:ia') : 'No expiration date (always on)' }}</span>
+                                </div>
+
+                                {{-- Mock Content below banner --}}
+                                <div class="mt-4 rounded-xl border border-line/60 bg-surface/70 p-3 opacity-60">
+                                    <div class="h-3 w-24 rounded bg-line mb-2"></div>
+                                    <div class="h-5 w-40 rounded bg-line mb-1"></div>
+                                    <div class="h-3 w-32 rounded bg-line"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const bannerOnCheckbox = document.getElementById('banner_on');
+                const previewStatusPill = document.getElementById('preview-status-pill');
+                const previewStatusText = document.getElementById('preview-status-text');
+                const previewInactiveOverlay = document.getElementById('preview-inactive-overlay');
+                const textEnInput = document.getElementById('text_en');
+                const textHiInput = document.getElementById('text_hi');
+                const counterEn = document.getElementById('counter_en');
+                const counterHi = document.getElementById('counter_hi');
+                const previewTextBody = document.getElementById('preview-text-body');
+                const langBtnEn = document.getElementById('lang-btn-en');
+                const langBtnHi = document.getElementById('lang-btn-hi');
+                const styleSelect = document.getElementById('style_select');
+                const styleCards = document.querySelectorAll('.style-card');
+                const previewBannerCard = document.getElementById('preview-banner-card');
+                const previewAccentStripe = document.getElementById('preview-accent-stripe');
+                const previewIconBox = document.getElementById('preview-icon-box');
+                const previewIconSvg = document.getElementById('preview-icon-svg');
+                const previewKickerBadge = document.getElementById('preview-kicker-badge');
+                const previewKickerDot = document.getElementById('preview-kicker-dot');
+                const previewKickerText = document.getElementById('preview-kicker-text');
+                const actionTypeSelect = document.getElementById('action_type');
+                const actionTypePills = document.querySelectorAll('.action-type-pill');
+                const actionEventPanel = document.getElementById('action_event_panel');
+                const actionUrlPanel = document.getElementById('action_url_panel');
+                const actionSlugInput = document.getElementById('action_slug');
+                const eventSelector = document.getElementById('event_selector');
+                const actionUrlInput = document.getElementById('action_url');
+                const previewActionRow = document.getElementById('preview-action-row');
+                const previewActionBtn = document.getElementById('preview-action-btn');
+                const previewActionBtnText = document.getElementById('preview-action-btn-text');
+                const previewActionBtnIcon = document.getElementById('preview-action-btn-icon');
+                const untilInput = document.getElementById('until_input');
+                const previewExpiryText = document.getElementById('preview-expiry-text');
+
+                let currentLang = 'en';
+
+                const styleConfigs = {
+                    info: {
+                        bg: '#FFF5EE',
+                        border: '#F7D5C1',
+                        accent: '#C33A19',
+                        iconTint: '#C33A19',
+                        iconBg: 'rgba(195, 58, 25, 0.12)',
+                        kickerEn: 'ANNOUNCEMENT',
+                        kickerHi: 'घोषणा',
+                        iconPath: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z'
+                    },
+                    warning: {
+                        bg: '#FFFBEB',
+                        border: '#FDE68A',
+                        accent: '#D97706',
+                        iconTint: '#B45309',
+                        iconBg: '#FEF3C7',
+                        kickerEn: 'IMPORTANT NOTICE',
+                        kickerHi: 'महत्वपूर्ण सूचना',
+                        iconPath: 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                    },
+                    success: {
+                        bg: '#F0FDF4',
+                        border: '#BBF7D0',
+                        accent: '#16A34A',
+                        iconTint: '#15803D',
+                        iconBg: '#DCFCE7',
+                        kickerEn: 'NEW UPDATE',
+                        kickerHi: 'ताज़ा अपडेट',
+                        iconPath: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z'
+                    }
+                };
+
+                function updatePreview() {
+                    if (!previewBannerCard) return;
+
+                    const isOn = bannerOnCheckbox ? bannerOnCheckbox.checked : false;
+                    if (previewInactiveOverlay) {
+                        previewInactiveOverlay.classList.toggle('hidden', isOn);
+                    }
+                    if (previewStatusPill) {
+                        previewStatusPill.className = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ' +
+                            (isOn ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-line/40 text-muted');
+                        const dot = previewStatusPill.querySelector('span');
+                        if (dot) dot.className = 'h-1.5 w-1.5 rounded-full ' + (isOn ? 'bg-[#16A34A] animate-pulse' : 'bg-muted');
+                        if (previewStatusText) previewStatusText.textContent = isOn ? 'Active on App' : 'Disabled / Hidden';
+                    }
+
+                    if (counterEn && textEnInput) counterEn.textContent = textEnInput.value.length + ' / 200';
+                    if (counterHi && textHiInput) counterHi.textContent = textHiInput.value.length + ' / 200';
+
+                    const textVal = currentLang === 'hi' ?
+                        (textHiInput && textHiInput.value.trim() ? textHiInput.value : (textEnInput ? textEnInput.value : '')) :
+                        (textEnInput && textEnInput.value.trim() ? textEnInput.value : '');
+                    if (previewTextBody) {
+                        previewTextBody.textContent = textVal || (currentLang === 'hi' ? 'कोई संदेश दर्ज नहीं किया गया। लाइव देखने के लिए ऊपर टाइप करें।' : 'No message entered yet. Type above to see live preview.');
+                    }
+
+                    const currentStyle = styleSelect ? styleSelect.value : 'info';
+                    const st = styleConfigs[currentStyle] || styleConfigs.info;
+
+                    previewBannerCard.style.backgroundColor = st.bg;
+                    previewBannerCard.style.borderColor = st.border;
+                    if (previewAccentStripe) previewAccentStripe.style.backgroundColor = st.accent;
+
+                    if (previewIconBox) {
+                        previewIconBox.style.backgroundColor = st.iconBg;
+                        previewIconBox.style.color = st.iconTint;
+                    }
+                    if (previewIconSvg) {
+                        previewIconSvg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="' + st.iconPath + '" />';
+                    }
+                    if (previewKickerBadge) {
+                        previewKickerBadge.style.backgroundColor = st.iconBg;
+                        previewKickerBadge.style.color = st.iconTint;
+                    }
+                    if (previewKickerDot) {
+                        previewKickerDot.style.backgroundColor = st.iconTint;
+                    }
+                    if (previewKickerText) {
+                        previewKickerText.textContent = currentLang === 'hi' ? st.kickerHi : st.kickerEn;
+                    }
+                    const previewCloseBtn = document.getElementById('preview-close-btn');
+                    if (previewCloseBtn) {
+                        previewCloseBtn.style.backgroundColor = st.iconBg;
+                        previewCloseBtn.style.color = st.iconTint;
+                    }
+
+                    const actType = actionTypeSelect ? actionTypeSelect.value : '';
+                    if (previewActionRow) {
+                        if (!actType) {
+                            previewActionRow.classList.add('hidden');
+                        } else {
+                            previewActionRow.classList.remove('hidden');
+                            if (previewActionBtn) {
+                                previewActionBtn.style.color = st.iconTint;
+                                previewActionBtn.style.borderColor = st.border;
+                            }
+                            if (actType === 'event') {
+                                if (previewActionBtnText) {
+                                    previewActionBtnText.textContent = currentLang === 'hi' ? 'इवेंट खोलें →' : 'View Event →';
+                                }
+                                if (previewActionBtnIcon) {
+                                    previewActionBtnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>';
+                                }
+                            } else if (actType === 'url') {
+                                if (previewActionBtnText) {
+                                    previewActionBtnText.textContent = currentLang === 'hi' ? 'वेबसाइट खोलें ↗' : 'Visit Link ↗';
+                                }
+                                if (previewActionBtnIcon) {
+                                    previewActionBtnIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>';
+                                }
+                            }
+                        }
+                    }
+
+                    if (previewExpiryText && untilInput) {
+                        if (untilInput.value) {
+                            const d = new Date(untilInput.value);
+                            previewExpiryText.textContent = 'Auto-expires: ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        } else {
+                            previewExpiryText.textContent = 'No expiration date (always on)';
+                        }
+                    }
+                }
+
+                if (bannerOnCheckbox) bannerOnCheckbox.addEventListener('change', updatePreview);
+                if (textEnInput) textEnInput.addEventListener('input', updatePreview);
+                if (textHiInput) textHiInput.addEventListener('input', updatePreview);
+                if (untilInput) untilInput.addEventListener('input', updatePreview);
+
+                if (langBtnEn && langBtnHi) {
+                    langBtnEn.addEventListener('click', function () {
+                        currentLang = 'en';
+                        langBtnEn.className = 'px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer';
+                        langBtnHi.className = 'px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer';
+                        updatePreview();
+                    });
+                    langBtnHi.addEventListener('click', function () {
+                        currentLang = 'hi';
+                        langBtnHi.className = 'px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer';
+                        langBtnEn.className = 'px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer';
+                        updatePreview();
+                    });
+                }
+
+                styleCards.forEach(function (card) {
+                    card.addEventListener('click', function () {
+                        const chosen = card.getAttribute('data-style');
+                        if (styleSelect) styleSelect.value = chosen;
+                        styleCards.forEach(function (c) {
+                            const s = c.getAttribute('data-style');
+                            if (s === chosen) {
+                                c.className = 'style-card relative flex flex-col justify-between rounded-xl border p-3.5 cursor-pointer transition-all ' +
+                                    (chosen === 'info' ? 'border-primary ring-2 ring-primary/20 bg-[#FFF5EE]' : (chosen === 'warning' ? 'border-amber-500 ring-2 ring-amber-500/20 bg-[#FFFBEB]' : 'border-emerald-500 ring-2 ring-emerald-500/20 bg-[#F0FDF4]'));
+                            } else {
+                                c.className = 'style-card relative flex flex-col justify-between rounded-xl border p-3.5 cursor-pointer transition-all border-line hover:border-muted bg-white';
+                            }
+                        });
+                        updatePreview();
+                    });
+                });
+
+                actionTypePills.forEach(function (pill) {
+                    pill.addEventListener('click', function () {
+                        const chosen = pill.getAttribute('data-type');
+                        if (actionTypeSelect) actionTypeSelect.value = chosen;
+                        actionTypePills.forEach(function (p) {
+                            const t = p.getAttribute('data-type');
+                            if (t === chosen) {
+                                p.className = 'action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all border-maroon bg-peach/40 text-maroon font-semibold';
+                            } else {
+                                p.className = 'action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all border-line bg-white text-muted hover:border-muted font-medium';
+                            }
+                        });
+                        if (actionEventPanel) actionEventPanel.classList.toggle('hidden', chosen !== 'event');
+                        if (actionUrlPanel) actionUrlPanel.classList.toggle('hidden', chosen !== 'url');
+                        updatePreview();
+                    });
+                });
+
+                if (eventSelector && actionSlugInput) {
+                    eventSelector.addEventListener('change', function () {
+                        if (eventSelector.value) {
+                            actionSlugInput.value = eventSelector.value;
+                            updatePreview();
+                        }
+                    });
+                    actionSlugInput.addEventListener('input', function () {
+                        if (eventSelector) eventSelector.value = actionSlugInput.value || '';
+                        updatePreview();
+                    });
+                }
+
+                if (actionUrlInput) actionUrlInput.addEventListener('input', updatePreview);
+
+                document.querySelectorAll('.preset-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const lang = btn.getAttribute('data-for');
+                        const txt = btn.getAttribute('data-text');
+                        if (lang === 'en' && textEnInput) {
+                            textEnInput.value = txt;
+                        } else if (lang === 'hi' && textHiInput) {
+                            textHiInput.value = txt;
+                        }
+                        updatePreview();
+                    });
+                });
+
+                document.querySelectorAll('.until-preset').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        const hours = parseInt(btn.getAttribute('data-hours'), 10) || 2;
+                        const d = new Date(Date.now() + hours * 3600 * 1000);
+                        const pad = (n) => String(n).padStart(2, '0');
+                        const localIso = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+                        if (untilInput) {
+                            untilInput.value = localIso;
+                            updatePreview();
+                        }
+                    });
+                });
+
+                const untilClearBtn = document.querySelector('.until-clear');
+                if (untilClearBtn && untilInput) {
+                    untilClearBtn.addEventListener('click', function () {
+                        untilInput.value = '';
+                        updatePreview();
+                    });
+                }
+
+                updatePreview();
+            });
+            </script>
         @endif
 
         {{-- Switches --}}

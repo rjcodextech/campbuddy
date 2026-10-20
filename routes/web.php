@@ -163,8 +163,9 @@ Route::prefix('admin')->group(function () {
 
         // Legal documents (Privacy notice and Terms of use).
         Route::get('legal', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'index'])->name('admin.legal.index');
+        Route::get('legal/{slug}', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'show'])->name('admin.legal.show');
         Route::get('legal/{slug}/edit', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'edit'])->name('admin.legal.edit');
-        Route::put('legal/{slug}', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'update'])->name('admin.legal.update');
+        Route::match(['put', 'post'], 'legal/{slug}', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'update'])->name('admin.legal.update');
         Route::post('legal/{slug}/reset', [\App\Http\Controllers\Admin\LegalDocumentController::class, 'reset'])->name('admin.legal.reset');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

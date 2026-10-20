@@ -1,0 +1,172 @@
+// Announcement banner: server-driven banner for app and PWA
+.announcement-banner {
+    position: relative;
+    border-radius: 12px;
+    border: 1px solid var(--banner-border, #f7d5c1);
+    background-color: var(--banner-bg, #fff5ee);
+    padding: 14px 16px;
+    margin: 12px 16px 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 4px;
+        background-color: var(--banner-accent, var(--color-primary, #c33a19));
+    }
+
+    &--info {
+        --banner-bg: #fff5ee;
+        --banner-border: #f7d5c1;
+        --banner-accent: #c33a19;
+        --banner-icon-tint: #c33a19;
+        --banner-badge-bg: rgba(195, 58, 25, 0.12);
+    }
+
+    &--warning {
+        --banner-bg: #fffbeb;
+        --banner-border: #fde68a;
+        --banner-accent: #d97706;
+        --banner-icon-tint: #b45309;
+        --banner-badge-bg: #fef3c7;
+    }
+
+    &--success {
+        --banner-bg: #f0fdf4;
+        --banner-border: #bbf7d0;
+        --banner-accent: #16a34a;
+        --banner-icon-tint: #15803d;
+        --banner-badge-bg: #dcfce7;
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    &__meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &__icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
+        color: var(--banner-icon-tint, #c33a19);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        svg {
+            width: 17px;
+            height: 17px;
+        }
+    }
+
+    &__kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 9999px;
+        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
+        color: var(--banner-icon-tint, #c33a19);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+
+        &-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+    }
+
+    &__close {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: none;
+        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
+        color: var(--banner-icon-tint, #c33a19);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition: transform 0.15s ease, background-color 0.15s ease;
+        flex-shrink: 0;
+
+        &:hover {
+            transform: scale(1.1);
+            filter: brightness(0.95);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+
+    &__text {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.45;
+        color: var(--color-ink, #231f20);
+    }
+
+    &__footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    &__cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        background-color: #ffffff;
+        border: 1px solid var(--banner-border, #f7d5c1);
+        color: var(--banner-icon-tint, #c33a19);
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: var(--banner-icon-tint, #c33a19);
+        }
+
+        svg {
+            width: 13px;
+            height: 13px;
+        }
+    }
+}

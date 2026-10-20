@@ -126,18 +126,89 @@ export function whereText(tables) {
     .join(' | ');
 }
 
+function renderLeadCard(lead) {
+  const el = render('tpl-contribute-lead-card', {
+    name: lead.name,
+    designation: lead.designation || null,
+    bio: lead.bio || null,
+    initial: lead.name ? lead.name.charAt(0).toUpperCase() : '?',
+  });
+
+  const avatarImg = el.querySelector('[data-slot="avatar"]');
+  const initialEl = el.querySelector('[data-slot="initial"]');
+
+  if (lead.avatar) {
+    avatarImg.src = lead.avatar;
+    avatarImg.onerror = () => {
+      avatarImg.remove();
+      if (initialEl) initialEl.style.display = 'flex';
+    };
+    if (initialEl) initialEl.style.display = 'none';
+  } else {
+    avatarImg?.remove();
+    if (initialEl) initialEl.style.display = 'flex';
+  }
+
+  const linksBox = el.querySelector('[data-slot="links"]');
+  if (linksBox) {
+    const linkItems = [];
+    if (lead.url) {
+      const a = document.createElement('a');
+      a.className = 'contrib-lead-link';
+      a.href = lead.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = 'Speaker Profile';
+      linkItems.push(a);
+    }
+    (lead.links || []).forEach((l) => {
+      if (!l.url) return;
+      const a = document.createElement('a');
+      a.className = 'contrib-lead-link';
+      a.href = l.url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      const label = l.type ? l.type.charAt(0).toUpperCase() + l.type.slice(1) : 'Link';
+      a.textContent = label;
+      linkItems.push(a);
+    });
+    if (linkItems.length > 0) {
+      linksBox.replaceChildren(...linkItems);
+    } else {
+      linksBox.remove();
+    }
+  }
+
+  return el;
+}
+
 function renderTables(tables) {
   const section = document.getElementById('contrib-tables');
   if (!section || !tables.length) return;
 
-  document.getElementById('contrib-tables-list').replaceChildren(...tables.map((t) => render('tpl-contribute-table', {
-    team: t.name,
-    place: Boolean(t.place),
-    'place-text': t.place,
-    leads: Boolean(t.leads?.length),
-    'leads-text': t.leads?.length ? `Table ${t.leads.length === 1 ? 'lead' : 'leads'}: ${t.leads.join(', ')}` : '',
-    note: t.note || null,
-  })));
+  const tableNodes = tables.map((t) => {
+    const hasDetails = Boolean(t.lead_details?.length);
+    const hasLeads = Boolean(t.leads?.length);
+    const el = render('tpl-contribute-table', {
+      team: t.name,
+      place: Boolean(t.place),
+      'place-text': t.place,
+      'leads-box': hasDetails,
+      leads: !hasDetails && hasLeads,
+      'leads-text': hasLeads ? `Table ${t.leads.length === 1 ? 'lead' : 'leads'}: ${t.leads.join(', ')}` : '',
+      note: t.note || null,
+    });
+
+    if (hasDetails) {
+      const list = el.querySelector('[data-slot="leads-list"]');
+      if (list) {
+        list.replaceChildren(...t.lead_details.map(renderLeadCard));
+      }
+    }
+    return el;
+  });
+
+  document.getElementById('contrib-tables-list').replaceChildren(...tableNodes);
   section.hidden = false;
 }
 
@@ -207,6 +278,28 @@ async function showTeamDetail(team, eventId, questId) {
     where: { attrs: { hidden: !whereText(tablesByTeam.get(team.id)) } },
     'where-text': whereText(tablesByTeam.get(team.id)),
   });
+
+  const teamTables = tablesByTeam.get(team.id) || [];
+  const allTeamLeads = teamTables.flatMap((t) => t.lead_details || []);
+  const teamLeadsBox = dialog.querySelector('[data-slot="team-leads"]');
+  const teamLeadsList = dialog.querySelector('[data-slot="team-leads-list"]');
+  if (teamLeadsBox && teamLeadsList) {
+    if (allTeamLeads.length > 0) {
+      teamLeadsList.replaceChildren(...allTeamLeads.map(renderLeadCard));
+      teamLeadsBox.hidden = false;
+    } else {
+      const plainLeads = [...new Set(teamTables.flatMap((t) => t.leads || []))];
+      if (plainLeads.length > 0) {
+        const p = document.createElement('p');
+        p.style.color = 'var(--c-muted)';
+        p.textContent = plainLeads.join(', ');
+        teamLeadsList.replaceChildren(p);
+        teamLeadsBox.hidden = false;
+      } else {
+        teamLeadsBox.hidden = true;
+      }
+    }
+  }
 
   dialog.showModal();
 

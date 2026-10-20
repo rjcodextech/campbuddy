@@ -15,5 +15,8 @@
             @endforeach
             <p class="delay-banner__hint">The times in CampBuddy already include this.</p>
         </div>
+        <button type="button" class="delay-banner__close" onclick="this.closest('.delay-banner').remove()" aria-label="Dismiss delay notification" style="background:none;border:none;color:inherit;opacity:0.7;cursor:pointer;padding:4px;margin-left:auto;align-self:flex-start;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
     </div>
 @endif

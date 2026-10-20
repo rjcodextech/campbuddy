@@ -1,0 +1,635 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// ==========================================================================
+// CampBuddy Legal Documents (Privacy Notice & Terms of Use)
+// DPDP Act 2023 compliant, responsive, accessible, matching brand tokens.
+// ==========================================================================
+
+.legal-shell {
+    width: 100%;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: v.$space-3 v.$space-4 40px;
+    color: var(--ink);
+
+    @media (min-width: v.$bp-tablet) {
+        padding: v.$space-5 v.$space-6 48px;
+    }
+}
+
+// Top document switcher: toggle between Privacy Notice & Terms of Use
+.legal-nav {
+    display: flex;
+    justify-content: center;
+    margin-bottom: v.$space-6;
+}
+
+.legal-tabs {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(35, 31, 32, 0.05);
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    padding: 4px;
+    gap: 4px;
+    max-width: 100%;
+}
+
+.legal-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+
+    &:hover {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    &.is-active {
+        background: var(--brand-primary);
+        color: #ffffff;
+        box-shadow: 0 2px 6px rgba(195, 58, 25, 0.25);
+
+        &:hover {
+            background: var(--brand-accent);
+            color: #ffffff;
+        }
+    }
+}
+
+// Hero Header
+.legal-hero {
+    margin-bottom: v.$space-6;
+    text-align: left;
+}
+
+.legal-hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8f5ee;
+    color: #1f7a4d;
+    border: 1px solid rgba(31, 122, 77, 0.2);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: v.$space-2;
+
+    &--terms {
+        background: #f0f4f9;
+        color: #0d2343;
+        border-color: rgba(13, 35, 67, 0.15);
+    }
+
+    svg {
+        width: 13px;
+        height: 13px;
+    }
+}
+
+.legal-hero__title {
+    font-size: 1.85rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 v.$space-2;
+    letter-spacing: -0.02em;
+
+    @media (min-width: v.$bp-tablet) {
+        font-size: 2.35rem;
+    }
+}
+
+.legal-hero__subtitle {
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0 0 v.$space-3;
+    max-width: 680px;
+}
+
+.legal-hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    padding-top: v.$space-1;
+    border-top: 1px solid var(--line);
+}
+
+.legal-hero__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    svg {
+        width: 14px;
+        height: 14px;
+        color: var(--brand-primary);
+    }
+}
+
+// Quick Jump Anchor Bar
+.legal-toc {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 2px v.$space-4;
+    margin-bottom: v.$space-5;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.legal-toc__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+
+    &:hover {
+        border-color: var(--brand-primary);
+        color: var(--brand-primary);
+        background: var(--paper);
+    }
+}
+
+// Legal Card: Standard container for sections
+.legal-card {
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: v.$space-5;
+    margin-bottom: v.$space-5;
+    box-shadow: 0 2px 10px rgba(35, 31, 32, 0.03);
+
+    @media (min-width: v.$bp-tablet) {
+        padding: v.$space-6 v.$space-8;
+    }
+}
+
+// The Short Version / Callout Highlight Box
+.legal-box {
+    background: linear-gradient(135deg, rgba(255, 240, 223, 0.7), rgba(255, 228, 196, 0.5));
+    border: 1px solid rgba(195, 58, 25, 0.2);
+    border-left: 5px solid var(--brand-primary);
+    border-radius: 14px;
+    padding: v.$space-5;
+    margin-bottom: v.$space-6;
+    box-shadow: 0 4px 14px rgba(195, 58, 25, 0.05);
+
+    @media (min-width: v.$bp-tablet) {
+        padding: v.$space-6;
+    }
+}
+
+.legal-box__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: v.$space-3;
+}
+
+.legal-box__title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0;
+}
+
+.legal-box__badge {
+    background: var(--brand-primary);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.legal-box__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.legal-box__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.94rem;
+    line-height: 1.55;
+    color: var(--ink);
+
+    strong {
+        color: var(--ink);
+        font-weight: 700;
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+        color: #1f7a4d;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+}
+
+// Section Headings & Numbering
+.legal-section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: v.$space-3;
+}
+
+.legal-section-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--peach);
+    color: var(--brand-primary);
+    font-size: 0.8rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.legal-section-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    line-height: 1.3;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.01em;
+
+    @media (min-width: v.$bp-tablet) {
+        font-size: 1.4rem;
+    }
+}
+
+.legal-section-subtitle {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: v.$space-4 0 v.$space-2;
+}
+
+.legal-p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--ink);
+    margin: 0 0 v.$space-3;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    a {
+        color: var(--brand-primary);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+
+        &:hover {
+            color: var(--brand-accent);
+        }
+    }
+}
+
+.legal-list {
+    padding-left: 1.2rem;
+    margin: v.$space-2 0 v.$space-4;
+    list-style: disc;
+
+    li {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: var(--ink);
+        margin-bottom: 6px;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        strong {
+            color: var(--ink);
+        }
+    }
+}
+
+// Data Retention Table & Responsive Mobile Cards
+.legal-table-container {
+    width: 100%;
+    margin: v.$space-4 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: #ffffff;
+}
+
+.legal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    text-align: left;
+
+    th {
+        background: var(--paper-soft);
+        color: var(--ink);
+        font-weight: 700;
+        padding: 12px 14px;
+        border-bottom: 2px solid var(--line);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    td {
+        padding: 14px 14px;
+        vertical-align: top;
+        border-bottom: 1px solid var(--line);
+        line-height: 1.55;
+        color: var(--ink);
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover td {
+        background: rgba(255, 240, 223, 0.2);
+    }
+}
+
+// Mobile responsive table cards
+@media (max-width: 680px) {
+    .legal-table,
+    .legal-table thead,
+    .legal-table tbody,
+    .legal-table tr,
+    .legal-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .legal-table thead {
+        display: none;
+    }
+
+    .legal-table tr {
+        border-bottom: 2px solid var(--line);
+        padding: 14px;
+        background: #ffffff;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .legal-table td {
+        padding: 6px 0;
+        border: none;
+
+        &[data-label]::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--brand-primary);
+            margin-bottom: 2px;
+        }
+    }
+}
+
+// Rights Grid (Section 4)
+.legal-rights-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: v.$space-4 0 v.$space-5;
+
+    @media (min-width: v.$bp-tablet) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.legal-right-item {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(35, 31, 32, 0.05);
+    }
+}
+
+.legal-right-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--peach);
+    color: var(--brand-primary);
+    flex-shrink: 0;
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+.legal-right-text {
+    flex: 1;
+
+    strong {
+        display: block;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 2px;
+    }
+
+    span {
+        display: block;
+        font-size: 0.85rem;
+        line-height: 1.45;
+        color: var(--muted);
+    }
+}
+
+// Contact / Grievance Card
+.legal-contact-card {
+    background: #ffffff;
+    border: 2px solid var(--peach);
+    border-radius: 16px;
+    padding: v.$space-5;
+    margin-top: v.$space-5;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    @media (min-width: v.$bp-tablet) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: v.$space-6;
+    }
+}
+
+.legal-contact-info {
+    flex: 1;
+}
+
+.legal-contact-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0 0 4px;
+}
+
+.legal-contact-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.legal-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--brand-primary);
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    padding: 12px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(195, 58, 25, 0.25);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+        background: var(--brand-accent);
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(195, 58, 25, 0.35);
+    }
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+// Hindi Summary Box (सारांश)
+.legal-hindi-box {
+    background: #fdfbf7;
+    border: 1px solid var(--line);
+    border-left: 4px solid #e39d1c;
+    border-radius: 12px;
+    padding: v.$space-5;
+    margin-top: v.$space-4;
+
+    .legal-hindi-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--ink);
+        margin: 0 0 v.$space-2;
+    }
+
+    p {
+        font-size: 0.95rem;
+        line-height: 1.75;
+        color: var(--ink);
+        margin: 0;
+    }
+}
+
+// Bottom Footer Links
+.legal-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: v.$space-6 v.$space-4 0;
+    border-top: 1px solid var(--line);
+    margin-top: v.$space-6;
+    text-align: center;
+}
+
+.legal-footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 18px;
+    font-size: 0.88rem;
+
+    a {
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.15s ease;
+
+        &:hover {
+            color: var(--brand-primary);
+            text-decoration: underline;
+        }
+    }
+}
+
+.legal-footer-copy {
+    font-size: 0.82rem;
+    color: var(--muted);
+}

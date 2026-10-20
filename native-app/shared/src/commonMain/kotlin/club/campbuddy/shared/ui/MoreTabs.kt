@@ -47,6 +47,7 @@ import club.campbuddy.shared.model.ContributorTable
 import club.campbuddy.shared.domain.ContribTeam
 import club.campbuddy.shared.domain.CONTRIB_TEAMS
 import club.campbuddy.shared.domain.CONTRIB_QUESTION_TAGS
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -311,6 +312,20 @@ fun ContributeTab(slug: String) {
                 Text("Find the table", style = MaterialTheme.typography.titleMedium)
                 Text(where, style = MaterialTheme.typography.bodyMedium)
             }
+            val teamTables = byTeam[team.id].orEmpty()
+            val teamLeads = teamTables.flatMap { it.leadDetails }
+            if (teamLeads.isNotEmpty()) {
+                Text("Table Leads", style = MaterialTheme.typography.titleMedium)
+                teamLeads.forEach { lead ->
+                    ContributorLeadCard(lead)
+                }
+            } else {
+                val plainLeads = teamTables.flatMap { it.leads }.distinct()
+                if (plainLeads.isNotEmpty()) {
+                    Text("Table Leads", style = MaterialTheme.typography.titleMedium)
+                    Text(plainLeads.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                }
+            }
         }
     }
 
@@ -382,15 +397,82 @@ fun ContributeTab(slug: String) {
         if (tables.isNotEmpty()) {
             item {
                 Card {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Tables at this WordCamp", style = MaterialTheme.typography.titleLarge)
-                        Text("Where each team sits on Contributor Day, and who to say hi to.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text("Tables at this WordCamp", style = MaterialTheme.typography.titleLarge)
+                            Text("Where each team sits on Contributor Day, and who to say hi to.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                        }
                         tables.forEach { table ->
-                            Column {
-                                Text(table.name.ifBlank { table.team ?: "Table" }, style = MaterialTheme.typography.titleMedium)
-                                if (table.place.isNotBlank()) Text(table.place, style = MaterialTheme.typography.bodyMedium)
-                                if (table.leads.isNotEmpty()) Text((if (table.leads.size == 1) "Table lead: " else "Table leads: ") + table.leads.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                                table.note?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .background(brand.surface)
+                                    .border(1.dp, brand.line, RoundedCornerShape(brand.radius.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    FlowRow(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            table.name.ifBlank { table.team ?: "Table" },
+                                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                            modifier = Modifier.padding(end = 8.dp)
+                                        )
+                                        if (table.place.isNotBlank()) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .background(Color.White)
+                                                    .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                LineIcon("map-pin", brand.primary, size = 12.dp)
+                                                Text(
+                                                    table.place,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        color = brand.primary,
+                                                        fontWeight = FontWeight.SemiBold
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    table.note?.takeIf { it.isNotBlank() }?.let {
+                                        Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                                    }
+
+                                    if (table.leadDetails.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Text(
+                                                "Table Leads",
+                                                style = MaterialTheme.typography.labelSmall.copy(
+                                                    color = brand.muted,
+                                                    fontWeight = FontWeight.Bold,
+                                                    letterSpacing = 0.5.sp
+                                                )
+                                            )
+                                            table.leadDetails.forEach { lead ->
+                                                ContributorLeadCard(lead)
+                                            }
+                                        }
+                                    } else if (table.leads.isNotEmpty()) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            LineIcon("users", brand.muted, size = 14.dp)
+                                            Text(
+                                                (if (table.leads.size == 1) "Table lead: " else "Table leads: ") + table.leads.joinToString(", "),
+                                                style = MaterialTheme.typography.bodySmall.copy(color = brand.muted)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -400,6 +482,145 @@ fun ContributeTab(slug: String) {
 
         item { Text("All contributor teams", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 10.dp)) }
         items(CONTRIB_TEAMS, key = { "team-" + it.id }) { TeamCard(it) }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail) {
+    val brand = LocalBrand.current
+    val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
+            .border(1.dp, brand.line, RoundedCornerShape(8.dp))
+            .padding(10.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .border(1.dp, brand.line, CircleShape)
+                ) {
+                    RemoteImage(
+                        url = lead.avatar,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        fallback = {
+                            Box(
+                                Modifier.fillMaxSize().background(brand.primary.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    lead.name.take(1).uppercase(),
+                                    style = MaterialTheme.typography.titleMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold)
+                                )
+                            }
+                        }
+                    )
+                }
+
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            lead.name,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Box(
+                            Modifier
+                                .background(Color(0xFFFFF9E6), RoundedCornerShape(4.dp))
+                                .border(1.dp, Color(0xFFD4A017), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 5.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                "Table Lead",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    color = Color(0xFF7A4B00),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                )
+                            )
+                        }
+                    }
+
+                    lead.designation?.takeIf { it.isNotBlank() }?.let { desig ->
+                        Text(
+                            desig,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = brand.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        )
+                    }
+                }
+            }
+
+            lead.bio?.takeIf { it.isNotBlank() }?.let { bio ->
+                Text(
+                    bio,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = brand.ink.copy(alpha = 0.85f),
+                        lineHeight = 16.sp
+                    )
+                )
+            }
+
+            val validLinks = lead.links.filter { it.url.isNotBlank() }
+            if (validLinks.isNotEmpty() || !lead.url.isNullOrBlank()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.padding(top = 2.dp)
+                ) {
+                    lead.url?.takeIf { it.isNotBlank() }?.let { profileUrl ->
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(brand.surface)
+                                .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                .clickable { runCatching { uriHandler.openUri(profileUrl) } }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                "Speaker Profile ↗",
+                                style = MaterialTheme.typography.labelSmall.copy(color = brand.ink, fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                    }
+                    validLinks.forEach { link ->
+                        val label = when (link.type?.lowercase()) {
+                            "linkedin" -> "LinkedIn ↗"
+                            "twitter", "x" -> "X / Twitter ↗"
+                            "website" -> "Website ↗"
+                            else -> "${link.type?.replaceFirstChar { it.uppercase() } ?: "Link"} ↗"
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(brand.surface)
+                                .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                .clickable { runCatching { uriHandler.openUri(link.url) } }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                label,
+                                style = MaterialTheme.typography.labelSmall.copy(color = brand.ink, fontWeight = FontWeight.SemiBold)
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -466,6 +687,7 @@ private fun PeopleList(slug: String) {
     val state by loader.state
     var query by rememberSaveable { mutableStateOf("") }
     var role by rememberSaveable { mutableStateOf("") }
+    var visibleLimit by rememberSaveable(slug, query, role) { mutableStateOf(50) }
     val model = remember(slug) { DiscoveryModel(slug, env, scope) }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -491,10 +713,11 @@ private fun PeopleList(slug: String) {
                 }
                 val shown = s.value.filter { (query.isBlank() || it.name.contains(query, ignoreCase = true)) && (role.isBlank() || role in it.roles) }
                 if (shown.isEmpty()) item { Text("Nobody matches.", style = MaterialTheme.typography.bodyMedium) }
+                val displayed = shown.take(visibleLimit)
                 item {
                     Card(Modifier.padding(top = 4.dp)) {
                         Column {
-                            shown.take(300).forEachIndexed { index, person ->
+                            displayed.forEachIndexed { index, person ->
                                 Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Box(Modifier.size(44.dp).clip(CircleShape).background(brand.peach).border(2.dp, brand.peach, CircleShape), contentAlignment = Alignment.Center) {
                                         RemoteImage(person.avatarUrl, Modifier.size(44.dp)) { Image(painterResource(Res.drawable.art_avatar), contentDescription = null, modifier = Modifier.size(44.dp)) }
@@ -534,9 +757,18 @@ private fun PeopleList(slug: String) {
                                     }
                                     MeetButton(person, slug)
                                 }
-                                if (index < shown.take(300).lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+                                if (index < displayed.lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
                             }
                         }
+                    }
+                }
+                if (shown.size > visibleLimit) {
+                    item {
+                        QuietButton(
+                            "Load more (${displayed.size} of ${shown.size} shown)",
+                            onClick = { visibleLimit += 50 },
+                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                        )
                     }
                 }
             }

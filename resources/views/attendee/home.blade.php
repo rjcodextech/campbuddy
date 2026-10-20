@@ -2,6 +2,7 @@
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
+        @include('attendee.partials.announcement-banner')
         @include('attendee.partials.delay-banner')
         {{-- Event branding lives here now, not the global topbar (§Header) —
         logo falls back to CampBuddy's own icon so this never looks broken
@@ -37,7 +38,7 @@
         {{-- "Bring it from your last WordCamp" (bring-data.js): a profile and people met at a WordCamp in the last month. --}}
         <div id="bring-data" class="home-section" hidden></div>
 
-        <section aria-labelledby="happening-now-heading">
+        <section aria-labelledby="happening-now-heading" class="home-section">
             <div class="section-head">
                 <h2 id="happening-now-heading" class="section-head__title">Happening now</h2>
             </div>

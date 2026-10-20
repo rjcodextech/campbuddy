@@ -77,6 +77,11 @@
                 <p class="footer-note" style="text-align:left" data-slot="where-text"></p>
             </div>
 
+            <div data-slot="team-leads" hidden style="margin-top:14px">
+                <p style="font-weight:700;margin-bottom:8px">Table Leads</p>
+                <div data-slot="team-leads-list"></div>
+            </div>
+
             <div style="margin-top:18px;display:flex;justify-content:flex-end">
                 <button type="button" class="btn btn--primary" data-action="close">Got it</button>
             </div>

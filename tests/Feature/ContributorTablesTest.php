@@ -67,7 +67,13 @@ class ContributorTablesTest extends TestCase
 
         $page = $this->get('/event/wc-tables/contribute')->assertOk();
         $data = json_decode(str($page->getContent())->between('id="contribute-data">', '</script>')->toString(), true);
-        $this->assertSame([['team' => 'polyglots', 'name' => 'Polyglots', 'place' => 'Floor 2 · Hall B · Table 5', 'leads' => ['Asha Rao', 'Same Name', 'Guest Lead'], 'note' => 'Bring a laptop']], $data['tables']);
+        $this->assertSame('polyglots', $data['tables'][0]['team']);
+        $this->assertSame('Polyglots', $data['tables'][0]['name']);
+        $this->assertSame('Floor 2 · Hall B · Table 5', $data['tables'][0]['place']);
+        $this->assertSame(['Asha Rao', 'Same Name', 'Guest Lead'], $data['tables'][0]['leads']);
+        $this->assertCount(3, $data['tables'][0]['lead_details']);
+        $this->assertSame('Asha Rao', $data['tables'][0]['lead_details'][0]['name']);
+        $this->assertSame('Bring a laptop', $data['tables'][0]['note']);
 
         $this->put(route('admin.events.tables.update', [$this->event, $table]), ['team' => 'polyglots', 'leads' => ''])->assertRedirect();
         $this->assertArrayNotHasKey($asha->id, RosterRoles::forEvent($this->event), 'no longer a lead, no badge');

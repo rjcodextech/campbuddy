@@ -23,6 +23,8 @@ import { ALL, ROLE_FILTER_LABELS, ROLE_LABELS, effectiveRoleFilter, matchesRole,
 import { render, renderFragment } from './template.js';
 import { iconText, lineIcon } from './line-icon.js';
 import { showToast } from './toast.js';
+import { initWhoToMeetInput } from './who-to-meet.js';
+
 
 // The same list and limit the picker's onboarding form offers (profile-sync.js);
 // the API takes at most 5 tags (StoreDiscoveryRequest), so the form stops there.
@@ -175,7 +177,11 @@ async function renderRoster(eventSlug, eventId) {
     }));
   };
 
+  const CHUNK_SIZE = 50;
+  let currentRenderId = 0;
+
   const draw = () => {
+    const renderId = ++currentRenderId;
     drawRoleChips();
     const q = searchEl.value.trim().toLowerCase();
     const list = entries.filter((a) => matchesRole(a, roleFilter) && (!q || a.name.toLowerCase().includes(q)));
@@ -185,9 +191,41 @@ async function renderRoster(eventSlug, eventId) {
       return;
     }
 
-    const rows = document.createDocumentFragment();
-    list.forEach((a) => rows.appendChild(rosterRow(a, eventId)));
-    el.replaceChildren(rows);
+    // Render first chunk of up to CHUNK_SIZE immediately for fast initial paint
+    const initialChunk = list.slice(0, CHUNK_SIZE);
+    const initialRows = document.createDocumentFragment();
+    initialChunk.forEach((a) => initialRows.appendChild(rosterRow(a, eventId)));
+    el.replaceChildren(initialRows);
+
+    // Stream subsequent chunks in the background using requestIdleCallback / setTimeout
+    let offset = CHUNK_SIZE;
+    const scheduleNextChunk = () => {
+      if (renderId !== currentRenderId) return; // Stale render, abort
+      if (offset >= list.length) return;
+
+      const nextBatch = list.slice(offset, offset + CHUNK_SIZE);
+      offset += CHUNK_SIZE;
+
+      const nextRows = document.createDocumentFragment();
+      nextBatch.forEach((a) => nextRows.appendChild(rosterRow(a, eventId)));
+      el.appendChild(nextRows);
+
+      if (offset < list.length) {
+        if ('requestIdleCallback' in window) {
+          window.requestIdleCallback(scheduleNextChunk, { timeout: 80 });
+        } else {
+          setTimeout(scheduleNextChunk, 16);
+        }
+      }
+    };
+
+    if (list.length > CHUNK_SIZE) {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(scheduleNextChunk, { timeout: 80 });
+      } else {
+        setTimeout(scheduleNextChunk, 16);
+      }
+    }
   };
 
   // Roster data is other people's data (§8.4) — only "the search was used"
@@ -451,6 +489,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
   setIdentity(identity);
 
   mountRosterPicker(el, eventSlug, () => picked, (entry) => { picked = entry; showError(''); }, fields.attendee_roster_id ?? null);
+  const whoInputCtrl = initWhoToMeetInput(el);
 
   // --- Tags ------------------------------------------------------------
   el.querySelectorAll('[data-tag]').forEach((chip) => {
@@ -475,6 +514,7 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
   // --- Save ------------------------------------------------------------
   const submitBtn = el.querySelector('#join-submit');
   submitBtn.addEventListener('click', async () => {
+    whoInputCtrl.flush();
     const displayName = el.querySelector('#join-display-name').value.trim();
     const body = {
       tags: [...selected],

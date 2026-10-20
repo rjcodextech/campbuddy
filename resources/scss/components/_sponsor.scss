@@ -732,3 +732,68 @@ dialog.steal-sheet {
     font-weight: v.$font-weight-bold;
     text-transform: capitalize;
 }
+
+// Deal Lead Capture Dialog ("Claim the deal / Claim the plan")
+dialog.deal-lead-dialog {
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    max-height: 88dvh;
+    margin: auto auto 0;
+    padding: 0;
+    border: 0;
+    border-radius: 16px 16px 0 0;
+    background: var(--paper);
+    color: var(--ink);
+    box-shadow: v.$shadow-raised;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    &::backdrop {
+        background: rgba(35, 31, 32, 0.45);
+    }
+
+    &[open] {
+        animation: meet-sheet-up 0.22s ease-out;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        margin: auto;
+        border-radius: 14px;
+        max-height: calc(100dvh - 48px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &[open] {
+            animation: none;
+        }
+    }
+}
+
+.deal-lead-dialog__card {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-2 v.$space-4 calc(#{v.$space-5} + env(safe-area-inset-bottom, 0px));
+
+    @include m.tablet {
+        padding: v.$space-5;
+    }
+}
+
+.deal-lead-dialog__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: v.$space-2;
+    padding-top: v.$space-1;
+}
+
+.deal-lead-dialog__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0;
+    line-height: 1.3;
+}
+

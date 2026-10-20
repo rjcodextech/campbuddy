@@ -53,7 +53,11 @@ class NativeKotlinSyncTest extends TestCase
 
         foreach (array_unique($paths) as $path) {
             // Kotlin string templates become sample values.
-            $url = '/api/v1'.preg_replace(['#\$\{?slug\}?#', '#\$\{?eventId\}?#', '#\$\{?(?:discoveryId|id|target)\}?#'], ['wordcamp-test', '7', str_repeat('a', 64)], $path);
+            $url = '/api/v1'.preg_replace(
+                ['#\$\{?slug\}?#', '#\$\{?eventId\}?#', '#\$\{?entryId\}?#', '#\$\{?itemId\}?#', '#\$\{?kind\}?#', '#\$\{?action\}?#', '#\$\{?job\}?#', '#\$\{?artAction\}?#', '#\$\{?(?:discoveryId|id|target)\}?#'],
+                ['wordcamp-test', '7', '1', '1', 'photos', 'suppress', 'schedule', 'use', str_repeat('a', 64)],
+                $path
+            );
             $matched = false;
             foreach (['GET', 'POST', 'PATCH', 'DELETE'] as $method) {
                 try {

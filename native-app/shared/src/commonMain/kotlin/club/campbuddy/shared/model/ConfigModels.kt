@@ -59,7 +59,9 @@ data class BannerConfig(
     val style: String = "info",
     val action: BannerAction? = null,
     val until: String? = null,
-)
+) {
+    val dismissKey: String get() = id.ifEmpty { (text["en"] ?: text.values.firstOrNull()).orEmpty() }
+}
 
 @Serializable
 data class BannerAction(val type: String, val url: String? = null, val slug: String? = null, val tab: String? = null)

@@ -58,7 +58,31 @@
         </div>
 
         @include('attendee.partials.form-field', ['id' => 'join-profession', 'label' => 'Profession', 'placeholder' => 'e.g. WordPress Engineer', 'hint' => 'Optional.', 'dataSlot' => 'profession', 'maxlength' => 100, 'errorLine' => false])
-        @include('attendee.partials.form-field', ['id' => 'join-who', 'label' => 'Who would you like to meet?', 'placeholder' => 'e.g. other agency owners', 'hint' => 'Optional.', 'dataSlot' => 'who', 'maxlength' => 255, 'errorLine' => false])
+        <div class="form-field who-tags-field">
+            <label class="form-field__label" for="join-who-text">Who would you like to meet?</label>
+            <input type="hidden" id="join-who" name="who_to_meet" data-slot="who" value="">
+            <div class="who-tags">
+                <div class="who-tags__items"></div>
+                <div class="who-tags__input-row">
+                    <input type="text" id="join-who-text" class="who-tags__input" list="who-datalist" placeholder="e.g. Plugin Developers, Agency Owners…" autocomplete="off">
+                    <button type="button" class="btn btn--compact btn--outline who-tags__add-btn" aria-label="Add entry">Add</button>
+                </div>
+            </div>
+            <datalist id="who-datalist">
+                @foreach (['Plugin Developers', 'Agency Owners', 'Core Contributors', 'Freelancers', 'Designers & UI/UX', 'Theme Developers', 'Content Creators & Bloggers', 'Marketers & SEO Experts', 'WooCommerce Builders', 'Beginners & First-Timers', 'Students & Learners', 'Community Organizers', 'Educators & Trainers', 'Potential Clients & Partners', 'Hiring Managers', 'Job Seekers', 'QA & Testers', 'Accessibility Advocates', 'Hosting Providers', 'WordPress Enthusiasts'] as $suggestion)
+                    <option value="{{ $suggestion }}"></option>
+                @endforeach
+            </datalist>
+            <div class="who-suggestions">
+                <span class="who-suggestions__label">Quick suggestions:</span>
+                <div class="who-suggestions__list">
+                    @foreach (['Plugin Developers', 'Agency Owners', 'Core Contributors', 'Designers & UI/UX', 'Freelancers', 'WooCommerce Builders', 'Job Seekers'] as $pill)
+                        <button type="button" class="who-suggestion-pill" data-suggest="{{ $pill }}">+ {{ $pill }}</button>
+                    @endforeach
+                </div>
+            </div>
+            <p class="form-field__hint">Pick from suggestions or type your own. Press Enter, comma or Add to add multiple entries.</p>
+        </div>
         @include('attendee.partials.form-field', ['id' => 'join-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Links to your profiles.wordpress.org page. Pasting the full profile link works too.', 'dataSlot' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 
         <p class="form-error" data-join-error role="alert" hidden></p>

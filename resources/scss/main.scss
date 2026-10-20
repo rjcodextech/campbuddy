@@ -39,7 +39,9 @@
 @use 'components/patterns';
 @use 'components/misc';
 @use 'components/line-icon';
+@use 'components/banner';
 @use 'components/motion';
+@use 'components/legal';
 
 // Last, so its wide-screen overrides win over the base component rules.
 @use 'layout/wide-screens';

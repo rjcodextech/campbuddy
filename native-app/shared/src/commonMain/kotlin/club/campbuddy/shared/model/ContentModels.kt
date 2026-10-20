@@ -68,16 +68,28 @@ data class FreeSteal(
 data class Quest(val id: Long, val title: String, val description: String? = null, val source: String = "event")
 
 @Serializable
+data class RosterLink(val url: String, val type: String? = null)
+
+@Serializable
+data class ContributorLeadDetail(
+    val name: String,
+    val avatar: String? = null,
+    val designation: String? = null,
+    val bio: String? = null,
+    val url: String? = null,
+    val links: List<RosterLink> = emptyList(),
+    @SerialName("roster_id") val rosterId: Long? = null,
+)
+
+@Serializable
 data class ContributorTable(
     val team: String? = null,
     val name: String = "",
     val place: String = "",
     val leads: List<String> = emptyList(),
+    @SerialName("lead_details") val leadDetails: List<ContributorLeadDetail> = emptyList(),
     val note: String? = null,
 )
-
-@Serializable
-data class RosterLink(val url: String, val type: String? = null)
 
 @Serializable
 data class RosterEntry(

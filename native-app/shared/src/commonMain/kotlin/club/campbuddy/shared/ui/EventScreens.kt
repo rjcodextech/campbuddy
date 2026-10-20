@@ -78,7 +78,14 @@ import kotlinx.datetime.TimeZone
 
 /** One WordCamp: the bottom tabs and the Home blocks come from the server config. */
 @Composable
-fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false, startTab: String? = null, startSub: String? = null) {
+fun EventScreen(
+    slug: String,
+    onBack: () -> Unit,
+    startInGuide: Boolean = false,
+    startTab: String? = null,
+    startSub: String? = null,
+    onStaff: (() -> Unit)? = null,
+) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
@@ -104,7 +111,25 @@ fun EventScreen(slug: String, onBack: () -> Unit, startInGuide: Boolean = false,
     PlatformBackHandler(enabled = true, onBack = onBack)
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        TopBar(onGuide = { guide = true }, onSwitch = onBack)
+        TopBar(onGuide = { guide = true }, onSwitch = onBack, onStaff = onStaff)
+        val banner = words.config.banner
+        if (banner != null && selected == "home" && !env.user.isBannerDismissed(banner.dismissKey)) {
+            Box(Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                BannerCard(
+                    banner = banner,
+                    language = words.language,
+                    onAction = {
+                        val action = banner.action
+                        when {
+                            action?.type == "event" && action.slug != null && action.slug != slug -> onBack()
+                            action?.type == "url" && action.url != null -> env.deps.openUrl(action.url)
+                            action?.type == "tab" && action.tab != null -> selected = action.tab
+                        }
+                    },
+                    onDismiss = { env.user.dismissBanner(banner.dismissKey) },
+                )
+            }
+        }
         if (selected == "home" || selected == "my-day") RunningLate(slug)
         Box(Modifier.weight(1f)) {
             when (val e = event) {
@@ -582,10 +607,15 @@ private fun TabIcon(key: String, icon: String, selected: Boolean) {
     }
 }
 
-/** The website's header: the CampBuddy wordmark, the guide and a refresh (32dp peach circles). */
+/** The website's header: the CampBuddy wordmark, staff hub button (if staff), the guide and a refresh. */
 @Composable
-private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit) {
+private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit, onStaff: (() -> Unit)? = null) {
     val brand = LocalBrand.current
+    val env = LocalEnv.current
+    val isStaff = onStaff != null
+    val role = env.repository.organizerRole() ?: "manager"
+    val isAdmin = role == "admin"
+
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -594,7 +624,26 @@ private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(32.dp))
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (isStaff) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(if (isAdmin) brand.primary.copy(alpha = 0.12f) else brand.accent.copy(alpha = 0.22f))
+                        .border(1.dp, if (isAdmin) brand.primary.copy(alpha = 0.40f) else brand.accent.copy(alpha = 0.50f), RoundedCornerShape(50))
+                        .clickable(role = Role.Button, onClickLabel = "Staff Hub", onClick = onStaff)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = if (isAdmin) "👑 Staff" else "👔 Staff",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = if (isAdmin) brand.primary else brand.ink,
+                        ),
+                    )
+                }
+            }
             RoundTool("help-circle", "Guide", onGuide)
             RoundTool("refresh", "Switch WordCamp", onSwitch)
         }

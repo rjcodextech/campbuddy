@@ -71,8 +71,10 @@ class LegalPagesTest extends TestCase
     public function test_guest_cannot_access_admin_legal(): void
     {
         $this->get(route('admin.legal.index'))->assertRedirect(route('login'));
+        $this->get(route('admin.legal.show', 'privacy'))->assertRedirect(route('login'));
         $this->get(route('admin.legal.edit', 'privacy'))->assertRedirect(route('login'));
         $this->put(route('admin.legal.update', 'privacy'), ['title' => 'Test', 'content' => 'Custom'])->assertRedirect(route('login'));
+        $this->post(route('admin.legal.update', 'privacy'), ['title' => 'Test', 'content' => 'Custom'])->assertRedirect(route('login'));
     }
 
     public function test_admin_can_view_legal_index_and_edit_page(): void
@@ -87,11 +89,22 @@ class LegalPagesTest extends TestCase
             ->assertSee('Terms of use')
             ->assertSee('Default template');
 
+        // Direct GET to /admin/legal/{slug} opens the editor instead of 405 Method Not Allowed
+        $this->actingAs($admin)
+            ->get(route('admin.legal.show', 'privacy'))
+            ->assertOk()
+            ->assertSee('Edit Privacy notice');
+
         $this->actingAs($admin)
             ->get(route('admin.legal.edit', 'privacy'))
             ->assertOk()
             ->assertSee('Edit Privacy notice')
             ->assertSee('Save changes');
+
+        // Unknown legal slug returns 404
+        $this->actingAs($admin)
+            ->get('/admin/legal/unknown-slug')
+            ->assertNotFound();
     }
 
     public function test_admin_can_customize_and_reset_legal_document(): void
@@ -123,13 +136,28 @@ class LegalPagesTest extends TestCase
         ]);
         $this->assertStringContainsString('approved by local organizers', $response->json('content'));
 
-        // 4. Reset document back to default
+        // 4. Also verify updating via standard POST without method spoofing works seamlessly
+        $this->actingAs($admin)
+            ->post(route('admin.legal.update', 'terms'), [
+                'title' => 'Custom Terms of Use',
+                'meta_description' => 'Custom terms for our attendees',
+                'content' => '<p>Please abide by the code of conduct.</p>',
+            ])
+            ->assertRedirect(route('admin.legal.index'))
+            ->assertSessionHas('status', 'legal-updated');
+
+        $this->get(route('terms'))
+            ->assertOk()
+            ->assertSee('Custom Terms of Use')
+            ->assertSee('Please abide by the code of conduct.', false);
+
+        // 5. Reset document back to default
         $this->actingAs($admin)
             ->post(route('admin.legal.reset', 'privacy'))
             ->assertRedirect(route('admin.legal.index'))
             ->assertSessionHas('status', 'legal-reset');
 
-        // 5. Verify restored default
+        // 6. Verify restored default
         $this->get(route('privacy'))
             ->assertOk()
             ->assertSee('Privacy notice')

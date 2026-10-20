@@ -155,4 +155,141 @@ class OrganizerApiTest extends TestCase
         $this->postJson("{$base}/clear", [], $headers)->assertNoContent();
         $this->getJson($base, $headers)->assertJsonPath('data.active', []);
     }
+
+    public function test_overview_returns_pulse_counts_and_info(): void
+    {
+        $manager = $this->manager();
+        $headers = $this->bearer('manager', $manager->id);
+
+        $res = $this->getJson("/api/v1/app/organizer/events/{$this->mine->id}/overview", $headers)
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    'id', 'slug', 'name', 'status', 'is_visible', 'timezone',
+                    'counts' => ['roster', 'discovery', 'sessions', 'speakers', 'sponsors', 'tables', 'open_reports'],
+                    'delay', 'info', 'memories',
+                ]
+            ]);
+
+        $this->assertSame($this->mine->id, $res->json('data.id'));
+        $this->assertSame('wordcamp-mine', $res->json('data.slug'));
+
+        // Another event manager cannot access
+        $this->getJson("/api/v1/app/organizer/events/{$this->theirs->id}/overview", $headers)->assertNotFound();
+    }
+
+    public function test_update_info_updates_event_info_and_records_activity(): void
+    {
+        $manager = $this->manager();
+        $headers = $this->bearer('manager', $manager->id);
+
+        $payload = [
+            'wifi' => 'SSID: EventWifi, Pass: secret123',
+            'venue' => 'Main Auditorium, Hall 2',
+            'emergency_contact' => '+91-9876543210',
+        ];
+
+        $res = $this->postJson("/api/v1/app/organizer/events/{$this->mine->id}/info", $payload, $headers)
+            ->assertOk();
+
+        $this->assertSame('SSID: EventWifi, Pass: secret123', $res->json('data.wifi'));
+        $this->assertSame('Main Auditorium, Hall 2', $res->json('data.venue'));
+
+        $this->assertDatabaseHas('event_manager_changes', [
+            'event_id' => $this->mine->id,
+            'event_manager_id' => $manager->id,
+            'section' => 'information',
+            'action' => 'updated',
+        ]);
+    }
+
+    public function test_memories_can_be_updated_and_notified(): void
+    {
+        $manager = $this->manager();
+        $headers = $this->bearer('manager', $manager->id);
+
+        \App\Models\PushSubscription::create([
+            'event_id' => $this->mine->id,
+            'device_id' => 'device-123',
+            'endpoint' => 'https://push.example.com/123',
+            'p256dh_key' => 'key',
+            'auth_key' => 'auth',
+        ]);
+
+        $update = $this->postJson("/api/v1/app/organizer/events/{$this->mine->id}/memories", [
+            'photo_album_url' => 'https://photos.google.com/album/test12345',
+            'wordpress_tv_url' => 'https://wordpress.tv/event/wordcamp-mine-2026/',
+        ], $headers)->assertOk();
+
+        $this->assertSame('https://photos.google.com/album/test12345', $update->json('data.photo_album_url'));
+        $this->assertSame('https://wordpress.tv/event/wordcamp-mine-2026/', $update->json('data.wordpress_tv_url'));
+
+        // Test notify memories
+        $notify = $this->postJson("/api/v1/app/organizer/events/{$this->mine->id}/memories/notify/photos", [], $headers)
+            ->assertOk();
+
+        $this->assertTrue($notify->json('data.sent'));
+        $this->assertDatabaseHas('event_manager_changes', [
+            'event_id' => $this->mine->id,
+            'event_manager_id' => $manager->id,
+            'section' => 'memories',
+            'action' => 'notified',
+        ]);
+    }
+
+    public function test_attendees_can_be_searched_and_roles_assigned(): void
+    {
+        $manager = $this->manager();
+        $headers = $this->bearer('manager', $manager->id);
+
+        $entry1 = \App\Models\AttendeeRoster::create([
+            'event_id' => $this->mine->id,
+            'name' => 'Rahul Sharma',
+            'gravatar_url' => 'https://example.com/avatar1.jpg',
+            'content_hash' => 'hash1',
+            'is_suppressed' => false,
+        ]);
+        $entry2 = \App\Models\AttendeeRoster::create([
+            'event_id' => $this->mine->id,
+            'name' => 'Priya Patel',
+            'gravatar_url' => 'https://example.com/avatar2.jpg',
+            'content_hash' => 'hash2',
+            'is_suppressed' => false,
+        ]);
+
+        // Search
+        $list = $this->getJson("/api/v1/app/organizer/events/{$this->mine->id}/attendees?q=Rahul", $headers)
+            ->assertOk()
+            ->json('data');
+
+        $this->assertCount(1, $list);
+        $this->assertSame('Rahul Sharma', $list[0]['name']);
+        $this->assertSame([], $list[0]['roles']);
+
+        // Assign role
+        $roleRes = $this->postJson("/api/v1/app/organizer/events/{$this->mine->id}/attendees/{$entry1->id}/roles", [
+            'roles' => ['volunteer', 'table_lead'],
+        ], $headers)->assertOk();
+
+        $this->assertEqualsCanonicalizing(['volunteer', 'table_lead'], $roleRes->json('data.roles'));
+
+        $this->assertDatabaseHas('roster_marks', [
+            'event_id' => $this->mine->id,
+            'person_key' => \App\Support\RosterMarks::keyFor($entry1),
+            'role' => 'volunteer',
+            'action' => 'add',
+        ]);
+        $this->assertDatabaseHas('roster_marks', [
+            'event_id' => $this->mine->id,
+            'person_key' => \App\Support\RosterMarks::keyFor($entry1),
+            'role' => 'table_lead',
+            'action' => 'add',
+        ]);
+        $this->assertDatabaseHas('event_manager_changes', [
+            'event_id' => $this->mine->id,
+            'event_manager_id' => $manager->id,
+            'section' => 'attendees',
+            'action' => 'roles',
+        ]);
+    }
 }

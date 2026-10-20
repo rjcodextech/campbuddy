@@ -53,6 +53,14 @@ class LegalDocumentController extends Controller
     }
 
     /**
+     * Show the editor for direct document URLs.
+     */
+    public function show(string $slug): View
+    {
+        return $this->edit($slug);
+    }
+
+    /**
      * Show the editor for a specific legal document.
      */
     public function edit(string $slug): View
@@ -61,12 +69,14 @@ class LegalDocumentController extends Controller
 
         $document = LegalDocument::forSlug($slug);
         $defaultMeta = LegalDocument::defaultMeta($slug);
+        $defaultContent = LegalDocument::defaultContent($slug);
 
         return view('admin.legal.edit', [
             'slug' => $slug,
             'docMeta' => $this->supported[$slug],
             'document' => $document,
             'defaultMeta' => $defaultMeta,
+            'defaultContent' => $defaultContent,
         ]);
     }
 

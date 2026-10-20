@@ -10,6 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.runtime.setValue
 import club.campbuddy.shared.App
 import club.campbuddy.shared.AppDeps
@@ -113,6 +114,7 @@ class MainActivity : ComponentActivity() {
                     shareImage = cardExport::share,
                     saveImage = cardExport::save,
                     shareFile = cardExport::shareFile,
+                    encodePng = { image -> java.io.ByteArrayOutputStream().also { image.asAndroidBitmap().compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }.toByteArray() },
                     makePdf = AndroidDayPdf::render,
                     openInApp = { url ->
                         val tab = androidx.browser.customtabs.CustomTabsIntent.Builder()
