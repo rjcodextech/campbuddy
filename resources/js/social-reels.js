@@ -9,6 +9,8 @@
 // an end card (the event's QR in CampBuddy, WPSimplified's credit). It follows
 // the event's look: its colours, fonts, pattern and skyline (social-kit.js).
 // Nothing is ever cropped: photos, cards and artwork are drawn whole.
+// Every word, QR and logo stays inside Instagram's safe zone (SAFE), the first
+// frame already shows the event, and no word is under 34 px (docs spec/25).
 //
 // No two reels of an event look or sound alike: each gets its own look from
 // its place in the list (lookFor): background, particles, transitions, how
@@ -36,6 +38,12 @@ export const MIN_SECONDS = 30;
 // More people than this and a reel shows them six at a time instead of one by one.
 const ONE_BY_ONE = 6;
 const GRID = 6;
+// Instagram's own buttons and words cover the top, the foot and a rail on the
+// right (the Reels mock-ups the owner collected): every word, QR and logo stays
+// in this box. Backgrounds, art and particles still fill the whole frame.
+const SAFE = { top: 220, bottom: 1500, left: 80, right: 920 };
+// Centred lines stay clear of the right rail: as wide as the box allows either side of the middle.
+const TEXT_W = 2 * (SAFE.right - W / 2);
 
 const GROUPS = [
   ['organizer', 'Organizers', 'warm'],
@@ -91,7 +99,7 @@ function fitAll(ctx, text, maxWidth, size, min, maxLines, weight, family) {
 }
 
 /** Centred lines; each rises into place a little after the one before. Returns the y under the last line. */
-function risingLines(ctx, fit, y, color, t, start, { weight = 800, family, lh = 1.12, align = 'center', x = W / 2, stagger = 0.08, maxWidth = W - 120 } = {}) {
+function risingLines(ctx, fit, y, color, t, start, { weight = 800, family, lh = 1.12, align = 'center', x = W / 2, stagger = 0.08, maxWidth = TEXT_W } = {}) {
   ctx.textAlign = align;
   ctx.fillStyle = color;
   fit.lines.forEach((line, i) => {
@@ -110,7 +118,7 @@ function pillAt(ctx, text, cx, y, bg, fg, size = 34, p = 1) {
   const { text: font } = T.fonts();
   ctx.save();
   ctx.font = `800 ${size}px ${font}`;
-  const w = Math.min(W - 120, ctx.measureText(text).width + size * 1.4);
+  const w = Math.min(TEXT_W, ctx.measureText(text).width + size * 1.4);
   const h = size * 1.9;
   ctx.globalAlpha *= p;
   ctx.translate(cx, y + h / 2);
@@ -276,24 +284,28 @@ function backdropShapes(ctx, time, reel, kind) {
   ctx.restore();
 }
 
+// The header row (logo, label), just under Instagram's top bar; a scene's content starts under it.
+const HEADER_Y = SAFE.top - 20;
+const CONTENT_Y = HEADER_Y + 190;
+
 function header(ctx, reel, t, label) {
   const p = ease(span(t, 0, 0.5));
   // Some reels keep the logo on the right and the label on the left.
   const mirror = reel.look?.mirror ?? false;
   ctx.save();
   ctx.globalAlpha *= p;
-  if (reel.logo) logoCard(ctx, reel, mirror ? W - 64 - 170 : 64, 72, 170, 30);
+  if (reel.logo) logoCard(ctx, reel, mirror ? SAFE.right - 150 : SAFE.left, HEADER_Y, 150, 28);
   if (label) {
     const { text } = T.fonts();
-    ctx.font = `800 30px ${text}`;
-    const w = ctx.measureText(label).width + 48;
-    const x = mirror ? 64 : W - 64 - w;
+    ctx.font = `800 34px ${text}`;
+    const w = ctx.measureText(label).width + 52;
+    const x = mirror ? SAFE.left : SAFE.right - w;
     ctx.fillStyle = reel.pal.primary;
-    T.roundRect(ctx, x, 126, w, 62, 31);
+    T.roundRect(ctx, x, HEADER_Y + 42, w, 66, 33);
     ctx.fill();
     ctx.fillStyle = reel.pal.onPrimary;
     ctx.textAlign = 'center';
-    ctx.fillText(label, x + w / 2, 168);
+    ctx.fillText(label, x + w / 2, HEADER_Y + 87);
     ctx.textAlign = 'left';
   }
   ctx.restore();
@@ -349,30 +361,30 @@ function introScene(kicker) {
       ctx.save();
       leaving(ctx, t, dur);
 
-      // The event's logo pops in.
-      const pop = back(span(t, 0.05, 0.6));
+      // The event's logo settles (already there on the first frame: it is the reel's cover).
+      const pop = back(span(t, -0.4, 0.6));
       ctx.save();
       ctx.globalAlpha *= clamp(pop);
-      ctx.translate(W / 2, 520);
+      ctx.translate(W / 2, 500);
       ctx.scale(0.4 + 0.6 * pop, 0.4 + 0.6 * pop);
-      if (reel.logo) logoCard(ctx, reel, -190, -190, 380, 56);
+      if (reel.logo) logoCard(ctx, reel, -180, -180, 360, 54);
       ctx.restore();
 
-      let y = pillAt(ctx, kicker, W / 2, 780, pal.primary, pal.onPrimary, 36, ease(span(t, 0.3, 0.4)));
-      const name = fitAll(ctx, kit.event.name, W - 160, 124, 70, 3, 800, head);
-      y = risingLines(ctx, name, y + 20, pal.ink, t, 0.45, { family: head });
+      let y = pillAt(ctx, kicker, W / 2, 740, pal.primary, pal.onPrimary, 38, ease(span(t, -0.2, 0.4)));
+      const name = fitAll(ctx, kit.event.name, TEXT_W, 124, 70, 3, 800, head);
+      y = risingLines(ctx, name, y + 20, pal.ink, t, -0.35, { family: head });
       ctx.save();
-      ctx.globalAlpha *= ease(span(t, 0.9, 0.5));
+      ctx.globalAlpha *= ease(span(t, 0.25, 0.5));
       ctx.fillStyle = T.mix(pal.ink, pal.paper, 0.3);
       ctx.textAlign = 'center';
       const line = [kit.event.dates, kit.event.place].filter(Boolean).join(' · ');
-      const sub = fitAll(ctx, line, W - 200, 46, 30, 2, 600, text);
+      const sub = fitAll(ctx, line, TEXT_W, 46, 34, 2, 600, text);
       ctx.font = `600 ${sub.size}px ${text}`;
       sub.lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 70 + i * sub.size * 1.25));
       ctx.restore();
 
-      // "CampBuddy × WPSimplified", small, at the foot.
-      partnersBadge(ctx, reel, H - 330, ease(span(t, 1.1, 0.5)));
+      // "CampBuddy × WPSimplified", under the words, inside the safe zone.
+      partnersBadge(ctx, reel, badgeY(y + 70 + sub.lines.length * sub.size * 1.25), ease(span(t, 0.5, 0.5)));
       ctx.restore();
     },
   };
@@ -390,48 +402,56 @@ function introLayout(ctx, t, dur, reel, kicker, layout) {
   ctx.save();
   leaving(ctx, t, dur);
 
+  let bottom;
   if (layout === 'band') {
-    const drop = ease(span(t, 0, 0.6));
+    // The band is already down on the first frame; the logo settles on it.
+    const drop = ease(span(t, -0.4, 0.6));
     ctx.fillStyle = pal.primary;
-    ctx.fillRect(0, 0, W, 860 * drop);
+    ctx.fillRect(0, 0, W, 720 * drop);
     ctx.fillStyle = pal.secondary;
-    ctx.fillRect(0, 860 * drop, W * ease(span(t, 0.3, 0.5)), 18);
-    const pop = back(span(t, 0.25, 0.6));
+    ctx.fillRect(0, 720 * drop, W * ease(span(t, -0.2, 0.5)), 18);
+    const pop = back(span(t, -0.3, 0.6));
     ctx.save();
     ctx.globalAlpha *= clamp(pop);
-    ctx.translate(W / 2, 470);
+    ctx.translate(W / 2, 450);
     ctx.rotate((1 - clamp(pop)) * -0.2);
     ctx.scale(0.4 + 0.6 * pop, 0.4 + 0.6 * pop);
-    if (reel.logo) logoCard(ctx, reel, -170, -170, 340, 50);
+    if (reel.logo) logoCard(ctx, reel, -160, -160, 320, 48);
     ctx.restore();
-    let y = pillAt(ctx, kicker, W / 2, 940, pal.secondary, pal.onSecondary, 36, ease(span(t, 0.45, 0.4)));
-    const name = fitAll(ctx, kit.event.name, W - 160, 124, 70, 3, 900, head);
-    y = risingLines(ctx, name, y + 20, pal.ink, t, 0.55, { weight: 900, family: head });
-    const sub = fitAll(ctx, line, W - 200, 46, 30, 2, 600, text);
-    risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.9, { weight: 600, family: text, lh: 1.25 });
+    let y = pillAt(ctx, kicker, W / 2, 780, pal.secondary, pal.onSecondary, 38, ease(span(t, -0.1, 0.4)));
+    const name = fitAll(ctx, kit.event.name, TEXT_W, 124, 70, 3, 900, head);
+    y = risingLines(ctx, name, y + 20, pal.ink, t, -0.3, { weight: 900, family: head });
+    const sub = fitAll(ctx, line, TEXT_W, 46, 34, 2, 600, text);
+    bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25 });
   } else {
     // left
-    const x = 90;
-    const slide = ease(span(t, 0.05, 0.6));
+    const x = SAFE.left + 10;
+    const width = SAFE.right - (x + 44);
+    const slide = ease(span(t, -0.45, 0.6));
     ctx.save();
     ctx.globalAlpha *= slide;
     ctx.translate(-(1 - slide) * 300, 0);
     if (reel.logo) logoCard(ctx, reel, x, 300, 300, 46);
     ctx.fillStyle = pal.primary;
-    ctx.fillRect(x, 660, 14, 640 * ease(span(t, 0.3, 0.8)));
+    ctx.fillRect(x, 660, 14, 640 * ease(span(t, 0, 0.8)));
     ctx.restore();
     const { text: font } = T.fonts();
-    ctx.font = `800 36px ${font}`;
-    const pw = Math.min(W - 120, ctx.measureText(kicker).width + 36 * 1.4);
-    let y = pillAt(ctx, kicker, x + 44 + pw / 2, 680, pal.primary, pal.onPrimary, 36, ease(span(t, 0.35, 0.4)));
-    const name = fitAll(ctx, kit.event.name, W - x - 160, 132, 70, 4, 900, head);
-    y = risingLines(ctx, name, y + 10, pal.ink, t, 0.45, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: W - x - 120 });
-    const sub = fitAll(ctx, line, W - x - 160, 44, 30, 3, 600, text);
-    risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.9, { weight: 600, family: text, lh: 1.25, align: 'left', x: x + 44, maxWidth: W - x - 120 });
+    ctx.font = `800 38px ${font}`;
+    const pw = Math.min(width, ctx.measureText(kicker).width + 38 * 1.4);
+    let y = pillAt(ctx, kicker, x + 44 + pw / 2, 680, pal.primary, pal.onPrimary, 38, ease(span(t, -0.1, 0.4)));
+    const name = fitAll(ctx, kit.event.name, width, 132, 70, 4, 900, head);
+    y = risingLines(ctx, name, y + 10, pal.ink, t, -0.3, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: width });
+    const sub = fitAll(ctx, line, width, 44, 34, 3, 600, text);
+    bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25, align: 'left', x: x + 44, maxWidth: width });
   }
 
-  partnersBadge(ctx, reel, H - 330, ease(span(t, 1.1, 0.5)));
+  partnersBadge(ctx, reel, badgeY(bottom), ease(span(t, 0.5, 0.5)));
   ctx.restore();
+}
+
+/** Where the "CampBuddy × WPSimplified" badge goes: under the words, never below the safe zone. */
+function badgeY(below) {
+  return Math.min(SAFE.bottom - 120, Math.max(below + 50, SAFE.bottom - 260));
 }
 
 function partnersBadge(ctx, reel, y, p) {
@@ -466,18 +486,19 @@ function cardScene(card, index, total, last) {
     beats: 8,
     stretch: true,
     draw(ctx, t, dur, reel) {
-      const s = 0.84;
+      // As big as the safe zone allows, so the card's own QR stays clear of Instagram's caption.
+      const s = (SAFE.bottom - SAFE.top) / H / 1.03;
       const w = W * s;
       const h = H * s;
       const look = reel.look ?? {};
       const dir = index % 2 ? -(look.side ?? 1) : (look.side ?? 1);
       const out = last ? 0 : ease(span(t, dur - 0.4, 0.4));
-      // Held for a while: it drifts a touch closer over the hold (0.84 → 0.88 of the frame, never past it).
-      const scale = 1 + 0.05 * ease(span(t, 0.8, Math.max(1, dur - 1.2)));
+      // Held for a while: it drifts a touch closer over the hold (never past the safe zone).
+      const scale = 1 + 0.03 * ease(span(t, 0.8, Math.max(1, dur - 1.2)));
       ctx.save();
       ctx.globalAlpha = clamp(span(t, 0, 0.25)) * (last ? 1 - span(t, dur - 0.3, 0.3) : 1);
       // It leaves to one side; the next card comes in from the other.
-      ctx.translate(W / 2 + out * 1300 * dir, H / 2 + 34 + Math.sin(t * 1.6) * 6);
+      ctx.translate(W / 2 + out * 1300 * dir, (SAFE.top + SAFE.bottom) / 2 + Math.sin(t * 1.6) * 4);
       ctx.rotate(out * 6 * dir * (Math.PI / 180));
       entrance(ctx, (look.motion ?? 'pop') === 'pop' ? 'rise' : look.motion, span(t, 0, 0.75), dir);
       ctx.scale(scale, scale);
@@ -511,7 +532,7 @@ function cardScene(card, index, total, last) {
         for (let i = 0; i < total; i++) {
           ctx.fillStyle = i === index ? reel.pal.primary : T.mix(reel.pal.primary, reel.pal.paper, 0.7);
           ctx.beginPath();
-          ctx.arc(W / 2 + (i - (total - 1) / 2) * 34, H - 52, i === index ? 11 : 8, 0, Math.PI * 2);
+          ctx.arc(W / 2 + (i - (total - 1) / 2) * 34, SAFE.bottom + 40, i === index ? 11 : 8, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.restore();
@@ -534,12 +555,12 @@ function groupIntroScene(role, title, line, count) {
       const sweep = ease(span(t, 0.05, 0.55));
       ctx.fillStyle = tone;
       ctx.fillRect(0, 640, W * sweep, 520);
-      const titleFit = fitAll(ctx, title, W - 160, 140, 72, 2, 900, head);
+      const titleFit = fitAll(ctx, title, TEXT_W, 140, 72, 2, 900, head);
       let y = risingLines(ctx, titleFit, 640 + (520 - titleFit.lines.length * titleFit.size * 1.1) / 2 - 20, T.textOn(tone, pal.ink, pal.paper), t, 0.3, { weight: 900, family: head, lh: 1.1 });
       y = 1200;
-      const lineFit = fitAll(ctx, line, W - 200, 54, 32, 3, 700, text);
+      const lineFit = fitAll(ctx, line, TEXT_W, 54, 34, 3, 700, text);
       y = risingLines(ctx, lineFit, y, pal.ink, t, 0.7, { weight: 700, family: text, lh: 1.25 });
-      pillAt(ctx, count, W / 2, y + 50, pal.secondary, pal.onSecondary, 36, ease(span(t, 1.0, 0.4)));
+      pillAt(ctx, count, W / 2, Math.min(y + 50, SAFE.bottom - 72), pal.secondary, pal.onSecondary, 36, ease(span(t, 1.0, 0.4)));
       ctx.restore();
     },
   };
@@ -558,34 +579,33 @@ function personScene(person, index, total, long, role) {
       header(ctx, reel, t, `${index + 1} / ${total}`);
       leaving(ctx, t, dur);
 
-      const size = long ? 600 : 640;
       const look = reel.look ?? {};
+      // The words first, measured, so the photo takes what's left of the safe zone.
+      const name = fitAll(ctx, person.name, TEXT_W, 96, 54, 2, 800, head);
+      const roles = (person.role_labels ?? []).join(' · ');
+      const detail = person.talk ? `“${person.talk}”` : [person.card?.role, person.card?.company].filter(Boolean).join(', ');
+      const fit = detail ? fitAll(ctx, detail, TEXT_W, person.talk ? 56 : 46, 34, person.talk ? 4 : 2, person.talk ? 700 : 600, text) : null;
+      const cta = fitAll(ctx, T.personCta(person, kit), TEXT_W, 40, 34, 2, 700, text);
+      const wordsH = name.lines.length * name.size * 1.12 + (roles ? 30 + 34 * 1.9 : 0) + (fit ? 30 + fit.lines.length * fit.size * 1.25 : 0) + 50 + cta.lines.length * cta.size * 1.25;
+      const size = Math.max(320, Math.min(long ? 600 : 640, SAFE.bottom - CONTENT_Y - 100 - wordsH));
       ctx.save();
       ctx.globalAlpha *= clamp(span(t, 0, 0.2));
-      ctx.translate(W / 2, 320 + size / 2);
+      ctx.translate(W / 2, CONTENT_Y + size / 2);
       entrance(ctx, look.motion, span(t, 0, 0.6), index % 2 ? -1 : 1);
       photoFrame(ctx, img, person.name, -size / 2, -size / 2, size, tone, T.mix(tone, pal.paper, 0.82), tone, span(t, 0.1, 0.6), look.frame);
       ctx.restore();
 
-      let y = 320 + size + 40;
-      const name = fitAll(ctx, person.name, W - 140, 96, 54, 2, 800, head);
+      let y = CONTENT_Y + size + 40;
       y = risingLines(ctx, name, y, pal.ink, t, 0.35, { family: head });
-      const roles = (person.role_labels ?? []).join(' · ');
       if (roles) y = pillAt(ctx, roles, W / 2, y + 30, tone, T.textOn(tone, pal.ink, pal.paper), 34, ease(span(t, 0.6, 0.4)));
-
-      const detail = person.talk ? `“${person.talk}”` : [person.card?.role, person.card?.company].filter(Boolean).join(', ');
-      if (detail) {
-        const fit = fitAll(ctx, detail, W - 160, person.talk ? 60 : 46, 30, person.talk ? 5 : 2, person.talk ? 700 : 600, text);
-        y = risingLines(ctx, fit, y + 30, T.mix(pal.ink, pal.paper, person.talk ? 0 : 0.3), t, 0.8, { weight: person.talk ? 700 : 600, family: text, lh: 1.25, stagger: 0.06 });
-      }
+      if (fit) y = risingLines(ctx, fit, y + 30, T.mix(pal.ink, pal.paper, person.talk ? 0 : 0.3), t, 0.8, { weight: person.talk ? 700 : 600, family: text, lh: 1.25, stagger: 0.06 });
 
       ctx.save();
       ctx.globalAlpha *= ease(span(t, 1.1, 0.4));
       ctx.fillStyle = tone;
       ctx.textAlign = 'center';
-      const cta = fitAll(ctx, T.personCta(person, kit), W - 200, 40, 26, 2, 700, text);
       ctx.font = `700 ${cta.size}px ${text}`;
-      cta.lines.forEach((l, i) => ctx.fillText(l, W / 2, Math.max(y + 90, H - 300) + i * cta.size * 1.25));
+      cta.lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 50 + (i + 0.8) * cta.size * 1.25, TEXT_W));
       ctx.restore();
       ctx.restore();
     },
@@ -603,11 +623,11 @@ function gridScene(people, first, total, role) {
       header(ctx, reel, t, `${first + 1}–${first + people.length} of ${total}`);
       leaving(ctx, t, dur);
       const cols = 2;
-      const cellW = 460;
-      const photo = 290;
-      const rowH = 500;
+      const cellW = 360;
+      const photo = 240;
+      const rowH = 370;
       const rows = Math.ceil(people.length / cols);
-      const top = 300 + ((3 - rows) * rowH) / 2;
+      const top = CONTENT_Y - 60 + ((3 - rows) * rowH) / 2;
       people.forEach((person, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
@@ -626,7 +646,7 @@ function gridScene(people, first, total, role) {
         ctx.globalAlpha *= ease(span(t, 0.3 + i * 0.12, 0.4));
         ctx.fillStyle = pal.ink;
         ctx.textAlign = 'center';
-        const fit = fitAll(ctx, person.name, cellW - 20, 42, 26, 2, 800, head);
+        const fit = fitAll(ctx, person.name, cellW - 20, 42, 34, 2, 800, head);
         ctx.font = `800 ${fit.size}px ${head}`;
         fit.lines.forEach((l, k) => ctx.fillText(l, cx, y + photo + 28 + (k + 1) * fit.size * 1.1, cellW - 20));
         ctx.restore();
@@ -647,11 +667,11 @@ function featuresScene(features) {
       ctx.save();
       header(ctx, reel, t, 'Free · no sign-up');
       leaving(ctx, t, dur);
-      const title = fitAll(ctx, `Your ${kit.short ?? kit.event.name} companion`, W - 160, 104, 60, 3, 800, head);
-      const rowH = 214;
-      // The title and the four lines as one block, in the middle of the space between the header and the foot.
+      const title = fitAll(ctx, `Your ${kit.short ?? kit.event.name} companion`, TEXT_W, 104, 60, 3, 800, head);
+      const rowH = 190;
+      // The title and the four lines as one block, in the middle of the safe zone under the header.
       const block = title.lines.length * title.size * 1.12 + 80 + features.length * rowH;
-      let y = risingLines(ctx, title, Math.max(270, (H - 160 - block) / 2), pal.ink, t, 0.1, { family: head });
+      let y = risingLines(ctx, title, CONTENT_Y - 60 + Math.max(0, (SAFE.bottom - CONTENT_Y + 60 - block) / 2), pal.ink, t, 0.1, { family: head });
       y += 80;
       features.forEach((line, i) => {
         const p = back(span(t, 0.5 + i * 0.28, 0.5));
@@ -663,7 +683,7 @@ function featuresScene(features) {
         ctx.shadowColor = 'rgba(0,0,0,0.08)';
         ctx.shadowBlur = 24;
         ctx.fillStyle = '#ffffff';
-        T.roundRect(ctx, 80, top, W - 160, rowH - 38, 34);
+        T.roundRect(ctx, SAFE.left, top, SAFE.right - SAFE.left, rowH - 38, 34);
         ctx.fill();
         ctx.shadowBlur = 0;
         ctx.fillStyle = pal.primary;
@@ -681,7 +701,7 @@ function featuresScene(features) {
         ctx.lineTo(144 + 13 * Math.min(1, tick * 2), mid + 14 * Math.min(1, tick * 2));
         if (tick > 0.5) ctx.lineTo(157 + 26 * (tick - 0.5) * 2, mid + 14 - 30 * (tick - 0.5) * 2);
         ctx.stroke();
-        const fit = fitAll(ctx, line, W - 160 - 200, 52, 32, 2, 700, text);
+        const fit = fitAll(ctx, line, SAFE.right - 40 - 232, 50, 34, 2, 700, text);
         ctx.fillStyle = pal.ink;
         ctx.font = `700 ${fit.size}px ${text}`;
         const lines = fit.lines.length * fit.size * 1.2;
@@ -704,10 +724,10 @@ function howScene() {
       ctx.save();
       header(ctx, reel, t, '3 steps');
       leaving(ctx, t, dur);
-      const title = fitAll(ctx, 'Ready in a minute', W - 160, 112, 60, 2, 800, head);
-      const stepH = 290;
+      const title = fitAll(ctx, 'Ready in a minute', TEXT_W, 112, 60, 2, 800, head);
+      const stepH = 250;
       const block = title.lines.length * title.size * 1.12 + 90 + 3 * stepH + 120;
-      let y = risingLines(ctx, title, Math.max(270, (H - 160 - block) / 2), pal.ink, t, 0.1, { family: head });
+      let y = risingLines(ctx, title, CONTENT_Y - 60 + Math.max(0, (SAFE.bottom - CONTENT_Y + 60 - block) / 2), pal.ink, t, 0.1, { family: head });
       const steps = [
         'Scan the QR, or open campbuddy.club',
         `Pick ${kit.short ?? kit.event.name}`,
@@ -728,7 +748,7 @@ function howScene() {
           ctx.lineCap = 'round';
           ctx.beginPath();
           ctx.moveTo(170, top + 160);
-          ctx.lineTo(170, top + 160 + (stepH - 180) * ease(span(t, start + 0.3, 0.4)));
+          ctx.lineTo(170, top + 160 + (stepH - 170) * ease(span(t, start + 0.3, 0.4)));
           ctx.stroke();
           ctx.setLineDash([]);
         }
@@ -744,7 +764,7 @@ function howScene() {
         ctx.textAlign = 'center';
         ctx.fillText(String(i + 1), 0, 26);
         ctx.restore();
-        const fit = fitAll(ctx, step, W - 380, 58, 34, 3, 700, text);
+        const fit = fitAll(ctx, step, SAFE.right - 290, 54, 34, 3, 700, text);
         ctx.fillStyle = pal.ink;
         ctx.font = `700 ${fit.size}px ${text}`;
         const lines = fit.lines.length * fit.size * 1.2;
@@ -931,50 +951,50 @@ function endScene(content) {
       ctx.save();
       if (reel.campbuddy) {
         const p = ease(span(t, 0.25, 0.4));
-        const h = 92;
+        const h = 80;
         const w = (reel.campbuddy.width / reel.campbuddy.height) * h;
         ctx.globalAlpha = p;
         ctx.fillStyle = '#ffffff';
-        T.roundRect(ctx, (W - w - 60) / 2, 150, w + 60, h + 40, 28);
+        T.roundRect(ctx, (W - w - 60) / 2, SAFE.top, w + 60, h + 40, 28);
         ctx.fill();
-        ctx.drawImage(reel.campbuddy, (W - w) / 2, 170, w, h);
+        ctx.drawImage(reel.campbuddy, (W - w) / 2, SAFE.top + 20, w, h);
         ctx.globalAlpha = 1;
       }
-      const head1 = fitAll(ctx, 'Find it all in CampBuddy', W - 160, 92, 56, 2, 900, head);
-      let y = risingLines(ctx, head1, 340, on, t, 0.35, { weight: 900, family: head });
-      const sub = fitAll(ctx, `${kit.event.name}: the schedule, people to meet and reminders. Free, no sign-up.`, W - 200, 44, 28, 3, 600, text);
+      const head1 = fitAll(ctx, 'Find it all in CampBuddy', TEXT_W, 88, 56, 2, 900, head);
+      let y = risingLines(ctx, head1, SAFE.top + 140, on, t, 0.35, { weight: 900, family: head });
+      const sub = fitAll(ctx, `${kit.event.name}: the schedule, people to meet and reminders. Free, no sign-up.`, TEXT_W, 40, 34, 2, 600, text);
       y = risingLines(ctx, sub, y + 10, on, t, 0.55, { weight: 600, family: text, lh: 1.3 });
 
       // The QR pops in, whole, on its light tile.
       const q = back(span(t, 0.6, 0.6));
-      const qs = 480;
+      const qs = 420;
       // A ring breathes around the QR, so the eye goes to it.
       const ring = (Math.sin(t * 4) + 1) / 2;
       ctx.save();
       ctx.globalAlpha *= clamp(span(t, 1.0, 0.3)) * (0.25 + 0.35 * ring);
       ctx.strokeStyle = pal.secondary;
       ctx.lineWidth = 10;
-      T.roundRect(ctx, (W - qs) / 2 - 24 - ring * 10, y + 60 - 24 - ring * 10, qs + 48 + ring * 20, qs + 48 + ring * 20, 48);
+      T.roundRect(ctx, (W - qs) / 2 - 24 - ring * 10, y + 40 - 24 - ring * 10, qs + 48 + ring * 20, qs + 48 + ring * 20, 48);
       ctx.stroke();
       ctx.restore();
       ctx.save();
       ctx.globalAlpha *= clamp(span(t, 0.6, 0.2));
-      ctx.translate(W / 2, y + 60 + qs / 2);
+      ctx.translate(W / 2, y + 40 + qs / 2);
       ctx.scale(0.5 + 0.5 * q, 0.5 + 0.5 * q);
       T.drawQr(ctx, qrLink(kit.event.qr, `reel-${content}`), -qs / 2, -qs / 2, qs, pal.ink, pal.paper);
       ctx.restore();
-      y += 60 + qs + 70;
+      y += 40 + qs + 50;
       ctx.save();
       ctx.globalAlpha *= ease(span(t, 0.9, 0.4));
       ctx.fillStyle = on;
       ctx.textAlign = 'center';
       ctx.font = `800 44px ${text}`;
-      ctx.fillText('Scan, or open campbuddy.club', W / 2, y + 30);
+      ctx.fillText('Scan, or open campbuddy.club', W / 2, y + 30, TEXT_W);
       const tags = (kit.event.hashtags ?? '').trim();
       if (tags) {
         ctx.font = `600 34px ${text}`;
         ctx.globalAlpha *= 0.85;
-        ctx.fillText(tags, W / 2, y + 86, W - 160);
+        ctx.fillText(tags, W / 2, y + 80, TEXT_W);
       }
       ctx.restore();
 
@@ -983,21 +1003,21 @@ function endScene(content) {
       if (c > 0) {
         ctx.save();
         ctx.globalAlpha = c;
-        const bw = 760;
-        const bh = 230;
+        const bw = TEXT_W;
+        const bh = 170;
         const bx = (W - bw) / 2;
-        const by = H - 330 + (1 - c) * 30;
+        const by = Math.min(SAFE.bottom - bh, y + 110) + (1 - c) * 30;
         ctx.fillStyle = '#ffffff';
         T.roundRect(ctx, bx, by, bw, bh, 34);
         ctx.fill();
         ctx.fillStyle = '#3a3a3a';
         ctx.textAlign = 'center';
-        ctx.font = `600 32px ${text}`;
-        ctx.fillText('Made with ♥ for the WordPress community by', W / 2, by + 62);
+        ctx.font = `600 34px ${text}`;
+        ctx.fillText('Made with ♥ for the WordPress community by', W / 2, by + 52, bw - 48);
         if (reel.wps) {
-          const lh = 104;
+          const lh = 78;
           const lw = (reel.wps.width / reel.wps.height) * lh;
-          ctx.drawImage(reel.wps, (W - lw) / 2, by + 92, lw, lh);
+          ctx.drawImage(reel.wps, (W - lw) / 2, by + 74, lw, lh);
         }
         ctx.restore();
       }
@@ -1681,4 +1701,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, context: C, tools: T, postContent };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent };

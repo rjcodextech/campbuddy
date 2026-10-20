@@ -60,6 +60,17 @@ test('every mood keeps a steady beat the scenes can be cut to', () => {
   }
 });
 
+test("words stay inside Instagram's safe zone: clear of its top bar, its caption and the right rail", () => {
+  const { SAFE, TEXT_W, badgeY } = _internals;
+  assert.ok(SAFE.top >= 220 && SAFE.bottom <= 1500, 'about 12 % at the top and 20 % at the foot are Instagram’s');
+  assert.ok(SAFE.left >= 80 && SAFE.right <= 920, 'the like / comment / share rail sits right of 920 px');
+  assert.ok(540 + TEXT_W / 2 <= SAFE.right, 'a centred line ends before the rail');
+  for (const below of [600, 1200, 1400, 1700]) {
+    const y = badgeY(below);
+    assert.ok(y >= SAFE.top && y + 120 <= SAFE.bottom, `the partners badge stays in the zone (${below})`);
+  }
+});
+
 test('no reel is shorter than 30 seconds', () => {
   assert.equal(_internals.MIN_SECONDS, 30);
 });

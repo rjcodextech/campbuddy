@@ -61,15 +61,15 @@ function wrap(ctx, text, max) {
   return lines;
 }
 
-/** Lines at the biggest size (down to min) that fit maxLines; smaller still rather than cut. */
+/** Lines at the biggest size (down to min) that fit maxLines; smaller still rather than cut, never under 24 px (docs spec/25). */
 function fit(ctx, text, max, size, min, maxLines, weight) {
-  for (let s = size; s >= 16; s -= 2) {
+  for (let s = size; s >= 24; s -= 2) {
     ctx.font = `${weight} ${s}px ${FONT}`;
     const lines = wrap(ctx, text, max);
     if ((lines.length <= maxLines || s < min) && lines.every((l) => ctx.measureText(l).width <= max)) return { lines, size: s };
   }
-  ctx.font = `${weight} 16px ${FONT}`;
-  return { lines: wrap(ctx, text, max), size: 16 };
+  ctx.font = `${weight} 24px ${FONT}`;
+  return { lines: wrap(ctx, text, max), size: 24 };
 }
 
 function lines(ctx, f, x, y, color, weight, align = 'left', lh = 1.15) {
@@ -106,7 +106,7 @@ function frame(ctx, d, assets, page, total, title) {
   ctx.shadowColor = 'rgba(0,0,0,0.12)';
   ctx.shadowBlur = 24 * SCALE; // shadows don't follow the canvas scale
   ctx.fillStyle = '#ffffff';
-  roundRect(ctx, 72, 72, 150, 150, 28);
+  roundRect(ctx, 80, 72, 150, 150, 28);
   ctx.fill();
   ctx.restore();
   if (assets.logo) contain(ctx, assets.logo, 90, 90, 114, 114);
@@ -128,11 +128,11 @@ function frame(ctx, d, assets, page, total, title) {
     const label = `${page} / ${total}`;
     const w = ctx.measureText(label).width + 40;
     ctx.fillStyle = pal.primary;
-    roundRect(ctx, W - 72 - w, 108, w, 56, 28);
+    roundRect(ctx, W - 80 - w, 108, w, 56, 28);
     ctx.fill();
     ctx.fillStyle = pal.onPrimary;
     ctx.textAlign = 'center';
-    ctx.fillText(label, W - 72 - w / 2, 146);
+    ctx.fillText(label, W - 80 - w / 2, 146);
     ctx.textAlign = 'left';
   }
 
@@ -141,15 +141,15 @@ function frame(ctx, d, assets, page, total, title) {
   ctx.fillStyle = pal.primary;
   ctx.fillRect(0, footY, W, 150);
   ctx.fillStyle = '#ffffff';
-  roundRect(ctx, 72, footY + 34, 300, 82, 18);
+  roundRect(ctx, 80, footY + 34, 300, 82, 18);
   ctx.fill();
   if (assets.campbuddy) contain(ctx, assets.campbuddy, 86, footY + 44, 272, 62);
   ctx.fillStyle = pal.onPrimary;
   ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('campbuddy.club · free, no sign-up', 400, footY + 70, W - 400 - 72);
+  ctx.fillText('campbuddy.club · free, no sign-up', 400, footY + 70, W - 400 - 80);
   ctx.globalAlpha = 0.85;
   ctx.font = `600 24px ${FONT}`;
-  ctx.fillText('Made with ♥ by WPSimplified', 400, footY + 108, W - 400 - 72);
+  ctx.fillText('Made with ♥ by WPSimplified', 400, footY + 108, W - 400 - 80);
   ctx.globalAlpha = 1;
 }
 
@@ -161,7 +161,7 @@ function cover(ctx, d) {
   // The number, huge, in the main colour.
   ctx.fillStyle = pal.primary;
   ctx.font = `900 ${users.value >= 10000 ? 300 : 340}px ${FONT}`;
-  ctx.fillText(big(users.value), 72, y + 330, W - 144);
+  ctx.fillText(big(users.value), 80, y + 330, W - 160);
   y = lines(ctx, fit(ctx, users.label, W - 160, 64, 40, 2, 800), 80, y + 350, pal.ink, 800);
   const pages = d.stats.find((s) => s.key === 'pages');
   if (pages && pages.value >= 3) {
@@ -180,11 +180,11 @@ function tiles(ctx, d) {
   lines(ctx, fit(ctx, 'What people did with it', W - 160, 72, 48, 2, 900), 80, 270, pal.ink, 900);
   const cols = 2;
   const gap = 32;
-  const tw = (W - 144 - gap) / cols;
+  const tw = (W - 160 - gap) / cols;
   const th = 228;
   const top = 400;
   list.forEach((t, i) => {
-    const x = 72 + (i % cols) * (tw + gap);
+    const x = 80 + (i % cols) * (tw + gap);
     const y = top + Math.floor(i / cols) * (th + gap);
     const bg = i % 3 === 0 ? pal.primary : i % 3 === 1 ? pal.secondary : '#ffffff';
     const fg = bg === '#ffffff' ? pal.ink : textOn(bg, pal.ink, pal.paper);
@@ -226,16 +226,16 @@ function daily(ctx, d) {
     ctx.fill();
     if (day.users > 0) {
       ctx.fillStyle = pal.ink;
-      ctx.font = `800 ${bw < 50 ? 22 : 28}px ${FONT}`;
+      ctx.font = `800 ${bw < 50 ? 24 : 28}px ${FONT}`;
       ctx.textAlign = 'center';
       ctx.fillText(big(day.users), x + bw / 2, base - h - 14);
     }
     ctx.fillStyle = mix(pal.ink, pal.paper, on ? 0 : 0.35);
-    ctx.font = `${on ? 800 : 600} ${bw < 50 ? 18 : 22}px ${FONT}`;
+    ctx.font = `${on ? 800 : 600} 24px ${FONT}`;
     ctx.textAlign = 'center';
     const date = new Date(`${day.date}T00:00:00`);
     ctx.fillText(String(date.getDate()), x + bw / 2, base + 34);
-    ctx.fillText(date.toLocaleString('en', { month: 'short' }), x + bw / 2, base + 60);
+    ctx.fillText(date.toLocaleString('en', { month: 'short' }), x + bw / 2, base + 64);
     ctx.textAlign = 'left';
   });
   // Key.
@@ -255,15 +255,15 @@ function talks(ctx, d) {
   let y = 470;
   list.forEach((t, i) => {
     if (y > H - 300) return;
-    const titleFit = fit(ctx, t.title, W - 144 - 98 - 210, 36, 24, 2, 700);
+    const titleFit = fit(ctx, t.title, W - 160 - 98 - 210, 36, 24, 2, 700);
     const h = Math.max(120, titleFit.lines.length * titleFit.size * 1.2 + 70);
     if (y + h > H - 180) return;
     ctx.fillStyle = '#ffffff';
-    roundRect(ctx, 72, y, W - 144, h, 26);
+    roundRect(ctx, 80, y, W - 160, h, 26);
     ctx.fill();
     // How many, as a bar along the foot of the row.
     ctx.fillStyle = mix(pal.primary, pal.paper, 0.75);
-    roundRect(ctx, 72, y + h - 14, ((W - 144) * t.saves) / max, 14, 7);
+    roundRect(ctx, 80, y + h - 14, ((W - 160) * t.saves) / max, 14, 7);
     ctx.fill();
     ctx.fillStyle = pal.primary;
     ctx.font = `900 46px ${FONT}`;
@@ -285,9 +285,9 @@ function thanks(ctx, d) {
     y += 60;
     ctx.fillStyle = pal.primary;
     ctx.font = `900 200px ${FONT}`;
-    ctx.fillText(String(d.rating.average), 72, y + 180);
+    ctx.fillText(String(d.rating.average), 80, y + 180);
     // Five stars, filled to the average.
-    const sx = 72;
+    const sx = 80;
     const sy = y + 230;
     for (let i = 0; i < 5; i++) {
       const fill = Math.max(0, Math.min(1, d.rating.average - i));
@@ -296,13 +296,13 @@ function thanks(ctx, d) {
     }
     ctx.fillStyle = pal.ink;
     ctx.font = `700 40px ${FONT}`;
-    ctx.fillText(`from ${d.rating.count} attendee ratings`, 72, sy + 150, W - 144);
+    ctx.fillText(`from ${d.rating.count} attendee ratings`, 80, sy + 150, W - 160);
     y = sy + 170;
   }
   if (d.minutes && d.minutes >= 1) {
     ctx.fillStyle = mix(pal.ink, pal.paper, 0.2);
     ctx.font = `700 40px ${FONT}`;
-    ctx.fillText(`${d.minutes} minutes in CampBuddy per person, on average`, 72, y + 90, W - 144);
+    ctx.fillText(`${d.minutes} minutes in CampBuddy per person, on average`, 80, y + 90, W - 160);
     y += 90;
   }
   const peak = [...d.daily].sort((a, b) => b.users - a.users)[0];
@@ -310,13 +310,13 @@ function thanks(ctx, d) {
     const when = new Date(`${peak.date}T00:00:00`).toLocaleString('en', { day: 'numeric', month: 'short' });
     ctx.fillStyle = mix(pal.ink, pal.paper, 0.2);
     ctx.font = `700 40px ${FONT}`;
-    ctx.fillText(`Busiest day: ${when}, ${big(peak.users)} people`, 72, y + 90, W - 144);
+    ctx.fillText(`Busiest day: ${when}, ${big(peak.users)} people`, 80, y + 90, W - 160);
     y += 90;
   }
   y = lines(ctx, fit(ctx, 'CampBuddy is free for every WordCamp: the schedule with reminders, people to meet and your Camp Card. No sign-up.', W - 460, 40, 28, 5, 600), 80, y + 60, mix(pal.ink, pal.paper, 0.15), 600, 'left', 1.3);
   // A QR to CampBuddy, for the next one.
   const qs = 300;
-  const qx = W - 72 - qs;
+  const qx = W - 80 - qs;
   const qy = H - 150 - 60 - qs;
   reelTools.drawQr(ctx, 'https://campbuddy.club/?utm_source=campbuddy&utm_medium=social&utm_campaign=usage-post', qx, qy, qs, pal.ink, '#ffffff');
   ctx.fillStyle = pal.ink;

@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use App\Services\SiteThemeScraper;
+use Illuminate\Http\Client\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -32,6 +33,14 @@ class SiteTheme
     /** Kept with the theme across "Read the site again". */
     private const KEPT = ['uploads', 'hidden', 'pinned', 'kinds'];
 
+    private const AGENT = 'CampBuddy (+https://campbuddy.club)';
+
+    /** Pictures opened at most per reading, to learn their size; only their first 64 KB is asked for. */
+    private const PROBES = 8;
+
+    /** Media library searches for artwork older than the newest 200 uploads. */
+    private const SEARCHES = ['skyline', 'pattern', 'illustration', 'motif'];
+
     /** WordPress's own placeholder taglines: the site didn't choose them. */
     private const PLACEHOLDER_TAGLINES = '/^(just another (wordpress|wordcamp)|my wordpress blog|$)/i';
 
@@ -51,10 +60,18 @@ class SiteTheme
     {
         $site = rtrim((string) $event->source_site_url, '/');
         try {
-            $response = Http::timeout(12)->withHeaders(['User-Agent' => 'CampBuddy (+https://campbuddy.club)'])->get($site.'/');
+            $response = Http::timeout(12)->withHeaders(['User-Agent' => self::AGENT])->get($site.'/');
             $response->throw();
-            $theme = (new SiteThemeScraper)->parse($response->body(), self::notArt($event), self::mediaLibrary($site))
-                + ['tagline' => self::readTagline($site, (string) ($event->info['venue'] ?? '')), 'fetched_at' => now()->toIso8601String()];
+            $scraper = new SiteThemeScraper;
+            $html = $response->body().self::ownCss($scraper->stylesheets($response->body(), $site));
+            [$skip, $media] = [self::notArt($event), self::mediaLibrary($site)];
+            $theme = $scraper->parse($html, $skip, $media, [], $site);
+            // Pieces whose size or see-through parts aren't known yet are opened (their first bytes) and judged again.
+            $probed = self::probe(array_column(array_filter($theme['art'], fn ($a) => ! isset($a['width']) || ! preg_match('/\.jpe?g$/i', $a['url'])), 'url'));
+            if ($probed) {
+                $theme = $scraper->parse($html, $skip, $media, $probed, $site);
+            }
+            $theme += ['tagline' => self::readTagline($site, (string) ($event->info['venue'] ?? '')), 'fetched_at' => now()->toIso8601String()];
         } catch (Throwable $e) {
             report($e);
 
@@ -350,27 +367,20 @@ class SiteTheme
     private static function mediaLibrary(string $site): array
     {
         $out = [];
-        foreach ([1, 2] as $page) {
-            try {
-                $items = Http::timeout(10)->acceptJson()
-                    ->get($site.'/wp-json/wp/v2/media', ['per_page' => 100, 'page' => $page, 'media_type' => 'image', '_fields' => 'source_url,title,alt_text,media_details'])
-                    ->throw()->json();
-            } catch (Throwable $e) {
-                if ($page === 1) {
-                    report($e);
-                }
-                break;
-            }
+        $read = function (array $query) use ($site, &$out): ?int {
+            $items = Http::timeout(10)->acceptJson()
+                ->get($site.'/wp-json/wp/v2/media', $query + ['media_type' => 'image', '_fields' => 'source_url,title,alt_text,media_details'])
+                ->throw()->json();
             if (! is_array($items)) {
-                break;
+                return null;
             }
             foreach ($items as $item) {
                 $url = is_array($item) ? SafeUrl::web($item['source_url'] ?? null) : null;
-                if ($url === null) {
+                if ($url === null || isset($out[$url])) {
                     continue;
                 }
                 $size = fn (string $side) => is_numeric($item['media_details'][$side] ?? null) ? (int) $item['media_details'][$side] : null;
-                $out[] = [
+                $out[$url] = [
                     'url' => $url,
                     'width' => $size('width'),
                     'height' => $size('height'),
@@ -378,10 +388,98 @@ class SiteTheme
                     'alt' => (string) ($item['alt_text'] ?? ''),
                 ];
             }
+
+            return count($items);
+        };
+
+        foreach ([1, 2] as $page) {
+            try {
+                $count = $read(['per_page' => 100, 'page' => $page]);
+            } catch (Throwable $e) {
+                if ($page === 1) {
+                    report($e);
+                }
+                // A library that can't be read can't be searched either.
+                return array_values($out);
+            }
             // A second page only when the first was full.
-            if (count($items) < 100) {
+            if ($count === null || $count < 100) {
                 break;
             }
+        }
+        // Artwork uploaded before the newest 200 pictures (a site with many event photos): found by its name.
+        foreach (self::SEARCHES as $term) {
+            try {
+                $read(['per_page' => 20, 'search' => $term]);
+            } catch (Throwable) {
+                break;
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /**
+     * The site's own stylesheets (SiteThemeScraper::stylesheets()), as
+     * <style> blocks to read with the page. A file that can't be read is
+     * left out; at most 1 MB each.
+     *
+     * @param  list<string>  $urls
+     */
+    private static function ownCss(array $urls): string
+    {
+        $css = '';
+        foreach ($urls as $url) {
+            try {
+                $response = Http::timeout(8)->withHeaders(['User-Agent' => self::AGENT])->get($url);
+                if ($response->successful() && strlen($response->body()) <= 1024 * 1024) {
+                    $css .= "\n<style>".$response->body().'</style>';
+                }
+            } catch (Throwable $e) {
+                report($e);
+            }
+        }
+
+        return $css;
+    }
+
+    /**
+     * Opens the first 64 KB of up to PROBES pictures at once, for their real
+     * size and whether they have see-through parts (a skyline cut out on
+     * nothing is artwork; a solid PNG is often a graphic with words).
+     *
+     * @param  list<string>  $urls
+     * @return array<string, array{width: int, height: int, alpha: bool}>
+     */
+    private static function probe(array $urls): array
+    {
+        $urls = array_slice(array_values(array_unique(array_filter($urls, fn ($u) => SafeUrl::web($u)))), 0, self::PROBES);
+        if ($urls === []) {
+            return [];
+        }
+        try {
+            $responses = Http::pool(fn ($pool) => array_map(
+                fn ($url) => $pool->as($url)->timeout(6)->withHeaders(['User-Agent' => self::AGENT, 'Range' => 'bytes=0-65535'])->get($url),
+                $urls,
+            ));
+        } catch (Throwable $e) {
+            report($e);
+
+            return [];
+        }
+        $out = [];
+        foreach ($urls as $url) {
+            $response = $responses[$url] ?? null;
+            if (! $response instanceof Response || ! $response->successful()) {
+                continue;
+            }
+            $body = substr($response->body(), 0, 4 * 1024 * 1024);
+            $info = @getimagesizefromstring($body);
+            $ext = ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp'][$info['mime'] ?? ''] ?? null;
+            if ($ext === null || ! $info[0] || ! $info[1]) {
+                continue;
+            }
+            $out[$url] = ['width' => (int) $info[0], 'height' => (int) $info[1], 'alpha' => self::hasAlpha($body, $ext)];
         }
 
         return $out;

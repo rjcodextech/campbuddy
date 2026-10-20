@@ -305,4 +305,71 @@ HTML;
         $this->assertFalse($now['alpha']);
         Storage::disk('public')->assertMissing(substr($hero['url'], strlen('/storage/')));
     }
+
+    public function test_page_pictures_carry_their_size_and_crafts_cut_outs_and_older_files_are_judged(): void
+    {
+        $base = 'https://jaipur.wordcamp.org/2026/files/2026/09/';
+        $html = '<html><body>'
+            .'<img src="'.$base.'gate-illustration-1024x341.png" width="1024" height="341" srcset="'.$base.'gate-illustration-1024x341.png 1024w, '.$base.'gate-illustration.png 3000w">'
+            .'<img src="'.$base.'tiny-skyline.png" width="120" height="40">'
+            .'<img src="'.$base.'rangoli.png" width="800" height="800">'
+            .'<img src="'.$base.'warli-dancers.png" width="1600" height="500">'
+            .'<img src="'.$base.'WCJ-2026-website-Banner.jpg" width="1920" height="600">'
+            .'<img src="'.$base.'fort-motif-removebg-preview.png" width="500" height="500">'
+            .'<img src="https://jaipur.wordcamp.org/2025/files/2025/09/old-motif.png" width="900" height="900">'
+            .'<div style="background:url(\''.$base.'venue-hero.png\')"></div>'
+            .'<img src="'.$base.'Fort_Gate_Frieze-removebg-preview.png" width="866" height="288">'
+            .'<img src="'.$base.'fort-gate-frieze.png" width="2400" height="800">'
+            .'</body></html>';
+        $scraper = new SiteThemeScraper;
+        $art = collect($scraper->parse($html, [], [], [], self::SITE)['art'])->keyBy('name');
+
+        $this->assertSame(3000, $art['gate-illustration']['width'], "the srcset's widest copy is the file's size");
+        $this->assertSame(999, $art['gate-illustration']['height']);
+        $this->assertArrayNotHasKey('tiny-skyline', $art->all(), 'too small to print, by the size the page gives');
+        $this->assertSame('pattern', $art['rangoli']['kind'], 'a rangoli repeats: a pattern');
+        $this->assertSame('illustration', $art['warli-dancers']['kind'], 'a Warli scene is drawn art');
+        $this->assertArrayNotHasKey('WCJ-2026-website-Banner', $art->all(), 'a website banner carries words');
+        $names = $art->keys()->all();
+        $this->assertGreaterThan(array_search('rangoli', $names), array_search('fort-motif-removebg-preview', $names), "a background-remover's preview comes after");
+        $this->assertGreaterThan(array_search('rangoli', $names), array_search('old-motif', $names), "last year's file comes after");
+        $this->assertArrayNotHasKey('Fort_Gate_Frieze-removebg-preview', $art->all(), 'a preview and its full file are one piece: the full one is kept');
+        $this->assertSame(['illustration', 2400], [$art['fort-gate-frieze']['kind'], $art['fort-gate-frieze']['width']]);
+        $this->assertSame('photo', $art['venue-hero']['kind'], 'a backdrop with nothing more to go on reads as a photo…');
+
+        $probed = $scraper->parse($html, [], [], [$base.'venue-hero.png' => ['width' => 2400, 'height' => 800, 'alpha' => true]], self::SITE)['art'];
+        $hero = collect($probed)->firstWhere('name', 'venue-hero');
+        $this->assertSame(['illustration', 2400], [$hero['kind'], $hero['width']], '…until opening it shows a cut-out');
+    }
+
+    public function test_reading_the_site_takes_in_its_own_css_searches_the_library_and_measures_pictures(): void
+    {
+        Storage::fake('public');
+        $event = Event::create(['slug' => 'wordcamp-jaipur-2026', 'display_name' => 'WordCamp Jaipur 2026', 'source_site_url' => self::SITE, 'status' => 'active', 'is_visible' => true]);
+        $css = self::SITE.'/wp-admin/admin-ajax.php?action=wordcamp_remote_css&ver=12';
+        $html = '<html><head><link rel="stylesheet" id="wordcamp-remote-css-css" href="'.htmlspecialchars($css).'" media="all">'
+            .'<link rel="stylesheet" href="https://evil.example/custom-css.css"></head><body></body></html>';
+        Http::fake([
+            self::SITE.'/' => Http::response($html),
+            self::SITE.'/wp-admin/admin-ajax.php*' => Http::response('.hero{background:#7a1f5c url("https://jaipur.wordcamp.org/2026/files/2026/09/lehariya-pattern.png") repeat}.band{color:#7a1f5c;border-color:#7a1f5c}'),
+            self::SITE.'/wp-json/wp/v2/media*' => function ($request) {
+                parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $q);
+
+                return Http::response(($q['search'] ?? '') === 'skyline' ? [['source_url' => 'https://jaipur.wordcamp.org/2026/files/2024/01/pink-city-skyline.png', 'title' => ['rendered' => 'Pink City skyline']]] : []);
+            },
+            'jaipur.wordcamp.org/2026/files/2024/01/pink-city-skyline.png' => Http::response($this->png(2400, 600)),
+            'jaipur.wordcamp.org/2026/files/2026/09/lehariya-pattern.png' => Http::response($this->png(300, 300, false)),
+            self::SITE.'/wp-json/*' => Http::response([]),
+            '*' => Http::response('', 404),
+        ]);
+
+        $theme = SiteTheme::refresh($event);
+
+        $this->assertContains('#7a1f5c', array_column($theme['colors'], 'hex'), 'colours from its Remote CSS');
+        $art = collect($theme['art'])->keyBy('name');
+        $this->assertSame('pattern', $art['lehariya-pattern']['kind'], 'a backdrop from its Remote CSS');
+        $this->assertSame([2400, 600], [$art['pink-city-skyline']['width'], $art['pink-city-skyline']['height']], 'found by a library search, measured by opening it');
+        Http::assertNotSent(fn ($request) => str_contains($request->url(), 'evil.example'));
+        Http::assertSent(fn ($request) => $request->hasHeader('Range', 'bytes=0-65535'));
+    }
 }

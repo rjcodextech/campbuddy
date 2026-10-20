@@ -27,10 +27,16 @@ class SiteThemeScraper
     /** WordPress core's palette, present on every site. */
     private const CORE = ['black', 'white', 'cyan-bluish-gray', 'pale-pink', 'vivid-red', 'luminous-vivid-orange', 'luminous-vivid-amber', 'light-green-cyan', 'vivid-green-cyan', 'pale-cyan-blue', 'vivid-cyan-blue', 'vivid-purple'];
 
-    private const ART_WORDS = '/(pattern|motif|tile|jali|texture|skyline|illustration|sprig|wall|banner|hero|backdrop|bg|background|mandala|border|doodle|wapuu|sketch|artwork|graphic)/i';
+    // The region's own crafts and forms count as artwork too: a rangoli, a Madhubani band, a mosque frieze.
+    private const CRAFT_WORDS = 'rangoli|kolam|alpana|madhubani|warli|paisley|ajrak|ikat|block-?print|kalamkari|phulkari|arabesque|frieze|ornament';
+
+    private const ART_WORDS = '/(pattern|motif|tile|jali|texture|skyline|illustration|sprig|wall|banner|hero|backdrop|bg|background|mandala|border|doodle|wapuu|sketch|artwork|graphic|monument|'.self::CRAFT_WORDS.')/i';
 
     // Words that name a real piece of artwork, whatever its shape or file type.
-    private const SHAPE_WORDS = '/(pattern|motif|tile|jali|texture|mandala|skyline|illustration|sprig|doodle|sketch)/i';
+    private const SHAPE_WORDS = '/(pattern|motif|tile|jali|texture|mandala|skyline|illustration|sprig|doodle|sketch|'.self::CRAFT_WORDS.')/i';
+
+    // Repeating crafts are patterns; drawn ones (a Warli scene, a frieze) illustrations.
+    private const PATTERN_WORDS = '/(pattern|motif|tile|jali|texture|mandala|rangoli|kolam|alpana|paisley|ajrak|ikat|block-?print|kalamkari|phulkari|arabesque|ornament)/i';
 
     // Photos of the place itself: the venue, the city.
     private const PLACE_WORDS = '/(?<![a-z])(venue|hall|hotel|campus|auditorium|exterior|building|city|aerial|landmark|centre|center)/i';
@@ -38,19 +44,46 @@ class SiteThemeScraper
     // Graphics with words or prices on them (ticket tiers, a venue map, a flyer) aren't artwork either,
     // nor frames, templates and social graphics ("post-frame", "social-frames-featured", made for
     // people's photos or carrying words), hotel rooms, or pictures of the team.
-    private const SKIP_WORDS = '/(?<![a-z])(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge|ticket|price|pricing|map|flyer|poster|screenshot|schedule|cta|frame|template|social|og-image|share|save-the-date|announce|room|organi[sz]er|volunteer|selfie|layout|floor-?plan|post|posts|update|fb|facebook|insta|instagram|twitter|linkedin|featured|story|reel|call[-_ ]for|with (the )?text|text reads)/i';
+    private const SKIP_WORDS = '/(?<![a-z])(logo|icon|avatar|gravatar|favicon|sponsor|speaker|profile|headshot|flag|qr|whatsapp|jetpack|badge|ticket|price|pricing|map|flyer|poster|screenshot|schedule|cta|frame|template|social|og-image|share|save-the-date|announce|room|organi[sz]er|volunteer|selfie|layout|floor-?plan|post|posts|update|fb|facebook|insta|instagram|twitter|linkedin|featured|story|reel|call[-_ ]for|website[-_ ]?banner|page[-_]?\d{2,}|with (the )?text|text reads)/i';
 
     /**
      * @param  list<string|array>  $media  the site's media library (see art())
+     * @param  array<string, array{width: int, height: int, alpha: bool}>  $probed  pictures CampBuddy opened to measure (see SiteTheme)
+     * @param  ?string  $site  the site's address, so artwork from an older edition ("…/2025/files/…") ranks lower
      * @return array{colors: list<array{name: string, hex: string}>, fonts: array<string, array{family: string, faces: list<array{url: string, weight: string, style: string, range: ?string}>}>, art: list<array{url: string, kind: string, name: string}>}
      */
-    public function parse(string $html, array $skipUrls = [], array $media = []): array
+    public function parse(string $html, array $skipUrls = [], array $media = [], array $probed = [], ?string $site = null): array
     {
         return [
             'colors' => $this->colors($html),
             'fonts' => $this->fonts($html),
-            'art' => $this->art($html, $skipUrls, $media),
+            'art' => $this->art($html, $skipUrls, $media, $probed, $site),
         ];
+    }
+
+    /**
+     * The site's own stylesheets worth reading too: WordCamp's Remote CSS and
+     * the Customizer's / Jetpack's custom CSS, where many sites keep their
+     * colours, fonts and background art. At most two, on the site's own host.
+     *
+     * @return list<string>
+     */
+    public function stylesheets(string $html, string $site): array
+    {
+        $host = parse_url($site, PHP_URL_HOST);
+        preg_match_all('/<link\b[^>]*rel=["\']stylesheet["\'][^>]*>/i', $html, $links);
+        $out = [];
+        foreach ($links[0] as $tag) {
+            if (! preg_match('/\shref=["\']([^"\']+)["\']/i', $tag, $m)) {
+                continue;
+            }
+            $url = SafeUrl::web(html_entity_decode($m[1]));
+            if ($url && parse_url($url, PHP_URL_HOST) === $host && preg_match('/wordcamp_remote_css|custom-css|custom_css/i', $url)) {
+                $out[] = $url;
+            }
+        }
+
+        return array_slice(array_values(array_unique($out)), 0, 2);
     }
 
     /** @return list<array{name: string, hex: string}> */
@@ -148,7 +181,7 @@ class SiteThemeScraper
      * @param  list<string|array{url: string, width?: ?int, height?: ?int, title?: string, alt?: string}>  $media  the site's media library
      * @return list<array{url: string, kind: string, name: string, width?: int, height?: int}>
      */
-    private function art(string $html, array $skipUrls, array $media = []): array
+    private function art(string $html, array $skipUrls, array $media = [], array $probed = [], ?string $site = null): array
     {
         $skip = array_flip(array_map(fn ($u) => $this->original((string) $u), array_filter($skipUrls)));
         $found = [];
@@ -178,7 +211,8 @@ class SiteThemeScraper
                 continue;
             }
             $cover = (bool) preg_match('/wp-block-cover__image|header-image|hero/i', $attr('class'));
-            $add($attr('src'), $cover ? 'backdrop' : 'page', null, null, $attr('alt'));
+            [$w, $h] = $this->tagSize($attr('src'), $attr('width'), $attr('height'), $attr('srcset'));
+            $add($attr('src'), $cover ? 'backdrop' : 'page', $w, $h, $attr('alt'));
         }
         // Any other upload of this site the page mentions (a srcset, a link).
         preg_match_all('/https?:\/\/[a-z0-9.-]*wordcamp\.org\/[^\s"\'()<>]*\/files\/[^\s"\'()<>]+\.(?:png|jpe?g|webp)/i', $html, $files);
@@ -194,10 +228,18 @@ class SiteThemeScraper
             }
         }
 
+        // What opening the file told: its real size, and whether it has see-through parts.
+        foreach ($probed as $url => $info) {
+            if (isset($found[$url])) {
+                $found[$url] = ['width' => $info['width'], 'height' => $info['height'], 'alpha' => $info['alpha']] + $found[$url];
+            }
+        }
+        $edition = preg_match('#/(\d{4})/?$#', (string) $site, $y) ? $y[1] : null;
+
         // One of each piece: its copies count once, the best kept.
         $best = [];
         foreach ($found as $piece) {
-            $piece = $this->judge($piece);
+            $piece = $this->judge($piece, $edition);
             if ($piece === null) {
                 continue;
             }
@@ -221,17 +263,19 @@ class SiteThemeScraper
      *
      * @return ?array{url: string, kind: string, name: string, width: ?int, height: ?int, score: int}
      */
-    private function judge(array $piece): ?array
+    private function judge(array $piece, ?string $edition = null): ?array
     {
         $file = basename(parse_url($piece['url'], PHP_URL_PATH) ?: '');
         $name = pathinfo($file, PATHINFO_FILENAME);
         $words = $name.' '.$piece['words'];
         [$w, $h] = [$piece['width'], $piece['height']];
         $backdrop = in_array('backdrop', $piece['sources'], true);
+        // Null when nobody opened the file; true for a cut-out (a skyline on nothing), false for a solid picture.
+        $alpha = $piece['alpha'] ?? null;
 
         $aspect = $w && $h ? $w / $h : null;
         $jpeg = (bool) preg_match('/\.jpe?g$/i', $file);
-        $tile = (bool) preg_match('/(pattern|motif|tile|jali|texture|mandala)/i', $words);
+        $tile = (bool) preg_match(self::PATTERN_WORDS, $words);
         $shape = (bool) preg_match(self::SHAPE_WORDS, $words);
 
         if (preg_match(self::SKIP_WORDS, $words)) {
@@ -260,9 +304,11 @@ class SiteThemeScraper
             return null;
         }
         $kind = match (true) {
-            (bool) preg_match('/(pattern|motif|tile|jali|texture|mandala)/i', $words) => 'pattern',
-            (bool) preg_match('/(skyline|illustration|sprig|wall|wapuu|doodle|sketch)/i', $words) => 'illustration',
+            $tile => 'pattern',
+            (bool) preg_match('/(skyline|illustration|sprig|wall|wapuu|doodle|sketch|madhubani|warli|frieze|monument)/i', $words) => 'illustration',
             $jpeg => 'photo',
+            // Something cut out on nothing is drawn art, never a photo.
+            $alpha === true && ! $place => 'illustration',
             $aspect !== null && $aspect >= 2.0 => 'illustration',
             // A Cover block's backdrop with no art words is nearly always a photo.
             $backdrop && ! $art => 'photo',
@@ -271,26 +317,61 @@ class SiteThemeScraper
         };
 
         $score = match (true) {
-            (bool) preg_match('/(skyline|pattern|motif|jali|tile|sprig|wapuu)/i', $words) => 6,
+            (bool) preg_match('/(skyline|pattern|motif|jali|tile|sprig|wapuu|rangoli|kolam|madhubani|warli|frieze)/i', $words) => 6,
             $art => 4,
             default => 2,
         };
         $score += $backdrop ? 3 : 0;
         $score += $place && $kind === 'photo' ? 1 : 0;
         $score += $w && $h && max($w, $h) >= 1200 ? 1 : 0;
+        // A cut-out reads best on the cards; a solid PNG with no art words is often a graphic with words on it.
+        $score += $alpha === true && ! $jpeg ? 2 : 0;
+        $score -= $alpha === false && ! $jpeg && ! $shape ? 1 : 0;
         // A Figma export ("Frame-1000015039") or a camera file name says little: below named artwork.
         $score -= preg_match('/^(frame|image|img|dsc|unnamed|untitled|screen|photo|pexels|unsplash)[-_ ]?\d*/i', $name) ? 2 : 0;
+        // A background-remover's small preview ("…-removebg-preview"), or last year's edition's file: kept, but after the rest.
+        $score -= preg_match('/removebg|[-_]preview$/i', $name) ? 2 : 0;
+        $score -= $edition && preg_match('#/(\d{4})/files/#', $piece['url'], $y) && $y[1] !== $edition ? 2 : 0;
 
         return ['url' => $piece['url'], 'kind' => $kind, 'name' => $name, 'width' => $w, 'height' => $h, 'score' => $score];
+    }
+
+    /**
+     * The full file's size from an <img> tag: its srcset's widest copy (the
+     * full file), else its width / height when the src is the full file
+     * itself (WordPress writes the size of the file it shows). Nulls when
+     * the tag doesn't say.
+     *
+     * @return array{0: ?int, 1: ?int}
+     */
+    private function tagSize(string $src, string $width, string $height, string $srcset): array
+    {
+        $w = ctype_digit($width) ? (int) $width : null;
+        $h = ctype_digit($height) ? (int) $height : null;
+        $widest = 0;
+        foreach (explode(',', $srcset) as $entry) {
+            if (preg_match('/\s(\d+)w\s*$/', trim($entry), $m)) {
+                $widest = max($widest, (int) $m[1]);
+            }
+        }
+        if ($widest > 0) {
+            return [$widest, $w && $h ? (int) round($widest * $h / $w) : null];
+        }
+        // A "-300x200" copy shows less than the file has: no size then, rather than a wrong one.
+        if (preg_match('/-\d+x\d+\.(?:png|jpe?g|webp)(?:\?.*)?$/i', $src)) {
+            return [null, null];
+        }
+
+        return $w && $h ? [$w, $h] : [null, null];
     }
 
     /** "wcjhb-skyline-white-1", "cropped-wcjhb-skyline-black-scaled" → "wcjhb-skyline". */
     private function family(string $name): string
     {
-        $name = (string) preg_replace('/^cropped-/', '', strtolower($name));
+        $name = (string) preg_replace('/^cropped-/', '', str_replace('_', '-', strtolower($name)));
         do {
             $before = $name;
-            $name = (string) preg_replace('/[-_](scaled|edited|e\d{10,}|\d{1,2}|v\d+|@?\dx|white|black|light|dark|ink|mono|colou?r|colou?red|warm|cool|trans|transparent|copy|final|new)$/', '', $name);
+            $name = (string) preg_replace('/[-_](scaled|edited|e\d{10,}|\d{1,2}|v\d+|@?\dx|white|black|light|dark|ink|mono|colou?r|colou?red|warm|cool|trans|transparent|copy|final|new|removebg|preview)$/', '', $name);
         } while ($name !== $before && $name !== '');
 
         return $name;
