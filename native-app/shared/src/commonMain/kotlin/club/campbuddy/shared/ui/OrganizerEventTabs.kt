@@ -134,6 +134,7 @@ internal fun OverviewTab(ctx: EventCtx, loader: Loader<OrganizerOverview>, onPre
             item { SectionTitle("Quick actions") }
             item {
                 val actions = buildList {
+                    add(Triple("Announce", "megaphone", "broadcast"))
                     add(Triple("Running late", "clock", "delay"))
                     add(Triple("Edit details", "pencil", "details"))
                     add(Triple("Venue & Wifi", "wifi", "info"))
@@ -997,6 +998,74 @@ internal fun ActivityCard(row: club.campbuddy.shared.model.ActivityRow, showEven
             }
             Text(row.summary, style = MaterialTheme.typography.bodyMedium)
             Text(listOfNotNull(row.manager, row.event.takeIf { showEvent }).joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+// ---- live announcements -----------------------------------------------------------------------------------
+
+/** "Opening remarks are starting", "Tea break"…: one tap to tell everyone at the WordCamp (EventBroadcasts). */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+internal fun BroadcastTab(ctx: EventCtx) {
+    var stamp by remember { mutableStateOf(0) }
+    val loader = rememberLoader("org-broadcasts:${ctx.eventId}:$stamp") { Loaded(ctx.api.broadcasts(ctx.token, ctx.eventId), false) }
+    val actions = rememberOrgActions()
+    var kind by remember { mutableStateOf("opening") }
+    var where by remember { mutableStateOf("") }
+    var session by remember { mutableStateOf<String?>(null) }
+    var title by remember { mutableStateOf("") }
+    var body by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf(false) }
+
+    TabBody {
+        loaded(loader.state.value, loader.reload, ctx.onExpired) { d ->
+            val preset = d.presets.firstOrNull { it.key == kind }
+            val sessionTitle = d.sessions.firstOrNull { it.id == session }?.title
+            fun fill(text: String) = text.replace("{where}", if (where.isNotBlank()) " in ${where.trim()}" else "").replace("{session}", sessionTitle ?: "The next session")
+            val shownTitle = title.ifBlank { fill(preset?.title.orEmpty()) }
+            val shownBody = body.ifBlank { fill(preset?.body.orEmpty()) }
+            item {
+                OrgSection("Send a live announcement", "megaphone", "To ${d.reach.web + d.reach.app} phones and browsers that opened this WordCamp in the last days and allowed notifications (${d.reach.seen} devices opened it). It also shows on Home for 30 minutes, for everyone.") {
+                    if (!d.ready) Text("The server needs `php artisan migrate` first.", style = MaterialTheme.typography.bodySmall.copy(color = LocalBrand.current.danger))
+                    Text("WHAT IS HAPPENING", style = MaterialTheme.typography.labelMedium)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        d.presets.forEach { p -> CbChip(selected = p.key == kind, onClick = { kind = p.key }, label = { Text(p.label) }) }
+                    }
+                    if (kind == "session" && d.sessions.isNotEmpty()) {
+                        OrgFilterRow("Session", d.sessions.map<club.campbuddy.shared.model.BroadcastSession, Pair<String?, String>> { it.id to "${it.time} · ${it.title.take(40)}" }, session) { session = it }
+                    }
+                    OrgField("Where (optional)", where, { where = it }, max = 60, placeholder = "the main hall")
+                    OrgField("Title", title, { title = it }, max = 80, placeholder = fill(preset?.title.orEmpty()).ifBlank { "Write a title" })
+                    OrgField("Message", body, { body = it }, lines = 2, max = 240, placeholder = fill(preset?.body.orEmpty()).ifBlank { "Write the message" })
+                    Column(Modifier.fillMaxWidth().background(LocalBrand.current.background, RoundedCornerShape(8.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("PREVIEW", style = MaterialTheme.typography.labelMedium)
+                        Text(shownTitle.ifBlank { "—" }, style = MaterialTheme.typography.titleMedium)
+                        Text(shownBody.ifBlank { "—" }, style = MaterialTheme.typography.bodyMedium)
+                    }
+                    OrgButton(if (actions.busy) "Sending…" else "Send now", { confirm = true }, Modifier.fillMaxWidth(), kind = BtnKind.Primary, icon = "megaphone",
+                        enabled = d.ready && !actions.busy && shownTitle.isNotBlank() && shownBody.isNotBlank())
+                }
+            }
+            if (d.history.isNotEmpty()) {
+                item { SectionTitle("Sent (${d.history.size})") }
+                items(d.history, key = { "b-${it.id}" }) { b ->
+                    Card {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(b.title, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp))
+                            Text(b.body, style = MaterialTheme.typography.bodyMedium)
+                            Text(listOfNotNull(orgWhen(b.at), b.sentBy, plural(b.recipients, "phone")).joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
+            }
+            if (confirm) item {
+                ConfirmSheet("Send it now?", "“$shownTitle” goes to everyone at the WordCamp right away.", "Send", danger = false, onConfirm = {
+                    actions.run({
+                        ctx.api.sendBroadcast(ctx.token, ctx.eventId, club.campbuddy.shared.model.BroadcastForm(kind, title.orNull(), body.orNull(), where.orNull(), session)).message
+                    }, { title = ""; body = ""; stamp++ })
+                }, onClose = { confirm = false })
+            }
         }
     }
 }

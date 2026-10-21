@@ -391,6 +391,23 @@ class ApiClient(
             token,
         ).data
 
+    // ---- live announcements (EventBroadcasts) ----
+
+    /** "This phone has the event open": the organizers' announcements reach phones seen since three days before it. */
+    suspend fun markSeen(slug: String, deviceId: String, platform: String) {
+        write<Unit>(io.ktor.http.HttpMethod.Post, "/events/$slug/seen", null, club.campbuddy.shared.model.SeenBody(deviceId, platform))
+    }
+
+    /** The announcement sent in the last half hour, if any. */
+    suspend fun liveNotice(slug: String): club.campbuddy.shared.model.LiveNotice? =
+        get<Data<club.campbuddy.shared.model.LiveNotice?>>("/events/$slug/live-notice").data
+
+    suspend fun broadcasts(token: String, eventId: Long): club.campbuddy.shared.model.BroadcastData =
+        get<Data<club.campbuddy.shared.model.BroadcastData>>("/app/organizer/events/$eventId/broadcasts", token).data
+
+    suspend fun sendBroadcast(token: String, eventId: Long, form: club.campbuddy.shared.model.BroadcastForm): Msg =
+        write(io.ktor.http.HttpMethod.Post, "/app/organizer/events/$eventId/broadcasts", token, form)
+
     // ---- organizer: social media (OrganizerSocialController) ----
 
     suspend fun socialKit(token: String, eventId: Long): club.campbuddy.shared.model.SocialKitData =

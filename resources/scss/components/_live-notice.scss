@@ -1,0 +1,80 @@
+@use '../abstracts/variables' as v;
+
+// The organizers' live announcement ("Tea break", "Lunch is served"…), live-updates.js:
+// at the top of the event's pages for half an hour after it went out.
+.live-notice {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2px 12px;
+    margin: v.$space-3 v.$space-4 v.$space-2;
+    padding: v.$space-3 v.$space-4;
+    border: 1px solid var(--gold);
+    border-left: 5px solid var(--brand-primary);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--gold) 16%, var(--paper));
+}
+
+.live-notice__kicker {
+    grid-column: 1 / -1;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--brand-primary);
+}
+
+.live-notice__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.live-notice__title {
+    font-size: v.$font-size-base;
+}
+
+.live-notice__body {
+    font-size: v.$font-size-sm;
+    color: var(--ink);
+}
+
+.live-notice__close {
+    align-self: start;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+// "Get live updates from the organizers" on Home, three days before the event.
+.live-ask {
+    margin: v.$space-5 0;
+    padding: v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--paper);
+}
+
+.live-ask__title {
+    margin: 0 0 4px;
+    font-weight: v.$font-weight-bold;
+}
+
+.live-ask__desc {
+    margin: 0 0 v.$space-3;
+    font-size: v.$font-size-sm;
+    color: var(--muted);
+}
+
+.live-ask__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}

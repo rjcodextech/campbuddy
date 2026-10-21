@@ -306,6 +306,34 @@ class OrganizerManageController extends Controller
         return response()->json(['message' => $message]);
     }
 
+    // ---- live announcements --------------------------------------------------------------------
+
+    /** The ready-made announcements, who they would reach, the sessions to pick from, and what went out. */
+    public function broadcasts(Request $request, int $id): JsonResponse
+    {
+        $event = $this->event($request, $id);
+
+        return response()->json(['data' => [
+            'ready' => \App\Support\EventBroadcasts::ready(),
+            'presets' => \App\Support\EventBroadcasts::presets(),
+            'reach' => \App\Support\EventBroadcasts::ready() ? \App\Support\EventBroadcasts::reach($event) : ['web' => 0, 'app' => 0, 'seen' => 0],
+            'window_from' => \App\Support\EventBroadcasts::windowStart($event)->toIso8601String(),
+            'sessions' => \App\Support\EventBroadcasts::upcomingSessions($event),
+            'history' => \App\Support\EventBroadcasts::history($event),
+        ]]);
+    }
+
+    public function sendBroadcast(Request $request, int $id): JsonResponse
+    {
+        $event = $this->event($request, $id);
+        [$kind, $message] = \App\Support\EventBroadcasts::fromRequest($request, $event);
+        \App\Support\EventBroadcasts::send($event, $kind, $message, $this->who($request));
+        $this->record($request, $event, 'notifications', 'added', 'Sent the announcement '.ManagerActivity::quote($message['title']));
+        $reach = \App\Support\EventBroadcasts::reach($event);
+
+        return response()->json(['message' => 'Sent: “'.$message['title'].'” goes to '.($reach['web'] + $reach['app']).' phones and browsers, and shows on Home for '.\App\Support\EventBroadcasts::BANNER_MINUTES.' minutes.'], 201);
+    }
+
     // ---- notifications, activity ---------------------------------------------------------------
 
     public function notifications(Request $request, int $id): JsonResponse

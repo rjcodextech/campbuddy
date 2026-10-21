@@ -226,6 +226,7 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');
         Route::get('events/{event}/memories', [MemoriesController::class, 'index'])->name('admin.events.memories');
         Route::get('events/{event}/notifications', NotificationsController::class)->name('admin.events.notifications');
+        Route::post('events/{event}/broadcasts', [\App\Http\Controllers\Admin\BroadcastController::class, 'store'])->middleware('throttle:10,1')->name('admin.events.broadcasts.store');
         Route::get('events/{event}/reports', [ReportsController::class, 'index'])->name('admin.events.reports');
         Route::post('events/{event}/reports/{discoveryId}/remove', [ReportsController::class, 'remove'])->where('discoveryId', '[a-f0-9]{64}')->name('admin.events.reports.remove');
         Route::post('events/{event}/reports/{discoveryId}/dismiss', [ReportsController::class, 'dismiss'])->where('discoveryId', '[a-f0-9]{64}')->name('admin.events.reports.dismiss');

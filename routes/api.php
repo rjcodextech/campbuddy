@@ -72,6 +72,8 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
             Route::get('/quests', [AppOrganizerManageController::class, 'quests'])->name('api.app.organizer.quests');
             Route::get('/tables', [AppOrganizerManageController::class, 'tables'])->name('api.app.organizer.tables');
             Route::get('/notifications', [AppOrganizerManageController::class, 'notifications'])->name('api.app.organizer.notifications');
+            Route::get('/broadcasts', [AppOrganizerManageController::class, 'broadcasts'])->name('api.app.organizer.broadcasts');
+            Route::post('/broadcasts', [AppOrganizerManageController::class, 'sendBroadcast'])->middleware('throttle:10,1')->name('api.app.organizer.broadcasts.send');
             // Admin only (the controller answers 403 to a manager).
             Route::get('/activity', [AppOrganizerManageController::class, 'activity'])->name('api.app.organizer.activity');
             Route::get('/deals', [AppOrganizerManageController::class, 'deals'])->name('api.app.organizer.deals');
@@ -153,6 +155,8 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::prefix('events/{event:slug}')->middleware('event.public')->group(function () {
         Route::get('/roster', RosterController::class)->name('api.events.roster');
         Route::get('/data-version', DataVersionController::class)->name('api.events.data-version');
+        // Live announcements from the organizers (EventLiveController): the banner, and "this device has the event open".
+        Route::get('/live-notice', [\App\Http\Controllers\Api\EventLiveController::class, 'notice'])->name('api.events.live-notice');
 
         Route::get('/discovery', [DiscoveryController::class, 'index'])->name('api.discovery.index');
         // Waves: only the profile's owner (bearer owner token) sees its own.
@@ -166,6 +170,7 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
 
         Route::middleware('throttle:api-writes')->group(function () {
             Route::post('/push/subscribe', PushSubscriptionController::class)->name('api.push.subscribe');
+            Route::post('/seen', [\App\Http\Controllers\Api\EventLiveController::class, 'seen'])->name('api.events.seen');
             // Native app (FCM) token, kept apart from the Web Push table.
             Route::post('/push/native-subscribe', [NativePushTokenController::class, 'store'])->name('api.push.native-subscribe');
             Route::delete('/push/native-subscribe', [NativePushTokenController::class, 'destroy'])->name('api.push.native-unsubscribe');

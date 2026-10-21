@@ -63,6 +63,7 @@ Route::prefix('manager')->group(function () {
         Route::post('events/{eventId}/delay', [ScheduleDelayController::class, 'store'])->name('manager.events.delay.store');
         Route::post('events/{eventId}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('manager.events.delay.clear');
         Route::get('events/{eventId}/memories', [MemoriesController::class, 'index'])->name('manager.events.memories');
+        Route::post('events/{eventId}/broadcasts', [\App\Http\Controllers\Manager\BroadcastController::class, 'store'])->middleware('throttle:10,1')->name('manager.events.broadcasts.store');
         Route::get('events/{eventId}/notifications', NotificationsController::class)->name('manager.events.notifications');
         Route::get('events/{eventId}/reports', [ReportsController::class, 'index'])->name('manager.events.reports');
         Route::post('events/{eventId}/reports/{discoveryId}/remove', [ReportsController::class, 'remove'])->where('discoveryId', '[a-f0-9]{64}')->name('manager.events.reports.remove');

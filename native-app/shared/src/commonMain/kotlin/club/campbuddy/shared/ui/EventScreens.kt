@@ -130,6 +130,9 @@ fun EventScreen(
                 )
             }
         }
+        // The organizers' announcement of the last half hour, on every tab (it tells everyone, not just one screen).
+        MarkSeen(slug)
+        LiveNoticeBanner(slug) { tab -> if (tabs.any { it.key == tab }) selected = tab }
         if (selected == "home" || selected == "my-day") RunningLate(slug)
         Box(Modifier.weight(1f)) {
             when (val e = event) {
@@ -188,6 +191,7 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
         if (offline) item { OfflineNote() }
+        item { LiveAskCard(event.slug, event.firstDay, event.lastDay, zone) }
 
         val sections = words.config.enabledSections().filter { visible(it, phase, profile.firstWordCamp, saved.isNotEmpty()) }
         items(sections.size) { index ->

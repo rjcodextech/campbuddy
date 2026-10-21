@@ -43,6 +43,7 @@ class PersonalDataErasureTest extends TestCase
         DB::table('push_subscriptions')->insert(['event_id' => $event->id, 'device_id' => "dev-{$tag}", 'endpoint' => "https://push.example/{$tag}", 'p256dh_key' => 'k', 'auth_key' => 'a', 'created_at' => now(), 'updated_at' => now()]);
         DB::table('native_push_tokens')->insert(['event_id' => $event->id, 'device_id' => "dev-{$tag}", 'platform' => 'android', 'token' => "tok-{$tag}", 'created_at' => now(), 'updated_at' => now()]);
         DB::table('session_bookmarks')->insert(['event_id' => $event->id, 'device_id' => "dev-{$tag}", 'session_id' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('event_device_visits')->insert(['event_id' => $event->id, 'device_id' => "dev-{$tag}", 'platform' => 'web', 'first_seen_at' => now(), 'last_seen_at' => now()]);
     }
 
     public function test_it_erases_only_events_past_retention_plus_sixty_days(): void
@@ -62,7 +63,7 @@ class PersonalDataErasureTest extends TestCase
 
         $this->artisan('campbuddy:erase-expired-data')->assertSuccessful();
 
-        foreach (['discovery_profiles', 'push_subscriptions', 'native_push_tokens', 'session_bookmarks'] as $table) {
+        foreach (['discovery_profiles', 'push_subscriptions', 'native_push_tokens', 'session_bookmarks', 'event_device_visits'] as $table) {
             $this->assertSame(0, DB::table($table)->where('event_id', $old->id)->count(), "{$table} of the old event is gone");
             $this->assertSame(1, DB::table($table)->where('event_id', $recent->id)->count(), "{$table} of the recent event stays");
         }

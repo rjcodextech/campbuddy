@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
  * are only hidden by "expired", so this removes them for good ERASE_AFTER_DAYS later (60: about 90 days after the
  * event, the same moment the event leaves the picker). It removes only things people chose to share: discovery
  * profiles with their waves and messages, shared Camp Cards, push addresses, server-side reminder bookmarks, deal-form
- * leads and discovery reports. Public attendee lists, ratings and the event itself are not personal uploads and stay.
+ * leads, discovery reports and which devices opened the event (for live announcements). Public attendee lists, ratings and the event itself are not personal uploads and stay.
  */
 class PersonalDataErasure
 {
@@ -31,6 +31,7 @@ class PersonalDataErasure
         'session_bookmarks',
         'offer_leads',
         'consent_logs',
+        'event_device_visits',
     ];
 
     /** The moment this event's shared data is erased, or null when it has no dates yet. */

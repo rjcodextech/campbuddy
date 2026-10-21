@@ -508,3 +508,53 @@ data class AnalyticsData(
     val reports: Map<String, List<Map<String, String>>> = emptyMap(),
     val events: Map<String, String> = emptyMap(),
 )
+
+// ---- live announcements ---------------------------------------------------------------------------------
+
+/** The announcement the organizers sent in the last half hour (the banner on Home). */
+@Serializable
+data class LiveNotice(val id: Long, val title: String = "", val body: String = "", val tab: String? = null, val at: String? = null)
+
+@Serializable
+data class BroadcastPreset(val key: String, val label: String = "", val icon: String = "megaphone", val title: String = "", val body: String = "")
+
+@Serializable
+data class BroadcastReach(val web: Int = 0, val app: Int = 0, val seen: Int = 0)
+
+@Serializable
+data class BroadcastSession(val id: String, val title: String = "", val time: String = "", val track: String? = null)
+
+@Serializable
+data class BroadcastSent(
+    val id: Long,
+    val title: String = "",
+    val body: String = "",
+    val tab: String? = null,
+    val at: String? = null,
+    @SerialName("sent_by") val sentBy: String = "",
+    val recipients: Int = 0,
+    val kind: String = "",
+)
+
+@Serializable
+data class BroadcastData(
+    val ready: Boolean = true,
+    val presets: List<BroadcastPreset> = emptyList(),
+    val reach: BroadcastReach = BroadcastReach(),
+    @SerialName("window_from") val windowFrom: String? = null,
+    val sessions: List<BroadcastSession> = emptyList(),
+    val history: List<BroadcastSent> = emptyList(),
+)
+
+/** Empty fields are left out (the server then uses the ready-made words). */
+@Serializable
+data class BroadcastForm(
+    val kind: String,
+    val title: String? = null,
+    val body: String? = null,
+    val where: String? = null,
+    @SerialName("session_id") val sessionId: String? = null,
+)
+
+@Serializable
+internal data class SeenBody(@SerialName("device_id") val deviceId: String, val platform: String)
