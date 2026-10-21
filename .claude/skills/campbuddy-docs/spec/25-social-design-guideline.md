@@ -90,3 +90,35 @@ on the first visit and on **Read the site again** (never on a schedule). Since
 
 Extra requests per reading: 1 stylesheet + 4 searches + up to 8 probes.
 See [09-admin-panel.md](09-admin-panel.md) → Social media for the admin side.
+
+## Daylight (21 Oct 2026, owner confirmed twice) — the default design
+
+From the owner's thumbnail guideline (only its rules; no WPSimplified name, logo or palette).
+`Daylight` is the first and default post and people-card design in `resources/js/social-kit.js`
+(`drawDaylightPost`, `drawDaylightPerson`); the older designs stay selectable.
+
+- **Base**: Paper (off-white to white) for type-led posts; Ink (the main colour almost black)
+  for people and the place's photo; Gradient (main to deep, 135°) for save-the-date and the
+  countdown when white reads on the main colour. Colours are the event's own; every text colour
+  is checked to 4.5:1 against its ground (`readableOn`).
+- **Texture and light**: a dot grid (2 px dots every 26 px, 12 %) on the right half (all of it on
+  dark), a soft glow top-right and bottom-left, four thin waves above the foot fading upward.
+- **Words**: kicker UPPERCASE, tracked 0.16em, in the accent, after a small wave mark; headline in
+  the site's heading font, 800, line height 1.04, ≤ 3 lines; 1–3 words highlighted (`*marked*` in
+  the headline field, else the last word) in the main-to-deep gradient on Paper, the light accent
+  on dark; subtitle muted.
+- **People**: circles with a ring (white, or the light accent on dark), a soft shadow; one person =
+  one hero portrait; two or three = cards tilted ±3°; four to eight = an even grid; the full name
+  under each on one line (shrunk, never split, never cut) and the role muted. No photo = a gradient
+  circle with initials. People per card: 3 square, 6 portrait, 8 story.
+- **Place photo** (save the date, meet, thank you): full-bleed under a strong colour veil and a
+  6 px blur; the words sit on it.
+- **Foot, the same on every card**: a rounded card (34 px) with the reason to scan (≤ 2 lines),
+  "Free · no sign-up · works offline", the event · dates, and the QR; below it the brand bar —
+  two pills of one height on one baseline, CampBuddy's wordmark left, a globe and
+  `campbuddy.club` right (light version on every base), nothing else in that strip.
+- **No "…" anywhere** (all designs): `fitText` shrinks (to 60 % of its minimum) and then wraps;
+  `ellipsize` now shrinks the font instead of cutting. People-card names are fitted on one line in
+  every design.
+- Not yet in the native app's own card renderer (`OrganizerSocialCards.kt`): it keeps the earlier
+  designs until ported.

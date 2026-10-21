@@ -9,8 +9,8 @@ import { launchChrome, sleep } from '../tests/browser/helpers/chrome.mjs';
 const [base = 'http://campbuddy.test', eventId, out = 'social-out', email = 'hello@wpsimplified.in', password = 'Hello@123'] = process.argv.slice(2);
 if (!eventId) throw new Error('usage: node tools/render-social.mjs <base-url> <event-id> <out-dir> [email] [password]');
 const SIZES = ['1080x1350', '1080x1080', '1080x1920'];
-const POSTS = ['classic', 'poster', 'frame', 'ticket', 'magazine', 'split', 'minimal'];
-const PEOPLE = ['classic', 'polaroid', 'badge', 'split', 'minimal', 'spotlight', 'arch'];
+const POSTS = (process.env.POSTS ?? 'daylight,classic,poster,frame,ticket,magazine,split,minimal').split(',');
+const PEOPLE = (process.env.PEOPLE_DESIGNS ?? 'daylight,classic,polaroid,badge,split,minimal,spotlight,arch').split(',');
 const PEOPLE_PER_DESIGN = Number(process.env.PEOPLE ?? 4);
 
 const chrome = await launchChrome();

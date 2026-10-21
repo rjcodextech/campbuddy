@@ -48,7 +48,7 @@ export function useArt(index = 0) {
     ART[kind] = list.length ? list[Math.abs(index) % list.length] : null;
   }
 }
-const PEOPLE_DESIGNS = ['classic', 'polaroid', 'badge', 'split', 'minimal', 'spotlight', 'arch'];
+const PEOPLE_DESIGNS = ['daylight', 'classic', 'polaroid', 'badge', 'split', 'minimal', 'spotlight', 'arch'];
 const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
 const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
 // The side margin for any word, QR or logo (the templates keep 80–100 px).
@@ -243,8 +243,10 @@ export function eventLook(seed) {
     texture: pick(TEXTURES),
     corner: r() < 0.5 ? 'right' : 'left',
     tilt: r() < 0.5 ? -1 : 1,
-    style: pick(POST_DESIGNS),
-    design: pick(PEOPLE_DESIGNS),
+    // Daylight first for every event (the brand guideline); the other designs stay a click away.
+    style: 'daylight',
+    design: 'daylight',
+    pick: { style: pick(POST_DESIGNS), design: pick(PEOPLE_DESIGNS) },
     rnd: r,
   };
 }
@@ -376,18 +378,25 @@ function fitText(ctx, text, maxWidth, size, min, maxLines, weight = 800, family 
     const lines = wrap(ctx, text, maxWidth);
     if (lines.length <= maxLines && lines.every((l) => ctx.measureText(l).width <= maxWidth)) return { lines, size: s };
   }
-  ctx.font = `${weight} ${min}px ${family}`;
-  const lines = wrap(ctx, text, maxWidth);
-  const kept = lines.slice(0, maxLines);
-  if (lines.length > maxLines) kept[maxLines - 1] = `${kept[maxLines - 1]}…`;
-  return { lines: kept.map((l) => ellipsize(ctx, l, maxWidth)), size: min };
+  // Still too long: smaller still, then as many lines as it needs — words are never cut with "…".
+  const floor = Math.max(14, Math.round(min * 0.6));
+  for (let s = min - 2; s >= floor; s -= 2) {
+    ctx.font = `${weight} ${s}px ${family}`;
+    const lines = wrap(ctx, text, maxWidth);
+    if (lines.length <= maxLines && lines.every((l) => ctx.measureText(l).width <= maxWidth)) return { lines, size: s };
+  }
+  ctx.font = `${weight} ${floor}px ${family}`;
+  return { lines: wrap(ctx, text, maxWidth), size: floor };
 }
 
+/** A line that is too wide gets a smaller font (on `ctx`) until it fits: never cut with "…". */
 function ellipsize(ctx, text, maxWidth) {
-  if (ctx.measureText(text).width <= maxWidth) return text;
-  let t = text.replace(/…$/, '');
-  while (t.length > 1 && ctx.measureText(`${t}…`).width > maxWidth) t = t.slice(0, -1);
-  return `${t}…`;
+  let size = Number(ctx.font.match(/(\d+(?:\.\d+)?)px/)?.[1] ?? 0);
+  while (size > 12 && ctx.measureText(text).width > maxWidth) {
+    size -= 1;
+    ctx.font = ctx.font.replace(/\d+(?:\.\d+)?px/, `${size}px`);
+  }
+  return text;
 }
 
 function wrap(ctx, text, maxWidth) {
@@ -844,7 +853,7 @@ export function postContent(post, fields, kit, pick) {
 // the event, the QR and CampBuddy's mark. Faces and photos are never under
 // words: a picture gets its own box and the words sit below it.
 
-const POST_DESIGNS = ['classic', 'poster', 'frame', 'ticket', 'magazine', 'split', 'minimal'];
+const POST_DESIGNS = ['daylight', 'classic', 'poster', 'frame', 'ticket', 'magazine', 'split', 'minimal'];
 
 /** The grid every card shares: the block at the foot, the header, the column. */
 function grid(W, H) {
@@ -1246,6 +1255,22 @@ export function planPost(content, size, styleName, colors) {
   const ctx = document.createElement('canvas').getContext('2d');
   useArt(content.artIndex ?? 0);
 
+  if (design === 'daylight') {
+    const d = daylightGrid(W, H);
+    if (content.body.type === 'photos') {
+      const all = content.body.people ?? [];
+      if (!all.length) return [{ ...content, body: { type: 'none' } }];
+      // As even as possible, so the last card is never one lonely face.
+      const per = Math.ceil(all.length / Math.ceil(all.length / daylightPerPage(H)));
+      const pages = [];
+      for (let i = 0; i < all.length; i += per) pages.push({ ...content, body: { ...content.body, people: all.slice(i, i + per) } });
+      return pages;
+    }
+    if (content.body.type === 'session') return [content];
+    const dm = daylightMeasure(ctx, content, d, null, d.w, d.top, d.bottom);
+    return paginate(content, dm.room, H);
+  }
+
   if (content.body.type === 'photos') {
     const all = content.body.people ?? [];
     if (!all.length) return [{ ...content, body: { type: 'none' } }];
@@ -1483,6 +1508,10 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   const pal = paletteOf(colors);
   const g = grid(W, H);
   const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
+  if (design === 'daylight') {
+    await drawDaylightPost(ctx, W, H, content, kit, pal, page);
+    return;
+  }
   const L = layoutFor(design, g, pal);
   const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), loadImage('/media/logo-wordmark.png')]);
   useArt(content.artIndex ?? 0);
@@ -1579,6 +1608,601 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   paintBlock(ctx, g, L.block, pal, kit, brand, content.key, cta);
 }
 
+// ---- Daylight (21 Oct 2026, owner confirmed twice) -------------------------
+//
+// The default design, after the owner's thumbnail guideline (spec/25 →
+// Daylight): light, calm, not cluttered. A base of Paper (off-white to white),
+// Ink (the main colour almost black) or Gradient (main to deep at 135°); a
+// faint dot grid, one or two soft glows, thin waves above the foot. The kicker
+// is uppercase and tracked with a small wave mark; one to three words of the
+// headline are highlighted (*marked* words, else the last word). People are
+// circles with a ring and their full name under them. The foot is always the
+// same: a card with the reason to scan and the QR, then the brand bar — two
+// pills of one height, CampBuddy left, campbuddy.club right, nothing else.
+
+/** The Daylight grid: header, the words' column, the QR card, the brand bar. */
+function daylightGrid(W, H) {
+  const square = H < 1100;
+  const tall = H >= 1900;
+  const barH = Math.round(H * (square ? 0.13 : (tall ? 0.1 : 0.12)));
+  const pillH = Math.round(Math.min(W, H) * (square ? 0.074 : 0.08));
+  const cardH = Math.round(H * (square ? 0.175 : (tall ? 0.125 : 0.15)));
+  const barTop = H - barH;
+  const cardTop = barTop - cardH - (square ? 6 : 12);
+  const logo = square ? { w: 190, h: 104 } : { w: 230, h: 126 };
+  const headerTop = SAFE - 12;
+  return {
+    W, H, square, tall, x: SAFE, w: W - 2 * SAFE, barH, barTop, pillH, cardH, cardTop, logo, headerTop,
+    top: headerTop + logo.h + (square ? 34 : 54),
+    bottom: cardTop - (square ? 26 : 42),
+  };
+}
+
+/** Paper for type-led posts, Ink for people and the place's photo, Gradient for the big dates and numbers. */
+function daylightBase(content, pal) {
+  if (['photos', 'session'].includes(content.body.type) || (ART.photo && PHOTO_POSTS.includes(content.key))) return 'ink';
+  if (['save-the-date', 'countdown'].includes(content.key) && contrast(pal.primary, pal.paper) >= 4.5) return 'gradient';
+  return 'paper';
+}
+
+/** The first colour of `list` that reads on every one of `grounds` (WCAG AA, 4.5:1), else the last. */
+function readableOn(list, grounds) {
+  return list.find((c) => grounds.every((g) => contrast(c, g) >= 4.5)) ?? list[list.length - 1];
+}
+
+/** Every colour a Daylight card uses, from the event's palette. */
+function daylightColors(base, pal) {
+  const white = mix(pal.paper, '#ffffff', 0.85);
+  if (base === 'paper') {
+    const accent = readableOn([pal.primary, mix(pal.primary, pal.ink, 0.3), pal.ink], [white, pal.paper]);
+    return {
+      base, dark: false, from: mix(pal.paper, '#ffffff', 0.25), to: white, ink: pal.ink, muted: readableOn([mix(pal.ink, white, 0.25), pal.ink], [white]),
+      accent, hlFrom: accent, hlTo: readableOn([mix(pal.primary, pal.ink, 0.5), pal.ink], [white]),
+      dot: pal.primary, glowA: pal.secondary, glowB: pal.primary, card: white, white,
+    };
+  }
+  const from = base === 'gradient' ? pal.primary : mix(pal.primary, '#050b09', 0.8);
+  const to = base === 'gradient' ? mix(pal.primary, pal.ink, 0.55) : mix(pal.primary, '#050b09', 0.9);
+  const light = readableOn([pal.secondary, mix(pal.secondary, white, 0.45), mix(pal.primary, white, 0.7), white], [from, to]);
+  return {
+    base, dark: true, from, to, ink: white, muted: readableOn([mix(white, from, 0.2), white], [from, to]),
+    accent: light, hlFrom: light, hlTo: light, dot: white, glowA: pal.secondary, glowB: light, card: alpha(white, 0.1), white,
+  };
+}
+
+/** The ground: the base, two soft glows, the dot grid (the right half on Paper, all of it on dark). */
+function paintDaylightGround(ctx, g, c) {
+  const { W, H } = g;
+  const grad = c.base === 'gradient' ? ctx.createLinearGradient(0, 0, W, H) : ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, c.from);
+  grad.addColorStop(1, c.to);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  const glow = (x, y, r, color, a) => {
+    const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, alpha(color, a));
+    rg.addColorStop(1, alpha(color, 0));
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, W, H);
+  };
+  glow(W * 0.94, H * 0.02, W * 0.75, c.glowA, c.dark ? 0.3 : 0.22);
+  glow(W * 0.02, g.cardTop, W * 0.65, c.glowB, c.dark ? 0.16 : 0.1);
+  ctx.fillStyle = alpha(c.dot, 0.12);
+  for (let y = 13; y < g.barTop; y += 26) {
+    for (let x = c.dark ? 13 : W / 2 + 13; x < W; x += 26) ctx.fillRect(x - 1, y - 1, 2, 2);
+  }
+}
+
+/** Thin parallel waves above the foot, fading upward (the signature). */
+function paintWaves(ctx, g, c, baseY) {
+  const color = c.dark ? c.accent : c.accent;
+  ctx.save();
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const y0 = baseY - i * 22;
+    const amp = 12 + i * 3;
+    const len = g.W / 1.4;
+    ctx.strokeStyle = alpha(color, (c.dark ? 0.34 : 0.26) * (1 - i * 0.22));
+    ctx.beginPath();
+    for (let x = 0; x <= g.W; x += 10) {
+      const y = y0 + Math.sin((x / len) * Math.PI * 2 + i * 0.9) * amp;
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** The little hand-drawn wave (~) in front of a kicker. */
+function waveMark(ctx, x, y, w, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(3, w / 9);
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  for (let i = 0; i <= 24; i++) {
+    const px = x + (w * i) / 24;
+    const py = y + Math.sin((i / 24) * Math.PI * 2) * (w / 7);
+    if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/** One line at the largest size that fits (a name is never split over two lines, nor cut). */
+function fitOneLine(ctx, text, maxWidth, size, weight = 800, family = FONT, min = 12) {
+  let s = size;
+  for (; s > min; s -= 1) {
+    ctx.font = `${weight} ${s}px ${family}`;
+    if (ctx.measureText(text).width <= maxWidth) break;
+  }
+  ctx.font = `${weight} ${s}px ${family}`;
+  return s;
+}
+
+/** The kicker: wave mark, UPPERCASE, tracked 0.16em, in the accent. Returns its height. */
+function paintKicker(ctx, text, x, y, maxWidth, size, color, align = 'left') {
+  const words = String(text ?? '').toUpperCase();
+  if (!words) return 0;
+  const mark = Math.round(size * 1.3);
+  ctx.save();
+  try { ctx.letterSpacing = '0.16em'; } catch { /* older browsers: no tracking */ }
+  const s = fitOneLine(ctx, words, maxWidth - mark - 14, size, 700, FONT, 18);
+  const tw = ctx.measureText(words).width;
+  const total = mark + 14 + tw;
+  const left = align === 'center' ? x + (maxWidth - total) / 2 : x;
+  waveMark(ctx, left, y + s * 0.5, mark, color);
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+  ctx.fillText(words, left + mark + 14, y + s * 0.86);
+  ctx.restore();
+  return s;
+}
+
+/**
+ * The headline's words and which are highlighted: words between *stars*, or,
+ * with none marked, the last word (and the one before it when the last is short).
+ */
+export function headlineMarks(text) {
+  const raw = String(text ?? '');
+  const marked = /\*[^*\s][^*]*\*/.test(raw);
+  const words = [];
+  let inside = false;
+  for (const token of raw.split(/\s+/).filter(Boolean)) {
+    const clean = token.replace(/\*/g, '');
+    const hl = marked && (inside || token.startsWith('*'));
+    if ((token.match(/\*/g) ?? []).length % 2 === 1) inside = !inside;
+    if (clean) words.push({ text: clean, hl });
+  }
+  if (!marked && words.length) {
+    words[words.length - 1].hl = true;
+    if (words.length > 2 && words[words.length - 1].text.replace(/\W/g, '').length <= 3) words[words.length - 2].hl = true;
+  }
+  return { plain: words.map((w) => w.text).join(' '), hl: words.map((w) => w.hl) };
+}
+
+/** A fitted headline, word by word: highlighted words in the main-to-deep gradient (Paper) or the light accent (dark). */
+function paintHeadline(ctx, fit, hl, x, y, w, c, family, align = 'left', lineHeight = 1.04) {
+  ctx.font = `800 ${fit.size}px ${family}`;
+  const space = ctx.measureText(' ').width;
+  let k = 0;
+  fit.lines.forEach((line, i) => {
+    const ly = y + fit.size * (0.86 + i * lineHeight);
+    const words = line.split(' ').filter(Boolean);
+    const width = ctx.measureText(line).width;
+    let cx = align === 'center' ? x + (w - width) / 2 : x;
+    for (const word of words) {
+      const ww = ctx.measureText(word).width;
+      if (hl[k] && !c.dark) {
+        const gr = ctx.createLinearGradient(cx, ly - fit.size, cx + ww, ly);
+        gr.addColorStop(0, c.hlFrom);
+        gr.addColorStop(1, c.hlTo);
+        ctx.fillStyle = gr;
+      } else ctx.fillStyle = hl[k] ? c.accent : c.ink;
+      ctx.fillText(word, cx, ly);
+      cx += ww + space;
+      k++;
+    }
+  });
+  return fit.lines.length * fit.size * lineHeight;
+}
+
+/** The words of a Daylight card: kicker, headline (highlighted), then what measureHero gives (date, number, line). */
+function daylightMeasure(ctx, content, g, kit, w, top, bottom, picture = false) {
+  const marks = headlineMarks(content.headline);
+  const m = measureHero(ctx, { ...content, headline: marks.plain }, g, kit, w, top, bottom, picture);
+  const kSize = g.tall ? 32 : (g.square ? 22 : 26);
+  const parts = m.parts.filter((p) => p.kind !== 'bar');
+  if (content.kicker) parts.unshift({ kind: 'kicker', size: kSize, gap: g.square ? 16 : 24 });
+  const heightOf = (p) => (p.kind === 'kicker' ? p.size : m.heightOf(p));
+  const textH = parts.reduce((sum, p) => sum + heightOf(p) + p.gap, 0);
+  return { ...m, parts, heightOf, textH, hl: marks.hl, room: bottom - top - textH - m.gap };
+}
+
+function paintDaylightWords(ctx, m, content, x, y, w, c, align = 'left') {
+  for (const p of m.parts) {
+    if (p.kind === 'kicker') paintKicker(ctx, content.kicker, x, y, w, p.size, c.accent, align);
+    else if (p.kind === 'head') paintHeadline(ctx, p.fit, m.hl, x, y, w, c, HEAD ?? FONT, align);
+    else if (p.kind === 'big') {
+      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT}`;
+      const mt = ctx.measureText(p.fit.lines[0]);
+      const asc = mt.actualBoundingBoxAscent || p.fit.size * 0.72;
+      const desc = mt.actualBoundingBoxDescent || 0;
+      if (c.dark) ctx.fillStyle = c.accent;
+      else {
+        const gr = ctx.createLinearGradient(x, y, x + mt.width, y + asc);
+        gr.addColorStop(0, c.hlFrom);
+        gr.addColorStop(1, c.hlTo);
+        ctx.fillStyle = gr;
+      }
+      ctx.textAlign = 'left';
+      ctx.fillText(p.fit.lines[0], align === 'center' ? x + (w - mt.width) / 2 : x - p.fit.size * 0.04, y + asc);
+      y += asc + desc + p.gap;
+      continue;
+    } else if (p.kind === 'month') {
+      ctx.save();
+      try { ctx.letterSpacing = '0.08em'; } catch { /* no tracking */ }
+      fitOneLine(ctx, p.text, w, p.size, 700, FONT);
+      ctx.fillStyle = c.ink;
+      const mw = ctx.measureText(p.text).width;
+      ctx.fillText(p.text, align === 'center' ? x + (w - mw) / 2 : x, y + p.size * 0.86);
+      ctx.restore();
+    } else if (p.kind === 'line') {
+      ctx.font = `500 ${p.fit.size}px ${FONT}`;
+      ctx.fillStyle = c.muted;
+      p.fit.lines.forEach((l, i) => {
+        const lw = ctx.measureText(l).width;
+        ctx.fillText(l, align === 'center' ? x + (w - lw) / 2 : x, y + p.fit.size * (0.9 + i * 1.25));
+      });
+    }
+    y += m.heightOf(p) + p.gap;
+  }
+  return y;
+}
+
+/** The header: the event's logo (left), the page chip (right). */
+function paintDaylightHeader(ctx, g, c, pal, logo, page) {
+  ctx.save();
+  ctx.shadowColor = alpha('#000000', c.dark ? 0.3 : 0.12);
+  ctx.shadowBlur = 36;
+  ctx.shadowOffsetY = 12;
+  logoTile(ctx, logo, g.x, g.headerTop, g.logo.w, g.logo.h, pal, 30);
+  ctx.restore();
+  if (page.total > 1) {
+    const text = page.index === 1 ? `${page.index}/${page.total} · SWIPE →` : `${page.index}/${page.total}`;
+    const h = g.square ? 48 : 56;
+    pill(ctx, text, g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: c.dark ? alpha(c.white, 0.14) : alpha(pal.primary, 0.1), fg: c.dark ? c.white : c.accent, size: g.square ? 22 : 24, height: h, pad: 22, align: 'right' });
+  }
+}
+
+/** The card above the brand bar: why scan (two lines at most), "free…", the event, and the QR. */
+function paintQrCard(ctx, g, c, pal, kit, qrContent, cta) {
+  const { x, w } = g;
+  const y = g.cardTop;
+  const h = g.cardH;
+  ctx.save();
+  ctx.shadowColor = alpha('#000000', c.dark ? 0.35 : 0.13);
+  ctx.shadowBlur = 44;
+  ctx.shadowOffsetY = 14;
+  ctx.fillStyle = c.card;
+  roundRect(ctx, x, y, w, h, 34);
+  ctx.fill();
+  ctx.restore();
+  if (c.dark) {
+    ctx.strokeStyle = alpha(c.white, 0.3);
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, y, w, h, 34);
+    ctx.stroke();
+  }
+  const pad = g.square ? 18 : 22;
+  const qr = h - 2 * pad;
+  const qx = x + w - pad - qr;
+  drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, y + pad, qr, pal.ink, c.white);
+  const tx = x + (g.square ? 28 : 36);
+  const tw = qx - 28 - tx;
+  const ctaFit = fitText(ctx, cta, tw, g.tall ? 44 : (g.square ? 30 : 34), 24, 2, 700, FONT);
+  const small = g.tall ? 28 : 24;
+  const stackH = ctaFit.lines.length * ctaFit.size * 1.12 + 12 + small * 2.5;
+  let ty = y + (h - stackH) / 2;
+  ctx.font = `700 ${ctaFit.size}px ${FONT}`;
+  ctx.fillStyle = c.ink;
+  ctaFit.lines.forEach((l, i) => ctx.fillText(l, tx, ty + ctaFit.size * (0.9 + i * 1.12)));
+  ty += ctaFit.lines.length * ctaFit.size * 1.12 + 12;
+  fitOneLine(ctx, 'Free · no sign-up · works offline', tw, small, 500, FONT);
+  ctx.fillStyle = c.muted;
+  ctx.fillText('Free · no sign-up · works offline', tx, ty + small);
+  const event = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
+  fitOneLine(ctx, event, tw, small, 700, FONT);
+  ctx.fillStyle = c.ink;
+  ctx.fillText(event, tx, ty + small * 2.35);
+}
+
+/** The globe icon of the address pill (the line icons' globe). */
+function globe(ctx, cx, cy, r, color) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(2, r / 5);
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(cx, cy, r * 0.45, r, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy); ctx.stroke();
+  ctx.restore();
+}
+
+/** The brand bar, the same on every card: CampBuddy (left) and campbuddy.club (right), one height, one baseline. */
+function paintBrandBar(ctx, g, c0, pal, brand) {
+  // The light version on every base: CampBuddy's mark keeps its own colours (a white copy of it lost its detail).
+  const c = { ...c0, dark: false };
+  const h = g.pillH;
+  const y = g.barTop + (g.barH - h) / 2;
+  const fill = c.dark ? alpha('#0b1f1a', 0.66) : alpha(c.white, 0.94);
+  const text = c.dark ? c.white : pal.ink;
+  const shape = (px, pw) => {
+    ctx.save();
+    if (!c.dark) { ctx.shadowColor = alpha('#000000', 0.12); ctx.shadowBlur = 30; ctx.shadowOffsetY = 8; }
+    ctx.fillStyle = fill;
+    roundRect(ctx, px, y, pw, h, h / 2);
+    ctx.fill();
+    ctx.restore();
+    if (c.dark) {
+      ctx.strokeStyle = alpha(c.white, 0.35);
+      ctx.lineWidth = 2;
+      roundRect(ctx, px, y, pw, h, h / 2);
+      ctx.stroke();
+    }
+  };
+  // Left: the wordmark (white on a dark bar).
+  const mark = brand ? (c.dark ? recolour(brand, c.white) ?? brand : brand) : null;
+  const mh = h * 0.56;
+  const mw = mark ? mh * (mark.width / mark.height) : 0;
+  const lw = mark ? mw + h * 0.8 : h * 3;
+  shape(g.x, lw);
+  if (mark) ctx.drawImage(mark, g.x + (lw - mw) / 2, y + (h - mh) / 2, mw, mh);
+  // Right: globe + address.
+  const size = Math.round(h * 0.36);
+  ctx.font = `600 ${size}px ${FONT}`;
+  const url = 'campbuddy.club';
+  const uw = ctx.measureText(url).width;
+  const icon = h * 0.36;
+  const rw = h * 0.4 + icon + 14 + uw + h * 0.4;
+  const rx = g.x + g.w - rw;
+  shape(rx, rw);
+  globe(ctx, rx + h * 0.4 + icon / 2, y + h / 2, icon / 2, text);
+  ctx.fillStyle = text;
+  ctx.fillText(url, rx + h * 0.4 + icon + 14, y + h / 2 + size * 0.36);
+}
+
+/** People per Daylight card: up to three as cards, more as an even grid of portraits. */
+function daylightPerPage(H) {
+  return H >= 1900 ? 8 : (H < 1100 ? 3 : 6);
+}
+
+/** A portrait: a circle with a ring, or a gradient circle with initials when there is no photo. */
+function portrait(ctx, img, cx, cy, r, ring, ringColor, pal, name) {
+  ctx.save();
+  ctx.shadowColor = alpha('#000000', 0.25);
+  ctx.shadowBlur = 30;
+  ctx.shadowOffsetY = 10;
+  ctx.fillStyle = ringColor;
+  ctx.beginPath(); ctx.arc(cx, cy, r + ring, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+  if (img) drawCover(ctx, img, cx - r, cy - r, 2 * r, 2 * r, 0.3);
+  else {
+    const gr = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
+    gr.addColorStop(0, pal.primary);
+    gr.addColorStop(1, mix(pal.primary, pal.ink, 0.5));
+    ctx.fillStyle = gr;
+    ctx.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+    ctx.fillStyle = textOn(pal.primary, pal.ink, mix(pal.paper, '#ffffff', 0.85));
+    ctx.textAlign = 'center';
+    ctx.font = `800 ${Math.round(r * 0.72)}px ${HEAD ?? FONT}`;
+    ctx.fillText(initials(name), cx, cy + r * 0.26);
+    ctx.textAlign = 'left';
+  }
+  ctx.restore();
+}
+
+/** Name (one line, whole) and role (muted) centred under a portrait. Returns the height used. */
+function nameAndRole(ctx, person, cx, y, w, size, c) {
+  ctx.textAlign = 'center';
+  const s = fitOneLine(ctx, person.name, w, size, 700, FONT, 14);
+  ctx.fillStyle = c.ink;
+  ctx.fillText(person.name, cx, y + s * 0.9);
+  let used = s * 1.15;
+  if (person.role) {
+    const rs = fitOneLine(ctx, person.role, w, Math.max(18, Math.round(size * 0.72)), 500, FONT, 14);
+    ctx.fillStyle = c.muted;
+    ctx.fillText(person.role, cx, y + used + rs * 0.95);
+    used += rs * 1.3;
+  }
+  ctx.textAlign = 'left';
+  return used;
+}
+
+/** The people of a speakers or session card in `box`: one hero, two or three cards, or an even grid. */
+async function paintDaylightPeople(ctx, box, people, c, pal, g) {
+  const list = people.length ? people : [];
+  if (!list.length) return;
+  const imgs = await Promise.all(list.map((p) => loadImage(p.photo)));
+  const ring = g.square ? 6 : 9;
+  const ringColor = c.dark ? c.accent : c.white;
+  const n = list.length;
+  if (n === 1) {
+    const nameSize = g.tall ? 56 : (g.square ? 38 : 46);
+    const textH = nameSize * 2.3;
+    const r = Math.max(60, Math.min(box.w * 0.3, (box.h - textH - 30) / 2 - ring));
+    const cy = box.y + ring + r;
+    portrait(ctx, imgs[0], box.x + box.w / 2, cy, r, ring, ringColor, pal, list[0].name);
+    nameAndRole(ctx, list[0], box.x + box.w / 2, cy + r + ring + 22, box.w, nameSize, c);
+    return;
+  }
+  if (n <= 3) {
+    const gap = 24;
+    const cw = (box.w - gap * (n - 1)) / n;
+    const nameSize = g.tall ? 40 : (g.square ? 28 : 32);
+    const textH = nameSize * 2.2;
+    const r = Math.max(44, Math.min(cw * 0.36, (box.h - 28 - textH - 70) / 2 - ring));
+    // Room for the ±3° tilt, so a corner never touches the card below.
+    const ch = Math.min(box.h - 28, 2 * (r + ring) + textH + 70);
+    const cy0 = box.y + (box.h - ch) / 2;
+    list.forEach((p, i) => {
+      const cx0 = box.x + i * (cw + gap);
+      ctx.save();
+      // A small tilt (±3°) adds energy.
+      ctx.translate(cx0 + cw / 2, cy0 + ch / 2);
+      ctx.rotate(((i % 2 ? 1 : -1) * 3 * Math.PI) / 180);
+      ctx.translate(-(cx0 + cw / 2), -(cy0 + ch / 2));
+      ctx.save();
+      ctx.shadowColor = alpha('#000000', c.dark ? 0.3 : 0.12);
+      ctx.shadowBlur = 40;
+      ctx.shadowOffsetY = 14;
+      ctx.fillStyle = c.dark ? alpha(c.white, 0.08) : c.white;
+      roundRect(ctx, cx0, cy0, cw, ch, 32);
+      ctx.fill();
+      ctx.restore();
+      const cy = cy0 + 30 + ring + r;
+      portrait(ctx, imgs[i], cx0 + cw / 2, cy, r, ring, ringColor, pal, p.name);
+      nameAndRole(ctx, p, cx0 + cw / 2, cy + r + ring + 18, cw - 28, nameSize, c);
+      ctx.restore();
+    });
+    return;
+  }
+  // Four to ten: an even grid, every portrait the same size, the name under each.
+  const nameSize = g.tall ? 34 : (g.square ? 24 : 28);
+  const textH = nameSize * 2.2;
+  let best = { cols: 2, r: 0 };
+  for (let cols = 2; cols <= 4; cols++) {
+    const rows = Math.ceil(n / cols);
+    const r = Math.min((box.w / cols) * 0.36, (box.h / rows - textH - 24) / 2 - ring);
+    if (r > best.r) best = { cols, r };
+  }
+  const { cols } = best;
+  const r = Math.max(36, best.r);
+  const rows = Math.ceil(n / cols);
+  const cellW = box.w / cols;
+  const cellH = Math.min(box.h / rows, 2 * (r + ring) + textH + 40);
+  const y0 = box.y + (box.h - cellH * rows) / 2;
+  list.forEach((p, i) => {
+    const row = Math.floor(i / cols);
+    const inRow = Math.min(cols, n - row * cols);
+    const x0 = box.x + (box.w - inRow * cellW) / 2;
+    const cx = x0 + (i % cols) * cellW + cellW / 2;
+    const cy = y0 + row * cellH + ring + r + 6;
+    portrait(ctx, imgs[i], cx, cy, r, ring, ringColor, pal, p.name);
+    nameAndRole(ctx, p, cx, cy + r + ring + 14, cellW - 20, nameSize, c);
+  });
+}
+
+/** One Daylight card of a post. */
+async function drawDaylightPost(ctx, W, H, content, kit, pal, page) {
+  const g = daylightGrid(W, H);
+  const c = daylightColors(daylightBase(content, pal), pal);
+  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  useArt(content.artIndex ?? 0);
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  const cta = CTA[content.key] ?? 'Scan to open CampBuddy';
+  paintDaylightGround(ctx, g, c);
+
+  const people = content.body.type === 'photos'
+    ? content.body.people.map((p) => ({ name: p.name, photo: p.photo, role: p.role ?? 'Speaker' }))
+    : (content.body.type === 'session' ? content.body.speakers.map((name, i) => ({ name, photo: content.body.photos?.[i] ?? null, role: 'Speaker' })) : null);
+  const placePhoto = !people && ART.photo && PHOTO_POSTS.includes(content.key);
+  if (placePhoto) {
+    // The place's photo under a strong colour veil and a soft blur: the headline stays clearly readable.
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0, 0, W, g.cardTop + g.cardH / 2); ctx.clip();
+    try { ctx.filter = 'blur(6px)'; } catch { /* no filter: the veil alone */ }
+    drawCover(ctx, ART.photo, -20, -20, W + 40, g.cardTop + g.cardH / 2 + 40, 0.5);
+    ctx.filter = 'none';
+    const veil = ctx.createLinearGradient(0, 0, 0, g.cardTop + g.cardH / 2);
+    veil.addColorStop(0, alpha(c.from, 0.78));
+    veil.addColorStop(1, alpha(c.to, 0.96));
+    ctx.fillStyle = veil;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+  paintDaylightHeader(ctx, g, c, pal, logo, page);
+
+  const m = daylightMeasure(ctx, content, g, kit, g.w, g.top, g.bottom, Boolean(people));
+  let y = paintDaylightWords(ctx, m, content, g.x, g.top, g.w, c);
+  if (people) {
+    const box = { x: g.x, y: y + (g.square ? 26 : 44), w: g.w, h: g.bottom - y - (g.square ? 26 : 44) };
+    paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
+    await paintDaylightPeople(ctx, box, people, c, pal, g);
+  } else {
+    const bH = bodyHeight(content.body, H, m.room);
+    const withBody = bH > 0 && m.room >= 100;
+    if (withBody) {
+      await paintBody(ctx, content.body, g.x, y + m.gap, g.w, bH, pal, kit, H, c.ink);
+      y += m.gap + bH;
+    }
+    // The site's artwork, faint, only in the room left between the words and the foot.
+    const free = g.cardTop - 24 - (y + 36);
+    if (!placePhoto && free > 150) paintArtBackground(ctx, { x: 0, y: y + 36, w: W, h: free, on: c.dark ? c.to : c.white, free: true }, pal);
+    paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
+    useArt(content.artIndex ?? 0);
+  }
+  paintQrCard(ctx, g, c, pal, kit, content.key, cta);
+  paintBrandBar(ctx, g, c, pal, brand);
+}
+
+/** A Daylight people card: the portrait, the role chip, the name, why they matter, the QR card, the brand bar. */
+async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
+  const g = daylightGrid(W, H);
+  const rc = roleColor(person, colors);
+  const c = daylightColors('paper', { ...pal, secondary: rc });
+  const [photo, brand, logo] = await Promise.all([loadImage(person.photo), loadImage('/media/logo-wordmark.png'), loadImage(kit.event.logo || kit.event.mark)]);
+  useArt(person.artIndex ?? 0);
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  paintDaylightGround(ctx, g, c);
+  paintDaylightHeader(ctx, g, c, pal, logo, { index: 1, total: 1 });
+  const { roles, talk } = personLines(person);
+  // The role chip, top right, in the role's tone.
+  if (person.role_labels?.[0]) {
+    const h = g.square ? 48 : 56;
+    pill(ctx, person.role_labels[0].toUpperCase(), g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: rc, fg: textOn(rc, pal.ink, c.white), size: g.square ? 22 : 24, height: h, pad: 24, align: 'right' });
+  }
+  const kSize = g.tall ? 32 : (g.square ? 22 : 26);
+  const nameSize = g.tall ? 104 : (g.square ? 60 : 80);
+  const lineSize = g.tall ? 38 : (g.square ? 26 : 30);
+  const lineFit = talk ? fitText(ctx, talk, g.w, lineSize, 22, 2, 500, FONT) : null;
+  const textH = kSize + 22 + nameSize * 1.1 + (roles ? lineSize * 1.5 : 0) + (lineFit ? lineFit.lines.length * lineFit.size * 1.25 + 10 : 0);
+  const ring = g.square ? 8 : 10;
+  const room = g.bottom - g.top - textH - 40;
+  const r = Math.max(70, Math.min(g.w * (g.square ? 0.22 : 0.3), room / 2 - ring));
+  const cy = g.top + ring + r;
+  portrait(ctx, photo, W / 2, cy, r, ring, c.white, pal, person.name);
+  let y = cy + r + ring + 40;
+  y += paintKicker(ctx, personHeadline(person, kit), g.x, y, g.w, kSize, c.accent, 'center') + 22;
+  // The full name on one line, the first name highlighted.
+  const marks = headlineMarks(`*${String(person.name ?? '').trim().split(/\s+/)[0] ?? ''}* ${String(person.name ?? '').trim().split(/\s+/).slice(1).join(' ')}`.trim());
+  const ns = fitOneLine(ctx, marks.plain, g.w, nameSize, 800, HEAD ?? FONT, 24);
+  y += paintHeadline(ctx, { lines: [marks.plain], size: ns }, marks.hl, g.x, y, g.w, c, HEAD ?? FONT, 'center', 1.1);
+  if (roles) {
+    ctx.textAlign = 'center';
+    const rs = fitOneLine(ctx, roles, g.w, lineSize, 600, FONT, 18);
+    ctx.fillStyle = c.ink;
+    ctx.fillText(roles, W / 2, y + rs * 1.1);
+    ctx.textAlign = 'left';
+    y += lineSize * 1.5;
+  }
+  if (lineFit) {
+    ctx.font = `500 ${lineFit.size}px ${FONT}`;
+    ctx.fillStyle = c.muted;
+    ctx.textAlign = 'center';
+    lineFit.lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 10 + lineFit.size * (0.95 + i * 1.25)));
+    ctx.textAlign = 'left';
+  }
+  paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
+  const qrContent = `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`;
+  paintQrCard(ctx, g, c, pal, kit, qrContent, personCta(person, kit));
+  paintBrandBar(ctx, g, c, pal, brand);
+}
+
 // ---- People cards (social posts, not the attendee app's Camp Card) --------
 
 /** The footer line of a people card: why the reader would look for this person, by role. */
@@ -1635,6 +2259,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  if (design === 'daylight') {
+    await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors);
+    return;
+  }
   const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png'), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   // The WordCamp's logo, on every people card.
@@ -1753,7 +2381,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     roundRect(ctx, W / 2 - 46, by + 16, 92, 20, 10); ctx.fill();
     const inner = bh - (square ? 100 : 130) - bandH;
     // The name is measured first, so a two-line name never runs into the role band: the photo gives way.
-    const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 2, 900);
+    const n = fitText(ctx, person.name, bw - 70, tall ? 84 : (square ? 46 : 64), 26, 1, 900);
     const nameH = n.lines.length * n.size * 1.06 + 14;
     const r = Math.max(40, Math.min(bw * (tall ? 0.34 : 0.26), inner * (talk ? 0.26 : 0.3), (inner - 26 - nameH - 22 - 8) / 2));
     const cy = by + (square ? 100 : 130) + 26 + r;
@@ -1816,7 +2444,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = pal.paper;
     ctx.fillRect(0, 0, W, H);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
-    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 2, 800, HEAD ?? FONT);
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 1, 800, HEAD ?? FONT);
     const nameH = n.lines.length * n.size * 1.04;
     const small = tall ? 34 : (square ? 24 : 28);
     const textH = nameH + small * 1.8 + (talk ? small * 1.6 : 0) + 30;
@@ -1972,7 +2600,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     topLogo(photoLeft ? SAFE + 30 : W - SAFE - 30 - LW);
     let y = SAFE + 40 + 2 * r + (tall ? 200 : (square ? 70 : 110));
     ctx.fillStyle = pal.ink;
-    const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 2, 700, SERIF);
+    const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 1, 700, SERIF);
     ctx.font = `700 ${n.size}px ${SERIF}`;
     n.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += n.size * 1.02; });
     ctx.fillStyle = rc; ctx.fillRect(SAFE + 30, y + 4, 120, 8);
@@ -2011,7 +2639,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   circlePhoto(ctx, photo, W / 2, cy, r, 14, pal.paper, pal.soft, pal.primary, person.name);
   let y = cy + r + (square ? 70 : (tall ? 150 : 100));
   ctx.fillStyle = pal.ink; ctx.textAlign = 'center';
-  const name = fitText(ctx, person.name, W - 2 * SAFE, square ? 60 : (tall ? 100 : 80), 34, 2, 900);
+  const name = fitText(ctx, person.name, W - 2 * SAFE, square ? 60 : (tall ? 100 : 80), 34, 1, 900);
   name.lines.forEach((l) => { ctx.fillText(l, W / 2, y); y += name.size * 1.1; });
   ctx.fillStyle = mix(rc, pal.ink, 0.2);
   ctx.font = `800 32px ${FONT}`;
