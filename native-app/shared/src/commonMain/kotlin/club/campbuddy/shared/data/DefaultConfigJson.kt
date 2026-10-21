@@ -7,8 +7,8 @@ internal const val DEFAULT_CONFIG_JSON = """
     "version": 0,
     "schema": 1,
     "min_app": {
-        "android": "1.0.0",
-        "ios": "1.0.0"
+        "android": "0.0.1",
+        "ios": "0.0.1"
     },
     "flags": {
         "native_push": true,

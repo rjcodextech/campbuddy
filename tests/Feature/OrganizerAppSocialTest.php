@@ -32,7 +32,7 @@ class OrganizerAppSocialTest extends TestCase
         Http::preventStrayRequests();
         $make = fn (string $slug) => Event::withoutEvents(fn () => Event::create([
             'slug' => $slug, 'display_name' => 'WordCamp '.ucfirst($slug).' 2026', 'source_site_url' => "https://{$slug}.wordcamp.org/2026",
-            'status' => 'active', 'is_visible' => true, 'starts_on' => now()->addDays(5)->toDateString(), 'ends_on' => now()->addDays(6)->toDateString(), 'timezone' => 'Asia/Kolkata',
+            'status' => 'active', 'is_visible' => true, 'starts_on' => now('Asia/Kolkata')->addDays(5)->toDateString(), 'ends_on' => now('Asia/Kolkata')->addDays(6)->toDateString(), 'timezone' => 'Asia/Kolkata',
         ]));
         $this->mine = $make('mine');
         $this->theirs = $make('theirs');

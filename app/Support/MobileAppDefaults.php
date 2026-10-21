@@ -34,7 +34,7 @@ class MobileAppDefaults
     {
         return [
             'schema' => self::SCHEMA,
-            'min_app' => ['android' => '1.0.0', 'ios' => '1.0.0'],
+            'min_app' => ['android' => '0.0.1', 'ios' => '0.0.1'],
             'flags' => ['native_push' => true, 'local_reminders' => true, 'discovery' => true, 'organizer_login' => true, 'report_block' => true],
             // The same palette as the website and the PWA (resources/scss/abstracts/_variables.scss).
             'theme' => [

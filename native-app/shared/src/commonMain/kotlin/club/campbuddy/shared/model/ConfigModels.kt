@@ -33,7 +33,7 @@ data class AppConfig(
 }
 
 @Serializable
-data class MinApp(val android: String = "1.0.0", val ios: String = "1.0.0")
+data class MinApp(val android: String = "0.0.1", val ios: String = "0.0.1")
 
 @Serializable
 data class ThemeConfig(
