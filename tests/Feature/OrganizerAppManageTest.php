@@ -330,6 +330,9 @@ class OrganizerAppManageTest extends TestCase
         $this->postJson('/api/v1/app/organizer/admin/events', ['slug' => 'wordcamp-new', 'display_name' => 'Again', 'source_site_url' => 'https://new.wordcamp.org/2027', 'status' => 'draft'], $admin)->assertUnprocessable();
 
         $this->postJson('/api/v1/app/organizer/admin/events/discover', [], $admin)->assertOk();
+        // "Refresh event data" keeps the web button's cooldown (it calls every WordCamp site).
+        Cache::put('admin:data-refresh:recent', true, 30);
+        $this->postJson('/api/v1/app/organizer/admin/data/refresh', [], $admin)->assertStatus(429);
         Queue::assertPushed(DiscoverWordCampsJob::class);
         $this->assertCount(3, $this->getJson('/api/v1/app/organizer/admin/event-options', $admin)->json('data'));
     }

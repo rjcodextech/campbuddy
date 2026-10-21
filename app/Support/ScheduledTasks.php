@@ -21,6 +21,8 @@ class ScheduledTasks
         'ingest-sessions-speakers-sponsors' => 'Fetches the schedule, speakers and sponsors of every live event from its site (for a week after it ends).',
         'ingest-event-info' => 'Fetches each live event\'s information (venue, links, contact); what an admin typed is never overwritten.',
         'ingest-attendee-roster' => 'Reads each live event\'s public Attendees page: new people in, people who left out.',
+        'fill-missing-photos' => 'Finds a real photo for everyone on a live event\'s attendee list: the site\'s photo, their Gravatar or their WordPress.org picture.',
+        'fetch-contributor-tables' => 'Reads Contributor Day teams and table leads from a live event\'s site (hand-made tables are never changed).',
         'backfill-event-branding' => 'Fetches a logo or favicon that is still missing for a live event.',
         'heartbeat' => 'Writes "the scheduler ran", which the dashboard checks.',
         'send-session-reminders' => 'Sends the "starting soon" push 5–10 minutes before each session a phone saved.',

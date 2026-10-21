@@ -968,9 +968,11 @@ function layoutFor(design, g, pal) {
     case 'magazine': {
       // The artwork is the hero of the top: shown big, in its own colours, on a soft ground.
       const show = Math.round(blockTop * (g.square ? 0.4 : 0.44));
+      // Below the logo and the label: the art never sits behind them (it used to run under the label pill).
+      const artTop = g.headerTop + g.logo.h + (g.square ? 10 : 16);
       return {
         ...base,
-        art: { x: 0, y: 0, w: W, h: show, on: pal.soft, showcase: true },
+        art: { x: 0, y: artTop, w: W, h: show - artTop, on: pal.soft, showcase: true, groundY: 0 },
         head: { ...base.head, onPicture: true },
         area: { x: g.x, y: show + (g.square ? 30 : 50), w: g.w, bottom: blockTop - (g.square ? 24 : 40) },
       };
@@ -1010,11 +1012,13 @@ function paintArtBackground(ctx, box, pal) {
   const strong = darkGround ? mix(on, pal.paper, 0.22) : mix(on, pal.primary, 0.3);
   const faint = darkGround ? mix(on, pal.ink, 0.12) : mix(on, pal.primary, 0.08);
   ctx.save();
-  ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
   if (box.showcase) {
+    // The soft ground reaches up behind the header (groundY) even though the art itself starts below it.
+    const from = box.groundY ?? box.y;
     ctx.fillStyle = on;
-    ctx.fillRect(box.x, box.y, box.w, box.h);
+    ctx.fillRect(box.x, from, box.w, box.y + box.h - from);
   }
+  ctx.beginPath(); ctx.rect(box.x, box.y, box.w, box.h); ctx.clip();
   const img = ART.illustration;
   if (img) {
     const info = artInfo(img);
@@ -1221,15 +1225,16 @@ function mosaicGrid(n, w, h) {
     const rows = Math.ceil(n / cols);
     const cell = (w / cols) / (h / rows);
     const waste = rows * cols - n;
-    const sc = Math.abs(Math.log(cell / 0.9)) + waste * 0.15;
+    // An empty tile looks like a missing photo: it costs more than a slightly long one.
+    const sc = Math.abs(Math.log(cell / 0.9)) + waste * 0.8;
     if (sc < score) { score = sc; best = { cols, rows }; }
   }
   return best;
 }
 
-/** Faces per speakers card: three, side by side, so every face is big. */
-function mosaicPage() {
-  return 3;
+/** Faces per speakers card: three side by side, so every face is big; four (two by two) on a tall story card. */
+function mosaicPage(H = 1350) {
+  return H >= 1900 ? 4 : 3;
 }
 
 /** Every card of a post at this size and design (measured with fonts loaded). */
@@ -1489,9 +1494,17 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   // header (or under the picture) the same way on every card: the site's
   // artwork then takes only the room left below them, never the room under words.
   const picture = isPicture(content);
-  const box = picture ? pictureBox(g, L) : null;
-  const top = picture ? box.y + box.h + (g.square ? 24 : 40) : L.area.y;
-  const m = measureHero(ctx, content, g, kit, L.area.w, top, L.area.bottom, picture);
+  let box = picture ? pictureBox(g, L) : null;
+  let top = picture ? box.y + box.h + (g.square ? 24 : 40) : L.area.y;
+  let m = measureHero(ctx, content, g, kit, L.area.w, top, L.area.bottom, picture);
+  // Words under a picture must end above the foot block: the picture gives way (it ran into the block on Magazine).
+  const over = picture ? top + m.textH - L.area.bottom : 0;
+  if (over > 0) {
+    const cut = Math.min(over, box.h * 0.4);
+    box = { ...box, h: box.h - cut };
+    top -= cut;
+    m = measureHero(ctx, content, g, kit, L.area.w, top, L.area.bottom, picture);
+  }
   const bH = picture ? 0 : bodyHeight(content.body, H, m.room);
   const withBody = bH > 0 && m.room >= 100;
   const wordsBottom = top + m.textH + (withBody ? m.gap + bH : 0);
@@ -1777,7 +1790,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       ctx.fillText(initials(person.name), W / 2, bandTop * 0.58);
       ctx.textAlign = 'left';
     }
-    paintArtBackground(ctx, { x: 0, y: bandTop * 0.64, w: W, h: bandTop * 0.36, on: dark }, pal);
+    // The art only where there is no photo: drawn over a face it looked like a sticker on the person.
+    if (!tone) paintArtBackground(ctx, { x: 0, y: bandTop * 0.64, w: W, h: bandTop * 0.36, on: dark }, pal);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
     if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
     ctx.fillStyle = rc;
@@ -1883,7 +1897,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     g.addColorStop(1, alpha(rc, 0.75));
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
 
-    paintArtBackground(ctx, { x: 0, y: ph * 0.62, w: W, h: ph * 0.38, on: mix(rc, pal.ink, 0.2) }, pal);
+    // Not over the photo itself (it covered the person's shoulder); with no photo it fills the empty picture.
+    if (!photo) paintArtBackground(ctx, { x: 0, y: ph * 0.62, w: W, h: ph * 0.38, on: mix(rc, pal.ink, 0.2) }, pal);
 
     // The block.
     ctx.fillStyle = rc;

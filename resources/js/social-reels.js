@@ -371,14 +371,13 @@ function introScene(kicker) {
       ctx.restore();
 
       let y = pillAt(ctx, kicker, W / 2, 740, pal.primary, pal.onPrimary, 38, ease(span(t, -0.2, 0.4)));
-      const name = fitAll(ctx, kit.event.name, TEXT_W, 124, 70, 3, 800, head);
+      const line = [kit.event.dates, kit.event.place].filter(Boolean).join(' · ');
+      const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 20, TEXT_W, 124, 3, 2, 800, head, text, 70);
       y = risingLines(ctx, name, y + 20, pal.ink, t, -0.35, { family: head });
       ctx.save();
       ctx.globalAlpha *= ease(span(t, 0.25, 0.5));
       ctx.fillStyle = T.mix(pal.ink, pal.paper, 0.3);
       ctx.textAlign = 'center';
-      const line = [kit.event.dates, kit.event.place].filter(Boolean).join(' · ');
-      const sub = fitAll(ctx, line, TEXT_W, 46, 34, 2, 600, text);
       ctx.font = `600 ${sub.size}px ${text}`;
       sub.lines.forEach((l, i) => ctx.fillText(l, W / 2, y + 70 + i * sub.size * 1.25));
       ctx.restore();
@@ -419,9 +418,8 @@ function introLayout(ctx, t, dur, reel, kicker, layout) {
     if (reel.logo) logoCard(ctx, reel, -160, -160, 320, 48);
     ctx.restore();
     let y = pillAt(ctx, kicker, W / 2, 780, pal.secondary, pal.onSecondary, 38, ease(span(t, -0.1, 0.4)));
-    const name = fitAll(ctx, kit.event.name, TEXT_W, 124, 70, 3, 900, head);
+    const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 20, TEXT_W, 124, 3, 2, 900, head, text, 30);
     y = risingLines(ctx, name, y + 20, pal.ink, t, -0.3, { weight: 900, family: head });
-    const sub = fitAll(ctx, line, TEXT_W, 46, 34, 2, 600, text);
     bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25 });
   } else {
     // left
@@ -439,14 +437,30 @@ function introLayout(ctx, t, dur, reel, kicker, layout) {
     ctx.font = `800 38px ${font}`;
     const pw = Math.min(width, ctx.measureText(kicker).width + 38 * 1.4);
     let y = pillAt(ctx, kicker, x + 44 + pw / 2, 680, pal.primary, pal.onPrimary, 38, ease(span(t, -0.1, 0.4)));
-    const name = fitAll(ctx, kit.event.name, width, 132, 70, 4, 900, head);
+    const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 10, width, 132, 4, 3, 900, head, text, 30);
     y = risingLines(ctx, name, y + 10, pal.ink, t, -0.3, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: width });
-    const sub = fitAll(ctx, line, width, 44, 34, 3, 600, text);
     bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25, align: 'left', x: x + 44, maxWidth: width });
   }
 
   partnersBadge(ctx, reel, badgeY(bottom), ease(span(t, 0.5, 0.5)));
   ctx.restore();
+}
+
+/**
+ * The intro's name and dates line, sized so they end above the "CampBuddy × WPSimplified" badge: a long name
+ * or venue address used to run under it (the second line of "St. Joseph's Boys' High School" was hidden).
+ * `gap` is the room between the name and the dates line.
+ */
+function introWords(ctx, name, line, top, width, nameMax, nameLines, subLines, weight, head, text, gap) {
+  const limit = SAFE.bottom - 120 - 50;
+  let fit = null;
+  for (const k of [1, 0.88, 0.76, 0.66, 0.58]) {
+    const n = fitAll(ctx, name, width, Math.round(nameMax * k), Math.min(60, Math.round(nameMax * k)), nameLines, weight, head);
+    const s = fitAll(ctx, line, width, Math.round(46 * Math.max(k, 0.8)), 30, subLines, 600, text);
+    fit = { n, s };
+    if (top + n.lines.length * n.size * 1.12 + gap + s.lines.length * s.size * 1.25 <= limit) break;
+  }
+  return fit;
 }
 
 /** Where the "CampBuddy × WPSimplified" badge goes: under the words, never below the safe zone. */
@@ -624,10 +638,15 @@ function gridScene(people, first, total, role) {
       leaving(ctx, t, dur);
       const cols = 2;
       const cellW = 360;
-      const photo = 240;
-      const rowH = 370;
       const rows = Math.ceil(people.length / cols);
-      const top = CONTENT_Y - 60 + ((3 - rows) * rowH) / 2;
+      // Names measured first: a two-line name gets its room, so it never runs into the photo below it,
+      // and the grid starts under the header (the logo and the count pill), never behind it.
+      const fits = people.map((person) => fitAll(ctx, person.name, cellW - 20, 42, 28, 2, 800, head));
+      const nameH = Math.max(...fits.map((f) => f.lines.length * f.size * 1.1));
+      const room = SAFE.bottom - CONTENT_Y;
+      const photo = Math.max(160, Math.min(240, room / rows - 28 - nameH - 30));
+      const rowH = photo + 28 + nameH + 30;
+      const top = CONTENT_Y + Math.max(0, (room - rows * rowH) / 2);
       people.forEach((person, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
@@ -646,7 +665,7 @@ function gridScene(people, first, total, role) {
         ctx.globalAlpha *= ease(span(t, 0.3 + i * 0.12, 0.4));
         ctx.fillStyle = pal.ink;
         ctx.textAlign = 'center';
-        const fit = fitAll(ctx, person.name, cellW - 20, 42, 34, 2, 800, head);
+        const fit = fits[i];
         ctx.font = `800 ${fit.size}px ${head}`;
         fit.lines.forEach((l, k) => ctx.fillText(l, cx, y + photo + 28 + (k + 1) * fit.size * 1.1, cellW - 20));
         ctx.restore();
