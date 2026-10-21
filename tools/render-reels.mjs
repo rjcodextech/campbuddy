@@ -22,7 +22,9 @@ try {
   const titles = await js(`[...document.querySelectorAll('[data-reel-list] li')].map((li) => li.querySelector('span').textContent)`);
   if (!titles?.length) throw new Error('No reels on the page (signed in?)');
 
+  const only = process.env.REELS ? process.env.REELS.split(",").map(Number) : null;
   for (let i = 0; i < titles.length; i++) {
+    if (only && !only.includes(i)) continue;
     const slug = titles[i].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
     await js(`[...document.querySelectorAll('[data-reel-list] li')][${i}].querySelector('button').click(), 1`);
     await sleep(1500);

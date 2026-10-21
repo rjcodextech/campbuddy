@@ -5,6 +5,10 @@
 //   - one reel each for the organizers, volunteers, media partners and table
 //     leads, and one per five speakers.
 //
+// Since 21 Oct 2026 every reel stands on the Daylight ground (spec/25): paper
+// to white, soft glows, a dot grid, thin waves rolling at the foot; the event's
+// name ends on a highlighted word; the end card ends on the brand bar.
+//
 // Every reel: an intro (the event, "CampBuddy × WPSimplified"), its scenes and
 // an end card (the event's QR in CampBuddy, WPSimplified's credit). It follows
 // the event's look: its colours, fonts, pattern and skyline (social-kit.js).
@@ -99,7 +103,7 @@ function fitAll(ctx, text, maxWidth, size, min, maxLines, weight, family) {
 }
 
 /** Centred lines; each rises into place a little after the one before. Returns the y under the last line. */
-function risingLines(ctx, fit, y, color, t, start, { weight = 800, family, lh = 1.12, align = 'center', x = W / 2, stagger = 0.08, maxWidth = TEXT_W } = {}) {
+function risingLines(ctx, fit, y, color, t, start, { weight = 800, family, lh = 1.12, align = 'center', x = W / 2, stagger = 0.08, maxWidth = TEXT_W, highlight = null } = {}) {
   ctx.textAlign = align;
   ctx.fillStyle = color;
   fit.lines.forEach((line, i) => {
@@ -107,7 +111,26 @@ function risingLines(ctx, fit, y, color, t, start, { weight = 800, family, lh = 
     ctx.save();
     ctx.globalAlpha *= p;
     ctx.font = `${weight} ${fit.size}px ${family}`;
-    ctx.fillText(line, x, y + (i + 1) * fit.size * lh + (1 - p) * 40, maxWidth);
+    const ly = y + (i + 1) * fit.size * lh + (1 - p) * 40;
+    const words = line.split(' ');
+    if (highlight && i === fit.lines.length - 1 && words.length > 1) {
+      // Daylight: the name's last word in the main-to-deep gradient.
+      const last = words.pop();
+      const head = `${words.join(' ')} `;
+      const hw = ctx.measureText(head).width;
+      const lw = ctx.measureText(last).width;
+      const left = align === 'center' ? x - (hw + lw) / 2 : x;
+      ctx.textAlign = 'left';
+      ctx.fillText(head, left, ly);
+      const gr = ctx.createLinearGradient(left + hw, ly - fit.size, left + hw + lw, ly);
+      gr.addColorStop(0, highlight[0]);
+      gr.addColorStop(1, highlight[1]);
+      ctx.fillStyle = gr;
+      ctx.fillText(last, left + hw, ly);
+    } else if (highlight && i === fit.lines.length - 1) {
+      ctx.fillStyle = highlight[0];
+      ctx.fillText(line, x, ly, maxWidth);
+    } else ctx.fillText(line, x, ly, maxWidth);
     ctx.restore();
   });
   ctx.textAlign = 'left';
@@ -193,7 +216,8 @@ function backdrop(ctx, time, reel) {
   ctx.fillRect(0, 0, W, H);
 
   const kind = reel.look?.backdrop ?? 'pattern';
-  if (kind !== 'pattern') backdropShapes(ctx, time, reel, kind);
+  if (reel.daylight !== false) daylightGround(ctx, time, reel, kind);
+  else if (kind !== 'pattern') backdropShapes(ctx, time, reel, kind);
   else if (art.patternTile) {
     const pattern = ctx.createPattern(art.patternTile, 'repeat');
     pattern.setTransform(new DOMMatrix().translate(-(time * 8) % art.patternTile.width, (time * 14) % art.patternTile.height));
@@ -227,6 +251,49 @@ function backdrop(ctx, time, reel) {
     ctx.drawImage(img, (W - w) / 2, H - h - 10 + rise + Math.sin(time * 0.8) * 4, w, h);
     ctx.restore();
   }
+}
+
+/**
+ * The Daylight ground (spec/25): paper fading to white, two soft glows that
+ * drift (where they sit follows the reel's look, so reels still differ), a
+ * faint dot grid on the right half and four thin waves rolling at the foot.
+ */
+function daylightGround(ctx, time, reel, kind) {
+  const { pal } = reel;
+  const white = T.mix(pal.paper, '#ffffff', 0.85);
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, T.mix(pal.paper, '#ffffff', 0.25));
+  g.addColorStop(1, white);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  const corners = { pattern: [0.94, 0.04, 0.04, 0.72], aurora: [0.06, 0.06, 0.94, 0.7], stripes: [0.9, 0.3, 0.1, 0.8], rings: [0.5, 0.02, 0.5, 0.84], dotwave: [0.96, 0.5, 0.04, 0.2] }[kind] ?? [0.94, 0.04, 0.04, 0.72];
+  const glow = (x, y, r, color, a) => {
+    const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, T.alpha(color, a));
+    rg.addColorStop(1, T.alpha(color, 0));
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, W, H);
+  };
+  glow(W * corners[0] + Math.sin(time * 0.3) * 40, H * corners[1] + Math.cos(time * 0.25) * 40, W * 0.8, pal.secondary, 0.22);
+  glow(W * corners[2] + Math.cos(time * 0.27) * 40, H * corners[3] + Math.sin(time * 0.2) * 40, W * 0.7, pal.primary, 0.1);
+  ctx.fillStyle = T.alpha(pal.primary, 0.12);
+  for (let y = 13; y < H; y += 26) {
+    for (let x = W / 2 + 13; x < W; x += 26) ctx.fillRect(x - 1, y - 1, 2, 2);
+  }
+  ctx.save();
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const y0 = H * 0.9 - i * 24;
+    ctx.strokeStyle = T.alpha(pal.primary, 0.26 * (1 - i * 0.22));
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 12) {
+      const y = y0 + Math.sin((x / (W / 1.4)) * Math.PI * 2 + i * 0.9 - time * 0.8) * (14 + i * 3);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
 }
 
 /** The backgrounds a reel can have besides the site's own pattern: soft, in the event's colours, always moving. */
@@ -373,7 +440,7 @@ function introScene(kicker) {
       let y = pillAt(ctx, kicker, W / 2, 740, pal.primary, pal.onPrimary, 38, ease(span(t, -0.2, 0.4)));
       const line = [kit.event.dates, kit.event.place].filter(Boolean).join(' · ');
       const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 20, TEXT_W, 124, 3, 2, 800, head, text, 70);
-      y = risingLines(ctx, name, y + 20, pal.ink, t, -0.35, { family: head });
+      y = risingLines(ctx, name, y + 20, pal.ink, t, -0.35, { family: head, highlight: highlightOf(reel) });
       ctx.save();
       ctx.globalAlpha *= ease(span(t, 0.25, 0.5));
       ctx.fillStyle = T.mix(pal.ink, pal.paper, 0.3);
@@ -419,7 +486,7 @@ function introLayout(ctx, t, dur, reel, kicker, layout) {
     ctx.restore();
     let y = pillAt(ctx, kicker, W / 2, 780, pal.secondary, pal.onSecondary, 38, ease(span(t, -0.1, 0.4)));
     const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 20, TEXT_W, 124, 3, 2, 900, head, text, 30);
-    y = risingLines(ctx, name, y + 20, pal.ink, t, -0.3, { weight: 900, family: head });
+    y = risingLines(ctx, name, y + 20, pal.ink, t, -0.3, { weight: 900, family: head, highlight: highlightOf(reel) });
     bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25 });
   } else {
     // left
@@ -438,12 +505,61 @@ function introLayout(ctx, t, dur, reel, kicker, layout) {
     const pw = Math.min(width, ctx.measureText(kicker).width + 38 * 1.4);
     let y = pillAt(ctx, kicker, x + 44 + pw / 2, 680, pal.primary, pal.onPrimary, 38, ease(span(t, -0.1, 0.4)));
     const { n: name, s: sub } = introWords(ctx, kit.event.name, line, y + 10, width, 132, 4, 3, 900, head, text, 30);
-    y = risingLines(ctx, name, y + 10, pal.ink, t, -0.3, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: width });
+    y = risingLines(ctx, name, y + 10, pal.ink, t, -0.3, { weight: 900, family: head, align: 'left', x: x + 44, maxWidth: width, highlight: highlightOf(reel) });
     bottom = risingLines(ctx, sub, y + 30, T.mix(pal.ink, pal.paper, 0.3), t, 0.3, { weight: 600, family: text, lh: 1.25, align: 'left', x: x + 44, maxWidth: width });
   }
 
   partnersBadge(ctx, reel, badgeY(bottom), ease(span(t, 0.5, 0.5)));
   ctx.restore();
+}
+
+/** The highlight of the event's name (main to deep, both readable on the light ground), or none off Daylight. */
+function highlightOf(reel) {
+  if (reel.daylight === false) return null;
+  const { pal } = reel;
+  const white = T.mix(pal.paper, '#ffffff', 0.85);
+  const from = T.readableOn([pal.primary, T.mix(pal.primary, pal.ink, 0.3), pal.ink], [white, pal.paper]);
+  return [from, T.readableOn([T.mix(pal.primary, pal.ink, 0.5), pal.ink], [white, pal.paper])];
+}
+
+/** The brand bar (spec/25): CampBuddy and campbuddy.club, two pills of one height, centred as a pair at `y`. */
+function brandBar(ctx, reel, y, p = 1) {
+  if (p <= 0) return;
+  const { text } = T.fonts();
+  const h = 96;
+  const gap = 24;
+  const white = T.alpha(T.mix(reel.pal.paper, '#ffffff', 0.85), 0.94);
+  const mh = h * 0.56;
+  const mw = reel.campbuddy ? mh * (reel.campbuddy.width / reel.campbuddy.height) : 0;
+  const lw = mw + h * 0.8;
+  ctx.save();
+  ctx.globalAlpha *= p;
+  ctx.font = `600 ${Math.round(h * 0.36)}px ${text}`;
+  const url = 'campbuddy.club';
+  const uw = ctx.measureText(url).width;
+  const icon = h * 0.36;
+  const rw = h * 0.4 + icon + 14 + uw + h * 0.4;
+  const x0 = (W - (lw + gap + rw)) / 2;
+  const pillShape = (x, w) => {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.14)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = white;
+    T.roundRect(ctx, x, y, w, h, h / 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  pillShape(x0, lw);
+  if (reel.campbuddy) ctx.drawImage(reel.campbuddy, x0 + (lw - mw) / 2, y + (h - mh) / 2, mw, mh);
+  const rx = x0 + lw + gap;
+  pillShape(rx, rw);
+  T.globe(ctx, rx + h * 0.4 + icon / 2, y + h / 2, icon / 2, reel.pal.ink);
+  ctx.fillStyle = reel.pal.ink;
+  ctx.textAlign = 'left';
+  ctx.fillText(url, rx + h * 0.4 + icon + 14, y + h / 2 + h * 0.13);
+  ctx.restore();
+  return y + h;
 }
 
 /**
@@ -960,7 +1076,11 @@ function endScene(content) {
       // The main colour washes over the frame.
       const wash = ease(span(t, 0, 0.45));
       ctx.save();
-      ctx.fillStyle = pal.primary;
+      // Daylight's Gradient base: the main colour to its deep tone at 135°.
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, pal.primary);
+      grad.addColorStop(1, T.mix(pal.primary, pal.ink, 0.45));
+      ctx.fillStyle = reel.daylight === false ? pal.primary : grad;
       ctx.beginPath();
       ctx.arc(W / 2, H / 2, Math.hypot(W, H) * 0.6 * wash, 0, Math.PI * 2);
       ctx.fill();
@@ -968,7 +1088,7 @@ function endScene(content) {
 
       const on = pal.onPrimary;
       ctx.save();
-      if (reel.campbuddy) {
+      if (reel.campbuddy && reel.daylight === false) {
         const p = ease(span(t, 0.25, 0.4));
         const h = 80;
         const w = (reel.campbuddy.width / reel.campbuddy.height) * h;
@@ -980,7 +1100,8 @@ function endScene(content) {
         ctx.globalAlpha = 1;
       }
       const head1 = fitAll(ctx, 'Find it all in CampBuddy', TEXT_W, 88, 56, 2, 900, head);
-      let y = risingLines(ctx, head1, SAFE.top + 140, on, t, 0.35, { weight: 900, family: head });
+      // On Daylight CampBuddy's mark moves to the brand bar under the QR, so the words start higher.
+      let y = risingLines(ctx, head1, SAFE.top + (reel.daylight === false ? 140 : 30), on, t, 0.35, { weight: 900, family: head });
       const sub = fitAll(ctx, `${kit.event.name}: the schedule, people to meet and reminders. Free, no sign-up.`, TEXT_W, 40, 34, 2, 600, text);
       y = risingLines(ctx, sub, y + 10, on, t, 0.55, { weight: 600, family: text, lh: 1.3 });
 
@@ -1008,14 +1129,20 @@ function endScene(content) {
       ctx.fillStyle = on;
       ctx.textAlign = 'center';
       ctx.font = `800 44px ${text}`;
-      ctx.fillText('Scan, or open campbuddy.club', W / 2, y + 30, TEXT_W);
-      const tags = (kit.event.hashtags ?? '').trim();
-      if (tags) {
-        ctx.font = `600 34px ${text}`;
-        ctx.globalAlpha *= 0.85;
-        ctx.fillText(tags, W / 2, y + 80, TEXT_W);
+      if (reel.daylight === false) {
+        ctx.fillText('Scan, or open campbuddy.club', W / 2, y + 30, TEXT_W);
+        const tags = (kit.event.hashtags ?? '').trim();
+        if (tags) {
+          ctx.font = `600 34px ${text}`;
+          ctx.globalAlpha *= 0.85;
+          ctx.fillText(tags, W / 2, y + 80, TEXT_W);
+        }
+        ctx.restore();
+      } else {
+        ctx.restore();
+        // The brand bar, the same as on every card: CampBuddy, campbuddy.club.
+        brandBar(ctx, reel, y, ease(span(t, 0.9, 0.4)));
       }
-      ctx.restore();
 
       // WPSimplified's credit.
       const c = ease(span(t, 1.2, 0.5));
@@ -1025,7 +1152,7 @@ function endScene(content) {
         const bw = TEXT_W;
         const bh = 170;
         const bx = (W - bw) / 2;
-        const by = Math.min(SAFE.bottom - bh, y + 110) + (1 - c) * 30;
+        const by = Math.min(SAFE.bottom - bh, y + (reel.daylight === false ? 110 : 132)) + (1 - c) * 30;
         ctx.fillStyle = '#ffffff';
         T.roundRect(ctx, bx, by, bw, bh, 34);
         ctx.fill();
@@ -1141,7 +1268,7 @@ function groupCaption(role, kit, group) {
 async function prepare(item, kit, colors, style) {
   const spec = item.build(style, colors);
   const pal = T.paletteOf(colors);
-  const reel = { item, kit, colors, pal, scenes: [], photos: new Map(), art: {}, dots: [], look: lookFor(item.variant ?? 0, kit.event.seed) };
+  const reel = { item, kit, colors, pal, scenes: [], photos: new Map(), art: {}, dots: [], look: lookFor(item.variant ?? 0, kit.event.seed), daylight: !style || style === 'daylight' };
 
   const [logo, campbuddy, wps] = await Promise.all([
     T.loadImage(kit.event.logo || kit.event.mark),

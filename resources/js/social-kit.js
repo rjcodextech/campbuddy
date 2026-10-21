@@ -3106,7 +3106,7 @@ async function publish(btn, kit, canvas, redraw, current) {
 export const socialContext = { kit: null, colors: null, style: null, posts: [] };
 
 export const reelTools = {
-  loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo,
+  loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
   proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT }),
   siteArt: () => SITE_ART,

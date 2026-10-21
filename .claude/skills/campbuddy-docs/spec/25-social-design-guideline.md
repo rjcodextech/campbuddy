@@ -120,5 +120,8 @@ From the owner's thumbnail guideline (only its rules; no WPSimplified name, logo
 - **No "…" anywhere** (all designs): `fitText` shrinks (to 60 % of its minimum) and then wraps;
   `ellipsize` now shrinks the font instead of cutting. People-card names are fitted on one line in
   every design.
-- Not yet in the native app's own card renderer (`OrganizerSocialCards.kt`): it keeps the earlier
-  designs until ported.
+- **Reels** (`social-reels.js`) with the Daylight design picked: every frame stands on the Daylight
+  ground (paper to white, two drifting glows placed by the reel's look so reels still differ, the dot
+  grid, four waves rolling at the foot); the intro's event name ends on a highlighted word; the end
+  card washes in the 135° gradient and ends on the brand bar (CampBuddy · campbuddy.club pills)
+  above the WPSimplified credit. Another design picked keeps the earlier reel look.
