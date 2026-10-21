@@ -68,8 +68,8 @@ internal enum class CardSize(val key: String, val label: String, val w: Int, val
     val tall: Boolean get() = this == Story
 }
 
-internal val POST_DESIGNS = listOf("classic" to "Classic", "poster" to "Poster", "frame" to "Frame", "ticket" to "Ticket", "magazine" to "Magazine", "split" to "Split", "minimal" to "Minimal")
-internal val PEOPLE_DESIGNS = listOf("classic" to "Classic", "polaroid" to "Polaroid", "badge" to "Badge", "split" to "Split", "minimal" to "Minimal", "spotlight" to "Spotlight", "arch" to "Arch")
+internal val POST_DESIGNS = listOf("daylight" to "Daylight", "classic" to "Classic", "poster" to "Poster", "frame" to "Frame", "ticket" to "Ticket", "magazine" to "Magazine", "split" to "Split", "minimal" to "Minimal")
+internal val PEOPLE_DESIGNS = listOf("daylight" to "Daylight", "classic" to "Classic", "polaroid" to "Polaroid", "badge" to "Badge", "split" to "Split", "minimal" to "Minimal", "spotlight" to "Spotlight", "arch" to "Arch")
 
 internal fun hex(value: String, fallback: Color): Color {
     val v = value.removePrefix("#").takeIf { it.length == 6 }?.toLongOrNull(16) ?: return fallback
@@ -205,6 +205,7 @@ internal fun PostPicture(kit: SocialKitData, c: PostContent, design: String, siz
     FixedText {
         Box(Modifier.fillMaxWidth().aspectRatio(size.ratio).clip(RoundedCornerShape(8.dp))) {
             when (design) {
+                "daylight" -> DaylightPost(kit, pal, c, size) { ink, muted, accent -> PostBody(pal, c, size, Tones(ink, muted, accent), false) }
                 "poster" -> {
                     Backdrop(kit, pal.secondary, pal.primary, artIndex)
                     PostColumn(kit, pal, c, size, Tones(pal.on(pal.secondary), pal.on(pal.secondary).copy(alpha = 0.85f), pal.primary), big = true, center = true)
@@ -247,7 +248,7 @@ internal fun PostPicture(kit: SocialKitData, c: PostContent, design: String, siz
                     PostColumn(kit, pal, c, size, Tones(pal.paper, pal.paper.copy(alpha = 0.88f), pal.secondary))
                 }
             }
-            if (c.pages > 1) Text("${c.page}/${c.pages}", style = st(11.sp, pal.ink, FontWeight.Bold), modifier = Modifier.align(Alignment.TopEnd).padding(14.dp).background(pal.paper, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp))
+            if (c.pages > 1 && design != "daylight") Text("${c.page}/${c.pages}", style = st(11.sp, pal.ink, FontWeight.Bold), modifier = Modifier.align(Alignment.TopEnd).padding(14.dp).background(pal.paper, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp))
         }
     }
 }
@@ -342,6 +343,7 @@ internal fun PersonPicture(kit: SocialKitData, p: SocialPerson, design: String, 
     FixedText {
         Box(Modifier.fillMaxWidth().aspectRatio(size.ratio).clip(RoundedCornerShape(8.dp))) {
             when (design) {
+                "daylight" -> DaylightPerson(kit, pal, p, size, qr)
                 "polaroid" -> {
                     Backdrop(kit, tone, pal.paper, 0)
                     PersonColumn(kit, pal, size, qr, on) {

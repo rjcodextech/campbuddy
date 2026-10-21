@@ -73,8 +73,9 @@ private class PostWords(headline: String, line: String, caption: String) {
 private fun withContent(qr: String, content: String) = qr + (if ('?' in qr) "&" else "?") + "utm_content=" + content
 
 /** Cards of a list post per picture, by size (the website's pages): more fit on a story. */
-private fun perPage(body: String, size: CardSize): Int = when (body) {
-    "photos" -> when (size) { CardSize.Square -> 6; CardSize.Portrait -> 8; CardSize.Story -> 12 }
+private fun perPage(body: String, size: CardSize, design: String = ""): Int = when (body) {
+    // Daylight: up to three people as cards, more as an even grid (as on the website).
+    "photos" -> if (design == "daylight") when (size) { CardSize.Square -> 3; CardSize.Portrait -> 6; CardSize.Story -> 8 } else when (size) { CardSize.Square -> 6; CardSize.Portrait -> 8; CardSize.Story -> 12 }
     "logos" -> when (size) { CardSize.Square -> 6; CardSize.Portrait -> 9; CardSize.Story -> 12 }
     "list" -> when (size) { CardSize.Square -> 4; CardSize.Portrait -> 6; CardSize.Story -> 9 }
     "tables" -> when (size) { CardSize.Square -> 4; CardSize.Portrait -> 5; CardSize.Story -> 8 }
@@ -106,8 +107,8 @@ internal fun SocialTab(ctx: EventCtx) {
     var section by remember { mutableStateOf("posts") }
     var size by remember { mutableStateOf(CardSize.Portrait) }
     var print by remember { mutableStateOf(false) }
-    var postDesign by remember { mutableStateOf("classic") }
-    var peopleDesign by remember { mutableStateOf("classic") }
+    var postDesign by remember { mutableStateOf("daylight") }
+    var peopleDesign by remember { mutableStateOf("daylight") }
     var role by remember { mutableStateOf<String?>(null) }
     var shown by remember { mutableStateOf(10) }
     val words = remember { mutableStateMapOf<String, PostWords>() }
@@ -220,7 +221,7 @@ private fun PostItem(
     val qr = post.link.ifBlank { withContent(k.event.qr, post.key) }
     val faces = when (post.body) { "photos" -> k.speakers.filter { it.photo != null }.ifEmpty { k.speakers }; "logos" -> k.sponsors; else -> emptyList() }
     val listCount = when (post.body) { "photos", "logos" -> faces.size; "list" -> daySessions.size; "tables" -> k.tables.size; else -> 0 }
-    val per = perPage(post.body, size)
+    val per = perPage(post.body, size, design)
     val pages = if (listCount > per) (listCount + per - 1) / per else 1
     val current = page.coerceIn(1, pages)
     fun <T> slice(list: List<T>) = if (pages > 1) list.drop((current - 1) * per).take(per) else list

@@ -125,3 +125,7 @@ From the owner's thumbnail guideline (only its rules; no WPSimplified name, logo
   grid, four waves rolling at the foot); the intro's event name ends on a highlighted word; the end
   card washes in the 135° gradient and ends on the brand bar (CampBuddy · campbuddy.club pills)
   above the WPSimplified credit. Another design picked keeps the earlier reel look.
+- **Native app** (`OrganizerSocialDaylight.kt`, 21 Oct 2026): the Social media tab draws Daylight too, as its
+  default for posts and people cards (same bases, dot grid, glows, waves, wave-mark kicker, highlighted
+  headline, ringed portraits with whole names via auto-size text, QR card and brand bar); Daylight people
+  posts hold 3 / 6 / 8 faces like the website.
