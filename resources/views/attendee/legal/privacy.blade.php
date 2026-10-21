@@ -129,8 +129,8 @@
                             <td data-label="Where, and how long">Our server and the sponsor. We <strong>delete our copy about 90 days after the event</strong>. The sponsor keeps their own copy under their own privacy policy; ask them or us to help.</td>
                         </tr>
                         <tr>
-                            <td data-label="What"><strong>Notifications</strong>, only if you allow them: a notification address from Google (Firebase) or your browser, a random device ID, the sessions you asked to be reminded about, and the app version.</td>
-                            <td data-label="Why">To send session reminders and a few event updates.</td>
+                            <td data-label="What"><strong>Notifications</strong>, only if you allow them: a notification address from Google (Firebase) or your browser, a random device ID, the sessions you asked to be reminded about, the app version, and which WordCamps you opened from three days before the event (and when).</td>
+                            <td data-label="Why">To send session reminders, a few event updates and the organizers' live announcements during the event ("Lunch is served").</td>
                             <td data-label="Where, and how long">Our server. Removed when you turn notifications off (or the address stops working), or <strong>deleted about 90 days after the event</strong>.</td>
                         </tr>
                         <tr>

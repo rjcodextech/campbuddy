@@ -3,25 +3,61 @@
 // The organizers' live announcement ("Tea break", "Lunch is served"…), live-updates.js:
 // at the top of the event's pages for half an hour after it went out.
 .live-notice {
+    --tone: var(--brand-primary);
     position: relative;
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 2px 12px;
+    grid-template-columns: auto 1fr auto;
+    align-items: start;
+    gap: 12px;
     margin: v.$space-3 v.$space-4 v.$space-2;
-    padding: v.$space-3 v.$space-4;
-    border: 1px solid var(--gold);
-    border-left: 5px solid var(--brand-primary);
+    padding: v.$space-3 v.$space-2 v.$space-3 v.$space-3;
+    border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
     border-radius: 12px;
-    background: color-mix(in srgb, var(--gold) 16%, var(--paper));
+    background: color-mix(in srgb, var(--tone) 10%, var(--paper));
+    animation: live-notice-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.live-notice--break { --tone: var(--gold); }
+.live-notice--together { --tone: var(--teal); }
+
+// The kind's icon in a disc of its colour, with a small "ring" when it arrives.
+.live-notice__icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--tone);
+    color: #fff;
+    animation: live-notice-ring 0.9s ease-in-out 0.45s 1 both;
+
+    svg { width: 20px; height: 20px; }
 }
 
 .live-notice__kicker {
-    grid-column: 1 / -1;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--brand-primary);
+    color: color-mix(in srgb, var(--tone) 70%, var(--ink));
+}
+
+@keyframes live-notice-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes live-notice-ring {
+    0%, 100% { transform: rotate(0); }
+    20% { transform: rotate(-14deg); }
+    40% { transform: rotate(12deg); }
+    60% { transform: rotate(-8deg); }
+    80% { transform: rotate(4deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .live-notice,
+    .live-notice__icon { animation: none; }
 }
 
 .live-notice__text {

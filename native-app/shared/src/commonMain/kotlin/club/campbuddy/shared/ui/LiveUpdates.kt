@@ -1,5 +1,13 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.ui.draw.rotate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,8 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.data.NotificationState
@@ -41,17 +52,20 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.todayIn
 
 // Live announcements from the people running the WordCamp (App\Support\EventBroadcasts on the server):
-// this phone says it has the event open (so an announcement reaches it), the announcement sent in the last
+// with notifications on, this phone says it has the event open (so an announcement reaches it; nothing is sent
+// while they are off), the announcement sent in the last
 // half hour shows as a banner, and from three days before the event a card asks to turn notifications on.
 
 private const val SEEN_EVERY_MS = 6 * 60 * 60 * 1000L
 private const val CHECK_EVERY_MS = 4 * 60 * 1000L
 
-/** Tells the server this phone has the event open, at most every six hours. */
+/** Tells the server this phone has the event open, at most every six hours, and only with notifications on. */
 @Composable
 internal fun MarkSeen(slug: String) {
     val env = LocalEnv.current
-    LaunchedEffect(slug) {
+    val on = env.user.notifications.enabled
+    LaunchedEffect(slug, on) {
+        if (!on) return@LaunchedEffect
         val key = "live:seen:$slug"
         val now = Clock.System.now().toEpochMilliseconds()
         val last = env.deps.store.get(key)?.toLongOrNull() ?: 0L
@@ -74,28 +88,42 @@ internal fun LiveNoticeBanner(slug: String, onTab: (String) -> Unit) {
             delay(CHECK_EVERY_MS)
         }
     }
-    val n = notice ?: return
-    if (closed == n.id.toString()) return
+    val n = notice?.takeIf { closed != it.id.toString() }
+    // Slides in when an announcement arrives; its colour and icon follow what is happening.
+    AnimatedVisibility(n != null, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+        if (n != null) NoticeCard(n, onTab) { env.deps.store.put("live:closed:$slug", n.id.toString()); closed = n.id.toString() }
+    }
+}
+
+@Composable
+private fun NoticeCard(n: LiveNotice, onTab: (String) -> Unit, onClose: () -> Unit) {
+    val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
+    val tone = when (n.tone) { "break" -> brand.accent; "together" -> brand.success; else -> brand.primary }
+    // A small "ring" of the icon when it shows (skipped by the system's remove-animations setting, like all animation).
+    val ring = remember(n.id) { Animatable(0f) }
+    LaunchedEffect(n.id) {
+        delay(450)
+        listOf(-14f, 12f, -8f, 4f, 0f).forEach { ring.animateTo(it, tween(150)) }
+    }
 
     Row(
         Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
-            .background(brand.accent.copy(alpha = 0.16f), shape).border(1.dp, brand.accent.copy(alpha = 0.6f), shape)
+            .background(tone.copy(alpha = 0.12f), shape).border(1.dp, tone.copy(alpha = 0.5f), shape)
             .clip(shape).clickable(enabled = n.tab != null, role = Role.Button) { n.tab?.let(onTab) }
-            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 4.dp),
+            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 4.dp)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(Modifier.size(36.dp).background(brand.primary, CircleShape), contentAlignment = Alignment.Center) { LineIcon("megaphone", Color.White, size = 18.dp) }
+        Box(Modifier.size(40.dp).rotate(ring.value).background(tone, CircleShape), contentAlignment = Alignment.Center) { LineIcon(n.icon, Color.White, size = 20.dp) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text("FROM THE ORGANIZERS", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary))
+            // Darkened towards the text colour so gold and teal stay readable on their light background.
+            Text("FROM THE ORGANIZERS", style = MaterialTheme.typography.labelMedium.copy(color = lerp(tone, brand.ink, 0.35f)))
             Text(n.title, style = MaterialTheme.typography.titleMedium)
             Text(n.body, style = MaterialTheme.typography.bodyMedium)
         }
-        Box(Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClickLabel = "Close this announcement") {
-            env.deps.store.put("live:closed:$slug", n.id.toString())
-            closed = n.id.toString()
-        }.semantics { contentDescription = "Close this announcement" }, contentAlignment = Alignment.Center) { LineIcon("x", brand.muted, size = 18.dp) }
+        Box(Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClickLabel = "Close this announcement", onClick = onClose).semantics { contentDescription = "Close this announcement" }, contentAlignment = Alignment.Center) { LineIcon("x", brand.muted, size = 18.dp) }
     }
 }
 

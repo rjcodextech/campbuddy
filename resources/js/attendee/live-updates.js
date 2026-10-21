@@ -1,9 +1,11 @@
 // Live announcements from the people running the WordCamp ("Opening remarks are
 // starting", "Tea break", "Lunch is served"…; App\Support\EventBroadcasts):
 //
-//   1. Tells the server this browser has the event open (only the anonymous
-//      device id), at most every six hours — announcements go to the devices
-//      seen since three days before the event.
+//   1. When notifications are on, tells the server this browser has the event
+//      open (only the anonymous device id), at most every six hours —
+//      announcements go to the devices seen since three days before the
+//      event. With notifications off nothing is sent (a push could not reach
+//      it anyway; the banner needs no record).
 //   2. Shows the announcement sent in the last half hour as a banner at the
 //      top of the event's pages, for everyone (no notification permission
 //      needed); asked again when the page comes back into view, and every few
@@ -15,6 +17,7 @@
 import { apiGet, apiMutate } from './api.js';
 import { getDeviceId } from './device.js';
 import { isStandalone } from './platform.js';
+import { lineIcon } from './line-icon.js';
 
 const SEEN_EVERY_MS = 6 * 60 * 60 * 1000;
 const CHECK_EVERY_MS = 4 * 60 * 1000;
@@ -39,9 +42,14 @@ export function inAskWindow(start, end, now = new Date()) {
   return today >= from && today <= (end || start);
 }
 
-export async function markSeen(slug, { now = Date.now(), mutate = apiMutate } = {}) {
+/** Whether this browser can get a push at all: only then is the visit worth recording. */
+export function notificationsOn() {
+  return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+}
+
+export async function markSeen(slug, { now = Date.now(), mutate = apiMutate, allowed = notificationsOn(), force = false } = {}) {
   const key = `campbuddy-seen:${slug}`;
-  if (!seenDue(store.get(key), now)) return false;
+  if (!allowed || (!force && !seenDue(store.get(key), now))) return false;
   await mutate(slug, '/seen', 'POST', { device_id: getDeviceId(), platform: isStandalone() ? 'pwa' : 'web' });
   store.set(key, String(now));
   return true;
@@ -49,7 +57,8 @@ export async function markSeen(slug, { now = Date.now(), mutate = apiMutate } = 
 
 function bannerEl(root, notice, slug) {
   const el = document.createElement('div');
-  el.className = 'live-notice';
+  // Its colour and icon follow what is happening: talks, breaks and food, together moments.
+  el.className = `live-notice live-notice--${['talk', 'break', 'together'].includes(notice.tone) ? notice.tone : 'talk'}`;
   el.setAttribute('role', 'status');
   el.dataset.liveNotice = String(notice.id);
   const text = document.createElement('div');
@@ -73,7 +82,12 @@ function bannerEl(root, notice, slug) {
   const label = document.createElement('span');
   label.className = 'live-notice__kicker';
   label.textContent = 'From the organizers';
-  el.append(label, text, close);
+  text.prepend(label);
+  const badge = document.createElement('span');
+  badge.className = 'live-notice__icon';
+  badge.setAttribute('aria-hidden', 'true');
+  badge.append(lineIcon(notice.icon || 'megaphone'));
+  el.append(badge, text, close);
   return el;
 }
 
@@ -121,6 +135,7 @@ function askCard(root, slug) {
       if (answer === 'granted') {
         const { registerSubscription } = await import('./push.js');
         await registerSubscription(slug);
+        markSeen(slug, { allowed: true, force: true }).catch(() => {});
         card.innerHTML = '<p class="live-ask__title">You will get the organizers\' updates.</p>';
         setTimeout(() => card.remove(), 4000);
         return;

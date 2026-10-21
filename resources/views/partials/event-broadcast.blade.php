@@ -17,7 +17,7 @@
 <div class="max-w-4xl space-y-6">
     <form method="POST" action="{{ $sendUrl }}" data-broadcast-form>
         @csrf
-        <x-card title="Send a live announcement" :description="'To '.($reach['web'] + $reach['app']).' phones and browsers that opened this WordCamp since '.$from->format('j M').' and allowed notifications ('.$reach['seen'].' devices opened it). It also shows on Home for '.\App\Support\EventBroadcasts::BANNER_MINUTES.' minutes, for everyone.'">
+        <x-card title="Send a live announcement" :description="'To '.($reach['web'] + $reach['app']).' phones and browsers that opened this WordCamp since '.$from->format('j M').' with notifications on. It also shows on Home for '.\App\Support\EventBroadcasts::BANNER_MINUTES.' minutes, for everyone.'">
             @unless ($ready)
                 <x-alert type="warning">Run <code>php artisan migrate</code> first.</x-alert>
             @endunless
@@ -28,7 +28,7 @@
                         @foreach ($presets as $i => $preset)
                             <label class="cursor-pointer">
                                 <input type="radio" name="kind" value="{{ $preset['key'] }}" class="peer sr-only" @checked(old('kind', 'opening') === $preset['key']) data-preset-title="{{ $preset['title'] }}" data-preset-body="{{ $preset['body'] }}">
-                                <span class="cb-btn cb-btn-sm cb-btn-secondary peer-checked:border-maroon peer-checked:bg-maroon peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-maroon">{{ $preset['label'] }}</span>
+                                <span class="cb-btn cb-btn-sm cb-btn-secondary peer-checked:border-maroon peer-checked:bg-maroon peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-maroon"><span aria-hidden="true">{{ $preset['emoji'] }}</span> {{ $preset['label'] }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -47,11 +47,11 @@
                         </div>
                     @endif
                 </div>
-                <x-form.input name="title" label="Title (leave empty for the ready-made one)" maxlength="80" />
+                <x-form.input name="title" label="Title" maxlength="80" />
                 <div>
-                    <label class="cb-label" for="broadcast-body">Message (leave empty for the ready-made one)</label>
+                    <label class="cb-label" for="broadcast-body">Message</label>
                     <textarea id="broadcast-body" name="body" rows="2" maxlength="240" class="cb-input">{{ old('body') }}</textarea>
-                    <p class="mt-1 text-xs text-muted">Ready-made words: <span data-broadcast-preview></span></p>
+                    <p class="mt-1 text-xs text-muted">Picking what is happening fills in its ready-made words; change them as you like.</p>
                 </div>
             </div>
             <x-slot:footer>
@@ -76,16 +76,37 @@
 </div>
 
 <script>
-    // Shows the ready-made words of the picked announcement (no build step: a few lines inline).
+    // Fills Title and Message with the picked announcement's ready-made words (no build step: a few lines inline).
+    // Words the organizer typed stay until another kind is picked; "Where" and the session update the rest.
     (() => {
         const form = document.querySelector('[data-broadcast-form]');
         if (!form) return;
-        const preview = form.querySelector('[data-broadcast-preview]');
-        const show = () => {
+        const title = form.querySelector('[name=title]');
+        const body = form.querySelector('[name=body]');
+        const where = form.querySelector('[name=where]');
+        const session = form.querySelector('[name=session_id]');
+        const sessionTitle = () => (session && session.value ? session.selectedOptions[0].text.replace(/^[^·]*·\s*/, '') : 'The next session');
+        const fill = (text) => text
+            .replace('{where}', where && where.value.trim() ? ` in ${where.value.trim()}` : '')
+            .replace('{session}', sessionTitle())
+            .trim();
+        const apply = (reset) => {
             const on = form.querySelector('input[name=kind]:checked');
-            preview.textContent = on && on.dataset.presetTitle ? `${on.dataset.presetTitle} — ${on.dataset.presetBody}` : 'none: write your own title and message.';
+            if (!on) return;
+            for (const [field, text] of [[title, on.dataset.presetTitle], [body, on.dataset.presetBody]]) {
+                if (reset) delete field.dataset.edited;
+                if (!field.dataset.edited) field.value = fill(text || '');
+            }
         };
-        form.addEventListener('change', show);
-        show();
+        [title, body].forEach((field) => field.addEventListener('input', () => {
+            if (field.value.trim()) field.dataset.edited = '1';
+            else delete field.dataset.edited;
+        }));
+        form.querySelectorAll('input[name=kind]').forEach((radio) => radio.addEventListener('change', () => apply(true)));
+        where?.addEventListener('input', () => apply(false));
+        session?.addEventListener('change', () => apply(false));
+        // After a refused send the typed words come back (old input): keep them.
+        [title, body].forEach((field) => { if (field.value.trim()) field.dataset.edited = '1'; });
+        apply(false);
     })();
 </script>

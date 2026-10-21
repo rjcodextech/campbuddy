@@ -26,7 +26,7 @@ return [
         // Promised time to answer a request or complaint.
         'reply_days' => 30,
         // The date the notice was last changed (shown on the page).
-        'updated' => '15 October 2026',
+        'updated' => '21 October 2026',
     ],
 
     // <title> of the WordCamp picker ("/"): "CampBuddy | Your WordCamp companion".

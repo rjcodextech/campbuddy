@@ -513,10 +513,10 @@ data class AnalyticsData(
 
 /** The announcement the organizers sent in the last half hour (the banner on Home). */
 @Serializable
-data class LiveNotice(val id: Long, val title: String = "", val body: String = "", val tab: String? = null, val at: String? = null)
+data class LiveNotice(val id: Long, val kind: String? = null, val icon: String = "megaphone", val tone: String = "talk", val title: String = "", val body: String = "", val tab: String? = null, val at: String? = null)
 
 @Serializable
-data class BroadcastPreset(val key: String, val label: String = "", val icon: String = "megaphone", val title: String = "", val body: String = "")
+data class BroadcastPreset(val key: String, val label: String = "", val icon: String = "megaphone", val emoji: String = "", val tone: String = "talk", val title: String = "", val body: String = "")
 
 @Serializable
 data class BroadcastReach(val web: Int = 0, val app: Int = 0, val seen: Int = 0)

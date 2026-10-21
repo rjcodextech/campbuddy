@@ -1014,36 +1014,39 @@ internal fun BroadcastTab(ctx: EventCtx) {
     var kind by remember { mutableStateOf("opening") }
     var where by remember { mutableStateOf("") }
     var session by remember { mutableStateOf<String?>(null) }
-    var title by remember { mutableStateOf("") }
-    var body by remember { mutableStateOf("") }
-    var confirm by remember { mutableStateOf(false) }
+    // null = the picked kind's ready-made words (filled with "Where" and the session); typed words replace them.
+    var title by remember { mutableStateOf<String?>(null) }
+    var body by remember { mutableStateOf<String?>(null) }
+    // The title and message waiting for "Send it now?" (outside the list, so the sheet shows however long it is).
+    var pending by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     TabBody {
         loaded(loader.state.value, loader.reload, ctx.onExpired) { d ->
             val preset = d.presets.firstOrNull { it.key == kind }
             val sessionTitle = d.sessions.firstOrNull { it.id == session }?.title
             fun fill(text: String) = text.replace("{where}", if (where.isNotBlank()) " in ${where.trim()}" else "").replace("{session}", sessionTitle ?: "The next session")
-            val shownTitle = title.ifBlank { fill(preset?.title.orEmpty()) }
-            val shownBody = body.ifBlank { fill(preset?.body.orEmpty()) }
+            val shownTitle = (title ?: fill(preset?.title.orEmpty())).trim()
+            val shownBody = (body ?: fill(preset?.body.orEmpty())).trim()
             item {
-                OrgSection("Send a live announcement", "megaphone", "To ${d.reach.web + d.reach.app} phones and browsers that opened this WordCamp in the last days and allowed notifications (${d.reach.seen} devices opened it). It also shows on Home for 30 minutes, for everyone.") {
+                OrgSection("Send a live announcement", "megaphone", "To ${d.reach.web + d.reach.app} phones and browsers that opened this WordCamp in the last days with notifications on. It also shows on Home for 30 minutes, for everyone.") {
                     if (!d.ready) Text("The server needs `php artisan migrate` first.", style = MaterialTheme.typography.bodySmall.copy(color = LocalBrand.current.danger))
                     Text("WHAT IS HAPPENING", style = MaterialTheme.typography.labelMedium)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        d.presets.forEach { p -> CbChip(selected = p.key == kind, onClick = { kind = p.key }, label = { Text(p.label) }) }
+                        d.presets.forEach { p -> CbChip(selected = p.key == kind, onClick = { kind = p.key; title = null; body = null }, label = { Text(if (p.emoji.isNotEmpty()) "${p.emoji} ${p.label}" else p.label) }) }
                     }
                     if (kind == "session" && d.sessions.isNotEmpty()) {
                         OrgFilterRow("Session", d.sessions.map<club.campbuddy.shared.model.BroadcastSession, Pair<String?, String>> { it.id to "${it.time} · ${it.title.take(40)}" }, session) { session = it }
                     }
                     OrgField("Where (optional)", where, { where = it }, max = 60, placeholder = "the main hall")
-                    OrgField("Title", title, { title = it }, max = 80, placeholder = fill(preset?.title.orEmpty()).ifBlank { "Write a title" })
-                    OrgField("Message", body, { body = it }, lines = 2, max = 240, placeholder = fill(preset?.body.orEmpty()).ifBlank { "Write the message" })
+                    OrgField("Title", title ?: fill(preset?.title.orEmpty()), { title = it }, max = 80, placeholder = "Write a title")
+                    OrgField("Message", body ?: fill(preset?.body.orEmpty()), { body = it }, lines = 2, max = 240, placeholder = "Write the message")
+                    Text("Picking what is happening fills in its ready-made words; change them as you like.", style = MaterialTheme.typography.bodySmall.copy(color = LocalBrand.current.muted))
                     Column(Modifier.fillMaxWidth().background(LocalBrand.current.background, RoundedCornerShape(8.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text("PREVIEW", style = MaterialTheme.typography.labelMedium)
                         Text(shownTitle.ifBlank { "—" }, style = MaterialTheme.typography.titleMedium)
                         Text(shownBody.ifBlank { "—" }, style = MaterialTheme.typography.bodyMedium)
                     }
-                    OrgButton(if (actions.busy) "Sending…" else "Send now", { confirm = true }, Modifier.fillMaxWidth(), kind = BtnKind.Primary, icon = "megaphone",
+                    OrgButton(if (actions.busy) "Sending…" else "Send now", { pending = shownTitle to shownBody }, Modifier.fillMaxWidth(), kind = BtnKind.Primary, icon = "megaphone",
                         enabled = d.ready && !actions.busy && shownTitle.isNotBlank() && shownBody.isNotBlank())
                 }
             }
@@ -1059,13 +1062,13 @@ internal fun BroadcastTab(ctx: EventCtx) {
                     }
                 }
             }
-            if (confirm) item {
-                ConfirmSheet("Send it now?", "“$shownTitle” goes to everyone at the WordCamp right away.", "Send", danger = false, onConfirm = {
-                    actions.run({
-                        ctx.api.sendBroadcast(ctx.token, ctx.eventId, club.campbuddy.shared.model.BroadcastForm(kind, title.orNull(), body.orNull(), where.orNull(), session)).message
-                    }, { title = ""; body = ""; stamp++ })
-                }, onClose = { confirm = false })
-            }
         }
+    }
+    pending?.let { (sendTitle, sendBody) ->
+        ConfirmSheet("Send it now?", "“$sendTitle” goes to everyone at the WordCamp right away.", "Send", danger = false, onConfirm = {
+            actions.run({
+                ctx.api.sendBroadcast(ctx.token, ctx.eventId, club.campbuddy.shared.model.BroadcastForm(kind, sendTitle.orNull(), sendBody.orNull(), where.orNull(), session)).message
+            }, { title = null; body = null; stamp++ })
+        }, onClose = { pending = null })
     }
 }

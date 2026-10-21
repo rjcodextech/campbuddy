@@ -36,25 +36,45 @@ class EventBroadcasts
 
     /**
      * The ready-made announcements: kind => [label, icon, title, body, tab]. {where} and {session} are filled in.
+ * The title starts with an emoji, so the push itself says what is happening at a glance.
      *
      * @var array<string, array{0: string, 1: string, 2: string, 3: string, 4: ?string}>
      */
     public const PRESETS = [
-        'opening' => ['Opening remarks', 'mic', 'Opening remarks are starting', 'Find a seat{where}: the day begins now.', 'my-day'],
-        'keynote' => ['Keynote', 'star', 'The keynote starts in 5 minutes', 'Head{where} now so you don\'t miss the start.', 'my-day'],
-        'session' => ['Session starting', 'calendar', '{session} starts in 5 minutes', 'Starting soon{where}. See you there!', 'my-day'],
-        'panel' => ['Panel discussion', 'users', 'The panel discussion is starting', 'Join us{where} and bring your questions.', 'my-day'],
-        'tea' => ['Tea break', 'coffee', 'Tea break!', 'Tea and snacks are out{where}. Back to the sessions in 15 minutes.', null],
-        'break' => ['Short break', 'clock', 'Short break', 'Stretch your legs, meet someone new{where}. We start again in 10 minutes.', null],
-        'lunch' => ['Lunch', 'utensils', 'Lunch is served', 'Lunch is ready{where}. Sessions start again after the break.', null],
-        'high_tea' => ['High tea', 'coffee', 'High tea is served', 'Tea and snacks{where}: a good time to say hi to a speaker.', null],
-        'photo' => ['Group photo', 'camera', 'Group photo in 5 minutes', 'Come along{where} for the WordCamp group photo.', null],
-        'contributor' => ['Contributor Day', 'wrench', 'Contributor Day tables are open', 'Find your team\'s table{where}. Everyone is welcome, no coding needed.', 'contribute'],
-        'closing' => ['Closing remarks', 'heart', 'Closing remarks are starting', 'Join us{where} as we wrap up the day. Thank you for coming!', null],
+        'registration' => ['Registration open', 'ticket', '🎟️ Registration is open', 'Collect your badge and swag at the registration desk{where}.', null],
+        'opening' => ['Opening remarks', 'mic', '🎤 Opening remarks are starting', 'Find a seat{where}: the day begins now.', 'my-day'],
+        'keynote' => ['Keynote', 'star', '⭐ The keynote starts in 5 minutes', 'Find a seat{where} now so you don\'t miss the start.', 'my-day'],
+        'session' => ['Session starting', 'calendar', '⏰ {session} starts in 5 minutes', 'Starting soon{where}. See you there!', 'my-day'],
+        'panel' => ['Panel discussion', 'users', '💬 The panel discussion is starting', 'Join us{where} and bring your questions.', 'my-day'],
+        'tea' => ['Tea break', 'coffee', '☕ Tea break!', 'Tea and snacks are out{where}. Back to the sessions in 15 minutes.', null],
+        'break' => ['Short break', 'clock', '🚶 Short break', 'Stretch your legs, meet someone new{where}. We start again in 10 minutes.', null],
+        'lunch' => ['Lunch', 'utensils', '🍽️ Lunch is served', 'Lunch is ready{where}. Sessions start again after the break.', null],
+        'high_tea' => ['High tea', 'coffee', '🫖 High tea is served', 'Tea and snacks{where}: a good time to say hi to a speaker.', null],
+        'resume' => ['Sessions resume', 'calendar', '🔔 Sessions are starting again', 'Please take your seats{where}: the next sessions begin in 5 minutes.', 'my-day'],
+        'photo' => ['Group photo', 'camera', '📸 Group photo in 5 minutes', 'Come along{where} for the WordCamp group photo.', null],
+        'contributor' => ['Contributor Day', 'wrench', '🛠️ Contributor Day tables are open', 'Find your team\'s table{where}. Everyone is welcome, no coding needed.', 'contribute'],
+        'closing' => ['Closing remarks', 'heart', '🎉 Closing remarks are starting', 'Join us{where} as we wrap up the day. Thank you for coming!', null],
         'custom' => ['Your own message', 'megaphone', '', '', null],
     ];
 
+    /** The banner's colour: talks (the brand colour), breaks and food (gold), together moments (teal). */
+    public const TONES = [
+        'tea' => 'break', 'break' => 'break', 'lunch' => 'break', 'high_tea' => 'break',
+        'photo' => 'together', 'contributor' => 'together', 'closing' => 'together',
+    ];
+
     public const TABS = ['my-day', 'quest', 'contribute', 'explore', 'camp-card'];
+
+    /** The emoji a ready-made title starts with (📣 for your own message). */
+    public static function emoji(string $title): string
+    {
+        return preg_match('/^(\S+)\s/u', $title, $m) === 1 && preg_match('/[\p{L}\p{N}{]/u', $m[1]) !== 1 ? $m[1] : '📣';
+    }
+
+    public static function tone(?string $kind): string
+    {
+        return self::TONES[$kind] ?? 'talk';
+    }
 
     public static function ready(): bool
     {
@@ -76,6 +96,14 @@ class EventBroadcasts
             ]);
         } elseif (CarbonImmutable::parse($row->last_seen_at)->lt($now->copy()->subHour())) {
             DB::table('event_device_visits')->where('id', $row->id)->update(['last_seen_at' => $now, 'platform' => $platform]);
+        }
+    }
+
+    /** Notifications switched off on this device: its visit is no longer needed. */
+    public static function forget(Event $event, string $deviceId): void
+    {
+        if (self::ready()) {
+            DB::table('event_device_visits')->where('event_id', $event->id)->where('device_id', $deviceId)->delete();
         }
     }
 
@@ -194,10 +222,10 @@ class EventBroadcasts
         ])->all();
     }
 
-    /** @return list<array{key: string, label: string, icon: string, title: string, body: string}> */
+    /** @return list<array{key: string, label: string, icon: string, emoji: string, tone: string, title: string, body: string}> */
     public static function presets(): array
     {
-        return collect(self::PRESETS)->map(fn ($p, $key) => ['key' => $key, 'label' => $p[0], 'icon' => $p[1], 'title' => $p[2], 'body' => $p[3]])->values()->all();
+        return collect(self::PRESETS)->map(fn ($p, $key) => ['key' => $key, 'label' => $p[0], 'icon' => $p[1], 'emoji' => self::emoji($p[2]), 'tone' => self::tone($key), 'title' => $p[2], 'body' => $p[3]])->values()->all();
     }
 
     /**
@@ -247,7 +275,8 @@ class EventBroadcasts
     private static function shape(object $row): array
     {
         return [
-            'id' => (int) $row->id, 'title' => $row->title, 'body' => $row->body, 'tab' => $row->tab,
+            'id' => (int) $row->id, 'kind' => $row->kind, 'icon' => self::PRESETS[$row->kind][1] ?? 'megaphone', 'tone' => self::tone($row->kind),
+            'title' => $row->title, 'body' => $row->body, 'tab' => $row->tab,
             'at' => CarbonImmutable::parse($row->created_at)->toIso8601String(),
         ];
     }

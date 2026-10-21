@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNativePushTokenRequest;
 use App\Models\Event;
 use App\Models\NativePushToken;
+use App\Support\EventBroadcasts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -43,6 +44,7 @@ class NativePushTokenController extends Controller
         $data = $request->validate(['device_id' => ['required', 'string', 'max:64']]);
 
         NativePushToken::where('event_id', $event->id)->where('device_id', $data['device_id'])->delete();
+        EventBroadcasts::forget($event, $data['device_id']);
 
         return response()->json(null, 204);
     }

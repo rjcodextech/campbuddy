@@ -78,8 +78,10 @@ class EventBroadcastsTest extends TestCase
 
     public function test_presets_fill_in_where_and_the_session_and_own_words_win(): void
     {
-        $this->assertSame(['title' => 'Tea break!', 'body' => 'Tea and snacks are out in the lobby. Back to the sessions in 15 minutes.', 'tab' => null], EventBroadcasts::compose('tea', null, null, 'the lobby', null, null));
-        $this->assertSame('Keynote: Ten years starts in 5 minutes', EventBroadcasts::compose('session', '', '', null, 'Keynote: Ten years', null)['title']);
+        $this->assertSame(['title' => '☕ Tea break!', 'body' => 'Tea and snacks are out in the lobby. Back to the sessions in 15 minutes.', 'tab' => null], EventBroadcasts::compose('tea', null, null, 'the lobby', null, null));
+        $this->assertSame('⏰ Keynote: Ten years starts in 5 minutes', EventBroadcasts::compose('session', '', '', null, 'Keynote: Ten years', null)['title']);
+        $this->assertSame('Collect your badge and swag at the registration desk in the lobby.', EventBroadcasts::compose('registration', null, null, 'the lobby', null, null)['body']);
+        $this->assertSame('🔔 Sessions are starting again', EventBroadcasts::compose('resume', null, null, null, null, null)['title']);
         $this->assertSame(['title' => 'Bus leaves', 'body' => 'Gate 2, 6 pm', 'tab' => 'my-day'], EventBroadcasts::compose('custom', 'Bus leaves', 'Gate 2, 6 pm', null, null, 'my-day'));
     }
 
@@ -97,7 +99,7 @@ class EventBroadcastsTest extends TestCase
         Queue::assertPushed(SendBroadcastPushJob::class);
         $this->assertDatabaseHas('event_manager_changes', ['section' => 'notifications', 'action' => 'added']);
 
-        $this->getJson('/api/v1/events/wc-live/live-notice')->assertOk()->assertJsonPath('data.title', 'Lunch is served')
+        $this->getJson('/api/v1/events/wc-live/live-notice')->assertOk()->assertJsonPath('data.title', '🍽️ Lunch is served')->assertJsonPath('data.icon', 'utensils')->assertJsonPath('data.tone', 'break')
             ->assertJsonPath('data.body', 'Lunch is ready in the dining hall. Sessions start again after the break.');
 
         // A second one straight away is refused (a double tap, two organizers at once).
@@ -115,9 +117,10 @@ class EventBroadcastsTest extends TestCase
     {
         Queue::fake();
         $admin = User::factory()->create();
-        $this->actingAs($admin)->get(route('admin.events.notifications', $this->event))->assertOk()->assertSee('Send a live announcement');
+        $this->actingAs($admin)->get(route('admin.events.notifications', $this->event))->assertOk()->assertSee('Send a live announcement')
+            ->assertSee('data-preset-title="🍽️ Lunch is served"', false)->assertSee('fills in its ready-made words');
         $this->actingAs($admin)->post(route('admin.events.broadcasts.store', $this->event), ['kind' => 'opening'])->assertRedirect();
-        $this->assertSame('Opening remarks are starting', DB::table('event_broadcasts')->value('title'));
+        $this->assertSame('🎤 Opening remarks are starting', DB::table('event_broadcasts')->value('title'));
 
         $manager = EventManager::factory()->create();
         $manager->events()->attach($this->event->id);
@@ -150,7 +153,8 @@ class EventBroadcastsTest extends TestCase
 
                     public function flush(?int $batchSize = null): \Generator
                     {
-                        yield from [];
+                        // The push service took one of the queued messages.
+                        yield new \Minishlink\WebPush\MessageSentReport(new \GuzzleHttp\Psr7\Request('POST', 'https://push.example/1'));
                     }
                 };
             }
@@ -161,5 +165,27 @@ class EventBroadcastsTest extends TestCase
         $this->assertStringContainsString('/event/wc-live', $job->queued[0]['url']);
         $this->assertSame(1, DB::table('event_broadcasts')->value('recipients'));
         $this->assertTrue(Schema::hasTable('event_device_visits'));
+
+        // Never twice (a queue retry), and never late: half an hour on, the moment has passed.
+        $again = new class($id) extends SendBroadcastPushJob {
+            protected function webPush(): \Minishlink\WebPush\WebPush
+            {
+                throw new \LogicException('must not push again');
+            }
+        };
+        $again->handle();
+        DB::table('event_broadcasts')->where('id', $id)->update(['recipients' => 0, 'show_until' => now()->subMinute()]);
+        $again->handle();
+        $this->assertSame(1, (new SendBroadcastPushJob($id))->tries);
+    }
+
+    public function test_turning_notifications_off_in_the_app_forgets_the_visit(): void
+    {
+        NativePushToken::create(['event_id' => $this->event->id, 'device_id' => 'phone-12345678', 'platform' => 'android', 'token' => 'tok-9']);
+        EventBroadcasts::seen($this->event, 'phone-12345678', 'android');
+        $this->assertSame(1, DB::table('event_device_visits')->count());
+
+        $this->deleteJson('/api/v1/events/wc-live/push/native-subscribe', ['device_id' => 'phone-12345678'])->assertNoContent();
+        $this->assertSame(0, DB::table('event_device_visits')->count());
     }
 }

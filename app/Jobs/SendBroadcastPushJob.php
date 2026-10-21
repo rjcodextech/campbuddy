@@ -10,6 +10,7 @@ use App\Support\NativePush;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
@@ -27,6 +28,9 @@ class SendBroadcastPushJob implements ShouldQueue
 
     public const TTL_SECONDS = 1800;
 
+    /** Never twice: a retry after a half-sent batch would buzz the same phones again. */
+    public int $tries = 1;
+
     public function __construct(public int $broadcastId) {}
 
     public function handle(): void
@@ -34,6 +38,12 @@ class SendBroadcastPushJob implements ShouldQueue
         $row = DB::table('event_broadcasts')->find($this->broadcastId);
         $event = $row ? Event::find($row->event_id) : null;
         if (! $row || ! $event) {
+            return;
+        }
+        // Already sent, or the queue ran so late that the moment has passed ("tea break" after the tea).
+        if ((int) $row->recipients > 0 || now()->greaterThan(Carbon::parse($row->show_until))) {
+            Log::info('Live announcement not pushed', ['broadcast' => $row->id, 'reason' => (int) $row->recipients > 0 ? 'already sent' : 'too late']);
+
             return;
         }
 
@@ -53,14 +63,16 @@ class SendBroadcastPushJob implements ShouldQueue
             foreach ($subs as $sub) {
                 try {
                     $webPush->queueNotification(Subscription::create(['endpoint' => $sub->endpoint, 'keys' => ['p256dh' => $sub->p256dh_key, 'auth' => $sub->auth_key]]), $json, $options);
-                    $sent++;
                 } catch (\Throwable $e) {
                     Log::warning('Broadcast push queue failed', ['subscription_id' => $sub->id, 'error' => $e->getMessage()]);
                 }
             }
             try {
                 foreach ($webPush->flush() as $report) {
-                    if (! $report->isSuccess() && $report->isSubscriptionExpired()) {
+                    // Counted when the push service took it, not when it was queued.
+                    if ($report->isSuccess()) {
+                        $sent++;
+                    } elseif ($report->isSubscriptionExpired()) {
                         PushSubscription::where('endpoint', $report->getEndpoint())->delete();
                     }
                 }
