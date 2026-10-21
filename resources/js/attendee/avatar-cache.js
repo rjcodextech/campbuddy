@@ -21,7 +21,7 @@ export function avatarUrls(entries) {
 
   for (const entry of entries ?? []) {
     try {
-      const url = new URL(entry?.gravatar_url ?? '');
+      const url = new URL(entry?.photo_url || entry?.gravatar_url || '');
 
       if (url.protocol === 'https:' && HOSTS.includes(url.host)) found.add(url.href);
     } catch {

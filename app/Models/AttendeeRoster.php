@@ -21,13 +21,23 @@ class AttendeeRoster extends Model
         'content_hash',
         'is_suppressed',
         'is_microsponsor',
+        'photo_url',
+        'photo_source',
+        'photo_checked_at',
     ];
 
     protected $casts = [
         'links' => 'array',
         'is_suppressed' => 'boolean',
         'is_microsponsor' => 'boolean',
+        'photo_checked_at' => 'datetime',
     ];
+
+    /** The picture to show: the best photo found for them (FillMissingPhotosJob), else what the attendee list gave. */
+    public function photo(): ?string
+    {
+        return $this->photo_url ?: $this->gravatar_url;
+    }
 
     public function event(): BelongsTo
     {

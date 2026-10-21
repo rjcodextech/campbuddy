@@ -69,7 +69,11 @@ class WordCampNormalizer
                 'id' => $speaker['id'],
                 'name' => $this->decodeTitle($this->rendered($speaker['title'] ?? null)),
                 'bio_html' => $bioHtml,
-                'avatar_url' => $this->avatar($speaker),
+                // The site's own photo of them first (organizers chose it for this WordCamp), else their Gravatar.
+                'avatar_url' => $this->featuredImage($speaker, 'medium') ?? $this->avatar($speaker),
+                // Kept apart: the Gravatar is how a speaker is matched to their attendee-list entry (RosterRoles).
+                'gravatar_url' => $this->avatar($speaker),
+                'wporg_username' => $this->username($speaker),
                 'link' => $this->httpUrl($speaker['link'] ?? null),
                 'social_links' => $this->client->extractSocialLinks($bioHtml),
             ];
@@ -108,7 +112,7 @@ class WordCampNormalizer
      *
      * @param  array<string, mixed>  $post
      */
-    private function featuredImage(array $post): ?string
+    private function featuredImage(array $post, string $prefer = 'medium_large'): ?string
     {
         $media = $post['_embedded']['wp:featuredmedia'][0] ?? null;
         if (! is_array($media)) {
@@ -116,7 +120,9 @@ class WordCampNormalizer
         }
         $sizes = $media['media_details']['sizes'] ?? [];
 
-        return SafeUrl::web($sizes['medium_large']['source_url'] ?? null)
+        // A person's photo: the 300 px copy is plenty for a round picture (and light on a phone).
+        return ($prefer === 'medium' ? SafeUrl::web($sizes['medium']['source_url'] ?? null) : null)
+            ?? SafeUrl::web($sizes['medium_large']['source_url'] ?? null)
             ?? SafeUrl::web($sizes['large']['source_url'] ?? null)
             ?? SafeUrl::web($media['source_url'] ?? null);
     }
@@ -131,7 +137,9 @@ class WordCampNormalizer
             'id' => $organizer['id'],
             'name' => $this->decodeTitle($this->rendered($organizer['title'] ?? null)),
             'bio_html' => $this->rendered($organizer['content'] ?? null),
-            'avatar_url' => $this->avatar($organizer),
+            'avatar_url' => $this->featuredImage($organizer, 'medium') ?? $this->avatar($organizer),
+            'gravatar_url' => $this->avatar($organizer),
+            'wporg_username' => $this->username($organizer),
         ], $organizers);
     }
 
@@ -183,6 +191,14 @@ class WordCampNormalizer
             fn ($id) => isset($lookup[$id]) ? $this->decodeTitle((string) $lookup[$id]) : null,
             $ids
         )));
+    }
+
+    /** Their WordPress.org username (the site's `_wcpt_user_name` field), when the organizers filled it in. */
+    private function username(array $person): ?string
+    {
+        $name = trim((string) ($person['meta']['_wcpt_user_name'] ?? ''));
+
+        return preg_match('/^[A-Za-z0-9._@-]{1,60}$/', $name) ? $name : null;
     }
 
     /** The largest Gravatar the site offers, as a safe web address. */

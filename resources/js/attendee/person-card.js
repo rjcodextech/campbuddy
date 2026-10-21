@@ -125,7 +125,7 @@ export function openPersonSheet(entry, { links = [], wireMeet = null } = {}) {
   const withCard = own || hasPublicCard(entry);
 
   const dialog = render('tpl-person-sheet', {
-    avatar: { attrs: { src: entry.gravatar_url || '/media/illustrations/avatar.svg' } },
+    avatar: { attrs: { src: entry.photo_url || entry.gravatar_url || '/media/illustrations/avatar.svg' } },
     name: entry.name ?? '',
     roles: roles.length ? roles.map((role) => render('tpl-role-badge', { badge: { text: ROLE_LABELS[role], class: { [`role-badge--${role}`]: true } } })) : null,
     talks: (entry.talks ?? []).length ? entry.talks.map((t) => render('tpl-person-talk', { talk: t })) : null,

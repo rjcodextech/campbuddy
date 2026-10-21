@@ -98,7 +98,8 @@ class RosterRoles
 
         $found = [];
         $mark = function (array $person, string $role) use (&$found, $byHash, $byName): array {
-            $hash = self::avatarHash($person['avatar_url'] ?? null);
+            // The Gravatar (not the site's photo) is what the attendee list shows too.
+            $hash = self::avatarHash($person['gravatar_url'] ?? $person['avatar_url'] ?? null);
             $ids = $hash !== null ? ($byHash[$hash] ?? []) : [];
 
             if ($ids === []) {

@@ -24,7 +24,7 @@
         <form method="POST" action="{{ $updateUrl($table) }}">
             @csrf
             @method('PUT')
-            <x-card :title="$table->teamName()" :description="$table->place() !== '' ? $table->place() : 'Place not set yet'">
+            <x-card :title="$table->teamName()" :description="($table->place() !== '' ? $table->place() : 'Place not set yet').(($table->source ?? 'manual') === 'site' ? ' · From the WordCamp site (saving it here keeps your version)' : '')">
                 @include('partials.contributor-table-fields', ['table' => $table, 'teams' => $teams, 'prefix' => 'table-'.$table->id])
 
                 <x-slot:footer>

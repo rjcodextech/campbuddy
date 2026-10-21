@@ -534,6 +534,7 @@ class OrganizerManageController extends Controller
             'id' => $t->id, 'team' => $t->team, 'title' => $t->title, 'track' => $t->track, 'floor' => $t->floor,
             'table_no' => $t->table_no, 'leads' => implode(', ', $t->leadNames()), 'note' => $t->note,
             'sort_order' => (int) $t->sort_order, 'name' => $t->teamName(), 'place' => $t->place(),
+            'source' => $t->source ?? 'manual',
         ];
     }
 

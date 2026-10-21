@@ -34,8 +34,8 @@
                     @foreach ($matches as $entry)
                         <div class="card" style="display:flex;align-items:center;gap:12px;justify-content:space-between">
                             <div style="display:flex;align-items:center;gap:10px">
-                                @if ($entry->gravatar_url)
-                                    <img src="{{ $entry->gravatar_url }}" alt="" style="width:40px;height:40px;border-radius:50%">
+                                @if ($entry->photo())
+                                    <img src="{{ $entry->photo() }}" alt="" style="width:40px;height:40px;border-radius:50%">
                                 @endif
                                 <span style="font-weight:700">{{ $entry->name }}</span>
                             </div>

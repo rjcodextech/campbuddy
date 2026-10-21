@@ -48,6 +48,14 @@ class CampbuddyIngestCommand extends Command
         ParseAttendeeRosterJob::dispatchSync($event);
         $ok = $this->reportLastLog($event, 'roster') && $ok;
 
+        $this->info('Finding photos for the attendee list...');
+        \App\Jobs\FillMissingPhotosJob::dispatchSync($event);
+        $this->reportLastLog($event, 'photos');
+
+        $this->info('Reading Contributor Day tables from the site...');
+        \App\Jobs\FetchContributorTablesJob::dispatchSync($event);
+        $this->reportLastLog($event, 'tables');
+
         return $ok ? self::SUCCESS : self::FAILURE;
     }
 

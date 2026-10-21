@@ -42,8 +42,8 @@
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
-                                @if ($entry->gravatar_url)
-                                    <img src="{{ $entry->gravatar_url }}" alt="" class="h-8 w-8 rounded-full bg-paper-soft object-cover">
+                                @if ($entry->photo())
+                                    <img src="{{ $entry->photo() }}" alt="" class="h-8 w-8 rounded-full bg-paper-soft object-cover">
                                 @else
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-paper-soft text-xs font-semibold text-muted" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($entry->name, 0, 1)) }}</span>
                                 @endif

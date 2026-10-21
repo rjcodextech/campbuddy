@@ -64,7 +64,9 @@ class WordCampRestClient
     /** @return array<int, array<string, mixed>> */
     public function fetchSpeakers(): array
     {
-        return $this->fetchCollection('speakers');
+        // The photo the organizers put on the speaker's page (the featured
+        // image) comes with each post: many speakers have no Gravatar.
+        return $this->fetchCollection('speakers', ['_embed' => 'wp:featuredmedia']);
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -78,7 +80,7 @@ class WordCampRestClient
     /** @return array<int, array<string, mixed>> */
     public function fetchOrganizers(): array
     {
-        return $this->fetchCollection('organizers');
+        return $this->fetchCollection('organizers', ['_embed' => 'wp:featuredmedia']);
     }
 
     /**

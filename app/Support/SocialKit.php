@@ -387,8 +387,8 @@ class SocialKit
     public static function people(Event $event): array
     {
         $roles = RosterRoles::forEvent($event);
-        $entries = $event->attendeeRoster()->where('is_suppressed', false)->orderBy('name')
-            ->get(['id', 'name', 'gravatar_url']);
+        $columns = \Illuminate\Support\Facades\Schema::hasColumn('attendee_roster', 'photo_url') ? ['id', 'name', 'gravatar_url', 'photo_url'] : ['id', 'name', 'gravatar_url'];
+        $entries = $event->attendeeRoster()->where('is_suppressed', false)->orderBy('name')->get($columns);
 
         $cards = [];
         try {
@@ -430,7 +430,8 @@ class SocialKit
             $people[] = [
                 'id' => $entry->id,
                 'name' => $entry->name,
-                'photo' => self::bigPhoto($entry->gravatar_url),
+                // The best photo found for them (their site photo, a real Gravatar, their WordPress.org picture).
+                'photo' => self::bigPhoto($entry->photo()),
                 'roles' => $personRoles,
                 'role_labels' => $labels,
                 'talk' => $talk,

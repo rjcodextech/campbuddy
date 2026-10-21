@@ -5,6 +5,8 @@ use App\Jobs\EvaluateEventLifecycleJob;
 use App\Jobs\FetchBrandingAssetsJob;
 use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
+use App\Jobs\FetchContributorTablesJob;
+use App\Jobs\FillMissingPhotosJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Jobs\SendSessionRemindersJob;
 use App\Jobs\SendAfterEventPushesJob;
@@ -71,6 +73,21 @@ Schedule::call(function () {
 // (site down at that moment, queue hiccup). Retry daily for any live event
 // still without a logo or favicon — only the missing one, never overwriting
 // what an admin uploaded.
+// A real photo for everyone on the attendee list (FillMissingPhotosJob), after
+// the night's roster scrape; only events still running, like every fetch.
+Schedule::call(function () {
+    Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
+        FillMissingPhotosJob::dispatch($event)->delay(now()->addSeconds($index * 20));
+    });
+})->dailyAt('00:40')->name('fill-missing-photos');
+
+// Contributor Day teams and table leads from the site's own pages (FetchContributorTablesJob).
+Schedule::call(function () {
+    Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
+        FetchContributorTablesJob::dispatch($event)->delay(now()->addSeconds($index * 10));
+    });
+})->dailyAt('02:15')->name('fetch-contributor-tables');
+
 Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])
         ->where(fn ($q) => $q->whereNull('logo_path')->orWhereNull('favicon_path'))

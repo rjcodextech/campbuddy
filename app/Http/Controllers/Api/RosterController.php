@@ -92,6 +92,8 @@ class RosterController extends Controller
                 // Only web addresses leave here, whatever was stored (rows
                 // scraped before the scraper checked, or a future source).
                 'gravatar_url' => SafeUrl::web($entry->gravatar_url),
+                // The best photo found for them (FillMissingPhotosJob): show this; the Gravatar stays for matching.
+                'photo_url' => SafeUrl::web($entry->photo()),
                 'links' => collect($entry->links ?? [])
                     ->filter(fn ($link) => SafeUrl::web($link['url'] ?? null) !== null)
                     ->values()

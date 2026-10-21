@@ -64,7 +64,16 @@ class ContributorTables
             'leads' => $leads,
             'note' => $input['note'] ?? null,
             'sort_order' => (int) ($input['sort_order'] ?? 0),
+            // Saved by a person: kept as theirs, never replaced by the daily read of the site (FetchContributorTablesJob).
+            ...(self::hasSource() ? ['source' => 'manual'] : []),
         ];
+    }
+
+    private static ?bool $hasSource = null;
+
+    private static function hasSource(): bool
+    {
+        return self::$hasSource ??= \Illuminate\Support\Facades\Schema::hasColumn('contributor_tables', 'source');
     }
 
     /** After any change: the Contribute tab and the Table Lead badges follow. */

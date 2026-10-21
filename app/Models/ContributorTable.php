@@ -14,7 +14,7 @@ use Throwable;
  */
 class ContributorTable extends Model
 {
-    protected $fillable = ['event_id', 'team', 'title', 'track', 'floor', 'table_no', 'leads', 'note', 'sort_order'];
+    protected $fillable = ['event_id', 'team', 'title', 'track', 'floor', 'table_no', 'leads', 'note', 'sort_order', 'source'];
 
     protected $casts = [
         'leads' => 'array',

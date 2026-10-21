@@ -154,6 +154,8 @@ data class OrgTable(
     @SerialName("sort_order") val sortOrder: Int = 0,
     val name: String = "",
     val place: String = "",
+    /** "site": read from the WordCamp site (saving it here makes it "manual", kept as typed). */
+    val source: String = "manual",
 )
 
 @Serializable

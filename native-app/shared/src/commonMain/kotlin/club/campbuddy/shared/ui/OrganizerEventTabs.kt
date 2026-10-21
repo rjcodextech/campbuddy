@@ -645,7 +645,10 @@ internal fun TablesTab(ctx: EventCtx) {
             items(d.tables, key = { it.id }) { t ->
                 Card {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(t.name, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(t.name, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp), modifier = Modifier.weight(1f))
+                            if (t.source == "site") OrgBadge("From the site", Tone.Muted, "globe")
+                        }
                         if (t.place.isNotBlank()) Text(t.place, style = MaterialTheme.typography.bodySmall)
                         if (t.leads.isNotBlank()) Text("Leads: ${t.leads}", style = MaterialTheme.typography.bodyMedium)
                         t.note?.let { Text(it, style = MaterialTheme.typography.bodySmall) }

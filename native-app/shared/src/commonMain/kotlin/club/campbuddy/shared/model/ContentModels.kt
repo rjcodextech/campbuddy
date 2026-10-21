@@ -96,12 +96,17 @@ data class RosterEntry(
     val id: Long,
     val name: String,
     @SerialName("open_to_meet") val openToMeet: Boolean = false,
-    @SerialName("gravatar_url") val avatarUrl: String? = null,
+    @SerialName("gravatar_url") val gravatarUrl: String? = null,
+    /** The best photo the server found for them (their site photo, a real Gravatar, their WordPress.org picture). */
+    @SerialName("photo_url") val photoUrl: String? = null,
     val links: List<RosterLink> = emptyList(),
     val roles: List<String> = emptyList(),
     val talks: List<String> = emptyList(),
     @SerialName("camp_card") val campCard: kotlinx.serialization.json.JsonElement? = null,
-)
+) {
+    /** The picture to show. */
+    val avatarUrl: String? get() = photoUrl ?: gravatarUrl
+}
 
 @Serializable
 data class RosterPage(val data: List<RosterEntry> = emptyList(), @SerialName("last_page") val lastPage: Int = 1, @SerialName("current_page") val currentPage: Int = 1)

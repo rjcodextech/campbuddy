@@ -361,8 +361,9 @@ function rosterRow(a, eventId) {
 
   const roles = rolesOf(a);
   const row = render('tpl-roster-row', {
-    'avatar-img': a.gravatar_url ? { attrs: { src: a.gravatar_url } } : null,
-    'avatar-initial': a.gravatar_url ? null : initial,
+    // The best photo found for them (photo_url), else what the attendee list had.
+    'avatar-img': (a.photo_url || a.gravatar_url) ? { attrs: { src: a.photo_url || a.gravatar_url } } : null,
+    'avatar-initial': (a.photo_url || a.gravatar_url) ? null : initial,
     name: a.name ?? '',
     roles: roles.length > 0 || a.camp_card
       ? [
@@ -378,7 +379,7 @@ function rosterRow(a, eventId) {
   const person = {
     personKey: `r:${a.id}`,
     name: a.name ?? '',
-    avatarUrl: a.gravatar_url || null,
+    avatarUrl: a.photo_url || a.gravatar_url || null,
     sub: 'On the attendee list',
     source: 'roster',
     links: (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')),
@@ -623,7 +624,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
 
     selectedWrap.querySelector('[data-picked-name]').textContent = picked.name ?? '';
     const avatar = selectedWrap.querySelector('[data-picked-avatar]');
-    avatar.src = picked.gravatar_url || '/media/illustrations/avatar.svg';
+    avatar.src = picked.photo_url || picked.gravatar_url || '/media/illustrations/avatar.svg';
   };
 
   const draw = () => {
@@ -654,7 +655,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
         const taken = Boolean(a.open_to_meet) && a.id !== myRosterId;
         const row = render('tpl-roster-picker-row', {
           row: { attrs: { 'aria-disabled': taken ? 'true' : null }, class: { 'roster-picker__row--taken': taken } },
-          avatar: { attrs: { src: a.gravatar_url || '/media/illustrations/avatar.svg' } },
+          avatar: { attrs: { src: a.photo_url || a.gravatar_url || '/media/illustrations/avatar.svg' } },
           name: a.name,
           note: taken,
         });

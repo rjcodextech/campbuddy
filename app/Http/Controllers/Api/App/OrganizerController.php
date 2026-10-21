@@ -310,7 +310,7 @@ class OrganizerController extends Controller
             return [
                 'id' => $entry->id,
                 'name' => $entry->name,
-                'gravatar_url' => $entry->gravatar_url,
+                'gravatar_url' => $entry->photo(),
                 'roles' => $marked[$entry->id]['roles'] ?? [],
                 'auto_roles' => $auto[$entry->id]['roles'] ?? [],
                 'talks' => $marked[$entry->id]['talks'] ?? [],
