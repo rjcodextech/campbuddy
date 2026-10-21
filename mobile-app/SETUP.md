@@ -110,7 +110,8 @@ Deploy ke baad:
 - Local (Android Studio hoga to): `cd mobile-app/app && npm ci && npx cap sync android && npx cap open android`.
 - CI: GitHub → Actions → **App build** (debug APK artifact download karke phone mein install). iOS simulator build bhi wahi.
 - Icons/splash dobara banane ho: `pip install pillow && python mobile-app/app/scripts/make-assets.py`.
-- Version badhana ho: `mobile-app/app/package.json` + `capacitor.config.json` ka `appendUserAgent` + `android/app/build.gradle` (`versionCode`, `versionName`) + Xcode `MARKETING_VERSION`/`CURRENT_PROJECT_VERSION` — sab ek saath.
+- Version (21 Oct 2026 se 0.0.1 se shuru): **har build par apne aap +1** hota hai. Native app: `native-app/version.properties` (agle build ka version) — `build-native.sh` har debug/release build ke baad `bump-version.sh` chalata hai (versionName patch +1, versionCode +1, iOS `project.yml` bhi). Capacitor app: `scripts/build-android.sh` build ke baad `scripts/set-version.mjs` se sab jagah +1. versionCode sirf badhta hai (store ki shart); hath se badalna ho to `node scripts/set-version.mjs <x.y.z> <build>`.
+- Server ka `MOBILE_MIN_VERSION_ANDROID` / `MOBILE_MIN_VERSION_IOS` (default ab `0.0.1`): live `.env` mein 1.0.0 ya usse upar likha ho to 0.0.x app "update karo" screen dikhayega — deploy par check karein.
 
 ## 6b. Release builds
 

@@ -24,6 +24,10 @@ val firebase: Map<String, String> = run {
     )
 }
 
+// The app's version: native-app/version.properties, which build-native.sh moves up after every build.
+val appVersion: Map<String, String> = rootProject.file("version.properties").readLines()
+    .filter { '=' in it && !it.trimStart().startsWith("#") }.associate { it.substringBefore('=').trim() to it.substringAfter('=').trim() }
+
 // The upload key for the store build lives next to the Firebase file (not in git). Without it the release build is unsigned.
 val signing: Map<String, String> = run {
     val file = rootProject.file("../storage/app/analytics/android-signing.txt")
@@ -39,8 +43,8 @@ android {
         applicationId = "club.campbuddy.app"
         minSdk = 24
         targetSdk = 36
-        versionCode = 3
-        versionName = "2.0.2"
+        versionCode = appVersion.getValue("versionCode").toInt()
+        versionName = appVersion.getValue("versionName")
     }
     buildFeatures { buildConfig = true }
     defaultConfig {

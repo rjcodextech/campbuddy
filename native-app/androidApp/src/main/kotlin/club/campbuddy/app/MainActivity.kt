@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity() {
             override fun put(key: String, value: String) = prefs.edit().putString(key, value).apply()
             override fun remove(key: String) = prefs.edit().remove(key).apply()
         }
-        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "2.0.0"
+        val version = packageManager.getPackageInfo(packageName, 0).versionName ?: "0.0.1"
         val reminders = AndroidReminders(applicationContext) { continuation ->
             waiting = continuation
             notificationQuestion.launch(android.Manifest.permission.POST_NOTIFICATIONS)

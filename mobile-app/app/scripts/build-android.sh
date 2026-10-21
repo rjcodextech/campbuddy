@@ -44,3 +44,8 @@ else
   cp app/build/outputs/apk/debug/app-debug.apk "$APP/release/CampBuddy-$VERSION-debug.apk"
 fi
 echo "Built into: $APP/release/"
+
+# Every build gets its own version: the next one is one higher (patch +1, build number +1), everywhere at once.
+BUILDNO="$(sed -n -E 's/^ *versionCode ([0-9]+).*/\1/p' "$APP/android/app/build.gradle")"
+IFS=. read -r MAJOR MINOR PATCH <<< "$VERSION"
+cd "$APP" && node scripts/set-version.mjs "$MAJOR.$MINOR.$((PATCH + 1))" "$((BUILDNO + 1))"

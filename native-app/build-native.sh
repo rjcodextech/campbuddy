@@ -22,3 +22,5 @@ case "$MODE" in
   release) "$GRADLE" :androidApp:assembleRelease :androidApp:bundleRelease --no-daemon ;;
   *)       "$GRADLE" :androidApp:assembleDebug --no-daemon ;;
 esac
+# Every build gets its own version: the next one is one higher (version.properties; also the iOS project).
+if [ "$MODE" != "test" ]; then bash "$HERE/bump-version.sh"; fi

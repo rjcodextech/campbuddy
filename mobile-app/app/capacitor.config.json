@@ -2,7 +2,7 @@
   "appId": "club.campbuddy.app",
   "appName": "CampBuddy",
   "webDir": "www",
-  "appendUserAgent": "CampBuddyApp/1.0.0",
+  "appendUserAgent": "CampBuddyApp/0.0.1",
   "server": {
     "url": "https://campbuddy.club",
     "cleartext": false,

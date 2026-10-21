@@ -109,7 +109,7 @@ private const val LONG_WAIT = 130_000L
 /** Talks to https://campbuddy.club/api/v1/app. Every call is a suspend function; none touches the UI. */
 class ApiClient(
     private val baseUrl: String = "https://campbuddy.club/api/v1",
-    private val appVersion: String = "2.0.0",
+    private val appVersion: String = "0.0.1",
     private val platform: String = "android",
     client: HttpClient? = null,
 ) {

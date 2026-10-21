@@ -27,7 +27,7 @@ private class UserDefaultsStore : KeyValueStore {
 /** Called from Swift (iosApp): the whole shared app as a UIViewController. */
 fun MainViewController(): UIViewController = ComposeUIViewController {
     val language = (NSLocale.preferredLanguages.firstOrNull() as? String)?.take(2)?.takeIf { it == "hi" } ?: "en"
-    val version = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "2.0.0"
+    val version = NSBundle.mainBundle.objectForInfoDictionaryKey("CFBundleShortVersionString") as? String ?: "0.0.1"
     App(
         AppDeps(
             store = UserDefaultsStore(),

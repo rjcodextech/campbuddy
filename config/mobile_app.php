@@ -22,8 +22,8 @@ return [
     // "update the app" screen (the only server-side kill switch for a shell
     // that cannot be hot-patched). Semver, e.g. "1.0.0".
     'min_version' => [
-        'android' => env('MOBILE_MIN_VERSION_ANDROID', '1.0.0'),
-        'ios' => env('MOBILE_MIN_VERSION_IOS', '1.0.0'),
+        'android' => env('MOBILE_MIN_VERSION_ANDROID', '0.0.1'),
+        'ios' => env('MOBILE_MIN_VERSION_IOS', '0.0.1'),
     ],
 
     'store_url' => [
