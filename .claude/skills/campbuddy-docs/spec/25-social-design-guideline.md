@@ -139,3 +139,18 @@ line in Poppins, headlines/names/big numbers in Baloo 2 800 (`resources/js/brand
 fonts" is ticked and the WordCamp site's heading font loaded. The native Daylight posts
 (`OrganizerSocialDaylight.kt` `ts()`) use the same pair. The reel "Ready in a minute" scene
 shrinks its step height so the steps and the pill stay inside the new safe box.
+
+## Daylight reels, rebuilt on the brand's reel template (22 Oct 2026)
+
+With the Daylight design picked, `prepare()` builds the reel from `v2Scenes()` (social-reels.js) instead of the
+earlier intro / post-card / features / steps / end scenes: a **hook** (2 s, ink ground with glow, dots and waves,
+the post's headline or "Meet the *organizers*", no logo), the reel's **topic** (post body → countdown number,
+numbered rows, faces or logos; people reels one person per scene, or four at a time for big groups; a words-only
+post skips straight on), then the event's **facts** — when & where, the schedule (sessions over days), three talks
+worth saving, four speakers, six sponsor logos, Contributor Day tables, the team counts — leaving out what the topic
+showed, then **one** CampBuddy end card (logo plate, "Plan X in CampBuddy", QR, campbuddy.club, WPSimplified credit).
+Every scene but the hook and end card carries the progress bar and the "N OF M · Step" pill. Scenes last whole beats
+(hook 4, fact 5, end 8; facts stretch a beat at a time to reach 30 s); lines come in on half beats, the highlighted
+word and the big numbers pulse on the beat. Each reel gets its own mood (bright / drive / warm by its place in the
+list; thank-you stays soft) on top of its own key, tempo, progression, arpeggio, lead and groove (`lookFor`). Old
+particles, transitions and post-card tilts are no longer drawn on Daylight; the other designs keep the earlier reels.

@@ -1177,6 +1177,603 @@ function endScene(content) {
   };
 }
 
+// ---- Daylight reels (the brand's reel guideline, 22 Oct 2026) ---------------
+//
+// The Daylight design's reels follow the reel templates of the brand
+// guideline (CAMPBUDDY-BRAND-GUIDELINES.md §9): a hook with no logo on an ink
+// ground (glow, dots, waves), then one thing about the event per cut — the
+// reel's own topic first, then the dates and venue, the schedule, the talks,
+// speakers, sponsors, Contributor Day and the team — each under a thin
+// progress bar with a "2 OF 7 · Schedule" step pill, and one CampBuddy end
+// card. Every cut falls on a beat, every line comes in on a half beat and the
+// highlighted word pulses on the beat. The other designs keep the earlier reels.
+
+const V2_BEATS = { hook: 4, fact: 5, end: 8 };
+
+/** A 1 → 0 pulse: strong on each beat, gone by the next. */
+function onBeat(reel, t) {
+  const b = reel.beat ?? 0.5;
+  return Math.exp(-((((t % b) + b) % b) / b) * 6);
+}
+
+/** When the k-th element of a scene comes in: on half beats, after a short settle. */
+function cue(reel, k) {
+  return 0.12 + (k * (reel.beat ?? 0.5)) / 2;
+}
+
+const inkGround = (pal) => T.mix(pal.ink, '#000000', 0.15);
+
+function v2Ground(ctx, time, reel, kind) {
+  const { pal } = reel;
+  if (kind === 'paper') {
+    daylightGround(ctx, time, reel, reel.look?.backdrop ?? 'pattern');
+    return;
+  }
+  if (kind === 'ink') {
+    ctx.fillStyle = inkGround(pal);
+  } else {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, pal.primary);
+    g.addColorStop(1, T.mix(pal.primary, pal.ink, 0.45));
+    ctx.fillStyle = g;
+  }
+  ctx.fillRect(0, 0, W, H);
+  const glow = (x, y, r, color, a) => {
+    const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, T.alpha(color, a));
+    rg.addColorStop(1, T.alpha(color, 0));
+    ctx.fillStyle = rg;
+    ctx.fillRect(0, 0, W, H);
+  };
+  if (kind === 'ink') {
+    glow(W * 0.15 + Math.sin(time * 0.3) * 60, H * 0.32 + Math.cos(time * 0.25) * 50, W * 0.9, pal.primary, 0.45);
+    glow(W * 0.9 + Math.cos(time * 0.27) * 50, H * 0.78, W * 0.7, pal.secondary, 0.22);
+  } else {
+    glow(W * 0.85, H * 0.12, W * 0.8, pal.secondary, 0.28);
+  }
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let y = 13; y < H; y += 26) {
+    for (let x = 13; x < W; x += 26) ctx.fillRect(x - 1, y - 1, 2, 2);
+  }
+  ctx.save();
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 4; i++) {
+    const y0 = H * 0.9 - i * 24;
+    ctx.strokeStyle = T.alpha(kind === 'ink' ? pal.secondary : '#ffffff', 0.3 * (1 - i * 0.22));
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 12) {
+      const y = y0 + Math.sin((x / (W / 1.4)) * Math.PI * 2 + i * 0.9 - time * 0.8) * (14 + i * 3);
+      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/** The colours on a ground: words, quiet words, the highlight (always 4.5:1 on that ground). */
+function v2Ink(reel, kind) {
+  const { pal } = reel;
+  if (kind === 'paper') {
+    const hl = highlightOf(reel) ?? [pal.primary];
+    return { ink: pal.ink, quiet: T.mix(pal.ink, pal.paper, 0.32), hl: hl[0] };
+  }
+  const ground = kind === 'ink' ? inkGround(pal) : T.mix(pal.primary, pal.ink, 0.2);
+  const hl = T.readableOn([pal.secondary, T.mix(pal.secondary, '#ffffff', 0.4), '#ffffff'], [ground]);
+  return { ink: '#ffffff', quiet: 'rgba(255,255,255,0.8)', hl };
+}
+
+/** The progress bar and the step pill ("2 OF 7 · Schedule") at the top of the safe zone; returns where content starts. */
+function v2Header(ctx, reel, t, scene) {
+  const { pal } = reel;
+  const steps = reel.scenes.filter((s) => s.step);
+  const index = steps.indexOf(scene);
+  if (index < 0) return SAFE.top;
+  const { text } = T.fonts();
+  const light = scene.ground !== 'paper';
+  const w = SAFE.right - SAFE.left;
+  const done = (index + Math.min(1, t / scene.dur)) / steps.length;
+  ctx.save();
+  ctx.fillStyle = light ? 'rgba(255,255,255,0.22)' : T.mix(pal.primary, pal.paper, 0.78);
+  T.roundRect(ctx, SAFE.left, SAFE.top, w, 8, 4);
+  ctx.fill();
+  ctx.fillStyle = light ? '#ffffff' : pal.primary;
+  T.roundRect(ctx, SAFE.left, SAFE.top, Math.max(8, w * done), 8, 4);
+  ctx.fill();
+  const p = back(span(t, 0, 0.35));
+  ctx.globalAlpha *= clamp(p);
+  const y = SAFE.top + 34;
+  const h = 64;
+  ctx.font = `700 30px ${text}`;
+  const label = `OF ${steps.length} · ${scene.step}`;
+  const lw = Math.min(w - h - 40, ctx.measureText(label).width);
+  const pw = h + lw + 30;
+  ctx.translate(SAFE.left, y);
+  ctx.scale(0.8 + 0.2 * p, 0.8 + 0.2 * p);
+  ctx.fillStyle = light ? '#ffffff' : pal.primary;
+  T.roundRect(ctx, 0, 0, pw, h, h / 2);
+  ctx.fill();
+  ctx.fillStyle = light ? pal.primary : '#ffffff';
+  ctx.beginPath();
+  ctx.arc(h / 2, h / 2, h / 2 - 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = light ? '#ffffff' : pal.primary;
+  ctx.textAlign = 'center';
+  ctx.font = `800 30px ${text}`;
+  ctx.fillText(String(index + 1), h / 2, h / 2 + 11);
+  ctx.fillStyle = light ? pal.ink : '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.font = `700 30px ${text}`;
+  ctx.fillText(label, h + 6, h / 2 + 11, lw);
+  ctx.restore();
+  return y + h + 60;
+}
+
+/**
+ * A headline whose *marked* words (else its last word) are in the highlight
+ * colour; lines rise in on half beats and the highlight pulses on the beat.
+ */
+function v2Headline(ctx, reel, words, x, y, t, k, colors, { size = 112, min = 64, lines = 3, align = 'left', width = SAFE.right - SAFE.left } = {}) {
+  const { head } = T.fonts();
+  const marked = /\*[^*]+\*/.test(words);
+  const plain = words.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
+  if (!plain) return y;
+  const clean = (w) => w.toLowerCase().replace(/[.,!?:;]+$/, '');
+  const hot = new Set((marked ? [...words.matchAll(/\*([^*]+)\*/g)].flatMap((m) => m[1].split(/\s+/)) : [plain.split(' ').at(-1)]).map(clean));
+  const fit = fitAll(ctx, plain, width, size, min, lines, 900, head);
+  const lh = fit.size * 1.06;
+  const pulse = 1 + 0.07 * onBeat(reel, t);
+  fit.lines.forEach((line, i) => {
+    const p = ease(span(t, cue(reel, k + i), 0.4));
+    if (p <= 0) return;
+    ctx.save();
+    ctx.globalAlpha *= p;
+    const ly = y + (i + 0.82) * lh + (1 - p) * 50;
+    ctx.font = `900 ${fit.size}px ${head}`;
+    ctx.textAlign = 'left';
+    const space = ctx.measureText(' ').width;
+    const total = ctx.measureText(line).width;
+    let cx = align === 'center' ? x - total / 2 : x;
+    for (const word of line.split(' ')) {
+      const ww = ctx.measureText(word).width;
+      const on = hot.has(clean(word));
+      ctx.fillStyle = on ? colors.hl : colors.ink;
+      if (on) {
+        ctx.save();
+        ctx.translate(cx + ww / 2, ly - fit.size * 0.32);
+        ctx.scale(pulse, pulse);
+        ctx.fillText(word, -ww / 2, fit.size * 0.32);
+        ctx.restore();
+      } else ctx.fillText(word, cx, ly);
+      cx += ww + space;
+    }
+    ctx.restore();
+  });
+  return y + fit.lines.length * lh + 10;
+}
+
+function v2Line(ctx, reel, words, x, y, t, k, color, { size = 42, lines = 3, align = 'left', weight = 600, width = SAFE.right - SAFE.left } = {}) {
+  if (!words) return y;
+  const { text } = T.fonts();
+  const fit = fitAll(ctx, words, width, size, 34, lines, weight, text);
+  const p = ease(span(t, cue(reel, k), 0.4));
+  ctx.save();
+  ctx.globalAlpha *= p;
+  ctx.fillStyle = color;
+  ctx.textAlign = align;
+  ctx.font = `${weight} ${fit.size}px ${text}`;
+  fit.lines.forEach((l, i) => ctx.fillText(l, x, y + (i + 0.85) * fit.size * 1.3 + (1 - p) * 30));
+  ctx.restore();
+  return y + fit.lines.length * fit.size * 1.3 + 10;
+}
+
+/** Numbered white rows (the guideline's list template): a mark in the main colour, the words, an optional meta line. */
+function v2Rows(ctx, reel, rows, y, t, k) {
+  const { pal } = reel;
+  const { head, text } = T.fonts();
+  const w = SAFE.right - SAFE.left;
+  const gap = 22;
+  const rowH = Math.max(110, Math.min(176, (SAFE.bottom - 20 - y - gap * (rows.length - 1)) / Math.max(1, rows.length)));
+  rows.forEach((row, i) => {
+    const p = back(span(t, cue(reel, k + i), 0.45));
+    if (p <= 0) return;
+    const ry = y + i * (rowH + gap);
+    const mark = row.mark ?? String(i + 1);
+    const markSize = Math.round(Math.min(mark.length > 2 ? 44 : 72, rowH * 0.5));
+    const markW = Math.max(110, mark.length > 2 ? 150 : 110);
+    ctx.save();
+    ctx.globalAlpha *= clamp(p);
+    ctx.translate((1 - clamp(p)) * -120, 0);
+    ctx.shadowColor = 'rgba(0,0,0,0.16)';
+    ctx.shadowBlur = 30;
+    ctx.shadowOffsetY = 10;
+    ctx.fillStyle = '#ffffff';
+    T.roundRect(ctx, SAFE.left, ry, w, rowH, 30);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = pal.primary;
+    ctx.font = `900 ${markSize}px ${head}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(mark, SAFE.left + markW / 2 + 6, ry + rowH / 2 + markSize * 0.36);
+    const tx = SAFE.left + markW + 16;
+    const tw = w - markW - 40;
+    const title = fitAll(ctx, row.title, tw, 40, 34, row.meta ? 2 : 3, 700, text);
+    const metaH = row.meta ? 44 : 0;
+    const blockH = title.lines.length * title.size * 1.2 + metaH;
+    let ty = ry + (rowH - blockH) / 2;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = pal.ink;
+    ctx.font = `700 ${title.size}px ${text}`;
+    title.lines.forEach((l, j) => ctx.fillText(l, tx, ty + (j + 0.85) * title.size * 1.2));
+    ty += title.lines.length * title.size * 1.2;
+    if (row.meta) {
+      ctx.fillStyle = T.mix(pal.ink, '#ffffff', 0.35);
+      ctx.font = `600 34px ${text}`;
+      ctx.fillText(row.meta, tx, ty + 36, tw);
+    }
+    ctx.restore();
+  });
+}
+
+/** Faces in a grid, each in a ring, with the whole name (shrunk, never cut) and an optional line. */
+function v2Faces(ctx, reel, people, y, t, k, colors) {
+  const { pal } = reel;
+  const { text, head } = T.fonts();
+  const n = people.length;
+  const cols = n <= 1 ? 1 : n <= 4 ? 2 : 3;
+  const rows = Math.ceil(n / cols);
+  const w = SAFE.right - SAFE.left;
+  const cell = Math.min(w / cols, (SAFE.bottom - 20 - y) / rows);
+  const size = Math.max(140, Math.min(n === 1 ? 460 : 300, cell - (n === 1 ? 170 : 110)));
+  people.forEach((person, i) => {
+    const p = back(span(t, cue(reel, k + i), 0.5));
+    if (p <= 0) return;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const inRow = Math.min(cols, n - row * cols);
+    const cx = SAFE.left + w / 2 + (col - (inRow - 1) / 2) * (w / cols);
+    const cy = y + row * cell + size / 2 + 12;
+    ctx.save();
+    ctx.globalAlpha *= clamp(p);
+    ctx.translate(cx, cy);
+    ctx.scale(0.6 + 0.4 * p, 0.6 + 0.4 * p);
+    ctx.fillStyle = colors.hl;
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2 + 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = T.mix(pal.primary, pal.paper, 0.75);
+    ctx.fill();
+    ctx.clip();
+    const img = reel.photos.get(person.key);
+    if (img) T.drawContain(ctx, img, -size / 2, -size / 2, size, size);
+    else {
+      ctx.fillStyle = pal.primary;
+      ctx.font = `800 ${Math.round(size * 0.36)}px ${head}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(T.initials(person.name || person.full || '?'), 0, size * 0.13);
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha *= clamp(p);
+    ctx.textAlign = 'center';
+    let ny = cy + size / 2 + 26;
+    if (person.name) {
+      const nameFit = fitAll(ctx, person.name, w / cols - 20, n === 1 ? 60 : 38, 28, 1, 800, text);
+      ctx.fillStyle = colors.ink;
+      ctx.font = `800 ${nameFit.size}px ${text}`;
+      ctx.fillText(nameFit.lines[0] ?? person.name, cx, ny + nameFit.size);
+      ny += nameFit.size + 14;
+    }
+    if (person.meta) {
+      const metaFit = fitAll(ctx, person.meta, w / cols - 20, n === 1 ? 42 : 30, 26, n === 1 ? 3 : 1, 600, text);
+      ctx.fillStyle = colors.quiet;
+      ctx.font = `600 ${metaFit.size}px ${text}`;
+      metaFit.lines.forEach((l, j) => ctx.fillText(l, cx, ny + (j + 1) * metaFit.size * 1.25));
+    }
+    ctx.restore();
+  });
+}
+
+/** Logos on white tiles. */
+function v2Logos(ctx, reel, logos, y, t, k) {
+  const n = logos.length;
+  const cols = n <= 4 ? 2 : 3;
+  const rows = Math.ceil(n / cols);
+  const w = SAFE.right - SAFE.left;
+  const gap = 24;
+  const tw = (w - gap * (cols - 1)) / cols;
+  const th = Math.min(tw * 0.62, (SAFE.bottom - 20 - y - gap * (rows - 1)) / rows);
+  logos.forEach((logo, i) => {
+    const p = back(span(t, cue(reel, k + i * 0.5), 0.45));
+    if (p <= 0) return;
+    const x = SAFE.left + (i % cols) * (tw + gap);
+    const ty = y + Math.floor(i / cols) * (th + gap);
+    ctx.save();
+    ctx.globalAlpha *= clamp(p);
+    ctx.translate(x + tw / 2, ty + th / 2);
+    ctx.scale(0.7 + 0.3 * p, 0.7 + 0.3 * p);
+    ctx.shadowColor = 'rgba(0,0,0,0.14)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetY = 8;
+    ctx.fillStyle = '#ffffff';
+    T.roundRect(ctx, -tw / 2, -th / 2, tw, th, 26);
+    ctx.fill();
+    ctx.shadowColor = 'transparent';
+    const img = reel.photos.get(logo.key);
+    if (img) T.drawContain(ctx, img, -tw / 2 + 22, -th / 2 + 18, tw - 44, th - 36);
+    else {
+      ctx.fillStyle = reel.pal.ink;
+      ctx.textAlign = 'center';
+      ctx.font = `800 34px ${T.fonts().text}`;
+      ctx.fillText(logo.name, 0, 12, tw - 40);
+    }
+    ctx.restore();
+  });
+}
+
+/** One fact scene: ground, step header, kicker, headline, line, and its body (rows, faces, logos or a big number). */
+function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, beats = V2_BEATS.fact }) {
+  const pictures = [];
+  if (body?.type === 'faces') body.people.forEach((p) => pictures.push([p.key, p.photo]));
+  if (body?.type === 'logos') body.logos.forEach((l) => pictures.push([l.key, l.logo]));
+  return {
+    beats,
+    step,
+    ground,
+    stretch: true,
+    pictures,
+    draw(ctx, t, dur, reel) {
+      leaving(ctx, t, dur);
+      const colors = v2Ink(reel, ground);
+      const { text, head } = T.fonts();
+      let y = v2Header(ctx, reel, t, this);
+      // Words only: the block sits a third of the way down the safe zone, not under the header.
+      if (!body) y = Math.max(y, SAFE.top + (SAFE.bottom - SAFE.top) * 0.3);
+      if (kicker) {
+        const p = ease(span(t, cue(reel, 0), 0.4));
+        ctx.save();
+        ctx.globalAlpha *= p;
+        T.waveMark(ctx, SAFE.left, y - 11, 34, colors.hl);
+        ctx.fillStyle = colors.hl;
+        ctx.font = `800 32px ${text}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(kicker.toUpperCase(), SAFE.left + 50, y, SAFE.right - SAFE.left - 50);
+        ctx.restore();
+        y += 30;
+      }
+      if (body?.type === 'number') {
+        const p = back(span(t, cue(reel, 1), 0.5));
+        ctx.save();
+        ctx.globalAlpha *= clamp(p);
+        ctx.fillStyle = colors.hl;
+        const s = (0.7 + 0.3 * p) * (1 + 0.05 * onBeat(reel, t));
+        ctx.translate(SAFE.left, y + 260);
+        ctx.scale(s, s);
+        ctx.font = `900 300px ${head}`;
+        ctx.textAlign = 'left';
+        ctx.fillText(body.value, -6, 0, SAFE.right - SAFE.left);
+        ctx.restore();
+        y += 300;
+      }
+      if (headline) y = v2Headline(ctx, reel, headline, SAFE.left, y, t, body?.type === 'number' ? 2 : 1, colors, { size: body ? 84 : 112, min: 56, lines: body ? 3 : 4 });
+      if (line) y = v2Line(ctx, reel, line, SAFE.left, y, t, 3, colors.quiet);
+      y += 30;
+      if (body?.type === 'rows') v2Rows(ctx, reel, body.rows, y, t, 4);
+      else if (body?.type === 'faces') v2Faces(ctx, reel, body.people, y, t, 4, colors);
+      else if (body?.type === 'logos') v2Logos(ctx, reel, body.logos, y, t, 4);
+    },
+  };
+}
+
+/** The hook (0–2 s): the reel's promise in big words on ink, no logo, no header. */
+function v2Hook(words, line) {
+  return {
+    beats: V2_BEATS.hook,
+    ground: 'ink',
+    pictures: [],
+    draw(ctx, t, dur, reel) {
+      leaving(ctx, t, dur);
+      const colors = v2Ink(reel, 'ink');
+      let y = SAFE.top + (SAFE.bottom - SAFE.top) * 0.22;
+      y = v2Headline(ctx, reel, words, SAFE.left, y, t, 0, colors, { size: 140, min: 80, lines: 4 });
+      v2Line(ctx, reel, line, SAFE.left, y + 10, t, 3, colors.quiet, { size: 46 });
+    },
+  };
+}
+
+/** The one CampBuddy end card: logo plate, the call, the QR, campbuddy.club, WPSimplified's credit. */
+function v2End(content) {
+  return {
+    beats: V2_BEATS.end,
+    ground: 'gradient',
+    pictures: [],
+    draw(ctx, t, dur, reel) {
+      const { pal, kit } = reel;
+      const { text } = T.fonts();
+      const colors = v2Ink(reel, 'gradient');
+      let y = SAFE.top + 10;
+      if (reel.campbuddy) {
+        const p = back(span(t, cue(reel, 0), 0.5));
+        const h = 92;
+        const w = (reel.campbuddy.width / reel.campbuddy.height) * h;
+        ctx.save();
+        ctx.globalAlpha *= clamp(p);
+        ctx.translate(W / 2, y + (h + 44) / 2);
+        ctx.scale(0.7 + 0.3 * p, 0.7 + 0.3 * p);
+        ctx.fillStyle = T.mix(pal.paper, '#ffffff', 0.6);
+        T.roundRect(ctx, -(w + 80) / 2, -(h + 44) / 2, w + 80, h + 44, (h + 44) / 2);
+        ctx.fill();
+        ctx.drawImage(reel.campbuddy, -w / 2, -h / 2, w, h);
+        ctx.restore();
+        y += h + 44 + 46;
+      }
+      y = v2Headline(ctx, reel, `Plan ${kit.short ?? kit.event.name} in *CampBuddy*`, W / 2, y, t, 1, colors, { size: 92, min: 60, lines: 3, align: 'center', width: TEXT_W });
+      y = v2Line(ctx, reel, 'Schedule, reminders and people to meet. Free, no sign-up, works offline.', W / 2, y, t, 3, colors.quiet, { size: 38, lines: 2, align: 'center', width: TEXT_W });
+      const qs = Math.max(240, Math.min(380, SAFE.bottom - y - 300));
+      const q = back(span(t, cue(reel, 4), 0.5));
+      ctx.save();
+      ctx.globalAlpha *= clamp(q);
+      ctx.translate(W / 2, y + 30 + qs / 2);
+      const s = (0.6 + 0.4 * q) * (1 + 0.025 * onBeat(reel, t));
+      ctx.scale(s, s);
+      ctx.fillStyle = '#ffffff';
+      T.roundRect(ctx, -qs / 2 - 22, -qs / 2 - 22, qs + 44, qs + 44, 36);
+      ctx.fill();
+      T.drawQr(ctx, qrLink(kit.event.qr, `reel-${content}`), -qs / 2, -qs / 2, qs, pal.ink, '#ffffff');
+      ctx.restore();
+      y += 30 + qs + 52;
+      const pp = ease(span(t, cue(reel, 5), 0.4));
+      ctx.save();
+      ctx.globalAlpha *= pp;
+      ctx.font = `700 40px ${text}`;
+      const url = 'campbuddy.club';
+      const ph = 84;
+      const pw = ctx.measureText(url).width + 120;
+      ctx.fillStyle = '#ffffff';
+      T.roundRect(ctx, (W - pw) / 2, y, pw, ph, ph / 2);
+      ctx.fill();
+      T.globe(ctx, (W - pw) / 2 + 48, y + ph / 2, 16, pal.ink);
+      ctx.fillStyle = pal.ink;
+      ctx.textAlign = 'left';
+      ctx.fillText(url, (W - pw) / 2 + 76, y + ph / 2 + 14);
+      ctx.restore();
+      y += ph + 26;
+      const c = ease(span(t, cue(reel, 6), 0.4));
+      if (c > 0) {
+        ctx.save();
+        ctx.globalAlpha *= c;
+        ctx.fillStyle = colors.quiet;
+        ctx.textAlign = 'center';
+        ctx.font = `600 30px ${text}`;
+        const words = 'Made with ♥ for the WordPress community by';
+        if (reel.wps && y + 120 <= SAFE.bottom + 10) {
+          const lh = 46;
+          const lw = (reel.wps.width / reel.wps.height) * lh;
+          ctx.fillText(words, W / 2, y + 30, TEXT_W);
+          ctx.fillStyle = '#ffffff';
+          T.roundRect(ctx, (W - lw - 40) / 2, y + 46, lw + 40, lh + 16, 18);
+          ctx.fill();
+          ctx.drawImage(reel.wps, (W - lw) / 2, y + 54, lw, lh);
+        } else ctx.fillText(`${words} WPSimplified`, W / 2, y + 30, TEXT_W);
+        ctx.restore();
+      }
+    },
+  };
+}
+
+/** The event's facts as fact scenes, leaving out what the reel's topic already showed. */
+function v2EventFacts(reel, shown) {
+  const { kit } = reel;
+  const short = kit.short ?? kit.event.name;
+  const out = [];
+  if ((kit.event.dates || kit.event.place) && !shown.has('when')) {
+    out.push(v2Fact({ step: 'When & where', ground: 'paper', kicker: 'Save the date', headline: kit.event.dates ? `*${kit.event.dates}*` : `*${kit.event.name}*`, line: [kit.event.place, kit.event.name].filter(Boolean).join(' · ') || null }));
+  }
+  const sessions = kit.schedule?.sessions ?? [];
+  const talks = sessions.filter((s) => (s.speakers ?? []).length);
+  if (sessions.length && !shown.has('schedule')) {
+    const days = kit.schedule.days?.length || 1;
+    out.push(v2Fact({
+      step: 'Schedule',
+      ground: 'gradient',
+      kicker: 'The schedule',
+      body: { type: 'number', value: String(sessions.length) },
+      headline: `sessions over *${days} ${days === 1 ? 'day' : 'days'}*`,
+      line: talks.length ? `${talks.length} talks, plus breaks, lunch and time to meet people.` : null,
+    }));
+  }
+  if ((talks.length || sessions.length) && !shown.has('talks')) {
+    out.push(v2Fact({
+      step: 'Talks',
+      ground: 'paper',
+      kicker: 'On stage',
+      headline: 'Talks worth *saving*',
+      body: { type: 'rows', rows: (talks.length ? talks : sessions).slice(0, 3).map((s) => ({ title: s.title, meta: [s.time, (s.speakers ?? []).join(', ')].filter(Boolean).join(' · ') })) },
+    }));
+  }
+  const speakers = (kit.speakers ?? []).filter((p) => p.name);
+  if (speakers.length && !shown.has('speakers')) {
+    const pick = speakers.filter((p) => p.photo).concat(speakers.filter((p) => !p.photo)).slice(0, 4);
+    out.push(v2Fact({ step: 'Speakers', ground: 'ink', kicker: `${speakers.length} ${speakers.length === 1 ? 'speaker' : 'speakers'}`, headline: 'Meet the *speakers*', body: { type: 'faces', people: pick.map((p, i) => ({ key: `speaker-${i}`, name: p.name, photo: p.photo })) } }));
+  }
+  const sponsors = (kit.sponsors ?? []).filter((s) => s.name);
+  if (sponsors.length && !shown.has('sponsors')) {
+    const pick = sponsors.filter((s) => s.logo).concat(sponsors.filter((s) => !s.logo)).slice(0, 6);
+    out.push(v2Fact({ step: 'Sponsors', ground: 'paper', kicker: `${sponsors.length} ${sponsors.length === 1 ? 'sponsor' : 'sponsors'}`, headline: `Making ${short} *possible*`, body: { type: 'logos', logos: pick.map((s, i) => ({ key: `sponsor-${i}`, name: s.name, logo: s.logo })) } }));
+  }
+  const tables = kit.tables ?? [];
+  if (tables.length && !shown.has('tables')) {
+    out.push(v2Fact({ step: 'Contributor Day', ground: 'paper', kicker: 'Contributor Day', headline: `${tables.length} ${tables.length === 1 ? 'table' : 'tables'} to *give back*`, body: { type: 'rows', rows: tables.slice(0, 3).map((tb) => ({ title: tb.name, meta: (tb.leads ?? []).slice(0, 2).join(', ') || null })) } }));
+  }
+  const count = (role) => (kit.people ?? []).filter((p) => (p.roles ?? []).includes(role)).length;
+  const team = [['organizer', 'Organizers'], ['volunteer', 'Volunteers'], ['speaker', 'Speakers']].map(([r, label]) => [count(r), label]).filter(([n]) => n);
+  if (team.length && !shown.has('team')) {
+    out.push(v2Fact({ step: 'The team', ground: 'gradient', kicker: 'Made by the community', headline: `The people behind *${short}*`, body: { type: 'rows', rows: team.map(([n, label]) => ({ mark: String(n), title: label })) } }));
+  }
+  return out;
+}
+
+/** A post reel's own scenes, from the post's content. */
+function v2PostTopic(reel, content, label, shown) {
+  const body = content.body ?? { type: 'none' };
+  const base = { step: label, kicker: content.kicker || label, headline: content.headline || label, line: content.line || null };
+  if (body.type === 'countdown') {
+    shown.add('when');
+    return [v2Fact({ ...base, ground: 'gradient', headline: body.days === 1 ? '*day* to go' : '*days* to go', body: { type: 'number', value: String(body.days) }, line: [reel.kit.event.dates, reel.kit.event.place].filter(Boolean).join(' · ') || null })];
+  }
+  if (body.type === 'features') return [v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: body.items.map((it) => ({ title: typeof it === 'string' ? it : it.title ?? String(it) })) } })];
+  if (body.type === 'photos') {
+    shown.add('speakers');
+    return chunk(body.people.slice(0, 8), 4).map((group, i) => v2Fact({ ...base, ground: i % 2 ? 'paper' : 'ink', body: { type: 'faces', people: group.map((p, j) => ({ key: `topic-${i}-${j}`, name: p.name, photo: p.photo })) } }));
+  }
+  if (body.type === 'logos') {
+    shown.add('sponsors');
+    return chunk(body.logos.slice(0, 12), 6).map((group, i) => v2Fact({ ...base, ground: 'paper', body: { type: 'logos', logos: group.map((s, j) => ({ key: `topic-${i}-${j}`, name: s.name, logo: s.logo })) } }));
+  }
+  if (body.type === 'list') {
+    shown.add('talks');
+    return chunk(body.items.slice(0, 6), 3).map((rows) => v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: rows.map((r) => ({ mark: r.time || undefined, title: r.title, meta: r.meta || null })) } }));
+  }
+  if (body.type === 'session') return [v2Fact({ ...base, ground: 'ink', body: { type: 'faces', people: body.speakers.slice(0, 4).map((name, j) => ({ key: `topic-0-${j}`, name, photo: body.photos?.[j] })) } })];
+  if (body.type === 'tables') {
+    shown.add('tables');
+    return chunk(body.tables.slice(0, 6), 3).map((rows) => v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: rows.map((tb) => ({ title: tb.name, meta: (tb.leads ?? []).slice(0, 2).join(', ') || null })) } }));
+  }
+  // Words only: the hook already said them, so the reel goes straight on to the event.
+  return [];
+}
+
+/** Every scene of a Daylight reel: the hook, the topic, the event's facts, the end card. */
+function v2Scenes(reel, spec) {
+  const { kit } = reel;
+  const short = kit.short ?? kit.event.name;
+  const shown = new Set();
+  const sub = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
+  let scenes;
+  if (spec.kind === 'post') {
+    const content = spec.content ?? {};
+    const words = (content.headline || spec.label || kit.event.name).trim();
+    scenes = [v2Hook(words, sub), ...v2PostTopic(reel, content, spec.label, shown)];
+  } else {
+    const [title, line] = GROUP_WORDS[spec.role](short);
+    const hookWords = /^Meet the /.test(title) ? title.replace(/^Meet the (.+)$/, 'Meet the *$1*') : `*${title}*`;
+    shown.add(spec.role === 'speaker' ? 'speakers' : 'team');
+    const people = spec.people.map((p, i) => ({ key: `person-${i}`, full: p.name, photo: p.photo, meta: p.talk || null }));
+    const one = spec.role === 'speaker' || people.length <= ONE_BY_ONE;
+    const groups = one ? people.map((p) => [p]) : chunk(people, 4);
+    scenes = [v2Hook(hookWords, line), ...groups.map((group, i) => {
+      if (one) {
+        const [first, ...rest] = group[0].full.split(' ');
+        return v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: spec.label.replace(/s$/, ''), headline: `*${first}* ${rest.join(' ')}`.trim(), body: { type: 'faces', people: [{ key: group[0].key, name: '', full: group[0].full, photo: group[0].photo, meta: group[0].meta }] } });
+      }
+      return v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: `${spec.label} ${i * 4 + 1}–${i * 4 + group.length}`, headline: `${spec.label} of *${short}*`, body: { type: 'faces', people: group.map((p) => ({ ...p, name: p.full })) } });
+    })];
+  }
+  return [...scenes, ...v2EventFacts(reel, shown), v2End(spec.utm)];
+}
+
 // ---- The reels on offer ------------------------------------------------------
 
 /** Every reel this event can have, with what it needs to be made. */
@@ -1187,8 +1784,9 @@ export function reelList(kit, posts) {
     mood: POST_MOODS[post.key] ?? 'bright',
     caption: post.caption,
     build: (style, colors) => {
-      const pages = planPost(post.content(), '1080x1920', style, colors);
-      return { kind: 'post', pages, label: post.label, utm: post.key };
+      const content = post.content();
+      const pages = planPost(content, '1080x1920', style, colors);
+      return { kind: 'post', pages, content, label: post.label, utm: post.key };
     },
   }));
 
@@ -1306,7 +1904,14 @@ async function prepare(item, kit, colors, style) {
     reel.dots.push({ x: rnd() * W, y: rnd() * H, r: 20 + rnd() * 90, a: 0.05 + rnd() * 0.06, c: [pal.primary, pal.secondary, ...(pal.extras ?? [])][i % 3], s: 0.3 + rnd() * 0.6, p: rnd() * 6, v: 0.3 + rnd() });
   }
 
-  if (spec.kind === 'post') {
+  if (reel.daylight) {
+    // Daylight: the brand's reel template (v2Scenes) — the hook, the topic, the event's facts, one end card.
+    reel.v2 = true;
+    reel.scenes = v2Scenes(reel, spec);
+    const wanted = reel.scenes.flatMap((sc) => sc.pictures ?? []);
+    const imgs = await Promise.all(wanted.map(([, url]) => (url ? T.loadImage(T.proxied(kit, url)) : null)));
+    wanted.forEach(([key], i) => reel.photos.set(key, imgs[i]));
+  } else if (spec.kind === 'post') {
     reel.scenes.push(introScene(spec.label));
     for (const [i, page] of spec.pages.entries()) {
       const c = canvas();
@@ -1329,15 +1934,21 @@ async function prepare(item, kit, colors, style) {
       chunk(spec.people, GRID).forEach((group, i) => reel.scenes.push(gridScene(group, i * GRID, spec.people.length, spec.role)));
     }
   }
-  // What CampBuddy gives them and how to start, before the QR: posts get both, people reels the steps.
-  if (spec.kind === 'post') reel.scenes.push(featuresScene(T.features));
-  reel.scenes.push(howScene());
-  reel.scenes.push(endScene(spec.utm));
+  if (!reel.v2) {
+    // What CampBuddy gives them and how to start, before the QR: posts get both, people reels the steps.
+    if (spec.kind === 'post') reel.scenes.push(featuresScene(T.features));
+    reel.scenes.push(howScene());
+    reel.scenes.push(endScene(spec.utm));
+  }
+
+  // Daylight reels each get their own mood too (turning with the reel's place in the list), not one per kind.
+  if (reel.v2 && item.mood !== 'soft') item = { ...item, mood: ['bright', 'drive', 'warm'][((item.variant ?? 0) + ((kit.event.seed >>> 0) % 3)) % 3] };
 
   // Every scene lasts whole beats, so the cuts fall on the music.
   const mood = MOODS[item.mood] ?? MOODS.bright;
   reel.bpm = reelBpm(mood, reel.look);
   const beat = 60 / reel.bpm;
+  reel.beat = beat;
   // At least MIN_SECONDS: a short reel holds its cards and people a little longer, a beat at a time, in turn.
   const stretchable = reel.scenes.filter((s) => s.stretch);
   let beats = reel.scenes.reduce((n, s) => n + s.beats, 0);
@@ -1357,6 +1968,15 @@ function drawFrame(ctx, reel, time) {
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalAlpha = 1;
   ctx.textBaseline = 'alphabetic';
+  if (reel.v2) {
+    // Daylight: each scene stands on its own ground (ink, paper or the gradient) and brings its own header.
+    const scene = reel.scenes.findLast((s) => s.start <= time) ?? reel.scenes[0];
+    v2Ground(ctx, time, reel, scene.ground ?? 'paper');
+    ctx.save();
+    scene.draw(ctx, time - scene.start, scene.dur, reel);
+    ctx.restore();
+    return;
+  }
   backdrop(ctx, time, reel);
   particles(ctx, reel, time);
   const scene = reel.scenes.findLast((s) => s.start <= time) ?? reel.scenes[0];
