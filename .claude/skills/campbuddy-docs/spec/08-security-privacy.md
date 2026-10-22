@@ -84,3 +84,17 @@ CampBuddy is a "Data Fiduciary" only for what attendees choose to share; the own
 | **Security safeguards**, breach notice | HTTPS, hashed tokens, throttling; the notice promises breach notification as the law requires. |
 
 The native apps contain **no analytics SDK**; Google Analytics runs only on the website and is off for Do Not Track / Global Privacy Control.
+
+### Hardening, 23 Oct 2026
+
+- **Legal pages HTML**: Admin → Legal content is saved and shown through `App\Support\SafeHtml::clean()` — an
+  allowlist of what the editor makes (text formatting, headings, lists, links, quotes, code, tables, the callout
+  box); scripts, styles, frames, forms, event-handler attributes and `javascript:`/`data:` links are dropped
+  (`tests/Unit/SafeHtmlTest.php`).
+- **Announcement banner**: the "already dismissed" check printed its key through `{{ json_encode() }}`, which
+  HTML-escaped the quotes and made the inline script a syntax error on every page; now `@json`.
+- **`.htaccess`**: SVGs served straight from disk get `Content-Security-Policy: default-src 'none';
+  style-src 'unsafe-inline'; sandbox` (like `/storage`), and `X-Powered-By` is removed.
+- **Dependencies**: `npm audit fix` (dompurify via jsPDF, follow-redirects, shell-quote, vite, source-map-js);
+  what remains is Tailwind 3's build-time chain (braces/micromatch/postcss-selector-parser), never shipped to
+  browsers — goes away with a Tailwind 4 move. `composer audit`: clean.

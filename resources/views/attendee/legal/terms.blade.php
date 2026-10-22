@@ -39,7 +39,7 @@
 
     @if ($hasCustomContent)
         <div class="legal-card legal-custom-content">
-            {!! $document->content !!}
+            {!! \App\Support\SafeHtml::clean($document->content) !!}
         </div>
     @else
         <nav class="legal-toc" aria-label="Quick jump sections">

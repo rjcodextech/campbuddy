@@ -48,7 +48,7 @@
         <aside class="announcement-banner announcement-banner--{{ $style }}" data-banner-key="{{ $bannerId }}" role="status" aria-label="Announcement">
             <script>
                 (function() {
-                    var k = {{ json_encode($bannerId) }};
+                    var k = @json($bannerId);
                     if (k && localStorage.getItem('campbuddy_dismissed_banner') === k) {
                         var el = document.currentScript.closest('.announcement-banner');
                         if (el) el.style.display = 'none';

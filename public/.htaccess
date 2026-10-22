@@ -74,4 +74,17 @@
     <FilesMatch "-[A-Za-z0-9_-]{8,}\.(js|css)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
+
+    # An SVG can carry <script>. Uploaded logos are checked (SvgGuard) and the
+    # /storage route already sends this policy, but the web server can serve a
+    # file from public/storage itself — so every SVG it serves directly goes
+    # out sandboxed and script-less too. Pictures shown through <img> are unchanged.
+    <FilesMatch "\.svg$">
+        Header set Content-Security-Policy "default-src 'none'; style-src 'unsafe-inline'; sandbox"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+
+    # Don't tell every visitor which PHP version runs the site.
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
 </IfModule>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LegalDocument;
+use App\Support\SafeHtml;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -98,7 +99,7 @@ class LegalDocumentController extends Controller
             [
                 'title' => $validated['title'],
                 'meta_description' => $validated['meta_description'],
-                'content' => $validated['content'],
+                'content' => SafeHtml::clean($validated['content']),
             ]
         );
 
