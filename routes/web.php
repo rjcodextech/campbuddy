@@ -80,6 +80,9 @@ Route::withoutMiddleware([
     // has its own copy (event.guide) that adds that event's venue and times.
     Route::view('/guide', 'attendee.guide-general')->name('guide');
 
+    // CampBuddy's brand guidelines, drawn with the live tokens (CAMPBUDDY-BRAND-GUIDELINES.md).
+    Route::view('/brand-guidelines', 'brand.guidelines')->name('brand-guidelines');
+
     // What CampBuddy does with personal data (DPDPA notice) and the rules of use.
     Route::get('/privacy', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('privacy');
     Route::get('/terms', [\App\Http\Controllers\LegalPageController::class, 'terms'])->name('terms');

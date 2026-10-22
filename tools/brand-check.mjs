@@ -68,6 +68,12 @@ for (const key of ['maroon', 'maroonDark', 'wine', 'gold', 'ink', 'paper', 'pape
 if (!/FONT_TEXT = '"Poppins"/.test(brand)) problems.push('resources/js/brand.js: FONT_TEXT must start with "Poppins"');
 if (!/FONT_DISPLAY = '"Baloo 2"/.test(brand)) problems.push('resources/js/brand.js: FONT_DISPLAY must start with "Baloo 2"');
 
+// The Brand guidelines page's data (app/Support/BrandTokens.php) shows the real colours.
+const tokensPhp = read('app/Support/BrandTokens.php');
+const pageHex = (token) => tokensPhp.match(new RegExp(`'${token}', '(#[0-9A-Fa-f]{6})'`))?.[1];
+const pageMap = { '--paper': 'paper', '--paper-soft': 'paperSoft', '--line': 'line', '--ink': 'ink', '--muted': 'muted', '--subtle': 'subtle', '--brand-primary': 'maroon', '--brand-accent': 'maroonDark', '--wine': 'wine', '--gold': 'gold', '--peach': 'peach', '--teal': 'teal', '--navy': 'navy', '--success': 'success', '--danger': 'danger' };
+for (const [token, src] of Object.entries(pageMap)) expect('BrandTokens.php', token, pageHex(token), colours[src]);
+
 // Native app defaults (Kotlin) and the server's app config defaults (PHP).
 const kotlin = read('native-app/shared/src/commonMain/kotlin/club/campbuddy/shared/model/ConfigModels.kt');
 const kt = (key) => kotlin.match(new RegExp(`val ${key}: String = "(#[0-9A-Fa-f]{6})"`))?.[1];

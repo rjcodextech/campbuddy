@@ -95,6 +95,9 @@ $space-4: 16px;
 $space-5: 20px;
 $space-6: 24px;
 $space-8: 32px;
+$space-10: 40px;
+$space-12: 48px;
+$space-16: 64px;
 
 // --- Radii & shadows ---
 // Radius grows with the surface (brand guideline §5): chips 6 · inputs 10 ·
@@ -117,6 +120,42 @@ $radius-lg: $radius-card;
 $shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 32, 0.18);
 $shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
 $shadow-focus: 0 0 0 3px rgba(195, 58, 25, 0.32);
+
+// Elevation scale (brand guideline §5): ink-tinted, two layers (contact +
+// ambient), from WPSimplified's Daylight. lg is a hovered card.
+$shadow-sm: 0 1px 2px rgba(35, 31, 32, 0.05), 0 1px 4px rgba(35, 31, 32, 0.06);
+$shadow-md: 0 2px 6px -2px rgba(35, 31, 32, 0.06), 0 12px 28px -12px rgba(35, 31, 32, 0.14);
+$shadow-lg: 0 4px 12px -4px rgba(35, 31, 32, 0.07), 0 24px 48px -20px rgba(35, 31, 32, 0.2);
+$shadow-xl: 0 8px 16px -8px rgba(35, 31, 32, 0.08), 0 36px 72px -32px rgba(35, 31, 32, 0.26);
+// The primary button's warm lift and the ochre glow it gains on hover — the
+// only coloured shadows (§5).
+$shadow-glow-lift: 0 12px 28px -12px rgba(161, 47, 20, 0.45);
+$shadow-glow-sm: 0 0 16px rgba(227, 157, 28, 0.3);
+
+// Light for backgrounds: a soft ochre and maroon wash (hero aurora, section
+// spotlight). Never under text as its only ground.
+$color-glow: rgba(227, 157, 28, 0.16);
+$color-glow-primary: rgba(195, 58, 25, 0.09);
+
+// --- Motion (§5) ---
+$duration-fast: 0.15s;
+$duration-normal: 0.25s;
+$duration-slow: 0.5s;
+$duration-slower: 0.8s;
+$duration-drift: 9s;
+$duration-drift-slow: 18s;
+$ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+$ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+// --- Art (§5): the brand motif as colourless SVG masks; the colour comes from
+// the element (`background: var(--brand-primary); mask: $art-wave-line`).
+//   wave-line : one tileable sine stroke, 120 × 24 — kickers, section rails
+//   wave-soft : a long, low swell with a body, 480 × 60 — hero foot
+//   dots      : a 24 × 24 dot grid tile — hero texture
+$art-wave-line: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 24' preserveAspectRatio='none'%3E%3Cpath d='M0 12 C20 2 40 2 60 12 S100 22 120 12' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E");
+$art-wave-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C80 6 160 6 240 30 S400 54 480 30 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E");
+$art-dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%23000'/%3E%3C/svg%3E");
 
 // --- Layout ---
 // The attendee app is full width at every viewport size (see

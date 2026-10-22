@@ -11,6 +11,8 @@ waves and dots, calm copy — in CampBuddy's own colours and logo. CampBuddy is
 made by WPSimplified, but it is not dressed as WPSimplified: no WPSimplified
 palette, logo or name except the small credit line.
 
+The people-facing version, drawn with the live tokens, is the **Brand guidelines** page: `/brand-guidelines` (`resources/views/brand/guidelines.blade.php`, data in `app/Support/BrandTokens.php`).
+
 It applies everywhere: admin panel, event-manager panel, attendee site/PWA,
 Android app, iPhone app, social posts, people cards, reels, QR kit, store
 listing and email.
@@ -105,6 +107,15 @@ Display 56 (landing only) · H1 32 · H2 24 · H3 20 · H4 18 · Lead 18 · Body
 - **Shadows:** ink-tinted (`rgba(35,31,32,…)`), two layers, `--shadow-sm … xl`. Never black, never coloured except the ochre glow on a primary orb.
 - **Motif:** smooth sine waves, a dot grid (2px dots every 26px, ≈12%), a soft ochre/maroon glow. A kicker always starts with a short wave. No zig-zags or squiggles.
 - **Motion:** slow and ambient (drift 9–18s), UI transitions 150–250ms. Infinite animations only behind `prefers-reduced-motion: no-preference`; reduced motion freezes everything (native: respect the system "remove animations").
+- **Effects (after WPSimplified's site, `components/_effects.scss`, admin `app.css`):**
+  - *Heroes:* ochre glow top right + maroon glow bottom left, a dot grid on the right half, a soft wave swell along the foot.
+  - *Section rail:* between Home's sections, a short wave (maroon → ochre → maroon, fading out both ways) drifting sideways, with a pulsing node in the middle.
+  - *Titles:* a short wave under every section title; a kicker starts with a wave.
+  - *Buttons:* primary = maroon → wine gradient pill with a warm lift shadow; on hover it lifts 2px, gains an ochre glow and a white sheen sweeps across once (0.8s); pressing settles it back. Outline buttons turn maroon on hover.
+  - *Cards that open something:* lift 4px, `--shadow-lg`, maroon-tinted border on hover.
+  - *Top bar:* frosted (translucent paper + 12px blur).
+  - *Scroll reveal:* sections that start below the fold fade up as they scroll in (`reveal.js`); content in view on load is never hidden.
+  - *Native:* gradient primary button with a wine lift, ink-tinted card shadows, the hero glow, and the short wave under section titles.
 
 ## 6. Voice & tone
 
@@ -156,6 +167,7 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 - 1080 × 1920, 9:16, 30 fps; 20–45s (60s maximum). Current reels: 30s.
 - **Safe zone** (Instagram Reels + YouTube Shorts + WhatsApp status): keep text and faces out of top 250px, bottom 450px, right 180px, left 64px → safe box x 64–900, y 250–1470.
 - Structure: Hook 0–2s (event name / the result, big, no logo) → Context 2–6s → Value 6–25s (one idea per cut, cut every 2–3s) → Payoff + **one** CTA 25–30s (scan / open campbuddy.club).
+- A thin progress bar (main colour on a pale track) runs under the header row on every scene except the hook and the end card (the brand's reel template).
 - Captions burned in: Poppins Bold 64–72px, max two lines, 3–6 words per line.
 - Logo only on the cover and the end card (brand bar + WPSimplified credit).
 - Export MP4 · H.264 · AAC 48 kHz · 8–12 Mbps. Music never louder than words.

@@ -43,6 +43,8 @@
 @use 'components/live-notice';
 @use 'components/motion';
 @use 'components/legal';
+@use 'components/effects';
+@use 'components/brand-page';
 
 // Last, so its wide-screen overrides win over the base component rules.
 @use 'layout/wide-screens';

@@ -32,6 +32,9 @@ if (isNativeApp()) import('./native-bridge.js').then((bridge) => bridge.initNati
 // laptop/desktop visitors at their phone.
 initDesktopNotice();
 
+// Sections below the fold fade up as they scroll in, once the page has laid out.
+window.addEventListener('load', () => setTimeout(() => import('./reveal.js').then(({ initReveal }) => initReveal()).catch(() => {}), 0));
+
 // A logo that fails to load falls back to CampBuddy's icon, not a broken image.
 initImageFallbacks();
 

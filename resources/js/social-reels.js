@@ -1363,7 +1363,28 @@ function drawFrame(ctx, reel, time) {
   ctx.save();
   scene.draw(ctx, time - scene.start, scene.dur, reel);
   ctx.restore();
+  progressBar(ctx, reel, time, scene);
   transition(ctx, reel, time);
+}
+
+// The reel's progress (the brand's reel template, guideline §9): a thin track
+// under the header row filling in the main colour, on every scene but the
+// first (the hook stays clean) and the end card.
+function progressBar(ctx, reel, time, scene) {
+  const scenes = reel.scenes;
+  if (scene === scenes[0] || scene === scenes[scenes.length - 1]) return;
+  const p = Math.min(1, Math.max(0, time / reel.duration));
+  const y = HEADER_Y + 124;
+  const w = SAFE.right - SAFE.left;
+  ctx.save();
+  ctx.globalAlpha = 0.9 * ease(span(time - scene.start, 0, 0.4));
+  ctx.fillStyle = T.mix(reel.pal.primary, reel.pal.paper, 0.78);
+  T.roundRect(ctx, SAFE.left, y, w, 6, 3);
+  ctx.fill();
+  ctx.fillStyle = reel.pal.primary;
+  T.roundRect(ctx, SAFE.left, y, Math.max(6, w * p), 6, 3);
+  ctx.fill();
+  ctx.restore();
 }
 
 // ---- Music -------------------------------------------------------------------

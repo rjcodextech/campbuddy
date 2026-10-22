@@ -1,0 +1,291 @@
+@use '../abstracts/variables' as v;
+@use '../abstracts/mixins' as m;
+
+// Daylight effects (CAMPBUDDY-BRAND-GUIDELINES.md §5), after WPSimplified's
+// site: an aurora glow and dot texture behind the heroes with a soft wave at
+// their foot, a wave rail with a glowing node between Home's sections, a
+// short wave under section titles, gradient pill buttons that lift with a
+// sheen, cards that lift on hover, and blocks below the fold that fade up as
+// they scroll in (reveal.js). Look and motion only — no layout or behaviour.
+// Every loop and lift is motion-safe; reduced motion keeps the still frame.
+
+@mixin motion-safe {
+    @media (prefers-reduced-motion: no-preference) {
+        @content;
+    }
+}
+
+// ---- Heroes: aurora, dots, wave foot -----------------------------------
+.home-hero,
+.landing-hero {
+    position: relative;
+    isolation: isolate;
+}
+
+.home-hero {
+    overflow: hidden;
+    background-image:
+        radial-gradient(60% 90% at 100% 0%, v.$color-glow 0%, transparent 70%),
+        radial-gradient(50% 80% at 0% 100%, v.$color-glow-primary 0%, transparent 72%);
+
+    // Dot texture on the right half, fading towards the words (a hero that
+    // shows the WordCamp site's own art, .home-hero--art, keeps that instead).
+    &:not(.home-hero--art)::after {
+        content: '';
+        position: absolute;
+        inset: 0 0 0 45%;
+        z-index: -1;
+        pointer-events: none;
+        background: var(--brand-primary);
+        opacity: 0.12;
+        mask: v.$art-dots 0 0 / 22px 22px repeat;
+        -webkit-mask: v.$art-dots 0 0 / 22px 22px repeat;
+        mask-image: v.$art-dots, linear-gradient(90deg, transparent, #000 60%);
+        -webkit-mask-image: v.$art-dots, linear-gradient(90deg, transparent, #000 60%);
+        mask-composite: intersect;
+        -webkit-mask-composite: source-in;
+        mask-size: 22px 22px, 100% 100%;
+        -webkit-mask-size: 22px 22px, 100% 100%;
+        mask-repeat: repeat, no-repeat;
+        -webkit-mask-repeat: repeat, no-repeat;
+    }
+}
+
+.landing-hero {
+    background-image:
+        radial-gradient(55% 70% at 90% 10%, v.$color-glow 0%, transparent 70%),
+        radial-gradient(45% 60% at 5% 95%, v.$color-glow-primary 0%, transparent 72%);
+    padding-bottom: v.$space-8;
+
+    // A soft wave swell along the foot, like the site's hero.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 0;
+        height: 28px;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(90deg, rgba(227, 157, 28, 0.22), rgba(195, 58, 25, 0.14));
+        mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
+        -webkit-mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
+    }
+
+    @media (min-width: v.$bp-tablet) {
+        background-image:
+            radial-gradient(55% 70% at 90% 10%, v.$color-glow 0%, transparent 70%),
+            radial-gradient(45% 60% at 5% 95%, v.$color-glow-primary 0%, transparent 72%),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(255, 236, 214, 0.6));
+    }
+}
+
+// ---- Kicker wave and the wave under section titles ---------------------
+// A kicker always starts with a short wave (§5).
+.home-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+        content: '';
+        flex: none;
+        width: 18px;
+        height: 8px;
+        background: currentColor;
+        mask: v.$art-wave-line 0 50% / 18px 100% no-repeat;
+        -webkit-mask: v.$art-wave-line 0 50% / 18px 100% no-repeat;
+    }
+}
+
+// The site's headlines carry a short wave under them; here, every section title.
+.section-head__title {
+    position: relative;
+    padding-bottom: 8px;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 44px;
+        height: 7px;
+        background: linear-gradient(90deg, var(--brand-primary), v.$color-gold);
+        mask: v.$art-wave-line 0 50% / 22px 100% repeat-x;
+        -webkit-mask: v.$art-wave-line 0 50% / 22px 100% repeat-x;
+    }
+}
+
+// ---- Section rail: a wave with a glowing node between Home's sections --
+@keyframes cb-wave-drift {
+    from {
+        mask-position: 0 50%;
+        -webkit-mask-position: 0 50%;
+    }
+
+    to {
+        mask-position: 64px 50%;
+        -webkit-mask-position: 64px 50%;
+    }
+}
+
+@keyframes cb-node-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(227, 157, 28, 0.25), 0 0 10px rgba(227, 157, 28, 0.45);
+    }
+
+    50% {
+        box-shadow: 0 0 0 6px rgba(227, 157, 28, 0.12), 0 0 18px rgba(227, 157, 28, 0.55);
+    }
+}
+
+.home-section + .home-section {
+    position: relative;
+    padding-top: v.$space-6;
+
+    // The wave, fading out both ways.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: min(320px, 80%);
+        height: 12px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        background: linear-gradient(90deg, transparent, rgba(195, 58, 25, 0.35) 22%, v.$color-gold 50%, rgba(195, 58, 25, 0.35) 78%, transparent);
+        mask: v.$art-wave-line 0 50% / 64px 100% repeat-x;
+        -webkit-mask: v.$art-wave-line 0 50% / 64px 100% repeat-x;
+
+        @include motion-safe {
+            animation: cb-wave-drift v.$duration-drift linear infinite;
+        }
+    }
+
+    // …and its node.
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        background: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(227, 157, 28, 0.25), 0 0 10px rgba(227, 157, 28, 0.45);
+
+        @include motion-safe {
+            animation: cb-node-pulse 2.4s ease-in-out infinite;
+        }
+    }
+}
+
+// ---- Buttons: gradient pill, warm lift, a sheen that sweeps once -------
+.btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+        transform: translateX(-110%);
+    }
+
+    @include motion-safe {
+        @include m.hover {
+            transform: translateY(-2px);
+            box-shadow: v.$shadow-md;
+
+            &::after {
+                transform: translateX(110%);
+                transition: transform v.$duration-slower v.$ease-out;
+            }
+        }
+    }
+}
+
+.btn--primary {
+    background: var(--gradient-brand);
+    border-color: transparent;
+    box-shadow: v.$shadow-glow-lift;
+
+    @include m.hover {
+        background: var(--gradient-brand);
+        border-color: transparent;
+        box-shadow: v.$shadow-glow-lift, v.$shadow-glow-sm;
+    }
+
+    &:focus-visible {
+        box-shadow: v.$shadow-glow-lift, v.$shadow-focus;
+    }
+}
+
+.btn--outline {
+    background: #fff;
+
+    @include m.hover {
+        background: #fff;
+        border-color: var(--brand-primary);
+        color: var(--brand-primary);
+    }
+}
+
+// Pressing settles the lifted button back down.
+.btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: v.$shadow-sm;
+}
+
+// ---- Cards that open something lift on hover -----------------------------
+.action-card,
+.quest-card,
+.useful-link,
+.deal-card,
+.event-card {
+    transition: transform v.$duration-normal v.$ease-standard, box-shadow v.$duration-normal v.$ease-standard, border-color v.$duration-normal v.$ease-standard;
+
+    @include m.hover {
+        border-color: rgba(195, 58, 25, 0.28);
+        box-shadow: v.$shadow-lg;
+
+        @include motion-safe {
+            transform: translateY(-4px);
+        }
+    }
+}
+
+// ---- Frosted top bar -------------------------------------------------------
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .topbar {
+        background: rgba(255, 240, 223, 0.82);
+        backdrop-filter: saturate(1.4) blur(12px);
+        -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    }
+}
+
+// ---- Scroll reveal (reveal.js marks only blocks that start below the fold,
+// so the first paint is never hidden) --------------------------------------
+.reveal {
+    opacity: 0;
+    transform: translateY(v.$space-6);
+    transition: opacity v.$duration-slow ease, transform v.$duration-slow v.$ease-out;
+}
+
+.reveal--visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

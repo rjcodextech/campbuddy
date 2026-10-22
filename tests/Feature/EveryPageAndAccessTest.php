@@ -227,7 +227,7 @@ class EveryPageAndAccessTest extends TestCase
             $this->assertSame(200, $this->get($this->url($route, ['event' => $this->event->slug]).$query)->status(), $route->uri());
         }
 
-        foreach (['/', '/guide', '/robots.txt', '/sitemap.xml', '/llms.txt', '/manifest.webmanifest', '/admin/login', '/manager/login'] as $url) {
+        foreach (['/', '/guide', '/brand-guidelines', '/robots.txt', '/sitemap.xml', '/llms.txt', '/manifest.webmanifest', '/admin/login', '/manager/login'] as $url) {
             $this->assertSame(200, $this->get($url)->status(), $url);
         }
     }

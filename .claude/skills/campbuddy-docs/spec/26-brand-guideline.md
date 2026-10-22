@@ -24,6 +24,26 @@ attendee site/PWA, Android, iOS, social posts and reels. Camp Card keeps its own
 | Native fonts | `composeResources/font/poppins_*.ttf`, `baloo2_*.ttf` | Built from the web woff2 subsets with fontTools (merged Latin + Latin Ext + Devanagari; Baloo instanced at 600/700/800). Inter removed. Licence: `native-app/FONTS-OFL.txt` |
 | App theme defaults | `app/Support/MobileAppDefaults.php`, `ConfigModels.kt` → `DefaultConfigJson.kt` (`php artisan campbuddy:app-config-defaults`) | Same colours; `radius` 20 (was 5). A saved config in Admin → Mobile app keeps its own radius until changed there. |
 
+## Effects (22 Oct 2026, owner confirmed)
+
+After the WPSimplified site's motion and backgrounds, in CampBuddy's colours:
+`resources/scss/components/_effects.scss` (attendee: hero glow + dots + wave foot, section rail with node,
+wave under section titles, kicker wave, gradient buttons with lift + sheen, card hover lift, frosted top bar,
+`.reveal`), `resources/js/attendee/reveal.js` (marks only sections below the fold; shows anything in view or
+already passed), admin `resources/css/app.css` (`.cb-btn` sheen + lift, gradient `.cb-btn-primary`,
+`.cb-event-card` lift, `.cb-hero` dots + wave), native `Components.kt` (`PrimaryButton` gradient + wine shadow,
+`Card` ink shadow, `SectionTitle` + `WaveLine`, `Modifier.brandGlow` on the Home hero) and the reel progress bar
+(`progressBar()` in `social-reels.js`). New tokens in `_variables.scss`: `$shadow-sm…xl`, `$shadow-glow-*`,
+`$color-glow*`, durations/eases, `$art-wave-line`, `$art-wave-soft`, `$art-dots`, `$space-10/12/16`.
+
+## Brand guidelines page
+
+`/brand-guidelines` (route `brand-guidelines`, public, stateless group; `resources/views/brand/guidelines.blade.php`,
+styles `components/_brand-page.scss`, data `app/Support/BrandTokens.php`): brand, logo (grounds, clear space,
+don'ts), colour (share bar, swatches, live contrast ratios), typography (specimens, scale), space and shape,
+motif and motion, voice, icons and buttons (hover them), social posts, reels (safe zone, beats), apps, checklist.
+`npm run brand` also checks the page's hexes; `EveryPageAndAccessTest` checks it returns 200.
+
 ## Checks
 
 - `npm run brand` (`tools/brand-check.mjs`, also the first row of `npm run check:sync`): every

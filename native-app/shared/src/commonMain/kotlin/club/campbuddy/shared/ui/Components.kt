@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Spacer
@@ -39,7 +40,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -121,7 +124,9 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     val shape = Radii.pill
     Box(
         modifier.heightIn(min = 50.dp)
-            .background(if (enabled) brand.primary else brand.primary.copy(alpha = 0.4f), shape)
+            // The website's gradient pill with its warm lift (guideline §5): maroon → wine.
+            .then(if (enabled) Modifier.shadow(6.dp, shape, clip = false, ambientColor = BRAND_WINE, spotColor = BRAND_WINE) else Modifier)
+            .background(Brush.linearGradient(listOf(brand.primary, BRAND_WINE)), shape, alpha = if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 20.dp, vertical = 12.dp),
         contentAlignment = Alignment.Center,
@@ -147,7 +152,7 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
     val shape = RoundedCornerShape(brand.radius.dp)
     val base = modifier
         .fillMaxWidth()
-        .shadow(3.dp, shape, clip = false, ambientColor = brand.primary.copy(alpha = 0.10f), spotColor = brand.primary.copy(alpha = 0.10f))
+        .shadow(4.dp, shape, clip = false, ambientColor = brand.ink.copy(alpha = 0.14f), spotColor = brand.ink.copy(alpha = 0.14f))
         .background(brand.surface, shape)
         .border(1.dp, brand.line, shape)
         .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
@@ -157,7 +162,39 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
 
 @Composable
 fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 8.dp, bottom = 4.dp))
+    // The website's section title: the words, then a short wave under them (guideline §5).
+    Column(Modifier.padding(top = 8.dp, bottom = 4.dp)) {
+        Text(text, style = MaterialTheme.typography.headlineSmall)
+        WaveLine(Modifier.padding(top = 4.dp).width(44.dp).height(7.dp))
+    }
+}
+
+/** The logo's wine, the brand gradient's partner (CAMPBUDDY-BRAND-GUIDELINES.md §3). */
+val BRAND_WINE = Color(0xFF721313)
+
+/** The brand's smooth sine stroke (guideline §5), maroon fading to ochre; [waves] crests across its width. */
+@Composable
+fun WaveLine(modifier: Modifier, waves: Int = 2) {
+    val brand = LocalBrand.current
+    Canvas(modifier) {
+        val path = Path()
+        val mid = size.height / 2
+        val amp = size.height * 0.36f
+        val step = size.width / (waves * 2)
+        path.moveTo(0f, mid)
+        for (i in 0 until waves * 2) {
+            val x0 = i * step
+            val dir = if (i % 2 == 0) -1 else 1
+            path.cubicTo(x0 + step * 0.33f, mid + dir * amp, x0 + step * 0.66f, mid + dir * amp, x0 + step, mid)
+        }
+        drawPath(path, Brush.horizontalGradient(listOf(brand.primary, brand.accent)), style = Stroke(width = 2.2.dp.toPx(), cap = StrokeCap.Round))
+    }
+}
+
+/** The heroes' light: an ochre glow top right and a maroon one bottom left, under the content (guideline §5). */
+fun Modifier.brandGlow(primary: Color, accent: Color): Modifier = drawBehind {
+    drawRect(Brush.radialGradient(listOf(accent.copy(alpha = 0.16f), Color.Transparent), center = Offset(size.width, 0f), radius = size.width * 0.7f))
+    drawRect(Brush.radialGradient(listOf(primary.copy(alpha = 0.09f), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
 }
 
 @Composable

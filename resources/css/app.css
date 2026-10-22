@@ -99,6 +99,85 @@ h3,
     }
 }
 
+/*
+| Daylight effects (CAMPBUDDY-BRAND-GUIDELINES.md §5), the same as the attendee
+| app's components/_effects.scss: gradient pill buttons with a warm lift and a
+| sheen that sweeps once on hover, cards that lift, and the dashboard hero's
+| dot texture with a wave along its foot. Reduced motion keeps the still frame.
+*/
+.cb-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.cb-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / 0.45) 50%, transparent 70%);
+    transform: translateX(-110%);
+}
+
+.cb-btn-primary,
+.cb-btn-primary:hover {
+    background-image: linear-gradient(135deg, theme('colors.maroon.DEFAULT'), theme('colors.wine'));
+    box-shadow: 0 12px 28px -12px rgb(161 47 20 / 0.45);
+}
+
+.cb-btn-primary:hover {
+    box-shadow: 0 12px 28px -12px rgb(161 47 20 / 0.45), 0 0 16px rgb(227 157 28 / 0.3);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .cb-btn:not(.cb-btn-link):hover {
+        transform: translateY(-2px);
+    }
+
+    .cb-btn:hover::after {
+        transform: translateX(110%);
+        transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cb-event-card:hover {
+        transform: translateY(-4px);
+    }
+}
+
+.cb-event-card {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+}
+
+.cb-event-card:hover {
+    border-color: rgb(195 58 25 / 0.28);
+    box-shadow: 0 4px 12px -4px rgb(35 31 32 / 0.07), 0 24px 48px -20px rgb(35 31 32 / 0.2);
+}
+
+/* The dashboard hero: a dot grid on its right half and a soft wave along its foot. */
+.cb-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 0 50%;
+    pointer-events: none;
+    background: #fff;
+    opacity: 0.1;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%23000'/%3E%3C/svg%3E") 0 0 / 22px 22px repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='2' cy='2' r='1.1' fill='%23000'/%3E%3C/svg%3E") 0 0 / 22px 22px repeat;
+}
+
+.cb-hero::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 22px;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgb(227 157 28 / 0.35), rgb(195 58 25 / 0.3));
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C80 6 160 6 240 30 S400 54 480 30 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E") 0 100% / 100% 100% no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C80 6 160 6 240 30 S400 54 480 30 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E") 0 100% / 100% 100% no-repeat;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .cb-enter,
     .cb-logo-in,

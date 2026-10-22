@@ -353,7 +353,7 @@ private fun visible(section: SectionConfig, phase: Phase, firstWordCamp: String?
 private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
-    Card(Modifier.clip(shape).patternBackground(Res.drawable.pattern_event, brand.surface)) {
+    Card(Modifier.clip(shape).patternBackground(Res.drawable.pattern_event, brand.surface).brandGlow(brand.primary, brand.accent)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 Modifier.size(104.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
