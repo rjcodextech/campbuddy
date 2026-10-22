@@ -29,5 +29,8 @@ A Capacitor 8 shell (`mobile-app/app/`, app id `club.campbuddy.app`) that opens 
 ## Admin and event manager in the app
 Staff sign-in links on the picker (shown only in the app). `resources/js/organizer-native.js` (app + `/admin|/manager` only): safe-area fit, one-time alerts opt-in, sign-out removes the token, Face ID / fingerprint lock (cold start and after 30 s away). `public/sw.js` never caches `/admin`, `/manager` or sign-in pages.
 
+## Native app on iPhone (`native-app/iosApp`, 22 Oct 2026)
+Same shared Kotlin/Compose app as Android; Swift shell only (`iOSApp.swift`, `AppDelegate.swift`). iOS parts in `shared/src/iosMain`: deep links (`openLink` from Swift: universal links, `campbuddy://`, push tap `data.url`), Safari sheet for in-app pages, organizer sign-in (`organizer.*`) in the Keychain (cleared on a fresh install), FCM push via Firebase iOS SDK (on only when `GoogleService-Info.plist` is in the build), day PDF with UIKit, share/save/PNG. XcodeGen `project.yml` writes Info.plist + entitlements (push, `applinks:campbuddy.club`); privacy manifest; iPhone only, light mode. Mac build: `bash native-app/build-ios.sh check|sim|open|archive|upload` (bumps `version.properties` like `build-native.sh`), steps in `mobile-app/native/14-ios-build-on-mac.md`. On Windows the iOS Kotlin type-checks with `./gradlew :shared:compileKotlinIosArm64 -Pkotlin.native.enableKlibsCrossCompilation=true`; Swift/Xcode only on a Mac.
+
 ## Not built / later
 Home-screen widget, Wallet pass, bundled (offline-first) shell. See `mobile-app/02-hybrid-app/04-features-by-phase.md` and `12-one-codebase-offline-speed.md`.

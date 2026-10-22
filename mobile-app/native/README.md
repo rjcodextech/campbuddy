@@ -23,3 +23,5 @@
 10. [10-build-ci-windows.md](10-build-ci-windows.md) — Windows par kaise, iOS cloud se
 11. [11-phases-risks.md](11-phases-risks.md) — milestones, waqt, risks
 12. [12-open-decisions.md](12-open-decisions.md) — shuru karne se pehle ke faisle
+13. [13-implementation-status.md](13-implementation-status.md) — kya bana, kya baaki
+14. [14-ios-build-on-mac.md](14-ios-build-on-mac.md) — **iPhone app: Mac par build, TestFlight, App Store (step by step)**

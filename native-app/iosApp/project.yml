@@ -1,26 +1,73 @@
-# XcodeGen spec: `brew install xcodegen && xcodegen` (on a Mac or the macOS CI runner) writes iosApp.xcodeproj.
+# XcodeGen spec: `brew install xcodegen && xcodegen` (on a Mac or the macOS CI runner) writes iosApp.xcodeproj,
+# iosApp/Info.plist and iosApp/iosApp.entitlements (all generated, not in git). On a Mac: bash native-app/build-ios.sh
 # The Kotlin code is built into the Shared framework by the pre-build script below.
+# Signing team: CAMPBUDDY_TEAM_ID (environment, or native-app/iosApp/local.env, which build-ios.sh reads).
 name: iosApp
 options:
   bundleIdPrefix: club.campbuddy
   deploymentTarget:
     iOS: "15.0"
+packages:
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    from: "11.6.0"
 targets:
   iosApp:
     type: application
     platform: iOS
     sources:
       - iosApp
+    dependencies:
+      - package: Firebase
+        product: FirebaseMessaging
+    info:
+      path: iosApp/Info.plist
+      properties:
+        CFBundleDisplayName: CampBuddy
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # The app is drawn light only (as on Android): dark status bar text on the cream background.
+        UIUserInterfaceStyle: Light
+        UIStatusBarStyle: UIStatusBarStyleDarkContent
+        UIViewControllerBasedStatusBarAppearance: false
+        CADisableMinimumFrameDurationOnPhone: true
+        CFBundleURLTypes:
+          - CFBundleURLName: club.campbuddy.app
+            CFBundleURLSchemes: [campbuddy]
+        NSPhotoLibraryAddUsageDescription: "Saves your Camp Card picture to your photos."
+        # Only HTTPS to campbuddy.club: no export-compliance question on every upload.
+        ITSAppUsesNonExemptEncryption: false
+        # A debug build may talk to a development server on this Mac (http://127.0.0.1); nothing else is opened up.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+    entitlements:
+      path: iosApp/iosApp.entitlements
+      properties:
+        # Xcode turns this into "production" when the archive is signed for the App Store.
+        aps-environment: development
+        com.apple.developer.associated-domains:
+          - applinks:campbuddy.club
+          - applinks:www.campbuddy.club
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: club.campbuddy.app
         MARKETING_VERSION: "0.0.2"
         CURRENT_PROJECT_VERSION: "5"
-        GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        INFOPLIST_KEY_CFBundleDisplayName: CampBuddy
-        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "Saves your Camp Card picture to your photos."
-        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        DEVELOPMENT_TEAM: ${CAMPBUDDY_TEAM_ID}
+        CODE_SIGN_STYLE: Automatic
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_VERSION: "5.0"
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         FRAMEWORK_SEARCH_PATHS: "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)"
         OTHER_LDFLAGS: "$(inherited) -framework Shared"
         ENABLE_USER_SCRIPT_SANDBOXING: NO
@@ -28,5 +75,13 @@ targets:
       - name: Build the Kotlin framework
         script: |
           cd "$SRCROOT/.."
+          # Xcode does not see the shell's settings: find Java (Android Studio's own, or any installed JDK 17+)
+          # and the Android SDK (the shared module also builds for Android, so Gradle wants to know where it is).
+          if [ -z "${JAVA_HOME:-}" ]; then
+            for candidate in "/Applications/Android Studio.app/Contents/jbr/Contents/Home" "$(/usr/libexec/java_home -v 17+ 2>/dev/null)"; do
+              if [ -x "$candidate/bin/java" ]; then export JAVA_HOME="$candidate"; break; fi
+            done
+          fi
+          if [ -z "${ANDROID_HOME:-}" ] && [ -d "$HOME/Library/Android/sdk" ]; then export ANDROID_HOME="$HOME/Library/Android/sdk"; fi
           if [ -x ./gradlew ]; then ./gradlew :shared:embedAndSignAppleFrameworkForXcode; else gradle :shared:embedAndSignAppleFrameworkForXcode; fi
         basedOnDependencyAnalysis: false

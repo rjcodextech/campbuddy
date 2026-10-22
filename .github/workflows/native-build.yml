@@ -60,5 +60,5 @@ jobs:
       - name: Generate the Xcode project and build the app for the simulator
         run: |
           brew install xcodegen
-          cd iosApp && xcodegen
-          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+          cd iosApp && CAMPBUDDY_TEAM_ID= xcodegen
+          xcodebuild build -project iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO
