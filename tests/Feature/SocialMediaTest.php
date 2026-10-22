@@ -89,7 +89,8 @@ class SocialMediaTest extends TestCase
 
         $kit = SocialKit::data($this->event);
 
-        $this->assertSame(['save-the-date', 'countdown', 'schedule', 'app', 'speakers', 'sponsors', 'today', 'spotlight', 'contributor', 'meet', 'thank-you'], array_column($kit['posts'], 'key'));
+        // Fifteen posts, in the order an event is promoted (SocialPlan).
+        $this->assertSame(['save-the-date', 'venue', 'speakers', 'sponsors', 'schedule', 'first-timer', 'contributor', 'wpsimplified', 'app', 'meet', 'countdown', 'today', 'spotlight', 'moments', 'thank-you'], array_column($kit['posts'], 'key'));
         $this->assertStringContainsString('utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-rajasthan-2026', $kit['event']['qr']);
         $this->assertSame(crc32('wordcamp-rajasthan-2026'), $kit['event']['seed']);
         $this->assertSame([['key' => '2026-10-03', 'label' => 'Sat 3 Oct'], ['key' => '2026-10-04', 'label' => 'Sun 4 Oct']], $kit['schedule']['days']);
@@ -162,7 +163,7 @@ class SocialMediaTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         $this->get(route('admin.events.social', $this->event))->assertOk()
-            ->assertSee('Event posts')->assertSee('People cards')->assertSee('Brand colours')->assertSee('One-click Publish')
+            ->assertSee('Studio')->assertSee('People cards')->assertSee('Posting plan')->assertSee('Brand colours')->assertSee('One-click Publish')
             ->assertSee('data-qr-kit', false)->assertDontSee('data-action="publish"', false);
 
         // Reels: the section the browser fills in, and the logos the reels draw.
@@ -225,7 +226,7 @@ class SocialMediaTest extends TestCase
         $manager->events()->attach($this->event->id);
         Auth::guard('manager')->setUser($manager);
 
-        $this->get(route('manager.events.social', $this->event->id))->assertOk()->assertSee('Event posts');
+        $this->get(route('manager.events.social', $this->event->id))->assertOk()->assertSee('Studio')->assertSee('Remind me on my phone when a post is due');
         $this->get(route('manager.events.social', $other->id))->assertNotFound();
         $this->post(route('manager.events.social.webhook', $this->event->id), ['webhook' => 'https://hooks.zapier.com/hooks/catch/1/x/'])->assertRedirect();
         $this->post(route('manager.events.social.publish', $this->event->id), [

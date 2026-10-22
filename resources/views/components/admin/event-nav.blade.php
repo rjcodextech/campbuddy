@@ -33,7 +33,9 @@
     $live = $event->status === 'active' && $event->is_visible;
 @endphp
 
-<div {{ $attributes->class('mb-6 overflow-hidden rounded-xl border border-line bg-white shadow-sm') }}>
+{{-- From lg up the panel's main column turns into two (resources/css/app.css, .cb-event-shell): this
+     card becomes a sticky menu on the left and the page's own content sits on the right. --}}
+<div {{ $attributes->class('cb-event-shell mb-6 overflow-hidden rounded-xl border border-line bg-white shadow-sm') }}>
     <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 sm:px-5">
         <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-base font-semibold text-maroon" aria-hidden="true">
             @if ($event->markUrl())
@@ -74,16 +76,16 @@
     </div>
 
     {{-- Scrolled so the open section's tab is in view: with nine tabs the later ones sit past the edge, even on a laptop. --}}
-    <nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" class="overflow-x-auto border-t border-line bg-paper/60 px-2 sm:px-3">
-        <ul class="flex min-w-max items-center gap-1">
+    <nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" class="overflow-x-auto border-t border-line bg-paper/60 px-2 sm:px-3 lg:overflow-visible lg:bg-white lg:px-2 lg:py-2">
+        <ul class="flex min-w-max items-center gap-1 lg:min-w-0 lg:flex-col lg:items-stretch">
             @foreach ($tabs as $key => [$label, $url, $count])
                 <li>
                     <a href="{{ $url }}"
                        @if ($current === $key) aria-current="page" @endif
                        @class([
-                           '-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
-                           'border-maroon text-maroon' => $current === $key,
-                           'border-transparent text-muted hover:border-line hover:text-ink' => $current !== $key,
+                           '-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40 lg:mb-0 lg:flex lg:w-full lg:justify-between lg:rounded-lg lg:border-b-0 lg:py-2.5',
+                           'border-maroon text-maroon lg:bg-maroon/10' => $current === $key,
+                           'border-transparent text-muted hover:border-line hover:text-ink lg:hover:bg-paper-soft' => $current !== $key,
                        ])>
                         {{ $label }}
                         @if ($count !== null)

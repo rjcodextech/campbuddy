@@ -167,7 +167,9 @@ class PeoplePhotosAndTablesTest extends TestCase
 
     public function test_a_finished_wordcamp_gets_none_of_the_daily_fetches(): void
     {
-        $ended = $this->makeEvent('wc-ended', now()->subDays(3));
+        // Fetched for EventTime::FETCH_DAYS (7) after its last day, never after (owner, 22 Oct 2026).
+        $ended = $this->makeEvent('wc-ended', now()->subDays(9));
+        $recent = $this->makeEvent('wc-recent', now()->subDays(3));
         app(Kernel::class)->bootstrap();
         Queue::fake();
 
@@ -179,5 +181,6 @@ class PeoplePhotosAndTablesTest extends TestCase
             Queue::assertPushed($job, fn ($j) => $j->event->is($this->event));
             Queue::assertNotPushed($job, fn ($j) => $j->event->is($ended));
         }
+        Queue::assertPushed(\App\Jobs\FetchEventInfoJob::class, fn ($j) => $j->event->is($recent));
     }
 }

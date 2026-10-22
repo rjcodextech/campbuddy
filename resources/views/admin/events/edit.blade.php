@@ -25,9 +25,31 @@
     {{-- Who the event is, where it stands, and the tabs to its other pages. --}}
     <x-admin.event-nav :event="$event" current="details" />
 
-    {{-- The forms on the left; what attendees see and the branding on the right (below on a phone). --}}
-    <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
-        <div class="min-w-0 space-y-6">
+    {{-- The page in four tabs, one at a time, so nothing needs a long scroll: Basics (the core form and
+         delete), Event info, Data & refresh, Branding. The open tab is kept for this event (also across a
+         save, which reloads the page) and #basics / #info / #data / #branding open one directly. A form
+         that comes back with errors opens its own tab. --}}
+    @php($errorTab = $errors->hasAny(['venue', 'wifi', 'contributor_day_location', 'code_of_conduct_url', 'registration_info', 'emergency_contact', 'social_event_info', 'nearby_venue_info', 'important_links']) ? 'info' : ($errors->hasAny(['logo', 'favicon']) ? 'branding' : ($errors->any() ? 'basics' : null)))
+    <div x-data="{
+            tabs: ['basics', 'info', 'data', 'branding'],
+            tab: 'basics',
+            key: 'event-tab-{{ $event->id }}',
+            init() {
+                const hash = location.hash.slice(1);
+                let saved = null;
+                try { saved = sessionStorage.getItem(this.key); } catch (e) {}
+                this.tab = @js($errorTab) || (this.tabs.includes(hash) ? hash : null) || (this.tabs.includes(saved) ? saved : 'basics');
+                this.$watch('tab', (t) => { try { sessionStorage.setItem(this.key, t); history.replaceState(null, '', '#' + t); } catch (e) {} });
+            },
+        }" class="space-y-6">
+        <nav class="flex gap-1 overflow-x-auto rounded-full border border-line bg-white p-1 shadow-sm" role="tablist" aria-label="Event details">
+            @foreach (['basics' => 'Basics', 'info' => 'Event info', 'data' => 'Data & refresh', 'branding' => 'Branding'] as $key => $label)
+                <button type="button" role="tab" @click="tab = '{{ $key }}'" :aria-selected="(tab === '{{ $key }}').toString()"
+                        class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-muted transition hover:text-ink aria-selected:bg-maroon/10 aria-selected:text-maroon focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $label }}</button>
+            @endforeach
+        </nav>
+
+        <div class="min-w-0 space-y-6" x-show="tab === 'basics'" role="tabpanel">
             {{-- Core details --}}
             <form method="POST" action="{{ route('admin.events.update', $event) }}">
                 @csrf
@@ -42,6 +64,18 @@
                 </x-card>
             </form>
 
+            @if ($event->status === 'draft')
+                <x-card title="Delete event" danger
+                        description="Only possible while the event is still a draft. Once it's approved, active or archived, archive it instead.">
+                    <x-action-form :action="route('admin.events.destroy', $event)" method="DELETE" variant="danger" icon="trash"
+                                   :confirm="'Delete “'.$event->display_name.'”? This cannot be undone.'">
+                        Delete draft event
+                    </x-action-form>
+                </x-card>
+            @endif
+        </div>
+
+        <div class="min-w-0 space-y-6" x-show="tab === 'info'" x-cloak role="tabpanel">
             {{-- What attendees see on Explore → Event Info. The fetch button posts to this
                  separate form (via its form="" attribute) because a form can't nest inside another. --}}
             <form id="fetch-info-form" method="POST" action="{{ route('admin.events.fetch-info', $event) }}" class="hidden">
@@ -85,19 +119,9 @@
                     </x-slot:footer>
                 </x-card>
             </form>
-
-            @if ($event->status === 'draft')
-                <x-card title="Delete event" danger
-                        description="Only possible while the event is still a draft. Once it's approved, active or archived, archive it instead.">
-                    <x-action-form :action="route('admin.events.destroy', $event)" method="DELETE" variant="danger" icon="trash"
-                                   :confirm="'Delete “'.$event->display_name.'”? This cannot be undone.'">
-                        Delete draft event
-                    </x-action-form>
-                </x-card>
-            @endif
         </div>
 
-        <div class="min-w-0 space-y-6">
+        <div class="min-w-0 space-y-6" x-show="tab === 'data'" x-cloak role="tabpanel">
             {{-- Sessions / speakers / sponsors ingestion --}}
             <x-card title="Event data" description="What attendees see right now. Updates by itself every 15 minutes (the attendee list daily) — new items added, changes updated, removed ones dropped; never cleared first.">
                 <x-slot:actions>
@@ -151,7 +175,9 @@
                     </details>
                 @endif
             </x-card>
+        </div>
 
+        <div class="min-w-0 space-y-6" x-show="tab === 'branding'" x-cloak role="tabpanel">
             {{-- Logo + favicon --}}
             <x-card title="Branding" description="The event's logo and favicon, shown in the attendee app.">
                 <div class="flex flex-wrap items-center gap-5">

@@ -32,6 +32,7 @@ class ScheduledTasks
         'evaluate-event-lifecycle' => 'Publishes ready drafts, and archives events three months after they end.',
         'prune-fetch-log' => 'Removes fetch-log rows older than 7 days (the latest of each kind stays).',
         'clear-social-cache' => 'Removes Social media copies of logos, artwork and fonts no event uses any more.',
+        'post-reminders' => 'Pushes the social posts due today (posting plan) to the organizers who turned on post reminders, in the venue’s morning.',
         'indexnow' => 'Tells search engines about new and changed pages (live site only).',
         'prune-device-transfers' => 'Deletes finished or expired "move to this device" requests.',
         'erase-expired-personal-data' => 'Erases personal data from events past their retention period (DPDPA 2023).',

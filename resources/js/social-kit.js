@@ -42,19 +42,22 @@ const SITE_ART = { pattern: [], illustration: [], photo: [] };
 // person takes the next one in turn, so every piece of the site's artwork is used.
 const ART = { pattern: null, illustration: null, photo: null };
 
-/** Sets the artwork for card number `index` (a post's place on the page, a person's in the list). */
+/** Sets the artwork for card number `index` (a post's place on the page, a person's in the list); -1 = none. */
 export function useArt(index = 0) {
   for (const kind of ['pattern', 'illustration', 'photo']) {
     const list = SITE_ART[kind];
-    ART[kind] = list.length ? list[Math.abs(index) % list.length] : null;
+    ART[kind] = index !== -1 && list.length ? list[Math.abs(index) % list.length] : null;
   }
 }
+
+// The Daylight effects a card draws (the Social media page's per-card switches): dot grid, glows, waves.
+// Carried on the card's grid (g.effects), not in a global, so cards drawn at the same time can't mix them.
+const EFFECTS_ON = { dots: true, glow: true, waves: true };
 const PEOPLE_DESIGNS = ['daylight', 'classic', 'polaroid', 'badge', 'split', 'minimal', 'spotlight', 'arch'];
 const MOTIFS = ['rings', 'dots', 'stripes', 'triangles', 'waves', 'arcs', 'blocks', 'plus'];
 const TEXTURES = ['circle', 'diamond', 'arc', 'bars'];
 // The side margin for any word, QR or logo (the templates keep 80–100 px).
 const SAFE = 80;
-const PEOPLE_PAGE = 8;
 
 // ---- Colours --------------------------------------------------------------
 
@@ -255,6 +258,32 @@ export function eventLook(seed) {
 // ---- Drawing helpers ------------------------------------------------------
 
 const images = new Map();
+
+/**
+ * CampBuddy × WPSimplified, side by side on one transparent canvas: the brand lockup every card
+ * and reel carries (CAMPBUDDY-BRAND-GUIDELINES.md §2, §8). WPSimplified's mark is a little smaller
+ * than CampBuddy's, after a thin divider. Falls back to the CampBuddy wordmark alone.
+ */
+let lockup = null;
+function brandLockup() {
+  lockup ??= Promise.all([loadImage('/media/logo-wordmark.png'), loadImage('/media/wpsimplified-logo.png')]).then(([cb, wps]) => {
+    if (!cb || !wps) return cb;
+    const h = cb.height;
+    const wh = Math.round(h * 0.72);
+    const ww = Math.round(wps.width * (wh / wps.height));
+    const gap = Math.round(h * 0.28);
+    const c = document.createElement('canvas');
+    c.width = cb.width + gap * 2 + 4 + ww;
+    c.height = h;
+    const x = c.getContext('2d');
+    x.drawImage(cb, 0, 0);
+    x.fillStyle = 'rgba(35,31,32,0.28)';
+    x.fillRect(cb.width + gap, h * 0.18, 4, h * 0.64);
+    x.drawImage(wps, cb.width + gap * 2 + 4, (h - wh) / 2, ww, wh);
+    return c;
+  });
+  return lockup;
+}
 
 function loadImage(url) {
   if (!url) return Promise.resolve(null);
@@ -812,6 +841,8 @@ export function daysToGo(kit, now = new Date()) {
 /** The drawable content of a post: kicker, headline, line, and a body. */
 export function postContent(post, fields, kit, pick) {
   const base = { key: post.key, kicker: post.kicker ?? '', headline: fields.headline, line: fields.line, body: { type: 'none' } };
+  // The newer posts (venue, first WordCamp, WPSimplified, moments) list their own points, drawn like the app's features.
+  if (post.body === 'points') return { ...base, body: post.points?.length ? { type: 'features', items: post.points } : { type: 'none' } };
 
   switch (post.key) {
     case 'countdown': {
@@ -839,7 +870,8 @@ export function postContent(post, fields, kit, pick) {
       };
     }
     case 'contributor':
-      return { ...base, body: kit.tables.length ? { type: 'tables', tables: kit.tables } : { type: 'none' } };
+      // No tables yet: what people do on Contributor Day, so the card is never empty.
+      return { ...base, body: kit.tables.length ? { type: 'tables', tables: kit.tables } : { type: 'features', items: ['Translate WordPress into your language', 'Test, find and report bugs', 'Write docs and tutorials', 'Help people in the forums'] } };
     default:
       return base;
   }
@@ -1126,9 +1158,6 @@ function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') 
   c.lines.forEach((l, i) => ctx.fillText(l, left, ty + c.size * (0.9 + i * 1.1)));
   // Nothing on a card under 24 px: it has to read on a phone.
   const small = g.tall ? 28 : 24;
-  ctx.font = `600 ${small}px ${FONT}`;
-  ctx.fillStyle = alpha(on, 0.78);
-  ctx.fillText('Free · no sign-up · works offline', left, bottom - pad - small * 1.6 - inner * 0);
   ctx.font = `800 ${small}px ${FONT}`;
   ctx.fillStyle = on;
   const tag = (kit.event.hashtags ?? '').split(' ')[2];
@@ -1252,6 +1281,8 @@ export function planPost(content, size, styleName, colors) {
   const [W, H] = SIZES[size];
   const g = grid(W, H);
   const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
+  // Only Daylight highlights *marked* words; the other designs show the words without the stars.
+  if (design !== 'daylight') content = { ...content, headline: String(content.headline ?? '').replace(/\*/g, '') };
   const L = layoutFor(design, g, paletteOf(colors));
   const ctx = document.createElement('canvas').getContext('2d');
   useArt(content.artIndex ?? 0);
@@ -1514,7 +1545,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
     return;
   }
   const L = layoutFor(design, g, pal);
-  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), brandLockup()]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -1686,8 +1717,12 @@ function paintDaylightGround(ctx, g, c) {
     ctx.fillStyle = rg;
     ctx.fillRect(0, 0, W, H);
   };
-  glow(W * 0.94, H * 0.02, W * 0.75, c.glowA, c.dark ? 0.3 : 0.22);
-  glow(W * 0.02, g.cardTop, W * 0.65, c.glowB, c.dark ? 0.16 : 0.1);
+  const fx = g.effects ?? EFFECTS_ON;
+  if (fx.glow) {
+    glow(W * 0.94, H * 0.02, W * 0.75, c.glowA, c.dark ? 0.3 : 0.22);
+    glow(W * 0.02, g.cardTop, W * 0.65, c.glowB, c.dark ? 0.16 : 0.1);
+  }
+  if (!fx.dots) return;
   ctx.fillStyle = alpha(c.dot, 0.12);
   for (let y = 13; y < g.barTop; y += 26) {
     for (let x = c.dark ? 13 : W / 2 + 13; x < W; x += 26) ctx.fillRect(x - 1, y - 1, 2, 2);
@@ -1696,6 +1731,7 @@ function paintDaylightGround(ctx, g, c) {
 
 /** Thin parallel waves above the foot, fading upward (the signature). */
 function paintWaves(ctx, g, c, baseY) {
+  if (!(g.effects ?? EFFECTS_ON).waves) return;
   const color = c.dark ? c.accent : c.accent;
   ctx.save();
   ctx.lineWidth = 3;
@@ -1904,19 +1940,16 @@ function paintQrCard(ctx, g, c, pal, kit, qrContent, cta) {
   const tw = qx - 28 - tx;
   const ctaFit = fitText(ctx, cta, tw, g.tall ? 44 : (g.square ? 30 : 34), 24, 2, 700, FONT);
   const small = g.tall ? 28 : 24;
-  const stackH = ctaFit.lines.length * ctaFit.size * 1.12 + 12 + small * 2.5;
+  const stackH = ctaFit.lines.length * ctaFit.size * 1.12 + 12 + small * 1.3;
   let ty = y + (h - stackH) / 2;
   ctx.font = `700 ${ctaFit.size}px ${FONT}`;
   ctx.fillStyle = c.ink;
   ctaFit.lines.forEach((l, i) => ctx.fillText(l, tx, ty + ctaFit.size * (0.9 + i * 1.12)));
   ty += ctaFit.lines.length * ctaFit.size * 1.12 + 12;
-  fitOneLine(ctx, 'Free · no sign-up · works offline', tw, small, 500, FONT);
-  ctx.fillStyle = c.muted;
-  ctx.fillText('Free · no sign-up · works offline', tx, ty + small);
   const event = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
   fitOneLine(ctx, event, tw, small, 700, FONT);
   ctx.fillStyle = c.ink;
-  ctx.fillText(event, tx, ty + small * 2.35);
+  ctx.fillText(event, tx, ty + small);
 }
 
 /** The globe icon of the address pill (the line icons' globe). */
@@ -1930,7 +1963,7 @@ function globe(ctx, cx, cy, r, color) {
   ctx.restore();
 }
 
-/** The brand bar, the same on every card: CampBuddy (left) and campbuddy.club (right), one height, one baseline. */
+/** The brand bar, the same on every card: CampBuddy × WPSimplified (left) and campbuddy.club (right), one height, one baseline. */
 function paintBrandBar(ctx, g, c0, pal, brand) {
   // The light version on every base: CampBuddy's mark keeps its own colours (a white copy of it lost its detail).
   const c = { ...c0, dark: false };
@@ -2098,9 +2131,9 @@ async function paintDaylightPeople(ctx, box, people, c, pal, g) {
 
 /** One Daylight card of a post. */
 async function drawDaylightPost(ctx, W, H, content, kit, pal, page) {
-  const g = daylightGrid(W, H);
+  const g = { ...daylightGrid(W, H), effects: { ...EFFECTS_ON, ...(content.effects ?? {}) } };
   const c = daylightColors(daylightBase(content, pal), pal);
-  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), loadImage('/media/logo-wordmark.png')]);
+  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), brandLockup()]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -2152,10 +2185,10 @@ async function drawDaylightPost(ctx, W, H, content, kit, pal, page) {
 
 /** A Daylight people card: the portrait, the role chip, the name, why they matter, the QR card, the brand bar. */
 async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
-  const g = daylightGrid(W, H);
+  const g = { ...daylightGrid(W, H), effects: { ...EFFECTS_ON, ...(person.effects ?? {}) } };
   const rc = roleColor(person, colors);
   const c = daylightColors('paper', { ...pal, secondary: rc });
-  const [photo, brand, logo] = await Promise.all([loadImage(person.photo), loadImage('/media/logo-wordmark.png'), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, brand, logo] = await Promise.all([loadImage(person.photo), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -2264,7 +2297,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors);
     return;
   }
-  const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), loadImage('/media/logo-wordmark.png'), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   // The WordCamp's logo, on every people card.
   const LW = H < 1100 ? 150 : 180;
@@ -2778,6 +2811,7 @@ export function initSocialKit() {
   // Same role, same artwork: every organizer's card has one piece, every speaker's the next…
   const ROLE_ART = ['organizer', 'speaker', 'volunteer', 'sponsor', 'media_partner', 'microsponsor', 'table_lead'];
   kit.people.forEach((person) => { const i = ROLE_ART.indexOf(person.roles?.[0]); person.artIndex = i < 0 ? ROLE_ART.length : i; });
+  const allPosts = [];
   const posts = [...document.querySelectorAll('[data-social-post]')].map((card, cardIndex) => {
     const post = kit.posts.find((p) => p.key === card.dataset.socialPost);
     const field = (name) => card.querySelector(`[data-field="${name}"]`);
@@ -2785,8 +2819,43 @@ export function initSocialKit() {
     const canvas = card.querySelector('[data-preview]');
     const pager = card.querySelector('[data-pager]');
     const pageLabel = card.querySelector('[data-page-label]');
-    const fields = () => ({ headline: field('headline').value, line: field('line').value, caption: field('caption').value });
+    const fields = () => ({ kicker: field('kicker')?.value ?? '', headline: field('headline').value, line: field('line').value, caption: field('caption').value });
     let pageIndex = 0;
+
+    // This post's own edits (colours, artwork, effects, words), kept in this browser per event and post.
+    const store = `cb-social:${kit.event.slug}:${post.key}`;
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(store) ?? 'null') ?? {}; } catch { return {}; } })();
+    const ownColorsEl = card.querySelector('[data-post-own-colors]');
+    const colorEls = [...card.querySelectorAll('[data-post-color]')];
+    const artEl = card.querySelector('[data-post-art]');
+    const effectEls = [...card.querySelectorAll('[data-post-effect]')];
+    const restore = () => {
+      for (const name of ['kicker', 'headline', 'line', 'caption']) if (typeof saved[name] === 'string' && field(name)) field(name).value = saved[name];
+      if (ownColorsEl) ownColorsEl.checked = Boolean(saved.ownColors);
+      colorEls.forEach((el) => { el.value = saved.colors?.[el.dataset.postColor] ?? colors[el.dataset.postColor]; });
+      if (artEl && saved.art !== undefined && [...artEl.options].some((o) => o.value === String(saved.art))) artEl.value = String(saved.art);
+      effectEls.forEach((el) => { el.checked = saved.effects?.[el.dataset.postEffect] ?? true; });
+    };
+    const remember = () => {
+      const now = {
+        ...fields(),
+        ownColors: Boolean(ownColorsEl?.checked),
+        colors: Object.fromEntries(colorEls.map((el) => [el.dataset.postColor, el.value])),
+        art: artEl?.value ?? 'auto',
+        effects: Object.fromEntries(effectEls.map((el) => [el.dataset.postEffect, el.checked])),
+      };
+      try { localStorage.setItem(store, JSON.stringify(now)); } catch { /* private mode: edits last the visit */ }
+    };
+    const postColors = () => (ownColorsEl?.checked ? { ...colors, ...Object.fromEntries(colorEls.map((el) => [el.dataset.postColor, el.value])) } : colors);
+    const artIndex = () => (artEl?.value === 'none' ? -1 : artEl?.value && artEl.value !== 'auto' ? Number(artEl.value) : cardIndex);
+    const effects = () => Object.fromEntries(effectEls.map((el) => [el.dataset.postEffect, el.checked]));
+    const contentNow = () => {
+      const c = { ...postContent(post, fields(), kit, pickEl?.value), artIndex: artIndex(), effects: effects() };
+      const kicker = fields().kicker;
+      if (kicker && kicker !== (post.kicker ?? '')) c.kicker = kicker;
+      return c;
+    };
+    restore();
     let pages = [];
     let drawing = Promise.resolve();
 
@@ -2804,17 +2873,25 @@ export function initSocialKit() {
     };
     const replan = () => {
       syncDays();
-      pages = planPost({ ...postContent(post, fields(), kit, pickEl?.value), artIndex: cardIndex }, size(), style(), colors);
+      pages = planPost(contentNow(), size(), style(), postColors());
       pageIndex = Math.min(pageIndex, pages.length - 1);
       // A class, not `hidden`: the row's own `flex` would win over the attribute.
       if (pager) pager.classList.toggle('hidden', pages.length < 2);
       if (pageLabel) pageLabel.textContent = `Card ${pageIndex + 1} of ${pages.length}`;
     };
+    const thumb = document.querySelector(`[data-studio-thumb="${post.key}"]`);
+    const paintThumb = () => {
+      if (!thumb || !canvas.width) return;
+      const t = thumb.getContext('2d');
+      const k = Math.min(thumb.width / canvas.width, thumb.height / canvas.height);
+      t.clearRect(0, 0, thumb.width, thumb.height);
+      t.drawImage(canvas, (thumb.width - canvas.width * k) / 2, (thumb.height - canvas.height * k) / 2, canvas.width * k, canvas.height * k);
+    };
     const redraw = () => {
       drawing = drawing.then(() => {
         replan();
-        return drawEventPost(canvas, size(), style(), pages[pageIndex], kit, colors, { index: pageIndex + 1, total: pages.length });
-      }).catch(() => {});
+        return drawEventPost(canvas, size(), style(), pages[pageIndex], kit, postColors(), { index: pageIndex + 1, total: pages.length });
+      }).then(paintThumb).catch(() => {});
       return drawing;
     };
 
@@ -2839,8 +2916,15 @@ export function initSocialKit() {
       pickEl.addEventListener('change', () => { pageIndex = 0; refreshCaption(); redraw(); });
     }
 
-    field('headline').addEventListener('input', redraw);
-    field('line').addEventListener('input', redraw);
+    const changed = () => { remember(); redraw(); };
+    for (const name of ['kicker', 'headline', 'line']) field(name)?.addEventListener('input', changed);
+    field('caption').addEventListener('input', remember);
+    [ownColorsEl, artEl, ...colorEls, ...effectEls].filter(Boolean).forEach((el) => el.addEventListener(el.type === 'color' ? 'input' : 'change', changed));
+    card.querySelector('[data-post-colors-reset]')?.addEventListener('click', () => { colorEls.forEach((el) => { el.value = colors[el.dataset.postColor]; }); changed(); });
+    card.querySelector('[data-post-reset]')?.addEventListener('click', () => {
+      try { localStorage.removeItem(store); } catch { /* nothing kept */ }
+      window.location.reload();
+    });
 
     // Every card of the post, at the chosen quality: one PNG, or a ZIP of them.
     const renderAll = async () => {
@@ -2849,7 +2933,7 @@ export function initSocialKit() {
       const out = document.createElement('canvas');
       const files = [];
       for (const [i, page] of pages.entries()) {
-        await drawEventPost(out, size(), style(), page, kit, colors, { index: i + 1, total: pages.length }, q.scale);
+        await drawEventPost(out, size(), style(), page, kit, postColors(), { index: i + 1, total: pages.length }, q.scale);
         files.push({ name: `${kit.event.slug}-${post.key}${pages.length > 1 ? `-${i + 1}` : ''}-${quality()}.png`, blob: await canvasBlob(out, quality()) });
       }
       return files;
@@ -2896,13 +2980,46 @@ export function initSocialKit() {
     socialContext.posts.push({
       key: post.key,
       label: post.label,
-      content: () => { syncDays(); return { ...postContent(post, fields(), kit, pickEl?.value), artIndex: cardIndex }; },
+      content: () => { syncDays(); return contentNow(); },
+      colors: postColors,
       caption: () => field('caption').value,
     });
 
+    allPosts.push({ post, renderAll, caption: () => field('caption').value });
     return redraw;
   });
   Object.assign(socialContext, { kit, colors, style });
+
+  // Download all posts: every card of every post at the chosen quality, the captions and the posting plan, one ZIP.
+  const zipBtns = [...document.querySelectorAll('[data-posts-zip]')];
+  const zipStatus = document.querySelector('[data-posts-zip-status]');
+  zipBtns.forEach((zipBtn) => zipBtn.addEventListener('click', async () => {
+    if (zipBtn.disabled) return;
+    zipBtns.forEach((b) => { b.disabled = true; });
+    try {
+      const entries = [];
+      const captions = [];
+      const plan = [`Posting plan for ${kit.event.name}${kit.event.dates ? ` (${kit.event.dates})` : ''}`, ''];
+      for (const [i, item] of allPosts.entries()) {
+        const note = `Making post ${i + 1} of ${allPosts.length}: ${item.post.label}…`;
+        if (zipStatus) zipStatus.textContent = note;
+        zipBtns.forEach((b) => { b.title = note; });
+        const n = String(i + 1).padStart(2, '0');
+        const files = await item.renderAll();
+        for (const f of files) entries.push({ name: `${n}-${f.name}`, data: new Uint8Array(await f.blob.arrayBuffer()) });
+        captions.push(`${n}. ${item.post.label}\n${item.caption()}\n`);
+        plan.push(`${n}. ${item.post.date_label ? `${item.post.date_label} — ` : ''}${item.post.label}${item.post.when ? ` (${item.post.when})` : ''}: ${files.map((f) => `${n}-${f.name}`).join(', ')}`);
+      }
+      entries.push({ name: 'captions.txt', data: new TextEncoder().encode(captions.join('\n')) });
+      entries.push({ name: 'posting-plan.txt', data: new TextEncoder().encode(plan.join('\n')) });
+      save(new Blob([zipStore(entries)], { type: 'application/zip' }), `${kit.event.slug}-posts-${quality()}.zip`);
+      if (zipStatus) zipStatus.textContent = `${allPosts.length} posts saved in one ZIP, with captions.txt and posting-plan.txt.`;
+    } catch (e) {
+      if (zipStatus) zipStatus.textContent = `That didn't work: ${e?.message ?? e}.`;
+    } finally {
+      zipBtns.forEach((b) => { b.disabled = false; });
+    }
+  }));
 
   people = setUpPeople(kit, colors, size, design, quality);
   redrawAll = () => { posts.forEach((r) => r()); people?.redraw(); };
@@ -2999,52 +3116,141 @@ function setUpPeople(kit, colors, size, design, quality) {
   const grid = document.querySelector('[data-people-grid]');
   if (!grid) return null;
   const roleEl = document.querySelector('[data-people-role]');
-  const more = document.querySelector('[data-people-more]');
+  const searchEl = document.querySelector('[data-people-search]');
+  const rail = document.querySelector('[data-people-rail]');
   const status = document.querySelector('[data-people-status]');
-  let shown = PEOPLE_PAGE;
+  const idOf = (person) => String(person.id ?? slugify(person.name));
+  let selected = null;
 
   const chosen = () => {
     const role = roleEl?.value ?? '';
-    return kit.people.filter((p) => !role || (role === 'card' ? Boolean(p.card) : p.roles.includes(role)));
+    const q = (searchEl?.value ?? '').trim().toLowerCase();
+    return kit.people.filter((p) => (!role || (role === 'card' ? Boolean(p.card) : p.roles.includes(role))) && (!q || p.name.toLowerCase().includes(q)));
   };
 
+  // The studio's list of people on the left; the chosen one's card and edits on the right.
   const redraw = () => {
     const list = chosen();
-    grid.replaceChildren(...list.slice(0, shown).map((person) => {
-      const box = document.createElement('div');
-      box.className = 'space-y-2 rounded-xl border border-line bg-white p-3 shadow-sm';
-      const canvas = document.createElement('canvas');
-      canvas.className = 'mx-auto block h-64 w-auto max-w-full rounded-lg';
-      const name = document.createElement('p');
-      name.className = 'text-sm font-medium';
+    if (!list.some((p) => idOf(p) === selected)) selected = list[0] ? idOf(list[0]) : null;
+    rail?.replaceChildren(...list.map((person) => {
+      const li = document.createElement('li');
+      li.className = 'shrink-0';
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'flex w-48 flex-col rounded-lg px-3 py-2 text-left hover:bg-paper-soft aria-[current=true]:bg-maroon/10 lg:w-full';
+      b.setAttribute('aria-current', String(idOf(person) === selected));
+      const name = document.createElement('span');
+      name.className = 'truncate text-sm font-semibold text-ink';
       name.textContent = person.name;
-      const actions = document.createElement('div');
-      actions.className = 'flex flex-wrap gap-2';
-      const dl = document.createElement('button');
-      dl.type = 'button';
-      dl.className = 'cb-btn cb-btn-secondary cb-btn-sm';
-      dl.textContent = 'Download';
-      dl.addEventListener('click', async () => {
-        const out = document.createElement('canvas');
-        await drawPersonCard(out, size(), design(), person, kit, colors, QUALITY[quality()].scale);
-        save(await canvasBlob(out, quality()), `${slugify(person.name)}-${design()}-${quality()}.png`);
-      });
-      const cp = document.createElement('button');
-      cp.type = 'button';
-      cp.className = 'cb-btn cb-btn-secondary cb-btn-sm';
-      cp.textContent = 'Copy caption';
-      cp.addEventListener('click', () => copy(person.caption, cp));
-      actions.append(dl, cp);
-      box.append(canvas, name, actions);
-      drawPersonCard(canvas, size(), design(), person, kit, colors);
-      return box;
+      const role = document.createElement('span');
+      role.className = 'truncate text-xs text-muted';
+      role.textContent = person.role_labels?.[0] ?? person.roles?.[0] ?? '';
+      b.append(name, role);
+      b.addEventListener('click', () => { selected = idOf(person); redraw(); });
+      li.append(b);
+      return li;
     }));
-    if (more) more.hidden = list.length <= shown;
+    const person = list.find((p) => idOf(p) === selected);
+    if (person) grid.replaceChildren(personRow(person));
+    else {
+      const empty = document.createElement('p');
+      empty.className = 'p-8 text-center text-sm text-muted';
+      empty.textContent = kit.people.length ? 'Nobody matches.' : 'Nobody yet. Mark speakers, organizers, volunteers… on the attendee list first.';
+      grid.replaceChildren(empty);
+    }
     if (status) status.textContent = `${list.length} ${list.length === 1 ? 'card' : 'cards'}`;
   };
 
-  roleEl?.addEventListener('change', () => { shown = PEOPLE_PAGE; redraw(); });
-  more?.addEventListener('click', () => { shown += PEOPLE_PAGE; redraw(); });
+  // One person per row: the card on the left; their caption, colours and effects on the right,
+  // kept in this browser per event and person (like the posts above).
+  function personRow(person) {
+    const store = `cb-social:${kit.event.slug}:person:${person.id ?? slugify(person.name)}`;
+    const saved = (() => { try { return JSON.parse(localStorage.getItem(store) ?? 'null') ?? {}; } catch { return {}; } })();
+    const el = (tag, cls, text) => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text !== undefined) n.textContent = text;
+      return n;
+    };
+    const box = el('div', 'grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]');
+    const canvas = el('canvas', 'block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg');
+    const side = el('div', 'min-h-0 space-y-4 overflow-y-auto border-l border-line bg-white p-4');
+    const caption = el('textarea', 'cb-input mt-1 text-sm');
+    caption.rows = 4;
+    caption.value = typeof saved.caption === 'string' ? saved.caption : person.caption;
+    const capLabel = el('label', 'cb-label', 'Caption');
+    capLabel.append(caption);
+    const own = el('input', 'cb-check');
+    own.type = 'checkbox';
+    own.checked = Boolean(saved.ownColors);
+    const ownLabel = el('label', 'flex items-center gap-2 text-sm');
+    ownLabel.append(own, ' Own colours for this card');
+    const swatches = el('div', 'flex flex-wrap items-end gap-3');
+    const colorEls = ['primary', 'secondary', 'ink', 'paper'].map((key) => {
+      const input = el('input', 'h-9 w-14 cursor-pointer rounded border border-line');
+      input.type = 'color';
+      input.value = saved.colors?.[key] ?? colors[key];
+      input.dataset.key = key;
+      const label = el('label', 'flex flex-col gap-1 text-xs text-muted', { primary: 'Main', secondary: 'Accent', ink: 'Text', paper: 'Light' }[key]);
+      label.append(input);
+      swatches.append(label);
+      return input;
+    });
+    const fxRow = el('div', 'flex flex-wrap gap-x-4 gap-y-2 text-sm');
+    const fxEls = ['glow', 'dots', 'waves'].map((key) => {
+      const input = el('input', 'cb-check');
+      input.type = 'checkbox';
+      input.checked = saved.effects?.[key] ?? true;
+      input.dataset.key = key;
+      const label = el('label', 'flex items-center gap-2');
+      label.append(input, ` ${key[0].toUpperCase()}${key.slice(1)}`);
+      fxRow.append(label);
+      return input;
+    });
+    const now = () => ({ ...person, caption: caption.value, effects: Object.fromEntries(fxEls.map((i) => [i.dataset.key, i.checked])) });
+    const cardColors = () => (own.checked ? { ...colors, ...Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])) } : colors);
+    const draw = () => drawPersonCard(canvas, size(), design(), now(), kit, cardColors());
+    const keep = () => {
+      try {
+        localStorage.setItem(store, JSON.stringify({ caption: caption.value, ownColors: own.checked, colors: Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])), effects: now().effects }));
+      } catch {
+        // Private mode: the edits last this visit.
+      }
+    };
+    caption.addEventListener('input', keep);
+    [own, ...fxEls].forEach((i) => i.addEventListener('change', () => { keep(); draw(); }));
+    colorEls.forEach((i) => i.addEventListener('input', () => { keep(); draw(); }));
+    const actions = el('div', 'flex flex-wrap gap-2 border-t border-line pt-4');
+    const dl = el('button', 'cb-btn cb-btn-primary cb-btn-sm', 'Download');
+    dl.type = 'button';
+    dl.addEventListener('click', async () => {
+      const out = document.createElement('canvas');
+      await drawPersonCard(out, size(), design(), now(), kit, cardColors(), QUALITY[quality()].scale);
+      save(await canvasBlob(out, quality()), `${slugify(person.name)}-${design()}-${quality()}.png`);
+    });
+    const cp = el('button', 'cb-btn cb-btn-secondary cb-btn-sm', 'Copy caption');
+    cp.type = 'button';
+    cp.addEventListener('click', () => copy(caption.value, cp));
+    actions.append(dl, cp);
+    side.append(
+      el('p', 'text-base font-semibold', person.name),
+      capLabel,
+      el('p', 'text-xs font-semibold uppercase tracking-wide text-muted', 'Colours'),
+      ownLabel,
+      swatches,
+      el('p', 'text-xs font-semibold uppercase tracking-wide text-muted', 'Effects (Daylight)'),
+      fxRow,
+      actions,
+    );
+    const left = el('div', 'flex min-h-0 items-center justify-center bg-paper-soft p-4');
+    left.append(canvas);
+    box.append(left, side);
+    draw();
+    return box;
+  }
+
+  roleEl?.addEventListener('change', redraw);
+  searchEl?.addEventListener('input', redraw);
 
   document.querySelector('[data-people-zip]')?.addEventListener('click', async (e) => {
     const btn = e.currentTarget;
@@ -3108,7 +3314,7 @@ async function publish(btn, kit, canvas, redraw, current) {
 export const socialContext = { kit: null, colors: null, style: null, posts: [] };
 
 export const reelTools = {
-  loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
+  brandLockup, loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
   proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT_DISPLAY }),
   siteArt: () => SITE_ART,

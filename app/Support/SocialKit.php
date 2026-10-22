@@ -121,7 +121,9 @@ class SocialKit
         $tags = self::hashtags($event).' #CampBuddy';
         $sessions = count(EventData::get($event->id, 'sessions') ?? []);
         $speakers = count(EventData::get($event->id, 'speakers') ?? []);
-        $timed = self::schedule($event, $now)['sessions'] !== [];
+        $sched = self::schedule($event, $now);
+        $timed = $sched['sessions'] !== [];
+        $dayCount = count($sched['days']);
         $days = self::daysToGo($event, $now);
         $link = fn (string $key) => self::link($event, $key);
         // The site's own tagline ("Dil se Dilli, code se community"), as the site says it.
@@ -129,6 +131,11 @@ class SocialKit
         $opening = $tagline !== null ? $tagline.(preg_match('/[.!?]$/u', $tagline) ? '' : '.')."\n\n" : '';
         // Every event gets its own wording: the same event always the same, the next one different.
         $pick = fn (string $key, array $options) => $options[crc32($event->slug.'|'.$key) % count($options)];
+
+        // The venue's short name (before its first comma) and the event's own hashtag, for the new posts.
+        $placeShort = trim(explode(',', $place)[0] ?? '') ?: $short;
+        $hashtag = (string) (collect(preg_split('/\s+/', trim(self::hashtags($event))) ?: [])
+            ->first(fn ($tag) => str_starts_with($tag, '#') && ! in_array(mb_strtolower($tag), ['#wordcamp', '#wordpress'], true)) ?? '');
 
         $posts = [
             [
@@ -165,7 +172,13 @@ class SocialKit
                 'kicker' => 'Now in CampBuddy',
                 'headline' => $pick('sch-head', ['The full schedule, in your pocket', 'Every talk, one tap away', "Plan your {$short} in minutes"]),
                 'line' => trim(($sessions ? "{$sessions} sessions" : '').($sessions && $speakers ? ' · ' : '').($speakers ? "{$speakers} speakers" : '')) ?: $when,
-                'body' => 'none',
+                'body' => 'points',
+                'points' => array_values(array_filter([
+                    $sessions ? "{$sessions} sessions".($dayCount > 1 ? " over {$dayCount} days" : '') : null,
+                    $speakers ? "{$speakers} ".($speakers === 1 ? 'speaker' : 'speakers').' on stage' : null,
+                    'Save a talk, get a reminder before it',
+                    'Your own day, in one tap',
+                ])),
                 'caption' => "The {$name} schedule is in CampBuddy".($sessions ? ": {$sessions} sessions" : '').($speakers ? " and {$speakers} speakers" : '').'. '.
                     $pick('sch-caption', [
                         'Save the talks you like and get a reminder before each one, even offline.',
@@ -176,9 +189,9 @@ class SocialKit
             [
                 'key' => 'app',
                 'label' => 'Get CampBuddy',
-                'kicker' => 'Free · no sign-up',
+                'kicker' => $pick('app-kicker', ['Get CampBuddy', 'Your WordCamp app', 'One link, the whole day']),
                 'headline' => $pick('app-head', ['Your WordCamp companion', "Your {$short} companion", 'One app for your whole WordCamp']),
-                'line' => $pick('app-line', ["For everyone at {$short}", 'Free, no sign-up, works offline', "Everything for {$short}, in one place"]),
+                'line' => $pick('app-line', ["For everyone at {$short}", 'Schedule, people and reminders', "Everything for {$short}, in one place"]),
                 'body' => 'features',
                 'caption' => $pick('app-caption', [
                     "Going to {$name}? CampBuddy puts the schedule, the people you want to meet, Contributor Day tips and deals in one place. Free, no sign-up, works offline.",
@@ -252,7 +265,8 @@ class SocialKit
                 'kicker' => 'Don\'t go alone',
                 'headline' => $pick('meet-head', ['Find people to meet', 'Meet your people', 'Come for the talks, stay for the people']),
                 'line' => 'CampBuddy shows who shares your interests',
-                'body' => 'none',
+                'body' => 'points',
+                'points' => ['See who shares your interests', 'Say hi with one tap', 'Swap Camp Cards with a QR', 'Your Contributor Day table'],
                 'caption' => $pick('meet-caption', [
                     "First WordCamp, or don't know anyone at {$name}? CampBuddy shows attendees who share your interests, and gives you an easy way to say hi.",
                     "The best part of {$name} is the people. CampBuddy shows who shares your interests, so the first hello is easy.",
@@ -265,7 +279,8 @@ class SocialKit
                 'kicker' => 'That\'s a wrap',
                 'headline' => $pick('ty-head', ["Thank you, {$short}!", "That's a wrap, {$short}!", "Thanks for a great {$short}"]),
                 'line' => 'Your day is saved in CampBuddy',
-                'body' => 'none',
+                'body' => 'points',
+                'points' => ['Your talks and notes stay in the app', 'The people you met, all in one place', 'Save your whole day as a PDF', 'See you at the next WordCamp'],
                 'caption' => $opening."Thank you for using CampBuddy at {$name}! ".$pick('ty-caption', [
                     'Your sessions, notes and the people you met stay in the app, and you can save it all as a PDF.',
                     'Everything from your day stays in the app: talks, notes and new friends. Save it as a PDF to keep.',
@@ -273,6 +288,103 @@ class SocialKit
                 ])."\n\nSee you at the next WordCamp.\n\n{$link('thank-you')}\n\n{$tags}",
             ],
         ];
+
+        // Fifteen posts in the order an event is promoted (22 Oct 2026): announce, build up, the last
+        // week, the days themselves and after. Each says when it works best (shown in the studio and
+        // in the posting plan that comes with "Download all").
+        $posts = array_merge($posts, [
+            [
+                'key' => 'venue',
+                'label' => 'Venue',
+                'kicker' => $pick('ven-kicker', ['Getting there', 'The venue', 'Where it happens']),
+                'headline' => $place !== '' ? $pick('ven-head', ["See you at {$placeShort}", "{$short} happens here", "Your way to {$short}"]) : "Where {$short} happens",
+                'line' => $when,
+                'body' => 'points',
+                'points' => array_values(array_filter([
+                    $place !== '' ? $place : null,
+                    $dates !== '' ? $dates : null,
+                    'Directions, Wi-Fi and food in CampBuddy',
+                ])),
+                'caption' => $pick('ven-caption', [
+                    "{$name} happens{$at} on {$dates}.\n\nDirections, Wi-Fi, food and everything you need on the day are in CampBuddy, free and without a sign-up.",
+                    "Where is {$name}?".($place !== '' ? " Right here: {$place}." : '').' Plan your way in, and find the Wi-Fi, food and help desk in CampBuddy.',
+                    "Mark the place: {$name}{$at}, {$dates}. CampBuddy has the venue details, the schedule and the people to meet, all on your phone.",
+                ])."\n\n{$link('venue')}\n\n{$tags}",
+            ],
+            [
+                'key' => 'first-timer',
+                'label' => 'First WordCamp?',
+                'kicker' => $pick('ft-kicker', ['First time?', 'New to WordCamp?', 'Pehla WordCamp?']),
+                'headline' => $pick('ft-head', ['Your first WordCamp? *Start here*', "First time at {$short}? *You'll love it*", 'New to WordCamp? *Read this first*']),
+                'line' => 'A 5-minute guide in CampBuddy',
+                'body' => 'points',
+                'points' => ['What happens on the day', "Words you'll hear", 'What to bring', 'How to meet people'],
+                'caption' => $pick('ft-caption', [
+                    "Going to your first WordCamp? {$name} is for you too. CampBuddy's 5-minute guide explains the day, the words you'll hear, what to bring and how to meet people.",
+                    "First WordCamp? Everyone has one. Read the CampBuddy guide before {$name}: how the day runs, what to bring and how to say hi.",
+                    "Never been to a WordCamp? Start with CampBuddy's short guide for {$name}, then save your talks and find people with the same interests.",
+                ])."\n\n".route('event.guide', $event).'?'.http_build_query(['utm_source' => 'campbuddy', 'utm_medium' => 'social', 'utm_campaign' => $event->slug, 'utm_content' => 'first-timer'])."\n\n{$tags}",
+            ],
+            [
+                'key' => 'wpsimplified',
+                'label' => 'Learn with WPSimplified',
+                'kicker' => $pick('wps-kicker', ['Get WordCamp-ready', 'Before you go', 'Learn first']),
+                'headline' => $pick('wps-head', ["Brush up on WordPress before *{$short}*", 'Learn WordPress, then *meet the people* behind it', "Come to {$short} *ready to learn*"]),
+                'line' => 'Free tutorials by WPSimplified, in Hindi and English',
+                'body' => 'points',
+                'points' => ['Step-by-step video tutorials', 'Podcasts with the community', 'Shorts: one tip in a minute'],
+                'caption' => $pick('wps-caption', [
+                    "Get ready for {$name} with free WordPress tutorials, podcasts and shorts from WPSimplified, in Hindi and English: https://wpsimplified.in\n\nThen plan your day in CampBuddy, made by WPSimplified for the WordPress community.",
+                    "New to WordPress or want to go deeper before {$name}? WPSimplified has free step-by-step tutorials in Hindi and English: https://wpsimplified.in\n\nAnd CampBuddy, also by WPSimplified, keeps your WordCamp day in one place.",
+                    "Learn a little WordPress before {$name}: WPSimplified's free videos, podcasts and shorts make it simple. https://wpsimplified.in\n\nSee you there, with CampBuddy on your phone.",
+                ])."\n\n{$link('wpsimplified')}\n\n{$tags} #WPSimplified",
+            ],
+            [
+                'key' => 'moments',
+                'label' => 'Share your moments',
+                'kicker' => $hashtag !== '' ? $hashtag : 'Share it',
+                'headline' => $pick('mom-head', ["Share your *{$short}* moments", 'Your photos make the day *last*', "Post it, tag it, *keep it*"]),
+                'line' => ($hashtag !== '' ? "Tag {$hashtag} · " : '').'Your day stays in CampBuddy Memories',
+                'body' => 'points',
+                'points' => array_values(array_filter([
+                    $hashtag !== '' ? "Post with {$hashtag}" : 'Post your photos',
+                    'Tag @CampBuddy and @WPSimplified',
+                    'Save your day in CampBuddy Memories',
+                ])),
+                'caption' => $pick('mom-caption', [
+                    "At {$name}? Share your favourite moments".($hashtag !== '' ? " with {$hashtag}" : '').". Your talks, notes and the people you met stay in CampBuddy Memories.",
+                    "Talks, hallway chats, selfies with new friends: post your {$name} moments".($hashtag !== '' ? " with {$hashtag}" : '').'. CampBuddy keeps your day in Memories.',
+                    "Make {$name} last: share your photos".($hashtag !== '' ? " with {$hashtag}" : '').' and keep your day, with the people you met, in CampBuddy.',
+                ])."\n\n{$link('moments')}\n\n{$tags} #WPSimplified",
+            ],
+        ]);
+        $plan = [
+            'save-the-date' => '6+ weeks before',
+            'venue' => '5 weeks before',
+            'speakers' => '4 weeks before',
+            'sponsors' => '3–4 weeks before',
+            'schedule' => '3 weeks before',
+            'first-timer' => '2–3 weeks before',
+            'contributor' => '2 weeks before',
+            'wpsimplified' => '2 weeks before',
+            'app' => '10 days before',
+            'meet' => '1 week before',
+            'countdown' => '7, 3 and 1 day before',
+            'today' => 'Each morning of the event',
+            'spotlight' => '30 minutes before a talk',
+            'moments' => 'During the event',
+            'thank-you' => 'The day after',
+        ];
+        // …and the tentative day for it (SocialPlan), counted back from the event's first day.
+        $dates = SocialPlan::dates($event, $now);
+        $posts = collect($posts)
+            ->sortBy(fn ($post) => array_search($post['key'], array_keys($plan), true))
+            ->map(fn ($post) => $post + [
+                'when' => $plan[$post['key']] ?? null,
+                'date' => $dates[$post['key']]['date'] ?? null,
+                'date_label' => $dates[$post['key']]['label'] ?? null,
+            ])
+            ->values()->all();
 
         // A day list or a spotlight needs a schedule with times: without one they'd be empty cards.
         return array_values(array_filter($posts, fn ($post) => $timed || ! in_array($post['key'], ['today', 'spotlight'], true)));

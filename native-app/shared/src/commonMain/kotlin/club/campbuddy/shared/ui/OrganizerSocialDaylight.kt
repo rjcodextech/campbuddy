@@ -220,7 +220,6 @@ private fun DayFoot(kit: SocialKitData, pal: Pal, d: DayColors, qr: String, cta:
         ) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(cta, style = ts(if (size.tall) 15.sp else 13.sp, d.ink, FontWeight.Bold), maxLines = 2)
-                BasicText("Free · no sign-up · works offline", style = ts(10.sp, d.muted), maxLines = 1, autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 10.sp))
                 BasicText(
                     listOf(kit.event.name, kit.event.dates).filter { it.isNotBlank() }.joinToString(" · "), style = ts(10.sp, d.ink, FontWeight.Bold), maxLines = 1,
                     autoSize = TextAutoSize.StepBased(minFontSize = 6.sp, maxFontSize = 10.sp),

@@ -38,7 +38,8 @@ mirror. `npm run brand` (`tools/brand-check.mjs`) fails when a mirror drifts.
 - **What:** a free app for WordCamp attendees — schedule, My Day, people, Camp Card, quests, deals, memories — that works offline.
 - **Who:** WordCamp attendees, volunteers, speakers and organisers; mostly in India, mostly on phones, many at their first ("pehla") WordCamp. Hindi, Hinglish and English.
 - **Promise:** calm and useful on a busy day. Every screen answers "what do I do next?" in one glance.
-- **Credit:** "Made by WPSimplified" — small, muted, at the foot. Never larger than the CampBuddy wordmark.
+- **Who it promotes:** every graphic and reel promotes three things at once — the **event**, **CampBuddy** and **WPSimplified** (who made it). The event leads; CampBuddy × WPSimplified sign every card and frame.
+- **The lockup:** "CampBuddy × WPSimplified" — CampBuddy's wordmark, a thin divider, WPSimplified's mark a little smaller (`brandLockup()` in `social-kit.js`). WPSimplified is never larger than CampBuddy.
 
 ## 2. Logo
 
@@ -156,11 +157,14 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 
 1. **Colours are the event's own** (from its site) when they pass 4.5:1 on their ground; otherwise fall back to the CampBuddy palette. Bases: Paper (type-led), Ink (people, place photo), Gradient (save the date, countdown).
 2. **Type:** headline in the event site's heading font when we have it, else Baloo 2 800; every other line (kicker, subtitle, names, foot, brand bar) in Poppins.
-3. One **brand bar** at the foot: CampBuddy wordmark on a paper pill left, globe + `campbuddy.club` pill right, same height, one baseline. Never covered. Credit line under it on reels' end card only.
+3. One **brand bar** at the foot: the CampBuddy × WPSimplified lockup on a paper pill left, globe + `campbuddy.club` pill right, same height, one baseline. Never covered. The event's logo sits at the top of every card.
 4. Headline: one highlighted phrase (1–3 words). ≤ 3 lines. Text ≥ 24px on a 1080 canvas; no ellipsis — shrink, never cut.
 5. Faces never overlap text; full names on one line (shrink, never split).
 6. Ochre/light accents are never text on paper.
 7. **Export:** PNG master at 2×, stamped 600 DPI, maximum quality; JPEG only where a platform rejects the PNG size.
+8. **No "Free · no sign-up · works offline" line** on any graphic or reel (22 Oct 2026). Captions may still say it.
+9. **Never an empty card:** a post with little to say lists its points (schedule numbers, what you'll find, what's next) instead of leaving the middle blank.
+10. **Fifteen posts, in the order an event is promoted**, each with a tentative day counted back from the event's first day (`SocialPlan`): Save the date (6 weeks before) → Venue (5) → Speakers (4) → Sponsors (3–4) → Schedule (3) → First WordCamp? (2–3) → Contributor Day (2) → Learn with WPSimplified (2) → Get CampBuddy (10 days) → Find your people (1 week) → Countdown (7, 3, 1 day) → Day schedule (each morning) → Session spotlight (30 min before a talk) → Share your moments (during) → Thank you (the day after). The studio shows the plan as a calendar; organizers can get a phone reminder on each day.
 
 ## 9. Reels & stories
 
@@ -169,7 +173,12 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 - Structure: Hook 0–2s (event name / the result, big, no logo) → Context 2–6s → Value 6–25s (one idea per cut, cut every 2–3s) → Payoff + **one** CTA 25–30s (scan / open campbuddy.club).
 - A thin progress bar (main colour on a pale track) runs under the header row on every scene except the hook and the end card (the brand's reel template).
 - Captions burned in: Poppins Bold 64–72px, max two lines, 3–6 words per line.
-- Logo only on the cover and the end card (brand bar + WPSimplified credit).
+- **Branding on every frame** (22 Oct 2026, replaces "logo only on the cover"): the event's logo on a white tile at the top centre of the safe zone; the CampBuddy × WPSimplified lockup on a white pill at its foot centre; the words between the two, never under them.
+- **The end card** carries no event logo: CampBuddy's mark at the top centre, WPSimplified's at the foot centre, and between them one call ("Plan <event> in CampBuddy"), the QR and `campbuddy.club`.
+- **Five templates** — Daylight, Stage, Poster, Photo, Minimal — each with its own grounds, entrance (rise, pop, slide, type on), cut on the beat (cut, flash, wipe, zoom, slide), effects (glow, dots, waves, equaliser, sparks, bands, grid) and music (mood, lead, groove, pad).
+- **Every reel is unique:** neighbouring reels take different templates and music (key, tempo, chords, arpeggio from its place in the list); each tells its own topic first, then its own slice of the event's facts (dates and venue, schedule, talks, speakers, sponsors, Contributor Day, the team — the next reel the next slice), with its own picks inside each; nothing the topic said is told again in the same reel.
+- Cuts land on beats; lines come in on half beats; the highlighted word, big numbers, QR and effects pulse on the beat. Minimum 30 s.
+- Everything is editable per reel in the studio (template, animation, effects, hook words, colours, mood, photos) with a live, looping preview.
 - Export MP4 · H.264 · AAC 48 kHz · 8–12 Mbps. Music never louder than words.
 
 ## 10. Native apps (Android & iPhone)

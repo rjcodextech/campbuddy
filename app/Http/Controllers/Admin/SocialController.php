@@ -39,7 +39,19 @@ class SocialController extends Controller
             'publishUrl' => SocialPublisher::configured($event) ? route('admin.events.social.publish', $event) : null,
             'webhookUrl' => route('admin.events.social.webhook', $event),
             'webhookSet' => SocialPublisher::configured($event),
+            'remindersUrl' => route('admin.social.reminders'),
+            'remindersOn' => (bool) auth()->user()?->social_reminders,
+            'remindersPhones' => \App\Models\OrganizerPushToken::where('role', 'admin')->where('user_id', auth()->id())->count(),
         ]);
+    }
+
+    /** Turns "Remind me on my phone when a post is due" on or off for the signed-in admin. */
+    public function reminders(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $user->forceFill(['social_reminders' => $request->boolean('on')])->save();
+
+        return back()->with('status', $user->social_reminders ? 'Post reminders are on for your phone.' : 'Post reminders are off.');
     }
 
     public function colors(Request $request, Event $event): RedirectResponse

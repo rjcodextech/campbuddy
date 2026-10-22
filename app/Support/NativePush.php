@@ -66,17 +66,20 @@ class NativePush
      * event managers assigned to it, who signed in on the app. `$path` is the
      * page inside the panel, relative to "/admin/events/{id}/" or "/manager/events/{id}/".
      *
+     * With `$socialReminders`, only those who turned on "Remind me on my phone when a post is due".
+     *
      * @param  array{title: string, body: string}  $payload
      * @return int phones the alert was handed to
      */
-    public static function toOrganizers(Event $event, array $payload, string $kind, string $path = 'reports', int $ttl = 86400): int
+    public static function toOrganizers(Event $event, array $payload, string $kind, string $path = 'reports', int $ttl = 86400, bool $socialReminders = false): int
     {
         if (! self::enabled()) {
             return 0;
         }
 
-        $managerIds = EventManager::where('is_active', true)->whereHas('events', fn ($q) => $q->whereKey($event->id))->pluck('id');
-        $admins = OrganizerPushToken::where('role', 'admin')->whereIn('user_id', User::pluck('id'))->get();
+        $managerIds = EventManager::where('is_active', true)->whereHas('events', fn ($q) => $q->whereKey($event->id))
+            ->when($socialReminders, fn ($q) => $q->where('social_reminders', true))->pluck('id');
+        $admins = OrganizerPushToken::where('role', 'admin')->whereIn('user_id', User::when($socialReminders, fn ($q) => $q->where('social_reminders', true))->pluck('id'))->get();
         $managers = OrganizerPushToken::where('role', 'manager')->whereIn('user_id', $managerIds)->get();
 
         return self::toTokens($admins, $payload + ['url' => "/admin/events/{$event->id}/{$path}"], $kind, $ttl)['sent']

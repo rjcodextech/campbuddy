@@ -142,7 +142,6 @@ private fun QrFoot(kit: SocialKitData, pal: Pal, qr: String, size: CardSize, lin
         QrCodeView(qr, size = if (size.tall) 72.dp else 56.dp, dark = pal.ink)
         Column(Modifier.weight(1f)) {
             Text(line, style = st(13.sp, pal.ink, FontWeight.Bold), maxLines = 2)
-            Text("Free · no sign-up · works offline", style = st(10.sp, pal.ink.copy(alpha = 0.7f)))
             if (kit.event.hashtags.isNotBlank()) Text(kit.event.hashtags, style = st(10.sp, pal.primary, FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
@@ -267,7 +266,7 @@ private fun BoxScope.PostColumn(kit: SocialKitData, pal: Pal, c: PostContent, si
         Column(Modifier.weight(if (split) 0.9f else 1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically), horizontalAlignment = align) {
             if (c.kicker.isNotBlank()) Text(c.kicker.uppercase(), style = st(12.sp, t.accent, FontWeight.Bold, spacing = 1.2.sp), maxLines = 2, textAlign = textAlign)
             if (c.body == "countdown" && c.days != null) Text(c.days.toString(), style = st(if (size.tall) 110.sp else 76.sp, t.accent, FontWeight.ExtraBold, line = if (size.tall) 112.sp else 78.sp))
-            Text(c.headline, style = st(headSize, t.head, FontWeight.ExtraBold), maxLines = if (size.tall) 4 else 3, overflow = TextOverflow.Ellipsis, textAlign = textAlign)
+            Text(c.headline.replace("*", ""), style = st(headSize, t.head, FontWeight.ExtraBold), maxLines = if (size.tall) 4 else 3, overflow = TextOverflow.Ellipsis, textAlign = textAlign)
             if (c.line.isNotBlank()) Text(c.line, style = st(14.sp, t.sub), maxLines = 2, textAlign = textAlign)
             if (!split) PostBody(pal, c, size, t, center)
         }

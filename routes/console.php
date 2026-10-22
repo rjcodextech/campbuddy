@@ -143,6 +143,13 @@ Schedule::call(fn () => Artisan::call('campbuddy:clear-social-cache'))
     ->dailyAt('00:15')
     ->name('clear-social-cache')
     ->withoutOverlapping(30);
+// The posts due today (SocialPlan), pushed every morning to the organizers who
+// turned on post reminders; hourly, and the command only sends in the venue's
+// morning (9–11), once per post and day.
+Schedule::call(fn () => Artisan::call('campbuddy:post-reminders'))
+    ->hourlyAt(5)
+    ->name('post-reminders')
+    ->withoutOverlapping(10);
 // Tell search engines about new and changed pages (IndexNow) once a day. Run
 // in-process (Artisan::call) like the queue drain below — hosts often disable
 // proc_open. The command itself does nothing outside production.

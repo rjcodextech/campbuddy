@@ -29,7 +29,7 @@ try {
     await js(`[...document.querySelectorAll('[data-reel-list] li')][${i}].querySelector('button').click(), 1`);
     await sleep(1500);
     for (let n = 0; n < 60; n++) {
-      const data = await js(`(() => { const c = document.querySelector('[data-reel-preview]'); const s = document.createElement('canvas'); s.width = 432; s.height = 768; s.getContext('2d').drawImage(c, 0, 0, 432, 768); return s.toDataURL('image/jpeg', 0.85); })()`);
+      const data = await js(`(() => { const c = [...document.querySelectorAll('[data-reel-list] li')][${i}]?.querySelector('canvas') ?? document.querySelector('[data-reel-preview]'); const s = document.createElement('canvas'); s.width = 432; s.height = 768; s.getContext('2d').drawImage(c, 0, 0, 432, 768); return s.toDataURL('image/jpeg', 0.85); })()`);
       if (data) {
         fs.mkdirSync(path.join(out, slug), { recursive: true });
         fs.writeFileSync(path.join(out, slug, `${String(n).padStart(2, '0')}.jpg`), Buffer.from(data.split(',')[1], 'base64'));

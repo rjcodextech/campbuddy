@@ -21,7 +21,8 @@ if (document.querySelector('[data-usage-post]')) import('./usage-post').then((m)
 if (document.getElementById('social-kit-data')) {
     import('./social-kit').then((kit) => {
         kit.initSocialKit();
-        // Its reels (video) use the same live state, so they start after it.
-        if (document.querySelector('[data-social-reels]')) import('./social-reels').then((reels) => reels.initSocialReels());
+        // Its reels (video) use the same live state, so they start after it; the studio opens once both are wired.
+        const reels = document.querySelector('[data-social-reels]') ? import('./social-reels').then((m) => m.initSocialReels()) : Promise.resolve();
+        reels.finally(() => import('./social-studio').then((m) => m.initStudio()));
     });
 }

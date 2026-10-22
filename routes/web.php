@@ -224,6 +224,8 @@ Route::prefix('admin')->group(function () {
         Route::post('events/{event}/social/art/kind', [SocialController::class, 'artKind'])->name('admin.events.social.art.kind');
         Route::post('events/{event}/social/webhook', [SocialController::class, 'webhook'])->name('admin.events.social.webhook');
         Route::post('events/{event}/social/publish', [SocialController::class, 'publish'])->middleware('throttle:20,1')->name('admin.events.social.publish');
+        // "Remind me on my phone when a post is due": each admin for themselves.
+        Route::post('social/reminders', [SocialController::class, 'reminders'])->name('admin.social.reminders');
         Route::get('events/{event}/delay', [ScheduleDelayController::class, 'index'])->name('admin.events.delay');
         Route::post('events/{event}/delay', [ScheduleDelayController::class, 'store'])->name('admin.events.delay.store');
         Route::post('events/{event}/delay/clear', [ScheduleDelayController::class, 'clear'])->name('admin.events.delay.clear');

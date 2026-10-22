@@ -58,6 +58,8 @@ Route::prefix('manager')->group(function () {
         Route::post('events/{eventId}/social/art/kind', [SocialController::class, 'artKind'])->name('manager.events.social.art.kind');
         Route::post('events/{eventId}/social/webhook', [SocialController::class, 'webhook'])->name('manager.events.social.webhook');
         Route::post('events/{eventId}/social/publish', [SocialController::class, 'publish'])->middleware('throttle:20,1')->name('manager.events.social.publish');
+        // "Remind me on my phone when a post is due": each manager for themselves.
+        Route::post('social/reminders', [SocialController::class, 'reminders'])->name('manager.social.reminders');
         Route::get('events/{eventId}/attendees', [AttendeeController::class, 'index'])->name('manager.events.attendees');
         Route::get('events/{eventId}/delay', [ScheduleDelayController::class, 'index'])->name('manager.events.delay');
         Route::post('events/{eventId}/delay', [ScheduleDelayController::class, 'store'])->name('manager.events.delay.store');

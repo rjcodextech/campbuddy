@@ -74,7 +74,8 @@ test('the posts take their body from the kit', () => {
   const f = { headline: 'H', line: 'L', caption: '' };
   assert.equal(postContent({ key: 'speakers' }, f, kit).body.people.length, 1, 'only speakers with a photo');
   assert.equal(postContent({ key: 'app' }, f, kit).body.type, 'features');
-  assert.equal(postContent({ key: 'contributor' }, f, kit).body.type, 'none', 'no tables: no list');
+  assert.equal(postContent({ key: 'contributor' }, f, kit).body.type, 'features', 'no tables: what people do on Contributor Day, never an empty card');
+  assert.deepEqual(postContent({ key: 'venue', body: 'points', points: ['A', 'B'] }, f, kit).body, { type: 'features', items: ['A', 'B'] }, 'the newer posts list their own points');
   const spot = postContent({ key: 'spotlight' }, { headline: '', line: '', caption: '' }, kit, 2);
   assert.equal(spot.headline, 'Blocks');
   assert.equal(spot.line, '10:00 AM · Track 1');

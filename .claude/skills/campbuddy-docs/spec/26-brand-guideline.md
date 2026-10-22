@@ -57,3 +57,30 @@ motif and motion, voice, icons and buttons (hover them), social posts, reels (sa
 - Social post *colours* still come from the event's site (contrast-checked); only fonts and the
   reel safe zone changed.
 - Copy: no wording was touched (visual and copy passes stay separate).
+
+## Studio, fifteen posts, posting plan, reminders, reel templates (22 Oct 2026, owner confirmed)
+
+- **Studio** (`partials/social-media.blade.php`, `resources/js/social-studio.js`): a full-screen dialog with tabs
+  Posts / People cards / Reels — list left, big preview centre, edits right; `#studio-posts|people|reels` opens it.
+  Per-item edits (text, own colours, artwork set or none, Daylight effects; reels: template, animation, effects,
+  hook, colours, mood, photos) are kept in the browser (`localStorage` key `cb-social:<slug>:…`). Reels play a
+  silent live loop that rebuilds 350 ms after an edit; "Play with music" plays once with sound.
+- **Fifteen posts** (`SocialKit::posts`, promotion order, each with `when`, `date`, `date_label`): four new —
+  `venue`, `first-timer`, `wpsimplified`, `moments` — and `schedule`, `meet`, `thank-you` now list points
+  (`body: points` → drawn as features). "Download all posts (ZIP)" saves every card + `captions.txt` +
+  `posting-plan.txt`.
+- **Posting plan** (`App\Support\SocialPlan`): days counted back from the event's first day; an event added late
+  spreads its pre-event posts evenly from the day it was added (`created_at`), so the plan never moves with
+  today. `SocialPlan::calendar()` draws it as a Monday-first calendar on the Social media page.
+- **Phone reminders**: each admin / manager turns on "Remind me on my phone when a post is due" for themselves
+  (`users.social_reminders`, `event_managers.social_reminders`; routes `admin.social.reminders`,
+  `manager.social.reminders`). `campbuddy:post-reminders` runs hourly and sends in the venue's morning (9–11),
+  once per post and day (cache key `post-reminder:<event>:<key>:<date>`), through `NativePush::toOrganizers(...,
+  socialReminders: true)` to the CampBuddy app signed in as an organizer. `--dry-run` lists what is due.
+- **Reel templates** (`REEL_TEMPLATES` in `social-reels.js`): Daylight, Stage, Poster, Photo, Minimal; branding on
+  every frame (`v2Brand`: event logo top centre, CampBuddy × WPSimplified lockup at the foot); end card
+  (`v2End`): CampBuddy top, WPSimplified foot, QR between, no event logo. Facts per reel: a three-fact slice of the
+  event's pool (`v2EventFacts`, rotated by the reel's place), never repeating the reel's own topic.
+- **Lockup** `brandLockup()` (`social-kit.js`): CampBuddy × WPSimplified for every post, people card and reel.
+- **Event Details page** (`admin/events/edit.blade.php`): tabs Basics / Event info / Data & refresh / Branding
+  (Alpine; kept per event in `sessionStorage`, `#basics|info|data|branding`, a form with errors opens its tab).

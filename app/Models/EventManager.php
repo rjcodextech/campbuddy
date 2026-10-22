@@ -40,6 +40,7 @@ class EventManager extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
+            'social_reminders' => 'boolean',
         ];
     }
 

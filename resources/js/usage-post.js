@@ -147,7 +147,7 @@ function frame(ctx, d, assets, page, total, title) {
   if (assets.campbuddy) contain(ctx, assets.campbuddy, 86, footY + 44, 272, 62);
   ctx.fillStyle = pal.onPrimary;
   ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('campbuddy.club · free, no sign-up', 400, footY + 70, W - 400 - 80);
+  ctx.fillText('campbuddy.club', 400, footY + 70, W - 400 - 80);
   ctx.globalAlpha = 0.85;
   ctx.font = `600 24px ${FONT}`;
   ctx.fillText('Made with ♥ by WPSimplified', 400, footY + 108, W - 400 - 80);
@@ -314,7 +314,7 @@ function thanks(ctx, d) {
     ctx.fillText(`Busiest day: ${when}, ${big(peak.users)} people`, 80, y + 90, W - 160);
     y += 90;
   }
-  y = lines(ctx, fit(ctx, 'CampBuddy is free for every WordCamp: the schedule with reminders, people to meet and your Camp Card. No sign-up.', W - 460, 40, 28, 5, 600), 80, y + 60, mix(pal.ink, pal.paper, 0.15), 600, 'left', 1.3);
+  y = lines(ctx, fit(ctx, 'CampBuddy is there for every WordCamp: the schedule with reminders, people to meet and your Camp Card.', W - 460, 40, 28, 5, 600), 80, y + 60, mix(pal.ink, pal.paper, 0.15), 600, 'left', 1.3);
   // A QR to CampBuddy, for the next one.
   const qs = 300;
   const qx = W - 80 - qs;
