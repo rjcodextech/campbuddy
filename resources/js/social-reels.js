@@ -1584,14 +1584,27 @@ function v2Rows(ctx, reel, rows, y, t, k) {
   const { head, text } = T.fonts();
   const w = SAFE.right - SAFE.left;
   const gap = 20;
+  const pad = 28;
   const rowH = Math.max(104, Math.min(170, (V2_BOTTOM - y - gap * (rows.length - 1)) / Math.max(1, rows.length)));
+  // A time ("10:00 AM") is set as the hour large with AM / PM small under it; any other mark (1, 2, 11) large.
+  const marks = rows.map((row, i) => {
+    const mark = String(row.mark ?? i + 1);
+    const time = mark.match(/^(\d{1,2}[:.]\d{2})\s*([AaPp]\.?[Mm]\.?)$/);
+    return time ? { main: time[1], sub: time[2].toUpperCase().replace(/\./g, '') } : { main: mark, sub: null };
+  });
+  // One mark column for the whole list, wide enough for its widest mark plus room on both sides, so the
+  // marks line up and never touch the card's edge.
+  const sizeFor = (m) => Math.round(Math.min(m.sub || m.main.length > 2 ? 52 : 72, rowH * (m.sub ? 0.4 : 0.5)));
+  const widest = Math.max(...marks.map((m) => {
+    ctx.font = `900 ${sizeFor(m)}px ${head}`;
+    return ctx.measureText(m.main).width;
+  }));
+  const markW = Math.max(112, Math.min(230, widest + pad * 2));
   rows.forEach((row, i) => {
     const p = back(span(t, cue(reel, k + i), 0.45));
     if (p <= 0) return;
     const ry = y + i * (rowH + gap);
-    const mark = row.mark ?? String(i + 1);
-    const markSize = Math.round(Math.min(mark.length > 2 ? 44 : 72, rowH * 0.5));
-    const markW = mark.length > 2 ? 150 : 110;
+    const m = marks[i];
     ctx.save();
     ctx.globalAlpha *= clamp(p);
     if (reel.anim === 'pop') {
@@ -1607,14 +1620,35 @@ function v2Rows(ctx, reel, rows, y, t, k) {
     T.roundRect(ctx, SAFE.left, ry, w, rowH, 30);
     ctx.fill();
     ctx.shadowColor = 'transparent';
+    // The mark, shrunk until it fits its column with `pad` on each side.
+    let size = sizeFor(m);
+    ctx.font = `900 ${size}px ${head}`;
+    while (size > 24 && ctx.measureText(m.main).width > markW - pad * 2) {
+      size -= 2;
+      ctx.font = `900 ${size}px ${head}`;
+    }
+    const cx = SAFE.left + markW / 2;
     ctx.fillStyle = pal.primary;
-    ctx.font = `900 ${markSize}px ${head}`;
     ctx.textAlign = 'center';
-    ctx.fillText(mark, SAFE.left + markW / 2 + 6, ry + rowH / 2 + markSize * 0.36);
-    const tx = SAFE.left + markW + 16;
-    const tw = w - markW - 40;
-    const title = fitAll(ctx, row.title, tw, 40, 32, row.meta ? 2 : 3, 700, text);
-    const metaH = row.meta ? 44 : 0;
+    if (m.sub) {
+      const sub = Math.round(size * 0.46);
+      const blockH = size * 0.9 + 8 + sub;
+      const top = ry + (rowH - blockH) / 2;
+      ctx.fillText(m.main, cx, top + size * 0.82);
+      ctx.font = `800 ${sub}px ${text}`;
+      ctx.fillStyle = T.mix(pal.primary, '#ffffff', 0.25);
+      ctx.fillText(m.sub, cx, top + size * 0.9 + 8 + sub * 0.85);
+    } else {
+      ctx.fillText(m.main, cx, ry + rowH / 2 + size * 0.36);
+    }
+    // A thin rule between the mark and the words.
+    ctx.fillStyle = T.alpha(pal.ink, 0.1);
+    ctx.fillRect(SAFE.left + markW, ry + 20, 2, rowH - 40);
+    const tx = SAFE.left + markW + 22;
+    const tw = w - markW - 22 - pad;
+    const title = fitAll(ctx, row.title, tw, 40, 30, row.meta ? 2 : 3, 700, text);
+    const meta = row.meta ? fitAll(ctx, row.meta, tw, 30, 24, 1, 600, text) : null;
+    const metaH = meta ? meta.size * 1.4 : 0;
     const blockH = title.lines.length * title.size * 1.2 + metaH;
     let ty = ry + (rowH - blockH) / 2;
     ctx.textAlign = 'left';
@@ -1622,10 +1656,10 @@ function v2Rows(ctx, reel, rows, y, t, k) {
     ctx.font = `700 ${title.size}px ${text}`;
     title.lines.forEach((l, j) => ctx.fillText(l, tx, ty + (j + 0.85) * title.size * 1.2));
     ty += title.lines.length * title.size * 1.2;
-    if (row.meta) {
+    if (meta) {
       ctx.fillStyle = T.mix(pal.ink, '#ffffff', 0.35);
-      ctx.font = `600 32px ${text}`;
-      ctx.fillText(row.meta, tx, ty + 36, tw);
+      ctx.font = `600 ${meta.size}px ${text}`;
+      ctx.fillText(meta.lines[0] ?? row.meta, tx, ty + meta.size * 1.1);
     }
     ctx.restore();
   });
