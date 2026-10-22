@@ -90,9 +90,9 @@
                         {{ $label }}
                         @if ($count !== null)
                             <span @class([
-                                'rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums leading-none',
-                                'bg-maroon/10 text-maroon' => $current === $key,
-                                'bg-paper-soft text-muted' => $current !== $key,
+                                'rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums leading-none',
+                                'bg-maroon/10 text-maroon-dark' => $current === $key,
+                                'bg-paper-soft text-[#574f4b]' => $current !== $key,
                             ])>{{ number_format($count) }}</span>
                         @endif
                     </a>

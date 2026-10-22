@@ -41,7 +41,7 @@
                     <h1 class="home-hero__title">{{ $event->display_name }}</h1>
                     @if ($event->starts_on)
                         <p class="home-hero__meta">
-                            {{ $event->starts_on->format('j M Y') }}@if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) – {{ $event->ends_on->format('j M Y') }}@endif
+                            {{ \App\Support\SocialKit::dates($event) }}
                         </p>
                     @endif
                 </div>

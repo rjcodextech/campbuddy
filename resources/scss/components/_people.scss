@@ -66,6 +66,26 @@
     }
 }
 
+// The narrowest phones (320–359px): three columns leave a name ~120px, so
+// long names break mid-word and the icons wrap. Two columns there — the
+// photo, and everything else stacked, with + Meet under the links.
+@media (max-width: 359px) {
+    .roster-row {
+        grid-template-columns: 44px minmax(0, 1fr);
+        align-items: start;
+
+        > .roster-row__avatar {
+            grid-row: span 2;
+        }
+
+        .meet-btn {
+            grid-column: 2;
+            justify-self: start;
+            margin-top: v.$space-2;
+        }
+    }
+}
+
 // "Showing the attendee list saved on your phone…" — above the list, when there's no connection.
 .roster-note {
     margin: 0 0 v.$space-2;

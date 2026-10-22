@@ -8,7 +8,9 @@
 --}}
 @props(['offer', 'muted' => false])
 
-<div @class(['flex flex-wrap gap-4 px-5 py-4 sm:flex-nowrap sm:px-6', 'bg-paper/60' => $muted])>
+{{-- One line only from xl: beside the admin sidebar and the event menu a 1024px screen leaves the
+    words ~40px, so until then the actions wrap under them. --}}
+<div @class(['flex flex-wrap gap-4 px-5 py-4 sm:px-6 xl:flex-nowrap', 'bg-paper/60' => $muted])>
     <span class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white" aria-hidden="true">
         @if ($offer->mediaAsset)
             <img src="{{ $offer->mediaAsset->url() }}" alt="" class="max-h-11 max-w-11 object-contain">
@@ -49,7 +51,7 @@
         </div>
     </div>
 
-    <div class="flex w-full shrink-0 flex-wrap items-start justify-end gap-2 sm:w-auto">
+    <div class="flex w-full shrink-0 flex-wrap items-start justify-end gap-2 xl:w-auto">
         {{ $slot }}
     </div>
 </div>

@@ -17,12 +17,7 @@
                 <p class="home-hero__eyebrow">{{ $event->short_name ?? 'WordCamp' }}</p>
                 <h1 class="home-hero__title">{{ $event->display_name }}</h1>
                 @if ($event->starts_on)
-                    <p class="home-hero__meta">
-                        {{ $event->starts_on->format('j M Y') }}
-                        @if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on))
-                            – {{ $event->ends_on->format('j M Y') }}
-                        @endif
-                    </p>
+                    <p class="home-hero__meta">{{ \App\Support\SocialKit::dates($event) }}</p>
                 @endif
                 {{-- "Starts in 3 days" / "Day 1 of 2" / "That's a wrap" — home.js,
                 from the device's own clock and date. --}}

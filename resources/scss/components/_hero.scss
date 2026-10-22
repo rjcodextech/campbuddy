@@ -28,6 +28,16 @@
     min-width: 0;
 }
 
+// Phones: a smaller logo leaves the name, dates and "Starts in" pill room to
+// sit on one line each instead of wrapping word by word beside a 104px box.
+@media (max-width: 419px) {
+    .home-hero__logo {
+        width: 76px;
+        height: 76px;
+        padding: 0 v.$space-2;
+    }
+}
+
 .home-hero__eyebrow {
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
@@ -144,7 +154,8 @@
         display: inline-flex;
         align-items: center;
         min-height: 44px;
-        color: var(--brand-primary);
+        // The deeper maroon: brand maroon on the peach "Happening now" card is 4.35:1, under AA.
+        color: var(--brand-accent);
         font-weight: v.$font-weight-bold;
         text-decoration: underline;
         text-underline-offset: 2px;

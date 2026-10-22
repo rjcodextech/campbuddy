@@ -94,9 +94,10 @@
                               :value="$old('lead_form.intro', $form['intro'])" maxlength="255"
                               placeholder="Share a few details to get this deal. They go only to the sponsor, so they can sort it out for you." />
 
-                <div class="overflow-x-auto rounded-lg border border-line">
-                    <table class="w-full min-w-[40rem] text-sm">
-                        <thead class="bg-paper-soft text-left text-xs uppercase tracking-wide text-muted">
+                {{-- A table from md up; on a phone each field is its own block (no sideways scrolling). --}}
+                <div class="rounded-lg border border-line md:overflow-x-auto">
+                    <table class="block w-full text-sm md:table md:min-w-[40rem]">
+                        <thead class="hidden bg-paper-soft text-left text-xs uppercase tracking-wide text-muted md:table-header-group">
                             <tr>
                                 <th class="px-3 py-2 font-medium">Field</th>
                                 <th class="px-3 py-2 font-medium">Asked</th>
@@ -104,14 +105,15 @@
                                 <th class="px-3 py-2 font-medium">Hint (optional)</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-line">
+                        <tbody class="block divide-y divide-line md:table-row-group">
                             @foreach (\App\Support\DealForm::FIELDS as $key => [$defaultLabel])
-                                <tr>
-                                    <td class="px-3 py-2 align-top font-medium">
+                                <tr class="block space-y-2 p-3 md:table-row md:space-y-0 md:p-0">
+                                    <td class="block align-top font-medium md:table-cell md:px-3 md:py-2">
                                         {{ ['name' => 'Name', 'company' => 'Company', 'email' => 'Email', 'mobile' => 'Phone'][$key] }}
                                         <span class="block text-xs font-normal text-muted">{{ $fieldHelp[$key] }}</span>
                                     </td>
-                                    <td class="px-3 py-2 align-top">
+                                    <td class="block align-top md:table-cell md:px-3 md:py-2">
+                                        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-muted md:hidden">Asked</span>
                                         @if ($key === 'email')
                                             <x-badge variant="brand">Required</x-badge>
                                         @else
@@ -120,12 +122,14 @@
                                                            :aria-label="$defaultLabel.': asked'" />
                                         @endif
                                     </td>
-                                    <td class="px-3 py-2 align-top">
+                                    <td class="block align-top md:table-cell md:px-3 md:py-2">
+                                        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-muted md:hidden">Label on the form</span>
                                         <x-form.input :name="'lead_form[fields]['.$key.'][label]'" :id="'lead-'.$key.'-label'" :label="null" :use-old="false" :show-error="false"
                                                       :value="$old('lead_form.fields.'.$key.'.label', $form['fields'][$key]['label'])" maxlength="80"
                                                       :aria-label="$defaultLabel.': label'" />
                                     </td>
-                                    <td class="px-3 py-2 align-top">
+                                    <td class="block align-top md:table-cell md:px-3 md:py-2">
+                                        <span class="mb-1 block text-xs font-medium uppercase tracking-wide text-muted md:hidden">Hint (optional)</span>
                                         <x-form.input :name="'lead_form[fields]['.$key.'][hint]'" :id="'lead-'.$key.'-hint'" :label="null" :use-old="false" :show-error="false"
                                                       :value="$old('lead_form.fields.'.$key.'.hint', $form['fields'][$key]['hint'])" maxlength="120"
                                                       :aria-label="$defaultLabel.': hint'" />
@@ -140,13 +144,13 @@
                     <p class="text-sm font-semibold">Products or plans to tick <span class="font-normal text-muted">(optional)</span></p>
                     <p class="mt-0.5 text-xs text-muted">e.g. “Need a special plan for:” with Knit Pay – Pro and Knit Pay – UPI. Attendees tap the ones they want.</p>
 
-                    <div class="mt-3 grid gap-4 md:grid-cols-12">
-                        <x-form.select name="lead_form[choices][mode]" id="lead-choices-mode" label="Asked" class="md:col-span-3" :use-old="false" :show-error="false"
+                    <div class="mt-3 grid gap-4 xl:grid-cols-12">
+                        <x-form.select name="lead_form[choices][mode]" id="lead-choices-mode" label="Asked" class="xl:col-span-3" :use-old="false" :show-error="false"
                                        :options="$modeOptions" :value="$old('lead_form.choices.mode', $form['choices']['mode'])" />
-                        <x-form.input name="lead_form[choices][label]" id="lead-choices-label" label="Question" class="md:col-span-6" :use-old="false" :show-error="false"
+                        <x-form.input name="lead_form[choices][label]" id="lead-choices-label" label="Question" class="xl:col-span-6" :use-old="false" :show-error="false"
                                       :value="$old('lead_form.choices.label', $form['choices']['options'] === [] ? '' : $form['choices']['label'])" maxlength="80"
                                       placeholder="e.g. Need a special plan for" />
-                        <div class="flex items-end md:col-span-3">
+                        <div class="flex items-end xl:col-span-3">
                             <x-form.checkbox name="lead_form[choices][multiple]" id="lead-choices-multiple" label="More than one allowed" unchecked="0"
                                              :use-old="false" :show-error="false"
                                              :checked="(bool) $old('lead_form.choices.multiple', $form['choices']['multiple'])" />

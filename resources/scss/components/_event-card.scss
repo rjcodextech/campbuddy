@@ -110,7 +110,7 @@
 }
 
 .event-card__date {
-    font-size: clamp(0.7rem, 0.65rem + 0.2vw, #{v.$font-size-xs});
+    font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
     letter-spacing: v.$letter-spacing-caps;

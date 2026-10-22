@@ -231,11 +231,11 @@
 
                                     {{-- Quick presets --}}
                                     <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[11px] text-muted font-medium mr-1">Presets:</span>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="WordCamp Rajasthan 2026 is live! Check schedule and sessions.">Live now</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Keynote session starts in 15 minutes in Main Auditorium.">Keynote starting</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Lunch & community networking is now open in Hall B.">Lunch served</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Official WordCamp photo album has been published! Find yourself.">Photos published</button>
+                                        <span class="text-xs text-muted font-medium mr-1">Presets:</span>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="WordCamp Rajasthan 2026 is live! Check schedule and sessions.">Live now</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Keynote session starts in 15 minutes in Main Auditorium.">Keynote starting</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Lunch & community networking is now open in Hall B.">Lunch served</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="en" data-text="Official WordCamp photo album has been published! Find yourself.">Photos published</button>
                                     </div>
                                 </div>
 
@@ -249,11 +249,11 @@
 
                                     {{-- Hindi presets --}}
                                     <div class="mt-2 flex flex-wrap items-center gap-1.5">
-                                        <span class="text-[11px] text-muted font-medium mr-1">सुझाव:</span>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="WordCamp Rajasthan शुरू हो चुका है! आज का शेड्यूल देखें।">शुरू हुआ</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="मुख्य सभागार में कीनोट सत्र 15 मिनट में शुरू हो रहा है।">कीनोट</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="हॉल बी में लंच और नेटवर्किंग शुरू हो चुकी है।">लंच</button>
-                                        <button type="button" class="preset-btn text-[11px] bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="आधिकारिक फ़ोटो एल्बम प्रकाशित हो चुका है! अपनी फ़ोटो देखें।">फ़ोटो</button>
+                                        <span class="text-xs text-muted font-medium mr-1">सुझाव:</span>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="WordCamp Rajasthan शुरू हो चुका है! आज का शेड्यूल देखें।">शुरू हुआ</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="मुख्य सभागार में कीनोट सत्र 15 मिनट में शुरू हो रहा है।">कीनोट</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="हॉल बी में लंच और नेटवर्किंग शुरू हो चुकी है।">लंच</button>
+                                        <button type="button" class="preset-btn text-xs bg-peach/50 hover:bg-peach text-ink font-medium px-2 py-0.5 rounded border border-line cursor-pointer" data-for="hi" data-text="आधिकारिक फ़ोटो एल्बम प्रकाशित हो चुका है! अपनी फ़ोटो देखें।">फ़ोटो</button>
                                     </div>
                                 </div>
                             </div>
@@ -277,7 +277,7 @@
                                         </span>
                                         <div>
                                             <p class="font-semibold text-sm text-ink">Info / General</p>
-                                            <p class="text-[11px] text-muted">Warm terracotta</p>
+                                            <p class="text-xs text-muted">Warm terracotta</p>
                                         </div>
                                     </div>
                                     <p class="mt-2 text-xs text-muted">Schedules, general notices & updates.</p>
@@ -291,7 +291,7 @@
                                         </span>
                                         <div>
                                             <p class="font-semibold text-sm text-ink">Urgent Alert</p>
-                                            <p class="text-[11px] text-muted">Golden amber</p>
+                                            <p class="text-xs text-muted">Golden amber</p>
                                         </div>
                                     </div>
                                     <p class="mt-2 text-xs text-muted">Delays, hall changes & urgent alerts.</p>
@@ -305,7 +305,7 @@
                                         </span>
                                         <div>
                                             <p class="font-semibold text-sm text-ink">Celebration</p>
-                                            <p class="text-[11px] text-muted">Emerald mint</p>
+                                            <p class="text-xs text-muted">Emerald mint</p>
                                         </div>
                                     </div>
                                     <p class="mt-2 text-xs text-muted">Highlights, photo drops & wrap-ups.</p>
@@ -392,7 +392,7 @@
                             <div class="flex items-center justify-between pb-3 border-b border-line mb-3">
                                 <div>
                                     <h3 class="font-bold text-sm text-ink">Live Mobile Preview</h3>
-                                    <p class="text-[11px] text-muted">Preview exactly how attendees see this</p>
+                                    <p class="text-xs text-muted">Preview exactly how attendees see this</p>
                                 </div>
                                 {{-- Language preview toggle --}}
                                 <div class="flex items-center rounded-lg border border-line bg-white p-0.5 text-xs font-semibold">
@@ -430,7 +430,7 @@
                                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"/></svg>
                                         </span>
                                         <p class="font-bold text-ink text-sm">Banner is Hidden</p>
-                                        <p class="text-[11px] text-muted mt-1">Toggle "Show banner" ON to display it across attendee devices.</p>
+                                        <p class="text-xs text-muted mt-1">Toggle "Show banner" ON to display it across attendee devices.</p>
                                     </div>
                                 </div>
 
@@ -465,7 +465,7 @@
 
                                         {{-- CTA Action Button --}}
                                         <div id="preview-action-row" class="flex justify-end pt-1 {{ $initialActionType === '' ? 'hidden' : '' }}">
-                                            <span id="preview-action-btn" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-[11px] font-bold text-primary shadow-2xs">
+                                            <span id="preview-action-btn" class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-bold text-primary shadow-2xs">
                                                 <span id="preview-action-btn-text">View Event →</span>
                                                 <svg id="preview-action-btn-icon" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                                             </span>

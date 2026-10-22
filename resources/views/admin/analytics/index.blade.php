@@ -143,7 +143,7 @@
                             <div class="group relative flex h-full flex-1 flex-col items-center justify-end"
                                  title="{{ $date->format('D j M') }}: {{ $num($d['activeUsers']) }} people, {{ $num($d['newUsers']) }} new, {{ $num($d['sessions']) }} visits, {{ $num($d['screenPageViews']) }} page views">
                                 @if (count($daily) <= 31)
-                                    <span class="mb-1 text-[11px] tabular-nums text-muted">{{ $num($d['activeUsers']) }}</span>
+                                    <span class="mb-1 text-xs tabular-nums text-muted">{{ $num($d['activeUsers']) }}</span>
                                 @endif
                                 <span class="block w-full max-w-[2.5rem] rounded-t bg-maroon group-hover:bg-maroon-dark" style="height: {{ max(1, $d['activeUsers'] / $dailyMax * 100) }}%"></span>
                             </div>
@@ -152,7 +152,7 @@
                     <div class="flex min-w-[32rem] gap-1 pt-1.5">
                         @foreach ($daily as $i => $d)
                             @php $date = \Illuminate\Support\Carbon::createFromFormat('Ymd', $d['date']); @endphp
-                            <span class="flex-1 text-center text-[11px] leading-tight text-muted">
+                            <span class="flex-1 text-center text-xs leading-tight text-muted">
                                 @if (count($daily) <= 14 || $i % (int) ceil(count($daily) / 10) === 0)
                                     {{ $date->format('j M') }}
                                     @if (count($daily) <= 14)
@@ -226,7 +226,7 @@
                             </div>
                         @endfor
                     </div>
-                    <div class="flex min-w-[24rem] gap-0.5 pt-1 text-[11px] text-muted">
+                    <div class="flex min-w-[24rem] gap-0.5 pt-1 text-xs text-muted">
                         @for ($h = 0; $h < 24; $h++)
                             <span class="flex-1 text-center">{{ $h % 3 === 0 ? $h : '' }}</span>
                         @endfor

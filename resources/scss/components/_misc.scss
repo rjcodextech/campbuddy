@@ -122,7 +122,10 @@
 // all five fit a phone with no sideways scroll. My Day keeps the plain row.
 .tab-strip--icons {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    // Equal columns, but never narrower than a label's longest word: on a 320px
+    // phone "Sponsors" takes a few pixels from "Info" instead of spilling out
+    // of its pill.
+    grid-template-columns: repeat(5, minmax(min-content, 1fr));
     gap: v.$space-1;
     margin: 0 0 v.$space-4;
     padding: 2px 0 v.$space-1;
@@ -139,7 +142,8 @@
         min-height: 60px;
         padding: v.$space-2 2px;
         font-size: v.$font-size-xs;
-        line-height: v.$line-height-tight;
+        // Two-line labels ("Free Steals" on a phone) need a little more than tight.
+        line-height: 1.25;
         text-align: center;
     }
 

@@ -111,9 +111,15 @@ Same shell as /guide: no event, no tab bar. Data: App\Support\BrandTokens. --}}
                 <p class="bg-lead">Paper ground, ink text, maroon for the brand. The logo’s wine is its gradient partner; ochre is light — glows, waves, highlights on ink — never text on paper. One fixed palette for every event.</p>
                 <div class="bg-share" role="img" aria-label="Share of a screen">
                     @foreach (B::SHARE as [$name, $pct, $bg, $fg])
-                        <span style="flex: {{ $pct }}; background: {{ $bg }}; color: {{ $fg }}">{{ $name }} {{ $pct }}%</span>
+                        {{-- A slice too thin for its name shows only the colour; the key below names every slice. --}}
+                        <span @class(['bg-share__thin' => $pct < 15]) style="flex: {{ $pct }}; background: {{ $bg }}; color: {{ $fg }}">{{ $name }} {{ $pct }}%</span>
                     @endforeach
                 </div>
+                <ul class="bg-share-key">
+                    @foreach (B::SHARE as [$name, $pct, $bg])
+                        <li><span style="background: {{ $bg }}"></span>{{ $name }} {{ $pct }}%</li>
+                    @endforeach
+                </ul>
                 @foreach (B::COLOURS as $group => $swatches)
                     <h3 class="bg-h3">{{ $group }}</h3>
                     <div class="bg-grid bg-grid--4">

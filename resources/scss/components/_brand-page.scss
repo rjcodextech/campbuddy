@@ -5,6 +5,11 @@
 // guidelines drawn with the live tokens. Page-only classes, all `bg-`.
 
 .bg-page {
+    // A centred flex item (auto margins) is as wide as its widest content unless
+    // told otherwise: without this a 2-column grid made the page 446px on a
+    // 360px phone and the frame cut the right side off.
+    width: 100%;
+    min-width: 0;
     max-width: 1080px;
     margin: 0 auto;
     padding: 0 v.$space-4 v.$space-16;
@@ -343,6 +348,35 @@
         font-size: v.$font-size-xs;
         font-weight: v.$font-weight-bold;
         white-space: nowrap;
+    }
+}
+
+// A slice too thin for its label keeps only its colour; .bg-share-key names them all.
+.bg-share .bg-share__thin {
+    color: transparent !important;
+}
+
+.bg-share-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2 v.$space-4;
+    margin: v.$space-2 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: v.$font-size-xs;
+    color: var(--muted);
+
+    li {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    span {
+        width: 12px;
+        height: 12px;
+        border: 1px solid var(--line);
+        border-radius: 3px;
     }
 }
 
@@ -706,7 +740,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 11px;
+        font-size: 12px;
         color: var(--muted);
     }
 }
@@ -800,7 +834,7 @@
     aspect-ratio: 9 / 16;
     border-radius: v.$radius-card;
     background: rgba(179, 38, 30, 0.12);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: v.$font-weight-bold;
     color: var(--danger);
 }
@@ -853,6 +887,7 @@
     font-size: v.$font-size-sm;
 
     small {
+        font-size: v.$font-size-xs;
         color: var(--muted);
     }
 

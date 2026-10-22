@@ -123,15 +123,8 @@
 
                     <div class="card-grid" data-picker-list>
                         @foreach ($events as $event)
-                            @php
-                                $dateLabel = null;
-                                if ($event->starts_on) {
-                                    $dateLabel = $event->starts_on->format('j M Y');
-                                    if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) {
-                                        $dateLabel .= ' – ' . $event->ends_on->format('j M Y');
-                                    }
-                                }
-                            @endphp
+                            {{-- "21–22 Nov 2026": the short form fits a phone-width card on one line. --}}
+                            @php($dateLabel = $event->starts_on ? \App\Support\SocialKit::dates($event) : null)
 
                             @php($isCompleted = isset($completed[$event->id]))
                             {{-- A finished WordCamp: the card (still opens the event) plus its own

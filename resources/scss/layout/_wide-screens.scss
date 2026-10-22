@@ -103,6 +103,8 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 
         &--active {
             background: var(--peach);
+            // Deeper maroon on peach for AA contrast (brand maroon is 4.35:1 there).
+            color: var(--brand-accent);
         }
 
         &:focus-visible {

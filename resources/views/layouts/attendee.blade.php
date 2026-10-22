@@ -56,7 +56,14 @@
     Playfair Display + JetBrains Mono are used nowhere except Camp Card's badge design
     (components/_camp-card.scss, the guideline's §4 exception) — loaded here in the shared
     attendee layout since Camp Card is reachable from every screen via the bottom nav. --}}
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    {{-- Render-blocking only on the Camp Card page (its badge measures text in these fonts);
+    everywhere else it loads without holding up the first paint. --}}
+    @if (request()->routeIs('event.camp-card'))
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    @else
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+        <noscript><link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+    @endif
 
     @include('attendee.partials.analytics', ['eventSlug' => $event->slug])
 

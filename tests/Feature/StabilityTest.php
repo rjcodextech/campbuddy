@@ -79,7 +79,7 @@ class StabilityTest extends TestCase
         // The dashboard doesn't repeat it: one line that points there.
         $this->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('need attention')
+            ->assertSee('1 problem needs attention')
             ->assertSee('View errors')
             ->assertDontSee('The scheduler has never run');
 

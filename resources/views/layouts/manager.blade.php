@@ -28,7 +28,7 @@
                         <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
                         <span class="min-w-0 leading-tight">
                             <span class="block truncate text-sm font-semibold">{{ config('app.name') }}</span>
-                            <span class="block text-[11px] font-medium uppercase tracking-[0.15em] text-white/50">Event manager</span>
+                            <span class="block text-xs font-medium uppercase tracking-[0.15em] text-white/50">Event manager</span>
                         </span>
                     </a>
 

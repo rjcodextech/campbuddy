@@ -49,6 +49,18 @@
     transition: all 0.2s ease;
     white-space: nowrap;
 
+    // Small phones: both tabs fit (at 320–389px they were a few px too wide and the second was cut).
+    @media (max-width: 389px) {
+        padding: 8px 12px;
+    }
+
+    // 320px: the words alone, no icons, so both tabs stay on screen.
+    @media (max-width: 359px) {
+        svg {
+            display: none;
+        }
+    }
+
     svg {
         width: 16px;
         height: 16px;
@@ -231,7 +243,7 @@
 .legal-box__badge {
     background: var(--brand-primary);
     color: #ffffff;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 9999px;
@@ -399,19 +411,54 @@
     }
 }
 
-// Mobile responsive table cards
+// Mobile responsive table cards — also the tables an admin writes in the
+// legal editor (.legal-custom-content), which carry the same data-label cells.
 @media (max-width: 680px) {
     .legal-table,
     .legal-table thead,
     .legal-table tbody,
     .legal-table tr,
-    .legal-table td {
+    .legal-table td,
+    .legal-custom-content table,
+    .legal-custom-content thead,
+    .legal-custom-content tbody,
+    .legal-custom-content tr,
+    .legal-custom-content td {
         display: block;
         width: 100%;
     }
 
-    .legal-table thead {
+    .legal-table thead,
+    .legal-custom-content thead {
         display: none;
+    }
+
+    .legal-custom-content tr {
+        border-bottom: 2px solid var(--line);
+        padding: 14px;
+        background: #ffffff;
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    .legal-custom-content td {
+        padding: 6px 0;
+        border: none;
+        // A long address or link breaks rather than pushing the card past the screen.
+        overflow-wrap: anywhere;
+
+        &[data-label]::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--brand-primary);
+            margin-bottom: 2px;
+        }
     }
 
     .legal-table tr {
@@ -431,7 +478,7 @@
         &[data-label]::before {
             content: attr(data-label);
             display: block;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;

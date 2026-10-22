@@ -19,7 +19,7 @@
                 <input type="checkbox" name="roles[]" value="{{ $role }}" class="cb-check" @checked(in_array($role, $current, true))>
                 <span>{{ $label }}</span>
                 @if (in_array($role, $auto, true))
-                    <span class="text-[11px] text-muted">auto</span>
+                    <span class="text-xs text-muted">auto</span>
                 @endif
             </label>
         @endforeach

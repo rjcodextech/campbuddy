@@ -84,3 +84,25 @@ motif and motion, voice, icons and buttons (hover them), social posts, reels (sa
 - **Lockup** `brandLockup()` (`social-kit.js`): CampBuddy × WPSimplified for every post, people card and reel.
 - **Event Details page** (`admin/events/edit.blade.php`): tabs Basics / Event info / Data & refresh / Branding
   (Alpine; kept per event in `sessionStorage`, `#basics|info|data|branding`, a form with errors opens its tab).
+
+## Readability rules (23 Oct 2026, full visual QA)
+
+Checked by `npm run test:text` (web, 7 widths), `tools/audit-social.mjs`, `tools/audit-reels.mjs` and emulator
+screenshots (411 dp, 360 dp, 1.3× system text) — see spec/15 §15.6.
+
+- **Smallest type**: web 12 px for any label (admin `text-[11px]` → `text-xs`), the attendee tab bar 11 px (one
+  line from 320 px phones; columns follow the label, `flex: 1 1 0`); native 11 sp for tab labels and badges.
+  Posts and people cards 24 px, reels 34 px (step pill and kicker included).
+- **Two columns → one when cramped**: My Day session rows put the time above the title under 480 px (web) /
+  480 dp (native); the Explore roster stacks + Meet under the name under 360 px; Home/Memories hero logo 76 px
+  under 420 px; the deal form's field table becomes one block per field below `md`; tables an admin writes on
+  the legal pages stack like `.legal-table` under 680 px.
+- **Never cut a word**: native tab bars and Explore tiles use `FitTabsRow` (a tab keeps the width its label —
+  or its longest word — needs; very large system text wraps and the bar grows); Camp Card's Share / Download
+  shrink a step instead of breaking; banner kicker no longer squeezed by a second weighted spacer.
+- **Dates**: one short range everywhere an event is named in a card ("21–22 Nov 2026", `SocialKit::dates`,
+  native `heroDates`).
+- **Social**: QR band footer 46 px off the edge and drops hashtag, then dates, before shrinking; tile names take
+  two lines rather than going under 24 px; spotlight people card role + talk on up to two lines (band grows).
+- **Reels**: frame 0 already shows the event logo + lockup (no fade-in); a tinted highlight on the main colour
+  only when it reaches 3:1, else white.

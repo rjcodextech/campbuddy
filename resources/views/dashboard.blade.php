@@ -17,7 +17,7 @@
             <x-icon :name="$errorSummary['critical'] > 0 ? 'exclamation-circle' : 'exclamation-triangle'"
                     class="h-5 w-5 shrink-0 motion-safe:animate-pulse {{ $errorSummary['critical'] > 0 ? 'text-danger' : 'text-gold' }}" />
             <span class="min-w-0 flex-1">
-                <span class="font-semibold">{{ $errorSummary['total'] }} {{ \Illuminate\Support\Str::plural('problem', $errorSummary['total']) }} need attention</span>
+                <span class="font-semibold">{{ $errorSummary['total'] }} {{ \Illuminate\Support\Str::plural('problem', $errorSummary['total']) }} {{ $errorSummary['total'] === 1 ? 'needs' : 'need' }} attention</span>
                 <span class="text-muted">
                     — {{ $errorSummary['system'] }} system {{ \Illuminate\Support\Str::plural('check', $errorSummary['system']) }}@if ($errorSummary['critical'] > 0) ({{ $errorSummary['critical'] }} critical)@endif,
                     {{ $errorSummary['fetch'] }} {{ \Illuminate\Support\Str::plural('fetch problem', $errorSummary['fetch']) }} in the last 7 days
@@ -85,7 +85,8 @@
                     <div class="relative mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
                         <span class="flex items-center gap-4 text-sm text-white/80">
                             <span class="inline-flex items-center gap-1.5"><x-icon name="users" class="h-4 w-4" /> {{ number_format($next->roster_count) }} on the roster</span>
-                            <x-event-status :status="$next->status" />
+                            {{-- Light on the dark card (the paper-tinted pill was 2.8:1 here). --}}
+                            <x-event-status :status="$next->status" class="!bg-white/15 !text-white !ring-white/30" />
                         </span>
                         <span class="flex flex-wrap gap-2">
                             <a href="{{ route('event.home', $next) }}" target="_blank" rel="noopener"
@@ -98,7 +99,7 @@
                 </div>
 
                 @if ($nextEvents->count() > 1)
-                    <ul class="mt-3 grid gap-3 sm:grid-cols-3">
+                    <ul class="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 2xl:grid-cols-3">
                         @foreach ($nextEvents->skip(1) as $event)
                             @php([$big, $small] = $countdown($event))
                             <li>
@@ -106,10 +107,10 @@
                                    class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-sm transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
                                     <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
                                         <span class="text-base font-bold tabular-nums leading-none">{{ $big }}</span>
-                                        <span class="text-[9px] font-semibold uppercase leading-tight">{{ $big === 'Live' ? 'now' : 'days' }}</span>
+                                        <span class="text-xs font-semibold uppercase leading-tight">{{ $big === 'Live' ? 'now' : 'days' }}</span>
                                     </span>
                                     <span class="min-w-0">
-                                        <span class="block truncate text-sm font-medium text-ink">{{ $event->display_name }}</span>
+                                        <span class="block break-words text-sm font-medium leading-snug text-ink">{{ $event->display_name }}</span>
                                         <span class="block text-xs text-muted">{{ $dates($event) }}</span>
                                     </span>
                                 </a>
@@ -131,7 +132,7 @@
             <h2 id="needs-approval" class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
                 Needs approval
                 @if ($draftCount > 0)
-                    <span class="rounded-full bg-maroon px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white">{{ $draftCount }}</span>
+                    <span class="rounded-full bg-maroon px-2 py-0.5 text-xs font-semibold tabular-nums text-white">{{ $draftCount }}</span>
                 @endif
             </h2>
 
@@ -140,7 +141,7 @@
                     <a href="{{ route('admin.events.edit', $event) }}"
                        class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
                         <span class="min-w-0">
-                            <span class="block truncate font-medium">{{ $event->display_name }}</span>
+                            <span class="block break-words font-medium leading-snug">{{ $event->display_name }}</span>
                             @if ($event->starts_on)
                                 <span class="block text-xs text-muted">{{ $event->starts_on->format('j M Y') }}</span>
                             @endif

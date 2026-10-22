@@ -48,11 +48,11 @@
                             </div>
                             <div class="border-t border-line px-2.5 py-2">
                                 <p class="truncate text-xs font-medium" title="{{ $asset->filename }}">{{ $asset->filename }}</p>
-                                <p class="text-[11px] text-muted">{{ \Illuminate\Support\Number::fileSize((int) $asset->size) }} · {{ $asset->created_at->format('j M Y') }}</p>
+                                <p class="text-xs text-muted">{{ \Illuminate\Support\Number::fileSize((int) $asset->size) }} · {{ $asset->created_at->format('j M Y') }}</p>
 
                                 @if ($uses->isNotEmpty())
                                     <div class="mt-1.5"><x-badge variant="success">In use · {{ $uses->count() }}</x-badge></div>
-                                    <p class="mt-1 text-[11px] leading-snug text-muted" title="{{ $uses->implode(', ') }}">
+                                    <p class="mt-1 text-xs leading-snug text-muted" title="{{ $uses->implode(', ') }}">
                                         {{ $uses->take(3)->implode(', ') }}@if ($uses->count() > 3) +{{ $uses->count() - 3 }} more @endif
                                     </p>
                                 @else

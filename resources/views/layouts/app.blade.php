@@ -57,7 +57,7 @@
                         <img src="/media/icons/icon-192.png" alt="" class="cb-logo-in h-8 w-8 shrink-0 rounded-lg motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
                         <span class="leading-tight">
                             <span class="block text-sm font-semibold text-white">{{ config('app.name') }}</span>
-                            <span class="block text-[11px] font-medium uppercase tracking-[0.15em] text-white/50">Admin</span>
+                            <span class="block text-xs font-medium uppercase tracking-[0.15em] text-white/50">Admin</span>
                         </span>
                     </a>
 

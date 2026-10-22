@@ -70,6 +70,25 @@
     white-space: nowrap;
 }
 
+// Phones: the time sits on its own line above the title instead of in a
+// 64px column beside it, so a long talk title gets the row's full width
+// (~30 characters a line on a 360px phone instead of ~18).
+@media (max-width: 479px) {
+    .schedule-item {
+        grid-template-columns: 1fr auto;
+        row-gap: v.$space-1;
+    }
+
+    .schedule-item__time {
+        grid-column: 1 / -1;
+    }
+
+    // (Row-qualified: the base .schedule-item-detail rule comes later in this file.)
+    .schedule-item-row .schedule-item-detail {
+        padding-left: 0;
+    }
+}
+
 // Plain, quiet text — an underline and regular weight read as "this is
 // tappable" without the row needing to shout. The underline itself
 // brightens on hover/expanded instead of the text turning bold, so the
