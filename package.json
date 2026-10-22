@@ -8,6 +8,7 @@
         "test:js": "node --experimental-test-module-mocks --test \"tests/js/*.test.mjs\"",
         "test:browser": "node tests/browser/offline.e2e.mjs",
         "test:ui": "node tests/browser/ui-audit.mjs",
+        "test:text": "node tests/browser/text-audit.mjs",
         "check:sync": "node tools/check-sync.mjs",
         "brand": "node tools/brand-check.mjs"
     },
