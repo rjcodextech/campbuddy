@@ -29,7 +29,7 @@
 // recorded in real time instead (MediaRecorder).
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
-import { drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
+import { contrastRatio, drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
 import { loadBrandFonts } from './brand.js';
 import { zipStore } from './zip-store.js';
 
@@ -1292,7 +1292,8 @@ function v2Ink(reel, kind = reel.ground ?? 'paper') {
     return { ink: pal.ink, quiet: T.mix(pal.ink, bg, 0.3), hl, light: false, bg };
   }
   let hl = T.readableOn([pal.secondary, T.mix(pal.secondary, '#ffffff', 0.45), '#ffffff'], [bg]);
-  if (hl === '#ffffff' && kind === 'bold-b') hl = T.mix(pal.secondary, '#ffffff', 0.55);
+  // A tinted highlight on the main colour only where it still reads as large text (3:1); else white.
+  if (hl === '#ffffff' && kind === 'bold-b' && contrastRatio(T.mix(pal.secondary, '#ffffff', 0.55), bg) >= 3) hl = T.mix(pal.secondary, '#ffffff', 0.55);
   return { ink: '#ffffff', quiet: 'rgba(255,255,255,0.82)', hl, light: true, bg };
 }
 
@@ -1422,9 +1423,9 @@ function v2Effects(ctx, time, reel) {
  * zone, CampBuddy × WPSimplified centred at its foot (CAMPBUDDY-BRAND-GUIDELINES.md §9).
  */
 function v2Brand(ctx, reel, t) {
-  const p = ease(span(t, 0, 0.3));
+  // Already there on frame 0 (no fade-in): the first frame is the reel's default cover and what people see
+  // while it loads, so it must never be empty (spec/25 "First frame is not empty").
   ctx.save();
-  ctx.globalAlpha *= p;
   const shadow = () => {
     ctx.shadowColor = 'rgba(0,0,0,0.18)';
     ctx.shadowBlur = 18;
@@ -1477,7 +1478,8 @@ function v2Header(ctx, reel, t, scene) {
   ctx.globalAlpha *= clamp(p);
   const y = V2_TOP + 6;
   const h = 64;
-  ctx.font = `700 30px ${text}`;
+  // 34px: the smallest text on a reel (brand guideline §8), also in the step pill.
+  ctx.font = `700 34px ${text}`;
   const label = `OF ${steps.length} · ${scene.step}`;
   const lw = Math.min(w - h - 40, ctx.measureText(label).width);
   const pw = h + lw + 30;
@@ -1493,12 +1495,12 @@ function v2Header(ctx, reel, t, scene) {
   ctx.fill();
   ctx.fillStyle = light ? '#ffffff' : pal.primary;
   ctx.textAlign = 'center';
-  ctx.font = `800 30px ${text}`;
-  ctx.fillText(String(index + 1), h / 2, h / 2 + 11);
+  ctx.font = `800 34px ${text}`;
+  ctx.fillText(String(index + 1), h / 2, h / 2 + 12);
   ctx.fillStyle = light ? pal.ink : '#ffffff';
   ctx.textAlign = 'left';
-  ctx.font = `700 30px ${text}`;
-  ctx.fillText(label, h + 6, h / 2 + 11, lw);
+  ctx.font = `700 34px ${text}`;
+  ctx.fillText(label, h + 6, h / 2 + 12, lw);
   ctx.restore();
   return y + h + 54;
 }
@@ -1789,10 +1791,10 @@ function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, b
         const p = ease(span(t, cue(reel, 0), 0.4));
         ctx.save();
         ctx.globalAlpha *= p;
-        ctx.font = `800 32px ${text}`;
+        ctx.font = `800 34px ${text}`;
         const kw = Math.min(SAFE.right - SAFE.left - 50, ctx.measureText(kicker.toUpperCase()).width);
         const kx = center ? W / 2 - (kw + 50) / 2 : SAFE.left;
-        T.waveMark(ctx, kx, y - 11, 34, colors.hl);
+        T.waveMark(ctx, kx, y - 12, 34, colors.hl);
         ctx.fillStyle = colors.hl;
         ctx.textAlign = 'left';
         ctx.fillText(kicker.toUpperCase(), kx + 50, y, SAFE.right - SAFE.left - 50);

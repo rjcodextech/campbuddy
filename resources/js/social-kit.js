@@ -1202,7 +1202,12 @@ function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') 
   ctx.font = `800 ${small}px ${FONT}`;
   ctx.fillStyle = on;
   const tag = (kit.event.hashtags ?? '').split(' ')[2];
-  ctx.fillText(ellipsize(ctx, [kit.event.name, kit.event.dates, tag].filter(Boolean).join('  ·  '), tw), left, bottom - pad);
+  // The footer keeps 46px off the bottom edge; a line too long for the width drops the hashtag, then the dates,
+  // before the font would have to shrink.
+  const foot = [[kit.event.name, kit.event.dates, tag], [kit.event.name, kit.event.dates], [kit.event.name]]
+    .map((parts) => parts.filter(Boolean).join('  ·  '))
+    .find((line) => ctx.measureText(line).width <= tw) ?? kit.event.name;
+  ctx.fillText(ellipsize(ctx, foot, tw), left, bottom - Math.max(pad, 46));
 }
 
 /** The header: the event's logo, and the kicker (and page number) on the right. */
@@ -1510,16 +1515,21 @@ async function paintPicture(ctx, box, content, pal, round) {
         }
       }
       if (list[i] && body.type === 'photos') {
-        // The name on its own face, on a short shade at the bottom of the tile.
-        const nh = Math.min(70, ch * 0.24);
+        // The name on its own face, on a short shade at the bottom of the tile. A name too long for one
+        // line at 24px takes two (and a taller shade) instead of a smaller font.
+        let t = fitText(ctx, list[i].name, cw - 24, Math.min(28, Math.max(24, cw / 12)), 24, 1, 700);
+        if (t.size < 24) t = fitText(ctx, list[i].name, cw - 24, 24, 24, 2, 700);
+        const lineH = t.size * 1.15;
+        const nh = Math.min(Math.max(70, lineH * t.lines.length + 34), ch * 0.5);
+        const font = ctx.font;
         const grad = ctx.createLinearGradient(0, cy + ch - nh, 0, cy + ch);
         grad.addColorStop(0, alpha(pal.ink, 0));
         grad.addColorStop(1, alpha(pal.ink, 0.72));
         ctx.fillStyle = grad;
         ctx.fillRect(cx, cy + ch - nh, cw, nh);
         ctx.fillStyle = pal.paper;
-        const t = fitText(ctx, list[i].name, cw - 24, Math.min(28, Math.max(24, cw / 12)), 24, 1, 700);
-        ctx.fillText(t.lines[0], cx + 12, cy + ch - 12);
+        ctx.font = font;
+        t.lines.forEach((line, k) => ctx.fillText(line, cx + 12, cy + ch - 12 - (t.lines.length - 1 - k) * lineH));
       }
       ctx.restore();
     }
@@ -1892,7 +1902,7 @@ function paintHeadline(ctx, fit, hl, x, y, w, c, family, align = 'left', lineHei
 function daylightMeasure(ctx, content, g, kit, w, top, bottom, picture = false) {
   const marks = headlineMarks(content.headline);
   const m = measureHero(ctx, { ...content, headline: marks.plain }, g, kit, w, top, bottom, picture);
-  const kSize = g.tall ? 32 : (g.square ? 22 : 26);
+  const kSize = g.tall ? 32 : (g.square ? 24 : 26); // never under 24px on a card
   const parts = m.parts.filter((p) => p.kind !== 'bar');
   if (content.kicker) parts.unshift({ kind: 'kicker', size: kSize, gap: g.square ? 16 : 24 });
   const heightOf = (p) => (p.kind === 'kicker' ? p.size : m.heightOf(p));
@@ -1952,7 +1962,7 @@ function paintDaylightHeader(ctx, g, c, pal, logo, page) {
   if (page.total > 1) {
     const text = page.index === 1 ? `${page.index}/${page.total} · SWIPE →` : `${page.index}/${page.total}`;
     const h = g.square ? 48 : 56;
-    pill(ctx, text, g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: c.dark ? alpha(c.white, 0.14) : alpha(pal.primary, 0.1), fg: c.dark ? c.white : c.accent, size: g.square ? 22 : 24, height: h, pad: 22, align: 'right' });
+    pill(ctx, text, g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: c.dark ? alpha(c.white, 0.14) : alpha(pal.primary, 0.1), fg: c.dark ? c.white : c.accent, size: 24, height: h, pad: 22, align: 'right' });
   }
 }
 
@@ -2089,7 +2099,7 @@ function nameAndRole(ctx, person, cx, y, w, size, c) {
   ctx.fillText(person.name, cx, y + s * 0.9);
   let used = s * 1.15;
   if (person.role) {
-    const rs = fitOneLine(ctx, person.role, w, Math.max(18, Math.round(size * 0.72)), 500, FONT, 14);
+    const rs = fitOneLine(ctx, person.role, w, Math.max(24, Math.round(size * 0.72)), 500, FONT, 20);
     ctx.fillStyle = c.muted;
     ctx.fillText(person.role, cx, y + used + rs * 0.95);
     used += rs * 1.3;
@@ -2241,9 +2251,9 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
   // The role chip, top right, in the role's tone.
   if (person.role_labels?.[0]) {
     const h = g.square ? 48 : 56;
-    pill(ctx, person.role_labels[0].toUpperCase(), g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: rc, fg: textOn(rc, pal.ink, c.white), size: g.square ? 22 : 24, height: h, pad: 24, align: 'right' });
+    pill(ctx, person.role_labels[0].toUpperCase(), g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: rc, fg: textOn(rc, pal.ink, c.white), size: 24, height: h, pad: 24, align: 'right' });
   }
-  const kSize = g.tall ? 32 : (g.square ? 22 : 26);
+  const kSize = g.tall ? 32 : (g.square ? 24 : 26); // never under 24px on a card
   const nameSize = g.tall ? 104 : (g.square ? 60 : 80);
   const lineSize = g.tall ? 38 : (g.square ? 26 : 30);
   const lineFit = talk ? fitText(ctx, talk, g.w, lineSize, 22, 2, 500, FONT) : null;
@@ -2483,7 +2493,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   if (design === 'spotlight') {
     // The photo, big, in two tones of the role's colour; a band in that colour
     // with the name; the site's artwork faint across the foot of the photo.
-    const bandH = square ? 150 : (tall ? 270 : 210);
+    // The role and talk under the name: up to two lines, never under 24px; a second line makes the band taller.
+    const small = tall ? 34 : (square ? 24 : 28);
+    const subText = [roles, talk].filter(Boolean).join('  ·  ');
+    const subFit = subText ? fitText(ctx, subText, W - 2 * SAFE, small, 24, 2, 700, FONT) : null;
+    const bandH = (square ? 150 : (tall ? 270 : 210)) + (subFit && subFit.lines.length > 1 ? Math.round(subFit.size * 1.2) : 0);
     const bandTop = g.blockTop - bandH;
     const dark = mix(rc, pal.ink, 0.6);
     const tone = photo ? duotone(photo, dark, mix(pal.paper, rc, 0.08)) : null;
@@ -2507,11 +2521,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.font = `900 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     let y = bandTop + (square ? 28 : 44) + n.size * 0.86;
     ctx.fillText(n.lines[0], SAFE, y);
-    const small = tall ? 34 : (square ? 24 : 28);
-    ctx.font = `700 ${small}px ${FONT}`;
-    ctx.fillStyle = alpha(onRc, 0.88);
-    const sub = [roles, talk].filter(Boolean).join('  ·  ');
-    if (sub) ctx.fillText(ellipsize(ctx, sub, W - 2 * SAFE), SAFE, y + small + (square ? 12 : 20));
+    if (subFit) {
+      ctx.font = `700 ${subFit.size}px ${FONT}`;
+      ctx.fillStyle = alpha(onRc, 0.88);
+      subFit.lines.forEach((line, i) => ctx.fillText(line, SAFE, y + subFit.size + (square ? 12 : 20) + i * subFit.size * 1.2));
+    }
     foot(rc);
     return;
   }
@@ -2637,7 +2651,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     y += square ? 14 : 20;
     const small = tall ? 34 : (square ? 24 : 26);
     const eventLine = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
-    const bottom = ph + blockH - pad;
+    // The event line keeps 46px off the bottom edge, like the QR band's footer.
+    const bottom = Math.min(ph + blockH - pad, H - 46);
     // Who, then why: "Organizer at WordCamp Delhi", then the role's line.
     ctx.font = `800 ${small}px ${FONT}`;
     ctx.fillStyle = alpha(onRc, 0.9);
@@ -2653,8 +2668,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     if (talk && room > small) {
       ctx.fillStyle = onRc;
       const t = fitText(ctx, talk, tw, small + 2, 24, Math.max(1, Math.min(2, Math.floor(room / ((small + 2) * 1.25)))), 600);
-      y += 10;
-      t.lines.forEach((l) => { y += t.size * 1.25; ctx.fillText(l, SAFE, y); });
+      // Only if it reads at 24px or more; a talk too long for the room stays in the caption instead.
+      if (t.size >= 24 && t.lines.length * t.size * 1.25 <= room) {
+        y += 10;
+        t.lines.forEach((l) => { y += t.size * 1.25; ctx.fillText(l, SAFE, y); });
+      }
     }
     ctx.font = `700 ${Math.max(24, small - 4)}px ${FONT}`;
     ctx.fillStyle = alpha(onRc, 0.8);
