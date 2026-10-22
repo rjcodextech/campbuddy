@@ -24,9 +24,13 @@ import { zipStore } from './zip-store.js';
 import { withPngDpi } from './attendee/png-dpi.js';
 import { FONT_DISPLAY, FONT_TEXT, loadBrandFonts } from './brand.js';
 
-const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920] };
+// Instagram portrait, square (Instagram, LinkedIn), story / reel cover, X (16:9) and LinkedIn / blog link (1.91:1).
+const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920], '1600x900': [1600, 900], '1200x627': [1200, 627] };
+// The wide sizes show the square card, whole, on a blurred copy of itself (no design is redrawn sideways).
+const LANDSCAPE = new Set(['1600x900', '1200x627']);
 // Print: six times the pixels (6480 px wide), stamped 600 DPI — 10.8 inches wide, sharp enough for a standee.
-const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 6, dpi: 600 } };
+// HD: twice the platform size (sharp on any phone, still under the networks' upload limits); print: six times, 600 DPI.
+const QUALITY = { social: { scale: 2, dpi: 300 }, print: { scale: 6, dpi: 600 } };
 // The scale being drawn at: artwork is prepared at this many times its card size, so print stays sharp.
 let RES = 1;
 const DEFAULT_FONT = FONT_TEXT;
@@ -258,6 +262,43 @@ export function eventLook(seed) {
 // ---- Drawing helpers ------------------------------------------------------
 
 const images = new Map();
+
+/**
+ * A wide size (X, LinkedIn / blog link): the square card drawn as usual, then set whole in the
+ * middle of the wide frame on a blurred, dimmed copy of itself, with a soft shadow.
+ */
+async function widen(canvas, size, scale, drawSquare) {
+  const [W, H] = SIZES[size];
+  const square = document.createElement('canvas');
+  await drawSquare(square, scale);
+  canvas.width = W * scale;
+  canvas.height = H * scale;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(scale, 0, 0, scale, 0, 0);
+  ctx.save();
+  ctx.filter = 'blur(32px) saturate(1.15)';
+  const cover = W / 1080;
+  ctx.drawImage(square, -40, (H - 1080 * cover) / 2 - 40, W + 80, 1080 * cover + 80);
+  ctx.restore();
+  ctx.fillStyle = 'rgba(20, 16, 16, 0.32)';
+  ctx.fillRect(0, 0, W, H);
+  const s = H * 0.9;
+  const x = (W - s) / 2;
+  const y = (H - s) / 2;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+  ctx.shadowBlur = 44;
+  ctx.shadowOffsetY = 14;
+  roundRect(ctx, x, y, s, s, 26);
+  ctx.fillStyle = '#ffffff';
+  ctx.fill();
+  ctx.restore();
+  ctx.save();
+  roundRect(ctx, x, y, s, s, 26);
+  ctx.clip();
+  ctx.drawImage(square, x, y, s, s);
+  ctx.restore();
+}
 
 /**
  * CampBuddy × WPSimplified, side by side on one transparent canvas: the brand lockup every card
@@ -1278,6 +1319,7 @@ function mosaicPage(H = 1350) {
 
 /** Every card of a post at this size and design (measured with fonts loaded). */
 export function planPost(content, size, styleName, colors) {
+  if (LANDSCAPE.has(size)) size = '1080x1080';
   const [W, H] = SIZES[size];
   const g = grid(W, H);
   const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
@@ -1531,6 +1573,7 @@ function paintWords(ctx, m, x, y, L) {
  * times the pixels).
  */
 export async function drawEventPost(canvas, size, styleName, content, kit, colors, page = { index: 1, total: 1 }, scale = 1) {
+  if (LANDSCAPE.has(size)) return widen(canvas, size, scale, (c, sc) => drawEventPost(c, '1080x1080', styleName, content, kit, colors, page, sc));
   const [W, H] = SIZES[size];
   canvas.width = W * scale;
   canvas.height = H * scale;
@@ -2287,6 +2330,7 @@ function personLines(person) {
 }
 
 export async function drawPersonCard(canvas, size, design, person, kit, colors, scale = 1) {
+  if (LANDSCAPE.has(size)) return widen(canvas, size, scale, (c, sc) => drawPersonCard(c, '1080x1080', design, person, kit, colors, sc));
   const [W, H] = SIZES[size];
   canvas.width = W * scale;
   canvas.height = H * scale;
@@ -2694,7 +2738,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
 
 async function canvasBlob(canvas, quality = 'social') {
   const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
-  return quality === 'print' ? withPngDpi(blob, QUALITY.print.dpi) : blob;
+  return withPngDpi(blob, (QUALITY[quality] ?? QUALITY.social).dpi);
 }
 
 function save(blob, filename) {

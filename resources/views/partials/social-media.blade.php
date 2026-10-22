@@ -266,13 +266,15 @@
                 <div class="ml-auto flex flex-wrap items-center gap-2">
                     <label class="sr-only" for="studio-size">Size</label>
                     <select id="studio-size" class="cb-input w-auto py-1.5 text-sm" data-social-size>
-                        <option value="1080x1350">Portrait 1080 × 1350</option>
-                        <option value="1080x1080">Square 1080 × 1080</option>
-                        <option value="1080x1920">Story 1080 × 1920</option>
+                        <option value="1080x1350">Instagram feed · 1080 × 1350</option>
+                        <option value="1080x1080">Instagram / LinkedIn square · 1080 × 1080</option>
+                        <option value="1080x1920">Story / reel cover · 1080 × 1920</option>
+                        <option value="1600x900">X post · 1600 × 900</option>
+                        <option value="1200x627">LinkedIn / blog link · 1200 × 627</option>
                     </select>
                     <div class="flex gap-1" role="group" aria-label="Quality">
-                        <button type="button" class="cb-btn cb-btn-sm cb-btn-primary" data-social-quality="social" aria-pressed="true" title="1080 px wide">Social</button>
-                        <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="6× size (6480 px wide), 600 DPI">Print</button>
+                        <button type="button" class="cb-btn cb-btn-sm cb-btn-primary" data-social-quality="social" aria-pressed="true" title="Twice the platform size, PNG, 300 DPI: sharp on every phone">HD</button>
+                        <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="6× size, 600 DPI">Print</button>
                     </div>
                     <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-studio-close aria-label="Close the studio">✕ Close</button>
                 </div>

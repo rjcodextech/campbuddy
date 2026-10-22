@@ -2546,7 +2546,8 @@ async function encodeMp4(reel, audio, onProgress) {
     firstTimestampBehavior: 'offset',
   });
   const video = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: (e) => { failure = e; } });
-  video.configure({ codec: 'avc1.640028', width: W, height: H, bitrate: 7_000_000, framerate: FPS });
+  // 1080 × 1920 at 30 fps, 10 Mbps H.264 High: above Instagram's and YouTube Shorts' recommendations for 1080p.
+  video.configure({ codec: 'avc1.640028', width: W, height: H, bitrate: 10_000_000, framerate: FPS });
 
   const frames = Math.round(reel.duration * FPS);
   for (let i = 0; i < frames; i++) {
@@ -2612,7 +2613,7 @@ async function recordRealtime(reel, audio, onProgress) {
     }
   }
   const type = ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'].find((t) => MediaRecorder.isTypeSupported(t));
-  const recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 7_000_000 });
+  const recorder = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 10_000_000 });
   const parts = [];
   recorder.ondataavailable = (e) => parts.push(e.data);
   const done = new Promise((r) => { recorder.onstop = r; });

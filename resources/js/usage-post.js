@@ -87,40 +87,119 @@ function big(n) {
   return Number(n).toLocaleString('en-IN');
 }
 
-/** What every card shares: the light ground, a band of the main colour, the event's logo, the page, the foot. */
+/** The scale the card is being drawn at (shadows don't follow the canvas scale). */
+let RES = SCALE;
+
+/** The colours a template draws with: Classic and Daylight on the light colour, Bold on the main colour. */
+export function usagePalette(c, tpl = 'classic') {
+  if (tpl !== 'bold') return { primary: c.primary, secondary: c.secondary, ink: c.ink, paper: c.paper, onPrimary: textOn(c.primary, c.ink, c.paper) };
+  const ground = c.primary;
+  const text = textOn(ground, c.ink, '#ffffff');
+  const accent = reelTools.readableOn([c.secondary, mix(c.secondary, '#ffffff', 0.45), text], [ground]);
+  return { primary: accent, secondary: mix(c.secondary, '#ffffff', 0.3), ink: text, paper: ground, onPrimary: textOn(accent, c.ink, '#ffffff') };
+}
+
+/** Two white pills at the foot: CampBuddy × WPSimplified, and campbuddy.club. */
+function footPills(ctx, d, assets, y) {
+  const { pal } = d;
+  const h = 84;
+  const pill = (x, w) => {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.14)';
+    ctx.shadowBlur = 24 * RES;
+    ctx.shadowOffsetY = 6 * RES;
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, x, y, w, h, h / 2);
+    ctx.fill();
+    ctx.restore();
+  };
+  const lock = assets.lockup ?? assets.campbuddy;
+  const lh = h * 0.56;
+  const lw = lock ? lock.width * (lh / lock.height) : 220;
+  pill(80, lw + h * 0.8);
+  if (lock) ctx.drawImage(lock, 80 + h * 0.4, y + (h - lh) / 2, lw, lh);
+  ctx.font = `700 30px ${FONT}`;
+  const url = 'campbuddy.club';
+  const uw = ctx.measureText(url).width + h * 0.8;
+  pill(W - 80 - uw, uw);
+  ctx.fillStyle = '#231f20';
+  ctx.textAlign = 'center';
+  ctx.fillText(url, W - 80 - uw / 2, y + h / 2 + 11);
+  ctx.textAlign = 'left';
+}
+
+/** What every card shares, in the chosen template: the ground, the event's logo and title, the page, the foot. */
 function frame(ctx, d, assets, page, total, title) {
   const { pal } = d;
-  ctx.fillStyle = pal.paper;
-  ctx.fillRect(0, 0, W, H);
-  // Soft circles in the event's colours, the same on every card.
-  [[W - 120, 140, 260, pal.secondary, 0.12], [80, H - 260, 220, pal.primary, 0.08], [W - 60, H - 520, 140, pal.primary, 0.06]].forEach(([x, y, r, c, a]) => {
-    ctx.globalAlpha = a;
-    ctx.fillStyle = c;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-  });
-  ctx.globalAlpha = 1;
+  const tpl = d.tpl ?? 'classic';
+  if (tpl === 'classic') {
+    ctx.fillStyle = pal.paper;
+    ctx.fillRect(0, 0, W, H);
+    // Soft circles in the event's colours, the same on every card.
+    [[W - 120, 140, 260, pal.secondary, 0.12], [80, H - 260, 220, pal.primary, 0.08], [W - 60, H - 520, 140, pal.primary, 0.06]].forEach(([x, y, r, c, a]) => {
+      ctx.globalAlpha = a;
+      ctx.fillStyle = c;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+  } else {
+    // Daylight: paper to white, two glows, a dot grid, waves above the foot. Bold: the main colour, deepening.
+    const g = ctx.createLinearGradient(0, 0, tpl === 'bold' ? W : 0, H);
+    g.addColorStop(0, tpl === 'bold' ? pal.paper : mix(pal.paper, '#ffffff', 0.2));
+    g.addColorStop(1, tpl === 'bold' ? mix(pal.paper, '#000000', 0.35) : mix(pal.paper, '#ffffff', 0.85));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    const glow = (x, y, r, color, a) => {
+      const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+      rg.addColorStop(0, reelTools.alpha(color, a));
+      rg.addColorStop(1, reelTools.alpha(color, 0));
+      ctx.fillStyle = rg;
+      ctx.fillRect(0, 0, W, H);
+    };
+    glow(W * 0.94, H * 0.02, W * 0.75, pal.secondary, tpl === 'bold' ? 0.3 : 0.22);
+    glow(W * 0.02, H * 0.75, W * 0.6, pal.primary, 0.1);
+    ctx.fillStyle = tpl === 'bold' ? 'rgba(255,255,255,0.08)' : reelTools.alpha(pal.primary, 0.12);
+    for (let y = 13; y < H - 170; y += 26) {
+      for (let x = tpl === 'bold' ? 13 : W / 2 + 13; x < W; x += 26) ctx.fillRect(x - 1, y - 1, 2, 2);
+    }
+    ctx.save();
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      const y0 = H - 190 - i * 22;
+      ctx.strokeStyle = reelTools.alpha(pal.secondary, 0.3 * (1 - i * 0.22));
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 10) {
+        const y = y0 + Math.sin((x / (W / 1.4)) * Math.PI * 2 + i * 0.9) * (12 + i * 3);
+        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // Header: the event's logo on its tile, the title, the page.
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.12)';
-  ctx.shadowBlur = 24 * SCALE; // shadows don't follow the canvas scale
+  ctx.shadowBlur = 24 * RES;
   ctx.fillStyle = '#ffffff';
   roundRect(ctx, 80, 72, 150, 150, 28);
   ctx.fill();
   ctx.restore();
   if (assets.logo) contain(ctx, assets.logo, 90, 90, 114, 114);
   else {
-    ctx.fillStyle = pal.primary;
+    ctx.fillStyle = tpl === 'bold' ? '#231f20' : pal.primary;
     ctx.font = `900 56px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.fillText(d.event.short.replace(/^WordCamp\s+/i, '').split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase() || 'WC', 147, 168);
     ctx.textAlign = 'left';
   }
+  if (tpl !== 'classic') reelTools.waveMark(ctx, 250, 118, 34, pal.primary);
   ctx.fillStyle = pal.primary;
   ctx.font = `800 30px ${FONT}`;
-  ctx.fillText(title.toUpperCase(), 250, 130, W - 250 - 200);
+  ctx.fillText(title.toUpperCase(), tpl === 'classic' ? 250 : 296, 130, W - 250 - 200);
   ctx.fillStyle = mix(pal.ink, pal.paper, 0.3);
   ctx.font = `600 30px ${FONT}`;
   ctx.fillText(`${d.event.short} · ${d.event.dates}`, 250, 176, W - 250 - 200);
@@ -137,28 +216,31 @@ function frame(ctx, d, assets, page, total, title) {
     ctx.textAlign = 'left';
   }
 
-  // Foot: a band of the main colour with CampBuddy and WPSimplified.
-  const footY = H - 150;
-  ctx.fillStyle = pal.primary;
-  ctx.fillRect(0, footY, W, 150);
-  ctx.fillStyle = '#ffffff';
-  roundRect(ctx, 80, footY + 34, 300, 82, 18);
-  ctx.fill();
-  if (assets.campbuddy) contain(ctx, assets.campbuddy, 86, footY + 44, 272, 62);
-  ctx.fillStyle = pal.onPrimary;
-  ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('campbuddy.club', 400, footY + 70, W - 400 - 80);
-  ctx.globalAlpha = 0.85;
-  ctx.font = `600 24px ${FONT}`;
-  ctx.fillText('Made with ♥ by WPSimplified', 400, footY + 108, W - 400 - 80);
-  ctx.globalAlpha = 1;
+  if (tpl === 'classic') {
+    // Foot: a band of the main colour with CampBuddy × WPSimplified and campbuddy.club.
+    const footY = H - 150;
+    ctx.fillStyle = pal.primary;
+    ctx.fillRect(0, footY, W, 150);
+    const lock = assets.lockup ?? assets.campbuddy;
+    const lh = 58;
+    const lw = lock ? Math.min(420, lock.width * (lh / lock.height)) : 0;
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, 80, footY + 34, lw + 48, 82, 18);
+    ctx.fill();
+    if (lock) contain(ctx, lock, 104, footY + 46, lw, lh);
+    ctx.fillStyle = pal.onPrimary;
+    ctx.font = `700 32px ${FONT}`;
+    ctx.fillText('campbuddy.club', 80 + lw + 80, footY + 86, W - (80 + lw + 80) - 80);
+  } else {
+    footPills(ctx, d, assets, H - 130);
+  }
 }
 
 function cover(ctx, d) {
   const { pal } = d;
   const users = d.stats.find((s) => s.key === 'users');
   let y = 330;
-  y = lines(ctx, fit(ctx, `CampBuddy at ${d.event.name}`, W - 160, 84, 52, 3, 900), 80, y, pal.ink, 900);
+  y = lines(ctx, fit(ctx, d.headline ?? `CampBuddy at ${d.event.name}`, W - 160, 84, 52, 3, 900), 80, y, pal.ink, 900);
   // The number, huge, in the main colour.
   ctx.fillStyle = pal.primary;
   ctx.font = `900 ${users.value >= 10000 ? 300 : 340}px ${FONT}`;
@@ -170,9 +252,11 @@ function cover(ctx, d) {
     ctx.font = `600 40px ${FONT}`;
     ctx.fillText(`and opened ${big(pages.value)} pages`, 80, y + 64, W - 160);
   }
-  ctx.fillStyle = mix(pal.ink, pal.paper, 0.4);
-  ctx.font = `600 28px ${FONT}`;
-  ctx.fillText(`From 3 days before the WordCamp to 3 days after (${d.range.from} – ${d.range.to})`, 80, H - 200, W - 160);
+  if (d.showRange !== false) {
+    ctx.fillStyle = mix(pal.ink, pal.paper, 0.4);
+    ctx.font = `600 28px ${FONT}`;
+    ctx.fillText(`From 3 days before the WordCamp to 3 days after (${d.range.from} – ${d.range.to})`, 80, H - 172, W - 160);
+  }
 }
 
 function tiles(ctx, d) {
@@ -188,15 +272,16 @@ function tiles(ctx, d) {
     const x = 80 + (i % cols) * (tw + gap);
     const y = top + Math.floor(i / cols) * (th + gap);
     const bg = i % 3 === 0 ? pal.primary : i % 3 === 1 ? pal.secondary : '#ffffff';
-    const fg = bg === '#ffffff' ? pal.ink : textOn(bg, pal.ink, pal.paper);
+    // Words on a tile always read on that tile, whatever the template's ground.
+    const fg = textOn(bg, '#231f20', '#ffffff');
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.10)';
-    ctx.shadowBlur = 24 * SCALE;
+    ctx.shadowBlur = 24 * RES;
     ctx.fillStyle = bg;
     roundRect(ctx, x, y, tw, th, 32);
     ctx.fill();
     ctx.restore();
-    ctx.fillStyle = bg === '#ffffff' ? pal.primary : fg;
+    ctx.fillStyle = bg === '#ffffff' ? reelTools.readableOn([pal.primary, d.colors?.primary ?? '#c33a19', '#231f20'], ['#ffffff']) : fg;
     ctx.font = `900 92px ${FONT}`;
     ctx.fillText(big(t.value), x + 34, y + 106, tw - 68);
     const label = fit(ctx, t.label, tw - 68, 32, 22, 2, 700);
@@ -362,10 +447,74 @@ export function initUsagePost() {
   if (!root) return;
   const status = root.querySelector('[data-usage-status]');
   const result = root.querySelector('[data-usage-result]');
-  const previews = root.querySelector('[data-usage-previews]');
+  const rail = root.querySelector('[data-usage-rail]');
+  const stage = root.querySelector('[data-usage-stage]');
+  const cardsBox = root.querySelector('[data-usage-cards]');
+  const titleEl = root.querySelector('[data-usage-title]');
+  const headlineEl = root.querySelector('[data-usage-headline]');
+  const rangeEl = root.querySelector('[data-usage-range]');
+  const colorEls = [...root.querySelectorAll('[data-usage-color]')];
+  const tplButtons = [...root.querySelectorAll('[data-usage-template]')];
   const captions = [...root.querySelectorAll('[data-usage-caption]')];
-  let made = [];
+  let d = null;
+  let assets = {};
+  let cards = [];
   let slug = '';
+  let current = 0;
+  const titles = {};
+  const off = new Set();
+
+  const included = () => cards.filter(([kind]) => !off.has(kind));
+  const titleOf = (kind, fallback) => (titles[kind] ?? fallback);
+  // The studio's state on the data the cards draw from.
+  const apply = () => {
+    const c = Object.fromEntries(colorEls.map((el) => [el.dataset.usageColor, el.value]));
+    d.tpl = tplButtons.find((b) => b.getAttribute('aria-pressed') === 'true')?.dataset.usageTemplate ?? 'classic';
+    d.pal = usagePalette(c, d.tpl);
+    d.headline = headlineEl.value.trim() || `CampBuddy at ${d.event.name}`;
+    d.showRange = rangeEl.checked;
+  };
+  const paint = (canvas, i, scale) => {
+    const list = included();
+    const [kind, title] = list[i];
+    canvas.width = Math.round(W * scale);
+    canvas.height = Math.round(H * scale);
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    RES = scale;
+    frame(ctx, d, assets, i + 1, list.length, titleOf(kind, title));
+    DRAW[kind](ctx, d);
+  };
+  let soon = 0;
+  const redraw = () => {
+    clearTimeout(soon);
+    soon = setTimeout(() => {
+      if (!d) return;
+      apply();
+      const list = included();
+      current = Math.min(current, list.length - 1);
+      rail.replaceChildren(...list.map(([kind, title], i) => {
+        const li = document.createElement('li');
+        li.className = 'shrink-0';
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = `flex w-36 flex-col items-center gap-1 rounded-lg p-2 text-xs font-semibold ${i === current ? 'bg-maroon/10 text-maroon' : 'text-ink hover:bg-paper-soft'}`;
+        const thumb = document.createElement('canvas');
+        thumb.className = 'h-28 w-auto rounded border border-line';
+        paint(thumb, i, 0.1);
+        b.append(thumb, titleOf(kind, title));
+        b.addEventListener('click', () => { current = i; syncFields(); redraw(); });
+        li.append(b);
+        return li;
+      }));
+      if (list.length) paint(stage, current, 1);
+    }, 120);
+  };
+  const syncFields = () => {
+    const list = included();
+    const [kind, title] = list[current] ?? [];
+    titleEl.value = kind ? titleOf(kind, title) : '';
+  };
 
   root.querySelector('[data-usage-make]')?.addEventListener('click', async (e) => {
     const btn = e.currentTarget;
@@ -380,38 +529,41 @@ export function initUsagePost() {
       if (root.dataset.stream) url.searchParams.set('stream', root.dataset.stream);
       if (root.querySelector('[data-usage-fresh]')?.checked) url.searchParams.set('fresh', '1');
       const res = await fetch(url, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
-      const d = await res.json();
-      if (!d.ready) { status.textContent = d.message ?? 'No numbers for this WordCamp.'; return; }
+      const data = await res.json();
+      if (!data.ready) { status.textContent = data.message ?? 'No numbers for this WordCamp.'; return; }
 
-      const cards = plan(d);
-      if (!cards.length) { status.textContent = `Too few people used CampBuddy at ${d.event.name} in those dates to post about it.`; return; }
-      const c = d.colors;
-      d.pal = { primary: c.primary, secondary: c.secondary, ink: c.ink, paper: c.paper, onPrimary: textOn(c.primary, c.ink, c.paper) };
+      cards = plan(data);
+      if (!cards.length) { status.textContent = `Too few people used CampBuddy at ${data.event.name} in those dates to post about it.`; return; }
+      d = data;
+      colorEls.forEach((el) => { el.value = d.colors[el.dataset.usageColor] ?? '#000000'; });
+      headlineEl.value = `CampBuddy at ${d.event.name}`;
+      off.clear();
+      Object.keys(titles).forEach((k) => delete titles[k]);
+      current = 0;
+      cardsBox.replaceChildren(...cards.map(([kind, title]) => {
+        const label = document.createElement('label');
+        label.className = 'flex items-center gap-2';
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.className = 'cb-check';
+        box.checked = true;
+        // The cover and the thank-you card always stay: they open and close the post.
+        box.disabled = kind === 'cover' || kind === 'thanks';
+        box.addEventListener('change', () => { if (box.checked) off.delete(kind); else off.add(kind); current = 0; syncFields(); redraw(); });
+        label.append(box, ` ${title}`);
+        return label;
+      }));
       await loadBrandFonts();
       await document.fonts?.ready;
-      const [logo, campbuddy] = await Promise.all([load(d.event.logo), load('/media/logo-wordmark.png')]);
-      const assets = { logo, campbuddy };
-
-      made = cards.map(([kind, title], i) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = SIZE.width;
-        canvas.height = SIZE.height;
-        canvas.className = 'shrink-0 rounded-lg border border-line';
-        // The preview: 320 px tall, whatever the canvas size (inline: not left to a class the CSS build may drop).
-        canvas.style.height = '20rem';
-        canvas.style.width = 'auto';
-        const ctx = canvas.getContext('2d');
-        ctx.scale(SCALE, SCALE);
-        frame(ctx, d, assets, i + 1, cards.length, title);
-        DRAW[kind](ctx, d);
-        return { canvas, name: `${slug}-campbuddy-usage-${i + 1}-${kind}.png` };
-      });
-      previews.replaceChildren(...made.map((m) => m.canvas));
+      const [logo, campbuddy, lockup] = await Promise.all([load(d.event.logo), load('/media/logo-wordmark.png'), reelTools.brandLockup()]);
+      assets = { logo, campbuddy, lockup };
       captions.forEach((box) => { box.value = d.captions?.[box.dataset.usageCaption] ?? d.caption; });
       const count = root.querySelector('[data-usage-x-count]');
       if (count) count.textContent = `${d.x_length ?? ''} / 280`;
       result.classList.remove('hidden');
-      status.textContent = `${made.length} ${made.length === 1 ? 'image' : 'images'} for ${d.event.name}, from ${d.range.from} to ${d.range.to}.`;
+      syncFields();
+      redraw();
+      status.textContent = `${cards.length} ${cards.length === 1 ? 'image' : 'images'} for ${d.event.name}, from ${d.range.from} to ${d.range.to}. Change anything on the right.`;
     } catch {
       status.textContent = "Couldn't make the post. Try again.";
     } finally {
@@ -419,18 +571,47 @@ export function initUsagePost() {
     }
   });
 
+  // The studio's edits.
+  tplButtons.forEach((b) => b.addEventListener('click', () => {
+    tplButtons.forEach((o) => {
+      const on = o === b;
+      o.setAttribute('aria-pressed', String(on));
+      o.classList.toggle('cb-btn-primary', on);
+      o.classList.toggle('cb-btn-secondary', !on);
+    });
+    redraw();
+  }));
+  colorEls.forEach((el) => el.addEventListener('input', redraw));
+  root.querySelector('[data-usage-colors-reset]')?.addEventListener('click', () => {
+    if (!d) return;
+    colorEls.forEach((el) => { el.value = d.colors[el.dataset.usageColor] ?? el.value; });
+    redraw();
+  });
+  headlineEl?.addEventListener('input', redraw);
+  rangeEl?.addEventListener('change', redraw);
+  titleEl?.addEventListener('input', () => {
+    const [kind] = included()[current] ?? [];
+    if (kind) titles[kind] = titleEl.value;
+    redraw();
+  });
+
   root.querySelector('[data-usage-download]')?.addEventListener('click', async () => {
-    if (!made.length) return;
+    if (!d) return;
     const btn = root.querySelector('[data-usage-download]');
     btn.disabled = true;
     status.textContent = 'Making the 600 DPI images…';
-    const files = await Promise.all(made.map(async (m) => {
-      const png = await withPngDpi(await new Promise((r) => m.canvas.toBlob(r, 'image/png')), DPI);
-      return { name: m.name, data: new Uint8Array(await png.arrayBuffer()) };
-    }));
+    apply();
+    const list = included();
+    const files = [];
+    for (const [i, [kind]] of list.entries()) {
+      const canvas = document.createElement('canvas');
+      paint(canvas, i, SCALE);
+      const png = await withPngDpi(await new Promise((r) => canvas.toBlob(r, 'image/png')), DPI);
+      files.push({ name: `${slug}-campbuddy-usage-${i + 1}-${kind}.png`, data: new Uint8Array(await png.arrayBuffer()) });
+    }
     captions.forEach((box) => files.push({ name: `caption-${box.dataset.usageCaption}.txt`, data: new TextEncoder().encode(box.value) }));
     btn.disabled = false;
-    status.textContent = `${made.length} ${made.length === 1 ? 'image' : 'images'} (3240 × 4050, 600 DPI) and 3 captions in the ZIP.`;
+    status.textContent = `${list.length} ${list.length === 1 ? 'image' : 'images'} (3240 × 4050, 600 DPI) and 3 captions in the ZIP.`;
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([zipStore(files)], { type: 'application/zip' }));
     a.download = `${slug}-campbuddy-usage.zip`;
