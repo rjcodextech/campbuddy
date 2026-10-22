@@ -28,7 +28,7 @@ internal const val DEFAULT_CONFIG_JSON = """
         "muted": "#6B625E",
         "danger": "#B3261E",
         "success": "#1F7A4D",
-        "radius": 5,
+        "radius": 20,
         "logo": null,
         "splash_text": "WordCamp companion"
     },

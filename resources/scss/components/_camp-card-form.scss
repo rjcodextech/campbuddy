@@ -30,7 +30,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
 
     &:focus-visible {
         @include m.focus-ring;
-        border-radius: v.$radius-sm;
+        border-radius: v.$cc-radius-sm;
     }
 }
 
@@ -83,7 +83,7 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
     min-height: 48px;
     padding: 6px;
     border: 1px solid var(--line);
-    border-radius: v.$radius-sm;
+    border-radius: v.$cc-radius-sm;
     background: #fff;
     cursor: text;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;

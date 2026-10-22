@@ -323,7 +323,7 @@ private fun Modifier.capture(layer: GraphicsLayer): Modifier = this.drawWithCont
 private fun IconButtonOutline(icon: String, text: String, modifier: Modifier, onClick: () -> Unit) {
     val brand = LocalBrand.current
     Row(
-        modifier.heightIn(min = 50.dp).border(1.dp, brand.line, RoundedCornerShape(4.dp)).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp),
+        modifier.heightIn(min = 50.dp).border(1.dp, brand.line, Radii.pill).clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically,
     ) {
         LineIcon(icon, brand.ink, size = 20.dp)
@@ -365,7 +365,7 @@ private fun FormField(
     prefix: String? = null, keyboard: KeyboardType = KeyboardType.Text, error: String? = null,
 ) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.input
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
             buildAnnotatedString { append(label); if (required) withStyle(SpanStyle(color = brand.primary)) { append(" *") } },
@@ -395,7 +395,7 @@ private fun FormField(
 @Composable
 private fun TagInput(tags: List<String>, onChange: (List<String>) -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.input
     var text by remember { mutableStateOf("") }
 
     fun add(raw: String) {
@@ -467,7 +467,7 @@ private fun SharePicker(state: LoadState<List<RosterEntry>>, onPick: (RosterEntr
         matches.forEach { entry ->
             Text(
                 entry.name, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.fillMaxWidth().border(1.dp, brand.line, RoundedCornerShape(4.dp)).clickable(role = Role.Button) { onPick(entry) }.padding(12.dp),
+                modifier = Modifier.fillMaxWidth().border(1.dp, brand.line, Radii.input).clickable(role = Role.Button) { onPick(entry) }.padding(12.dp),
             )
         }
         LinkButton("Cancel", onCancel)

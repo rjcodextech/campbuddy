@@ -52,16 +52,15 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    {{-- Inter is the app-wide UI font. Playfair Display + JetBrains Mono
-    are used nowhere except Camp Card's badge design (components/_camp-card.scss) —
-    loaded here in the shared attendee layout since Camp Card is reachable
-    from every screen via the bottom nav, so there's no single "Camp Card
-    page load" to scope a separate font request to. --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    {{-- Poppins + Baloo 2 (the brand fonts) are self-hosted in resources/css/fonts.css.
+    Playfair Display + JetBrains Mono are used nowhere except Camp Card's badge design
+    (components/_camp-card.scss, the guideline's §4 exception) — loaded here in the shared
+    attendee layout since Camp Card is reachable from every screen via the bottom nav. --}}
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     @include('attendee.partials.analytics', ['eventSlug' => $event->slug])
 
-    @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
+    @vite(['resources/css/fonts.css', 'resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell" data-page-type="{{ $pageType }}" data-event-phase="{{ $eventPhase }}">
     {{-- --with-nav reserves room under the page for the fixed tab bar. --}}

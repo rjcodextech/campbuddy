@@ -52,7 +52,7 @@
     width: clamp(264px, 84vw, 344px);
     padding: v.$space-3;
     border: 1px solid var(--line);
-    border-radius: v.$radius-lg;
+    border-radius: v.$cc-radius-lg;
     background: var(--paper);
     scroll-snap-align: start;
     container-type: inline-size;
@@ -1015,7 +1015,7 @@ $ticket-band: 136; // design px: the wine band's height, where the tear line sit
 .cc-print-note {
     margin: v.$space-4 0 v.$space-5;
     padding: v.$space-3;
-    border-radius: v.$radius-sm;
+    border-radius: v.$cc-radius-sm;
     background: var(--paper);
     border: 1px dashed var(--line);
     font-size: v.$font-size-xs;

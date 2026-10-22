@@ -14,11 +14,16 @@
     --gold: #{v.$color-gold};
     --navy: #{v.$color-navy};
     --teal: #{v.$color-teal};
+    --wine: #{v.$color-wine};
+    --subtle: #{v.$color-subtle};
     --danger: #{v.$color-danger};
     --success: #{v.$color-success};
 
     --brand-primary: #{v.$color-maroon};
     --brand-accent: #{v.$color-maroon-dark};
+    --gradient-brand: linear-gradient(135deg, #{v.$color-maroon}, #{v.$color-wine});
+    --font-display: #{v.$font-display};
+    --shadow-focus: #{v.$shadow-focus};
 
     // The fixed tab bar's full height — the bar itself plus the iPhone
     // home-indicator inset beneath it. One number shared by the bar, the

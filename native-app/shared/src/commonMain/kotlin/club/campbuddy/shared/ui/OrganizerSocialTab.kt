@@ -381,7 +381,7 @@ private fun ArtRow(piece: ArtPiece, inUse: Boolean, busy: Boolean, onKind: ((Str
     val brand = LocalBrand.current
     Column(Modifier.fillMaxWidth().background(brand.background, RoundedCornerShape(8.dp)).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(Modifier.size(64.dp).clip(RoundedCornerShape(6.dp)).background(brand.line)) {
+            Box(Modifier.size(64.dp).clip(Radii.input).background(brand.line)) {
                 RemoteImage(piece.url, Modifier.size(64.dp), contentScale = ContentScale.Crop) {}
             }
             Column(Modifier.weight(1f)) {

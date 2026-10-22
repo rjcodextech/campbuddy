@@ -61,8 +61,13 @@ import kotlin.math.sin
 // the headline with its last word (or its *marked* words) highlighted; people as ringed circles with their
 // whole name on one line; and the same foot on every card — the QR card, then the brand bar.
 
+// Brand fonts (guideline §8): ExtraBold headlines, names and numbers in Baloo 2, every other line in Poppins.
+@Composable
 private fun ts(size: TextUnit, color: Color, weight: FontWeight = FontWeight.Normal, line: TextUnit = size * 1.18f, spacing: TextUnit = 0.sp) =
-    TextStyle(fontSize = size, color = color, fontWeight = weight, lineHeight = line, letterSpacing = spacing)
+    TextStyle(
+        fontFamily = if (weight >= FontWeight.ExtraBold) balooFamily() else poppinsFamily(),
+        fontSize = size, color = color, fontWeight = weight, lineHeight = line, letterSpacing = spacing,
+    )
 
 private fun contrastOf(a: Color, b: Color): Float {
     val x = a.luminance() + 0.05f

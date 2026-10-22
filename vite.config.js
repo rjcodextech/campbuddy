@@ -10,6 +10,8 @@ export default defineConfig({
             // BEM/SCSS + vanilla JS, no framework — so neither design
             // system bleeds into the other.
             input: [
+                // The brand fonts' @font-face rules, shared by both bundles.
+                'resources/css/fonts.css',
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/scss/main.scss',

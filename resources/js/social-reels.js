@@ -30,6 +30,7 @@
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
 import { drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C } from './social-kit.js';
+import { loadBrandFonts } from './brand.js';
 import { zipStore } from './zip-store.js';
 
 const W = 1080;
@@ -44,8 +45,10 @@ const ONE_BY_ONE = 6;
 const GRID = 6;
 // Instagram's own buttons and words cover the top, the foot and a rail on the
 // right (the Reels mock-ups the owner collected): every word, QR and logo stays
-// in this box. Backgrounds, art and particles still fill the whole frame.
-const SAFE = { top: 220, bottom: 1500, left: 80, right: 920 };
+// in this box — the combined Instagram Reels + YouTube Shorts zone of the brand
+// guideline (§9): clear of the top 250, bottom 450, right 180 and left 64 px.
+// Backgrounds, art and particles still fill the whole frame.
+const SAFE = { top: 250, bottom: 1470, left: 64, right: 900 };
 // Centred lines stay clear of the right rail: as wide as the box allows either side of the middle.
 const TEXT_W = 2 * (SAFE.right - W / 2);
 
@@ -860,7 +863,9 @@ function howScene() {
       header(ctx, reel, t, '3 steps');
       leaving(ctx, t, dur);
       const title = fitAll(ctx, 'Ready in a minute', TEXT_W, 112, 60, 2, 800, head);
-      const stepH = 250;
+      // Up to 250 a step, less when the title, the steps and the pill would run past the safe box.
+      const titleH = title.lines.length * title.size * 1.12;
+      const stepH = Math.min(250, Math.floor((SAFE.bottom - CONTENT_Y + 60 - titleH - 90 - 120) / 3));
       const block = title.lines.length * title.size * 1.12 + 90 + 3 * stepH + 120;
       let y = risingLines(ctx, title, CONTENT_Y - 60 + Math.max(0, (SAFE.bottom - CONTENT_Y + 60 - block) / 2), pal.ink, t, 0.1, { family: head });
       const steps = [
@@ -1732,6 +1737,7 @@ export function initSocialReels() {
   const say = (text) => { if (status) status.textContent = text; };
 
   const build = async (item) => {
+    await loadBrandFonts();
     await document.fonts?.ready;
     return prepare(item, C.kit, C.colors, C.style());
   };

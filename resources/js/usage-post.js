@@ -14,6 +14,7 @@
 import { mix, reelTools, textOn } from './social-kit.js';
 import { zipStore } from './zip-store.js';
 import { withPngDpi } from './attendee/png-dpi.js';
+import { FONT_TEXT, loadBrandFonts } from './brand.js';
 
 const W = 1080;
 const H = 1350;
@@ -21,7 +22,7 @@ const H = 1350;
 const SCALE = 3;
 export const DPI = 200 * SCALE;
 export const SIZE = { width: W * SCALE, height: H * SCALE };
-const FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
+const FONT = FONT_TEXT;
 
 function load(url) {
   return new Promise((resolve) => {
@@ -386,6 +387,7 @@ export function initUsagePost() {
       if (!cards.length) { status.textContent = `Too few people used CampBuddy at ${d.event.name} in those dates to post about it.`; return; }
       const c = d.colors;
       d.pal = { primary: c.primary, secondary: c.secondary, ink: c.ink, paper: c.paper, onPrimary: textOn(c.primary, c.ink, c.paper) };
+      await loadBrandFonts();
       await document.fonts?.ready;
       const [logo, campbuddy] = await Promise.all([load(d.event.logo), load('/media/logo-wordmark.png')]);
       const assets = { logo, campbuddy };

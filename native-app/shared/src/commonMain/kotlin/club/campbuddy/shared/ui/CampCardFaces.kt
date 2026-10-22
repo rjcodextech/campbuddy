@@ -44,9 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import campbuddy_native.shared.generated.resources.Res
 import campbuddy_native.shared.generated.resources.app_icon
-import campbuddy_native.shared.generated.resources.inter_bold
-import campbuddy_native.shared.generated.resources.inter_extrabold
-import campbuddy_native.shared.generated.resources.inter_medium
 import campbuddy_native.shared.generated.resources.jetbrains_mono
 import campbuddy_native.shared.generated.resources.pattern_icons
 import campbuddy_native.shared.generated.resources.playfair
@@ -77,7 +74,8 @@ private fun serifItalic(): FontFamily = FontFamily(Font(Res.font.playfair_italic
 private fun mono(): FontFamily = FontFamily(Font(Res.font.jetbrains_mono, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))))
 
 @Composable
-private fun sans(): FontFamily = FontFamily(Font(Res.font.inter_medium, FontWeight.Medium), Font(Res.font.inter_bold, FontWeight.Bold), Font(Res.font.inter_extrabold, FontWeight.ExtraBold))
+// The badge's sans is the brand's Poppins, like the website's Camp Card ($font-sans); 800 draws as Bold.
+private fun sans(): FontFamily = poppinsFamily()
 
 /** One Camp Card face. The card is 3 x 5 and every size is in "design px" out of 300 across, as in the website's own stylesheet. */
 @OptIn(ExperimentalLayoutApi::class)

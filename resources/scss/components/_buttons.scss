@@ -10,8 +10,9 @@
     align-items: center;
     justify-content: center;
     gap: v.$space-2;
-    padding: v.$space-3 v.$space-5;
-    border-radius: v.$radius-sm;
+    min-height: 44px;
+    padding: v.$space-3 v.$space-6;
+    border-radius: v.$radius-full;
     font-weight: v.$font-weight-bold;
     font-size: v.$font-size-base;
     border: 1px solid transparent;

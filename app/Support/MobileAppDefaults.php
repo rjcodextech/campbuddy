@@ -48,7 +48,8 @@ class MobileAppDefaults
                 'muted' => '#6B625E',
                 'danger' => '#B3261E',
                 'success' => '#1F7A4D',
-                'radius' => 5,
+                // Card corners (CAMPBUDDY-BRAND-GUIDELINES.md §5: cards 20).
+                'radius' => 20,
                 'logo' => null,
                 'splash_text' => 'WordCamp companion',
             ],

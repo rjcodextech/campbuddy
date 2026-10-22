@@ -114,11 +114,11 @@ fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = fals
     }
 }
 
-/** The website's button: 50 high, 4px corners, 16 bold (the compact one, [ActionButton], is 44 high and 14). */
+/** The website's button: 50 high, a pill (brand guideline §5), 16 bold (the compact one, [ActionButton], is 44 high and 14). */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.pill
     Box(
         modifier.heightIn(min = 50.dp)
             .background(if (enabled) brand.primary else brand.primary.copy(alpha = 0.4f), shape)
@@ -131,7 +131,7 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
 @Composable
 fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.pill
     Box(
         modifier.heightIn(min = 50.dp)
             .border(1.dp, brand.line, shape)

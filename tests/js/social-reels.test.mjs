@@ -62,8 +62,9 @@ test('every mood keeps a steady beat the scenes can be cut to', () => {
 
 test("words stay inside Instagram's safe zone: clear of its top bar, its caption and the right rail", () => {
   const { SAFE, TEXT_W, badgeY } = _internals;
-  assert.ok(SAFE.top >= 220 && SAFE.bottom <= 1500, 'about 12 % at the top and 20 % at the foot are Instagram’s');
-  assert.ok(SAFE.left >= 80 && SAFE.right <= 920, 'the like / comment / share rail sits right of 920 px');
+  // The combined Instagram Reels + YouTube Shorts zone (CAMPBUDDY-BRAND-GUIDELINES.md §9).
+  assert.ok(SAFE.top >= 250 && SAFE.bottom <= 1470, 'the top 250 px and the foot below 1470 px are the apps’');
+  assert.ok(SAFE.left >= 64 && SAFE.right <= 900, 'the like / comment / share rail sits right of 900 px');
   assert.ok(540 + TEXT_W / 2 <= SAFE.right, 'a centred line ends before the rail');
   for (const below of [600, 1200, 1400, 1700]) {
     const y = badgeY(below);

@@ -13,11 +13,8 @@
         <title>{{ $pageTitle }} | {{ config('campbuddy.name') }} Event manager</title>
 
         <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/fonts.css', 'resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-full bg-paper font-sans text-ink antialiased">
         <a href="#main-content" class="sr-only z-[60] rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow focus:not-sr-only focus:fixed focus:left-3 focus:top-3">

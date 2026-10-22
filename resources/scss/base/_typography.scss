@@ -21,3 +21,47 @@
 .u-font-medium { font-weight: v.$font-weight-medium; }
 .u-font-bold { font-weight: v.$font-weight-bold; }
 .u-font-black { font-weight: v.$font-weight-black; }
+
+// Headlines, card titles and big numbers in Baloo 2 (brand guideline §4).
+// List-row names and body copy stay in Poppins — Baloo is for display, not
+// for dense rows or paragraphs.
+.section-head__title,
+.u-page-title,
+.home-hero__title,
+.landing-hero__title,
+.guide-hero__title,
+.legal-hero__title,
+.guide-section__title,
+.start-here__title,
+.about-steps__title,
+.about-who__title,
+.about-step__num,
+.action-card__title,
+.event-card__title,
+.quest-card__title,
+.empty-state__title,
+.desktop-notice__title,
+.thank-you__title,
+.mission-big,
+.plan-summary__title,
+.plan-summary__count,
+.plan-section-title,
+.deal-card__title,
+.person-card__name,
+.meet-sheet__name,
+.info-head__name,
+.legal-box__title,
+.legal-section-title,
+.legal-contact-title,
+.legal-hindi-title,
+.in-app-browser__title,
+.deal-lead-dialog__title,
+.live-notice__title,
+.delay-banner__title,
+.bring-data__title,
+.move-data__title,
+.free-steal-suggest__title,
+.ob__count {
+    font-family: v.$font-display;
+    letter-spacing: 0;
+}

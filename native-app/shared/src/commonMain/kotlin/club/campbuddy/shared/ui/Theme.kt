@@ -18,11 +18,13 @@ import androidx.compose.ui.unit.sp
 import club.campbuddy.shared.model.AppConfig
 import club.campbuddy.shared.model.ThemeConfig
 import campbuddy_native.shared.generated.resources.Res
-import campbuddy_native.shared.generated.resources.inter_bold
-import campbuddy_native.shared.generated.resources.inter_extrabold
-import campbuddy_native.shared.generated.resources.inter_medium
-import campbuddy_native.shared.generated.resources.inter_regular
-import campbuddy_native.shared.generated.resources.inter_semibold
+import campbuddy_native.shared.generated.resources.baloo2_bold
+import campbuddy_native.shared.generated.resources.baloo2_extrabold
+import campbuddy_native.shared.generated.resources.baloo2_semibold
+import campbuddy_native.shared.generated.resources.poppins_bold
+import campbuddy_native.shared.generated.resources.poppins_medium
+import campbuddy_native.shared.generated.resources.poppins_regular
+import campbuddy_native.shared.generated.resources.poppins_semibold
 
 /** The config and the phone language every screen reads its words from. */
 class Words(val config: AppConfig, val language: String) {
@@ -55,16 +57,35 @@ class Brand(theme: ThemeConfig) {
 }
 
 /**
- * Typography is fixed in the app (design, not content). Inter is the website's UI font, bundled so the app reads the
- * same on every phone (the system font can be anything, even a serif a person picked).
+ * Corners grow with the surface (CAMPBUDDY-BRAND-GUIDELINES.md §5): chips 6 · inputs and small boxes 10 · rows 14 ·
+ * cards 20 (the server theme's `radius`) · sheets 28 · buttons and pills round.
+ */
+object Radii {
+    val chip = RoundedCornerShape(6.dp)
+    val input = RoundedCornerShape(10.dp)
+    val row = RoundedCornerShape(14.dp)
+    val sheet = RoundedCornerShape(28.dp)
+    val pill = RoundedCornerShape(percent = 50)
+}
+
+/**
+ * Typography is fixed in the app (design, not content), the website's brand fonts bundled so the app reads the same
+ * on every phone (the system font can be anything, even a serif a person picked): Poppins for text and UI, Baloo 2
+ * for headings (guideline §4). Both carry Latin, Latin Extended and Devanagari.
  */
 @Composable
-private fun interFamily(): FontFamily = FontFamily(
-    Font(Res.font.inter_regular, FontWeight.Normal),
-    Font(Res.font.inter_medium, FontWeight.Medium),
-    Font(Res.font.inter_semibold, FontWeight.SemiBold),
-    Font(Res.font.inter_bold, FontWeight.Bold),
-    Font(Res.font.inter_extrabold, FontWeight.ExtraBold),
+fun poppinsFamily(): FontFamily = FontFamily(
+    Font(Res.font.poppins_regular, FontWeight.Normal),
+    Font(Res.font.poppins_medium, FontWeight.Medium),
+    Font(Res.font.poppins_semibold, FontWeight.SemiBold),
+    Font(Res.font.poppins_bold, FontWeight.Bold),
+)
+
+@Composable
+fun balooFamily(): FontFamily = FontFamily(
+    Font(Res.font.baloo2_semibold, FontWeight.SemiBold),
+    Font(Res.font.baloo2_bold, FontWeight.Bold),
+    Font(Res.font.baloo2_extrabold, FontWeight.ExtraBold),
 )
 
 private fun style(family: FontFamily, size: Int, weight: FontWeight, line: Int, color: Color) =
@@ -85,12 +106,13 @@ fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
         onSurfaceVariant = brand.muted,
     )
     val shape = RoundedCornerShape(brand.radius.dp)
-    val family = interFamily()
+    val family = poppinsFamily()
+    val display = balooFamily()
     // The website's own sizes (measured on the live site): section/page title 16.8 w800, card title 18 w700,
-    // body 16 / 14, small 13.12, badge 12 w700. Buttons are 16 w700 (compact 14 w700).
+    // body 16 / 14, small 13.12, badge 12 w700. Buttons are 16 w700 (compact 14 w700). Titles in Baloo 2.
     val typography = Typography(
-        headlineSmall = style(family, 17, FontWeight.ExtraBold, 22, brand.ink).copy(fontSize = 16.8.sp, lineHeight = 21.84.sp, letterSpacing = (-0.336).sp),
-        titleLarge = style(family, 18, FontWeight.Bold, 24, brand.ink).copy(letterSpacing = (-0.36).sp),
+        headlineSmall = style(display, 17, FontWeight.ExtraBold, 22, brand.ink).copy(fontSize = 16.8.sp, lineHeight = 21.84.sp),
+        titleLarge = style(display, 18, FontWeight.Bold, 24, brand.ink),
         titleMedium = style(family, 16, FontWeight.Bold, 24, brand.ink),
         bodyLarge = style(family, 16, FontWeight.Normal, 24, brand.ink),
         bodyMedium = style(family, 14, FontWeight.Normal, 21, brand.ink),

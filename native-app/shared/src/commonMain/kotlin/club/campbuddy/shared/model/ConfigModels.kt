@@ -47,7 +47,7 @@ data class ThemeConfig(
     val muted: String = "#6B625E",
     val danger: String = "#B3261E",
     val success: String = "#1F7A4D",
-    val radius: Int = 5,
+    val radius: Int = 20,
     val logo: String? = null,
     @SerialName("splash_text") val splashText: String = "",
 )

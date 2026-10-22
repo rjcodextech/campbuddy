@@ -305,7 +305,7 @@ enum class BtnKind { Primary, Quiet, Danger }
 @Composable
 fun OrgButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, kind: BtnKind = BtnKind.Quiet, icon: String? = null, enabled: Boolean = true) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(6.dp)
+    val shape = Radii.input
     val (bg, fg, border) = when (kind) {
         BtnKind.Primary -> Triple(brand.primary, Color.White, brand.primary)
         BtnKind.Danger -> Triple(brand.danger.copy(alpha = 0.08f), brand.danger, brand.danger.copy(alpha = 0.45f))

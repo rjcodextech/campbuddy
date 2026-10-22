@@ -18,7 +18,7 @@
     @endif
     <span class="min-w-0">
         <span class="block text-sm text-muted">{{ $label }}</span>
-        <span class="mt-0.5 block text-2xl font-semibold tabular-nums tracking-tight text-ink">{{ $value }}</span>
+        <span class="mt-0.5 block font-display text-2xl font-semibold tabular-nums tracking-tight text-ink">{{ $value }}</span>
         @if ($hint)
             <span class="mt-0.5 block text-xs text-muted">{{ $hint }}</span>
         @endif

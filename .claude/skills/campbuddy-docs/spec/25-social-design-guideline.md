@@ -54,8 +54,9 @@ Prototype)`, `Instagram UI Mockup 2.0`, `Instgram_Profile_Story_Reel_UI Design`)
 - **Safe zone**: Instagram's own UI covers the top ~12 % (status bar, "Reels",
   camera), the bottom ~20 % (name, caption, audio, nav) and a right rail of
   ~14 % width (like, comment, share, from 50 % to 92 % height). Keep every word,
-  QR and logo inside **x 80–920, y 220–1500**. Backgrounds, art and particles
-  may fill the whole frame.
+  QR and logo inside **x 64–900, y 250–1470** (22 Oct 2026: the combined
+  Instagram Reels + YouTube Shorts zone of the brand guideline §9; was
+  x 80–920, y 220–1500). Backgrounds, art and particles may fill the whole frame.
 - **Grid crop**: the profile grid shows the middle 3:4 (y 240–1680); the intro
   puts the event's name inside it.
 - **First frame is not empty**: frame 0 already shows the logo and the event's
@@ -129,3 +130,12 @@ From the owner's thumbnail guideline (only its rules; no WPSimplified name, logo
   default for posts and people cards (same bases, dot grid, glows, waves, wave-mark kicker, highlighted
   headline, ringed portraits with whole names via auto-size text, QR card and brand bar); Daylight people
   posts hold 3 / 6 / 8 faces like the website.
+
+## Brand fonts (22 Oct 2026)
+
+Posts, people cards, reels and the usage post follow [spec/26](26-brand-guideline.md): every
+line in Poppins, headlines/names/big numbers in Baloo 2 800 (`resources/js/brand.js` →
+`FONT_TEXT`, `FONT_DISPLAY`, `loadBrandFonts()` before the first draw), unless "Use the site's
+fonts" is ticked and the WordCamp site's heading font loaded. The native Daylight posts
+(`OrganizerSocialDaylight.kt` `ts()`) use the same pair. The reel "Ready in a minute" scene
+shrinks its step height so the steps and the pill stay inside the new safe box.

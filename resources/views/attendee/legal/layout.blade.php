@@ -10,11 +10,8 @@
 
     @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false)])
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    @vite(['resources/scss/main.scss', 'resources/js/attendee/app.js'])
+    @vite(['resources/css/fonts.css', 'resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell" data-page-type="legal">
     <div class="app-frame">

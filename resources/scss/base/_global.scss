@@ -34,11 +34,14 @@ textarea:focus-visible,
     @include m.focus-ring;
 }
 
+// Headings in Baloo 2 (brand guideline §4); its tall ascenders need a
+// tighter line height than Poppins body copy.
 h1,
 h2,
 h3 {
+    font-family: v.$font-display;
     font-weight: 800;
-    line-height: v.$line-height-heading;
+    line-height: v.$line-height-tight;
     color: var(--ink);
 }
 
@@ -64,8 +67,8 @@ dialog {
     overflow-y: auto;
     overscroll-behavior: contain;
     border: 1px solid var(--line);
-    border-radius: v.$radius-lg;
-    padding: v.$space-5;
+    border-radius: v.$radius-sheet;
+    padding: v.$space-6;
     background: var(--paper);
     color: var(--ink);
     box-shadow: v.$shadow-raised;

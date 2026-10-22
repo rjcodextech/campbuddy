@@ -51,6 +51,7 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 24 | [spec/24-mobile-app.md](spec/24-mobile-app.md) | The Android / iOS app (Capacitor shell), native reminders, FCM push, report and block, organizers in the app |
 | 25 | [spec/25-social-design-guideline.md](spec/25-social-design-guideline.md) | Design rules for social posts and reels, measured from 11 Figma template files (margins, type scale, headline position, Instagram safe zone), and how site artwork is read |
 | 23 | [spec/23-data-retention.md](spec/23-data-retention.md) | The "nothing of an attendee's disappears while the event is on" rule: the event's real last day, retention window, what uses it |
+| 26 | [spec/26-brand-guideline.md](spec/26-brand-guideline.md) | CampBuddy's brand guideline (colours, Baloo 2 + Poppins, radius scale, voice, social/reels rules) — where each token lives on web, admin, native and canvas, and `npm run brand` |
 
 ### §3 quick lookup (functional requirements, split by feature)
 

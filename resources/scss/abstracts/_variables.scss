@@ -1,7 +1,7 @@
-// CampBuddy's own brand tokens — reused by tailwind.config.js's admin
-// theme so the admin panel and attendee app read as the same product
-// even though their component systems (Tailwind vs. hand-written
-// BEM/SCSS) are deliberately separate.
+// CampBuddy's own brand tokens — the single source of truth named in
+// CAMPBUDDY-BRAND-GUIDELINES.md §0. Mirrored (must stay equal) in
+// tailwind.config.js (admin/manager), resources/js/brand.js (social posts,
+// reels) and the native app's Theme.kt; `npm run brand` checks the mirrors.
 
 // --- Colors (compile-time — mirrored as CSS custom properties in
 // base/_root.scss so JS-driven markup can read them via var(...)) ---
@@ -16,7 +16,12 @@ $color-maroon: #c33a19;
 $color-maroon-dark: #a12f14;
 $color-gold: #e39d1c;
 $color-navy: #0d2343;
-$color-teal: #049395;
+// The logo's wine — the brand gradient's partner (maroon → wine, 135°).
+$color-wine: #721313;
+// Darkened from V1's #049395 (3.6:1) so teal can be text on paper (4.96:1).
+$color-teal: #047a7c;
+// Meta and captions (4.6:1 on paper); body copy stays $color-muted.
+$color-subtle: #7a706b;
 
 $color-danger: #b3261e;
 $color-success: #1f7a4d;
@@ -30,9 +35,16 @@ $cc-charcoal: #1e1e1e;
 $cc-dark-wine: #721313;
 $cc-antique-white: #fbecd8;
 $cc-ochre: #d77b06;
+// Camp Card keeps its own sharp badge corners (guideline §4 exception) —
+// it does not follow the app's rounder radius scale.
+$cc-radius-sm: 4px;
+$cc-radius-lg: 5px;
 
 // --- Type ---
-$font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+// Poppins for body/UI, Baloo 2 for headings and numbers (brand guideline
+// §4), both self-hosted from resources/fonts (base/_fonts.scss).
+$font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+$font-display: 'Baloo 2', 'Poppins', system-ui, sans-serif;
 
 // Also Camp Card-scoped — a serif for its display name/heading accents
 // and a monospace for handles/codes, so the badge reads as a distinct
@@ -85,20 +97,26 @@ $space-6: 24px;
 $space-8: 32px;
 
 // --- Radii & shadows ---
-// Capped at 5px max on every rectangular surface (cards, buttons,
-// inputs, chips-as-rectangles) — a deliberately sharper, more minimal
-// look than the previous 8/12/18px scale. $radius-full is a different
-// thing entirely (true pills/circles via 999px or 50%, not "more
-// rounding of a rectangle") and stays as-is — capping it at 5px would
-// turn round avatars/badges into rounded squares, which isn't what this
-// rule is for.
-$radius-sm: 4px;
-$radius-md: 5px;
-$radius-lg: 5px;
+// Radius grows with the surface (brand guideline §5): chips 6 · inputs 10 ·
+// rows 14 · cards 20 · sheets 28 · stages 40 · buttons and pills round.
+$radius-chip: 6px;
+$radius-input: 10px;
+$radius-row: 14px;
+$radius-card: 20px;
+$radius-sheet: 28px;
+$radius-stage: 40px;
 $radius-full: 999px;
+
+// The older three steps, kept as aliases so every existing caller lands on
+// the matching surface size: sm = small boxes and fields, md = rows and
+// tiles, lg = cards and panels.
+$radius-sm: $radius-input;
+$radius-md: $radius-row;
+$radius-lg: $radius-card;
 
 $shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 32, 0.18);
 $shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
+$shadow-focus: 0 0 0 3px rgba(195, 58, 25, 0.32);
 
 // --- Layout ---
 // The attendee app is full width at every viewport size (see

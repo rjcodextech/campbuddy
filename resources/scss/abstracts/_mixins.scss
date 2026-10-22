@@ -18,9 +18,12 @@
     border: 0;
 }
 
+// A solid maroon outline (3:1 on paper) with the brand's soft 32% halo
+// around it (brand guideline §7).
 @mixin focus-ring {
     outline: 2px solid var(--brand-primary);
     outline-offset: 2px;
+    box-shadow: v.$shadow-focus;
 }
 
 // The tap/press micro-interaction shared by every interactive control
@@ -78,7 +81,7 @@
 @mixin card-surface {
     background: var(--paper);
     border: 1px solid var(--line);
-    border-radius: v.$radius-md;
+    border-radius: v.$radius-card;
     box-shadow: v.$shadow-card;
 }
 

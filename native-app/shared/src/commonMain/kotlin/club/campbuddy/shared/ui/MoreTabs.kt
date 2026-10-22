@@ -229,11 +229,11 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
     }
 }
 
-/** The website's compact button: 44 high, 4px corners, 14 bold; filled brand colour, or an outline once the thing is done. */
+/** The website's compact button: 44 high, a pill, 14 bold; filled brand colour, or an outline once the thing is done. */
 @Composable
 fun ActionButton(text: String, filled: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.pill
     Box(
         Modifier.heightIn(min = 44.dp)
             .background(if (filled) brand.primary else androidx.compose.ui.graphics.Color.Transparent, shape)
@@ -425,7 +425,7 @@ fun ContributeTab(slug: String) {
                                             Row(
                                                 modifier = Modifier
                                                     .background(Color.White)
-                                                    .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                                    .border(1.dp, brand.line, Radii.input)
                                                     .padding(horizontal = 6.dp, vertical = 2.dp),
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                                                 verticalAlignment = Alignment.CenterVertically
@@ -538,8 +538,8 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                         )
                         Box(
                             Modifier
-                                .background(Color(0xFFFFF9E6), RoundedCornerShape(4.dp))
-                                .border(1.dp, Color(0xFFD4A017), RoundedCornerShape(4.dp))
+                                .background(Color(0xFFFFF9E6), Radii.input)
+                                .border(1.dp, Color(0xFFD4A017), Radii.input)
                                 .padding(horizontal = 5.dp, vertical = 1.dp)
                         ) {
                             Text(
@@ -585,9 +585,9 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                     lead.url?.takeIf { it.isNotBlank() }?.let { profileUrl ->
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(Radii.input)
                                 .background(brand.surface)
-                                .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                .border(1.dp, brand.line, Radii.input)
                                 .clickable { runCatching { uriHandler.openUri(profileUrl) } }
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
@@ -606,9 +606,9 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                         }
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(Radii.input)
                                 .background(brand.surface)
-                                .border(1.dp, brand.line, RoundedCornerShape(4.dp))
+                                .border(1.dp, brand.line, Radii.input)
                                 .clickable { runCatching { uriHandler.openUri(link.url) } }
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
@@ -665,8 +665,8 @@ private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier
     val shape = RoundedCornerShape(brand.radius.dp)
     Column(
         modifier.heightIn(min = 65.dp)
-            .background(if (selected) brand.peach else Color.Transparent, RoundedCornerShape(4.dp))
-            .border(1.dp, if (selected) Color.Transparent else brand.line, RoundedCornerShape(4.dp))
+            .background(if (selected) brand.peach else Color.Transparent, Radii.input)
+            .border(1.dp, if (selected) Color.Transparent else brand.line, Radii.input)
             .clickable(role = Role.Tab, onClick = onClick)
             .padding(horizontal = 2.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -808,7 +808,7 @@ private fun SponsorList(slug: String) {
                                         else -> brand.surface to brand.line
                                     }
                                     Box(
-                                        Modifier.weight(1f).heightIn(min = 54.dp).background(bg, RoundedCornerShape(4.dp)).border(1.dp, border, RoundedCornerShape(4.dp))
+                                        Modifier.weight(1f).heightIn(min = 54.dp).background(bg, Radii.input).border(1.dp, border, Radii.input)
                                             .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
@@ -848,7 +848,7 @@ private fun DealList(slug: String) {
         Column(Modifier.fillMaxWidth().background(brand.surface, shape).border(1.dp, brand.line, shape).clip(shape)) {
             Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
-                    Modifier.size(48.dp).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(1.dp),
+                    Modifier.size(48.dp).background(Color.White, Radii.input).border(1.dp, brand.line, Radii.input).padding(1.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     RemoteImage(deal.logo, Modifier.size(44.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
@@ -861,7 +861,7 @@ private fun DealList(slug: String) {
                     Text(
                         tag.uppercase(), textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp, lineHeight = 14.sp),
-                        modifier = Modifier.widthIn(max = 130.dp).rotate(-3f).background(brand.surface, RoundedCornerShape(6.dp)).border(2.dp, brand.primary, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 3.dp),
+                        modifier = Modifier.widthIn(max = 130.dp).rotate(-3f).background(brand.surface, Radii.input).border(2.dp, brand.primary, Radii.input).padding(horizontal = 7.dp, vertical = 3.dp),
                     )
                 }
             }
@@ -982,7 +982,7 @@ private fun InfoList(slug: String) {
         event?.let { e ->
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(48.dp).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(4.dp), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(48.dp).background(Color.White, Radii.input).border(1.dp, brand.line, Radii.input).padding(4.dp), contentAlignment = Alignment.Center) {
                         RemoteImage(e.logo, Modifier.size(40.dp)) { Image(painterResource(Res.drawable.app_icon), null, Modifier.size(36.dp)) }
                     }
                     Column {
@@ -1080,7 +1080,7 @@ private fun StealList(slug: String) {
 @Composable
 private fun StealLogo(steal: FreeSteal, size: androidx.compose.ui.unit.Dp) {
     val brand = LocalBrand.current
-    Box(Modifier.size(size).background(Color.White, RoundedCornerShape(4.dp)).border(1.dp, brand.line, RoundedCornerShape(4.dp)).padding(1.dp), contentAlignment = Alignment.Center) {
+    Box(Modifier.size(size).background(Color.White, Radii.input).border(1.dp, brand.line, Radii.input).padding(1.dp), contentAlignment = Alignment.Center) {
         RemoteImage(steal.logo, Modifier.size(size - 4.dp)) { LineIcon(steal.icon, brand.primary, size = size / 2) }
     }
 }
@@ -1090,7 +1090,7 @@ private fun FeaturedTag() {
     val brand = LocalBrand.current
     Text(
         "FEATURED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp),
-        modifier = Modifier.rotate(-3f).background(brand.surface, RoundedCornerShape(6.dp)).border(2.dp, brand.primary, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 3.dp),
+        modifier = Modifier.rotate(-3f).background(brand.surface, Radii.input).border(2.dp, brand.primary, Radii.input).padding(horizontal = 7.dp, vertical = 3.dp),
     )
 }
 

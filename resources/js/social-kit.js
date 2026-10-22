@@ -22,15 +22,16 @@
 import QRCode from 'qrcode-generator';
 import { zipStore } from './zip-store.js';
 import { withPngDpi } from './attendee/png-dpi.js';
+import { FONT_DISPLAY, FONT_TEXT, loadBrandFonts } from './brand.js';
 
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920] };
 // Print: six times the pixels (6480 px wide), stamped 600 DPI — 10.8 inches wide, sharp enough for a standee.
 const QUALITY = { social: { scale: 1, dpi: 72 }, print: { scale: 6, dpi: 600 } };
 // The scale being drawn at: artwork is prepared at this many times its card size, so print stays sharp.
 let RES = 1;
-const DEFAULT_FONT = '"Inter", "Segoe UI", system-ui, -apple-system, sans-serif';
+const DEFAULT_FONT = FONT_TEXT;
 const DEFAULT_SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
-// Text and headline fonts: CampBuddy's, or the WordCamp site's own (useSiteFonts()).
+// Text and headline fonts: CampBuddy's (Poppins, Baloo 2 headlines), or the WordCamp site's own (useSiteFonts()).
 let FONT = DEFAULT_FONT;
 let SERIF = DEFAULT_SERIF;
 let HEAD = null;
@@ -1172,23 +1173,23 @@ function measureHero(ctx, content, g, kit, w, top, bottom, picture = false) {
   const S = (n) => Math.round(n * (0.6 + 0.4 * scale));
   const parts = [];
   if (picture) {
-    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 100 : (g.square ? 60 : 84)), 36, 2, 800, HEAD ?? FONT), gap: 16 });
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 100 : (g.square ? 60 : 84)), 36, 2, 800, HEAD ?? FONT_DISPLAY), gap: 16 });
     const line = content.key === 'spotlight' && content.body.speakers?.length ? [content.line, content.body.speakers.join(', ')].filter(Boolean).join(' · ') : content.line;
     if (line) parts.push({ kind: 'line', fit: fitText(ctx, line, w, S(g.tall ? 40 : 32), 24, 2, 600), gap: 0 });
   } else if (content.key === 'save-the-date') {
     const d = dateParts(kit?.event?.dates);
-    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 96 : (g.square ? 60 : 80)), 36, 2, 800, HEAD ?? FONT), gap: 34 });
-    if (d.big) parts.push({ kind: 'big', fit: fitText(ctx, d.big, w, S(g.tall ? 300 : (g.square ? 190 : 240)), 80, 1, 900, HEAD ?? FONT), gap: 22 });
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 96 : (g.square ? 60 : 80)), 36, 2, 800, HEAD ?? FONT_DISPLAY), gap: 34 });
+    if (d.big) parts.push({ kind: 'big', fit: fitText(ctx, d.big, w, S(g.tall ? 300 : (g.square ? 190 : 240)), 80, 1, 900, HEAD ?? FONT_DISPLAY), gap: 22 });
     parts.push({ kind: 'month', text: d.small, size: S(g.tall ? 64 : (g.square ? 42 : 52)), gap: 26 });
     const dates = kit?.event?.dates ?? '';
     const where = (dates ? String(content.line ?? '').replace(dates, '') : String(content.line ?? '')).replace(/^[\s·]+/, '');
     if (where) parts.push({ kind: 'line', fit: fitText(ctx, where, w, S(g.tall ? 40 : 32), 24, 2, 600), gap: 0 });
   } else if (body === 'countdown' && content.body.days) {
-    parts.push({ kind: 'big', fit: fitText(ctx, String(content.body.days), w, S(g.tall ? 440 : (g.square ? 260 : 340)), 110, 1, 900, HEAD ?? FONT), gap: 22 });
+    parts.push({ kind: 'big', fit: fitText(ctx, String(content.body.days), w, S(g.tall ? 440 : (g.square ? 260 : 340)), 110, 1, 900, HEAD ?? FONT_DISPLAY), gap: 22 });
     parts.push({ kind: 'month', text: content.body.days === 1 ? 'DAY TO GO' : 'DAYS TO GO', size: S(g.tall ? 72 : (g.square ? 46 : 58)), gap: 26 });
     if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, S(g.tall ? 40 : 32), 24, 2, 600), gap: 0 });
   } else {
-    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 120 : (g.square ? (hasBody ? 64 : 84) : (hasBody ? 84 : 104))), 36, 3, 800, HEAD ?? FONT), gap: 22 });
+    parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 120 : (g.square ? (hasBody ? 64 : 84) : (hasBody ? 84 : 104))), 36, 3, 800, HEAD ?? FONT_DISPLAY), gap: 22 });
     parts.push({ kind: 'bar', gap: 22 });
     if (content.line) parts.push({ kind: 'line', fit: fitText(ctx, content.line, w, S(g.tall ? 40 : 32), 24, 2, 600), gap: 0 });
   }
@@ -1430,7 +1431,7 @@ async function paintPicture(ctx, box, content, pal, round) {
         if (list[i]) {
           ctx.fillStyle = textOn(tone, pal.ink, pal.paper);
           ctx.textAlign = 'center';
-          ctx.font = `900 ${Math.round(Math.min(cw, ch) * 0.34)}px ${HEAD ?? FONT}`;
+          ctx.font = `900 ${Math.round(Math.min(cw, ch) * 0.34)}px ${HEAD ?? FONT_DISPLAY}`;
           ctx.fillText(initials(list[i].name), cx + cw / 2, cy + ch / 2 + Math.min(cw, ch) * 0.12);
           ctx.textAlign = 'left';
         }
@@ -1462,12 +1463,12 @@ async function paintPicture(ctx, box, content, pal, round) {
 function paintWords(ctx, m, x, y, L) {
   for (const p of m.parts) {
     if (p.kind === 'head') {
-      ctx.font = `800 ${p.fit.size}px ${HEAD ?? FONT}`;
+      ctx.font = `800 ${p.fit.size}px ${HEAD ?? FONT_DISPLAY}`;
       ctx.fillStyle = L.ink;
       p.fit.lines.forEach((l, i) => ctx.fillText(l, x, y + p.fit.size * (0.86 + i * 1.04)));
     } else if (p.kind === 'big') {
       // Placed by the glyphs' real height: display fonts draw digits very differently.
-      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT}`;
+      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT_DISPLAY}`;
       ctx.fillStyle = L.accent;
       const mt = ctx.measureText(p.fit.lines[0]);
       const asc = mt.actualBoundingBoxAscent || p.fit.size * 0.72;
@@ -1823,9 +1824,9 @@ function daylightMeasure(ctx, content, g, kit, w, top, bottom, picture = false) 
 function paintDaylightWords(ctx, m, content, x, y, w, c, align = 'left') {
   for (const p of m.parts) {
     if (p.kind === 'kicker') paintKicker(ctx, content.kicker, x, y, w, p.size, c.accent, align);
-    else if (p.kind === 'head') paintHeadline(ctx, p.fit, m.hl, x, y, w, c, HEAD ?? FONT, align);
+    else if (p.kind === 'head') paintHeadline(ctx, p.fit, m.hl, x, y, w, c, HEAD ?? FONT_DISPLAY, align);
     else if (p.kind === 'big') {
-      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT}`;
+      ctx.font = `900 ${p.fit.size}px ${HEAD ?? FONT_DISPLAY}`;
       const mt = ctx.measureText(p.fit.lines[0]);
       const asc = mt.actualBoundingBoxAscent || p.fit.size * 0.72;
       const desc = mt.actualBoundingBoxDescent || 0;
@@ -1997,7 +1998,7 @@ function portrait(ctx, img, cx, cy, r, ring, ringColor, pal, name) {
     ctx.fillRect(cx - r, cy - r, 2 * r, 2 * r);
     ctx.fillStyle = textOn(pal.primary, pal.ink, mix(pal.paper, '#ffffff', 0.85));
     ctx.textAlign = 'center';
-    ctx.font = `800 ${Math.round(r * 0.72)}px ${HEAD ?? FONT}`;
+    ctx.font = `800 ${Math.round(r * 0.72)}px ${HEAD ?? FONT_DISPLAY}`;
     ctx.fillText(initials(name), cx, cy + r * 0.26);
     ctx.textAlign = 'left';
   }
@@ -2180,8 +2181,8 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
   y += paintKicker(ctx, personHeadline(person, kit), g.x, y, g.w, kSize, c.accent, 'center') + 22;
   // The full name on one line, the first name highlighted.
   const marks = headlineMarks(`*${String(person.name ?? '').trim().split(/\s+/)[0] ?? ''}* ${String(person.name ?? '').trim().split(/\s+/).slice(1).join(' ')}`.trim());
-  const ns = fitOneLine(ctx, marks.plain, g.w, nameSize, 800, HEAD ?? FONT, 24);
-  y += paintHeadline(ctx, { lines: [marks.plain], size: ns }, marks.hl, g.x, y, g.w, c, HEAD ?? FONT, 'center', 1.1);
+  const ns = fitOneLine(ctx, marks.plain, g.w, nameSize, 800, HEAD ?? FONT_DISPLAY, 24);
+  y += paintHeadline(ctx, { lines: [marks.plain], size: ns }, marks.hl, g.x, y, g.w, c, HEAD ?? FONT_DISPLAY, 'center', 1.1);
   if (roles) {
     ctx.textAlign = 'center';
     const rs = fitOneLine(ctx, roles, g.w, lineSize, 600, FONT, 18);
@@ -2414,7 +2415,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     if (tone) drawCover(ctx, tone, 0, 0, W, bandTop, 0.25);
     else {
       ctx.fillStyle = pal.paper; ctx.textAlign = 'center';
-      ctx.font = `900 ${Math.round(bandTop * 0.3)}px ${HEAD ?? FONT}`;
+      ctx.font = `900 ${Math.round(bandTop * 0.3)}px ${HEAD ?? FONT_DISPLAY}`;
       ctx.fillText(initials(person.name), W / 2, bandTop * 0.58);
       ctx.textAlign = 'left';
     }
@@ -2425,8 +2426,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = rc;
     ctx.fillRect(0, bandTop, W, bandH);
     ctx.fillStyle = onRc;
-    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 110 : (square ? 60 : 80), 32, 1, 900, HEAD ?? FONT);
-    ctx.font = `900 ${n.size}px ${HEAD ?? FONT}`;
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 110 : (square ? 60 : 80), 32, 1, 900, HEAD ?? FONT_DISPLAY);
+    ctx.font = `900 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     let y = bandTop + (square ? 28 : 44) + n.size * 0.86;
     ctx.fillText(n.lines[0], SAFE, y);
     const small = tall ? 34 : (square ? 24 : 28);
@@ -2444,7 +2445,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = pal.paper;
     ctx.fillRect(0, 0, W, H);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
-    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 1, 800, HEAD ?? FONT);
+    const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 1, 800, HEAD ?? FONT_DISPLAY);
     const nameH = n.lines.length * n.size * 1.04;
     const small = tall ? 34 : (square ? 24 : 28);
     const textH = nameH + small * 1.8 + (talk ? small * 1.6 : 0) + 30;
@@ -2478,7 +2479,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     else {
       ctx.fillStyle = pal.soft; ctx.fillRect(ax, top, aw, ah);
       ctx.fillStyle = rc; ctx.textAlign = 'center';
-      ctx.font = `900 ${Math.round(aw * 0.36)}px ${HEAD ?? FONT}`;
+      ctx.font = `900 ${Math.round(aw * 0.36)}px ${HEAD ?? FONT_DISPLAY}`;
       ctx.fillText(initials(person.name), W / 2, top + ah * 0.6);
       ctx.textAlign = 'left';
     }
@@ -2486,7 +2487,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     let y = top + ah + 22 + (square ? 30 : 50);
     ctx.textAlign = 'center';
     ctx.fillStyle = pal.ink;
-    ctx.font = `800 ${n.size}px ${HEAD ?? FONT}`;
+    ctx.font = `800 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     n.lines.forEach((l) => { y += n.size * 0.86; ctx.fillText(l, W / 2, y); y += n.size * 0.18; });
     ctx.font = `800 ${small}px ${FONT}`;
     ctx.fillStyle = rc;
@@ -2515,7 +2516,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph);
       if (ART.pattern) fillWithPattern(ctx, ART.pattern, rc, 0, 0, W, ph, 180, 0.12);
       ctx.fillStyle = rc; ctx.textAlign = 'center';
-      ctx.font = `900 ${Math.round(ph * 0.34)}px ${HEAD ?? FONT}`;
+      ctx.font = `900 ${Math.round(ph * 0.34)}px ${HEAD ?? FONT_DISPLAY}`;
       ctx.fillText(initials(person.name), W / 2, ph * 0.5);
       ctx.textAlign = 'left';
     }
@@ -2552,8 +2553,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const tw = qx - 36 - SAFE;
     let y = ph + pad;
     ctx.fillStyle = onRc;
-    const n = fitText(ctx, person.name, tw, tall ? 96 : (square ? 50 : 66), 30, 1, 900, HEAD ?? FONT);
-    ctx.font = `900 ${n.size}px ${HEAD ?? FONT}`;
+    const n = fitText(ctx, person.name, tw, tall ? 96 : (square ? 50 : 66), 30, 1, 900, HEAD ?? FONT_DISPLAY);
+    ctx.font = `900 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     y += n.size * 0.9;
     ctx.fillText(n.lines[0], SAFE, y);
     y += square ? 14 : 20;
@@ -2733,7 +2734,7 @@ async function loadSiteFonts(kit) {
     }));
     const loaded = (await Promise.allSettled(faces.map((face) => face.load()))).filter((r) => r.status === 'fulfilled').map((r) => r.value);
     loaded.forEach((face) => document.fonts.add(face));
-    if (loaded.length) out[role] = `"${family}", ${role === 'heading' ? DEFAULT_SERIF : DEFAULT_FONT}`;
+    if (loaded.length) out[role] = `"${family}", ${role === 'heading' ? FONT_DISPLAY : DEFAULT_FONT}`;
   }
   return out;
 }
@@ -2982,6 +2983,7 @@ export function initSocialKit() {
       // CampBuddy's fonts then.
     }
     await setSiteArt(kit, enabledArt()).catch(() => {});
+    await loadBrandFonts();
     await document.fonts?.ready;
     // The site's own colours come first; saved colours are for a site that names none.
     if (sitePalette) setColors(sitePalette, 'From the WordCamp site.');
@@ -3108,7 +3110,7 @@ export const socialContext = { kit: null, colors: null, style: null, posts: [] }
 export const reelTools = {
   loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
   proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
-  fonts: () => ({ text: FONT, head: HEAD ?? FONT }),
+  fonts: () => ({ text: FONT, head: HEAD ?? FONT_DISPLAY }),
   siteArt: () => SITE_ART,
   features: FEATURES,
 };

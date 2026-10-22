@@ -522,7 +522,7 @@ private fun ReportTable(title: String, rows: List<Map<String, String>>, events: 
             }
         }
         (if (all) rows else rows.take(10)).forEach { row ->
-            Row(Modifier.fillMaxWidth().background(brand.background, RoundedCornerShape(4.dp)).padding(vertical = 4.dp, horizontal = 4.dp)) {
+            Row(Modifier.fillMaxWidth().background(brand.background, Radii.input).padding(vertical = 4.dp, horizontal = 4.dp)) {
                 columns.forEachIndexed { i, c ->
                     val raw = row[c].orEmpty()
                     val shown = when {

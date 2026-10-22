@@ -18,7 +18,7 @@
         :root { --ink:#2b1a14; --muted:#6b5a52; --paper:#fffaf4; --line:#eaded3; --brand:#c33a19; --brand-dark:#8f2a12; }
         * { box-sizing: border-box; }
         body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px;
-               font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--paper); color:var(--ink); }
+               font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--paper); color:var(--ink); }
         main { width:100%; max-width:420px; text-align:center; }
         .art { width:160px; height:auto; margin:0 auto 20px; display:block; }
         .code { font-size:.8rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--brand); margin:0 0 6px; }

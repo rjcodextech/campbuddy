@@ -279,8 +279,8 @@ private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
     Box(
         Modifier.heightIn(min = 44.dp)
-            .background(if (selected) brand.peach else Color.Transparent, RoundedCornerShape(4.dp))
-            .border(1.dp, if (selected) Color.Transparent else brand.line, RoundedCornerShape(4.dp))
+            .background(if (selected) brand.peach else Color.Transparent, Radii.input)
+            .border(1.dp, if (selected) Color.Transparent else brand.line, Radii.input)
             .clickable(role = Role.Tab, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
@@ -290,7 +290,7 @@ private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
 @Composable
 internal fun SearchField(value: String, hint: String = "Search sessions or speakers…", onChange: (String) -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(4.dp)
+    val shape = Radii.input
     Row(
         Modifier.fillMaxWidth().heightIn(min = 46.dp).background(Color.White, shape).border(1.dp, brand.line, shape).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
