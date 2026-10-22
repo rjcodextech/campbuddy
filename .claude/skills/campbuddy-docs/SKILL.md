@@ -52,6 +52,8 @@ Several `spec/` files carry a **"Current implementation note"** callout where th
 | 25 | [spec/25-social-design-guideline.md](spec/25-social-design-guideline.md) | Design rules for social posts and reels, measured from 11 Figma template files (margins, type scale, headline position, Instagram safe zone), and how site artwork is read |
 | 23 | [spec/23-data-retention.md](spec/23-data-retention.md) | The "nothing of an attendee's disappears while the event is on" rule: the event's real last day, retention window, what uses it |
 | 26 | [spec/26-brand-guideline.md](spec/26-brand-guideline.md) | CampBuddy's brand guideline (colours, Baloo 2 + Poppins, radius scale, voice, social/reels rules) — where each token lives on web, admin, native and canvas, and `npm run brand` |
+| — | [brand/](brand/) | `CAMPBUDDY-BRAND-GUIDELINES.md` (the brand rules) and `WPSIMPLIFIED-BRAND-GUIDELINES.md` (the WPSimplified guideline it is modelled on) |
+| — | [mobile/](mobile/) | Native app owner docs: `SETUP.md` (accounts, Firebase, signing, store), `DEPLOYMENT.md`, `TODO.md`, `ios-build-on-mac.md`, `build-on-windows.md`, `native-status.md`, `api-spec.md`, `server-driven-config.md`, store listing EN/HI |
 
 ### §3 quick lookup (functional requirements, split by feature)
 

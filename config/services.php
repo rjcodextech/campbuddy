@@ -36,7 +36,7 @@ return [
     ],
 
     // Firebase Cloud Messaging, for pushes to the native app (App\Support\NativePush).
-    // Unset = no native push, nothing else changes. See mobile-app/SETUP.md.
+    // Unset = no native push, nothing else changes. See .claude/skills/campbuddy-docs/mobile/SETUP.md.
     'fcm' => [
         'credentials_path' => env('FCM_CREDENTIALS_PATH'),
         'project_id' => env('FCM_PROJECT_ID'),

@@ -67,23 +67,6 @@ class AppSyncTest extends TestCase
         }
     }
 
-    public function test_the_server_and_the_shell_agree_on_the_app_identity(): void
-    {
-        $shell = json_decode(file_get_contents(base_path('mobile-app/app/capacitor.config.json')), true);
-
-        $this->assertSame($shell['appId'], config('mobile_app.app_id'));
-        $this->assertStringContainsString('CampBuddyApp/', $shell['appendUserAgent']);
-    }
-
-    public function test_the_notification_look_is_the_same_on_the_phone_and_from_the_server(): void
-    {
-        $shell = json_decode(file_get_contents(base_path('mobile-app/app/capacitor.config.json')), true)['plugins']['LocalNotifications'];
-        $push = file_get_contents(app_path('Support/NativePush.php'));
-
-        $this->assertStringContainsString("'color' => '{$shell['iconColor']}'", $push);
-        $this->assertStringContainsString("'icon' => '{$shell['smallIcon']}'", $push);
-    }
-
     public function test_the_app_start_up_config_lists_every_switch_the_page_reads(): void
     {
         $bridge = file_get_contents(resource_path('js/attendee/native-bridge.js'));
@@ -93,15 +76,6 @@ class AppSyncTest extends TestCase
         foreach (array_unique($read[1]) as $feature) {
             $this->assertContains($feature, $served, "native-bridge.js reads features.{$feature}, which /api/v1/app-config does not serve");
         }
-    }
-
-    public function test_the_pwa_manifest_and_the_app_use_the_same_name_and_icon_source(): void
-    {
-        $pwa = config('campbuddy.pwa');
-        $shell = json_decode(file_get_contents(base_path('mobile-app/app/capacitor.config.json')), true);
-
-        $this->assertSame($pwa['short_name'], $shell['appName']);
-        $this->assertFileExists(public_path('media/favicon.png'), 'the app icons are made from this file (scripts/make-assets.py)');
     }
 
     public function test_every_bottom_tab_of_the_panel_in_the_app_is_a_real_page(): void

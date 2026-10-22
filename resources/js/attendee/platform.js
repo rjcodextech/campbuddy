@@ -14,7 +14,7 @@ export function isStandalone() {
 }
 
 // Running inside the CampBuddy Android / iOS app (the Capacitor shell adds
-// "CampBuddyApp/<version> (android|ios)" to the user agent — mobile-app/app).
+// "CampBuddyApp/<version> (android|ios)" to the user agent — the retired Capacitor shell).
 const APP_UA = /CampBuddyApp\/(\d+\.\d+\.\d+)(?: \((android|ios)\))?/;
 
 export function isNativeApp() {

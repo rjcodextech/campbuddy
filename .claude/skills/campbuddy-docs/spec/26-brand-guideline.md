@@ -1,8 +1,8 @@
 # 26 — Brand guideline: how it is wired
 
-The rules themselves are in [`CAMPBUDDY-BRAND-GUIDELINES.md`](../../../../CAMPBUDDY-BRAND-GUIDELINES.md)
-at the repo root (written 22 Oct 2026, modelled on WPSimplified's "Daylight" guideline in
-`BRAND-GUIDELINES.md`, but in CampBuddy's own maroon, logo and name). This page says where each
+The rules themselves are in [`CAMPBUDDY-BRAND-GUIDELINES.md`](../brand/CAMPBUDDY-BRAND-GUIDELINES.md)
+in this skill's `brand/` folder (written 22 Oct 2026, modelled on WPSimplified's "Daylight" guideline in
+`../brand/WPSIMPLIFIED-BRAND-GUIDELINES.md`, but in CampBuddy's own maroon, logo and name). This page says where each
 rule lives in the code, so a change lands everywhere at once.
 
 Owner decisions (22 Oct 2026, confirmed twice): keep CampBuddy maroon `#C33A19` as the one brand

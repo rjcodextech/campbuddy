@@ -1,4 +1,5 @@
-// CampBuddy inside the Android / iOS app (Capacitor shell, mobile-app/app).
+// CampBuddy inside the old Android / iOS Capacitor shell (retired 22 Oct 2026; the store app is now
+// native-app/). Kept so phones that still have the shell installed keep working.
 // Loaded ONLY when the user agent says CampBuddyApp (platform.js isNativeApp),
 // through a dynamic import — so the website and the installed PWA never
 // download or run a byte of it.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the native app for iPhone. Needs a Mac with Xcode; every step is explained in
-# mobile-app/native/14-ios-build-on-mac.md
+# .claude/skills/campbuddy-docs/mobile/ios-build-on-mac.md
 #   bash native-app/build-ios.sh check     what is installed and set up, nothing built
 #   bash native-app/build-ios.sh open      makes the Xcode project and opens it (Run on your iPhone from there)
 #   bash native-app/build-ios.sh sim       builds and starts the app in the iPhone simulator

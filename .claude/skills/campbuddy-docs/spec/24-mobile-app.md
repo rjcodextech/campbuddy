@@ -1,6 +1,6 @@
 # §24 Mobile app (Android + iOS)
 
-**Status (13 Oct 2026, branch `app`):** built, not yet released. Planning and setup live in `mobile-app/` (start at `mobile-app/README.md`; the owner's one-time configuration is `mobile-app/SETUP.md`).
+**Status (22 Oct 2026):** the store app is the native Kotlin app (`native-app/`, Android + iOS); the Capacitor shell described below (`mobile-app/app/`) was retired and deleted on 22 Oct 2026 — the website keeps `native-bridge.js` so phones that still have that shell keep working. Setup, deployment, iOS and API docs: [`../mobile/`](../mobile/) (`SETUP.md`, `DEPLOYMENT.md`, `ios-build-on-mac.md`, `native-status.md`, `api-spec.md`, `server-driven-config.md`).
 
 ## What it is
 A Capacitor 8 shell (`mobile-app/app/`, app id `club.campbuddy.app`) that opens the live website (`server.url = https://campbuddy.club`). Same product, same no-login rule; the website and PWA are unchanged. Navigation is limited to `campbuddy.club`; other links open in the system browser. A bundled `offline.html` (Inter + wordmark) is the error page.

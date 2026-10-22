@@ -15,8 +15,6 @@ const checks = [
   { layer: 'Brand', name: 'Colours, fonts and corners match CAMPBUDDY-BRAND-GUIDELINES.md (_variables.scss mirrors)', cmd: 'node', args: ['tools/brand-check.mjs'] },
   { layer: 'Front end + PWA', name: 'JS unit tests (service worker, bridge, panel tabs, downloads, report)', cmd: 'npm', args: ['run', 'test:js', '--silent'] },
   { layer: 'Admin panel + Web app', name: 'PHP: routes, service-worker private paths, app config, panel tabs, push, reports', cmd: 'php', args: ['artisan', 'test', '--filter=AppSyncTest|NativeKotlinSyncTest|MobileAppConfigTest|AppEventApiTest|OrganizerApiTest|NativeAppBackendTest|NativePushTest|DiscoveryReportTest|OrganizerAppTest|EveryPageAndAccessTest'] },
-  { layer: 'Android + iOS', name: 'Shell: versions, ids, link paths, plugins, permissions, Firebase hooks, icons', cmd: 'npm', args: ['test', '--silent'], cwd: 'mobile-app/app' },
-  { layer: 'Android + iOS + PWA', name: 'Icons and splash match the website logo', cmd: 'python', args: ['mobile-app/app/scripts/make-assets.py'], then: { cmd: 'python', args: ['mobile-app/app/scripts/check-assets-in-sync.py'] } },
 ];
 
 let failed = 0;
