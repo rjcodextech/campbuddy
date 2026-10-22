@@ -29,7 +29,7 @@
 // recorded in real time instead (MediaRecorder).
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
-import { drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C } from './social-kit.js';
+import { drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
 import { loadBrandFonts } from './brand.js';
 import { zipStore } from './zip-store.js';
 
@@ -39,7 +39,9 @@ const FPS = 30;
 const RATE = 48000;
 const SPEAKERS_PER_REEL = 5;
 // No reel is shorter than this; one with more to show runs longer.
-export const MIN_SECONDS = 30;
+export const MIN_SECONDS = 20;
+// No reel runs longer than this: a long one drops facts from its end, then takes people four at a time.
+export const MAX_SECONDS = 120;
 // More people than this and a reel shows them six at a time instead of one by one.
 const ONE_BY_ONE = 6;
 const GRID = 6;
@@ -1470,17 +1472,10 @@ function v2Header(ctx, reel, t, scene) {
   const { text } = T.fonts();
   const light = v2Ink(reel).light;
   const w = SAFE.right - SAFE.left;
-  const done = (index + Math.min(1, t / scene.dur)) / steps.length;
   ctx.save();
-  ctx.fillStyle = light ? 'rgba(255,255,255,0.22)' : T.alpha(pal.primary, 0.18);
-  T.roundRect(ctx, SAFE.left, V2_TOP, w, 8, 4);
-  ctx.fill();
-  ctx.fillStyle = light ? '#ffffff' : pal.primary;
-  T.roundRect(ctx, SAFE.left, V2_TOP, Math.max(8, w * done), 8, 4);
-  ctx.fill();
   const p = back(span(t, 0, 0.35));
   ctx.globalAlpha *= clamp(p);
-  const y = V2_TOP + 30;
+  const y = V2_TOP + 6;
   const h = 64;
   ctx.font = `700 30px ${text}`;
   const label = `OF ${steps.length} · ${scene.step}`;
@@ -1945,7 +1940,9 @@ function v2EventFacts(reel, shown) {
   // Each reel its own slice of the pool (three facts; the next reel the next three), so reels
   // don't repeat each other; inside a fact the picks turn with the reel too.
   const pool = [...first, ...rest];
-  return rotate(pool, v * 3).slice(0, Math.min(pool.length, reel.factCount ?? 3));
+  const picked = rotate(pool, v * 3).slice(0, Math.min(pool.length, reel.factCount ?? 3));
+  picked.forEach((sc) => { sc.fact = true; });
+  return picked;
 }
 
 /** A post reel's own scenes, from the post's content. */
@@ -1990,7 +1987,18 @@ function v2Scenes(reel, spec) {
   // The reel's own hook words, when the studio set them.
   const ownHook = reel.item?.hook?.trim();
   let scenes;
-  if (spec.kind === 'post') {
+  if (spec.kind === 'session') {
+    const s = spec.session;
+    shown.add('talks');
+    const speakers = (s.speakers ?? []).map((name, i) => ({ key: `session-${i}`, name, photo: s.photos?.[i] }));
+    const day = kit.schedule?.days?.find((d) => d.key === s.day)?.label;
+    const words = ownHook || s.title;
+    scenes = [
+      v2Hook(words, [day, s.time, s.track].filter(Boolean).join(' · ')),
+      v2Fact({ step: 'On stage', ground: 'ink', kicker: speakers.length === 1 ? 'Speaker' : 'Speakers', headline: speakers.length ? `With *${speakers.map((p) => p.name.split(' ')[0]).join(' & ')}*` : `*${s.title}*`, body: speakers.length ? { type: 'faces', people: speakers.slice(0, 4) } : null }),
+      v2Fact({ step: 'When', ground: 'paper', kicker: 'Save the talk', headline: `*${s.time}*${day ? ` · ${day}` : ''}`, body: { type: 'rows', rows: [s.track ? { mark: '1', title: s.track, meta: 'Where' } : null, { mark: s.track ? '2' : '1', title: 'Save it in CampBuddy', meta: 'A reminder before it starts' }].filter(Boolean) } }),
+    ];
+  } else if (spec.kind === 'post') {
     const content = spec.content ?? {};
     const words = ownHook || (content.headline || spec.label || kit.event.name).trim();
     scenes = [v2Hook(words, sub), ...v2PostTopic(reel, content, spec.label, shown)];
@@ -1999,7 +2007,7 @@ function v2Scenes(reel, spec) {
     const hookWords = /^Meet the /.test(title) ? title.replace(/^Meet the (.+)$/, 'Meet the *$1*') : `*${title}*`;
     shown.add(spec.role === 'speaker' ? 'speakers' : 'team');
     const people = spec.people.map((p, i) => ({ key: `person-${i}`, full: p.name, photo: p.photo, meta: p.talk || null }));
-    const one = spec.role === 'speaker' || people.length <= ONE_BY_ONE;
+    const one = (spec.role === 'speaker' && people.length <= 24) || people.length <= ONE_BY_ONE;
     const groups = one ? people.map((p) => [p]) : chunk(people, 4);
     scenes = [v2Hook(ownHook || hookWords, line), ...groups.map((group, i) => {
       if (one) {
@@ -2017,6 +2025,51 @@ function v2Scenes(reel, spec) {
 function v2TemplateOf(item, seed) {
   if (item.template && REEL_TEMPLATES[item.template]) return item.template;
   return TEMPLATE_KEYS[((item.variant ?? 0) + ((Number(seed) >>> 0) % TEMPLATE_KEYS.length)) % TEMPLATE_KEYS.length];
+}
+
+/**
+ * The reel's progress as a border round the whole frame (owner, 22 Oct 2026): it starts at the top-left
+ * corner, runs clockwise along the top, down the right, back along the foot and up the left, and closes
+ * at the top-left corner on the last frame. A faint track shows the way; the stroke is thick enough to
+ * read on a phone, in the light colour on dark grounds and the main colour on light ones.
+ */
+function v2Border(ctx, reel, time) {
+  const inset = 14;
+  const lw = 16;
+  const r = 56;
+  const x0 = inset + lw / 2;
+  const y0 = inset + lw / 2;
+  const x1 = W - inset - lw / 2;
+  const y1 = H - inset - lw / 2;
+  const p = clamp(time / Math.max(0.001, reel.duration));
+  // One path from the top-left corner's end of its curve, clockwise, ending where it began.
+  const path = new Path2D();
+  path.moveTo(x0 + r, y0);
+  path.lineTo(x1 - r, y0);
+  path.arcTo(x1, y0, x1, y0 + r, r);
+  path.lineTo(x1, y1 - r);
+  path.arcTo(x1, y1, x1 - r, y1, r);
+  path.lineTo(x0 + r, y1);
+  path.arcTo(x0, y1, x0, y1 - r, r);
+  path.lineTo(x0, y0 + r);
+  path.arcTo(x0, y0, x0 + r, y0, r);
+  const length = 2 * (x1 - x0 - 2 * r) + 2 * (y1 - y0 - 2 * r) + 2 * Math.PI * r;
+  const light = v2Ink(reel).light;
+  ctx.save();
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = light ? 'rgba(255,255,255,0.18)' : T.alpha(reel.pal.primary, 0.14);
+  ctx.stroke(path);
+  if (p > 0) {
+    ctx.setLineDash([Math.max(0.01, length * p), length + 10]);
+    ctx.strokeStyle = light ? T.readableOn([reel.pal.secondary, '#ffffff'], [inkGround(reel.pal)]) : reel.pal.primary;
+    // A soft glow on the head of the line, pulsing on the beat.
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = 10 + 14 * onBeat(reel, time);
+    ctx.stroke(path);
+  }
+  ctx.restore();
 }
 
 /** One frame of a template reel: ground, effects, the scene, its brand strip, and the cut into it. */
@@ -2040,6 +2093,7 @@ function v2Frame(ctx, reel, time) {
   scene.draw(ctx, t, scene.dur, reel);
   ctx.restore();
   if (!scene.end) v2Brand(ctx, reel, time);
+  v2Border(ctx, reel, time);
   if (index > 0 && cutIn < 1) {
     ctx.save();
     if (tpl.cut === 'flash') {
@@ -2060,7 +2114,8 @@ function v2Frame(ctx, reel, time) {
 
 /** Every reel this event can have, with what it needs to be made. */
 export function reelList(kit, posts) {
-  const list = posts.map((post) => ({
+  const talks = (kit.schedule?.sessions ?? []).filter((s) => (s.speakers ?? []).length);
+  const list = posts.filter((post) => !(post.key === 'spotlight' && talks.length)).map((post) => ({
     key: `post-${post.key}`,
     title: post.label,
     mood: POST_MOODS[post.key] ?? 'bright',
@@ -2071,6 +2126,17 @@ export function reelList(kit, posts) {
       return { kind: 'post', pages, content, label: post.label, utm: post.key };
     },
   }));
+
+  // A spotlight reel for every talk on the schedule.
+  talks.forEach((session) => {
+    list.push({
+      key: `spotlight-${session.id}`,
+      title: `Spotlight: ${session.title}`,
+      mood: 'drive',
+      caption: () => spotlightCaption(kit, session),
+      build: () => ({ kind: 'session', session, label: 'Session spotlight', utm: `spotlight-${session.id}` }),
+    });
+  });
 
   for (const [role, label, mood] of GROUPS) {
     const people = kit.people.filter((p) => (p.roles ?? []).includes(role));
@@ -2186,7 +2252,7 @@ async function prepare(item, kit, colors, style) {
     reel.dots.push({ x: rnd() * W, y: rnd() * H, r: 20 + rnd() * 90, a: 0.05 + rnd() * 0.06, c: [pal.primary, pal.secondary, ...(pal.extras ?? [])][i % 3], s: 0.3 + rnd() * 0.6, p: rnd() * 6, v: 0.3 + rnd() });
   }
 
-  if (reel.daylight) {
+  if (reel.daylight || spec.kind === 'session') {
     // Daylight: the brand's reel templates (v2Scenes) — the hook, the topic, the event's facts, one end card,
     // in the reel's template (its own by its place in the list, or the studio's pick).
     reel.v2 = true;
@@ -2253,6 +2319,17 @@ async function prepare(item, kit, colors, style) {
   const stretchable = reel.scenes.filter((s) => s.stretch);
   let beats = reel.scenes.reduce((n, s) => n + s.beats, 0);
   for (let i = 0; beats * beat < MIN_SECONDS && stretchable.length; i++, beats++) stretchable[i % stretchable.length].beats++;
+  // At most MAX_SECONDS: drop the facts after the topic, last first, then shorten every scene by a beat.
+  const facts = reel.scenes.filter((sc) => sc.fact);
+  while (beats * beat > MAX_SECONDS && facts.length) {
+    const drop = facts.pop();
+    reel.scenes.splice(reel.scenes.indexOf(drop), 1);
+    beats -= drop.beats;
+  }
+  for (const sc of reel.scenes) {
+    if (beats * beat <= MAX_SECONDS) break;
+    if (sc.beats > 3) { sc.beats -= 1; beats -= 1; }
+  }
   let at = 0;
   reel.scenes.forEach((s) => {
     s.start = at;
@@ -3000,4 +3077,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, MAX_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent };

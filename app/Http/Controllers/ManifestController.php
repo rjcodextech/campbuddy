@@ -36,6 +36,9 @@ class ManifestController extends Controller
             // rather than bouncing out to a browser tab.
             'scope' => '/',
             'display' => 'standalone',
+            'display_override' => ['standalone', 'minimal-ui'],
+            'orientation' => 'portrait',
+            'prefer_related_applications' => false,
             'background_color' => $pwa['background_color'],
             'theme_color' => $pwa['theme_color'],
             'categories' => ['events', 'productivity', 'social'],
@@ -44,6 +47,12 @@ class ManifestController extends Controller
                 ['src' => '/media/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any'],
                 ['src' => '/media/icons/icon-maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
             ],
+            // Long-press the installed icon: straight to the day, the people, the Camp Card.
+            'shortcuts' => $event ? [
+                ['name' => 'My Day', 'url' => route('event.my-day', $event, absolute: false), 'icons' => [['src' => '/media/icons/icon-192.png', 'sizes' => '192x192']]],
+                ['name' => 'Explore', 'url' => route('event.explore', $event, absolute: false), 'icons' => [['src' => '/media/icons/icon-192.png', 'sizes' => '192x192']]],
+                ['name' => 'Camp Card', 'url' => route('event.camp-card', $event, absolute: false), 'icons' => [['src' => '/media/icons/icon-192.png', 'sizes' => '192x192']]],
+            ] : [],
         ], 200, ['Content-Type' => 'application/manifest+json'], JSON_UNESCAPED_SLASHES);
     }
 }

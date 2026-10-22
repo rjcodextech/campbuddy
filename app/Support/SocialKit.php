@@ -348,7 +348,7 @@ class SocialKit
                 'body' => 'points',
                 'points' => array_values(array_filter([
                     $hashtag !== '' ? "Post with {$hashtag}" : 'Post your photos',
-                    'Tag @CampBuddy and @WPSimplified',
+                    'Add #CampBuddy and #WPSimplified',
                     'Save your day in CampBuddy Memories',
                 ])),
                 'caption' => $pick('mom-caption', [

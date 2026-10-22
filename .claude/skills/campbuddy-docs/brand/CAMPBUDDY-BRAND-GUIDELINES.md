@@ -171,7 +171,7 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 - 1080 × 1920, 9:16, 30 fps; 20–45s (60s maximum). Current reels: 30s.
 - **Safe zone** (Instagram Reels + YouTube Shorts + WhatsApp status): keep text and faces out of top 250px, bottom 450px, right 180px, left 64px → safe box x 64–900, y 250–1470.
 - Structure: Hook 0–2s (event name / the result, big, no logo) → Context 2–6s → Value 6–25s (one idea per cut, cut every 2–3s) → Payoff + **one** CTA 25–30s (scan / open campbuddy.club).
-- A thin progress bar (main colour on a pale track) runs under the header row on every scene except the hook and the end card (the brand's reel template).
+- **Progress border** (22 Oct 2026, replaces the progress bar): a 16 px line runs round the whole frame — from the top-left corner, clockwise, back to it on the last frame — over a faint track; main colour on light grounds, the light colour on dark ones, its glow pulsing on the beat. The step pill ("2 OF 7 · Schedule") stays under the event's logo.
 - Captions burned in: Poppins Bold 64–72px, max two lines, 3–6 words per line.
 - **Branding on every frame** (22 Oct 2026, replaces "logo only on the cover"): the event's logo on a white tile at the top centre of the safe zone; the CampBuddy × WPSimplified lockup on a white pill at its foot centre; the words between the two, never under them.
 - **The end card** carries no event logo: CampBuddy's mark at the top centre, WPSimplified's at the foot centre, and between them one call ("Plan <event> in CampBuddy"), the QR and `campbuddy.club`.

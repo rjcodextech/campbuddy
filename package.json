@@ -26,7 +26,7 @@
     },
     "dependencies": {
         "html2canvas": "^1.4.1",
-        "jspdf": "^3.0.4",
+        "jspdf": "^4.2.1",
         "mp4-muxer": "5.2.2",
         "qrcode-generator": "^2.0.4"
     }

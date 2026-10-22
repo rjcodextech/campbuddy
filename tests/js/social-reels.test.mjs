@@ -72,8 +72,9 @@ test("words stay inside Instagram's safe zone: clear of its top bar, its caption
   }
 });
 
-test('no reel is shorter than 30 seconds', () => {
-  assert.equal(_internals.MIN_SECONDS, 30);
+test('reels run from 20 seconds to 2 minutes', () => {
+  assert.equal(_internals.MIN_SECONDS, 20);
+  assert.equal(_internals.MAX_SECONDS, 120);
 });
 
 
