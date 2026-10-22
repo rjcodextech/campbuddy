@@ -306,10 +306,12 @@ fun BannerCard(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+                // All the room the close button leaves (no second weighted spacer splitting it in half,
+                // which wrapped "NEW UPDATE" onto two lines on a 360dp phone).
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.weight(1f, fill = false),
+                    modifier = Modifier.weight(1f),
                 ) {
                     Box(
                         Modifier
@@ -339,11 +341,10 @@ fun BannerCard(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 0.8.sp,
                             ),
+                            maxLines = 1,
                         )
                     }
                 }
-
-                Spacer(Modifier.weight(1f))
 
                 if (onDismiss != null) {
                     Box(

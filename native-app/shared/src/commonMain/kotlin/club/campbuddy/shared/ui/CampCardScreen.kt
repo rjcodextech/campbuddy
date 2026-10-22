@@ -1,5 +1,7 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -327,7 +329,14 @@ private fun IconButtonOutline(icon: String, text: String, modifier: Modifier, on
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically,
     ) {
         LineIcon(icon, brand.ink, size = 20.dp)
-        Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink))
+        // One line, a little smaller if large system text would otherwise break "Download" mid-word.
+        BasicText(
+            text,
+            style = MaterialTheme.typography.titleMedium.copy(color = brand.ink),
+            maxLines = 1,
+            softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = 12.sp, maxFontSize = MaterialTheme.typography.titleMedium.fontSize, stepSize = 0.5.sp),
+        )
     }
 }
 

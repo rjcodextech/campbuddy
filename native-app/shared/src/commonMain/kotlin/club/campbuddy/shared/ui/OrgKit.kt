@@ -354,7 +354,7 @@ fun rememberDebounced(value: String, wait: Long = 350): String {
 @Composable
 fun <K> OrgFilterRow(label: String?, options: List<Pair<K, String>>, selected: K, onSelect: (K) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        if (label != null) Text(label.uppercase(), style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.5.sp, letterSpacing = 0.6.sp))
+        if (label != null) Text(label.uppercase(), style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, letterSpacing = 0.6.sp))
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { (key, text) -> CbChip(selected = key == selected, onClick = { onSelect(key) }, label = { Text(text) }) }
         }

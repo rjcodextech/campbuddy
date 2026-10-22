@@ -397,7 +397,7 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 datesText(event.startsOn, event.endsOn)?.let {
-                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.67.sp, fontSize = 11.2.sp))
+                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.67.sp, fontSize = 12.sp))
                 }
                 Text(event.name, style = MaterialTheme.typography.titleMedium)
                 if (done) Row(

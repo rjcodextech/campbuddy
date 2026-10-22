@@ -547,7 +547,7 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color = Color(0xFF7A4B00),
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp
+                                    fontSize = 11.sp
                                 )
                             )
                         }
@@ -634,7 +634,8 @@ fun ExploreTab(slug: String, start: String? = null) {
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(words("tabs.explore"), style = MaterialTheme.typography.headlineSmall)
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            // Equal tiles, but never narrower than a label's longest word ("Sponsors" in large system text).
+            FitTabsRow(Modifier.bleedX(3.dp), byWord = true) {
                 listOf(
                     Triple("people", "People", "users"),
                     Triple("sponsors", "Sponsors", "heart"),
@@ -642,7 +643,7 @@ fun ExploreTab(slug: String, start: String? = null) {
                     Triple("steals", "Free Steals", "sparkles"),
                     Triple("info", "Info", "ticket"),
                 ).forEach { (key, label, icon) ->
-                    ExploreTile(label, icon, selected = section == key, modifier = Modifier.weight(1f)) { section = key }
+                    ExploreTile(label, icon, selected = section == key, modifier = Modifier.padding(horizontal = 3.dp)) { section = key }
                 }
             }
         }

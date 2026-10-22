@@ -186,7 +186,7 @@ internal fun SocialTab(ctx: EventCtx) {
 @Composable
 private fun <K> ChipGroup(label: String, options: List<Pair<K, String>>, selected: K, onSelect: (K) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(label.uppercase(), style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.5.sp, letterSpacing = 0.6.sp))
+        Text(label.uppercase(), style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, letterSpacing = 0.6.sp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { (key, text) -> CbChip(selected = key == selected, onClick = { onSelect(key) }, label = { Text(text) }) }
         }

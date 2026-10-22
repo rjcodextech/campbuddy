@@ -209,7 +209,7 @@ private fun DefaultPrivacyContent(grievanceEmail: String) {
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
-                                fontSize = 9.sp,
+                                fontSize = 11.sp,
                             ),
                         )
                     }
@@ -408,7 +408,7 @@ private fun DefaultTermsContent() {
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
-                                fontSize = 9.sp,
+                                fontSize = 11.sp,
                             ),
                         )
                     }
@@ -635,7 +635,7 @@ private fun DataCategoryItem(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
                             color = if (isLocal) brand.success else brand.primary,
-                            fontSize = 9.sp,
+                            fontSize = 11.sp,
                         ),
                     )
                 }
@@ -704,7 +704,7 @@ private fun CustomLegalContent(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White,
-                                    fontSize = 9.sp,
+                                    fontSize = 11.sp,
                                 ),
                             )
                         }

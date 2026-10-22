@@ -1,5 +1,8 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -354,17 +357,21 @@ private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Inst
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
     Card(Modifier.clip(shape).patternBackground(Res.drawable.pattern_event, brand.surface).brandGlow(brand.primary, brand.accent)) {
+        // Phones (like the website under 420px): a smaller logo leaves the name, dates and pill room for a line each.
+        BoxWithConstraints {
+        val logo = if (maxWidth < 388.dp) 76.dp else 104.dp
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
-                Modifier.size(104.dp).background(brand.background, shape).border(1.dp, brand.line, shape),
+                Modifier.size(logo).background(brand.background, shape).border(1.dp, brand.line, shape),
                 contentAlignment = Alignment.Center,
-            ) { RemoteImage(event.logo, Modifier.size(96.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(72.dp)) } }
+            ) { RemoteImage(event.logo, Modifier.size(logo - 8.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(logo * 0.7f)) } }
             Column(Modifier.weight(1f)) {
                 Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
                 Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
                 heroDates(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
                 Box(Modifier.padding(top = 8.dp)) { StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During) }
             }
+        }
         }
     }
 }
@@ -700,22 +707,23 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
     val words = LocalWords.current
     Column(Modifier.fillMaxWidth().background(brand.surface).navigationBarsPadding()) {
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-        Row(Modifier.fillMaxWidth().height(64.dp)) {
+        FitTabsRow {
             tabs.forEach { tab ->
                 val on = tab.key == selected
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(tab.key) }),
+                    Modifier.fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(tab.key) }).padding(horizontal = 2.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Box(
-                        Modifier.size(width = 48.dp, height = 26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)),
+                        Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)),
                         contentAlignment = Alignment.Center,
                     ) { TabIcon(tab.key, tab.icon, on) }
+                    // 11sp, never cut off: FitTabsRow gives a long label the width it needs.
                     Text(
                         words(tab.title),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.4.sp, lineHeight = 11.5.sp, color = if (on) brand.primary else brand.muted),
-                        maxLines = 1, softWrap = false, modifier = Modifier.padding(top = 3.dp),
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primary else brand.muted),
+                        maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp),
                     )
                 }
             }
@@ -723,13 +731,22 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
     }
 }
 
-/** "21 Nov 2026 – 22 Nov 2026": the dates line on the website's event card and Memories page. */
+/**
+ * "21–22 Nov 2026" / "30 Nov – 2 Dec 2026" / "30 Dec 2026 – 1 Jan 2027": the dates line on the website's
+ * event card, Home and Memories (SocialKit::dates) — short enough for one line beside the logo on a phone.
+ */
 internal fun heroDates(starts: String?, ends: String?): String? {
     val a = starts?.let { runCatching { LocalDate.parse(it) }.getOrNull() } ?: return null
     val b = ends?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
-    fun text(d: LocalDate) = "${d.dayOfMonth} ${d.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }} ${d.year}"
+    fun month(d: LocalDate) = d.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
+    fun text(d: LocalDate) = "${d.dayOfMonth} ${month(d)} ${d.year}"
 
-    return if (b == null || b == a) text(a) else text(a) + " – " + text(b)
+    return when {
+        b == null || b == a -> text(a)
+        a.year == b.year && a.month == b.month -> "${a.dayOfMonth}–${text(b)}"
+        a.year == b.year -> "${a.dayOfMonth} ${month(a)} – ${text(b)}"
+        else -> text(a) + " – " + text(b)
+    }
 }
 
 /** The guide card shows until it is dismissed, and never to someone who said it is not their first WordCamp. */

@@ -1,5 +1,7 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -231,18 +233,18 @@ internal fun OrgBottomBar(tabs: List<Triple<String, String, String>>, selected: 
     val brand = LocalBrand.current
     Column(Modifier.fillMaxWidth().background(brand.surface).navigationBarsPadding()) {
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-        Row(Modifier.fillMaxWidth().height(64.dp)) {
+        FitTabsRow {
             tabs.forEach { (key, label, icon) ->
                 val on = key == selected
                 Column(
-                    Modifier.weight(1f).fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(key) }),
+                    Modifier.fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(key) }).padding(horizontal = 2.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Box(Modifier.size(width = 48.dp, height = 26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
+                    Box(Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
                         LineIcon(icon, if (on) brand.primary else brand.muted, size = 20.dp)
                     }
-                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.4.sp, lineHeight = 11.5.sp, color = if (on) brand.primary else brand.muted), maxLines = 1, modifier = Modifier.padding(top = 3.dp))
+                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primary else brand.muted), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp))
                 }
             }
         }

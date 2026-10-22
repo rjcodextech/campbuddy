@@ -1,5 +1,7 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -298,7 +300,8 @@ internal fun SearchField(value: String, hint: String = "Search sessions or speak
     ) {
         LineIcon("search", brand.ink, size = 22.dp)
         Box(Modifier.weight(1f)) {
-            if (value.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
+            // One line like the field itself (a long hint on a narrow phone ends in … rather than growing the box).
+            if (value.isEmpty()) Text(hint, style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted), maxLines = 1, overflow = TextOverflow.Ellipsis)
             BasicTextField(
                 value = value,
                 onValueChange = onChange,
@@ -339,13 +342,17 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
     val hasMore = !session.description.isNullOrBlank()
     val type = when (session.sessionType) { "session" -> "Talk"; "custom" -> "Activity"; null -> null; else -> session.sessionType.replaceFirstChar { it.uppercase() } }
 
-    Column(Modifier.fillMaxWidth().background(if (live) brand.peach else Color.Transparent)) {
-        Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-            Text(
-                start?.let { EventClock.time(it, zone) } ?: "TBA",
-                style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(top = 2.dp).width(64.dp),
-            )
+    val timeLabel = start?.let { EventClock.time(it, zone) } ?: "TBA"
+    val timeStyle = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold)
+
+    // Phones (under 480dp, like the website): the time sits on its own line above the title instead of in a
+    // 64dp column beside it, so a long talk title gets the row's full width.
+    BoxWithConstraints(Modifier.fillMaxWidth().background(if (live) brand.peach else Color.Transparent)) {
+    val stacked = maxWidth < 480.dp
+    Column(Modifier.fillMaxWidth()) {
+        if (stacked) Text(timeLabel, style = timeStyle, modifier = Modifier.padding(top = 12.dp))
+        Row(Modifier.fillMaxWidth().padding(top = if (stacked) 4.dp else 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+            if (!stacked) Text(timeLabel, style = timeStyle, modifier = Modifier.padding(top = 2.dp).width(64.dp))
             Column(Modifier.weight(1f)) {
                 Row(
                     Modifier.fillMaxWidth().heightIn(min = 21.dp).clickable(enabled = hasMore, role = Role.Button) { open = !open },
@@ -381,6 +388,7 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
             ) { LineIcon("star", if (saved) brand.accent else brand.muted, size = 22.dp, filled = saved) }
         }
         if (!last) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+    }
     }
 }
 
