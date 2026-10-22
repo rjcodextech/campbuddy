@@ -154,13 +154,18 @@ class EventTime
     }
 
     /**
-     * Whether the event's data is still fetched from its site on a schedule:
-     * only live, upcoming and currently running events.
-     * Ended WordCamps do not need to be crawled again.
+     * Whether the event's data is still fetched from its site — by the
+     * schedule, "Refresh all" and campbuddy:doctor alike: upcoming and running
+     * events, and a finished one until FETCH_DAYS after its last day at the
+     * venue (owner, 22 Oct 2026). After that it is a finished record and is
+     * never crawled again. An event with no dates yet is always fetched, so
+     * its dates can arrive.
      */
     public static function refreshing(Event $event, ?\DateTimeInterface $now = null): bool
     {
-        return ! self::isOver($event, $now);
+        $end = self::endPlus($event, self::FETCH_DAYS);
+
+        return $end === null || CarbonImmutable::instance($now ?? now())->lte($end);
     }
 
     /** The end of the event's last day at the venue plus `$days` (in UTC−12 while the zone is unknown). */

@@ -7,6 +7,7 @@ use App\Jobs\FetchEventInfoJob;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
 use App\Jobs\ParseAttendeeRosterJob;
 use App\Models\Event;
+use App\Support\EventTime;
 use App\Support\SystemHealth;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
@@ -103,10 +104,13 @@ class DoctorCommand extends Command
 
         if (! $this->option('skip-fetch')) {
             $this->components->info('7/7 Fetching live events\' data');
-            $events = Event::whereIn('status', ['approved', 'active'])->orderBy('id')->get();
+            // Only events still being fetched (EventTime::refreshing): a WordCamp that
+            // ended more than FETCH_DAYS ago is a finished record, never crawled again.
+            $events = Event::whereIn('status', ['approved', 'active'])->orderBy('id')->get()
+                ->filter(fn (Event $event) => EventTime::refreshing($event))->values();
 
             if ($events->isEmpty()) {
-                $this->line('  No approved or active events.');
+                $this->line('  No approved or active events still being fetched.');
             }
 
             foreach ($events as $event) {
