@@ -78,6 +78,14 @@ android {
             buildConfigField("String", "API_BASE", "\"https://campbuddy.club/api/v1\"")
         }
     }
+    // Two ways to get the same app: the APK from campbuddy.club, which updates itself (Admin → Mobile app →
+    // App updates; src/direct), and the Play Store build, which Play updates. Play does not allow an app to
+    // install packages, so only "direct" has that permission (src/play has a no-op updater).
+    flavorDimensions += "store"
+    productFlavors {
+        create("direct") { dimension = "store" }
+        create("play") { dimension = "store" }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -97,4 +105,5 @@ dependencies {
     implementation(compose.material3)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    "directImplementation"("androidx.work:work-runtime-ktx:2.10.1") // the APK's update checks in the background
 }

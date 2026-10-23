@@ -42,6 +42,10 @@ Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
     Route::get('/app-config', AppConfigController::class)->name('api.app-config');
     // The native app's server-driven settings (Admin > Mobile app).
     Route::get('/app/config', AppSettingsController::class)->name('api.app.config');
+    // Android APK updates (Admin > Mobile app > App updates): is a newer build live, and its file.
+    Route::get('/app/update', [\App\Http\Controllers\Api\AppUpdateController::class, 'show'])->name('api.app.update');
+    Route::get('/app/releases/{package}/{code}.apk', [\App\Http\Controllers\Api\AppUpdateController::class, 'download'])
+        ->where(['package' => '[a-z][a-z0-9_]*(\.[a-z0-9_]+)+', 'code' => '[0-9]{1,10}'])->name('api.app.releases.download');
 
     // Legal documents for direct in-app native rendering (Privacy notice & Terms of use)
     Route::get('/legal/{slug}', [LegalApiController::class, 'show'])->whereIn('slug', ['privacy', 'terms'])->name('api.legal.show');

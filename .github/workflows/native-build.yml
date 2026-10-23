@@ -37,7 +37,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: campbuddy-native-debug-apk
-          path: native-app/androidApp/build/outputs/apk/debug/*.apk
+          path: native-app/androidApp/build/outputs/apk/*/debug/*.apk
           retention-days: 7
 
   ios:

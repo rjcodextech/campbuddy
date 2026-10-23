@@ -87,11 +87,14 @@ class NativePush
     }
 
     /**
+     * With `$silent`, a data-only message (no notification): the app acts on it in the background
+     * (an app update); `$payload` is then just the data, as strings.
+     *
      * @param  Collection<int, NativePushToken|OrganizerPushToken>  $tokens
-     * @param  array{title: string, body: string, url: string}  $payload
+     * @param  array{title: string, body: string, url: string}|array<string, string>  $payload
      * @return array{sent: int, expired: int}
      */
-    public static function toTokens(Collection $tokens, array $payload, string $kind, int $ttl): array
+    public static function toTokens(Collection $tokens, array $payload, string $kind, int $ttl, bool $silent = false): array
     {
         $result = ['sent' => 0, 'expired' => 0];
         $credentials = self::credentials();
@@ -111,12 +114,12 @@ class NativePush
         $url = 'https://fcm.googleapis.com/v1/projects/'.rawurlencode($credentials['project_id']).'/messages:send';
         $list = $tokens->values();
 
-        $requests = function () use ($list, $payload, $kind, $ttl, $url, $bearer) {
+        $requests = function () use ($list, $payload, $kind, $ttl, $url, $bearer, $silent) {
             foreach ($list as $token) {
                 yield new Request('POST', $url, [
                     'Authorization' => 'Bearer '.$bearer,
                     'Content-Type' => 'application/json',
-                ], json_encode(self::message($token->token, $payload, $kind, $ttl)));
+                ], json_encode($silent ? self::dataMessage($token->token, $payload, $kind, $ttl) : self::message($token->token, $payload, $kind, $ttl)));
             }
         };
 
@@ -165,6 +168,21 @@ class NativePush
                 'headers' => ['apns-expiration' => (string) (time() + $ttl), 'apns-collapse-id' => substr($kind, 0, 64)],
                 'payload' => ['aps' => ['sound' => 'default']],
             ],
+        ]];
+    }
+
+    /**
+     * A data-only FCM message for one Android install: nothing is shown, the app's messaging
+     * service handles it (older apps ignore a message without a title).
+     *
+     * @param  array<string, string>  $data
+     */
+    public static function dataMessage(string $token, array $data, string $kind, int $ttl): array
+    {
+        return ['message' => [
+            'token' => $token,
+            'data' => array_map('strval', $data) + ['kind' => $kind],
+            'android' => ['priority' => 'HIGH', 'ttl' => $ttl.'s', 'collapse_key' => $kind],
         ]];
     }
 

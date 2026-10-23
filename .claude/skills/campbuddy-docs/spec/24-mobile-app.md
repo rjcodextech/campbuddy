@@ -1,5 +1,7 @@
 # §24 Mobile app (Android + iOS)
 
+**APK auto-update (23 Oct 2026):** the Android app has two flavors: `direct` (the APK from campbuddy.club, updates itself) and `play` (Play Store AAB, no install permission). Admin → Mobile app → **App updates** uploads a release APK (checked on the server by `App\Support\ApkInspector`: package, newer build, same signing key), publishes it (silent FCM push `kind=app-update`), withdraws it. API: `GET /api/v1/app/update?package=&code=`, file `GET /api/v1/app/releases/{package}/{code}.apk` (Range, immutable), share link `/app/android`. Table `app_releases`. The phone verifies size, SHA-256, package, build number and signing key before PackageInstaller (silent on Android 12+ after the one-time "Install unknown apps" OK). Steps for the owner: `../mobile/SETUP.md` §6b-2.
+
 **Status (22 Oct 2026):** the store app is the native Kotlin app (`native-app/`, Android + iOS); the Capacitor shell described below (`mobile-app/app/`) was retired and deleted on 22 Oct 2026 — the website keeps `native-bridge.js` so phones that still have that shell keep working. Setup, deployment, iOS and API docs: [`../mobile/`](../mobile/) (`SETUP.md`, `DEPLOYMENT.md`, `ios-build-on-mac.md`, `native-status.md`, `api-spec.md`, `server-driven-config.md`).
 
 ## What it is

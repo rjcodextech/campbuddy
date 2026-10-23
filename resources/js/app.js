@@ -14,6 +14,9 @@ if (/^\/(admin|manager)(\/|$)/.test(location.pathname) && /CampBuddyApp\//.test(
 // Only the "QR codes" pages have [data-qr-kit] cards; the QR library is loaded just there.
 if (document.querySelector('[data-qr-kit]')) import('./qr-kit').then((kit) => kit.initQrKit());
 
+// Mobile app → App updates: the APK upload (in pieces, checked on the server).
+if (document.querySelector('[data-app-release-upload]')) import('./app-release-upload').then((m) => m.initAppReleaseUpload());
+
 // Analytics → Usage post (drawn in the browser from the WordCamp's numbers).
 if (document.querySelector('[data-usage-post]')) import('./usage-post').then((m) => m.initUsagePost());
 

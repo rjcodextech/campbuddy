@@ -87,6 +87,9 @@ Route::withoutMiddleware([
     Route::get('/privacy', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('privacy');
     Route::get('/terms', [\App\Http\Controllers\LegalPageController::class, 'terms'])->name('terms');
 
+    // The newest Android APK (Admin → Mobile app → App updates): the link to share for a first install.
+    Route::get('/app/android', [\App\Http\Controllers\Api\AppUpdateController::class, 'latest'])->name('app.android');
+
     // PWA manifest for the picker page and any page without an event of its own.
     Route::get('/manifest.webmanifest', ManifestController::class)->name('manifest');
 
@@ -149,6 +152,13 @@ Route::prefix('admin')->group(function () {
         Route::post('mobile-app/publish', [MobileAppController::class, 'publish'])->name('admin.mobile.publish');
         Route::post('mobile-app/discard', [MobileAppController::class, 'discard'])->name('admin.mobile.discard');
         Route::post('mobile-app/rollback/{version}', [MobileAppController::class, 'rollback'])->whereNumber('version')->name('admin.mobile.rollback');
+        // Android app updates outside the Play Store (App updates tab).
+        Route::post('mobile-app/releases/chunk', [\App\Http\Controllers\Admin\AppReleaseController::class, 'chunk'])->name('admin.mobile.releases.chunk');
+        Route::post('mobile-app/releases', [\App\Http\Controllers\Admin\AppReleaseController::class, 'store'])->name('admin.mobile.releases.store');
+        Route::post('mobile-app/releases/{release}/publish', [\App\Http\Controllers\Admin\AppReleaseController::class, 'publish'])->whereNumber('release')->name('admin.mobile.releases.publish');
+        Route::post('mobile-app/releases/{release}/withdraw', [\App\Http\Controllers\Admin\AppReleaseController::class, 'withdraw'])->whereNumber('release')->name('admin.mobile.releases.withdraw');
+        Route::delete('mobile-app/releases/{release}', [\App\Http\Controllers\Admin\AppReleaseController::class, 'destroy'])->whereNumber('release')->name('admin.mobile.releases.destroy');
+        Route::get('mobile-app/releases/{release}/download', [\App\Http\Controllers\Admin\AppReleaseController::class, 'download'])->whereNumber('release')->name('admin.mobile.releases.download');
         Route::post('mobile-app/{section}', [MobileAppController::class, 'save'])->whereIn('section', ['navigation', 'home', 'text', 'look', 'banner', 'switches'])->name('admin.mobile.save');
 
         // Everything that is failing, in one place (the dashboard only summarises it).

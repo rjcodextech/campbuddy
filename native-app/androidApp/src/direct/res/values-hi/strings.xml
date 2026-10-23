@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_channel">ऐप अपडेट</string>
+    <string name="update_ready_title">CampBuddy अपडेट तैयार है</string>
+    <string name="update_ready_text">नया वर्ज़न इंस्टॉल करने के लिए टैप कीजिए।</string>
+    <string name="update_allow_text">CampBuddy खोलिए और उसे अपने अपडेट इंस्टॉल करने की अनुमति दीजिए।</string>
+    <string name="update_done_title">CampBuddy %1$s पर अपडेट हो गया</string>
+    <string name="update_done_text">खोलने के लिए टैप कीजिए।</string>
+</resources>

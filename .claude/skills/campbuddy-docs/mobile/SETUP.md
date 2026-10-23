@@ -122,9 +122,25 @@ Deploy ke baad:
 
 ## 6b. Release builds
 
-- **Android:** `bash native-app/build-native.sh release` → `.aab` Play Console → Internal testing mein upload karo.
+- **Android:** `bash native-app/build-native.sh release` → do file `native-app/release/` mein (gitignored):
+  - `CampBuddy-<version>.apk` = **direct** flavor (khud update hone wala APK) → Admin → Mobile app → **App updates** mein upload.
+  - `CampBuddy-<version>-play.aab` = **play** flavor (install permission nahi, Play policy) → Play Console → Internal testing.
+- Debug: `build-native.sh debug` dono flavor banata hai: `androidApp/build/outputs/apk/{direct,play}/debug/`.
 - **iOS:** Mac par `bash native-app/build-ios.sh archive` / `upload` (dekho `ios-build-on-mac.md`).
 - Dono se pehle: `npm run check:sync`.
+
+## 6b-2. APK auto-update (23 Oct 2026)
+
+Play Store ke bahar APK wale phones apne aap update hote hain:
+1. `build-native.sh release` → `native-app/release/CampBuddy-<version>.apk`.
+2. Admin → Mobile app → **App updates** → APK upload (tukdon mein, shared hosting ki limit ke hisaab se; server SHA-256 milata hai). Server check karta hai: package `club.campbuddy.app`, build number har purane upload se bada, wahi signing key (pehle upload jaisa; `MOBILE_ANDROID_SHA256` set ho to usme bhi). Galat file reason ke saath reject. Draft banta hai.
+3. **Publish** → silent push (FCM data `kind=app-update`) un Android phones ko jo purane version par hain + app khud check karta hai: khulne par (30 min mein ek baar), har 6 ghante (WorkManager), aur push par.
+4. Phone: download (resume hota hai) → size + SHA-256 + package + bada build + same signing key check → PackageInstaller. Android 12+ par app khud ko bina tap update karta hai; pehli baar "Install unknown apps" ki permission chahiye (app samjhakar Settings kholta hai). App screen par ho to "CampBuddy x.y.z / Install / Later" sheet; Later ya app band karne ke 3 min baad apne aap install. **Required** version: purane phone sirf update screen dekhte hain.
+5. **Withdraw** = aage offer band (jinke paas hai unke paas rahega). Draft/withdrawn delete ho sakte hain.
+- Pehli baar ka link (jinke paas app nahi ya purana APK bina updater): `https://campbuddy.club/app/android` (newest live APK).
+- Files server par `storage/app/private/app-releases/` mein — hosting badle to ye folder bhi copy karo. Download URL versioned hai (`/api/v1/app/releases/<package>/<build>.apk`), Cloudflare cache kar sakta hai.
+- Local test: `.native` debug package sirf local/testing env mein accept hota hai.
+- App sab jagah domain (campbuddy.club) use karta hai, IP nahi — `tests/Feature/AppUsesDomainTest.php` ise pakka karta hai. Hosting badalne par sirf Cloudflare DNS badlo, app update ki zarurat nahi.
 
 ## 6c. Organizer (admin / event manager) app mein
 

@@ -98,6 +98,9 @@ class MainActivity : ComponentActivity() {
         }
 
         val cardExport = AndroidCardExport(this)
+        val api = apiBase(prefs)
+        // The APK build updates itself (Admin → Mobile app → App updates); null in the Play build.
+        val updater = club.campbuddy.app.update.Updates.updater(applicationContext, api)
 
         setContent {
             App(
@@ -125,9 +128,20 @@ class MainActivity : ComponentActivity() {
                             .build()
                         runCatching { tab.launchUrl(this@MainActivity, Uri.parse(url)) }.onFailure { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                     },
-                    apiBase = apiBase(prefs),
+                    apiBase = api,
+                    updater = updater,
                 )
             )
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        club.campbuddy.app.update.Updates.onForeground(applicationContext, true)
+    }
+
+    override fun onStop() {
+        club.campbuddy.app.update.Updates.onForeground(applicationContext, false)
+        super.onStop()
     }
 }

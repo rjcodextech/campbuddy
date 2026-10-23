@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AppRelease;
 use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\EventManager;
@@ -17,6 +18,7 @@ use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route as Router;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -62,6 +64,13 @@ class EveryPageAndAccessTest extends TestCase
         $table = \App\Models\ContributorTable::create(['event_id' => $this->event->id, 'team' => 'polyglots', 'leads' => [['name' => 'Asha Rao', 'roster_id' => $entry->id]]]);
         $manager = EventManager::factory()->create(['is_active' => true]);
         $manager->events()->attach($this->event->id);
+        // An uploaded Android APK (Mobile app → App updates), so its download page has a file to send.
+        Storage::fake('local');
+        Storage::disk('local')->put('app-releases/club.campbuddy.app/13-test.apk', file_get_contents(base_path('tests/Fixtures/apk/campbuddy-13.apk')));
+        $release = AppRelease::create([
+            'package' => 'club.campbuddy.app', 'version_code' => 13, 'version_name' => '0.0.13', 'file' => 'app-releases/club.campbuddy.app/13-test.apk',
+            'size' => 8339, 'sha256' => str_repeat('a', 64), 'cert_sha256' => str_repeat('b', 64), 'status' => AppRelease::DRAFT,
+        ]);
 
         $this->params = [
             'event' => $this->event->id,
@@ -84,6 +93,7 @@ class EveryPageAndAccessTest extends TestCase
             'discoveryId' => str_repeat('a', 64),
             'version' => 1,
             'section' => 'text',
+            'release' => $release->id,
             // Breeze's e-mail verification link.
             'id' => 1,
             'hash' => sha1('x'),

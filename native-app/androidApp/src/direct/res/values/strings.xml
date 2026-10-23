@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Notifications of the APK build's self-updater (ApkUpdater). In-app texts come from Admin → Mobile app → Text. -->
+<resources>
+    <string name="update_channel">App updates</string>
+    <string name="update_ready_title">CampBuddy update ready</string>
+    <string name="update_ready_text">Tap to install the new version.</string>
+    <string name="update_allow_text">Open CampBuddy to allow it to install its updates.</string>
+    <string name="update_done_title">CampBuddy updated to %1$s</string>
+    <string name="update_done_text">Tap to open it.</string>
+</resources>

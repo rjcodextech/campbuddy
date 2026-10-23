@@ -16,6 +16,8 @@ import com.google.firebase.messaging.RemoteMessage
  */
 class CampBuddyMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
+        // The silent "new version" push (APK build only): check and download in the background, show nothing.
+        if (club.campbuddy.app.update.Updates.onPush(applicationContext, message.data)) return
         val title = message.notification?.title ?: message.data["title"] ?: return
         val body = message.notification?.body ?: message.data["body"].orEmpty()
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

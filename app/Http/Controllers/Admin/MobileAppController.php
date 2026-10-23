@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppRelease;
+use App\Support\AppReleases;
 use App\Support\LineIcons;
 use App\Support\MobileAppConfig;
 use App\Support\MobileAppDefaults;
@@ -20,7 +22,7 @@ use Illuminate\View\View;
  */
 class MobileAppController extends Controller
 {
-    public const TABS = ['overview', 'navigation', 'home', 'text', 'look', 'banner', 'switches', 'history'];
+    public const TABS = ['overview', 'navigation', 'home', 'text', 'look', 'banner', 'switches', 'updates', 'history'];
 
     public function index(Request $request): View
     {
@@ -39,6 +41,11 @@ class MobileAppController extends Controller
             'icons' => array_merge(['home', 'dashboard'], array_keys(LineIcons::ICONS)),
             'conditions' => MobileAppDefaults::VISIBLE_IF,
             'errors_list' => session('config_errors', []),
+            // App updates tab (App\Support\AppReleases): Android APK builds and which versions phones run.
+            'releases' => $tab === 'updates' ? AppRelease::with(['uploader:id,name', 'publisher:id,name'])->orderByDesc('version_code')->get() : collect(),
+            'adoption' => $tab === 'updates' ? AppReleases::adoption() : [],
+            'requiredCode' => $tab === 'updates' ? AppReleases::requiredCode((string) config('mobile_app.app_id')) : 0,
+            'chunkSize' => AppReleases::chunkSize(),
         ]);
     }
 

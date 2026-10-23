@@ -1,5 +1,5 @@
 @php
-    $labels = ['overview' => 'Overview', 'navigation' => 'Navigation', 'home' => 'Home', 'text' => 'Text & languages', 'look' => 'Look', 'banner' => 'Banner', 'switches' => 'Switches', 'history' => 'History'];
+    $labels = ['overview' => 'Overview', 'navigation' => 'Navigation', 'home' => 'Home', 'text' => 'Text & languages', 'look' => 'Look', 'banner' => 'Banner', 'switches' => 'Switches', 'updates' => 'App updates', 'history' => 'History'];
     $strings = $config['strings'];
     $defaultsEn = \App\Support\MobileAppDefaults::strings('en');
     $input = 'block w-full rounded-md border-line text-sm shadow-xs focus:border-maroon focus:ring-maroon';
@@ -782,6 +782,104 @@
                 </x-card>
                 <x-button>Save to draft</x-button>
             </form>
+        @endif
+
+        {{-- App updates: Android APK builds (App\Support\AppReleases) --}}
+        @if ($tab === 'updates')
+            @php
+                $live = $releases->where('status', \App\Models\AppRelease::LIVE)->where('package', config('mobile_app.app_id'))->sortByDesc('version_code')->first();
+                $required = $requiredCode ? $releases->firstWhere('version_code', $requiredCode) : null;
+                $totalPhones = array_sum(array_column($adoption, 'phones'));
+            @endphp
+            <x-card title="Where things stand" description="Phones that installed the CampBuddy APK (not the Play Store app, not iPhone) check here when the app opens and every few hours. They download the newest live version, check that it is genuine, and install it. Android asks the person to tap Install the first time; after that most phones (Android 12 and newer) update on their own.">
+                <dl class="grid gap-4 text-sm sm:grid-cols-3">
+                    <div><dt class="text-muted">Newest live version</dt><dd class="text-lg font-semibold">{{ $live ? $live->version_name.' (build '.$live->version_code.')' : 'None yet' }}</dd></div>
+                    <div><dt class="text-muted">Required from</dt><dd class="text-lg font-semibold">{{ $required ? $required->version_name : 'Nothing required' }}</dd></div>
+                    <div><dt class="text-muted">Link for a first install</dt><dd class="break-all">@if ($live)<a class="cb-btn-link" href="{{ route('app.android') }}">{{ route('app.android') }}</a>@else <span class="text-muted">Publish a version first</span>@endif</dd></div>
+                </dl>
+                <div class="mt-5">
+                    <p class="text-sm font-medium">Android phones by app version <span class="font-normal text-muted">(phones that turned on notifications for an event)</span></p>
+                    @if ($adoption)
+                        <ul class="mt-2 flex flex-wrap gap-2 text-sm">
+                            @foreach ($adoption as $row)
+                                <li><x-badge :variant="$live && version_compare($row['version'], $live->version_name, '>=') ? 'success' : 'neutral'">{{ $row['version'] }} · {{ $row['phones'] }} {{ $row['phones'] === 1 ? 'phone' : 'phones' }}</x-badge></li>
+                            @endforeach
+                        </ul>
+                        <p class="mt-1 text-xs text-muted">{{ $totalPhones }} {{ $totalPhones === 1 ? 'phone' : 'phones' }} in all.</p>
+                    @else
+                        <p class="mt-1 text-sm text-muted">No phone has reported its version yet.</p>
+                    @endif
+                </div>
+            </x-card>
+
+            <x-card title="Upload a new version" description="The release APK from: bash native-app/build-native.sh release (it prints where the file is). The server checks that it is CampBuddy, newer than every upload so far, and signed with the same key, and refuses it otherwise.">
+                <form data-app-release-upload data-chunk-url="{{ route('admin.mobile.releases.chunk') }}" data-store-url="{{ route('admin.mobile.releases.store') }}" data-chunk-size="{{ $chunkSize }}" class="space-y-4">
+                    <div>
+                        <label for="release-file" class="mb-1 block text-sm font-medium">APK file</label>
+                        <input id="release-file" name="file" type="file" accept=".apk,application/vnd.android.package-archive" required class="block w-full text-sm">
+                    </div>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div>
+                            <label for="release-notes-en" class="mb-1 block text-sm font-medium">What's new (English, optional)</label>
+                            <textarea id="release-notes-en" name="notes_en" maxlength="500" rows="3" class="{{ $input }}" placeholder="e.g. Faster schedule, fixed the Camp Card share"></textarea>
+                        </div>
+                        <div>
+                            <label for="release-notes-hi" class="mb-1 block text-sm font-medium">What's new (Hindi, optional)</label>
+                            <textarea id="release-notes-hi" name="notes_hi" maxlength="500" rows="3" class="{{ $input }}"></textarea>
+                        </div>
+                    </div>
+                    <label class="flex items-start gap-2 text-sm"><input type="checkbox" name="required" value="1" class="mt-0.5"> <span><span class="font-medium">Required update.</span> Phones older than this cannot use the app until they install it. Use it for a serious bug, not for every update.</span></label>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <x-button data-upload-button>Upload and check</x-button>
+                        <progress data-upload-progress value="0" max="100" class="hidden h-2 w-48" aria-label="Upload progress"></progress>
+                    </div>
+                    <p data-upload-status role="status" aria-live="polite" class="text-sm text-muted"></p>
+                </form>
+            </x-card>
+
+            <x-card title="Versions" description="Publish sends a version to phones. Withdraw stops offering it (phones that have it keep it). Only drafts and withdrawn versions can be deleted.">
+                @forelse ($releases as $release)
+                    <div class="flex flex-wrap items-start justify-between gap-3 border-t border-line py-3 first:border-t-0">
+                        <div class="min-w-0">
+                            <p class="font-medium">
+                                {{ $release->version_name }} <span class="font-normal text-muted">build {{ $release->version_code }}</span>
+                                @if ($release->status === \App\Models\AppRelease::LIVE)<x-badge variant="success">Live</x-badge>@elseif ($release->status === \App\Models\AppRelease::DRAFT)<x-badge variant="warning">Draft</x-badge>@else<x-badge>Withdrawn</x-badge>@endif
+                                @if ($release->required)<x-badge variant="danger">Required</x-badge>@endif
+                                @if ($release->package !== config('mobile_app.app_id'))<x-badge variant="info">{{ $release->package }}</x-badge>@endif
+                            </p>
+                            <p class="text-sm text-muted">
+                                {{ number_format($release->size / 1048576, 1) }} MB
+                                · uploaded {{ $release->created_at->format('j M Y, g:ia') }}@if ($release->uploader) by {{ $release->uploader->name }}@endif
+                                @if ($release->published_at) · published {{ $release->published_at->format('j M Y, g:ia') }}@endif
+                                @if ($release->pushed_to !== null) · push sent to {{ $release->pushed_to }} {{ $release->pushed_to === 1 ? 'phone' : 'phones' }}@endif
+                            </p>
+                            @if ($release->notes_en)<p class="mt-1 text-sm">{{ $release->notes_en }}</p>@endif
+                            <p class="mt-1 break-all font-mono text-xs text-muted">SHA-256 {{ $release->sha256 }} · key {{ substr($release->cert_sha256, 0, 16) }}…</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <x-button variant="secondary" size="sm" :href="route('admin.mobile.releases.download', $release)">Download</x-button>
+                            @if ($release->status !== \App\Models\AppRelease::LIVE)
+                                <form method="POST" action="{{ route('admin.mobile.releases.publish', $release) }}" onsubmit="return confirm('Send version {{ $release->version_name }} to every phone with the APK app?')">
+                                    @csrf
+                                    <x-button size="sm">Publish</x-button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.mobile.releases.destroy', $release) }}" onsubmit="return confirm('Delete version {{ $release->version_name }}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button variant="danger-outline" size="sm">Delete</x-button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('admin.mobile.releases.withdraw', $release) }}" onsubmit="return confirm('Stop offering version {{ $release->version_name }}?')">
+                                    @csrf
+                                    <x-button variant="secondary" size="sm">Withdraw</x-button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-sm text-muted">No version uploaded yet.</p>
+                @endforelse
+            </x-card>
         @endif
 
         {{-- History --}}

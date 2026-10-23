@@ -4,13 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +23,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import club.campbuddy.shared.data.ApiClient
@@ -28,6 +33,8 @@ import club.campbuddy.shared.data.UserData
 import club.campbuddy.shared.ui.Env
 import club.campbuddy.shared.ui.LocalEnv
 import club.campbuddy.shared.ui.ReminderSync
+import club.campbuddy.shared.domain.AppUpdater
+import club.campbuddy.shared.domain.UpdateState
 import club.campbuddy.shared.domain.compareVersions
 import club.campbuddy.shared.model.OrganizerEvent
 import club.campbuddy.shared.ui.DataSweep
@@ -39,6 +46,9 @@ import club.campbuddy.shared.ui.OrganizerHomeScreen
 import club.campbuddy.shared.ui.OrganizerLoginScreen
 import club.campbuddy.shared.ui.PickerScreen
 import club.campbuddy.shared.ui.PrimaryButton
+import club.campbuddy.shared.ui.QuietButton
+import club.campbuddy.shared.ui.Sheet
+import club.campbuddy.shared.ui.SheetActions
 import club.campbuddy.shared.ui.Words
 
 /** What the platform shell hands the shared app. */
@@ -65,6 +75,8 @@ class AppDeps(
     val makePdf: (club.campbuddy.shared.domain.DayPdf) -> ByteArray? = { null },
     /** A picture as PNG bytes (the Social media card sent to Publish); null where the phone cannot. */
     val encodePng: (androidx.compose.ui.graphics.ImageBitmap) -> ByteArray? = { null },
+    /** The APK build's self-updater; null on iPhone and in the Play Store build (their stores update them). */
+    val updater: club.campbuddy.shared.domain.AppUpdater? = null,
 )
 
 private sealed interface Screen {
@@ -101,15 +113,17 @@ fun App(deps: AppDeps) {
 
     val words = Words(config, deps.language)
     val minimum = if (deps.platform == "ios") config.minApp.ios else config.minApp.android
+    val update by (deps.updater?.state ?: remember { kotlinx.coroutines.flow.MutableStateFlow<UpdateState>(UpdateState.Idle) }).collectAsState()
 
     CampBuddyTheme(words) {
       CompositionLocalProvider(LocalEnv provides env) {
         ReminderSync()
         DataSweep()
-        if (compareVersions(deps.appVersion, minimum) < 0) {
-            UpdateScreen(words, deps)
+        if (compareVersions(deps.appVersion, minimum) < 0 || update.required) {
+            UpdateScreen(words, deps, update)
             return@CompositionLocalProvider
         }
+        UpdatePrompt(words, deps, update)
 
         val scope = rememberCoroutineScope()
         fun push(screen: Screen) = stack.add(screen)
@@ -170,12 +184,75 @@ fun App(deps: AppDeps) {
     }
 }
 
+/** This build may no longer be used. The APK build updates itself from here; iPhone and the Play build open the website. */
 @Composable
-private fun UpdateScreen(words: Words, deps: AppDeps) {
+private fun UpdateScreen(words: Words, deps: AppDeps, update: UpdateState) {
     val brand = LocalBrand.current
+    val updater = deps.updater
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(words("common.update_title"), style = MaterialTheme.typography.headlineSmall)
-        Text(words("common.update_text"), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = 12.dp))
-        PrimaryButton("Update", { deps.openUrl("https://campbuddy.club") })
+        Text(words("common.update_title"), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
+        Text(words("common.update_text"), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 12.dp))
+        if (updater == null) {
+            PrimaryButton("Update", { deps.openUrl("https://campbuddy.club") })
+            return@Column
+        }
+        UpdateSteps(words, deps, updater, update)
+    }
+}
+
+/** The steps of an update in progress, shared by the blocking screen and the "new version" sheet. */
+@Composable
+private fun UpdateSteps(words: Words, deps: AppDeps, updater: AppUpdater, update: UpdateState) {
+    val brand = LocalBrand.current
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        when (update) {
+            is UpdateState.Downloading -> {
+                Text(words("common.update_downloading"), style = MaterialTheme.typography.bodyMedium)
+                LinearProgressIndicator(progress = { update.percent / 100f }, modifier = Modifier.fillMaxWidth(), color = brand.primary, trackColor = brand.line)
+            }
+            is UpdateState.Installing -> CircularProgressIndicator(color = brand.primary)
+            is UpdateState.NeedsPermission -> {
+                Text(words("common.update_allow"), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+                PrimaryButton(words("common.update_allow_button"), updater::allowInstalls, Modifier.fillMaxWidth())
+            }
+            is UpdateState.Ready -> PrimaryButton(words("common.update_install"), updater::install, Modifier.fillMaxWidth())
+            is UpdateState.Failed -> {
+                Text(words("common.update_failed"), style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger), textAlign = TextAlign.Center)
+                PrimaryButton(words("common.retry"), updater::check, Modifier.fillMaxWidth())
+            }
+            UpdateState.Idle -> PrimaryButton(words("common.update_now"), updater::check, Modifier.fillMaxWidth())
+        }
+        if (update is UpdateState.Failed || update == UpdateState.Idle) {
+            // Last resort: the newest APK from the website (same domain as the API).
+            QuietButton(words("common.update_browser"), { deps.openUrl(deps.apiBase.substringBefore("/api/") + "/app/android") }, Modifier.fillMaxWidth())
+        }
+    }
+}
+
+/**
+ * A newer version is downloaded and checked: offered once. "Later" (or closing the sheet) installs it the next
+ * time the app is closed instead; if Android first needs the person's OK, the sheet asks for that.
+ */
+@Composable
+private fun UpdatePrompt(words: Words, deps: AppDeps, update: UpdateState) {
+    val updater = deps.updater ?: return
+    val version = when (update) {
+        is UpdateState.Ready -> update.version.takeUnless { update.postponed }
+        is UpdateState.NeedsPermission -> update.version
+        else -> null
+    } ?: return
+    val brand = LocalBrand.current
+    val ready = update as? UpdateState.Ready
+    val actions: (@Composable () -> Unit)? = if (ready == null) null else {
+        { SheetActions(words("common.update_install"), updater::install, words("common.update_later"), updater::later) }
+    }
+    Sheet("CampBuddy $version", onClose = updater::later, actions = actions) {
+        if (ready == null) {
+            UpdateSteps(words, deps, updater, update)
+        } else {
+            Text(words("common.update_ready"), style = MaterialTheme.typography.bodyLarge)
+            val notes = ready.notes[deps.language]?.takeIf(String::isNotBlank) ?: ready.notes["en"].orEmpty()
+            if (notes.isNotBlank()) Text(notes, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+        }
     }
 }
