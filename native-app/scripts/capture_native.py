@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-TOOLS = HERE.parents[1] / "mobile-app" / "Tools"
+TOOLS = HERE.parent / "Tools"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("screens", nargs="*", default=["home", "my-day", "quest", "contribute", "explore", "camp-card"])

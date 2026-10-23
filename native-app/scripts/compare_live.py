@@ -14,7 +14,7 @@ from pathlib import Path
 from PIL import Image
 
 HERE = Path(__file__).resolve().parent
-TOOLS = HERE.parents[1] / "mobile-app" / "Tools"
+TOOLS = HERE.parent / "Tools"
 LIVE = HERE / "pwa-reference" / "live"
 
 parser = argparse.ArgumentParser()

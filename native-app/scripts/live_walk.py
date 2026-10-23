@@ -3,8 +3,8 @@ import os, re, subprocess, sys, time
 import xml.etree.ElementTree as ET
 
 ROOT = r"E:\Sites\InHouse\campbuddy\V2"
-ADB = ROOT + r"\mobile-app\Tools\android-build\sdk\platform-tools\adb.exe"
-ENV = {**os.environ, "USERPROFILE": ROOT + r"\mobile-app\Tools\adb-home", "HOME": ROOT + r"\mobile-app\Tools\adb-home"}
+ADB = ROOT + r"\native-app\Tools\android-build\sdk\platform-tools\adb.exe"
+ENV = {**os.environ, "USERPROFILE": ROOT + r"\native-app\Tools\adb-home", "HOME": ROOT + r"\native-app\Tools\adb-home"}
 SERIAL = sys.argv[1] if len(sys.argv) > 1 else "ZD2228YJHF"
 PKG = "club.campbuddy.app"
 OUT = ROOT + r"\native-app\scripts\emulator-smoke-out"

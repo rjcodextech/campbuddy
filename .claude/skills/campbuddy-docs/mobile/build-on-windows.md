@@ -1,12 +1,12 @@
 # Build, CI, Windows
 
 ## Aapki machine (Windows)
-- **Android Studio** + JDK 21 (pehle se `mobile-app/Tools` mein): shared Kotlin + Android app yahin build aur phone par chalega (USB, jaise abhi).
+- **Android Studio** + JDK 21 (pehle se `native-app/Tools` mein): shared Kotlin + Android app yahin build aur phone par chalega (USB, jaise abhi).
 - iOS: Windows par Kotlin/Native iOS compile nahi hota. Isliye **cloud macOS**: GitHub Actions `macos-15` (ya Codemagic). Wahi IPA/TestFlight banata hai.
 - iOS ka UI check: CI screenshot tests (simulator) + TestFlight; Compose Multiplatform ka UI Android jaisa hi render hota hai, farak sirf platform hisse (notifications, biometric, share) mein.
 
 ## Repo
-`native/` folder isi repo mein (`mobile-app/native/` ke bagal mein alag top-level `native-app/` code folder, docs yahan). `mobile-app/Tools` ke andar hi sab caches (aapka niyam: project se bahar kuch nahi).
+Code top-level `native-app/` folder mein, docs `.claude/skills/campbuddy-docs/mobile/` mein. Build tools aur sab caches `native-app/Tools` ke andar (gitignored; aapka niyam: project se bahar kuch nahi). `mobile-app/` folder 23 Oct 2026 ko hata diya.
 
 ## CI jobs
 | Job | Kya |

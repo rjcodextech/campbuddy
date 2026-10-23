@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Builds the native (Kotlin) Android app with every tool and cache kept inside mobile-app/Tools.
+# Builds the native (Kotlin) Android app with every tool and cache kept inside native-app/Tools (gitignored).
 #   bash native-app/build-native.sh [test|debug|release]
 set -euo pipefail
 
 MODE="${1:-debug}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-TOOLS="$(cd "$HERE/../mobile-app/Tools" && pwd)"
+TOOLS="$(cd "$HERE/Tools" && pwd)"
 BUILD="$TOOLS/android-build"
 
 export JAVA_HOME="$(ls -d "$BUILD"/jdk-21* | head -1)"

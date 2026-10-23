@@ -5,3 +5,6 @@ build/
 *.iml
 .idea/
 scripts/pwa-reference/
+
+# Local build tools (JDK, Android SDK, Gradle, emulator) - machine-only, never committed
+Tools/

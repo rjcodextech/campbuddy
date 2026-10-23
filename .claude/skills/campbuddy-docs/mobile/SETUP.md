@@ -108,7 +108,13 @@ Deploy ke baad:
 
 ## 6. Build aur test
 
-- Local: `bash native-app/build-native.sh debug` (tools `mobile-app/Tools` mein).
+- Local: `bash native-app/build-native.sh debug` (tools `native-app/Tools` mein; ye folder git mein nahi jaata).
+- `native-app/Tools` (23 Oct 2026 se; pehle `mobile-app/Tools` tha, wo folder hata diya):
+  - `android-build/jdk-21.0.12.1+1` (Temurin JDK 21) aur `android-build/gradle-8.14.3`
+  - `android-build/sdk`: cmdline-tools/latest, platform-tools (adb), `platforms;android-36`, `build-tools;36.0.0`, emulator, `system-images;android-35;google_apis;x86_64`
+  - `avd/cb.avd` (Pixel 6 emulator "cb"), `gradle-home`, `android-home`, `adb-home` (sab cache yahin, project se bahar kuch nahi)
+  - Dobara banana ho: JDK (api.adoptium.net), Gradle (services.gradle.org), `commandlinetools-win-11076708_latest.zip` (dl.google.com) download karke wahi folder naam rakho; phir `sdkmanager --sdk_root=<sdk> --licenses` aur upar wale packages; emulator: `ANDROID_AVD_HOME=native-app/Tools/avd avdmanager create avd -n cb -k "system-images;android-35;google_apis;x86_64" -d pixel_6`.
+  - Emulator chalana: `ANDROID_AVD_HOME=native-app/Tools/avd`, `ANDROID_SDK_ROOT=native-app/Tools/android-build/sdk`, phir `sdk/emulator/emulator.exe -avd cb -no-window -no-audio -no-snapshot -gpu swiftshader_indirect -no-boot-anim`.
 - CI: GitHub → Actions → **Native app build** (APK artifact). 
 - Icons dobara banane ho: `php artisan campbuddy:app-icons`.
 - Version (21 Oct 2026 se 0.0.1 se shuru): **har build par apne aap +1** hota hai. Native app: `native-app/version.properties` (agle build ka version) — `build-native.sh` har debug/release build ke baad `bump-version.sh` chalata hai (versionName patch +1, versionCode +1, iOS `project.yml` bhi). versionCode sirf badhta hai (store ki shart).

@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-TOOLS = HERE.parent.parent / "mobile-app" / "Tools"
+TOOLS = HERE.parent / "Tools"
 PKG = "club.campbuddy.app.native"
 API = "http://10.0.2.2:8099/api/v1"
 OUT = HERE / "emulator-smoke-out"
