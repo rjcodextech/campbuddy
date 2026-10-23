@@ -810,6 +810,8 @@ private fun SponsorList(slug: String) {
                                     }
                                     Box(
                                         Modifier.weight(1f).heightIn(min = 54.dp).background(bg, Radii.input).border(1.dp, border, Radii.input)
+                                            // The logo is a picture: the sponsor's name is what a screen reader says.
+                                            .semantics(mergeDescendants = true) { contentDescription = sponsor.name }
                                             .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
