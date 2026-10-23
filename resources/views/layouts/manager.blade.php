@@ -17,14 +17,14 @@
         @vite(['resources/css/fonts.css', 'resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="min-h-full bg-paper font-sans text-ink antialiased">
-        <a href="#main-content" class="sr-only z-[60] rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+        <a href="#main-content" class="sr-only z-60 rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
             Skip to content
         </a>
 
         <div class="flex min-h-screen flex-col">
             <div class="bg-navy text-white">
                 <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-                    <a href="{{ route('manager.dashboard') }}" class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex min-w-0 items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                    <a href="{{ route('manager.dashboard') }}" class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex min-w-0 items-center gap-2.5 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
                         <img src="/media/icons/icon-192.png" alt="" class="h-8 w-8 shrink-0 rounded-lg">
                         <span class="min-w-0 leading-tight">
                             <span class="block truncate text-sm font-semibold">{{ config('app.name') }}</span>
@@ -34,14 +34,14 @@
 
                     <div class="flex shrink-0 items-center gap-3">
                         <span class="hidden min-w-0 text-right leading-tight sm:block">
-                            <span class="block max-w-[14rem] truncate text-sm font-medium">{{ $manager?->name }}</span>
-                            <span class="block max-w-[14rem] truncate text-xs text-white/50">{{ $manager?->email }}</span>
+                            <span class="block max-w-56 truncate text-sm font-medium">{{ $manager?->name }}</span>
+                            <span class="block max-w-56 truncate text-xs text-white/50">{{ $manager?->email }}</span>
                         </span>
 
                         <form method="POST" action="{{ route('manager.logout') }}">
                             @csrf
                             <button type="submit"
-                                    class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                                    class="relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
                                 <x-icon name="logout" class="h-4 w-4" />
                                 Sign out
                             </button>
@@ -62,7 +62,7 @@
                                                 <x-icon name="chevron-right" class="h-3 w-3 text-muted/60" />
                                             @endif
                                             @if (isset($crumb[1]) && ! $loop->last)
-                                                <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
+                                                <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
                                             @else
                                                 <span @if ($loop->last) aria-current="page" @endif class="{{ $loop->last ? 'font-medium text-ink' : '' }}">{{ $crumb[0] }}</span>
                                             @endif
@@ -84,7 +84,7 @@
                 </div>
             </header>
 
-            <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
+            <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-hidden sm:px-6 lg:px-8">
                 @if (session('status'))
                     <x-alert type="success" class="mb-6">{{ session('status') }}</x-alert>
                 @endif

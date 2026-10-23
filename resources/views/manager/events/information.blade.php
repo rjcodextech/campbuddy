@@ -23,7 +23,7 @@
 <x-manager-layout :title="$event->display_name" :subtitle="'/event/'.$event->slug"
                   :breadcrumbs="[['My events', route('manager.dashboard')], [$event->display_name, route('manager.events.details', $event)], ['Event information']]">
     <x-slot:actions>
-        <x-event-status :status="$event->status" class="!px-3 !py-1" />
+        <x-event-status :status="$event->status" class="px-3! py-1!" />
     </x-slot:actions>
 
     <x-manager.event-nav :event="$event" current="information" />

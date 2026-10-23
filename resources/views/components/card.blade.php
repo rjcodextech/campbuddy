@@ -18,7 +18,7 @@
 ])
 
 <section {{ $attributes->class([
-    'overflow-hidden rounded-xl border bg-white shadow-sm',
+    'overflow-hidden rounded-xl border bg-white shadow-xs',
     'border-line' => ! $danger,
     'border-danger/30' => $danger,
 ]) }}>

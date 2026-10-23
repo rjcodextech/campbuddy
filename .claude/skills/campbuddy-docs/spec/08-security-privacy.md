@@ -96,5 +96,5 @@ The native apps contain **no analytics SDK**; Google Analytics runs only on the 
 - **`.htaccess`**: SVGs served straight from disk get `Content-Security-Policy: default-src 'none';
   style-src 'unsafe-inline'; sandbox` (like `/storage`), and `X-Powered-By` is removed.
 - **Dependencies**: `npm audit fix` (dompurify via jsPDF, follow-redirects, shell-quote, vite, source-map-js);
-  what remains is Tailwind 3's build-time chain (braces/micromatch/postcss-selector-parser), never shipped to
-  browsers — goes away with a Tailwind 4 move. `composer audit`: clean.
+  the admin panel then moved to Tailwind 4 (same day), which removed Tailwind 3's build-time chain
+  (braces/micromatch/postcss-selector-parser): `npm audit` 0 vulnerabilities, `composer audit` clean.

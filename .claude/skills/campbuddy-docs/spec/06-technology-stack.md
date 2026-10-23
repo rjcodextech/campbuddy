@@ -6,7 +6,7 @@
 |---|---|
 | App structure | **One Laravel app** — no separate frontend/backend repos or mount paths ([5](05-system-architecture.md)) |
 | Templating | **Blade** — attendee pages rendered server-side ([5.1](05-system-architecture.md#51-request-flow-public-pages--updated-for-server-rendering)) |
-| Frontend assets | Vite ([5.5](05-system-architecture.md#55-asset-build--laravels-default-vite-pipeline)) — attendee app keeps vanilla JS + hand-written BEM/SCSS; admin panel uses Tailwind + Alpine, scoped to `/admin` only — built on its own small design system (`.cb-*` classes in `resources/css/app.css` + Blade components), see [9](09-admin-panel.md) |
+| Frontend assets | Vite ([5.5](05-system-architecture.md#55-asset-build--laravels-default-vite-pipeline)) — attendee app keeps vanilla JS + hand-written BEM/SCSS; admin panel uses Tailwind 4 (Vite plugin `@tailwindcss/vite`, since 23 Oct 2026; was 3) + Alpine, scoped to `/admin` only — built on its own small design system (`.cb-*` classes in `resources/css/admin-components.css`, brand `@theme` in `resources/css/app.css` + Blade components), see [9](09-admin-panel.md) |
 | Frontend libraries | `qrcode-generator`; Web Push client via the browser's native Push API |
 | Backend framework | **Laravel 12** |
 | Auth scaffolding | **Laravel Breeze** for `/admin` — session-based, Argon2id-capable hasher |

@@ -1,7 +1,7 @@
 <x-manager-layout :title="$event->display_name" :subtitle="'/event/'.$event->slug"
                   :breadcrumbs="[['My events', route('manager.dashboard')], [$event->display_name]]">
     <x-slot:actions>
-        <x-event-status :status="$event->status" class="!px-3 !py-1" />
+        <x-event-status :status="$event->status" class="px-3! py-1!" />
         @if ($event->status === 'active' && $event->is_visible)
             <x-button :href="route('event.home', $event)" target="_blank" rel="noopener" variant="secondary" icon="external">View in app</x-button>
         @endif

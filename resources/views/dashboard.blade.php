@@ -10,7 +10,7 @@
     @if ($errorSummary['total'] > 0)
         <a href="{{ route('admin.errors.index') }}"
            @class([
-               'mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+               'mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
                'border-danger/30 bg-danger-soft hover:border-danger/50' => $errorSummary['critical'] > 0,
                'border-gold/40 bg-gold/10 hover:border-gold' => $errorSummary['critical'] === 0,
            ])>
@@ -62,7 +62,7 @@
 
                     <div class="relative flex flex-wrap items-start justify-between gap-6">
                         <div class="flex min-w-0 items-start gap-4">
-                            <span class="cb-logo-in flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-sm">
+                            <span class="cb-logo-in flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-xs">
                                 @if ($next->logoUrl())
                                     <img src="{{ $next->logoUrl() }}" alt="" class="h-full w-full object-contain">
                                 @else
@@ -71,7 +71,7 @@
                             </span>
                             <div class="min-w-0">
                                 <p class="text-xs font-medium uppercase tracking-[0.15em] text-white/60">Next WordCamp</p>
-                                <h3 class="mt-1 break-words text-xl font-semibold tracking-tight sm:text-2xl">{{ $next->display_name }}</h3>
+                                <h3 class="mt-1 wrap-break-word text-xl font-semibold tracking-tight sm:text-2xl">{{ $next->display_name }}</h3>
                                 <p class="mt-1 text-sm text-white/70">{{ $dates($next) }}</p>
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                         <span class="flex items-center gap-4 text-sm text-white/80">
                             <span class="inline-flex items-center gap-1.5"><x-icon name="users" class="h-4 w-4" /> {{ number_format($next->roster_count) }} on the roster</span>
                             {{-- Light on the dark card (the paper-tinted pill was 2.8:1 here). --}}
-                            <x-event-status :status="$next->status" class="!bg-white/15 !text-white !ring-white/30" />
+                            <x-event-status :status="$next->status" class="bg-white/15! text-white! ring-white/30!" />
                         </span>
                         <span class="flex flex-wrap gap-2">
                             <a href="{{ route('event.home', $next) }}" target="_blank" rel="noopener"
@@ -104,13 +104,13 @@
                             @php([$big, $small] = $countdown($event))
                             <li>
                                 <a href="{{ route('admin.events.edit', $event) }}"
-                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-sm transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-xs transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
                                     <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
                                         <span class="text-base font-bold tabular-nums leading-none">{{ $big }}</span>
                                         <span class="text-xs font-semibold uppercase leading-tight">{{ $big === 'Live' ? 'now' : 'days' }}</span>
                                     </span>
                                     <span class="min-w-0">
-                                        <span class="block break-words text-sm font-medium leading-snug text-ink">{{ $event->display_name }}</span>
+                                        <span class="block wrap-break-word text-sm font-medium leading-snug text-ink">{{ $event->display_name }}</span>
                                         <span class="block text-xs text-muted">{{ $dates($event) }}</span>
                                     </span>
                                 </a>
@@ -136,12 +136,12 @@
                 @endif
             </h2>
 
-            <div class="rounded-2xl border border-line bg-white p-2 shadow-sm">
+            <div class="rounded-2xl border border-line bg-white p-2 shadow-xs">
                 @forelse ($draftEvents as $event)
                     <a href="{{ route('admin.events.edit', $event) }}"
-                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
                         <span class="min-w-0">
-                            <span class="block break-words font-medium leading-snug">{{ $event->display_name }}</span>
+                            <span class="block wrap-break-word font-medium leading-snug">{{ $event->display_name }}</span>
                             @if ($event->starts_on)
                                 <span class="block text-xs text-muted">{{ $event->starts_on->format('j M Y') }}</span>
                             @endif
@@ -175,7 +175,7 @@
     {{-- Two separate jobs, two buttons: fresh data from the WordCamp
     sites (DataRefresher) vs. dropping saved copies (CachePurger). --}}
     <section class="mt-6 grid gap-4 md:grid-cols-2" aria-label="Maintenance">
-        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
             <div>
                 <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="refresh" class="h-4 w-4 text-maroon" /> Event data</h2>
                 <p class="mt-1 text-xs text-muted">Updates by itself every 15 minutes; open apps update on their own.</p>
@@ -191,7 +191,7 @@
             <x-action-form :action="route('admin.data.refresh')" icon="refresh" variant="primary">Refresh event data now</x-action-form>
         </div>
 
-        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-sm">
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
             <div>
                 <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="trash" class="h-4 w-4 text-maroon" /> Cache</h2>
                 <p class="mt-1 text-xs text-muted">

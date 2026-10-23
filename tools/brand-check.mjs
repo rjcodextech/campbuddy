@@ -2,7 +2,7 @@
 //
 // CAMPBUDDY-BRAND-GUIDELINES.md §0: resources/scss/abstracts/_variables.scss is
 // the single source of the brand's colours, fonts and corners. Every mirror —
-// the admin Tailwind theme, the canvas tokens (social posts, reels), the
+// the admin Tailwind theme (resources/css/app.css), the canvas tokens (social posts, reels), the
 // native app's theme defaults and the server's app-config defaults — must
 // equal it. This fails, naming each drift, when one doesn't. It also fails on
 // a Google Fonts link for the brand fonts (they are self-hosted) and on text
@@ -41,25 +41,25 @@ const expect = (where, what, actual, wanted) => {
   if (String(actual ?? '').toLowerCase() !== String(wanted).toLowerCase()) problems.push(`${where}: ${what} is ${actual ?? '(missing)'}, the source says ${wanted}`);
 };
 
-// Admin / manager panel (tailwind.config.js).
-const tw = read('tailwind.config.js');
-const twColour = (key) => tw.match(new RegExp(`['"]?${key}['"]?:\\s*['"](#[0-9a-fA-F]{6})['"]`))?.[1];
-const twNested = (group, key) => tw.match(new RegExp(`${group}:\\s*\\{[^}]*?${key}:\\s*['"](#[0-9a-fA-F]{6})['"]`, 's'))?.[1];
-expect('tailwind.config.js', 'ink', twColour('ink'), colours.ink);
-expect('tailwind.config.js', 'paper', twColour('paper'), colours.paper);
-expect('tailwind.config.js', 'paper-soft', twColour('paper-soft'), colours.paperSoft);
-expect('tailwind.config.js', 'muted', twColour('muted'), colours.muted);
-expect('tailwind.config.js', 'subtle', twColour('subtle'), colours.subtle);
-expect('tailwind.config.js', 'line', twColour('line'), colours.line);
-expect('tailwind.config.js', 'maroon', twNested('maroon', 'DEFAULT'), colours.maroon);
-expect('tailwind.config.js', 'maroon-dark', twNested('maroon', 'dark'), colours.maroonDark);
-expect('tailwind.config.js', 'wine', twColour('wine'), colours.wine);
-expect('tailwind.config.js', 'gold', twColour('gold'), colours.gold);
-expect('tailwind.config.js', 'navy', twColour('navy'), colours.navy);
-expect('tailwind.config.js', 'teal', twColour('teal'), colours.teal);
-if (!/sans:\s*\['Poppins'/.test(tw)) problems.push("tailwind.config.js: fontFamily.sans must start with 'Poppins'");
-if (!/display:\s*\['"Baloo 2"'/.test(tw)) problems.push('tailwind.config.js: fontFamily.display must start with "Baloo 2"');
-expect('tailwind.config.js', 'radius xl (cards)', tw.match(/xl:\s*'(\d+px)'/)?.[1], token('radius-card'));
+// Admin / manager panel: the Tailwind 4 theme in resources/css/app.css (@theme).
+const tw = read('resources/css/app.css');
+const where = 'resources/css/app.css @theme';
+const twVar = (name) => tw.match(new RegExp(`--${name}:\s*([^;]+);`))?.[1]?.trim();
+expect(where, 'ink', twVar('color-ink'), colours.ink);
+expect(where, 'paper', twVar('color-paper'), colours.paper);
+expect(where, 'paper-soft', twVar('color-paper-soft'), colours.paperSoft);
+expect(where, 'muted', twVar('color-muted'), colours.muted);
+expect(where, 'subtle', twVar('color-subtle'), colours.subtle);
+expect(where, 'line', twVar('color-line'), colours.line);
+expect(where, 'maroon', twVar('color-maroon'), colours.maroon);
+expect(where, 'maroon-dark', twVar('color-maroon-dark'), colours.maroonDark);
+expect(where, 'wine', twVar('color-wine'), colours.wine);
+expect(where, 'gold', twVar('color-gold'), colours.gold);
+expect(where, 'navy', twVar('color-navy'), colours.navy);
+expect(where, 'teal', twVar('color-teal'), colours.teal);
+if (!/^Poppins,/.test(twVar('font-sans') ?? '')) problems.push(`${where}: --font-sans must start with Poppins`);
+if (!/^'Baloo 2'/.test(twVar('font-display') ?? '')) problems.push(`${where}: --font-display must start with 'Baloo 2'`);
+expect(where, 'radius xl (cards)', twVar('radius-xl'), token('radius-card'));
 
 // Canvas tokens (resources/js/brand.js).
 const brand = read('resources/js/brand.js');

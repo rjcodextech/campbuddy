@@ -153,7 +153,7 @@
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach ([['posts', 'Posts', count($kit['posts']).' posts, in the order to share them', 'image'], ['people', 'People cards', $peopleCount.' '.($peopleCount === 1 ? 'card' : 'cards').' for speakers, organizers, volunteers…', 'users'], ['reels', 'Reels', 'Videos with music, 30 s or more, five templates', 'megaphone']] as [$key, $label, $hint, $icon])
-                <button type="button" data-studio-open="{{ $key }}" class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 text-left shadow-sm transition hover:-translate-y-1 hover:border-maroon/30 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                <button type="button" data-studio-open="{{ $key }}" class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 text-left shadow-xs transition hover:-translate-y-1 hover:border-maroon/30 hover:shadow-lg focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon"><x-icon :name="$icon" class="h-5 w-5" /></span>
                     <span class="min-w-0">
                         <span class="block font-display text-lg font-bold text-ink">{{ $label }}</span>
@@ -187,14 +187,14 @@
                     <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded bg-maroon/15 ring-1 ring-maroon/30"></span>Event days</span>
                 </div>
                 <div class="overflow-x-auto">
-                    <div class="grid min-w-[44rem] grid-cols-7 gap-px overflow-hidden rounded-lg border border-line bg-line text-xs" role="grid" aria-label="Posting plan calendar">
+                    <div class="grid min-w-176 grid-cols-7 gap-px overflow-hidden rounded-lg border border-line bg-line text-xs" role="grid" aria-label="Posting plan calendar">
                         @foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $dow)
                             <div class="bg-paper-soft px-2 py-1.5 text-center font-semibold uppercase tracking-wide text-muted" role="columnheader">{{ $dow }}</div>
                         @endforeach
                         @foreach ($weeks as $week)
                             @foreach ($week as $day)
                                 <div role="gridcell" @class([
-                                    'min-h-[5.5rem] space-y-1 p-1.5',
+                                    'min-h-22 space-y-1 p-1.5',
                                     'bg-white' => ! $day['event'] && ! $day['past'],
                                     'bg-paper/70' => $day['past'] && ! $day['event'],
                                     'bg-maroon/5' => $day['event'],
@@ -214,7 +214,7 @@
                                     </div>
                                     @foreach ($day['posts'] as $post)
                                         <button type="button" data-studio-open="posts" data-studio-post="{{ $post['key'] }}" title="{{ $post['label'] }} · {{ $post['when'] }}"
-                                                class="block w-full truncate rounded-md px-1.5 py-1 text-left font-semibold ring-1 ring-inset transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/50 {{ $phase($post['key']) }} {{ $day['past'] && ! $day['today'] ? 'opacity-60' : '' }}">
+                                                class="block w-full truncate rounded-md px-1.5 py-1 text-left font-semibold ring-1 ring-inset transition hover:-translate-y-0.5 hover:shadow-xs focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/50 {{ $phase($post['key']) }} {{ $day['past'] && ! $day['today'] ? 'opacity-60' : '' }}">
                                             {{ $post['label'] }}
                                         </button>
                                     @endforeach
@@ -260,7 +260,7 @@
                 </div>
                 <nav class="flex gap-1 rounded-full bg-paper-soft p-1" role="tablist" aria-label="Studio">
                     @foreach (['posts' => 'Posts', 'people' => 'People cards', 'reels' => 'Reels'] as $key => $label)
-                        <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="rounded-full px-4 py-1.5 text-sm font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon aria-selected:shadow-sm">{{ $label }}</button>
+                        <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="rounded-full px-4 py-1.5 text-sm font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon aria-selected:shadow-xs">{{ $label }}</button>
                     @endforeach
                 </nav>
                 <div class="ml-auto flex flex-wrap items-center gap-2">
@@ -298,7 +298,7 @@
                         <ol class="flex min-h-0 flex-1 gap-2 overflow-auto p-2 lg:flex-col" aria-label="Posts, in the order to share them">
                             @foreach ($kit['posts'] as $post)
                                 <li class="shrink-0">
-                                    <button type="button" data-studio-item="{{ $post['key'] }}" aria-current="false" class="flex w-56 items-center gap-3 rounded-lg p-2 text-left hover:bg-paper-soft aria-[current=true]:bg-maroon/10 lg:w-full">
+                                    <button type="button" data-studio-item="{{ $post['key'] }}" aria-current="false" class="flex w-56 items-center gap-3 rounded-lg p-2 text-left hover:bg-paper-soft aria-current:bg-maroon/10 lg:w-full">
                                         <canvas class="h-16 w-[3.2rem] shrink-0 rounded border border-line bg-paper-soft" width="104" height="130" data-studio-thumb="{{ $post['key'] }}"></canvas>
                                         <span class="min-w-0">
                                             <span class="block truncate text-sm font-semibold text-ink">{{ $loop->iteration }}. {{ $post['label'] }}</span>

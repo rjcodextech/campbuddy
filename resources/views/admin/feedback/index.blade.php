@@ -49,7 +49,7 @@
             @forelse ($feedback as $answer)
                 <tr class="align-top">
                     <td class="whitespace-nowrap text-gold" aria-label="{{ $answer->rating }} out of 5">{{ str_repeat('★', $answer->rating) }}<span class="text-line">{{ str_repeat('★', 5 - $answer->rating) }}</span></td>
-                    <td class="min-w-[14rem] break-words">{{ $answer->comment ?? '—' }}</td>
+                    <td class="min-w-56 wrap-break-word">{{ $answer->comment ?? '—' }}</td>
                     <td class="hidden sm:table-cell">{{ $answer->event?->display_name }}</td>
                     <td class="hidden whitespace-nowrap text-muted md:table-cell" title="{{ $answer->updated_at }}">{{ $answer->updated_at->diffForHumans() }}</td>
                 </tr>

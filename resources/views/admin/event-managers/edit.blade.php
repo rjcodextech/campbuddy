@@ -2,9 +2,9 @@
               :breadcrumbs="[['Event managers', route('admin.event-managers.index')], [$manager->name]]">
     <x-slot:actions>
         @if ($manager->is_active)
-            <x-badge variant="success" class="!px-3 !py-1">Active</x-badge>
+            <x-badge variant="success" class="px-3! py-1!">Active</x-badge>
         @else
-            <x-badge variant="warning" class="!px-3 !py-1">Switched off</x-badge>
+            <x-badge variant="warning" class="px-3! py-1!">Switched off</x-badge>
         @endif
     </x-slot:actions>
 
@@ -37,7 +37,7 @@
                         </span>
                         <span class="text-xs text-muted" title="{{ $change->created_at }}">{{ $change->created_at->diffForHumans() }}</span>
                     </div>
-                    <p class="mt-0.5 break-words text-sm text-muted">{{ $change->summary }}</p>
+                    <p class="mt-0.5 wrap-break-word text-sm text-muted">{{ $change->summary }}</p>
                 </div>
             @empty
                 <p class="text-sm text-muted">Nothing changed yet.</p>

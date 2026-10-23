@@ -2,7 +2,7 @@
     $labels = ['overview' => 'Overview', 'navigation' => 'Navigation', 'home' => 'Home', 'text' => 'Text & languages', 'look' => 'Look', 'banner' => 'Banner', 'switches' => 'Switches', 'history' => 'History'];
     $strings = $config['strings'];
     $defaultsEn = \App\Support\MobileAppDefaults::strings('en');
-    $input = 'block w-full rounded-md border-line text-sm shadow-sm focus:border-maroon focus:ring-maroon';
+    $input = 'block w-full rounded-md border-line text-sm shadow-xs focus:border-maroon focus:ring-maroon';
 @endphp
 
 <x-app-layout title="Mobile app" subtitle="Everything the CampBuddy app shows, without a store release"
@@ -199,7 +199,7 @@
                     <div class="lg:col-span-7 space-y-5">
 
                         {{-- 1. Status Hero Card --}}
-                        <div class="rounded-xl border border-line bg-surface p-5 shadow-xs">
+                        <div class="rounded-xl border border-line bg-surface p-5 shadow-2xs">
                             <div class="flex items-center justify-between gap-4">
                                 <div class="space-y-1">
                                     <div class="flex items-center gap-2.5">
@@ -213,7 +213,7 @@
                                 </div>
                                 <label class="relative inline-flex cursor-pointer items-center">
                                     <input type="checkbox" name="banner_on" id="banner_on" value="1" @checked($bannerOn) class="peer sr-only">
-                                    <div class="h-7 w-12 rounded-full bg-line peer-checked:bg-maroon peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-maroon/30 after:absolute after:left-[3px] after:top-[3px] after:h-5.5 after:w-5.5 after:rounded-full after:border after:border-line after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
+                                    <div class="h-7 w-12 rounded-full bg-line peer-checked:bg-maroon peer-focus:outline-hidden peer-focus:ring-2 peer-focus:ring-maroon/30 after:absolute after:left-[3px] after:top-[3px] after:h-5.5 after:w-5.5 after:rounded-full after:border after:border-line after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
                                 </label>
                             </div>
                         </div>
@@ -402,7 +402,7 @@
                             </div>
 
                             {{-- Device Screen Simulation Frame --}}
-                            <div class="relative mx-auto rounded-[28px] border-4 border-ink bg-[#FFF0DF] p-3.5 shadow-inner overflow-hidden max-w-[340px] transition-all">
+                            <div class="relative mx-auto rounded-2xl border-4 border-ink bg-paper-soft p-3.5 shadow-inner overflow-hidden max-w-[340px] transition-all">
                                 {{-- Phone Notch / Status Bar --}}
                                 <div class="flex items-center justify-between px-3 pt-1 pb-2 text-[10px] font-semibold text-ink">
                                     <span>9:41</span>
@@ -435,7 +435,7 @@
                                 </div>
 
                                 {{-- Live Rendered Banner Card --}}
-                                <div id="preview-banner-card" class="relative rounded-xl border p-3.5 shadow-xs transition-all overflow-hidden bg-[#FFF5EE] border-[#F7D5C1]">
+                                <div id="preview-banner-card" class="relative rounded-xl border p-3.5 shadow-2xs transition-all overflow-hidden bg-[#FFF5EE] border-[#F7D5C1]">
                                     {{-- Accent Stripe --}}
                                     <div id="preview-accent-stripe" class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
 

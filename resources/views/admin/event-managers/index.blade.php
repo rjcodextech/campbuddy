@@ -36,7 +36,7 @@
                         @else
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($manager->events->take(3) as $event)
-                                    <x-badge variant="info" class="!inline-block max-w-[9rem] truncate align-middle" :title="$event->display_name">{{ $event->display_name }}</x-badge>
+                                    <x-badge variant="info" class="inline-block! max-w-36 truncate align-middle" :title="$event->display_name">{{ $event->display_name }}</x-badge>
                                 @endforeach
                                 @if ($manager->events->count() > 3)
                                     <x-badge>+{{ $manager->events->count() - 3 }} more</x-badge>

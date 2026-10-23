@@ -6,7 +6,7 @@
 <x-app-layout title="Manager activity" subtitle="What event managers changed, newest first. Entries are kept for {{ $keepDays }} days."
               :breadcrumbs="[['Event managers', route('admin.event-managers.index')], ['Activity']]">
     <form method="GET" action="{{ route('admin.event-managers.activity') }}" role="search" aria-label="Filter activity" x-data
-          class="mb-4 rounded-xl border border-line bg-white p-4 shadow-sm">
+          class="mb-4 rounded-xl border border-line bg-white p-4 shadow-xs">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(2,minmax(0,1fr))_auto] lg:items-end">
             <x-form.select name="manager" label="Manager" placeholder="Everyone" :use-old="false" :value="(string) $filters['manager']" :options="$managers->all()"
                            x-on:change="$el.form.requestSubmit()" />
@@ -50,7 +50,7 @@
                         @endif
                     </td>
                     <td class="hidden md:table-cell"><x-badge variant="info">{{ $sections[$change->section] ?? $change->section }}</x-badge></td>
-                    <td class="min-w-[12rem] break-words text-muted">{{ $change->summary }}</td>
+                    <td class="min-w-48 wrap-break-word text-muted">{{ $change->summary }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="5" icon="{{ $filtering ? 'search' : 'pencil' }}" title="{{ $filtering ? 'No changes match these filters' : 'No changes yet' }}">

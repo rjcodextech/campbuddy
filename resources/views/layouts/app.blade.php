@@ -41,7 +41,7 @@
     </head>
     <body class="min-h-full bg-paper font-sans text-ink antialiased">
         <div x-data="{ sidebarOpen: false }" x-on:keydown.escape.window="sidebarOpen = false" class="min-h-screen lg:flex">
-            <a href="#main-content" class="sr-only z-[60] rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+            <a href="#main-content" class="sr-only z-60 rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
                 Skip to content
             </a>
 
@@ -53,7 +53,7 @@
                    x-bind:class="{ 'max-lg:translate-x-0': sidebarOpen }"
                    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col bg-navy transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0">
                 <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
-                    <a href="{{ route('dashboard') }}" class="group relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                    <a href="{{ route('dashboard') }}" class="group relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
                         <img src="/media/icons/icon-192.png" alt="" class="cb-logo-in h-8 w-8 shrink-0 rounded-lg motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
                         <span class="leading-tight">
                             <span class="block text-sm font-semibold text-white">{{ config('app.name') }}</span>
@@ -72,12 +72,12 @@
                         <a href="{{ $item['href'] }}"
                            @if ($item['active']) aria-current="page" @endif
                            @class([
-                               'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+                               'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60',
                                'bg-white/10 text-white' => $item['active'],
                                'text-white/70 hover:bg-white/5 hover:text-white' => ! $item['active'],
                            ])>
                             @if ($item['active'])
-                                <span class="absolute inset-y-1.5 left-0 w-1 rounded-r bg-maroon" aria-hidden="true"></span>
+                                <span class="absolute inset-y-1.5 left-0 w-1 rounded-r-sm bg-maroon" aria-hidden="true"></span>
                             @endif
                             <x-icon :name="$item['icon']" class="h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" />
                             {{ $item['label'] }}
@@ -86,7 +86,7 @@
 
                     <div class="pt-4">
                         <a href="{{ url('/') }}" target="_blank" rel="noopener"
-                           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
                             <x-icon name="external" class="h-5 w-5 shrink-0" />
                             View attendee app
                         </a>
@@ -97,7 +97,7 @@
                     <a href="{{ route('profile.edit') }}"
                        @if (request()->routeIs('profile.*')) aria-current="page" @endif
                        @class([
-                           'flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60',
+                           'flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60',
                            'bg-white/10' => request()->routeIs('profile.*'),
                            'hover:bg-white/5' => ! request()->routeIs('profile.*'),
                        ])>
@@ -113,7 +113,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="mt-1">
                         @csrf
                         <button type="submit"
-                                class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60">
+                                class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
                             <x-icon name="logout" class="h-5 w-5 shrink-0" />
                             Sign out
                         </button>
@@ -124,7 +124,7 @@
             <div class="flex min-w-0 flex-1 flex-col">
                 {{-- Mobile top bar --}}
                 <div class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-white px-4 lg:hidden">
-                    <button type="button" class="-ml-1 rounded-md p-2 text-ink hover:bg-paper-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40"
+                    <button type="button" class="-ml-1 rounded-md p-2 text-ink hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40"
                             x-on:click="sidebarOpen = true" aria-controls="admin-sidebar" x-bind:aria-expanded="sidebarOpen.toString()" aria-label="Open menu">
                         <x-icon name="menu" class="h-6 w-6" />
                     </button>
@@ -144,7 +144,7 @@
                                                     <x-icon name="chevron-right" class="h-3 w-3 text-muted/60" />
                                                 @endif
                                                 @if (isset($crumb[1]) && ! $loop->last)
-                                                    <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
+                                                    <a href="{{ $crumb[1] }}" class="relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] rounded hover:text-ink hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $crumb[0] }}</a>
                                                 @else
                                                     <span @if ($loop->last) aria-current="page" @endif class="{{ $loop->last ? 'font-medium text-ink' : '' }}">{{ $crumb[0] }}</span>
                                                 @endif
@@ -166,7 +166,7 @@
                     </div>
                 </header>
 
-                <main id="main-content" tabindex="-1" class="cb-enter cb-enter-late mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
+                <main id="main-content" tabindex="-1" class="cb-enter cb-enter-late mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-hidden sm:px-6 lg:px-8">
                     @if ($flash)
                         <x-alert type="success" class="mb-6">{{ $flashMessages[$flash] ?? $flash }}</x-alert>
                     @endif

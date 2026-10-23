@@ -18,7 +18,7 @@ attendee site/PWA, Android, iOS, social posts and reels. Camp Card keeps its own
 | Attendee CSS vars | `resources/scss/base/_root.scss` | `--wine`, `--subtle`, `--gradient-brand`, `--font-display`, `--shadow-focus` added |
 | Fonts (web) | `resources/fonts/*.woff2` + `resources/css/fonts.css` | Self-hosted @font-face, Latin / Latin Ext / Devanagari subsets; its own Vite entry, added first to every `@vite([...])` (attendee, admin, manager, guest, legal, guide, memories, welcome). Only Camp Card's Playfair + JetBrains Mono still come from Google Fonts (attendee layout). |
 | Headings (web) | `base/_global.scss` (h1–h3), `base/_typography.scss` (title/number classes) | Baloo 2; list-row names stay Poppins |
-| Admin / manager | `tailwind.config.js`, `resources/css/app.css` | `font-sans` Poppins, `font-display` Baloo 2 (h1–h3, `.cb-display`, stat values), radius scale overrides (md 10, lg 14, xl 20, 2xl 28, 3xl 40), `.cb-btn` pill; app tab bar uses theme colours |
+| Admin / manager | `resources/css/app.css` (Tailwind 4 `@theme`) | `font-sans` Poppins, `font-display` Baloo 2 (h1–h3, `.cb-display`, stat values), radius scale overrides (md 10, lg 14, xl 20, 2xl 28, 3xl 40), `.cb-btn` pill; app tab bar uses theme colours |
 | Canvas | `resources/js/brand.js` | `BRAND` hexes, `FONT_TEXT`, `FONT_DISPLAY`, `loadBrandFonts()` — used by `social-kit.js`, `social-reels.js`, `usage-post.js` |
 | Native | `native-app/.../ui/Theme.kt` | `poppinsFamily()`, `balooFamily()` (headlineSmall/titleLarge in Baloo), `Radii` (chip 6, input 10, row 14, sheet 28, pill); buttons are pills; small fixed corners use `Radii.input` |
 | Native fonts | `composeResources/font/poppins_*.ttf`, `baloo2_*.ttf` | Built from the web woff2 subsets with fontTools (merged Latin + Latin Ext + Devanagari; Baloo instanced at 600/700/800). Inter removed. Licence: `native-app/FONTS-OFL.txt` |
@@ -106,3 +106,11 @@ screenshots (411 dp, 360 dp, 1.3× system text) — see spec/15 §15.6.
   two lines rather than going under 24 px; spotlight people card role + talk on up to two lines (band grows).
 - **Reels**: frame 0 already shows the event logo + lockup (no fade-in); a tinted highlight on the main colour
   only when it reaches 3:1, else white.
+
+- **Landscape sizes** (X 1600 × 900, LinkedIn / link 1200 × 627; 23 Oct 2026): drawn wide, no longer the square
+  shrunk on a blurred copy of itself. The design fills the left part (1080 / 800 px) and a panel down the right
+  edge (`SIDE` 520 / 400 px, `paintSideBlock`) carries the foot: the reason to scan, the QR with the lockup, the
+  event line; Daylight stands its QR card up in the side column (`paintDaylightSide`). The short size gets a
+  smaller logo, sizes come down together until the words fit (`measureHero`, never under each minimum), Daylight
+  shows two people per card, a split people card keeps the photo over a name band. Checked: 272 landscape
+  pictures, all text ≥ 24 px and off the edges.

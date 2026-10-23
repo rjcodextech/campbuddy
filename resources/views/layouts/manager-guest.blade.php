@@ -30,7 +30,7 @@
                     <p class="mt-1.5 text-sm text-muted">{{ $subtitle }}</p>
                 @endif
 
-                <div class="mt-6 rounded-xl border border-line bg-white p-6 shadow-sm sm:p-8">
+                <div class="mt-6 rounded-xl border border-line bg-white p-6 shadow-xs sm:p-8">
                     {{ $slot }}
                 </div>
 

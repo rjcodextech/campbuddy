@@ -28,7 +28,7 @@
     </x-card>
 
     <form method="GET" action="{{ route('admin.errors.index') }}" role="search" aria-label="Filter fetch problems" x-data
-          class="mb-4 mt-6 rounded-xl border border-line bg-white p-4 shadow-sm">
+          class="mb-4 mt-6 rounded-xl border border-line bg-white p-4 shadow-xs">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end">
             <x-form.select name="period" label="Period" :use-old="false" :value="$filters['period']" :options="$periods"
                            x-on:change="$el.form.requestSubmit()" />
@@ -79,9 +79,9 @@
                     <td class="hidden sm:table-cell"><x-fetch-status :status="$row->status" /></td>
                     <td class="hidden tabular-nums sm:table-cell">×{{ $row->times }}</td>
                     <td class="hidden whitespace-nowrap text-muted md:table-cell" title="{{ $row->last_at }}">{{ \Illuminate\Support\Carbon::parse($row->last_at)->diffForHumans() }}</td>
-                    <td class="min-w-[12rem] text-muted">
+                    <td class="min-w-48 text-muted">
                         {{-- Some upstream errors are a whole HTML page; keep the row short, the full text is on hover. --}}
-                        <span class="line-clamp-3 break-words" title="{{ $row->message }}">{{ $row->message ?: '—' }}</span>
+                        <span class="line-clamp-3 wrap-break-word" title="{{ $row->message }}">{{ $row->message ?: '—' }}</span>
                         <span class="block text-xs md:hidden">{{ \Illuminate\Support\Carbon::parse($row->last_at)->diffForHumans() }} · ×{{ $row->times }}</span>
                     </td>
                 </tr>

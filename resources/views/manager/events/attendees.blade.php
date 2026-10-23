@@ -46,7 +46,7 @@
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-paper-soft text-xs font-semibold text-muted" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($entry->name, 0, 1)) }}</span>
                                 @endif
                                 {{-- May break mid-word on a phone, so opening Roles beside it never pushes the table sideways. --}}
-                                <span class="min-w-0 font-medium [overflow-wrap:anywhere]">{{ $entry->name }}</span>
+                                <span class="min-w-0 font-medium wrap-anywhere">{{ $entry->name }}</span>
                             </div>
                             @if (! empty($roles[$entry->id]['roles']))
                                 <div class="mt-1 flex flex-wrap gap-1 pl-11 max-sm:[table:has(details[open])_&]:pl-0">@include('partials.roster-role-badges', ['roles' => $roles[$entry->id]['roles']])</div>

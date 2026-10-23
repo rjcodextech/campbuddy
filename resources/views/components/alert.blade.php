@@ -11,11 +11,11 @@
         'success' => ['box' => 'border-teal/30 bg-teal/10 text-ink', 'icon' => 'text-teal', 'name' => 'check-circle'],
         'error' => ['box' => 'border-danger/30 bg-danger-soft text-ink', 'icon' => 'text-danger', 'name' => 'exclamation-circle'],
         'warning' => ['box' => 'border-gold/40 bg-gold/10 text-ink', 'icon' => 'text-gold', 'name' => 'exclamation-triangle'],
-        'info' => ['box' => 'border-line bg-white text-ink shadow-sm', 'icon' => 'text-navy', 'name' => 'information-circle'],
+        'info' => ['box' => 'border-line bg-white text-ink shadow-xs', 'icon' => 'text-navy', 'name' => 'information-circle'],
     ][$type] ?? null;
 
     $style = $styles ?? [
-        'box' => 'border-line bg-white text-ink shadow-sm', 'icon' => 'text-navy', 'name' => 'information-circle',
+        'box' => 'border-line bg-white text-ink shadow-xs', 'icon' => 'text-navy', 'name' => 'information-circle',
     ];
 @endphp
 
