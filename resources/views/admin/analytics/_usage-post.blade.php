@@ -28,11 +28,11 @@
     <div class="mt-4 hidden" data-usage-result>
         {{-- The studio: cards | preview | edits. --}}
         <div class="grid gap-4 overflow-hidden rounded-xl border border-line bg-white lg:grid-cols-[11rem_minmax(0,1fr)_20rem]">
-            <ol class="flex gap-2 overflow-auto border-b border-line p-2 lg:max-h-[38rem] lg:flex-col lg:border-b-0 lg:border-r" data-usage-rail aria-label="Cards"></ol>
-            <div class="flex min-h-[24rem] items-center justify-center bg-paper-soft p-4">
-                <canvas class="block max-h-[36rem] w-auto max-w-full rounded-xl border border-line shadow-lg" data-usage-stage aria-label="The chosen card"></canvas>
+            <ol class="flex gap-2 overflow-auto border-b border-line p-2 lg:max-h-152 lg:flex-col lg:border-b-0 lg:border-r" data-usage-rail aria-label="Cards"></ol>
+            <div class="flex min-h-96 items-center justify-center bg-paper-soft p-4">
+                <canvas class="block max-h-144 w-auto max-w-full rounded-xl border border-line shadow-lg" data-usage-stage aria-label="The chosen card"></canvas>
             </div>
-            <div class="space-y-4 border-t border-line p-4 lg:max-h-[38rem] lg:overflow-y-auto lg:border-l lg:border-t-0">
+            <div class="space-y-4 border-t border-line p-4 lg:max-h-152 lg:overflow-y-auto lg:border-l lg:border-t-0">
                 <div>
                     <span class="cb-label" id="usage-template-label">Template</span>
                     <div class="mt-1 flex flex-wrap gap-1" role="group" aria-labelledby="usage-template-label">

@@ -12,7 +12,7 @@
 
     {{-- Filters: a plain GET form, so a filtered list can be bookmarked or shared. The selects submit by themselves. --}}
     <form method="GET" action="{{ route('admin.events.index') }}" role="search" aria-label="Filter events" x-data
-          class="mb-4 rounded-xl border border-line bg-white p-4 shadow-sm">
+          class="mb-4 rounded-xl border border-line bg-white p-4 shadow-xs">
         @if ($tableView)
             <input type="hidden" name="view" value="table">
         @endif
@@ -58,7 +58,7 @@
             <a href="{{ request()->fullUrlWithQuery(['view' => null, 'page' => null]) }}"
                @if (! $tableView) aria-current="true" @endif
                @class([
-                   'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+                   'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
                    'bg-maroon text-white' => ! $tableView,
                    'text-muted hover:text-ink' => $tableView,
                ])>
@@ -67,7 +67,7 @@
             <a href="{{ request()->fullUrlWithQuery(['view' => 'table', 'page' => null]) }}"
                @if ($tableView) aria-current="true" @endif
                @class([
-                   'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40',
+                   'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
                    'bg-maroon text-white' => $tableView,
                    'text-muted hover:text-ink' => ! $tableView,
                ])>

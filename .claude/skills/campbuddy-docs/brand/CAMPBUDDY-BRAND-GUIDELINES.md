@@ -23,7 +23,7 @@ listing and email.
 
 | What | Single source | Mirrors (must equal the source) |
 | --- | --- | --- |
-| Colours, type, space, radii, shadows, motion | `resources/scss/abstracts/_variables.scss` (→ CSS custom properties in `base/_root.scss`) | `tailwind.config.js` (admin/manager), `native-app/.../shared/ui/Theme.kt` + server theme defaults, `resources/js/brand.js` (social posts, reels, canvas) |
+| Colours, type, space, radii, shadows, motion | `resources/scss/abstracts/_variables.scss` (→ CSS custom properties in `base/_root.scss`) | `resources/css/app.css` `@theme` (admin/manager, Tailwind 4), `native-app/.../shared/ui/Theme.kt` + server theme defaults, `resources/js/brand.js` (social posts, reels, canvas) |
 | Logos | `public/media/logo-wordmark.png` (+ `-sm`), `public/media/logo.png`, `public/media/favicon.png` / `icons/*` (app icon) | Native app resources are copies of these |
 | Fonts | `resources/fonts/baloo2-*.woff2`, `resources/fonts/poppins-*.woff2` + `resources/css/fonts.css` (web, bundled by Vite into `/build/`, so offline too); `composeResources/font/baloo2_*.ttf`, `poppins_*.ttf` (native) | Self-hosted. No Google Fonts, no other families (Camp Card keeps its own badge fonts, §4). |
 | Icons | Line-icon sprite (`App\Support\LineIcons`, `attendee/partials/line-icons.blade.php`); admin `x-icon` | Same stroke rules in Kotlin `Icons` |

@@ -79,7 +79,7 @@
               :breadcrumbs="[['Analytics']]">
 
     <form method="GET" action="{{ route('admin.analytics.index') }}" aria-label="Choose what to report" x-data="{ period: @js($filters['period']) }"
-          class="mb-6 rounded-xl border border-line bg-white p-4 shadow-sm">
+          class="mb-6 rounded-xl border border-line bg-white p-4 shadow-xs">
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(2,minmax(0,1fr))_auto_auto] lg:items-end">
             @if ($streams !== [])
                 <x-form.select name="stream" label="Website (GA stream)" :use-old="false" :value="$filters['stream']" :options="$streams" />
@@ -137,7 +137,7 @@
                 <p class="text-sm text-muted">No visits in these dates.</p>
             @else
                 <div class="overflow-x-auto">
-                    <div class="flex h-56 min-w-[32rem] items-end gap-1 border-b border-line pt-5" role="img" aria-label="People per day">
+                    <div class="flex h-56 min-w-lg items-end gap-1 border-b border-line pt-5" role="img" aria-label="People per day">
                         @foreach ($daily as $d)
                             @php $date = \Illuminate\Support\Carbon::createFromFormat('Ymd', $d['date']); @endphp
                             <div class="group relative flex h-full flex-1 flex-col items-center justify-end"
@@ -145,11 +145,11 @@
                                 @if (count($daily) <= 31)
                                     <span class="mb-1 text-xs tabular-nums text-muted">{{ $num($d['activeUsers']) }}</span>
                                 @endif
-                                <span class="block w-full max-w-[2.5rem] rounded-t bg-maroon group-hover:bg-maroon-dark" style="height: {{ max(1, $d['activeUsers'] / $dailyMax * 100) }}%"></span>
+                                <span class="block w-full max-w-10 rounded-t-sm bg-maroon group-hover:bg-maroon-dark" style="height: {{ max(1, $d['activeUsers'] / $dailyMax * 100) }}%"></span>
                             </div>
                         @endforeach
                     </div>
-                    <div class="flex min-w-[32rem] gap-1 pt-1.5">
+                    <div class="flex min-w-lg gap-1 pt-1.5">
                         @foreach ($daily as $i => $d)
                             @php $date = \Illuminate\Support\Carbon::createFromFormat('Ymd', $d['date']); @endphp
                             <span class="flex-1 text-center text-xs leading-tight text-muted">
@@ -222,7 +222,7 @@
                         @for ($h = 0; $h < 24; $h++)
                             @php $v = $hours[$h]['activeUsers'] ?? 0; @endphp
                             <div class="flex h-full flex-1 items-end" title="{{ sprintf('%02d:00–%02d:59', $h, $h) }}: {{ $num($v) }} people">
-                                <span class="block w-full rounded-t bg-maroon hover:bg-maroon-dark" style="height: {{ $v ? max(1, $v / $hourMax * 100) : 0 }}%"></span>
+                                <span class="block w-full rounded-t-sm bg-maroon hover:bg-maroon-dark" style="height: {{ $v ? max(1, $v / $hourMax * 100) : 0 }}%"></span>
                             </div>
                         @endfor
                     </div>
@@ -345,7 +345,7 @@
                         @endphp
                         @forelse ($errorRows as [$label, $times, $people])
                             <tr>
-                                <td class="break-words">{{ $label }}</td>
+                                <td class="wrap-break-word">{{ $label }}</td>
                                 <td class="text-right tabular-nums">{{ $num($times) }}</td>
                                 <td class="text-right tabular-nums">{{ $num($people) }}</td>
                             </tr>

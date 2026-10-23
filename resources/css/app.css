@@ -1,6 +1,81 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+| Tailwind 4. Classes come from the same files Tailwind 3 read (not v4's
+| whole-project scan), so the same classes are generated. The shared .cb-*
+| classes are in admin-components.css (see there for how they rank).
+*/
+@import 'tailwindcss' source(none);
+@import './admin-components.css';
+
+@plugin '@tailwindcss/forms';
+
+@source '../views/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+| Tailwind 4 (23 Oct 2026, was 3). The brand tokens that lived in
+| tailwind.config.js are the theme below — they mirror
+| resources/scss/abstracts/_variables.scss and `npm run brand` checks they
+| match. Radius grows with the surface (guideline §5): chips 6 · inputs 10 ·
+| rows 14 · cards 20 · sheets 28 · stages 40.
+*/
+@theme {
+    --font-sans: Poppins, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Baloo 2', Poppins, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --radius-xs: 6px;
+    --radius-sm: 6px;
+    --radius: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-2xl: 28px;
+    --radius-3xl: 40px;
+
+    --shadow-focus: 0 0 0 3px rgba(195, 58, 25, 0.32);
+
+    --color-ink: #231f20;
+    --color-paper: #fffaf4;
+    --color-paper-soft: #fff0df;
+    --color-muted: #6b625e;
+    --color-subtle: #7a706b;
+    --color-line: #eadfd6;
+    --color-maroon: #c33a19;
+    --color-maroon-dark: #a12f14;
+    --color-navy: #0d2343;
+    /* Light only: highlights on ink, glows. Never text on paper (2.2:1). */
+    --color-gold: #e39d1c;
+    --color-wine: #721313;
+    --color-teal: #047a7c;
+    /* Destructive actions get their own red so "Delete" never reads as the maroon primary "Save". */
+    --color-danger: #b42318;
+    --color-danger-dark: #912018;
+    --color-danger-soft: #fef3f2;
+}
+
+/*
+| Tailwind 3's defaults that these pages were drawn with, kept: the light grey
+| default border, grey placeholders, and the pointer on buttons.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-gray-400);
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+}
 
 /*
 | Admin design system.
@@ -9,7 +84,7 @@
 | components in resources/views/components — <x-button>, <x-form.input>,
 | <x-card> …) so buttons, fields and tables look and behave the same
 | everywhere. Brand tokens (maroon, navy, paper, line …) live in
-| tailwind.config.js; don't hard-code colours in a view.
+| the @theme above; don't hard-code colours in a view.
 */
 
 [x-cloak] {
@@ -72,7 +147,7 @@ h1,
 h2,
 h3,
 .cb-display {
-    font-family: theme('fontFamily.display');
+    font-family: var(--font-display);
 }
 
 /* The dashboard's "Next WordCamp" card: a slow maroon/gold glow drifting
@@ -123,7 +198,7 @@ h3,
 
 .cb-btn-primary,
 .cb-btn-primary:hover {
-    background-image: linear-gradient(135deg, theme('colors.maroon.DEFAULT'), theme('colors.wine'));
+    background-image: linear-gradient(135deg, var(--color-maroon), var(--color-wine));
     box-shadow: 0 12px 28px -12px rgb(161 47 20 / 0.45);
 }
 
@@ -198,8 +273,8 @@ h3,
     margin: 0 !important;
     padding: 0;
     border: 0;
-    background: theme('colors.paper');
-    color: theme('colors.ink');
+    background: var(--color-paper);
+    color: var(--color-ink);
 }
 
 .cb-studio::backdrop {
@@ -246,124 +321,6 @@ html.cb-studio-open {
     }
 }
 
-@layer components {
-    /* ---- Form controls ------------------------------------------------ */
-    .cb-label {
-        @apply block text-sm font-medium text-ink;
-    }
-
-    .cb-input {
-        @apply block w-full rounded-md border-line bg-white px-3 py-2 text-sm text-ink shadow-sm
-               placeholder:text-muted/60
-               focus:border-maroon focus:ring-2 focus:ring-maroon/25
-               disabled:cursor-not-allowed disabled:bg-paper-soft disabled:text-muted;
-    }
-
-    .cb-input[aria-invalid='true'] {
-        @apply border-danger focus:border-danger focus:ring-danger/25;
-    }
-
-    select.cb-input {
-        @apply pr-9;
-    }
-
-    .cb-check {
-        @apply h-4 w-4 rounded border-line text-maroon shadow-sm focus:ring-2 focus:ring-maroon/30 focus:ring-offset-0;
-    }
-
-    .cb-file {
-        @apply block w-full cursor-pointer rounded-md border border-dashed border-line bg-paper px-3 py-2 text-sm text-muted
-               file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5
-               file:text-sm file:font-medium file:text-ink file:shadow-sm file:ring-1 file:ring-line
-               hover:border-maroon/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/30;
-    }
-
-    .cb-hint {
-        @apply mt-1 text-xs text-muted;
-    }
-
-    .cb-error {
-        @apply mt-1 text-xs font-medium text-danger;
-    }
-
-    /* ---- Buttons ------------------------------------------------------ */
-    .cb-btn {
-        @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent
-               px-4 py-2 text-sm font-semibold transition motion-safe:active:scale-[0.97]
-               focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40 focus-visible:ring-offset-2
-               disabled:pointer-events-none disabled:opacity-50;
-    }
-
-    .cb-btn-sm {
-        @apply px-3 py-1.5 text-xs;
-    }
-
-    .cb-btn-primary {
-        @apply bg-maroon text-white shadow-sm hover:bg-maroon-dark;
-    }
-
-    .cb-btn-secondary {
-        @apply border-line bg-white text-ink shadow-sm hover:bg-paper-soft;
-    }
-
-    .cb-btn-danger {
-        @apply bg-danger text-white shadow-sm hover:bg-danger-dark focus-visible:ring-danger/40;
-    }
-
-    .cb-btn-danger-outline {
-        @apply border-danger/30 bg-white text-danger hover:bg-danger-soft focus-visible:ring-danger/40;
-    }
-
-    .cb-btn-link {
-        @apply px-0 py-0 text-maroon hover:text-maroon-dark hover:underline;
-    }
-
-    /* ---- Tables ------------------------------------------------------- */
-    .cb-table {
-        @apply min-w-full text-left text-sm;
-    }
-
-    .cb-table thead th {
-        @apply whitespace-nowrap bg-paper-soft px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted;
-    }
-
-    .cb-table tbody tr {
-        @apply border-t border-line;
-    }
-
-    .cb-table tbody tr:hover {
-        @apply bg-paper/60;
-    }
-
-    .cb-table tbody td {
-        @apply px-4 py-3 align-middle text-ink;
-    }
-
-    /* A row that deserves a second look — the events list marks the nearest
-       upcoming ones. The bar sits on the first cell so columns stay aligned. */
-    .cb-table tbody tr.cb-row-soon {
-        @apply bg-maroon/5;
-    }
-
-    .cb-table tbody tr.cb-row-soon:hover {
-        @apply bg-maroon/10;
-    }
-
-    .cb-table tbody tr.cb-row-soon > td:first-child {
-        @apply border-l-4 border-maroon;
-    }
-
-    /* ---- Event cards ---------------------------------------------------
-       The Events list as a grid of cards. -soon marks the nearest upcoming
-       ones, the same ten the table view tints. */
-    .cb-event-card {
-        @apply flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-sm transition-shadow hover:shadow-md;
-    }
-
-    .cb-event-card-soon {
-        @apply border-maroon/30 border-t-4 border-t-maroon bg-maroon/5;
-    }
-}
 
 /*
  * Phones: every admin and manager control is a comfortable 44px to tap, and
@@ -423,7 +380,7 @@ html.has-app-tabbar body {
     z-index: 40;
     display: flex;
     background: #fff;
-    border-top: 1px solid theme('colors.line');
+    border-top: 1px solid var(--color-line);
     padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -436,7 +393,7 @@ html.has-app-tabbar body {
     align-items: center;
     justify-content: center;
     gap: 2px;
-    color: theme('colors.muted');
+    color: var(--color-muted);
     font-size: 11px;
     font-weight: 600;
     text-decoration: none;
@@ -450,10 +407,10 @@ html.has-app-tabbar body {
 }
 
 .app-tabbar__item--active {
-    color: theme('colors.maroon.DEFAULT');
+    color: var(--color-maroon);
 }
 
 .app-tabbar__item:focus-visible {
-    outline: 2px solid theme('colors.maroon.DEFAULT');
+    outline: 2px solid var(--color-maroon);
     outline-offset: -3px;
 }

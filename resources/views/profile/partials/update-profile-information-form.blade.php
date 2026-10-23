@@ -16,7 +16,7 @@
         @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
             <x-alert type="warning" class="mt-5">
                 Your email address is unverified.
-                <button form="send-verification" class="font-medium underline hover:no-underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">
+                <button form="send-verification" class="font-medium underline hover:no-underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
                     Re-send the verification email.
                 </button>
             </x-alert>

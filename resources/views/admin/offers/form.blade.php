@@ -96,7 +96,7 @@
 
                 {{-- A table from md up; on a phone each field is its own block (no sideways scrolling). --}}
                 <div class="rounded-lg border border-line md:overflow-x-auto">
-                    <table class="block w-full text-sm md:table md:min-w-[40rem]">
+                    <table class="block w-full text-sm md:table md:min-w-160">
                         <thead class="hidden bg-paper-soft text-left text-xs uppercase tracking-wide text-muted md:table-header-group">
                             <tr>
                                 <th class="px-3 py-2 font-medium">Field</th>

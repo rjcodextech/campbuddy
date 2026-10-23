@@ -11,7 +11,7 @@
         <ul class="grid gap-4 md:grid-cols-2">
             @foreach ($events as $event)
                 @php $timing = \App\Support\EventListing::timing($event, $today); @endphp
-                <li class="flex flex-col rounded-xl border border-line bg-white p-5 shadow-sm">
+                <li class="flex flex-col rounded-xl border border-line bg-white p-5 shadow-xs">
                     <div class="flex items-start gap-3">
                         <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-sm font-semibold text-maroon" aria-hidden="true">
                             @if ($event->markUrl())
@@ -22,7 +22,7 @@
                         </span>
                         <div class="min-w-0 flex-1">
                             <h2 class="text-base font-semibold leading-snug">
-                                <a href="{{ route('manager.events.details', $event) }}" class="hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                                <a href="{{ route('manager.events.details', $event) }}" class="hover:text-maroon hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
                             </h2>
                             <p class="mt-0.5 text-sm text-muted">
                                 @if ($event->starts_on)

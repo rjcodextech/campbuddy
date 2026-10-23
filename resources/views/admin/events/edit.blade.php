@@ -42,10 +42,10 @@
                 this.$watch('tab', (t) => { try { sessionStorage.setItem(this.key, t); history.replaceState(null, '', '#' + t); } catch (e) {} });
             },
         }" class="space-y-6">
-        <nav class="flex gap-1 overflow-x-auto rounded-full border border-line bg-white p-1 shadow-sm" role="tablist" aria-label="Event details">
+        <nav class="flex gap-1 overflow-x-auto rounded-full border border-line bg-white p-1 shadow-xs" role="tablist" aria-label="Event details">
             @foreach (['basics' => 'Basics', 'info' => 'Event info', 'data' => 'Data & refresh', 'branding' => 'Branding'] as $key => $label)
                 <button type="button" role="tab" @click="tab = '{{ $key }}'" :aria-selected="(tab === '{{ $key }}').toString()"
-                        class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-muted transition hover:text-ink aria-selected:bg-maroon/10 aria-selected:text-maroon focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $label }}</button>
+                        class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold text-muted transition hover:text-ink aria-selected:bg-maroon/10 aria-selected:text-maroon focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $label }}</button>
             @endforeach
         </nav>
 
@@ -167,7 +167,7 @@
                                         </span>
                                     </div>
                                     @if ($log->message)
-                                        <p class="mt-0.5 break-words text-xs text-muted">{{ $log->message }}</p>
+                                        <p class="mt-0.5 wrap-break-word text-xs text-muted">{{ $log->message }}</p>
                                     @endif
                                 </li>
                             @endforeach

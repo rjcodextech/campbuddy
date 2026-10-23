@@ -268,7 +268,7 @@ class AdminPanelTest extends TestCase
         // Tailwind drops component classes whose full name never appears in a
         // scanned file, so a class assembled as 'cb-btn-'.$variant ships
         // unstyled buttons — with no error anywhere.
-        preg_match_all('/\.(cb-btn-[a-z-]+)/', file_get_contents(resource_path('css/app.css')), $m);
+        preg_match_all('/\.(cb-btn-[a-z-]+)/', file_get_contents(resource_path('css/app.css')).file_get_contents(resource_path('css/admin-components.css')), $m);
         $views = collect(File::allFiles(resource_path('views')))->map->getContents()->implode("\n");
 
         $this->assertNotEmpty($m[1]);
@@ -294,6 +294,6 @@ class AdminPanelTest extends TestCase
             }
         }
 
-        $this->assertSame([], $offenders, 'Use the tokens in tailwind.config.js (ink, muted, line, maroon, danger, teal…).');
+        $this->assertSame([], $offenders, 'Use the brand tokens in resources/css/app.css @theme (ink, muted, line, maroon, danger, teal…).');
     }
 }

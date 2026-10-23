@@ -35,7 +35,7 @@
 
 {{-- From lg up the panel's main column turns into two (resources/css/app.css, .cb-event-shell): this
      card becomes a sticky menu on the left and the page's own content sits on the right. --}}
-<div {{ $attributes->class('cb-event-shell mb-6 overflow-hidden rounded-xl border border-line bg-white shadow-sm') }}>
+<div {{ $attributes->class('cb-event-shell mb-6 overflow-hidden rounded-xl border border-line bg-white shadow-xs') }}>
     <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 sm:px-5">
         <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-base font-semibold text-maroon" aria-hidden="true">
             @if ($event->markUrl())
@@ -47,7 +47,7 @@
 
         <div class="min-w-0 flex-1 basis-56">
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] text-base font-semibold hover:text-maroon hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] text-base font-semibold hover:text-maroon hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
                 <x-event-status :status="$event->status" />
                 @unless ($event->is_visible)
                     <x-badge>Hidden</x-badge>
@@ -83,7 +83,7 @@
                     <a href="{{ $url }}"
                        @if ($current === $key) aria-current="page" @endif
                        @class([
-                           '-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-maroon/40 lg:mb-0 lg:flex lg:w-full lg:justify-between lg:rounded-lg lg:border-b-0 lg:py-2.5',
+                           '-mb-px inline-flex items-center gap-1.5 border-b-2 px-3 py-3 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 lg:mb-0 lg:flex lg:w-full lg:justify-between lg:rounded-lg lg:border-b-0 lg:py-2.5',
                            'border-maroon text-maroon lg:bg-maroon/10' => $current === $key,
                            'border-transparent text-muted hover:border-line hover:text-ink lg:hover:bg-paper-soft' => $current !== $key,
                        ])>

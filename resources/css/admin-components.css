@@ -1,0 +1,129 @@
+/*
+| The admin's shared classes (.cb-*): form controls, buttons, tables, event
+| cards, as Tailwind 3 ranked them. The single-class ones sit in the
+| components layer, under the utilities, so a utility in a view still
+| overrides them (`cb-input w-auto`). The compound ones (a table's cells, an
+| invalid field, a select) are left outside the layers: under Tailwind 3 their
+| higher specificity beat a single utility, and outside the layers they still
+| do (Tailwind 4's utilities layer would otherwise beat them).
+*/
+
+@layer components {
+    /* ---- Form controls ------------------------------------------------ */
+    .cb-label {
+        @apply block text-sm font-medium text-ink;
+    }
+
+    .cb-input {
+        @apply block w-full rounded-md border-line bg-white px-3 py-2 text-sm text-ink shadow-xs
+               placeholder:text-muted/60
+               focus:border-maroon focus:ring-2 focus:ring-maroon/25
+               disabled:cursor-not-allowed disabled:bg-paper-soft disabled:text-muted;
+    }
+
+    .cb-check {
+        @apply h-4 w-4 rounded-sm border-line text-maroon shadow-xs focus:ring-2 focus:ring-maroon/30 focus:ring-offset-0;
+    }
+
+    .cb-file {
+        @apply block w-full cursor-pointer rounded-md border border-dashed border-line bg-paper px-3 py-2 text-sm text-muted
+               file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-white file:px-3 file:py-1.5
+               file:text-sm file:font-medium file:text-ink file:shadow-xs file:ring-1 file:ring-line
+               hover:border-maroon/40 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/30;
+    }
+
+    .cb-hint {
+        @apply mt-1 text-xs text-muted;
+    }
+
+    .cb-error {
+        @apply mt-1 text-xs font-medium text-danger;
+    }
+
+    /* ---- Buttons ------------------------------------------------------ */
+    .cb-btn {
+        @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent
+               px-4 py-2 text-sm font-semibold transition motion-safe:active:scale-[0.97]
+               focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 focus-visible:ring-offset-2
+               disabled:pointer-events-none disabled:opacity-50;
+    }
+
+    .cb-btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+
+    .cb-btn-primary {
+        @apply bg-maroon text-white shadow-xs hover:bg-maroon-dark;
+    }
+
+    .cb-btn-secondary {
+        @apply border-line bg-white text-ink shadow-xs hover:bg-paper-soft;
+    }
+
+    .cb-btn-danger {
+        @apply bg-danger text-white shadow-xs hover:bg-danger-dark focus-visible:ring-danger/40;
+    }
+
+    .cb-btn-danger-outline {
+        @apply border-danger/30 bg-white text-danger hover:bg-danger-soft focus-visible:ring-danger/40;
+    }
+
+    .cb-btn-link {
+        @apply px-0 py-0 text-maroon hover:text-maroon-dark hover:underline;
+    }
+
+    /* ---- Tables ------------------------------------------------------- */
+    .cb-table {
+        @apply min-w-full text-left text-sm;
+    }
+
+    /* ---- Event cards ---------------------------------------------------
+       The Events list as a grid of cards. -soon marks the nearest upcoming
+       ones, the same ten the table view tints. */
+    .cb-event-card {
+        @apply flex flex-col overflow-hidden rounded-xl border border-line bg-white shadow-xs transition-shadow hover:shadow-md;
+    }
+
+    .cb-event-card-soon {
+        @apply border-maroon/30 border-t-4 border-t-maroon bg-maroon/5;
+    }
+}
+
+.cb-input[aria-invalid='true'] {
+    @apply border-danger focus:border-danger focus:ring-danger/25;
+}
+
+select.cb-input {
+    @apply pr-9;
+}
+
+.cb-table thead th {
+    @apply whitespace-nowrap bg-paper-soft px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted;
+}
+
+.cb-table tbody tr {
+    @apply border-t border-line;
+}
+
+.cb-table tbody tr:hover {
+    @apply bg-paper/60;
+}
+
+.cb-table tbody td {
+    @apply px-4 py-3 align-middle text-ink;
+}
+
+/* A row that deserves a second look — the events list marks the nearest
+   upcoming ones. The bar sits on the first cell so columns stay aligned. */
+.cb-table tbody tr.cb-row-soon {
+    @apply bg-maroon/5;
+}
+
+.cb-table tbody tr.cb-row-soon:hover {
+    @apply bg-maroon/10;
+}
+
+.cb-table tbody tr.cb-row-soon > td:first-child {
+    @apply border-l-4 border-maroon;
+}
+
