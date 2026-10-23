@@ -50,6 +50,7 @@
                         <a href="{{ route('privacy') }}">Privacy notice</a>
                         <a href="{{ route('terms') }}">Terms of use</a>
                         <a href="mailto:{{ config('campbuddy.legal.grievance_email') }}?subject=CampBuddy%20data%20request">Data request or complaint</a>
+                        @include('attendee.partials.apk-link')
                     </div>
                     <div class="legal-footer-copy">
                         &copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.

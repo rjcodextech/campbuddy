@@ -6,6 +6,7 @@ use App\Jobs\SendAppUpdatePushJob;
 use App\Models\AppRelease;
 use App\Models\NativePushToken;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -32,6 +33,14 @@ final class AppReleases
         $id = (string) config('mobile_app.app_id');
 
         return app()->environment('local', 'testing') ? [$id, $id.'.native'] : [$id];
+    }
+
+    private const LIVE_CACHE_KEY = 'app-releases:has-live-apk';
+
+    /** Whether the website footer may offer the APK (/app/android): a store-app version is live. Cached, cleared on every change. */
+    public static function hasLiveApk(): bool
+    {
+        return (bool) Cache::remember(self::LIVE_CACHE_KEY, 600, fn () => self::latest((string) config('mobile_app.app_id')) !== null);
     }
 
     public static function latest(string $package): ?AppRelease
@@ -189,18 +198,21 @@ final class AppReleases
     public static function publish(AppRelease $release, ?User $user): void
     {
         $release->update(['status' => AppRelease::LIVE, 'published_at' => now(), 'published_by' => $user?->id]);
+        Cache::forget(self::LIVE_CACHE_KEY);
         SendAppUpdatePushJob::dispatch($release->id);
     }
 
     public static function withdraw(AppRelease $release): void
     {
         $release->update(['status' => AppRelease::WITHDRAWN]);
+        Cache::forget(self::LIVE_CACHE_KEY);
     }
 
     public static function delete(AppRelease $release): void
     {
         Storage::disk('local')->delete($release->file);
         $release->delete();
+        Cache::forget(self::LIVE_CACHE_KEY);
     }
 
     public static function path(AppRelease $release): string

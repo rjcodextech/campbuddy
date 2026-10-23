@@ -312,6 +312,26 @@ class AppReleaseTest extends TestCase
             ->assertSee(route('app.android'));
     }
 
+    public function test_the_website_footer_offers_the_apk_only_while_a_version_is_live(): void
+    {
+        Queue::fake();
+        Cache::flush();
+        foreach (['/', '/guide', '/privacy', '/terms'] as $page) {
+            $this->get($page)->assertOk()->assertDontSee('Android app (APK)');
+        }
+
+        $admin = User::factory()->create();
+        $this->upload($admin, 'campbuddy-13')->assertOk();
+        $this->get('/')->assertDontSee('Android app (APK)'); // a draft is not offered
+        AppReleases::publish(AppRelease::sole(), $admin);
+        foreach (['/', '/guide', '/privacy', '/terms'] as $page) {
+            $this->get($page)->assertOk()->assertSee('Android app (APK)')->assertSee(route('app.android'), false);
+        }
+
+        AppReleases::withdraw(AppRelease::sole());
+        $this->get('/')->assertDontSee('Android app (APK)');
+    }
+
     public function test_guests_cannot_upload_or_publish(): void
     {
         $this->call('POST', route('admin.mobile.releases.chunk'), [], [], [], ['HTTP_X_UPLOAD_ID' => (string) Str::uuid(), 'HTTP_X_CHUNK_INDEX' => '0'], 'x')->assertRedirect();
