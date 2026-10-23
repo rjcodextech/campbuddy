@@ -1,5 +1,5 @@
 @php
-    $labels = ['overview' => 'Overview', 'navigation' => 'Navigation', 'home' => 'Home', 'text' => 'Text & languages', 'look' => 'Look', 'banner' => 'Banner', 'switches' => 'Switches', 'updates' => 'App updates', 'history' => 'History'];
+    $labels = \App\Http\Controllers\Admin\MobileAppController::LABELS;
     $strings = $config['strings'];
     $defaultsEn = \App\Support\MobileAppDefaults::strings('en');
     $input = 'block w-full rounded-md border-line text-sm shadow-xs focus:border-maroon focus:ring-maroon';

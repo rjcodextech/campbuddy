@@ -24,6 +24,9 @@ class MobileAppController extends Controller
 {
     public const TABS = ['overview', 'navigation', 'home', 'text', 'look', 'banner', 'switches', 'updates', 'history'];
 
+    /** The tab names, shared by the page's tab strip and the panel's sidebar submenu. */
+    public const LABELS = ['overview' => 'Overview', 'navigation' => 'Navigation', 'home' => 'Home', 'text' => 'Text & languages', 'look' => 'Look', 'banner' => 'Banner', 'switches' => 'Switches', 'updates' => 'App updates', 'history' => 'History'];
+
     public function index(Request $request): View
     {
         Gate::authorize('viewAny', \App\Models\Event::class);
