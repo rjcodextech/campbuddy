@@ -26,8 +26,10 @@ import { FONT_DISPLAY, FONT_TEXT, loadBrandFonts } from './brand.js';
 
 // Instagram portrait, square (Instagram, LinkedIn), story / reel cover, X (16:9) and LinkedIn / blog link (1.91:1).
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920], '1600x900': [1600, 900], '1200x627': [1200, 627] };
-// The wide sizes show the square card, whole, on a blurred copy of itself (no design is redrawn sideways).
-const LANDSCAPE = new Set(['1600x900', '1200x627']);
+// The wide sizes are drawn wide (23 Oct 2026; they were the square card shrunk to 75% on a blurred copy
+// of itself, its text ~18 px): the design fills the left part and a panel down the right edge carries what
+// the foot block carries on the other sizes (why scan, the QR, the lockup, the event). SIDE = that panel.
+const SIDE = { '1600x900': 520, '1200x627': 400 };
 // Print: six times the pixels (6480 px wide), stamped 600 DPI — 10.8 inches wide, sharp enough for a standee.
 // HD: twice the platform size (sharp on any phone, still under the networks' upload limits); print: six times, 600 DPI.
 const QUALITY = { social: { scale: 2, dpi: 300 }, print: { scale: 6, dpi: 600 } };
@@ -264,43 +266,6 @@ export function eventLook(seed) {
 const images = new Map();
 
 /**
- * A wide size (X, LinkedIn / blog link): the square card drawn as usual, then set whole in the
- * middle of the wide frame on a blurred, dimmed copy of itself, with a soft shadow.
- */
-async function widen(canvas, size, scale, drawSquare) {
-  const [W, H] = SIZES[size];
-  const square = document.createElement('canvas');
-  await drawSquare(square, scale);
-  canvas.width = W * scale;
-  canvas.height = H * scale;
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(scale, 0, 0, scale, 0, 0);
-  ctx.save();
-  ctx.filter = 'blur(32px) saturate(1.15)';
-  const cover = W / 1080;
-  ctx.drawImage(square, -40, (H - 1080 * cover) / 2 - 40, W + 80, 1080 * cover + 80);
-  ctx.restore();
-  ctx.fillStyle = 'rgba(20, 16, 16, 0.32)';
-  ctx.fillRect(0, 0, W, H);
-  const s = H * 0.9;
-  const x = (W - s) / 2;
-  const y = (H - s) / 2;
-  ctx.save();
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-  ctx.shadowBlur = 44;
-  ctx.shadowOffsetY = 14;
-  roundRect(ctx, x, y, s, s, 26);
-  ctx.fillStyle = '#ffffff';
-  ctx.fill();
-  ctx.restore();
-  ctx.save();
-  roundRect(ctx, x, y, s, s, 26);
-  ctx.clip();
-  ctx.drawImage(square, x, y, s, s);
-  ctx.restore();
-}
-
-/**
  * CampBuddy × WPSimplified, side by side on one transparent canvas: the brand lockup every card
  * and reel carries (CAMPBUDDY-BRAND-GUIDELINES.md §2, §8). WPSimplified's mark is a little smaller
  * than CampBuddy's, after a thin divider. Falls back to the CampBuddy wordmark alone.
@@ -444,7 +409,8 @@ function roundRect(ctx, x, y, w, h, r) {
 
 /** Word-wrapped lines at the largest size (down to `min`) where every line fits. */
 function fitText(ctx, text, maxWidth, size, min, maxLines, weight = 800, family = FONT) {
-  for (let s = size; s >= min; s -= 2) {
+  // A start under the minimum (a size scaled down to fit a short card) begins at the minimum instead.
+  for (let s = Math.max(size, min); s >= min; s -= 2) {
     ctx.font = `${weight} ${s}px ${family}`;
     const lines = wrap(ctx, text, maxWidth);
     if (lines.length <= maxLines && lines.every((l) => ctx.measureText(l).width <= maxWidth)) return { lines, size: s };
@@ -930,17 +896,19 @@ export function postContent(post, fields, kit, pick) {
 const POST_DESIGNS = ['daylight', 'classic', 'poster', 'frame', 'ticket', 'magazine', 'split', 'minimal'];
 
 /** The grid every card shares: the block at the foot, the header, the column. */
-function grid(W, H) {
+function grid(W, H, side = 0) {
   const square = H < 1100;
   const tall = H >= 1900;
-  const blockH = Math.round(H * (square ? 0.25 : (tall ? 0.2 : 0.235)));
+  // With a side panel (landscape) there is no foot block, only the margin under the words.
+  const blockH = side ? SAFE - 24 : Math.round(H * (square ? 0.25 : (tall ? 0.2 : 0.235)));
   return {
-    W, H, square, tall, blockH,
+    W, H, square, tall, blockH, side,
     blockTop: H - blockH,
     x: SAFE,
     w: W - 2 * SAFE,
     headerTop: SAFE - 12,
-    logo: square ? { w: 190, h: 104 } : { w: 230, h: 126 },
+    // The short landscape size (1200 x 627) gets a smaller logo: its height goes to the words.
+    logo: H < 700 ? { w: 150, h: 82 } : (square ? { w: 190, h: 104 } : { w: 230, h: 126 }),
   };
 }
 
@@ -1026,7 +994,7 @@ function layoutFor(design, g, pal) {
       };
     case 'frame': {
       const m = g.square ? 28 : 40;
-      const panel = { x: m, y: m, w: W - 2 * m, h: blockTop - 2 * m + 10 };
+      const panel = { x: m, y: m, w: W - 2 * m, h: g.side ? H - 2 * m : blockTop - 2 * m + 10 };
       return {
         ...base, bg: pal.primary,
         art: { ...base.art, on: pal.primary },
@@ -1061,7 +1029,7 @@ function layoutFor(design, g, pal) {
       };
     }
     case 'split': {
-      const side = Math.round(W * 0.34);
+      const side = Math.round(W * (g.side ? 0.26 : 0.34));
       return {
         ...base,
         art: { x: 0, y: 0, w: side, h: blockTop, on: pal.primary },
@@ -1138,6 +1106,7 @@ function paintArtBackground(ctx, box, pal) {
  * (name · dates · hashtag) and, on the right, the QR with CampBuddy's mark.
  */
 function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') {
+  if (g.side) return paintSideBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label);
   const color = block.color;
   const x0 = block.x0 ?? 0;
   const x1 = block.x1 ?? g.W;
@@ -1210,6 +1179,61 @@ function paintBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') 
   ctx.fillText(ellipsize(ctx, foot, tw), left, bottom - Math.max(pad, 46));
 }
 
+/**
+ * Landscape: the foot block turned on its side — a panel down the right edge, in the block's colour, with
+ * (top to bottom) who this is (people cards), the reason to scan, the QR with the lockup under it, and the
+ * event line at the foot. Every line 24 px or more; the QR as big as the room allows.
+ */
+function paintSideBlock(ctx, g, block, pal, kit, brand, qrContent, cta, label = '') {
+  const x0 = g.W;
+  const pw = g.side;
+  const H = g.H;
+  const big = pw >= 500;
+  const color = block.color;
+  const on = textOn(color, pal.ink, pal.paper);
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.fillRect(x0, 0, pw, H);
+  if (ART.pattern && !block.line) fillWithPattern(ctx, ART.pattern, on, x0, 0, pw, H, 120, 0.07);
+  ctx.restore();
+  if (block.line) {
+    ctx.fillStyle = alpha(pal.ink, 0.2);
+    ctx.fillRect(x0, SAFE - 24, 2, H - 2 * (SAFE - 24));
+  }
+  const pad = big ? 56 : 44;
+  const w = pw - 2 * pad;
+  const left = x0 + pad;
+  ctx.textAlign = 'left';
+  let y = pad;
+  if (label) {
+    const lf = fitText(ctx, label, w, big ? 26 : 24, 24, 2, 800, FONT);
+    ctx.font = `800 ${lf.size}px ${FONT}`;
+    ctx.fillStyle = alpha(on, 0.82);
+    lf.lines.forEach((l, i) => ctx.fillText(l, left, y + lf.size * (0.9 + i * 1.2)));
+    y += lf.lines.length * lf.size * 1.2 + 12;
+  }
+  const c = fitText(ctx, cta, w, big ? 40 : 32, 24, 3, 800, FONT);
+  ctx.font = `800 ${c.size}px ${FONT}`;
+  ctx.fillStyle = on;
+  c.lines.forEach((l, i) => ctx.fillText(l, left, y + c.size * (0.9 + i * 1.12)));
+  y += c.lines.length * c.size * 1.12 + 22;
+  // The event line at the foot, measured first: the QR takes the room left between.
+  const tag = (kit.event.hashtags ?? '').split(' ')[2];
+  const foot = fitText(ctx, [kit.event.name, kit.event.dates, tag].filter(Boolean).join('  ·  '), w, big ? 26 : 24, 24, 2, 800, FONT);
+  const footH = foot.lines.length * foot.size * 1.25;
+  const chipH = big ? 52 : 44;
+  const qr = Math.max(120, Math.min(w, H - pad - footH - 22 - chipH - 10 - y));
+  const qx = x0 + (pw - qr) / 2;
+  drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, y, qr, pal.ink, color === pal.paper || block.line ? mix(pal.paper, '#ffffff', 0.5) : pal.paper);
+  ctx.fillStyle = block.line || color === pal.paper ? mix(pal.paper, pal.ink, 0.06) : pal.paper;
+  roundRect(ctx, qx, y + qr + 10, qr, chipH, 12);
+  ctx.fill();
+  if (brand) drawContain(ctx, brand, qx + 8, y + qr + 16, qr - 16, chipH - 12);
+  ctx.font = `800 ${foot.size}px ${FONT}`;
+  ctx.fillStyle = on;
+  foot.lines.forEach((l, i) => ctx.fillText(l, left, H - pad - (foot.lines.length - 1 - i) * foot.size * 1.25));
+}
+
 /** The header: the event's logo, and the kicker (and page number) on the right. */
 function paintTop(ctx, g, L, pal, logo, kicker, page) {
   const head = L.head;
@@ -1242,10 +1266,21 @@ function dateParts(dates) {
 
 /** The words of a card, measured for `w`: headline (or the date / the number) and line. */
 function measureHero(ctx, content, g, kit, w, top, bottom, picture = false) {
+  // The sizes come down together (never under each part's own minimum) until the words fit the room
+  // between the header and the foot; at the usual sizes they already do, so k stays 1.
+  let m = null;
+  for (const k of [1, 0.9, 0.8, 0.7, 0.6]) {
+    m = measureHeroAt(ctx, content, g, kit, w, top, bottom, picture, k);
+    if (m.textH <= bottom - top) break;
+  }
+  return m;
+}
+
+function measureHeroAt(ctx, content, g, kit, w, top, bottom, picture, k) {
   const body = content.body.type;
   const hasBody = !picture && !['none', 'countdown'].includes(body);
   const scale = Math.min(1, w / g.w);
-  const S = (n) => Math.round(n * (0.6 + 0.4 * scale));
+  const S = (n) => Math.round(n * (0.6 + 0.4 * scale) * k);
   const parts = [];
   if (picture) {
     parts.push({ kind: 'head', fit: fitText(ctx, content.headline, w, S(g.tall ? 100 : (g.square ? 60 : 84)), 36, 2, 800, HEAD ?? FONT_DISPLAY), gap: 16 });
@@ -1324,9 +1359,10 @@ function mosaicPage(H = 1350) {
 
 /** Every card of a post at this size and design (measured with fonts loaded). */
 export function planPost(content, size, styleName, colors) {
-  if (LANDSCAPE.has(size)) size = '1080x1080';
-  const [W, H] = SIZES[size];
-  const g = grid(W, H);
+  const side = SIDE[size] ?? 0;
+  const [FW, H] = SIZES[size];
+  const W = FW - side;
+  const g = grid(W, H, side);
   const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
   // Only Daylight highlights *marked* words; the other designs show the words without the stars.
   if (design !== 'daylight') content = { ...content, headline: String(content.headline ?? '').replace(/\*/g, '') };
@@ -1335,7 +1371,7 @@ export function planPost(content, size, styleName, colors) {
   useArt(content.artIndex ?? 0);
 
   if (design === 'daylight') {
-    const d = daylightGrid(W, H);
+    const d = daylightGrid(W, H, side);
     if (content.body.type === 'photos') {
       const all = content.body.people ?? [];
       if (!all.length) return [{ ...content, body: { type: 'none' } }];
@@ -1583,18 +1619,20 @@ function paintWords(ctx, m, x, y, L) {
  * times the pixels).
  */
 export async function drawEventPost(canvas, size, styleName, content, kit, colors, page = { index: 1, total: 1 }, scale = 1) {
-  if (LANDSCAPE.has(size)) return widen(canvas, size, scale, (c, sc) => drawEventPost(c, '1080x1080', styleName, content, kit, colors, page, sc));
-  const [W, H] = SIZES[size];
-  canvas.width = W * scale;
+  // Landscape: the design is laid out in the left W px; the side panel takes the rest.
+  const side = SIDE[size] ?? 0;
+  const [FW, H] = SIZES[size];
+  const W = FW - side;
+  canvas.width = FW * scale;
   canvas.height = H * scale;
   RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   const pal = paletteOf(colors);
-  const g = grid(W, H);
+  const g = grid(W, H, side);
   const design = POST_DESIGNS.includes(styleName) ? styleName : 'classic';
   if (design === 'daylight') {
-    await drawDaylightPost(ctx, W, H, content, kit, pal, page);
+    await drawDaylightPost(ctx, W, H, content, kit, pal, page, side);
     return;
   }
   const L = layoutFor(design, g, pal);
@@ -1633,7 +1671,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
   ctx.fillRect(0, 0, W, H);
   if (L.split) {
     ctx.fillStyle = pal.primary;
-    ctx.fillRect(0, 0, L.split, g.blockTop);
+    ctx.fillRect(0, 0, L.split, g.side ? H : g.blockTop);
   }
   const artBox = L.panel || L.ticket ? L.art : below(L.art);
   if (artBox.h > 40) paintArtBackground(ctx, artBox, pal);
@@ -1672,11 +1710,12 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
     }
   }
   if (L.frameLine) {
+    const frameH = (g.side ? H - 34 : g.blockTop) - 34;
     ctx.strokeStyle = alpha(pal.ink, 0.2);
     ctx.lineWidth = 2;
-    ctx.strokeRect(34, 34, W - 68, g.blockTop - 34);
+    ctx.strokeRect(34, 34, W - 68, frameH);
     ctx.fillStyle = pal.primary;
-    ctx.fillRect(34, 34, 12, g.blockTop - 34);
+    ctx.fillRect(34, 34, 12, frameH);
   }
   paintTop(ctx, g, L, pal, logo, content.kicker, page);
 
@@ -1706,19 +1745,20 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
 // pills of one height, CampBuddy left, campbuddy.club right, nothing else.
 
 /** The Daylight grid: header, the words' column, the QR card, the brand bar. */
-function daylightGrid(W, H) {
+function daylightGrid(W, H, side = 0) {
   const square = H < 1100;
   const tall = H >= 1900;
-  const barH = Math.round(H * (square ? 0.13 : (tall ? 0.1 : 0.12)));
+  // Landscape: the QR card and the brand bar move to the side column (paintDaylightSide).
+  const barH = side ? 0 : Math.round(H * (square ? 0.13 : (tall ? 0.1 : 0.12)));
   const pillH = Math.round(Math.min(W, H) * (square ? 0.074 : 0.08));
-  const cardH = Math.round(H * (square ? 0.175 : (tall ? 0.125 : 0.15)));
+  const cardH = side ? 0 : Math.round(H * (square ? 0.175 : (tall ? 0.125 : 0.15)));
   const barTop = H - barH;
-  const cardTop = barTop - cardH - (square ? 6 : 12);
-  const logo = square ? { w: 190, h: 104 } : { w: 230, h: 126 };
+  const cardTop = side ? H - SAFE + 26 : barTop - cardH - (square ? 6 : 12);
+  const logo = H < 700 ? { w: 150, h: 82 } : (square ? { w: 190, h: 104 } : { w: 230, h: 126 });
   const headerTop = SAFE - 12;
   return {
-    W, H, square, tall, x: SAFE, w: W - 2 * SAFE, barH, barTop, pillH, cardH, cardTop, logo, headerTop,
-    top: headerTop + logo.h + (square ? 34 : 54),
+    W, H, square, tall, side, x: SAFE, w: W - 2 * SAFE, barH, barTop, pillH, cardH, cardTop, logo, headerTop,
+    top: headerTop + logo.h + (H < 700 ? 24 : (square ? 34 : 54)),
     bottom: cardTop - (square ? 26 : 42),
   };
 }
@@ -2005,6 +2045,75 @@ function paintQrCard(ctx, g, c, pal, kit, qrContent, cta) {
   ctx.fillText(event, tx, ty + small);
 }
 
+/**
+ * Landscape Daylight: the QR card stood up in the side column (the reason to scan, the event, the QR,
+ * campbuddy.club) and the CampBuddy × WPSimplified pill under it — the foot of the other sizes.
+ */
+function paintDaylightSide(ctx, g, c, pal, kit, qrContent, cta, brand) {
+  const big = g.side >= 500;
+  const margin = big ? SAFE : 48;
+  const x = g.W;
+  const w = g.side - margin;
+  const top = g.headerTop;
+  const pillH = g.pillH;
+  const h = g.H - margin - pillH - 16 - top;
+  ctx.save();
+  ctx.shadowColor = alpha('#000000', c.dark ? 0.35 : 0.13);
+  ctx.shadowBlur = 44;
+  ctx.shadowOffsetY = 14;
+  ctx.fillStyle = c.card;
+  roundRect(ctx, x, top, w, h, 34);
+  ctx.fill();
+  ctx.restore();
+  if (c.dark) {
+    ctx.strokeStyle = alpha(c.white, 0.3);
+    ctx.lineWidth = 2;
+    roundRect(ctx, x, top, w, h, 34);
+    ctx.stroke();
+  }
+  const pad = big ? 30 : 22;
+  const tx = x + pad;
+  const tw = w - 2 * pad;
+  ctx.textAlign = 'left';
+  let y = top + pad;
+  const ctaFit = fitText(ctx, cta, tw, big ? 34 : 28, 24, 3, 700, FONT);
+  ctx.font = `700 ${ctaFit.size}px ${FONT}`;
+  ctx.fillStyle = c.ink;
+  ctaFit.lines.forEach((l, i) => ctx.fillText(l, tx, y + ctaFit.size * (0.9 + i * 1.12)));
+  y += ctaFit.lines.length * ctaFit.size * 1.12 + 10;
+  const ev = fitText(ctx, [kit.event.name, kit.event.dates].filter(Boolean).join(' · '), tw, 24, 24, 2, 700, FONT);
+  ctx.font = `700 ${ev.size}px ${FONT}`;
+  ctx.fillStyle = c.muted;
+  ev.lines.forEach((l, i) => ctx.fillText(l, tx, y + ev.size * (0.9 + i * 1.25)));
+  y += ev.lines.length * ev.size * 1.25 + 14;
+  // campbuddy.club at the foot of the card, the QR in the room between.
+  const size = 24;
+  const url = 'campbuddy.club';
+  ctx.font = `600 ${size}px ${FONT}`;
+  const uw = ctx.measureText(url).width + size + 10;
+  const uy = top + h - pad;
+  globe(ctx, x + (w - uw) / 2 + size / 2, uy - size * 0.36, size / 2, c.ink);
+  ctx.fillStyle = c.ink;
+  ctx.fillText(url, x + (w - uw) / 2 + size + 10, uy);
+  const qr = Math.max(120, Math.min(tw, uy - size - 16 - y));
+  drawQr(ctx, qrLink(kit.event.qr, qrContent), x + (w - qr) / 2, y, qr, pal.ink, c.white);
+  // The lockup pill, centred under the card.
+  if (brand) {
+    const mh = pillH * 0.56;
+    const mw = mh * (brand.width / brand.height);
+    const lw = Math.min(w, mw + pillH * 0.8);
+    const px = x + (w - lw) / 2;
+    const py = g.H - margin - pillH;
+    ctx.save();
+    ctx.shadowColor = alpha('#000000', 0.12); ctx.shadowBlur = 30; ctx.shadowOffsetY = 8;
+    ctx.fillStyle = alpha(c.white, 0.94);
+    roundRect(ctx, px, py, lw, pillH, pillH / 2);
+    ctx.fill();
+    ctx.restore();
+    drawContain(ctx, brand, px + pillH * 0.4, py + (pillH - mh) / 2, lw - pillH * 0.8, mh);
+  }
+}
+
 /** The globe icon of the address pill (the line icons' globe). */
 function globe(ctx, cx, cy, r, color) {
   ctx.save();
@@ -2061,7 +2170,8 @@ function paintBrandBar(ctx, g, c0, pal, brand) {
 
 /** People per Daylight card: up to three as cards, more as an even grid of portraits. */
 function daylightPerPage(H) {
-  return H >= 1900 ? 8 : (H < 1100 ? 3 : 6);
+  // Two on the short landscape card (1200 x 627), so each name keeps 24px on one line.
+  return H >= 1900 ? 8 : (H < 700 ? 2 : (H < 1100 ? 3 : 6));
 }
 
 /** A portrait: a circle with a ring, or a gradient circle with initials when there is no photo. */
@@ -2128,11 +2238,14 @@ async function paintDaylightPeople(ctx, box, people, c, pal, g) {
   if (n <= 3) {
     const gap = 24;
     const cw = (box.w - gap * (n - 1)) / n;
-    const nameSize = g.tall ? 40 : (g.square ? 28 : 32);
+    // The short landscape size: smaller portraits and less padding, so every name stays on its card.
+    const short = g.H < 700;
+    const nameSize = short ? 24 : (g.tall ? 40 : (g.square ? 28 : 32));
     const textH = nameSize * 2.2;
-    const r = Math.max(44, Math.min(cw * 0.36, (box.h - 28 - textH - 70) / 2 - ring));
+    const pad = short ? 36 : 70;
+    const r = Math.max(short ? 28 : 44, Math.min(cw * 0.36, (box.h - 28 - textH - pad) / 2 - ring));
     // Room for the ±3° tilt, so a corner never touches the card below.
-    const ch = Math.min(box.h - 28, 2 * (r + ring) + textH + 70);
+    const ch = Math.min(box.h - 28, 2 * (r + ring) + textH + pad);
     const cy0 = box.y + (box.h - ch) / 2;
     list.forEach((p, i) => {
       const cx0 = box.x + i * (cw + gap);
@@ -2149,7 +2262,7 @@ async function paintDaylightPeople(ctx, box, people, c, pal, g) {
       roundRect(ctx, cx0, cy0, cw, ch, 32);
       ctx.fill();
       ctx.restore();
-      const cy = cy0 + 30 + ring + r;
+      const cy = cy0 + (short ? 14 : 30) + ring + r;
       portrait(ctx, imgs[i], cx0 + cw / 2, cy, r, ring, ringColor, pal, p.name);
       nameAndRole(ctx, p, cx0 + cw / 2, cy + r + ring + 18, cw - 28, nameSize, c);
       ctx.restore();
@@ -2183,15 +2296,15 @@ async function paintDaylightPeople(ctx, box, people, c, pal, g) {
 }
 
 /** One Daylight card of a post. */
-async function drawDaylightPost(ctx, W, H, content, kit, pal, page) {
-  const g = { ...daylightGrid(W, H), effects: { ...EFFECTS_ON, ...(content.effects ?? {}) } };
+async function drawDaylightPost(ctx, W, H, content, kit, pal, page, side = 0) {
+  const g = { ...daylightGrid(W, H, side), effects: { ...EFFECTS_ON, ...(content.effects ?? {}) } };
   const c = daylightColors(daylightBase(content, pal), pal);
   const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), brandLockup()]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
   const cta = CTA[content.key] ?? 'Scan to open CampBuddy';
-  paintDaylightGround(ctx, g, c);
+  paintDaylightGround(ctx, side ? { ...g, W: W + side } : g, c);
 
   const people = content.body.type === 'photos'
     ? content.body.people.map((p) => ({ name: p.name, photo: p.photo, role: p.role ?? 'Speaker' }))
@@ -2232,20 +2345,23 @@ async function drawDaylightPost(ctx, W, H, content, kit, pal, page) {
     paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
     useArt(content.artIndex ?? 0);
   }
-  paintQrCard(ctx, g, c, pal, kit, content.key, cta);
-  paintBrandBar(ctx, g, c, pal, brand);
+  if (side) paintDaylightSide(ctx, g, c, pal, kit, content.key, cta, brand);
+  else {
+    paintQrCard(ctx, g, c, pal, kit, content.key, cta);
+    paintBrandBar(ctx, g, c, pal, brand);
+  }
 }
 
 /** A Daylight people card: the portrait, the role chip, the name, why they matter, the QR card, the brand bar. */
-async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
-  const g = { ...daylightGrid(W, H), effects: { ...EFFECTS_ON, ...(person.effects ?? {}) } };
+async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors, side = 0) {
+  const g = { ...daylightGrid(W, H, side), effects: { ...EFFECTS_ON, ...(person.effects ?? {}) } };
   const rc = roleColor(person, colors);
   const c = daylightColors('paper', { ...pal, secondary: rc });
   const [photo, brand, logo] = await Promise.all([loadImage(person.photo), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  paintDaylightGround(ctx, g, c);
+  paintDaylightGround(ctx, side ? { ...g, W: W + side } : g, c);
   paintDaylightHeader(ctx, g, c, pal, logo, { index: 1, total: 1 });
   const { roles, talk } = personLines(person);
   // The role chip, top right, in the role's tone.
@@ -2260,7 +2376,7 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
   const textH = kSize + 22 + nameSize * 1.1 + (roles ? lineSize * 1.5 : 0) + (lineFit ? lineFit.lines.length * lineFit.size * 1.25 + 10 : 0);
   const ring = g.square ? 8 : 10;
   const room = g.bottom - g.top - textH - 40;
-  const r = Math.max(70, Math.min(g.w * (g.square ? 0.22 : 0.3), room / 2 - ring));
+  const r = Math.max(H < 700 ? 48 : 70, Math.min(g.w * (g.square ? 0.22 : 0.3), room / 2 - ring));
   const cy = g.top + ring + r;
   portrait(ctx, photo, W / 2, cy, r, ring, c.white, pal, person.name);
   let y = cy + r + ring + 40;
@@ -2286,8 +2402,11 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors) {
   }
   paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
   const qrContent = `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`;
-  paintQrCard(ctx, g, c, pal, kit, qrContent, personCta(person, kit));
-  paintBrandBar(ctx, g, c, pal, brand);
+  if (side) paintDaylightSide(ctx, g, c, pal, kit, qrContent, personCta(person, kit), brand);
+  else {
+    paintQrCard(ctx, g, c, pal, kit, qrContent, personCta(person, kit));
+    paintBrandBar(ctx, g, c, pal, brand);
+  }
 }
 
 // ---- People cards (social posts, not the attendee app's Camp Card) --------
@@ -2340,15 +2459,17 @@ function personLines(person) {
 }
 
 export async function drawPersonCard(canvas, size, design, person, kit, colors, scale = 1) {
-  if (LANDSCAPE.has(size)) return widen(canvas, size, scale, (c, sc) => drawPersonCard(c, '1080x1080', design, person, kit, colors, sc));
-  const [W, H] = SIZES[size];
-  canvas.width = W * scale;
+  // Landscape: the card in the left W px, the side panel (the foot block on its side) in the rest.
+  const side = SIDE[size] ?? 0;
+  const [FW, H] = SIZES[size];
+  const W = FW - side;
+  canvas.width = FW * scale;
   canvas.height = H * scale;
   RES = scale;
   const ctx = canvas.getContext('2d');
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   if (design === 'daylight') {
-    await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors);
+    await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors, side);
     return;
   }
   const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
@@ -2365,8 +2486,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   const tall = H >= 1900;
   const square = H < 1100;
   // The posts' grid: a block at the foot in the role's tone (why scan, the
-  // event, the QR); the site's artwork large in each design's background.
-  const g = grid(W, H);
+  // event, the QR) — on the right side in landscape; the site's artwork large in each design's background.
+  const g = grid(W, H, side);
   const cta = personCta(person, kit);
   const footLabel = personHeadline(person, kit);
   const qrContent = `people-${String(person.roles?.[0] ?? 'camp-card').replace(/_/g, '-')}`;
@@ -2405,9 +2526,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.restore();
     ctx.fillStyle = pal.ink;
     ctx.textAlign = 'center';
-    const n = fitText(ctx, person.name, inner, 56, 28, 1, 700, SERIF);
+    // One line, or two (a long name on a small photo) rather than a font under 26px.
+    let n = fitText(ctx, person.name, inner, 56, 28, 1, 700, SERIF);
+    if (n.size < 28) n = fitText(ctx, person.name, inner, 34, 26, 2, 700, SERIF);
     ctx.font = `italic 700 ${n.size}px ${SERIF}`;
-    ctx.fillText(n.lines[0], 0, ph / 2 - 66);
+    n.lines.forEach((line, i) => ctx.fillText(line, 0, ph / 2 - 66 - (n.lines.length - 1 - i) * n.size * 1.05));
     ctx.font = `700 24px ${FONT}`;
     ctx.fillStyle = rc;
     ctx.fillText(ellipsize(ctx, roles, inner), 0, ph / 2 - 28);
@@ -2539,7 +2662,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 1, 800, HEAD ?? FONT_DISPLAY);
     const nameH = n.lines.length * n.size * 1.04;
     const small = tall ? 34 : (square ? 24 : 28);
-    const textH = nameH + small * 1.8 + (talk ? small * 1.6 : 0) + 30;
+    // The talk on up to two lines at 24px or more; one too long for that stays in the caption.
+    const talkFit = talk ? fitText(ctx, talk, W - 2 * SAFE, Math.max(24, small - 2), 24, 2, 600) : null;
+    const talkLines = talkFit && talkFit.size >= 24 ? talkFit : null;
+    const textH = nameH + small * 1.8 + (talkLines ? small * 0.4 + talkLines.lines.length * talkLines.size * 1.25 : 0) + 30;
     const top = SAFE + (square ? 90 : 120);
     const room = fTop - top - textH - 24;
     const aw = Math.min(W * (square ? 0.44 : 0.58), room / 1.3);
@@ -2583,11 +2709,11 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.font = `800 ${small}px ${FONT}`;
     ctx.fillStyle = rc;
     if (roles) { y += small * 1.3; ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE), W / 2, y); }
-    if (talk) {
-      ctx.font = `600 ${Math.max(24, small - 2)}px ${FONT}`;
+    if (talkLines) {
+      ctx.font = `600 ${talkLines.size}px ${FONT}`;
       ctx.fillStyle = alpha(pal.ink, 0.75);
-      y += small * 1.4;
-      ctx.fillText(ellipsize(ctx, talk, W - 2 * SAFE), W / 2, y);
+      y += small * 0.4;
+      talkLines.lines.forEach((line) => { y += talkLines.size * 1.25; ctx.fillText(line, W / 2, y); });
     }
     ctx.textAlign = 'left';
     foot(pal.paper);
@@ -2600,7 +2726,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // the picture: its skyline rises from the colour block into the photo (in
     // that tone), tall art (a sprig) grows from the corner, the pattern lines
     // the block faintly.
-    const ph = Math.round(H * 0.75);
+    // Landscape: the photo over a band with the name and role; the QR and the rest go in the side panel.
+    const ph = g.side ? H - (H < 700 ? 150 : 180) : Math.round(H * 0.75);
     const logo = await loadImage(kit.event.logo || kit.event.mark);
     if (photo) drawCover(ctx, photo, 0, 0, W, ph, 0.25);
     else {
@@ -2612,10 +2739,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
       ctx.textAlign = 'left';
     }
     // The photo darkens into the role's tone where it meets the block.
-    const g = ctx.createLinearGradient(0, ph * 0.55, 0, ph);
-    g.addColorStop(0, alpha(rc, 0));
-    g.addColorStop(1, alpha(rc, 0.75));
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, ph);
+    const shade = ctx.createLinearGradient(0, ph * 0.55, 0, ph);
+    shade.addColorStop(0, alpha(rc, 0));
+    shade.addColorStop(1, alpha(rc, 0.75));
+    ctx.fillStyle = shade; ctx.fillRect(0, 0, W, ph);
 
     // Not over the photo itself (it covered the person's shoulder); with no photo it fills the empty picture.
     if (!photo) paintArtBackground(ctx, { x: 0, y: ph * 0.62, w: W, h: ph * 0.38, on: mix(rc, pal.ink, 0.2) }, pal);
@@ -2627,6 +2754,26 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
 
     // On the photo: the event's logo (who this is goes in the block).
     if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
+
+    if (g.side) {
+      const bandH = H - ph;
+      const nm = fitText(ctx, person.name, W - 2 * SAFE, H < 700 ? 50 : 62, 30, 1, 900, HEAD ?? FONT_DISPLAY);
+      const rs = roles ? fitText(ctx, roles, W - 2 * SAFE, 26, 24, 1, 700, FONT) : null;
+      const stack = nm.size * 0.9 + (rs ? 14 + rs.size : 0);
+      // Centred in the band, but the last line never closer than 46px to the bottom edge.
+      let by = Math.min(ph + (bandH - stack) / 2, H - 46 - stack) + nm.size * 0.78;
+      ctx.font = `900 ${nm.size}px ${HEAD ?? FONT_DISPLAY}`;
+      ctx.fillStyle = onRc;
+      ctx.fillText(nm.lines[0], SAFE, by);
+      if (rs) {
+        by += 14 + rs.size;
+        ctx.font = `700 ${rs.size}px ${FONT}`;
+        ctx.fillStyle = alpha(onRc, 0.9);
+        ctx.fillText(rs.lines[0], SAFE, by);
+      }
+      foot(rc);
+      return;
+    }
 
     // In the block: the QR (and CampBuddy's mark) on the right, the words on the left.
     const pad = square ? 30 : (tall ? 56 : 40);
