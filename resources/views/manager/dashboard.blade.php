@@ -38,10 +38,12 @@
                         <x-event-status :status="$event->status" />
                     </div>
 
+                    {{-- Plain links with <x-button>'s classes: three components per card made this list
+                         slow to draw for a manager with hundreds of events. --}}
                     <div class="mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
-                        <x-button :href="route('manager.events.details', $event)" variant="secondary" size="sm">Event details</x-button>
-                        <x-button :href="route('manager.events.information', $event)" variant="secondary" size="sm">Event information</x-button>
-                        <x-button :href="route('manager.events.quests', $event)" variant="secondary" size="sm">Quests &amp; checklist</x-button>
+                        <a href="{{ route('manager.events.details', $event) }}" class="cb-btn cb-btn-secondary cb-btn-sm">Event details</a>
+                        <a href="{{ route('manager.events.information', $event) }}" class="cb-btn cb-btn-secondary cb-btn-sm">Event information</a>
+                        <a href="{{ route('manager.events.quests', $event) }}" class="cb-btn cb-btn-secondary cb-btn-sm">Quests &amp; checklist</a>
                     </div>
                 </li>
             @endforeach

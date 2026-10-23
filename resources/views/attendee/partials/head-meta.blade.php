@@ -26,6 +26,15 @@
      explicit tel: links. --}}
 <meta name="format-detection" content="telephone=no">
 
+{{-- The brand fonts every screen draws first (body, bold, headings; Latin), fetched with the
+     page instead of after the stylesheet: the text swaps to them sooner and the page jumps less. --}}
+@foreach (['poppins-400-latin', 'poppins-700-latin', 'baloo2-600-800-latin'] as $font)
+    @php($fontUrl = rescue(fn () => \Illuminate\Support\Facades\Vite::asset("resources/fonts/{$font}.woff2"), null, false))
+    @if ($fontUrl)
+        <link rel="preload" href="{{ $fontUrl }}" as="font" type="font/woff2" crossorigin>
+    @endif
+@endforeach
+
 {{-- Bumped by the admin's "Purge cache": see cache-version.js. --}}
 <meta name="campbuddy-cache-version" content="{{ \App\Support\CacheVersion::current() }}">
 

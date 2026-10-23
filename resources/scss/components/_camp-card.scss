@@ -1,3 +1,4 @@
+@use 'sass:color';
 @use 'sass:math';
 @use '../abstracts/variables' as v;
 
@@ -215,7 +216,8 @@ body > div > img[width='1'][height='1'] {
     line-height: 1.25;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    opacity: 0.85;
+    // 0.92, not 0.85: the small caps stay at 4.5:1 or more on every layout.
+    opacity: 0.92;
     overflow-wrap: anywhere;
 }
 
@@ -231,7 +233,8 @@ body > div > img[width='1'][height='1'] {
     font-weight: v.$font-weight-bold;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    opacity: 0.7;
+    // 0.92, not 0.7: 4.5:1 or more on every layout (dark ink on the ochre one too).
+    opacity: 0.92;
 }
 
 // "Scan to connect on LinkedIn" — says what the QR does, beside it.
@@ -868,7 +871,8 @@ $ticket-band: 136; // design px: the wine band's height, where the tear line sit
         font-size: cc(10);
         font-weight: 800;
         letter-spacing: 0.26em;
-        color: v.$cc-ochre;
+        // Ochre lifted toward the cream: plain ochre on the wine band was 3.7:1.
+        color: color.mix(v.$cc-ochre, v.$cc-antique-white, 70%);
         opacity: 1;
     }
 

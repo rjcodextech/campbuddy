@@ -76,8 +76,10 @@
     font-weight: v.$font-weight-bold;
     color: var(--ink);
 
+    // Until home.js fills it in, it keeps its place (invisible) instead of
+    // appearing ~1s in and pushing the whole page down (layout shift).
     &[hidden] {
-        display: none;
+        visibility: hidden;
     }
 
     // A live dot while the event is on.
@@ -228,4 +230,15 @@
 .home-hero__logo--on-dark {
     background: var(--ink);
     border-color: var(--ink);
+}
+
+// Home's two live cards are filled by home.js from the phone's clock and saved
+// sessions. Until then they hold about the room they will take, so the cards
+// below don't jump down when they arrive (Lighthouse CLS was 0.2 here).
+#happening-now:has(> .footer-note:only-child) {
+    min-height: 220px;
+}
+
+#up-next:empty {
+    min-height: 120px;
 }

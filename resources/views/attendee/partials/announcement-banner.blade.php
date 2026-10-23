@@ -45,7 +45,7 @@
     @endphp
 
     @if (! empty($text))
-        <aside class="announcement-banner announcement-banner--{{ $style }}" data-banner-key="{{ $bannerId }}" role="status" aria-label="Announcement">
+        <div class="announcement-banner announcement-banner--{{ $style }}" data-banner-key="{{ $bannerId }}" role="status" aria-label="Announcement">
             <script>
                 (function() {
                     var k = @json($bannerId);
@@ -85,7 +85,7 @@
                     </a>
                 </div>
             @endif
-        </aside>
+        </div>
 
         <script>
             if (!window.__cbBannerInit) {

@@ -21,7 +21,7 @@
                 @endif
                 {{-- "Starts in 3 days" / "Day 1 of 2" / "That's a wrap" — home.js,
                 from the device's own clock and date. --}}
-                <p class="home-hero__status" id="event-status" hidden></p>
+                <p class="home-hero__status" id="event-status" hidden>&nbsp;</p>
             </div>
         </section>
 

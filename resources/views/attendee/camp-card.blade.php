@@ -6,9 +6,6 @@
             <h1 class="section-head__title">Camp Card</h1>
         </div>
 
-        <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
-            This is a preview. Fill in the form below to make it yours.
-        </p>
 
         <div class="camp-card-scroll" id="camp-card-scroll">
             @foreach (['ticket' => 'Ticket', 'classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
@@ -26,6 +23,11 @@
             @endforeach
         </div>
 
+        {{-- Under the cards, not above them: it appears once camp-card.js has looked for a saved card,
+             and above the cards it pushed the whole gallery down as it came in (layout shift). --}}
+        <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
+            This is a preview. Fill in the form below to make it yours.
+        </p>
         <p class="cc-print-note">
             <strong>Print quality:</strong> 900&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
         </p>

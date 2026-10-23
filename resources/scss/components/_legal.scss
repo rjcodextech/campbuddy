@@ -367,6 +367,140 @@
     }
 }
 
+// The Privacy / Terms text an admin writes in Admin → Legal (plain h2, p, ul,
+// table… from the editor): the same type and spacing as the built-in page
+// above, so headings, paragraphs and lists don't run into each other.
+.legal-custom-content {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--ink);
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+
+    h2 {
+        margin: v.$space-8 0 v.$space-3;
+        font-size: 1.25rem;
+        font-weight: 800;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
+
+        @media (min-width: v.$bp-tablet) {
+            font-size: 1.4rem;
+        }
+    }
+
+    h3 {
+        margin: v.$space-5 0 v.$space-2;
+        font-size: 1.05rem;
+        font-weight: 700;
+        line-height: 1.35;
+    }
+
+    h4 {
+        margin: v.$space-4 0 v.$space-2;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    p {
+        margin: 0 0 v.$space-3;
+    }
+
+    ul,
+    ol {
+        margin: v.$space-2 0 v.$space-4;
+        padding-left: 1.2rem;
+    }
+
+    ul {
+        list-style: disc;
+    }
+
+    ol {
+        list-style: decimal;
+    }
+
+    li {
+        line-height: 1.6;
+        margin-bottom: 6px;
+    }
+
+    a {
+        color: var(--brand-primary);
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        overflow-wrap: anywhere;
+
+        &:hover {
+            color: var(--brand-accent);
+        }
+    }
+
+    blockquote {
+        margin: v.$space-4 0;
+        padding: v.$space-3 v.$space-4;
+        border-left: 4px solid var(--line);
+        color: var(--muted);
+    }
+
+    hr {
+        margin: v.$space-6 0;
+        border: 0;
+        border-top: 1px solid var(--line);
+    }
+
+    // The editor's callout box.
+    .legal__box {
+        margin: 0 0 v.$space-6;
+        padding: v.$space-5;
+        border: 1px solid rgba(195, 58, 25, 0.2);
+        border-left: 5px solid var(--brand-primary);
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(255, 240, 223, 0.7), rgba(255, 228, 196, 0.5));
+
+        ul {
+            margin-bottom: 0;
+        }
+    }
+
+    table {
+        width: 100%;
+        margin: v.$space-4 0;
+        border-collapse: collapse;
+        // Even columns: left to the browser, the longest column was squeezed to a
+        // few words a line while a shorter one took the room.
+        table-layout: fixed;
+        font-size: 0.9rem;
+        text-align: left;
+    }
+
+    th {
+        padding: 12px 14px;
+        border-bottom: 2px solid var(--line);
+        background: var(--paper-soft);
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    td {
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        line-height: 1.55;
+        // A long address breaks inside its column instead of running out of the card.
+        overflow-wrap: anywhere;
+    }
+}
+
 // Data Retention Table & Responsive Mobile Cards
 .legal-table-container {
     width: 100%;

@@ -35,3 +35,17 @@
 None of §21.1–21.3 changes the shared-hosting deployment target in [12](12-deployment.md), the CDN-first scaling story in [5.4](05-system-architecture.md#54-cdn--now-mandatory-not-optional), or the timeline in [19](19-build-order.md) — it's the difference between "this code happens to work on one server" and "this code works on one server today and doesn't have to be rewritten if that ever changes."
 
 > **Current implementation note — built for a crowd (Sept 2026):** measured on a dev box, every PHP request costs ~75 ms of framework start-up (a trivial JSON as much as a page) against ~15 ms for a static file, so the levers are *fewer requests*, not faster queries. (1) **Shared lists** are built once and validated (`ConditionalJson`, [10](10-api-specification.md)). (2) **Polling** (`resources/js/attendee/polling.js`): every ~5 min from the day before the event to the day after, ~15 min otherwise, ±20 % spread so phones never ask in step, doubling back-off (max 15 min) on errors, `Retry-After` honoured. (3) **Reminders** (`SendSessionRemindersJob` + `App\Support\ConcurrentWebPush`): the library's `flush()` is sequential, so a popular session's reminders would arrive after it started; batches of 200 are now sent 25 at a time through Guzzle's pool, each push carries `TTL: 600` + `Urgency: high` (a phone that was offline no longer gets "starting soon" hours later; the library's default TTL is 4 weeks), a per-session `Topic` replaces an unsent duplicate, one malformed subscription can't sink a batch, and a 404/410 removes the subscription. (4) A page open across a deploy that asks for a chunk the new build no longer has reloads once (`preload-recovery.js`, on Vite's `vite:preloadError`). Tests: `ApiCachingTest`, `SessionRemindersTest`, `tests/js/`.
+
+
+> **Current implementation note — page speed and layout shift (23 Oct 2026):** Lighthouse (mobile, on a local
+> `php artisan serve`, so uncompressed and with an antivirus script injected — production behind Cloudflare
+> scores higher) found Home jumping as its live parts arrived (CLS 0.20): the "Starts in…" pill now keeps its
+> place while `[hidden]` (`visibility: hidden`), Happening now / Up next hold ~220 / 120 px until `home.js`
+> fills them (`:has()` / `:empty`), and Camp Card's "This is a preview" note sits under the cards instead of
+> above them (CLS 0.13 → 0). Home CLS is now 0.03, Home performance 51 → 64–70. The three fonts every screen
+> draws first (Poppins 400 / 700, Baloo 2 Latin) are preloaded from `attendee/partials/head-meta`
+> (`Vite::asset`, skipped when there is no build). The Google Fonts CSS for the Camp Card badge only blocks
+> rendering on the Camp Card page. Accessibility 100 on Picker, Home, My Day, Explore and Camp Card (Camp Card
+> greeting/event-name opacity 0.92 and the Ticket greeting a lighter ochre for 4.5:1; the announcement banner is
+> a `div role="status"`, not an `aside`). Manager dashboard: the three buttons per event are plain links with
+> `<x-button>`'s classes (900 component renders for a 300-event manager), pixel-identical.
