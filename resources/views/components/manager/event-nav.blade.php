@@ -22,17 +22,20 @@
     ];
 @endphp
 
-{{-- Scrolled so the open section's tab is in view (on a phone most tabs sit past the edge). --}}
-<nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" {{ $attributes->class('-mx-4 mb-6 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0') }}>
-    <ul class="flex min-w-max items-center gap-1">
+{{-- On a phone: a tab strip on top, scrolled so the open section is in view (most tabs sit past the edge).
+     From lg up: a menu card on the left that stays in view while the page scrolls (.cb-event-shell in
+     resources/css/app.css puts the page's content in a second column, as on the admin's event pages). --}}
+<nav aria-label="Event sections" x-data x-init="$nextTick(() => { const tab = $el.querySelector('[aria-current=page]'); if (tab && $el.scrollWidth > $el.clientWidth) $el.scrollLeft += tab.getBoundingClientRect().left - $el.getBoundingClientRect().left - ($el.clientWidth - tab.offsetWidth) / 2 })" {{ $attributes->class('cb-event-shell -mx-4 mb-6 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0 lg:overflow-visible lg:rounded-xl lg:border lg:bg-white lg:p-2 lg:shadow-xs') }}>
+    <p class="hidden px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted lg:block">This event</p>
+    <ul class="flex min-w-max items-center gap-1 lg:min-w-0 lg:flex-col lg:items-stretch">
         @foreach ($tabs as $key => [$label, $url])
             <li>
                 <a href="{{ $url }}"
                    @if ($current === $key) aria-current="page" @endif
                    @class([
-                       '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
-                       'border-maroon text-maroon' => $current === $key,
-                       'border-transparent text-muted hover:border-line hover:text-ink' => $current !== $key,
+                       '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 lg:mb-0 lg:flex lg:w-full lg:rounded-lg lg:border-b-0',
+                       'border-maroon text-maroon lg:bg-maroon/10' => $current === $key,
+                       'border-transparent text-muted hover:border-line hover:text-ink lg:hover:bg-paper-soft' => $current !== $key,
                    ])>
                     {{ $label }}
                 </a>

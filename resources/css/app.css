@@ -286,9 +286,10 @@ h3,
 }
 
 /*
-| One event's pages (components/admin/event-nav.blade.php): from lg up the event's
-| card is a sticky menu on the left and everything else on the page sits on the
-| right. Phones and tablets keep the card on top with its tab strip.
+| One event's pages (components/admin/event-nav.blade.php, and the event manager's
+| components/manager/event-nav.blade.php): from lg up the event's menu is a sticky
+| card on the left and everything else on the page sits on the right. Phones and
+| tablets keep it on top as a tab strip.
 */
 @media (min-width: 1024px) {
     main:has(> .cb-event-shell) {
