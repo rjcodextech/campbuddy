@@ -307,6 +307,32 @@ function loadImage(url) {
   return images.get(url);
 }
 
+/**
+ * A picture from a WordCamp site (a sponsor's logo, a photo, artwork): CampBuddy's own copy first
+ * (proxied), and when that copy can't be had (the server couldn't fetch it), the same file from
+ * WordPress.com's image CDN, which lets any page draw it — so a logo is never just its name for that.
+ */
+async function loadRemote(kit, url) {
+  const img = await loadImage(proxied(kit, url));
+  if (img || !url) return img;
+  const cdn = photonUrl(url);
+  return cdn && cdn !== proxied(kit, url) ? loadImage(cdn) : null;
+}
+
+/** The address of a WordCamp / WordPress.com image on WordPress.com's CDN (i0.wp.com), or null (SVGs, other hosts). */
+export function photonUrl(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  if (!/^https?:$/.test(u.protocol) || /\.svg$/i.test(u.pathname)) return null;
+  if (/^i\d\.wp\.com$/.test(u.hostname)) return u.href;
+  if (!/(^|\.)(wordcamp\.org|wordpress\.com|wp\.com)$/.test(u.hostname)) return null;
+  return `https://i0.wp.com/${u.hostname}${u.pathname}`;
+}
+
 const lightness = new WeakMap();
 
 /**
@@ -421,6 +447,13 @@ function fitText(ctx, text, maxWidth, size, min, maxLines, weight = 800, family 
     ctx.font = `${weight} ${s}px ${family}`;
     const lines = wrap(ctx, text, maxWidth);
     if (lines.length <= maxLines && lines.every((l) => ctx.measureText(l).width <= maxWidth)) return { lines, size: s };
+  }
+  if (maxLines === 1) {
+    // One line asked for (a name, a label): drawn as one line, so it keeps shrinking — never half a name.
+    let s = floor;
+    ctx.font = `${weight} ${s}px ${family}`;
+    while (s > 8 && ctx.measureText(text).width > maxWidth) ctx.font = `${weight} ${--s}px ${family}`;
+    return { lines: [String(text)], size: s };
   }
   ctx.font = `${weight} ${floor}px ${family}`;
   return { lines: wrap(ctx, text, maxWidth), size: floor };
@@ -1434,7 +1467,7 @@ async function paintBody(ctx, body, x, y, w, h, pal, kit, H, ink) {
     const gap = 16;
     const cellW = (w - gap * (cols - 1)) / cols;
     const rowH = ROWS.logos(H);
-    const imgs = await Promise.all(body.logos.map((l) => loadImage(proxied(kit, l.logo))));
+    const imgs = await Promise.all(body.logos.map((l) => loadRemote(kit, l.logo)));
     body.logos.forEach((l, i) => {
       const bx = x + (cellW + gap) * (i % cols);
       const by = y + rowH * Math.floor(i / cols);
@@ -2413,17 +2446,18 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors, side = 0)
 
 /** The footer line of a people card: why the reader would look for this person, by role. */
 export function personCta(person, kit) {
-  const first = String(person.name ?? '').trim().split(/\s+/)[0] || 'them';
+  // Always the whole name (owner, 24 Oct 2026): never only the first name.
+  const name = String(person.name ?? '').trim().replace(/\s+/g, ' ') || 'them';
   const event = kit?.short ?? kit?.event?.name ?? 'WordCamp';
   switch (person.roles?.[0]) {
-    case 'organizer': return `Say hi to ${first}, one of the people making ${event} happen`;
-    case 'speaker': return person.talk ? `Save ${first}'s talk and get a reminder` : `Catch ${first} on stage at ${event}`;
-    case 'volunteer': return `Thank ${first}, a volunteer at ${event}`;
-    case 'sponsor': return `Visit ${first} at the sponsor booth`;
-    case 'media_partner': return `Follow ${first}'s coverage of ${event}`;
-    case 'microsponsor': return `Thank ${first} for backing ${event}`;
-    case 'table_lead': return `Join ${first}'s table on Contributor Day`;
-    default: return `Meet ${first} at ${event}`;
+    case 'organizer': return `Say hi to ${name}, one of the people making ${event} happen`;
+    case 'speaker': return person.talk ? `Save ${name}'s talk and get a reminder` : `Catch ${name} on stage at ${event}`;
+    case 'volunteer': return `Thank ${name}, a volunteer at ${event}`;
+    case 'sponsor': return `Visit ${name} at the sponsor booth`;
+    case 'media_partner': return `Follow ${name}'s coverage of ${event}`;
+    case 'microsponsor': return `Thank ${name} for backing ${event}`;
+    case 'table_lead': return `Join ${name}'s table on Contributor Day`;
+    default: return `Meet ${name} at ${event}`;
   }
 }
 
@@ -2994,7 +3028,7 @@ async function setSiteArt(kit, enabled) {
     // A site piece too small to stay sharp at card size (an old 20 px sprite, a thumbnail) is left out;
     // a pattern repeats, so it may be small; an upload was chosen by someone, so it stays.
     const minSide = kind === 'pattern' ? 48 : 400;
-    const loaded = await Promise.all(pieces.map((a) => loadImage(proxied(kit, a.url))));
+    const loaded = await Promise.all(pieces.map((a) => loadRemote(kit, a.url)));
     const kept = loaded.filter((img, i) => img && (pieces[i].uploaded || Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height) >= minSide));
     // An illustration without its empty margins, so it fills the room it gets (a pattern keeps its spacing, a photo is solid).
     SITE_ART[kind] = kind === 'illustration' ? kept.map(trimmed) : kept;
@@ -3523,7 +3557,7 @@ async function publish(btn, kit, canvas, redraw, current) {
 export const socialContext = { kit: null, colors: null, style: null, posts: [] };
 
 export const reelTools = {
-  brandLockup, loadImage, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
+  brandLockup, loadImage, loadRemote, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
   proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT_DISPLAY }),
   siteArt: () => SITE_ART,

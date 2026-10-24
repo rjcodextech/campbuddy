@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { contrastRatio, daysToGo, personCta, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -165,11 +165,21 @@ test('the countdown counts the days at the venue when the card is drawn', () => 
   assert.equal(daysToGo({ event: {} }), null);
 });
 
-test('a people card says why to find the person, by role', () => {
+test('a people card says why to find the person, by role, with their whole name', () => {
   const kit = { short: 'WordCamp Delhi' };
-  assert.equal(personCta({ name: 'Anup Kumar', roles: ['organizer'] }, kit), 'Say hi to Anup, one of the people making WordCamp Delhi happen');
-  assert.equal(personCta({ name: 'Amit Singh', roles: ['speaker'], talk: 'Closing' }, kit), "Save Amit's talk and get a reminder");
+  assert.equal(personCta({ name: 'Anup Kumar', roles: ['organizer'] }, kit), 'Say hi to Anup Kumar, one of the people making WordCamp Delhi happen');
+  assert.equal(personCta({ name: 'Amit Singh', roles: ['speaker'], talk: 'Closing' }, kit), "Save Amit Singh's talk and get a reminder");
   assert.equal(personCta({ name: 'Asha', roles: ['volunteer'] }, kit), 'Thank Asha, a volunteer at WordCamp Delhi');
-  assert.equal(personCta({ name: 'Kim Lee', roles: ['table_lead'] }, kit), "Join Kim's table on Contributor Day");
+  assert.equal(personCta({ name: 'Kim  Lee ', roles: ['table_lead'] }, kit), "Join Kim Lee's table on Contributor Day");
   assert.equal(personCta({ name: 'Ravi', roles: [] }, kit), 'Meet Ravi at WordCamp Delhi');
+});
+
+test('a WordCamp picture the server could not copy comes from WordPress.com’s CDN instead (never an SVG, never another host)', () => {
+  assert.equal(photonUrl('https://delhi.wordcamp.org/2026/files/2026/10/nexgi.webp'), 'https://i0.wp.com/delhi.wordcamp.org/2026/files/2026/10/nexgi.webp');
+  assert.equal(photonUrl('https://i0.wp.com/canada.wordcamp.org/2026/files/a.png?fit=768%2C210&ssl=1'), 'https://i0.wp.com/canada.wordcamp.org/2026/files/a.png?fit=768%2C210&ssl=1');
+  assert.equal(photonUrl('https://example.wordpress.com/files/logo.png'), 'https://i0.wp.com/example.wordpress.com/files/logo.png');
+  assert.equal(photonUrl('https://delhi.wordcamp.org/2026/files/logo.svg'), null);
+  assert.equal(photonUrl('https://evil.example/logo.png'), null);
+  assert.equal(photonUrl('/storage/art/1.png'), null);
+  assert.equal(photonUrl(null), null);
 });

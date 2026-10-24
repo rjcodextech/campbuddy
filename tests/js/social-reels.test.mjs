@@ -72,6 +72,70 @@ test("words stay inside Instagram's safe zone: clear of its top bar, its caption
   }
 });
 
+// What each reel tells (owner, 24 Oct 2026): its own topic, one date-and-venue slide, the end card — nothing from another reel.
+const FOREIGN = ['Speakers', 'Sponsors', 'Schedule', 'Talks', 'The team', 'Contributor Day', 'Organizers', 'Volunteers'];
+const fullKit = () => ({
+  ...kit([
+    person('o1', 'organizer', { name: 'Anup Kumar' }), person('o2', 'organizer', { name: 'Devyanshi Wadhwa' }),
+    person('s1', 'speaker', { name: 'Amit Singh', talk: 'Closing' }),
+    person('t1', 'table_lead', { name: 'Nidhi Jain' }),
+  ]),
+  event: { name: 'WordCamp Test 2026', dates: '12–13 Dec 2026', place: 'Test Centre, Delhi', hashtags: '#WCTest' },
+  speakers: [{ name: 'Amit Singh', photo: null }],
+  sponsors: [{ name: 'Acme Hosting', logo: null }],
+  tables: [{ name: 'Polyglots', leads: ['Nidhi Jain'] }],
+  schedule: { days: [{ key: '2026-12-12', label: 'Sat 12 Dec' }], sessions: [{ id: 1, day: '2026-12-12', time: '10:00 AM', title: 'Closing', track: 'Hall A', speakers: ['Amit Singh', 'Ravi Kumar Sharma'], photos: [] }] },
+});
+const scenesOf = (spec, k = fullKit()) => _internals.v2Scenes({ kit: k, item: { variant: 0 } }, spec);
+const steps = (scenes) => scenes.filter((s) => s.step).map((s) => s.step);
+
+test('a people reel shows only its own people, then the date and venue, then the end card', () => {
+  const k = fullKit();
+  for (const [role, label] of [['organizer', 'Organizers'], ['table_lead', 'Table leads'], ['speaker', 'Speakers']]) {
+    const people = k.people.filter((p) => p.roles.includes(role));
+    const scenes = scenesOf({ kind: 'people', role, label, people, first: 0, total: people.length, utm: 'x' }, k);
+    const own = steps(scenes).filter((s) => s !== 'When & where');
+    assert.ok(own.length >= people.length, `${label}: one cut per person`);
+    assert.ok(own.every((s) => s === label), `${label}: ${steps(scenes).join(' > ')}`);
+    assert.equal(steps(scenes).filter((s) => s === 'When & where').length, 1, `${label}: one date-and-venue slide`);
+    assert.ok(scenes.at(-1).end, 'ends on the CampBuddy card');
+    assert.equal(scenes.filter((s) => s.end).length, 1);
+  }
+});
+
+test('a post reel and a talk spotlight show only their topic', () => {
+  const k = fullKit();
+  const post = (key, label, body) => scenesOf({ kind: 'post', label, utm: key, content: { key, kicker: label, headline: label, line: '', body } }, k);
+  const sponsors = steps(post('sponsors', 'Sponsors', { type: 'logos', logos: k.sponsors }));
+  assert.deepEqual([...new Set(sponsors)], ['Sponsors', 'When & where']);
+  const app = steps(post('app', 'Get CampBuddy', { type: 'features', items: ['One', 'Two', 'Three'] }));
+  assert.deepEqual(app, ['Get CampBuddy', 'Get CampBuddy', 'Get CampBuddy', 'When & where'], 'one point per cut');
+  assert.ok(!steps(post('thank-you', 'Thank you', { type: 'features', items: ['A'] })).includes('When & where'), 'no date slide once it is over');
+  assert.ok(!steps(post('venue', 'Venue', { type: 'features', items: ['Test Centre', '12–13 Dec'] })).includes('When & where'), 'the venue post already says it');
+  const coming = steps(post('save-the-date', 'Coming up', { type: 'none' }));
+  assert.equal(coming[0], 'When & where', 'the date is the news of a save-the-date');
+  for (const key of ['sponsors', 'app', 'thank-you', 'venue']) {
+    const shown = steps(post(key, key, key === 'sponsors' ? { type: 'logos', logos: k.sponsors } : { type: 'features', items: ['A'] }));
+    assert.ok(shown.every((s) => s === key || s === 'When & where' || !FOREIGN.includes(s)), `${key}: ${shown.join(' > ')}`);
+  }
+  const spot = scenesOf({ kind: 'session', session: k.schedule.sessions[0], label: 'Session spotlight', utm: 's' }, k);
+  assert.deepEqual(steps(spot), ['On stage', 'On stage', 'When & where'], 'each speaker, then when and where');
+});
+
+test('names are whole everywhere in a reel: never only the first name', () => {
+  const k = fullKit();
+  const plain = (w) => String(w ?? '').replace(/\*/g, '');
+  const spot = scenesOf({ kind: 'session', session: k.schedule.sessions[0], label: 'Session spotlight', utm: 's' }, k);
+  assert.deepEqual(spot.filter((s) => s.step === 'On stage').map((s) => plain(s.words.headline)), ['Amit Singh', 'Ravi Kumar Sharma']);
+  const organizers = k.people.filter((p) => p.roles.includes('organizer'));
+  const reel = scenesOf({ kind: 'people', role: 'organizer', label: 'Organizers', people: organizers, first: 0, total: 2, utm: 'x' }, k);
+  assert.equal(plain(reel[0].words.headline), 'Meet the 2 organizers', 'the hook says how many');
+  assert.deepEqual(reel.filter((s) => s.words?.kicker === 'Organizer').map((s) => plain(s.words.headline)), ['Anup Kumar', 'Devyanshi Wadhwa']);
+  assert.deepEqual(reel.find((s) => s.words?.kicker === 'All together').words.names, ['Anup Kumar', 'Devyanshi Wadhwa'], 'then all together, whole names');
+  const leads = scenesOf({ kind: 'people', role: 'table_lead', label: 'Table leads', people: k.people.filter((p) => p.roles.includes('table_lead')), first: 0, total: 1, utm: 't' }, k);
+  assert.equal(plain(leads[1].words.headline), 'Nidhi Jain');
+});
+
 test('reels run from 20 seconds to 2 minutes', () => {
   assert.equal(_internals.MIN_SECONDS, 20);
   assert.equal(_internals.MAX_SECONDS, 120);

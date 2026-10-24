@@ -29,7 +29,7 @@
 // recorded in real time instead (MediaRecorder).
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
-import { contrastRatio, drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
+import { contrastRatio, daysToGo, drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
 import { loadBrandFonts } from './brand.js';
 import { zipStore } from './zip-store.js';
 
@@ -1181,11 +1181,10 @@ function endScene(content) {
 //
 // With the Daylight post design picked, every reel is built from the brand's
 // reel template (CAMPBUDDY-BRAND-GUIDELINES.md §9): a two-second hook, the
-// reel's own topic, then one thing about the event per cut — when and where,
-// the schedule, talks, speakers, sponsors, Contributor Day, the team — each
-// under a thin progress bar with a "2 OF 7 · Schedule" step pill, and one
-// CampBuddy end card. Every frame carries the brand strip: the event's logo
-// and name on the left, CampBuddy × WPSimplified on the right.
+// reel's own topic and nothing else (v2Scenes), one date-and-venue slide, and
+// one CampBuddy end card; every cut under a "2 OF 7 · Schedule" step pill.
+// Every frame carries the brand strip: the event's logo at the top,
+// CampBuddy × WPSimplified at the foot.
 //
 // Five templates give the reels their look and feel — Daylight, Stage, Poster,
 // Photo and Minimal: their grounds, how words come in, the cut between scenes,
@@ -1580,14 +1579,15 @@ function v2Line(ctx, reel, words, x, y, t, k, color, { size = 42, lines = 3, ali
   return y + fit.lines.length * fit.size * 1.3 + 10;
 }
 
-/** Numbered white rows (the guideline's list template): a mark in the main colour, the words, an optional meta line. */
-function v2Rows(ctx, reel, rows, y, t, k) {
+/** Numbered white rows (the guideline's list template): a mark in the main colour, the words, an optional meta line. Returns the y under the last row. */
+function v2Rows(ctx, reel, rows, y, t, k, bottom = V2_BOTTOM) {
   const { pal } = reel;
   const { head, text } = T.fonts();
   const w = SAFE.right - SAFE.left;
   const gap = 20;
   const pad = 28;
-  const rowH = Math.max(104, Math.min(170, (V2_BOTTOM - y - gap * (rows.length - 1)) / Math.max(1, rows.length)));
+  // Three rows or fewer may grow taller, so a long talk title keeps a readable size over three lines.
+  const rowH = Math.max(104, Math.min(rows.length <= 3 ? 220 : 170, (bottom - y - gap * (rows.length - 1)) / Math.max(1, rows.length)));
   // A time ("10:00 AM") is set as the hour large with AM / PM small under it; any other mark (1, 2, 11) large.
   const marks = rows.map((row, i) => {
     const mark = String(row.mark ?? i + 1);
@@ -1648,9 +1648,12 @@ function v2Rows(ctx, reel, rows, y, t, k) {
     ctx.fillRect(SAFE.left + markW, ry + 20, 2, rowH - 40);
     const tx = SAFE.left + markW + 22;
     const tw = w - markW - 22 - pad;
-    const title = fitAll(ctx, row.title, tw, 40, 30, row.meta ? 2 : 3, 700, text);
-    const meta = row.meta ? fitAll(ctx, row.meta, tw, 30, 24, 1, 600, text) : null;
-    const metaH = meta ? meta.size * 1.4 : 0;
+    const title = fitAll(ctx, row.title, tw, 40, 30, row.meta && rowH < 200 ? 2 : 3, 700, text);
+    // The meta line at the reel minimum (34 px) where the row is tall enough, else 30 px.
+    let meta = row.meta ? fitAll(ctx, row.meta, tw, rowH >= 170 ? 34 : 30, 24, 1, 600, text) : null;
+    // A long meta line (speakers' whole names) takes a second line rather than lose a name.
+    if (meta && (meta.lines.length > 1 || meta.size < 24)) meta = fitAll(ctx, row.meta, tw, 26, 24, 2, 600, text);
+    const metaH = meta ? meta.size * (1.4 + (meta.lines.length - 1) * 1.25) : 0;
     const blockH = title.lines.length * title.size * 1.2 + metaH;
     let ty = ry + (rowH - blockH) / 2;
     ctx.textAlign = 'left';
@@ -1661,10 +1664,11 @@ function v2Rows(ctx, reel, rows, y, t, k) {
     if (meta) {
       ctx.fillStyle = T.mix(pal.ink, '#ffffff', 0.35);
       ctx.font = `600 ${meta.size}px ${text}`;
-      ctx.fillText(meta.lines[0] ?? row.meta, tx, ty + meta.size * 1.1);
+      meta.lines.forEach((l, j) => ctx.fillText(l, tx, ty + meta.size * (1.1 + j * 1.25)));
     }
     ctx.restore();
   });
+  return y + rows.length * (rowH + gap) - gap;
 }
 
 /** Faces in a grid, each in a ring, with the whole name (shrunk, never cut) and an optional line. */
@@ -1676,7 +1680,15 @@ function v2Faces(ctx, reel, people, y, t, k, colors) {
   const rows = Math.ceil(n / cols);
   const w = SAFE.right - SAFE.left;
   const cell = Math.min(w / cols, (V2_BOTTOM - y) / rows);
-  const size = Math.max(140, Math.min(n === 1 ? 440 : 290, cell - (n === 1 ? 170 : 110)));
+  // The words under each photo are measured first — the whole name (a long one on two lines, never cut;
+  // owner, 24 Oct 2026) and the line under it — and the photos take what is left, so nothing runs into
+  // the next row or the brand strip.
+  const fits = people.map((person) => [
+    person.name ? fitAll(ctx, person.name, w / cols - 20, n === 1 ? 60 : 38, 28, 2, 800, text) : null,
+    person.meta ? fitAll(ctx, person.meta, w / cols - 20, n === 1 ? 40 : 30, 26, n === 1 ? 3 : 2, 600, text) : null,
+  ]);
+  const wordsH = Math.max(0, ...fits.map(([nf, mf]) => (nf ? nf.size * (1 + (nf.lines.length - 1) * 1.15) + 14 : 0) + (mf ? mf.lines.length * mf.size * 1.25 + 10 : 0)));
+  const size = Math.max(140, Math.min(n === 1 ? 440 : 290, cell - 60 - wordsH));
   people.forEach((person, i) => {
     const p = back(span(t, cue(reel, k + i), 0.5));
     if (p <= 0) return;
@@ -1712,15 +1724,14 @@ function v2Faces(ctx, reel, people, y, t, k, colors) {
     ctx.globalAlpha *= clamp(p);
     ctx.textAlign = 'center';
     let ny = cy + size / 2 + 26;
-    if (person.name) {
-      const nameFit = fitAll(ctx, person.name, w / cols - 20, n === 1 ? 60 : 38, 28, 1, 800, text);
+    const [nameFit, metaFit] = fits[i];
+    if (nameFit) {
       ctx.fillStyle = colors.ink;
       ctx.font = `800 ${nameFit.size}px ${text}`;
-      ctx.fillText(nameFit.lines[0] ?? person.name, cx, ny + nameFit.size);
-      ny += nameFit.size + 14;
+      nameFit.lines.forEach((l, j) => ctx.fillText(l, cx, ny + nameFit.size + j * nameFit.size * 1.15));
+      ny += nameFit.size * (1 + (nameFit.lines.length - 1) * 1.15) + 14;
     }
-    if (person.meta) {
-      const metaFit = fitAll(ctx, person.meta, w / cols - 20, n === 1 ? 40 : 30, 26, n === 1 ? 3 : 1, 600, text);
+    if (metaFit) {
       ctx.fillStyle = colors.quiet;
       ctx.font = `600 ${metaFit.size}px ${text}`;
       metaFit.lines.forEach((l, j) => ctx.fillText(l, cx, ny + (j + 1) * metaFit.size * 1.25));
@@ -1729,10 +1740,10 @@ function v2Faces(ctx, reel, people, y, t, k, colors) {
   });
 }
 
-/** Logos on white tiles. */
+/** Logos on white tiles: two across up to six (big enough to read on a phone), three across beyond. */
 function v2Logos(ctx, reel, logos, y, t, k) {
   const n = logos.length;
-  const cols = n <= 4 ? 2 : 3;
+  const cols = n <= 6 ? 2 : 3;
   const rows = Math.ceil(n / cols);
   const w = SAFE.right - SAFE.left;
   const gap = 24;
@@ -1741,7 +1752,9 @@ function v2Logos(ctx, reel, logos, y, t, k) {
   logos.forEach((logo, i) => {
     const p = back(span(t, cue(reel, k + i * 0.5), 0.45));
     if (p <= 0) return;
-    const x = SAFE.left + (i % cols) * (tw + gap);
+    // A short last row stands in the middle.
+    const inRow = Math.min(cols, n - Math.floor(i / cols) * cols);
+    const x = SAFE.left + (w - inRow * tw - (inRow - 1) * gap) / 2 + (i % cols) * (tw + gap);
     const ty = y + Math.floor(i / cols) * (th + gap);
     ctx.save();
     ctx.globalAlpha *= clamp(p);
@@ -1757,17 +1770,71 @@ function v2Logos(ctx, reel, logos, y, t, k) {
     const img = reel.photos.get(logo.key);
     if (img) T.drawContain(ctx, img, -tw / 2 + 22, -th / 2 + 18, tw - 44, th - 36);
     else {
+      // No logo on the WordCamp site: the sponsor's whole name, as large as the tile allows.
+      const fit = fitAll(ctx, logo.name, tw - 48, 46, 34, 2, 800, T.fonts().text);
       ctx.fillStyle = reel.pal.ink;
       ctx.textAlign = 'center';
-      ctx.font = `800 34px ${T.fonts().text}`;
-      ctx.fillText(logo.name, 0, 12, tw - 40);
+      ctx.font = `800 ${fit.size}px ${T.fonts().text}`;
+      fit.lines.forEach((l, j) => ctx.fillText(l, 0, fit.size * 0.36 + (j - (fit.lines.length - 1) / 2) * fit.size * 1.15));
     }
     ctx.restore();
   });
 }
 
-/** One fact scene: step header, kicker, headline, line, and its body (rows, faces, logos or a big number). */
-function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, beats = V2_BEATS.fact }) {
+/**
+ * "Send this to your WordCamp buddy": a pill with a paper plane under the date and venue (owner, 24 Oct
+ * 2026), so the reel gets passed on — a send is what takes a reel to people who don't follow the page.
+ */
+function v2Share(ctx, reel, words, x, y, t, k, colors, align = 'left') {
+  const p = back(span(t, cue(reel, k), 0.45));
+  if (p <= 0) return;
+  const { pal } = reel;
+  const { text } = T.fonts();
+  const h = 78;
+  ctx.save();
+  ctx.font = `700 34px ${text}`;
+  const tw = Math.min(SAFE.right - SAFE.left - h - 40, ctx.measureText(words).width);
+  const w = h + tw + 34;
+  const left = align === 'center' ? x - w / 2 : x;
+  const bg = colors.light ? '#ffffff' : pal.primary;
+  const fg = colors.light ? pal.ink : T.textOn(pal.primary, pal.ink, '#ffffff');
+  ctx.globalAlpha *= clamp(p);
+  ctx.translate(left + w / 2, y + h / 2);
+  const s = (0.7 + 0.3 * p) * (1 + 0.03 * onBeat(reel, t));
+  ctx.scale(s, s);
+  ctx.translate(-w / 2, -h / 2);
+  ctx.shadowColor = 'rgba(0,0,0,0.16)';
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = bg;
+  T.roundRect(ctx, 0, 0, w, h, h / 2);
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+  // The paper plane, on a round chip.
+  const r = h / 2 - 9;
+  ctx.fillStyle = fg;
+  ctx.beginPath();
+  ctx.arc(h / 2, h / 2, r, 0, Math.PI * 2);
+  ctx.fill();
+  const c = r * 0.55;
+  ctx.fillStyle = bg;
+  ctx.beginPath();
+  ctx.moveTo(h / 2 - c, h / 2 - c * 0.05);
+  ctx.lineTo(h / 2 + c, h / 2 - c * 0.85);
+  ctx.lineTo(h / 2 + c * 0.25, h / 2 + c * 0.9);
+  ctx.lineTo(h / 2 - c * 0.05, h / 2 + c * 0.2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = fg;
+  ctx.textAlign = 'left';
+  ctx.fillText(words, h + 6, h / 2 + 12, tw);
+  ctx.restore();
+}
+
+const SHARE = 'Send this to your WordCamp buddy';
+
+/** One fact scene: step header, kicker, headline, line, and its body (rows, faces, logos or a big number); `share` adds the send pill under it. */
+function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, beats = V2_BEATS.fact, share = null }) {
   const pictures = [];
   if (body?.type === 'faces') body.people.forEach((p) => pictures.push([p.key, p.photo]));
   if (body?.type === 'logos') body.logos.forEach((l) => pictures.push([l.key, l.logo]));
@@ -1777,6 +1844,8 @@ function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, b
     ground,
     stretch: true,
     pictures,
+    // What it says, names whole (the tests read it).
+    words: { kicker, headline, line, names: (body?.people ?? body?.logos ?? []).map((p) => p.full || p.name).filter(Boolean) },
     draw(ctx, t, dur, reel) {
       leaving(ctx, t, dur);
       const colors = v2Ink(reel);
@@ -1818,9 +1887,10 @@ function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, b
       if (headline) y = v2Headline(ctx, reel, headline, x, y, t, body?.type === 'number' ? 2 : 1, colors, { size: body ? 84 : 112, min: 56, lines: body ? 3 : 4, align });
       if (line) y = v2Line(ctx, reel, line, x, y, t, 3, colors.quiet, { align });
       y += 30;
-      if (body?.type === 'rows') v2Rows(ctx, reel, body.rows, y, t, 4);
+      if (body?.type === 'rows') y = v2Rows(ctx, reel, body.rows, y, t, 4, share ? V2_BOTTOM - 130 : V2_BOTTOM) + 40;
       else if (body?.type === 'faces') v2Faces(ctx, reel, body.people, y, t, 4, colors);
       else if (body?.type === 'logos') v2Logos(ctx, reel, body.logos, y, t, 4);
+      if (share) v2Share(ctx, reel, share, x, Math.min(y + 10, V2_BOTTOM - 90), t, 4 + (body?.rows?.length ?? 0), colors, align);
     },
   };
 }
@@ -1831,6 +1901,7 @@ function v2Hook(words, line) {
     beats: V2_BEATS.hook,
     ground: 'ink',
     pictures: [],
+    words: { headline: words, line },
     draw(ctx, t, dur, reel) {
       leaving(ctx, t, dur);
       const colors = v2Ink(reel);
@@ -1847,12 +1918,16 @@ function v2Hook(words, line) {
 /**
  * The one CampBuddy end card: CampBuddy's mark at the top, WPSimplified's at the foot, and between
  * them the call, the QR and campbuddy.club. No event logo here: the other frames carry it.
+ * The call follows the reel's topic ("Save their talks in CampBuddy"); it may hold a few beats
+ * longer than the others, time to scan the QR.
  */
-function v2End(content) {
+function v2End(content, call = null) {
   return {
     beats: V2_BEATS.end,
     ground: 'gradient',
     end: true,
+    stretch: true,
+    stretchMax: V2_BEATS.end + 4,
     pictures: [],
     draw(ctx, t, dur, reel) {
       const { pal, kit } = reel;
@@ -1879,8 +1954,9 @@ function v2End(content) {
       plate(reel.wps, SAFE.bottom - footH - 40, footH, 6);
       const bottom = SAFE.bottom - footH - 40 - 36;
 
-      y = v2Headline(ctx, reel, `Plan ${kit.short ?? kit.event.name} in *CampBuddy*`, W / 2, y, t, 1, colors, { size: 86, min: 56, lines: 3, align: 'center', width: TEXT_W });
-      y = v2Line(ctx, reel, 'The schedule, reminders and people to meet, for the whole event.', W / 2, y, t, 3, colors.quiet, { size: 36, lines: 2, align: 'center', width: TEXT_W });
+      const [words, line] = call ?? [`Plan ${kit.short ?? kit.event.name} in *CampBuddy*`, 'The schedule, reminders and people to meet, for the whole event.'];
+      y = v2Headline(ctx, reel, words, W / 2, y, t, 1, colors, { size: 86, min: 56, lines: 3, align: 'center', width: TEXT_W });
+      y = v2Line(ctx, reel, line, W / 2, y, t, 3, colors.quiet, { size: 36, lines: 2, align: 'center', width: TEXT_W });
       const pillH = 78;
       const qs = Math.max(220, Math.min(360, bottom - y - pillH - 90));
       const q = back(span(t, cue(reel, 4), 0.5));
@@ -1921,140 +1997,222 @@ function rotate(list, n) {
   return [...list.slice(k), ...list.slice(0, k)];
 }
 
-/** The event's facts as fact scenes, leaving out what the topic showed; their order and picks turn with the reel. */
-function v2EventFacts(reel, shown) {
-  const { kit } = reel;
-  const v = reel.item?.variant ?? 0;
-  const short = kit.short ?? kit.event.name;
-  const first = [];
-  const rest = [];
-  if ((kit.event.dates || kit.event.place) && !shown.has('when')) {
-    first.push(v2Fact({ step: 'When & where', ground: 'paper', kicker: 'Save the date', headline: kit.event.dates ? `*${kit.event.dates}*` : `*${kit.event.name}*`, line: [kit.event.place, kit.event.name].filter(Boolean).join(' · ') || null }));
-  }
-  const sessions = kit.schedule?.sessions ?? [];
-  const talks = sessions.filter((s) => (s.speakers ?? []).length);
-  if (sessions.length && !shown.has('schedule')) {
-    const days = kit.schedule.days?.length || 1;
-    rest.push(v2Fact({
-      step: 'Schedule',
-      ground: 'gradient',
-      kicker: 'The schedule',
-      body: { type: 'number', value: String(sessions.length) },
-      headline: `sessions over *${days} ${days === 1 ? 'day' : 'days'}*`,
-      line: talks.length ? `${talks.length} talks, plus breaks, lunch and time to meet people.` : null,
-    }));
-  }
-  if ((talks.length || sessions.length) && !shown.has('talks')) {
-    const pool = talks.length ? talks : sessions;
-    rest.push(v2Fact({
-      step: 'Talks',
-      ground: 'paper',
-      kicker: ['On stage', 'Don\'t miss', 'Worth a seat'][v % 3],
-      headline: ['Talks worth *saving*', 'Save these *talks*', 'On the *main stage*'][v % 3],
-      body: { type: 'rows', rows: rotate(pool, v * 3).slice(0, 3).map((s) => ({ title: s.title, meta: [s.time, (s.speakers ?? []).join(', ')].filter(Boolean).join(' · ') })) },
-    }));
-  }
-  const speakers = (kit.speakers ?? []).filter((p) => p.name);
-  if (speakers.length && !shown.has('speakers')) {
-    const pick = rotate(speakers.filter((p) => p.photo).concat(speakers.filter((p) => !p.photo)), v * 4).slice(0, 4);
-    rest.push(v2Fact({ step: 'Speakers', ground: 'ink', kicker: `${speakers.length} ${speakers.length === 1 ? 'speaker' : 'speakers'}`, headline: ['Meet the *speakers*', 'The voices of *' + short + '*', 'On stage, *for you*'][v % 3], body: { type: 'faces', people: pick.map((p, i) => ({ key: `speaker-${i}`, name: p.name, photo: p.photo })) } }));
-  }
-  const sponsors = (kit.sponsors ?? []).filter((s) => s.name);
-  if (sponsors.length && !shown.has('sponsors')) {
-    const pick = rotate(sponsors.filter((s) => s.logo).concat(sponsors.filter((s) => !s.logo)), v * 6).slice(0, 6);
-    rest.push(v2Fact({ step: 'Sponsors', ground: 'paper', kicker: `${sponsors.length} ${sponsors.length === 1 ? 'sponsor' : 'sponsors'}`, headline: `Making ${short} *possible*`, body: { type: 'logos', logos: pick.map((s, i) => ({ key: `sponsor-${i}`, name: s.name, logo: s.logo })) } }));
-  }
-  const tables = kit.tables ?? [];
-  if (tables.length && !shown.has('tables')) {
-    rest.push(v2Fact({ step: 'Contributor Day', ground: 'paper', kicker: 'Contributor Day', headline: `${tables.length} ${tables.length === 1 ? 'table' : 'tables'} to *give back*`, body: { type: 'rows', rows: rotate(tables, v * 3).slice(0, 3).map((tb) => ({ title: tb.name, meta: (tb.leads ?? []).slice(0, 2).join(', ') || null })) } }));
-  }
-  const count = (role) => (kit.people ?? []).filter((p) => (p.roles ?? []).includes(role)).length;
-  const team = [['organizer', 'Organizers'], ['volunteer', 'Volunteers'], ['speaker', 'Speakers']].map(([r, label]) => [count(r), label]).filter(([n]) => n);
-  if (team.length && !shown.has('team')) {
-    rest.push(v2Fact({ step: 'The team', ground: 'gradient', kicker: 'Made by the community', headline: `The people behind *${short}*`, body: { type: 'rows', rows: team.map(([n, label]) => ({ mark: String(n), title: label })) } }));
-  }
-  // Each reel its own slice of the pool (three facts; the next reel the next three), so reels
-  // don't repeat each other; inside a fact the picks turn with the reel too.
-  const pool = [...first, ...rest];
-  const picked = rotate(pool, v * 3).slice(0, Math.min(pool.length, reel.factCount ?? 3));
-  picked.forEach((sc) => { sc.fact = true; });
-  return picked;
+// ---- What each reel tells (owner, 24 Oct 2026) --------------------------------
+//
+// A reel tells only its own topic: the organizers' reel the organizers, the
+// sponsors' reel the sponsors — never another reel's speakers, sponsors,
+// schedule or team. Then one slide with the event's dates and venue (and a
+// nudge to send the reel on), and the CampBuddy end card with a call that
+// fits the topic. Lists go one point per cut (01, 02 …) and people one by one,
+// then all together: one idea every two or three seconds. Every name is whole.
+
+/** The whole name, its first name highlighted (*Anup* Kumar). */
+function nameWords(full) {
+  const [first = '', ...rest] = String(full ?? '').trim().split(/\s+/);
+  return `*${first}* ${rest.join(' ')}`.trim();
 }
 
-/** A post reel's own scenes, from the post's content. */
-function v2PostTopic(reel, content, label, shown) {
+/** The Contributor Day table a lead runs ("Polyglots table"), found by their name. */
+function tableOf(kit, name) {
+  const key = String(name ?? '').trim().toLowerCase();
+  const table = (kit.tables ?? []).find((tb) => (tb.leads ?? []).some((l) => String(l).trim().toLowerCase() === key));
+  return table ? `${table.name} table` : null;
+}
+
+/** The one date-and-venue slide: the dates highlighted, the place, and the send pill. */
+function v2When(reel) {
+  const { event } = reel.kit;
+  if (!event.dates && !event.place) return [];
+  return [v2Fact({
+    step: 'When & where',
+    ground: 'paper',
+    kicker: daysToGo(reel.kit) !== null ? 'Save the date' : 'When & where',
+    headline: event.dates ? `*${event.dates}*` : `*${event.name}*`,
+    line: [event.place, event.name].filter(Boolean).join(' · ') || null,
+    share: SHARE,
+  })];
+}
+
+/** A post's points, one per cut, each under its big number (01, 02 …). */
+function v2Points(base, items) {
+  return items.map((it, i) => v2Fact({
+    ...base,
+    ground: i % 2 ? 'ink' : 'paper',
+    line: null,
+    headline: typeof it === 'string' ? it : it.title ?? String(it),
+    body: { type: 'number', value: String(i + 1).padStart(2, '0') },
+    beats: 4,
+  }));
+}
+
+/** A big count before a list: "12 sponsors make it happen". */
+function v2Count(step, n, words, line = null) {
+  return v2Fact({ step, ground: 'gradient', kicker: step, body: { type: 'number', value: String(n) }, headline: words, line });
+}
+
+/** Three talks from the schedule (each reel its own three), with their speakers' whole names. */
+function v2Talks(reel, step) {
+  const sessions = reel.kit.schedule?.sessions ?? [];
+  const talks = sessions.filter((s) => (s.speakers ?? []).length);
+  const pool = talks.length ? talks : sessions;
+  if (!pool.length) return [];
+  const rows = rotate(pool, (reel.item?.variant ?? 0) * 3).slice(0, 3).map((s) => ({ mark: s.time || undefined, title: s.title, meta: (s.speakers ?? []).join(', ') || null }));
+  return [v2Fact({ step, ground: 'paper', kicker: 'Worth a seat', headline: 'Talks worth *saving*', body: { type: 'rows', rows } })];
+}
+
+/**
+ * A post reel's own scenes, from the post's content, and where its date-and-venue slide goes:
+ * 'first' (the date is the news), 'last', or null (the post already says it, or the event is over).
+ */
+function v2PostTopic(reel, content, label) {
+  const { kit } = reel;
   const body = content.body ?? { type: 'none' };
-  // What the post is about is not told again by the facts after it.
-  const covers = { 'save-the-date': 'when', venue: 'when', countdown: 'when', schedule: 'schedule', today: 'talks', spotlight: 'talks', speakers: 'speakers', sponsors: 'sponsors', contributor: 'tables', meet: 'team' }[content.key];
-  if (covers) shown.add(covers);
   const base = { step: label, kicker: content.kicker || label, headline: content.headline || label, line: content.line || null };
+  const count = (n, one, many) => `*${n === 1 ? one : many}*`;
   if (body.type === 'countdown') {
-    shown.add('when');
-    return [v2Fact({ ...base, ground: 'gradient', headline: body.days === 1 ? '*day* to go' : '*days* to go', body: { type: 'number', value: String(body.days) }, line: [reel.kit.event.dates, reel.kit.event.place].filter(Boolean).join(' · ') || null })];
+    const rows = [
+      { title: 'Save the talks you want', meta: 'A reminder before each one' },
+      { title: 'Find people to meet', meta: 'Who shares your interests' },
+      kit.tables?.length ? { title: 'Pick a Contributor Day table', meta: 'Three quick questions' } : { title: 'Pack the right things', meta: 'The packing list' },
+    ];
+    return {
+      when: 'last',
+      scenes: [
+        v2Fact({ ...base, ground: 'gradient', line: null, headline: body.days === 1 ? '*day* to go' : '*days* to go', body: { type: 'number', value: String(body.days) } }),
+        v2Fact({ step: label, ground: 'paper', kicker: 'Get ready', headline: 'Before the *big day*', body: { type: 'rows', rows } }),
+      ],
+    };
   }
-  if (body.type === 'features') return [v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: body.items.map((it) => ({ title: typeof it === 'string' ? it : it.title ?? String(it) })) } })];
+  if (body.type === 'features') {
+    // The venue's points are its place and dates; after the event a date slide says nothing new.
+    const when = ['venue', 'thank-you'].includes(content.key) ? null : 'last';
+    return { when, scenes: [...v2Points(base, body.items), ...(content.key === 'schedule' ? v2Talks(reel, label) : [])] };
+  }
   if (body.type === 'photos') {
-    shown.add('speakers');
-    return chunk(body.people.slice(0, 8), 4).map((group, i) => v2Fact({ ...base, ground: i % 2 ? 'paper' : 'ink', body: { type: 'faces', people: group.map((p, j) => ({ key: `topic-${i}-${j}`, name: p.name, photo: p.photo })) } }));
+    const total = (kit.speakers ?? []).length;
+    // Speakers with a photo first (the post's own pick); none has one: everyone, with initials.
+    const groups = chunk((body.people.length ? body.people : kit.speakers ?? []).slice(0, 12), 4);
+    return {
+      when: 'last',
+      scenes: [
+        ...(total > 4 ? [v2Count(label, total, `${count(total, 'speaker', 'speakers')} on stage`, base.line)] : []),
+        // Four at a time under a one-line count ("1–4 of 29"), so the faces and whole names get the room.
+        ...groups.map((group, i) => v2Fact({ ...base, line: null, headline: groups.length > 1 || total > group.length ? `*${i * 4 + 1}–${i * 4 + group.length}* of ${Math.max(total, group.length)}` : base.headline, ground: i % 2 ? 'paper' : 'ink', body: { type: 'faces', people: group.map((p, j) => ({ key: `topic-${i}-${j}`, name: p.name, photo: p.photo })) } })),
+      ],
+    };
   }
   if (body.type === 'logos') {
-    shown.add('sponsors');
-    return chunk(body.logos.slice(0, 12), 6).map((group, i) => v2Fact({ ...base, ground: 'paper', body: { type: 'logos', logos: group.map((s, j) => ({ key: `topic-${i}-${j}`, name: s.name, logo: s.logo })) } }));
+    const all = body.logos;
+    return {
+      when: 'last',
+      scenes: [
+        ...(all.length > 2 ? [v2Count(label, all.length, `${count(all.length, 'sponsor', 'sponsors')} make it happen`, base.line)] : []),
+        ...chunk(all.slice(0, 18), 6).map((group, i) => v2Fact({ ...base, line: null, ground: 'paper', body: { type: 'logos', logos: group.map((s, j) => ({ key: `topic-${i}-${j}`, name: s.name, logo: s.logo })) } })),
+      ],
+    };
   }
   if (body.type === 'list') {
-    shown.add('talks');
-    return chunk(body.items.slice(0, 6), 3).map((rows) => v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: rows.map((r) => ({ mark: r.time || undefined, title: r.title, meta: r.meta || null })) } }));
+    return { when: 'last', scenes: chunk(body.items.slice(0, 6), 3).map((rows) => v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: rows.map((r) => ({ mark: r.time || undefined, title: r.title, meta: r.meta || null })) } })) };
   }
-  if (body.type === 'session') return [v2Fact({ ...base, ground: 'ink', body: { type: 'faces', people: body.speakers.slice(0, 4).map((name, j) => ({ key: `topic-0-${j}`, name, photo: body.photos?.[j] })) } })];
+  if (body.type === 'session') {
+    return { when: 'last', scenes: [v2Fact({ ...base, ground: 'ink', body: { type: 'faces', people: body.speakers.slice(0, 4).map((name, j) => ({ key: `topic-0-${j}`, name, photo: body.photos?.[j] })) } })] };
+  }
   if (body.type === 'tables') {
-    shown.add('tables');
-    return chunk(body.tables.slice(0, 6), 3).map((rows) => v2Fact({ ...base, ground: 'paper', body: { type: 'rows', rows: rows.map((tb) => ({ title: tb.name, meta: (tb.leads ?? []).slice(0, 2).join(', ') || null })) } }));
+    const tables = body.tables;
+    return {
+      when: 'last',
+      scenes: [
+        ...(tables.length > 3 ? [v2Count(label, tables.length, `${count(tables.length, 'table', 'tables')} to give back`, base.line)] : []),
+        ...chunk(tables.slice(0, 6), 3).map((rows) => v2Fact({ ...base, line: null, ground: 'paper', body: { type: 'rows', rows: rows.map((tb) => ({ title: tb.name, meta: (tb.leads ?? []).slice(0, 2).join(', ') || null })) } })),
+      ],
+    };
   }
-  // Words only: the hook already said them, so the reel goes straight on to the event.
-  return [];
+  // Words only. Coming up: the date is the news, then how far off it is; any other: the date and venue after.
+  if (content.key !== 'save-the-date') return { when: 'last', scenes: [] };
+  const days = daysToGo(kit);
+  return { when: 'first', scenes: days ? [v2Fact({ step: 'Countdown', ground: 'gradient', kicker: 'Countdown', headline: days === 1 ? '*day* to go' : '*days* to go', body: { type: 'number', value: String(days) } })] : [] };
 }
 
-/** Every scene of a reel: the hook, the topic, the event's facts, the end card. */
+const TALK_CALL = ['Save their talks in *CampBuddy*', 'Get a reminder before each one starts.'];
+const DAY_CALL = ['Plan your day in *CampBuddy*', 'Save talks and get a reminder before each one.'];
+const TABLE_CALL = ['Find your table in *CampBuddy*', 'Three questions, one Contributor Day team for you.'];
+
+/** The end card's call by topic (a post's key, a people reel's role); any other reel: "Plan {event} in CampBuddy". */
+const V2_CALLS = {
+  speaker: TALK_CALL,
+  speakers: TALK_CALL,
+  session: ['Save this talk in *CampBuddy*', 'Get a reminder before it starts.'],
+  sponsors: ['See their deals in *CampBuddy*', 'Offers for attendees, all in one place.'],
+  table_lead: TABLE_CALL,
+  contributor: TABLE_CALL,
+  schedule: DAY_CALL,
+  today: DAY_CALL,
+  countdown: DAY_CALL,
+  meet: ['Find your people in *CampBuddy*', 'See who shares your interests, and say hi.'],
+  'first-timer': ['Read the 5-minute guide in *CampBuddy*', 'How the day runs, what to bring, how to meet people.'],
+  moments: ['Keep your day in *CampBuddy*', 'Your talks, notes and the people you met, in Memories.'],
+  'thank-you': ['Your day is saved in *CampBuddy*', 'Your talks, notes and the people you met.'],
+};
+
+/** Every scene of a reel: the hook, its own topic, the date and venue, the end card. */
 function v2Scenes(reel, spec) {
   const { kit } = reel;
   const short = kit.short ?? kit.event.name;
-  const shown = new Set();
   const sub = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
   // The reel's own hook words, when the studio set them.
   const ownHook = reel.item?.hook?.trim();
-  let scenes;
+
   if (spec.kind === 'session') {
     const s = spec.session;
-    shown.add('talks');
     const speakers = (s.speakers ?? []).map((name, i) => ({ key: `session-${i}`, name, photo: s.photos?.[i] }));
     const day = kit.schedule?.days?.find((d) => d.key === s.day)?.label;
-    const words = ownHook || s.title;
-    scenes = [
-      v2Hook(words, [day, s.time, s.track].filter(Boolean).join(' · ')),
-      v2Fact({ step: 'On stage', ground: 'ink', kicker: speakers.length === 1 ? 'Speaker' : 'Speakers', headline: speakers.length ? `With *${speakers.map((p) => p.name.split(' ')[0]).join(' & ')}*` : `*${s.title}*`, body: speakers.length ? { type: 'faces', people: speakers.slice(0, 4) } : null }),
-      v2Fact({ step: 'When', ground: 'paper', kicker: 'Save the talk', headline: `*${s.time}*${day ? ` · ${day}` : ''}`, body: { type: 'rows', rows: [s.track ? { mark: '1', title: s.track, meta: 'Where' } : null, { mark: s.track ? '2' : '1', title: 'Save it in CampBuddy', meta: 'A reminder before it starts' }].filter(Boolean) } }),
+    // Up to four speakers each get their own cut, photo and whole name; more stand together.
+    const onStage = speakers.length > 4
+      ? [v2Fact({ step: 'On stage', ground: 'ink', kicker: `${speakers.length} speakers`, headline: 'On *stage*', body: { type: 'faces', people: speakers.slice(0, 6) } })]
+      : speakers.map((p, i) => v2Fact({ step: 'On stage', ground: i % 2 ? 'paper' : 'ink', kicker: speakers.length === 1 ? 'Speaker' : `Speaker ${i + 1} of ${speakers.length}`, headline: nameWords(p.name), body: { type: 'faces', people: [{ ...p, name: '', full: p.name, meta: speakers.length === 1 && s.title ? `“${s.title}”` : null }] } }));
+    // The talk's own when and where: its time and day, its room, the venue.
+    const rows = [
+      s.track ? { title: s.track, meta: 'Room' } : null,
+      kit.event.place ? { title: kit.event.place, meta: kit.event.dates || null } : null,
+      { title: 'Save it in CampBuddy', meta: 'A reminder before it starts' },
+    ].filter(Boolean).map((r, i) => ({ ...r, mark: String(i + 1) }));
+    return [
+      v2Hook(ownHook || s.title, [day, s.time, s.track].filter(Boolean).join(' · ')),
+      ...onStage,
+      v2Fact({ step: 'When & where', ground: 'paper', kicker: 'Save the talk', headline: [s.time ? `*${s.time}*` : null, day].filter(Boolean).join(' · ') || `*${kit.event.dates ?? ''}*`, body: { type: 'rows', rows }, share: SHARE }),
+      v2End(spec.utm, V2_CALLS.session),
     ];
-  } else if (spec.kind === 'post') {
+  }
+
+  if (spec.kind === 'post') {
     const content = spec.content ?? {};
     const words = ownHook || (content.headline || spec.label || kit.event.name).trim();
-    scenes = [v2Hook(words, sub), ...v2PostTopic(reel, content, spec.label, shown)];
-  } else {
-    const [title, line] = GROUP_WORDS[spec.role](short);
-    const hookWords = /^Meet the /.test(title) ? title.replace(/^Meet the (.+)$/, 'Meet the *$1*') : `*${title}*`;
-    shown.add(spec.role === 'speaker' ? 'speakers' : 'team');
-    const people = spec.people.map((p, i) => ({ key: `person-${i}`, full: p.name, photo: p.photo, meta: p.talk || null }));
-    const one = (spec.role === 'speaker' && people.length <= 24) || people.length <= ONE_BY_ONE;
-    const groups = one ? people.map((p) => [p]) : chunk(people, 4);
-    scenes = [v2Hook(ownHook || hookWords, line), ...groups.map((group, i) => {
-      if (one) {
-        const [firstName, ...rest] = group[0].full.split(' ');
-        return v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: spec.label.replace(/s$/, ''), headline: `*${firstName}* ${rest.join(' ')}`.trim(), body: { type: 'faces', people: [{ key: group[0].key, name: '', full: group[0].full, photo: group[0].photo, meta: group[0].meta }] } });
-      }
-      return v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: `${spec.label} ${i * 4 + 1}–${i * 4 + group.length}`, headline: `${spec.label} of *${short}*`, body: { type: 'faces', people: group.map((p) => ({ ...p, name: p.full })) } });
-    })];
+    const topic = v2PostTopic(reel, content, spec.label);
+    const when = topic.when ? v2When(reel) : [];
+    // When the date is the news, the hook keeps it back for the next cut.
+    const line = topic.when === 'first' ? kit.event.name : (content.line || sub);
+    return [
+      v2Hook(words, line),
+      ...(topic.when === 'first' ? when : []),
+      ...topic.scenes,
+      ...(topic.when === 'last' ? when : []),
+      v2End(spec.utm, V2_CALLS[content.key] ?? null),
+    ];
   }
-  reel.factCount = scenes.length <= 2 ? 4 : 3;
-  return [...scenes, ...v2EventFacts(reel, shown), v2End(spec.utm)];
+
+  // A people reel: the group's own people, one by one (then all together) or four at a time.
+  const n = spec.people.length;
+  const people = spec.people.map((p, i) => ({ key: `person-${i}`, full: p.name, photo: p.photo, meta: spec.role === 'table_lead' ? tableOf(kit, p.name) : (spec.role === 'speaker' ? p.talk || null : null) }));
+  const one = (spec.role === 'speaker' && n <= 24) || n <= ONE_BY_ONE;
+  const singular = spec.label.replace(/s$/, '');
+  const scenes = one
+    ? people.map((p, i) => v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: singular, headline: nameWords(p.full), body: { type: 'faces', people: [{ key: p.key, name: '', full: p.full, photo: p.photo, meta: p.meta }] } }))
+    : chunk(people, 4).map((group, i) => v2Fact({ step: spec.label, ground: i % 2 ? 'paper' : 'ink', kicker: `${spec.label} of ${short}`, headline: `*${i * 4 + 1}–${i * 4 + group.length}* of ${n}`, body: { type: 'faces', people: group.map((p) => ({ key: p.key, name: p.full, photo: p.photo, meta: p.meta })) } }));
+  if (one && n > 1) {
+    scenes.push(v2Fact({ step: spec.label, ground: 'gradient', kicker: 'All together', headline: `The ${spec.label.toLowerCase()} of *${short}*`, body: { type: 'faces', people: people.slice(0, 6).map((p) => ({ key: p.key, name: p.full, photo: p.photo })) } }));
+  }
+  const [, line] = GROUP_WORDS[spec.role](short);
+  return [v2Hook(ownHook || PEOPLE_HOOKS[spec.role](n, spec), line), ...scenes, ...v2When(reel), v2End(spec.utm, V2_CALLS[spec.role] ?? null)];
 }
 
 /** The template a reel uses: the studio's pick, else its own by its place in the list (neighbours differ). */
@@ -2244,6 +2402,15 @@ const GROUP_WORDS = {
   table_lead: () => ['Contributor Day table leads', 'Join a table and give back to WordPress'],
 };
 
+// A people reel's hook says how many: "Meet the *11 organizers*".
+const PEOPLE_HOOKS = {
+  organizer: (n) => (n === 1 ? 'Meet the *organizer*' : `Meet the *${n} organizers*`),
+  speaker: (n, spec) => (spec.total > n ? `Meet the *speakers*: ${spec.first + 1}–${spec.first + n} of ${spec.total}` : (n === 1 ? 'Meet the *speaker*' : `Meet the *${n} speakers*`)),
+  volunteer: (n) => (n === 1 ? 'Meet our *volunteer*' : `Meet our *${n} volunteers*`),
+  media_partner: (n) => (n === 1 ? 'Our *media partner*' : `Our *${n} media partners*`),
+  table_lead: (n) => (n === 1 ? 'Meet the *table lead*' : `Meet the *${n} table leads*`),
+};
+
 function groupCaption(role, kit, group) {
   const short = kit.short ?? kit.event.name;
   const names = group.map((p) => p.name).join(', ');
@@ -2305,7 +2472,7 @@ async function prepare(item, kit, colors, style) {
     reel.scenes = v2Scenes(reel, spec);
     // "Photos and logos" off in the reel editor: faces become initials, logos their names.
     const wanted = item.noPictures ? [] : reel.scenes.flatMap((sc) => sc.pictures ?? []);
-    const imgs = await Promise.all(wanted.map(([, url]) => (url ? T.loadImage(T.proxied(kit, url)) : null)));
+    const imgs = await Promise.all(wanted.map(([, url]) => (url ? T.loadRemote(kit, url) : null)));
     wanted.forEach(([key], i) => reel.photos.set(key, imgs[i]));
   } else if (spec.kind === 'post') {
     reel.scenes.push(introScene(spec.label));
@@ -2322,7 +2489,7 @@ async function prepare(item, kit, colors, style) {
       : `${spec.people.length} ${spec.people.length === 1 ? spec.label.replace(/s$/, '').toLowerCase() : spec.label.toLowerCase()}`;
     reel.scenes.push(introScene(spec.label));
     reel.scenes.push(groupIntroScene(spec.role, title, line, count));
-    const photos = await Promise.all(spec.people.map((p) => T.loadImage(T.proxied(kit, p.photo))));
+    const photos = await Promise.all(spec.people.map((p) => T.loadRemote(kit, p.photo)));
     spec.people.forEach((p, i) => reel.photos.set(p.id, photos[i]));
     if (spec.role === 'speaker' || spec.people.length <= ONE_BY_ONE) {
       spec.people.forEach((p, i) => reel.scenes.push(personScene(p, spec.first + i, spec.total, spec.role === 'speaker', spec.role)));
@@ -2351,10 +2518,17 @@ async function prepare(item, kit, colors, style) {
   reel.bpm = reelBpm(mood, reel.look);
   const beat = 60 / reel.bpm;
   reel.beat = beat;
-  // At least MIN_SECONDS: a short reel holds its cards and people a little longer, a beat at a time, in turn.
+  // At least MIN_SECONDS: a short reel holds its cards and people a little longer, a beat at a time, in turn
+  // (a scene with a `stretchMax`, the end card, only up to it).
   const stretchable = reel.scenes.filter((s) => s.stretch);
   let beats = reel.scenes.reduce((n, s) => n + s.beats, 0);
-  for (let i = 0; beats * beat < MIN_SECONDS && stretchable.length; i++, beats++) stretchable[i % stretchable.length].beats++;
+  for (let i = 0, full = 0; beats * beat < MIN_SECONDS && full < stretchable.length; i++) {
+    const sc = stretchable[i % stretchable.length];
+    if (sc.stretchMax && sc.beats >= sc.stretchMax) { full++; continue; }
+    full = 0;
+    sc.beats++;
+    beats++;
+  }
   // At most MAX_SECONDS: drop the facts after the topic, last first, then shorten every scene by a beat.
   const facts = reel.scenes.filter((sc) => sc.fact);
   while (beats * beat > MAX_SECONDS && facts.length) {
@@ -3113,4 +3287,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, MAX_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, MAX_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent, v2Scenes };

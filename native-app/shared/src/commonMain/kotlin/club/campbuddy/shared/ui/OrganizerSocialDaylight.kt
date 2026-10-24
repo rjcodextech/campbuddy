@@ -379,6 +379,6 @@ internal fun BoxScope.DaylightPerson(kit: SocialKitData, pal: Pal, p: SocialPers
             // Two lines at most, smaller rather than cut (the QR card is right below).
             p.talk?.takeIf { it.isNotBlank() }?.let { BasicText("“$it”", style = ts(12.sp, d.muted).copy(textAlign = TextAlign.Center), maxLines = 2, autoSize = TextAutoSize.StepBased(minFontSize = 7.sp, maxFontSize = 12.sp)) }
         }
-        DayFoot(kit, pal, d, qr, if (!p.talk.isNullOrBlank()) "Save $first's talk and get a reminder" else "Meet $first at $event", size)
+        DayFoot(kit, pal, d, qr, if (!p.talk.isNullOrBlank()) "Save ${p.name.trim()}'s talk and get a reminder" else "Meet ${p.name.trim()} at $event", size)
     }
 }

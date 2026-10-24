@@ -159,7 +159,7 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 2. **Type:** headline in the event site's heading font when we have it, else Baloo 2 800; every other line (kicker, subtitle, names, foot, brand bar) in Poppins.
 3. One **brand bar** at the foot: the CampBuddy × WPSimplified lockup on a paper pill left, globe + `campbuddy.club` pill right, same height, one baseline. Never covered. The event's logo sits at the top of every card.
 4. Headline: one highlighted phrase (1–3 words). ≤ 3 lines. Text ≥ 24px on a 1080 canvas; no ellipsis — shrink, never cut.
-5. Faces never overlap text; full names on one line (shrink, never split).
+5. Faces never overlap text; full names on one line (shrink, never split). **A name is always whole** (24 Oct 2026, owner): every card, post, reel and caption line says the full name — "Save Amit Singh's talk", never "Save Amit's talk"; where a grid is too narrow the name takes a second line, it is never cut.
 6. Ochre/light accents are never text on paper.
 7. **Export:** PNG master at 2×, stamped 600 DPI, maximum quality; JPEG only where a platform rejects the PNG size.
 8. **No "Free · no sign-up · works offline" line** on any graphic or reel (22 Oct 2026). Captions may still say it.
@@ -175,10 +175,11 @@ default design; the older designs stay selectable but follow §8 rules 4–7.
 - **List rows** (23 Oct 2026): white cards, one mark column per list sized to its widest mark with 28 px on both sides; a time is set as the hour large with AM / PM small under it, never touching the card's edge; titles and the meta line shrink to fit, they never run into the right edge.
 - Captions burned in: Poppins Bold 64–72px, max two lines, 3–6 words per line.
 - **Branding on every frame** (22 Oct 2026, replaces "logo only on the cover"): the event's logo on a white tile at the top centre of the safe zone; the CampBuddy × WPSimplified lockup on a white pill at its foot centre; the words between the two, never under them.
-- **The end card** carries no event logo: CampBuddy's mark at the top centre, WPSimplified's at the foot centre, and between them one call ("Plan <event> in CampBuddy"), the QR and `campbuddy.club`.
+- **The end card** carries no event logo: CampBuddy's mark at the top centre, WPSimplified's at the foot centre, and between them one call that fits the reel's topic ("Save their talks in CampBuddy", "See their deals in CampBuddy", "Find your table in CampBuddy"; otherwise "Plan <event> in CampBuddy"), the QR and `campbuddy.club`. It may hold up to four beats longer than the others (time to scan).
 - **Five templates** — Daylight, Stage, Poster, Photo, Minimal — each with its own grounds, entrance (rise, pop, slide, type on), cut on the beat (cut, flash, wipe, zoom, slide), effects (glow, dots, waves, equaliser, sparks, bands, grid) and music (mood, lead, groove, pad).
-- **Every reel is unique:** neighbouring reels take different templates and music (key, tempo, chords, arpeggio from its place in the list); each tells its own topic first, then its own slice of the event's facts (dates and venue, schedule, talks, speakers, sponsors, Contributor Day, the team — the next reel the next slice), with its own picks inside each; nothing the topic said is told again in the same reel.
-- Cuts land on beats; lines come in on half beats; the highlighted word, big numbers, QR and effects pulse on the beat. Minimum 30 s.
+- **Every reel tells only its own topic** (24 Oct 2026, owner): the organizers' reel shows the organizers, the sponsors' reel the sponsors, a talk's spotlight that talk — never another reel's speakers, sponsors, schedule or team. Structure: hook → the topic (people one by one with photo and whole name, then **all together**; a list one point per cut under a big 01, 02 …; a big count before a long list: "12 sponsors make it happen") → **one date-and-venue slide** (dates highlighted, venue, and a **"Send this to your WordCamp buddy"** pill — sends take a reel to new people) → the end card. No date slide where the post already is the date (Venue) or the event is over (Thank you); on Coming up the date comes first, then the countdown.
+- **Every reel is unique:** neighbouring reels take different templates and music (key, tempo, chords, arpeggio from its place in the list), with their own picks inside their topic.
+- Cuts land on beats; lines come in on half beats; the highlighted word, big numbers, QR and effects pulse on the beat. Minimum 20 s (`MIN_SECONDS`): a short reel holds its scenes a beat longer each, in turn.
 - Everything is editable per reel in the studio (template, animation, effects, hook words, colours, mood, photos) with a live, looping preview.
 - Export MP4 · H.264 · AAC 48 kHz · 8–12 Mbps. Music never louder than words.
 

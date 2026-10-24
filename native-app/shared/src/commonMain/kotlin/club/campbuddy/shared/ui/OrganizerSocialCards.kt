@@ -383,7 +383,7 @@ internal fun PersonPicture(kit: SocialKitData, p: SocialPerson, design: String, 
                                 Text(why, style = st(12.sp, on.copy(alpha = 0.9f)), maxLines = 4, overflow = TextOverflow.Ellipsis)
                             }
                         }
-                        Box(Modifier.padding(14.dp)) { QrFoot(kit, pal, qr, size, "Find ${p.name.substringBefore(' ')} in CampBuddy") }
+                        Box(Modifier.padding(14.dp)) { QrFoot(kit, pal, qr, size, "Find ${p.name.trim()} in CampBuddy") }
                     }
                 }
                 "minimal" -> {
@@ -396,7 +396,7 @@ internal fun PersonPicture(kit: SocialKitData, p: SocialPerson, design: String, 
                             Text(p.name, style = st(28.sp, pal.ink, FontWeight.ExtraBold), maxLines = 3)
                             Text(why, style = st(13.sp, pal.ink.copy(alpha = 0.75f)), maxLines = 3, overflow = TextOverflow.Ellipsis)
                         }
-                        QrFoot(kit, pal, qr, size, "Find ${p.name.substringBefore(' ')} in CampBuddy")
+                        QrFoot(kit, pal, qr, size, "Find ${p.name.trim()} in CampBuddy")
                     }
                 }
                 "spotlight" -> {
@@ -411,7 +411,7 @@ internal fun PersonPicture(kit: SocialKitData, p: SocialPerson, design: String, 
                         Text(role, style = st(12.sp, on.copy(alpha = 0.9f), FontWeight.Bold, spacing = 1.2.sp))
                         Text(p.name, style = st(28.sp, on, FontWeight.ExtraBold), maxLines = 2)
                         Text(why, style = st(13.sp, on.copy(alpha = 0.9f)), maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        QrFoot(kit, pal, qr, size, "Find ${p.name.substringBefore(' ')} in CampBuddy")
+                        QrFoot(kit, pal, qr, size, "Find ${p.name.trim()} in CampBuddy")
                     }
                 }
                 "arch" -> {
@@ -435,7 +435,7 @@ internal fun PersonPicture(kit: SocialKitData, p: SocialPerson, design: String, 
                                 Text(why, style = st(13.sp, on.copy(alpha = 0.9f)), maxLines = 3, overflow = TextOverflow.Ellipsis)
                             }
                         }
-                        QrFoot(kit, pal, qr, size, "Find ${p.name.substringBefore(' ')} in CampBuddy")
+                        QrFoot(kit, pal, qr, size, "Find ${p.name.trim()} in CampBuddy")
                     }
                 }
             }
