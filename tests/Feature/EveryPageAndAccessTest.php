@@ -121,9 +121,10 @@ class EveryPageAndAccessTest extends TestCase
 
     private static function isGet(Route $route): bool
     {
-        // The Social media page's image proxy and the Analytics usage-post numbers are endpoints for a canvas,
-        // not pages (SocialMediaTest and UsagePostTest cover them).
+        // The Social media page's image proxy, its Studio music tracks and the Analytics usage-post numbers are
+        // endpoints for a canvas or the reels, not pages (SocialMediaTest, StudioMusicTest and UsagePostTest cover them).
         return in_array('GET', $route->methods(), true) && ! str_ends_with((string) $route->getName(), '.social.image')
+            && ! str_ends_with((string) $route->getName(), '.social.music')
             && $route->getName() !== 'admin.analytics.usage-post';
     }
 
