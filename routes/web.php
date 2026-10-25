@@ -227,6 +227,7 @@ Route::prefix('admin')->group(function () {
         Route::get('events/{event}/social', [SocialController::class, 'index'])->name('admin.events.social');
         Route::post('events/{event}/social/colors', [SocialController::class, 'colors'])->name('admin.events.social.colors');
         Route::get('events/{event}/social/image', [SocialController::class, 'image'])->name('admin.events.social.image');
+        Route::get('events/{event}/social/music', [SocialController::class, 'music'])->name('admin.events.social.music');
         Route::post('events/{event}/social/site', [SocialController::class, 'site'])->name('admin.events.social.site');
         Route::post('events/{event}/social/art', [SocialController::class, 'art'])->middleware('throttle:20,1')->name('admin.events.social.art');
         Route::post('events/{event}/social/art/remove', [SocialController::class, 'removeArt'])->name('admin.events.social.art.remove');

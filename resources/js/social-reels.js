@@ -2794,10 +2794,25 @@ async function ownTrack(file, duration) {
   return ctx.startRendering();
 }
 
+/** A track from the Studio music library CampBuddy shares with WPSimplified: fetched once a visit, so "Make all" doesn't fetch it per reel. */
+const libraryTracks = new Map();
+function libraryTrack(url) {
+  if (!libraryTracks.has(url)) {
+    const got = fetch(url, { credentials: 'same-origin' }).then((r) => {
+      if (!r.ok) throw new Error(`the Studio track isn't there (${r.status})`);
+      return r.blob();
+    });
+    got.catch(() => libraryTracks.delete(url));
+    libraryTracks.set(url, got);
+  }
+  return libraryTracks.get(url);
+}
+
 async function soundtrack(reel, music) {
   let buffer = null;
   if (music.mode === 'auto') buffer = await makeMusic(reel);
   else if (music.mode === 'file' && music.file) buffer = await ownTrack(music.file, reel.duration);
+  else if (music.mode === 'library' && music.url) buffer = await ownTrack(await libraryTrack(music.url), reel.duration);
   if (buffer && music.volume !== 1) {
     for (let ch = 0; ch < buffer.numberOfChannels; ch++) {
       const d = buffer.getChannelData(ch);
@@ -2950,14 +2965,19 @@ export function initSocialReels() {
   const preview = root.querySelector('[data-reel-preview]');
   const musicEl = root.querySelector('[data-reel-music]');
   const fileEl = root.querySelector('[data-reel-file]');
+  const trackEl = root.querySelector('[data-reel-track]');
   const volumeEl = root.querySelector('[data-reel-volume]');
   const items = reelList(C.kit, C.posts);
   let busy = false;
   let playing = null;
 
-  fileEl?.closest('[data-reel-file-row]')?.classList.toggle('hidden', musicEl?.value !== 'file');
-  musicEl?.addEventListener('change', () => fileEl?.closest('[data-reel-file-row]')?.classList.toggle('hidden', musicEl.value !== 'file'));
-  const music = () => ({ mode: musicEl?.value ?? 'auto', file: fileEl?.files?.[0] ?? null, volume: Number(volumeEl?.value ?? 100) / 100 });
+  const musicRows = () => {
+    fileEl?.closest('[data-reel-file-row]')?.classList.toggle('hidden', musicEl?.value !== 'file');
+    trackEl?.closest('[data-reel-track-row]')?.classList.toggle('hidden', musicEl?.value !== 'library');
+  };
+  musicRows();
+  musicEl?.addEventListener('change', musicRows);
+  const music = () => ({ mode: musicEl?.value ?? 'auto', file: fileEl?.files?.[0] ?? null, url: trackEl?.value ?? '', volume: Number(volumeEl?.value ?? 100) / 100 });
   const say = (text) => { if (status) status.textContent = text; };
 
   const build = async (item) => {

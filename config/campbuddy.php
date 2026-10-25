@@ -61,4 +61,19 @@ return [
         'anonymous_writes' => (int) env('RATE_LIMIT_ANONYMOUS_WRITES', 60),
     ],
 
+    /*
+    | The Studio folder CampBuddy shares with WPSimplified: every audio, video and
+    | creative file, kept outside the web root so none of it goes to git or the FTP
+    | upload. Social media → Reels → Music offers its music library (Audio/Library,
+    | App\Support\StudioMusic). STUDIO_PATH wins; otherwise the first of these
+    | folders that exists (local, then the server); with none, the option is left out.
+    */
+    'studio' => [
+        'path' => env('STUDIO_PATH'),
+        'candidates' => [
+            'E:/Sites/InHouse/wpsimplified/Studio',
+            '/home/mzpjfuem/domains/Studio',
+        ],
+    ],
+
 ];

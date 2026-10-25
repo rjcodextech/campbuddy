@@ -12,6 +12,7 @@ use App\Support\SocialImageProxy;
 use App\Support\SocialKit;
 use App\Support\SiteTheme;
 use App\Support\SocialPublisher;
+use App\Support\StudioMusic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,8 @@ class SocialController extends Controller
             'codes' => QrKit::codes($event),
             'colorsUrl' => route('manager.events.social.colors', $event),
             'imageUrl' => route('manager.events.social.image', $event),
+            'musicUrl' => route('manager.events.social.music', $event),
+            'studioTracks' => StudioMusic::tracks(),
             'siteUrl' => route('manager.events.social.site', $event),
             'artUrl' => route('manager.events.social.art', $event),
             'artRemoveUrl' => route('manager.events.social.art.remove', $event),
@@ -92,6 +95,14 @@ class SocialController extends Controller
         $this->managedEvent($request, $eventId);
 
         return SocialImageProxy::respond((string) $request->query('u'));
+    }
+
+    /** A track from the shared Studio music library, for the reels. */
+    public function music(Request $request, string $eventId): Response
+    {
+        $this->managedEvent($request, $eventId);
+
+        return StudioMusic::respond((string) $request->query('f'));
     }
 
     /** Reads the WordCamp site's colours, fonts and artwork again. */

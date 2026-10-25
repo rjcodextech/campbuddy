@@ -4,7 +4,8 @@
     colours, event posts with captions, people cards (one ZIP), and the QR codes.
 
       @include('partials.social-media', ['event' => $event, 'kit' => $kit, 'codes' => $codes, 'colorsUrl' => …,
-          'publishUrl' => …|null, 'webhookUrl' => …, 'webhookSet' => bool])
+          'publishUrl' => …|null, 'webhookUrl' => …, 'webhookSet' => bool,
+          'musicUrl' => …, 'studioTracks' => App\Support\StudioMusic::tracks()])
 --}}
 <div class="max-w-6xl space-y-6" data-social-kit>
     <x-alert type="info">
@@ -475,6 +476,9 @@
                                 <select class="cb-input py-1.5 text-sm" data-reel-music>
                                     <option value="auto">CampBuddy's music (own per reel)</option>
                                     <option value="file">My own track</option>
+                                    @if (($studioTracks ?? []) !== [])
+                                        <option value="library">WPSimplified Studio music</option>
+                                    @endif
                                     <option value="none">No music</option>
                                 </select>
                             </label>
@@ -482,6 +486,24 @@
                                 <span class="cb-label">Track (MP3, WAV, M4A)</span>
                                 <input type="file" accept="audio/*" class="text-xs" data-reel-file>
                             </label>
+                            {{-- The music library CampBuddy shares with WPSimplified (App\Support\StudioMusic). --}}
+                            @if (($studioTracks ?? []) !== [])
+                                <label class="flex flex-col gap-1 hidden" data-reel-track-row>
+                                    <span class="cb-label">Track</span>
+                                    <select class="cb-input py-1.5 text-sm" data-reel-track>
+                                        @foreach (['reel' => 'Reel cuts (about 30 s)', 'loop' => 'Loops (repeat smoothly)', 'full' => 'Full tracks (5 min)'] as $kind => $group)
+                                            @php($inGroup = array_filter($studioTracks, fn ($t) => $t['kind'] === $kind))
+                                            @if ($inGroup !== [])
+                                                <optgroup label="{{ $group }}">
+                                                    @foreach ($inGroup as $track)
+                                                        <option value="{{ $musicUrl.'?f='.urlencode($track['file']) }}">{{ $track['title'] }} · {{ $track['seconds'] }} s</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </label>
+                            @endif
                             <label class="flex flex-col gap-1">
                                 <span class="cb-label">Music volume</span>
                                 <input type="range" min="0" max="100" value="85" data-reel-volume>
