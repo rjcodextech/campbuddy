@@ -23,13 +23,14 @@ use Symfony\Component\Console\Output\BufferedOutput;
  * runnable; then every other artisan command, listed for reference only. A run happens in this request (no queue): the output comes back on
  * the page and the run is logged with who started it. One run at a time.
  * Prompts can't be answered from a browser, so --yes is set where a command
- * has it; the page asks first instead. campbuddy:doctor is terminal-only
- * (migrations, npm build, emptying the logs).
+ * has it; the page asks first instead. campbuddy:doctor and campbuddy:run-all
+ * are terminal-only (migrations, npm build, emptying the logs, every scheduled
+ * task at once and minutes of queue work).
  */
 class CommandController extends Controller
 {
     /** Shown, but only runnable from the server's terminal. */
-    public const TERMINAL_ONLY = ['campbuddy:doctor'];
+    public const TERMINAL_ONLY = ['campbuddy:doctor', 'campbuddy:run-all'];
 
     /**
      * Laravel's own commands that are safe to run from here: clearing caches,
