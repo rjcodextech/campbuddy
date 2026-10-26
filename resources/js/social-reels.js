@@ -1203,6 +1203,16 @@ const V2_TOP = SAFE.top + V2_LOGO_H + 28;
 const V2_BOTTOM = SAFE.bottom - V2_STRIP - 28;
 
 export const REEL_TEMPLATES = {
+  pulse: {
+    label: 'Pulse',
+    ground: (kind) => kind,
+    align: 'left',
+    anim: 'rise',
+    cut: 'wave',
+    effects: { glow: true, dots: true, waves: true, motif: true, eq: false, sparks: false },
+    features: { karaoke: true, markerWave: true, countUp: true, ghostReveal: true, loopEnd: true },
+    music: {},
+  },
   daylight: {
     label: 'Daylight',
     ground: (kind) => kind,
@@ -1381,11 +1391,88 @@ function v2Ground(ctx, time, reel, kind) {
   }
 }
 
-/** Effects over the ground, under the words: an equaliser at the foot and sparks drifting up, both on the beat. */
+const TOPIC_ICONS = {
+  calendar: [
+    'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6z',
+    'M16 2v4',
+    'M8 2v4',
+    'M3 10h18',
+  ],
+  mic: [
+    'M9 5a3 3 0 0 1 6 0v6a3 3 0 0 1-6 0V5z',
+    'M19 10v1a7 7 0 0 1-14 0v-1',
+    'M12 18v4',
+    'M8 22h8',
+  ],
+  users: [
+    'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2',
+    'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+    'M22 21v-2a4 4 0 0 0-3-3.87',
+    'M16 3.13a4 4 0 0 1 0 7.75',
+  ],
+  handshake: [
+    'm11 17 2 2a1 1 0 0 0 1.4 0l4.6-4.6a2 2 0 0 0 0-2.8l-3.2-3.2a2 2 0 0 0-2.8 0L11 11',
+    'm18 11 3-3a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L12 8',
+    'm3 11 3-3a2 2 0 0 1 2.8 0l1.4 1.4a2 2 0 0 1 0 2.8L8 14',
+    'm7 17-2 2a1 1 0 0 1-1.4 0l-1.6-1.6a2 2 0 0 1 0-2.8l3.2-3.2a2 2 0 0 1 2.8 0L11 14',
+  ],
+  'map-pin': [
+    'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z',
+    'M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z',
+  ],
+};
+
+function topicIconFor(reel) {
+  const k = (reel.item?.key || '').toLowerCase();
+  const utm = (reel.item?.utm || '').toLowerCase();
+  const title = (reel.item?.title || '').toLowerCase();
+  if (k.includes('speaker') || k.includes('spotlight') || utm.includes('speaker') || title.includes('speaker') || title.includes('talk')) return 'mic';
+  if (k.includes('countdown') || k.includes('date') || k.includes('schedule') || utm.includes('save-the-date') || title.includes('schedule') || title.includes('date')) return 'calendar';
+  if (k.includes('sponsor') || k.includes('table') || utm.includes('sponsor') || title.includes('table') || title.includes('sponsor') || title.includes('contribute')) return 'handshake';
+  if (k.includes('venue') || k.includes('place') || utm.includes('venue') || title.includes('venue')) return 'map-pin';
+  return 'users';
+}
+
+function drawTopicMotif(ctx, time, reel) {
+  const iconName = topicIconFor(reel);
+  const paths = TOPIC_ICONS[iconName];
+  if (!paths || typeof Path2D === 'undefined') return;
+  const dark = v2Ink(reel).light;
+  const { pal } = reel;
+  const size = 560;
+  const driftX = Math.sin(time * 0.35) * 40;
+  const driftY = Math.cos(time * 0.28) * 35;
+  const rot = Math.sin(time * 0.2) * 0.05;
+  const cx = W / 2 + driftX;
+  const cy = H * 0.44 + driftY;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(rot);
+  ctx.scale(size / 24, size / 24);
+  ctx.translate(-12, -12);
+
+  ctx.lineWidth = 1.4;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = dark ? T.alpha(pal.secondary, 0.08) : T.alpha(pal.primary, 0.06);
+
+  paths.forEach((d) => {
+    try {
+      ctx.stroke(new Path2D(d));
+    } catch {}
+  });
+  ctx.restore();
+}
+
+/** Effects over the ground, under the words: topic motif, an equaliser at the foot and sparks drifting up. */
 function v2Effects(ctx, time, reel) {
   const fx = reel.fx ?? {};
   const { pal } = reel;
   const dark = v2Ink(reel).light;
+  if (fx.motif) {
+    drawTopicMotif(ctx, time, reel);
+  }
   if (fx.eq) {
     const bars = 28;
     const bw = (SAFE.right - SAFE.left) / bars;
@@ -1524,7 +1611,7 @@ function v2Enter(ctx, reel, p, i, x, y, w) {
  * A headline whose *marked* words (else its last word) are in the highlight
  * colour; lines come in on half beats and the highlight pulses on the beat.
  */
-function v2Headline(ctx, reel, words, x, y, t, k, colors, { size = 112, min = 64, lines = 3, align = 'left', width = SAFE.right - SAFE.left } = {}) {
+function v2Headline(ctx, reel, words, x, y, t, k, colors, { size = 112, min = 64, lines = 3, align = 'left', width = SAFE.right - SAFE.left, isHook = false } = {}) {
   const { head } = T.fonts();
   const marked = /\*[^*]+\*/.test(words);
   const plain = words.replace(/\*/g, '').replace(/\s+/g, ' ').trim();
@@ -1534,29 +1621,76 @@ function v2Headline(ctx, reel, words, x, y, t, k, colors, { size = 112, min = 64
   const fit = fitAll(ctx, plain, width, size, min, lines, 900, head);
   const lh = fit.size * 1.06;
   const pulse = 1 + 0.07 * onBeat(reel, t);
+  const isKaraoke = Boolean(reel.features?.karaoke && isHook);
+  const hasMarkerWave = Boolean(reel.features?.markerWave);
+  let wordCounter = 0;
+  const beat = reel.beat ?? 0.5;
+
   fit.lines.forEach((line, i) => {
     const p = ease(span(t, cue(reel, k + i), 0.4));
-    if (p <= 0) return;
+    if (p <= 0 && !isKaraoke) return;
     ctx.save();
-    ctx.globalAlpha *= reel.anim === 'type' ? 1 : p;
+    if (!isKaraoke) ctx.globalAlpha *= reel.anim === 'type' ? 1 : p;
     const ly = y + (i + 0.82) * lh;
     ctx.font = `900 ${fit.size}px ${head}`;
     ctx.textAlign = 'left';
     const space = ctx.measureText(' ').width;
     const total = ctx.measureText(line).width;
     let cx = align === 'center' ? x - total / 2 : x;
-    v2Enter(ctx, reel, p, i, align === 'center' ? x : x + total / 2, ly - fit.size * 0.3, total / 2 + 20);
+    if (!isKaraoke) {
+      v2Enter(ctx, reel, p, i, align === 'center' ? x : x + total / 2, ly - fit.size * 0.3, total / 2 + 20);
+    }
     for (const word of line.split(' ')) {
       const ww = ctx.measureText(word).width;
       const on = hot.has(clean(word));
+      const wIdx = wordCounter++;
+      const wordCue = cue(reel, k) + (wIdx * beat) / 2;
+      const wordLitP = isKaraoke ? ease(span(t, wordCue, 0.18)) : 1;
+      const wordAlpha = isKaraoke ? (0.28 + 0.72 * wordLitP) : 1;
+
+      ctx.save();
+      ctx.globalAlpha *= wordAlpha;
       ctx.fillStyle = on ? colors.hl : colors.ink;
       if (on) {
+        if (hasMarkerWave) {
+          const markerP = isKaraoke ? wordLitP : ease(span(t, cue(reel, k + i), 0.3));
+          if (markerP > 0) {
+            ctx.save();
+            ctx.fillStyle = T.alpha(colors.hl, colors.light ? 0.35 : 0.22);
+            const mw = (ww + 16) * markerP;
+            const mh = fit.size * 0.76;
+            T.roundRect(ctx, cx - 8, ly - fit.size * 0.68, mw, mh, 8);
+            ctx.fill();
+            ctx.restore();
+
+            const waveW = ww * markerP;
+            if (waveW > 6) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.strokeStyle = colors.hl;
+              ctx.lineWidth = Math.max(3.5, fit.size * 0.05);
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              const waveY = ly + 12;
+              const waveAmp = Math.max(3, fit.size * 0.05);
+              const waveFreq = 0.16;
+              for (let wx = 0; wx <= waveW; wx += 2) {
+                const wy = waveY + Math.sin(wx * waveFreq + t * 4) * waveAmp;
+                if (wx === 0) ctx.moveTo(cx + wx, wy);
+                else ctx.lineTo(cx + wx, wy);
+              }
+              ctx.stroke();
+              ctx.restore();
+            }
+          }
+        }
         ctx.save();
         ctx.translate(cx + ww / 2, ly - fit.size * 0.32);
         ctx.scale(pulse, pulse);
         ctx.fillText(word, -ww / 2, fit.size * 0.32);
         ctx.restore();
       } else ctx.fillText(word, cx, ly);
+      ctx.restore();
       cx += ww + space;
     }
     ctx.restore();
@@ -1564,17 +1698,19 @@ function v2Headline(ctx, reel, words, x, y, t, k, colors, { size = 112, min = 64
   return y + fit.lines.length * lh + 10;
 }
 
-function v2Line(ctx, reel, words, x, y, t, k, color, { size = 42, lines = 3, align = 'left', weight = 600, width = SAFE.right - SAFE.left } = {}) {
+function v2Line(ctx, reel, words, x, y, t, k, color, { size = 42, lines = 3, align = 'left', weight = 600, width = SAFE.right - SAFE.left, isHook = false } = {}) {
   if (!words) return y;
   const { text } = T.fonts();
   const fit = fitAll(ctx, words, width, size, 34, lines, weight, text);
+  const isKaraoke = Boolean(reel.features?.karaoke && isHook);
   const p = ease(span(t, cue(reel, k), 0.4));
+  if (p <= 0 && !isKaraoke) return y + fit.lines.length * fit.size * 1.3 + 10;
   ctx.save();
-  ctx.globalAlpha *= p;
+  ctx.globalAlpha *= isKaraoke ? (0.28 + 0.72 * p) : p;
   ctx.fillStyle = color;
   ctx.textAlign = align;
   ctx.font = `${weight} ${fit.size}px ${text}`;
-  fit.lines.forEach((l, i) => ctx.fillText(l, x, y + (i + 0.85) * fit.size * 1.3 + (1 - p) * 30));
+  fit.lines.forEach((l, i) => ctx.fillText(l, x, y + (i + 0.85) * fit.size * 1.3 + (isKaraoke ? 0 : (1 - p) * 30)));
   ctx.restore();
   return y + fit.lines.length * fit.size * 1.3 + 10;
 }
@@ -1602,22 +1738,27 @@ function v2Rows(ctx, reel, rows, y, t, k, bottom = V2_BOTTOM) {
     return ctx.measureText(m.main).width;
   }));
   const markW = Math.max(112, Math.min(230, widest + pad * 2));
+  const ghost = Boolean(reel.features?.ghostReveal);
   rows.forEach((row, i) => {
     const p = back(span(t, cue(reel, k + i), 0.45));
-    if (p <= 0) return;
+    if (p <= 0 && !ghost) return;
+    const isGhost = p <= 0;
+    const effP = isGhost ? 0 : clamp(p);
     const ry = y + i * (rowH + gap);
     const m = marks[i];
     ctx.save();
-    ctx.globalAlpha *= clamp(p);
-    if (reel.anim === 'pop') {
-      const s = 0.7 + 0.3 * p;
-      ctx.translate(W / 2, ry + rowH / 2);
-      ctx.scale(s, s);
-      ctx.translate(-W / 2, -(ry + rowH / 2));
-    } else ctx.translate((1 - clamp(p)) * (i % 2 && reel.anim === 'slide' ? 160 : -120), 0);
-    ctx.shadowColor = 'rgba(0,0,0,0.16)';
-    ctx.shadowBlur = 30;
-    ctx.shadowOffsetY = 10;
+    ctx.globalAlpha *= isGhost ? 0.22 : effP;
+    if (!isGhost) {
+      if (reel.anim === 'pop') {
+        const s = 0.7 + 0.3 * p;
+        ctx.translate(W / 2, ry + rowH / 2);
+        ctx.scale(s, s);
+        ctx.translate(-W / 2, -(ry + rowH / 2));
+      } else ctx.translate((1 - clamp(p)) * (i % 2 && reel.anim === 'slide' ? 160 : -120), 0);
+      ctx.shadowColor = 'rgba(0,0,0,0.16)';
+      ctx.shadowBlur = 30;
+      ctx.shadowOffsetY = 10;
+    }
     ctx.fillStyle = '#ffffff';
     T.roundRect(ctx, SAFE.left, ry, w, rowH, 30);
     ctx.fill();
@@ -1689,19 +1830,23 @@ function v2Faces(ctx, reel, people, y, t, k, colors) {
   ]);
   const wordsH = Math.max(0, ...fits.map(([nf, mf]) => (nf ? nf.size * (1 + (nf.lines.length - 1) * 1.15) + 14 : 0) + (mf ? mf.lines.length * mf.size * 1.25 + 10 : 0)));
   const size = Math.max(140, Math.min(n === 1 ? 440 : 290, cell - 60 - wordsH));
+  const ghost = Boolean(reel.features?.ghostReveal);
   people.forEach((person, i) => {
     const p = back(span(t, cue(reel, k + i), 0.5));
-    if (p <= 0) return;
+    if (p <= 0 && !ghost) return;
+    const isGhost = p <= 0;
+    const effP = isGhost ? 0 : clamp(p);
     const col = i % cols;
     const row = Math.floor(i / cols);
     const inRow = Math.min(cols, n - row * cols);
     const cx = SAFE.left + w / 2 + (col - (inRow - 1) / 2) * (w / cols);
     const cy = y + row * cell + size / 2 + 12;
-    const beat = 1 + 0.03 * onBeat(reel, t);
+    const beat = isGhost ? 1 : 1 + 0.03 * onBeat(reel, t);
     ctx.save();
-    ctx.globalAlpha *= clamp(p);
+    ctx.globalAlpha *= isGhost ? 0.22 : effP;
     ctx.translate(cx, cy);
-    ctx.scale((0.6 + 0.4 * p) * beat, (0.6 + 0.4 * p) * beat);
+    const s = isGhost ? 0.7 : (0.6 + 0.4 * p) * beat;
+    ctx.scale(s, s);
     ctx.fillStyle = colors.hl;
     ctx.beginPath();
     ctx.arc(0, 0, size / 2 + 10, 0, Math.PI * 2);
@@ -1721,7 +1866,7 @@ function v2Faces(ctx, reel, people, y, t, k, colors) {
     }
     ctx.restore();
     ctx.save();
-    ctx.globalAlpha *= clamp(p);
+    ctx.globalAlpha *= isGhost ? 0.22 : effP;
     ctx.textAlign = 'center';
     let ny = cy + size / 2 + 26;
     const [nameFit, metaFit] = fits[i];
@@ -1749,20 +1894,26 @@ function v2Logos(ctx, reel, logos, y, t, k) {
   const gap = 24;
   const tw = (w - gap * (cols - 1)) / cols;
   const th = Math.min(tw * 0.62, (V2_BOTTOM - y - gap * (rows - 1)) / rows);
+  const ghost = Boolean(reel.features?.ghostReveal);
   logos.forEach((logo, i) => {
     const p = back(span(t, cue(reel, k + i * 0.5), 0.45));
-    if (p <= 0) return;
+    if (p <= 0 && !ghost) return;
+    const isGhost = p <= 0;
+    const effP = isGhost ? 0 : clamp(p);
     // A short last row stands in the middle.
     const inRow = Math.min(cols, n - Math.floor(i / cols) * cols);
     const x = SAFE.left + (w - inRow * tw - (inRow - 1) * gap) / 2 + (i % cols) * (tw + gap);
     const ty = y + Math.floor(i / cols) * (th + gap);
     ctx.save();
-    ctx.globalAlpha *= clamp(p);
+    ctx.globalAlpha *= isGhost ? 0.22 : effP;
     ctx.translate(x + tw / 2, ty + th / 2);
-    ctx.scale(0.7 + 0.3 * p, 0.7 + 0.3 * p);
-    ctx.shadowColor = 'rgba(0,0,0,0.14)';
-    ctx.shadowBlur = 24;
-    ctx.shadowOffsetY = 8;
+    const s = isGhost ? 0.7 : 0.7 + 0.3 * p;
+    ctx.scale(s, s);
+    if (!isGhost) {
+      ctx.shadowColor = 'rgba(0,0,0,0.14)';
+      ctx.shadowBlur = 24;
+      ctx.shadowOffsetY = 8;
+    }
     ctx.fillStyle = '#ffffff';
     T.roundRect(ctx, -tw / 2, -th / 2, tw, th, 26);
     ctx.fill();
@@ -1880,7 +2031,18 @@ function v2Fact({ step, ground = 'paper', kicker, headline, line, body = null, b
         ctx.scale(s, s);
         ctx.font = `900 300px ${head}`;
         ctx.textAlign = align;
-        ctx.fillText(body.value, center ? 0 : -6, 0, SAFE.right - SAFE.left);
+        let numStr = body.value;
+        if (reel.features?.countUp) {
+          const match = String(body.value).match(/\d+/);
+          if (match) {
+            const target = parseInt(match[0], 10);
+            const countDur = (reel.beat ?? 0.5) * 1.8;
+            const prog = ease(span(t, cue(reel, 0), countDur));
+            const curr = Math.min(target, Math.round(target * prog));
+            numStr = String(body.value).replace(match[0], String(curr));
+          }
+        }
+        ctx.fillText(numStr, center ? 0 : -6, 0, SAFE.right - SAFE.left);
         ctx.restore();
         y += 300;
       }
@@ -1909,8 +2071,8 @@ function v2Hook(words, line) {
       const x = center ? W / 2 : SAFE.left;
       const align = center ? 'center' : 'left';
       let y = V2_TOP + (V2_BOTTOM - V2_TOP) * 0.16;
-      y = v2Headline(ctx, reel, words, x, y, t, 0, colors, { size: 136, min: 80, lines: 4, align });
-      v2Line(ctx, reel, line, x, y + 10, t, 3, colors.quiet, { size: 46, align });
+      y = v2Headline(ctx, reel, words, x, y, t, 0, colors, { size: 136, min: 80, lines: 4, align, isHook: true });
+      v2Line(ctx, reel, line, x, y + 10, t, 3, colors.quiet, { size: 46, align, isHook: true });
     },
   };
 }
@@ -2215,10 +2377,10 @@ function v2Scenes(reel, spec) {
   return [v2Hook(ownHook || PEOPLE_HOOKS[spec.role](n, spec), line), ...scenes, ...v2When(reel), v2End(spec.utm, V2_CALLS[spec.role] ?? null)];
 }
 
-/** The template a reel uses: the studio's pick, else its own by its place in the list (neighbours differ). */
+/** The template a reel uses: the studio's pick, else Pulse by default (built on Daylight). */
 function v2TemplateOf(item, seed) {
   if (item.template && REEL_TEMPLATES[item.template]) return item.template;
-  return TEMPLATE_KEYS[((item.variant ?? 0) + ((Number(seed) >>> 0) % TEMPLATE_KEYS.length)) % TEMPLATE_KEYS.length];
+  return 'pulse';
 }
 
 /**
@@ -2266,12 +2428,53 @@ function v2Border(ctx, reel, time) {
   ctx.restore();
 }
 
+/** Wave cut transition: a dual-band sine wave wipe across the frame. */
+function v2WaveCut(ctx, reel, cutIn) {
+  const p = ease(cutIn);
+  if (p >= 1) return;
+  const { pal } = reel;
+  const drawWave = (prog, color, alpha) => {
+    const edgeX = W * clamp(prog);
+    const amp = 48 * Math.sin(clamp(prog) * Math.PI);
+    const freq = 0.014;
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    ctx.moveTo(W, 0);
+    ctx.lineTo(edgeX, 0);
+    for (let y = 0; y <= H; y += 12) {
+      const x = edgeX + amp * Math.sin(y * freq);
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  };
+  drawWave(p * 1.15, pal.secondary, 0.7 * (1 - p));
+  drawWave(p, pal.primary, 0.88 * (1 - p));
+}
+
+/** Frame 0 exact appearance for seamless loop blending. */
+function drawFirstFrame(ctx, reel) {
+  const scene0 = reel.scenes[0];
+  if (!scene0) return;
+  const tpl = REEL_TEMPLATES[reel.template] ?? REEL_TEMPLATES.pulse;
+  const ground = tpl.ground(scene0.ground ?? 'paper', 0);
+  v2Ground(ctx, 0, reel, ground);
+  v2Effects(ctx, 0, reel);
+  scene0.draw(ctx, 0, scene0.dur, reel);
+  v2Brand(ctx, reel, 0);
+  v2Border(ctx, reel, 0);
+}
+
 /** One frame of a template reel: ground, effects, the scene, its brand strip, and the cut into it. */
 function v2Frame(ctx, reel, time) {
   const index = reel.scenes.findLastIndex((s) => s.start <= time);
   const scene = reel.scenes[Math.max(0, index)];
   const t = time - scene.start;
-  const tpl = REEL_TEMPLATES[reel.template] ?? REEL_TEMPLATES.daylight;
+  const tpl = REEL_TEMPLATES[reel.template] ?? REEL_TEMPLATES.pulse;
   reel.ground = tpl.ground(scene.ground ?? 'paper', Math.max(0, index));
   v2Ground(ctx, time, reel, reel.ground);
   v2Effects(ctx, time, reel);
@@ -2299,8 +2502,24 @@ function v2Frame(ctx, reel, time) {
       ctx.fillRect(W * ease(cutIn), 0, W * (1 - ease(cutIn)), H);
       ctx.fillStyle = reel.pal.primary;
       ctx.fillRect(W * Math.min(1, ease(cutIn) * 1.25), 0, W, H);
+    } else if (tpl.cut === 'wave') {
+      v2WaveCut(ctx, reel, cutIn);
     }
     ctx.restore();
+  }
+  // Loop-friendly end (tpl.features.loopEnd): cross-fade into frame 0 in the last 0.4s
+  if (tpl.features?.loopEnd && reel.scenes.length > 0) {
+    const loopSpan = 0.4;
+    const loopStart = reel.duration - loopSpan;
+    if (time >= loopStart) {
+      const p = ease(clamp((time - loopStart) / loopSpan));
+      if (p > 0) {
+        ctx.save();
+        ctx.globalAlpha = p;
+        drawFirstFrame(ctx, reel);
+        ctx.restore();
+      }
+    }
   }
 }
 
@@ -2464,6 +2683,7 @@ async function prepare(item, kit, colors, style) {
     reel.align = tpl.align;
     reel.anim = item.anim && REEL_ANIMS[item.anim] ? item.anim : tpl.anim;
     reel.fx = { ...tpl.effects, ...(item.effects ?? {}) };
+    reel.features = { ...(tpl.features ?? {}) };
     reel.lockup = await T.brandLockup();
     // The Photo template stands on the site's photos (each reel the next one), else its artwork.
     const site = T.siteArt();
@@ -3148,7 +3368,7 @@ export function initSocialReels() {
     const animLabel = el('label', 'cb-label block', 'Animation');
     animLabel.append(animSel);
     const fxRow = el('div', 'flex flex-wrap gap-x-4 gap-y-2 text-sm');
-    const fxNames = { glow: 'Glow', dots: 'Dots', waves: 'Waves', eq: 'Equaliser', sparks: 'Sparks' };
+    const fxNames = { glow: 'Glow', dots: 'Dots', waves: 'Waves', motif: 'Topic motif', eq: 'Equaliser', sparks: 'Sparks' };
     const tplNow = () => REEL_TEMPLATES[v2TemplateOf({ ...item, template: tplSel.value || null }, C.kit.event.seed)];
     const fxEls = Object.entries(fxNames).map(([key, label]) => {
       const input = el('input', 'cb-check');
@@ -3307,4 +3527,4 @@ export function initSocialReels() {
 }
 
 // For tests.
-export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, MAX_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent, v2Scenes };
+export const _internals = { prepare, drawFrame, makeMusic, fitAll, MOODS, PROGRESSIONS, reelBpm, MIN_SECONDS, MAX_SECONDS, SAFE, TEXT_W, badgeY, context: C, tools: T, postContent, v2Scenes, v2TemplateOf, REEL_TEMPLATES, topicIconFor, TOPIC_ICONS };

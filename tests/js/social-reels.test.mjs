@@ -169,3 +169,41 @@ test('each reel keeps its own tempo, still on a steady beat', () => {
   }
   assert.ok(_internals.PROGRESSIONS.every((p) => p.length === 4));
 });
+
+test('Pulse template is default for unpicked reels, built on Daylight with wave cut and creative features', () => {
+  const { REEL_TEMPLATES, v2TemplateOf, topicIconFor } = _internals;
+  assert.ok(REEL_TEMPLATES.pulse, 'Pulse template exists');
+  assert.equal(REEL_TEMPLATES.pulse.label, 'Pulse');
+  assert.equal(REEL_TEMPLATES.pulse.cut, 'wave', 'Pulse uses wave cut transition');
+  assert.deepEqual(REEL_TEMPLATES.pulse.features, {
+    karaoke: true,
+    markerWave: true,
+    countUp: true,
+    ghostReveal: true,
+    loopEnd: true,
+  });
+
+  // Default is Pulse when nothing chosen in studio
+  assert.equal(v2TemplateOf({ variant: 0 }, 123), 'pulse');
+  assert.equal(v2TemplateOf({ variant: 1 }, 456), 'pulse');
+  assert.equal(v2TemplateOf({ template: null }, 0), 'pulse');
+  assert.equal(v2TemplateOf({}, 0), 'pulse');
+
+  // Explicit studio pick is respected
+  assert.equal(v2TemplateOf({ template: 'stage' }, 0), 'stage');
+  assert.equal(v2TemplateOf({ template: 'daylight' }, 0), 'daylight');
+  assert.equal(v2TemplateOf({ template: 'poster' }, 0), 'poster');
+  assert.equal(v2TemplateOf({ template: 'photo' }, 0), 'photo');
+  assert.equal(v2TemplateOf({ template: 'minimal' }, 0), 'minimal');
+
+  // Topic motif maps correctly to CampBuddy line icons
+  assert.equal(topicIconFor({ item: { key: 'speaker-1' } }), 'mic');
+  assert.equal(topicIconFor({ item: { key: 'spotlight-12' } }), 'mic');
+  assert.equal(topicIconFor({ item: { key: 'post-save-the-date' } }), 'calendar');
+  assert.equal(topicIconFor({ item: { key: 'post-countdown' } }), 'calendar');
+  assert.equal(topicIconFor({ item: { key: 'post-sponsors' } }), 'handshake');
+  assert.equal(topicIconFor({ item: { key: 'table-lead' } }), 'handshake');
+  assert.equal(topicIconFor({ item: { key: 'post-venue' } }), 'map-pin');
+  assert.equal(topicIconFor({ item: { key: 'organizer' } }), 'users');
+  assert.equal(topicIconFor({ item: { key: 'volunteer' } }), 'users');
+});
