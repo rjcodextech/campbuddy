@@ -91,6 +91,27 @@
         </div>
     </section>
 
+    <section class="about-wps-banner" aria-labelledby="wps-partnership-title">
+        <div class="about-wps-banner__inner">
+            <div class="about-wps-banner__badge">
+                <span class="live-dot live-dot--green"></span>
+                <span>Open Source Community Initiative</span>
+            </div>
+            <h3 id="wps-partnership-title" class="about-wps-banner__title">
+                CampBuddy &times; <a href="https://wpsimplified.in" target="_blank" rel="noopener">WPSimplified</a>
+            </h3>
+            <p class="about-wps-banner__desc">
+                Built and maintained by WPSimplified as a free, open gift for the WordPress community. Zero sign-up, zero ads, and 100% offline-ready for every WordCamp worldwide.
+            </p>
+            <div class="about-wps-banner__actions">
+                <a href="{{ route('about') }}" class="btn btn--primary">
+                    <span>Read Full Story</span>
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <section class="about-faq" aria-labelledby="about-faq-heading">
         <div class="section-head">
             <h2 id="about-faq-heading" class="section-head__title">Quick questions</h2>

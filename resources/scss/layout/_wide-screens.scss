@@ -54,6 +54,31 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
         height: 38px;
     }
 
+    // Unified desktop container across header, body, and footer:
+    // Standalone pages (welcome picker, about, guide, brand guidelines, legal)
+    // match the exact $shell-max container width so header logo, body, and footer align.
+    .app-frame:not(.app-frame--with-nav) {
+        #main-content,
+        .landing-main {
+            max-width: $shell-max;
+            padding-right: 0;
+            padding-left: 0;
+            margin-right: auto;
+            margin-left: auto;
+            width: 100%;
+        }
+
+        .landing-footer {
+            max-width: $shell-max;
+            margin-right: auto;
+            margin-left: auto;
+            padding-right: 0;
+            padding-left: 0;
+            width: 100%;
+            text-align: center;
+        }
+    }
+
     // --- The tab bar, as a sidebar -------------------------------------
     .app-frame--with-nav {
         padding-bottom: 0;

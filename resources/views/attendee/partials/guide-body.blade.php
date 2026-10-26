@@ -30,28 +30,57 @@
     $cocUrl = $webUrl($info['code_of_conduct_url'] ?? null);
 @endphp
 
-<section class="guide-hero" aria-labelledby="guide-title">
-    <div class="guide-hero__text">
-        <p class="guide-hero__eyebrow">
-            <img src="/media/icons/icon-192.png" alt="" width="22" height="22">
-            WordCamp 101
-        </p>
-        <h1 id="guide-title" class="guide-hero__title">
-            @if ($event)
-                New to {{ $event->short_name ?: 'WordCamp' }}?<br>Start here.
-            @else
-                Your first WordCamp?<br>Start here.
-            @endif
-        </h1>
-        <p class="guide-hero__lead">
-            How the day runs, the words people throw around, and how to start talking to people you don't know yet.
-        </p>
-        <ul class="guide-hero__meta" aria-label="About this guide">
-            <li><x-attendee.line-icon name="clock" class="guide-hero__meta-icon" /> 5-minute read</li>
-            <li><x-attendee.line-icon name="wifi" class="guide-hero__meta-icon" /> Works offline</li>
-        </ul>
+<section class="hero-creative" aria-labelledby="guide-title">
+    <nav class="hero-breadcrumb" aria-label="Breadcrumb">
+        <a href="{{ route('home') }}">Home</a>
+        <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
+        <span class="hero-breadcrumb__current" aria-current="page">WordCamp Guide</span>
+    </nav>
+
+    <div class="hero-kicker">
+        <x-attendee.line-icon name="sprout" />
+        <span>5-Minute First-Timer Handbook</span>
     </div>
-    <img class="guide-hero__art" src="/media/illustrations/first-badge.svg" alt="" width="260" height="300">
+
+    <h1 id="guide-title" class="hero-creative__title">
+        @if ($event)
+            New to {{ $event->short_name ?: 'WordCamp' }}? <span class="hero-creative__highlight">Start Here</span>
+        @else
+            Your First WordCamp? <span class="hero-creative__highlight">Start Here</span>
+        @endif
+    </h1>
+
+    <p class="hero-creative__lead">
+        How the day runs, the words people throw around, what to bring, and how to start talking to people you don't know yet in the hallway track.
+    </p>
+
+    <div class="hero-creative__pills">
+        <span class="hero-pill"><x-attendee.line-icon name="clock" /> 5-minute read</span>
+        @if ($event && filled($event->venue))
+            <span class="hero-pill"><x-attendee.line-icon name="map-pin" /> {{ $event->venue }}</span>
+        @else
+            <span class="hero-pill"><x-attendee.line-icon name="ticket" /> Free community guide</span>
+        @endif
+        <span class="hero-pill"><x-attendee.line-icon name="wifi" /> Works offline</span>
+        <span class="hero-pill"><x-attendee.line-icon name="users" /> Hallway tips</span>
+    </div>
+
+    <div class="hero-creative__actions">
+        <a href="#guide-what" class="btn btn--primary">
+            <span>Read WordCamp 101</span>
+            <span aria-hidden="true">&darr;</span>
+        </a>
+        <a href="{{ route('home') }}#find-your-camp" class="btn btn--outline">
+            <span>Select WordCamp</span>
+            <span aria-hidden="true">&rarr;</span>
+        </a>
+    </div>
+
+    <div class="hero-creative__waves" aria-hidden="true">
+        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+        </svg>
+    </div>
 </section>
 
 <nav class="guide-jump" aria-label="Guide sections">

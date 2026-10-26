@@ -281,6 +281,7 @@ class Seo
         $urls = [
             ['loc' => route('home'), 'lastmod' => null, 'changefreq' => 'daily', 'priority' => '1.0'],
             ['loc' => route('guide'), 'lastmod' => null, 'changefreq' => 'monthly', 'priority' => '0.9'],
+            ['loc' => route('about'), 'lastmod' => null, 'changefreq' => 'weekly', 'priority' => '0.9'],
         ];
 
         foreach (self::publicEvents() as $event) {

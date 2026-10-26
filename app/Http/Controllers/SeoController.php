@@ -83,6 +83,7 @@ class SeoController extends Controller
                 '',
                 '## Guides',
                 '',
+                '- ['.'About CampBuddy & Media Platform]('.route('about').'): what CampBuddy is, complete feature architecture, offline sync, and WPSimplified media partnership details.',
                 '- ['.'Beginner\'s guide to WordCamp]('.route('guide').'): what happens during the day, the words people use, tips for students, what to bring, and FAQ.',
                 '',
             ];

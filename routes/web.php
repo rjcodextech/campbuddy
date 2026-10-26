@@ -80,6 +80,9 @@ Route::withoutMiddleware([
     // has its own copy (event.guide) that adds that event's venue and times.
     Route::view('/guide', 'attendee.guide-general')->name('guide');
 
+    // What CampBuddy is, complete feature breakdown and media partner platform.
+    Route::view('/about', 'attendee.about')->name('about');
+
     // CampBuddy's brand guidelines, drawn with the live tokens (CAMPBUDDY-BRAND-GUIDELINES.md).
     Route::view('/brand-guidelines', 'brand.guidelines')->name('brand-guidelines');
 
