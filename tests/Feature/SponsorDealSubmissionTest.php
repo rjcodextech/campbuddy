@@ -332,4 +332,277 @@ class SponsorDealSubmissionTest extends TestCase
         ]);
         $this->assertFalse($differentDomain->emailDomainMatches());
     }
+
+    public function test_upload_valid_png_logo_under_100kb_succeeds(): void
+    {
+        Storage::fake('public');
+        Mail::fake();
+
+        $event = $this->createEvent();
+        $token = Crypt::encryptString(json_encode([
+            'time' => now()->subSeconds(10)->timestamp,
+            'ip' => '127.0.0.1',
+        ]));
+
+        // Generate a 40 KB PNG image
+        $pngFile = UploadedFile::fake()->image('sponsor-logo.png', 200, 200)->size(40);
+
+        $response = $this->post(route('sponsor-deals.store'), [
+            'event_id' => $event->id,
+            'sponsor_name' => 'Kinsta',
+            'title' => '2 months free WordPress hosting',
+            'description' => 'Fast managed WordPress hosting with premium Google C2 machines.',
+            'url' => 'https://kinsta.com',
+            'submitter_name' => 'Mark',
+            'submitter_email' => 'mark@kinsta.com',
+            'submission_token' => $token,
+            'logo_image' => $pngFile,
+        ]);
+
+        $response->assertRedirect(route('sponsor-deals.success'));
+
+        $submission = SponsorDealSubmission::where('sponsor_name', 'Kinsta')->first();
+        $this->assertNotNull($submission);
+        $this->assertNotNull($submission->logo_path);
+        $this->assertStringEndsWith('.png', $submission->logo_path);
+        Storage::disk('public')->assertExists($submission->logo_path);
+    }
+
+    public function test_reject_non_png_logo_upload(): void
+    {
+        Storage::fake('public');
+
+        $event = $this->createEvent();
+        $token = Crypt::encryptString(json_encode([
+            'time' => now()->subSeconds(10)->timestamp,
+            'ip' => '127.0.0.1',
+        ]));
+
+        // JPG file
+        $jpgFile = UploadedFile::fake()->image('logo.jpg', 200, 200);
+
+        $response = $this->from(route('sponsor-deals.create'))->post(route('sponsor-deals.store'), [
+            'event_id' => $event->id,
+            'sponsor_name' => 'Invalid Logo Co',
+            'title' => 'Valid Title',
+            'description' => 'Valid description details here.',
+            'url' => 'https://example.com',
+            'submitter_name' => 'Test',
+            'submitter_email' => 'test@example.com',
+            'submission_token' => $token,
+            'logo_image' => $jpgFile,
+        ]);
+
+        $response->assertRedirect(route('sponsor-deals.create'));
+        $response->assertSessionHasErrors('logo_image');
+        $this->assertDatabaseMissing('sponsor_deal_submissions', ['sponsor_name' => 'Invalid Logo Co']);
+    }
+
+    public function test_reject_logo_image_larger_than_100kb(): void
+    {
+        Storage::fake('public');
+
+        $event = $this->createEvent();
+        $token = Crypt::encryptString(json_encode([
+            'time' => now()->subSeconds(10)->timestamp,
+            'ip' => '127.0.0.1',
+        ]));
+
+        // 150 KB PNG (exceeds 100 KB limit)
+        $largePng = UploadedFile::fake()->image('huge-logo.png', 400, 400)->size(150);
+
+        $response = $this->from(route('sponsor-deals.create'))->post(route('sponsor-deals.store'), [
+            'event_id' => $event->id,
+            'sponsor_name' => 'Heavy Logo Co',
+            'title' => 'Valid Title',
+            'description' => 'Valid description details here.',
+            'url' => 'https://example.com',
+            'submitter_name' => 'Test',
+            'submitter_email' => 'test@example.com',
+            'submission_token' => $token,
+            'logo_image' => $largePng,
+        ]);
+
+        $response->assertRedirect(route('sponsor-deals.create'));
+        $response->assertSessionHasErrors('logo_image');
+        $this->assertDatabaseMissing('sponsor_deal_submissions', ['sponsor_name' => 'Heavy Logo Co']);
+    }
+
+    public function test_approving_submission_with_uploaded_logo_creates_media_asset(): void
+    {
+        Storage::fake('public');
+        $admin = $this->adminUser();
+        $event = $this->createEvent();
+
+        // Create a stored file
+        $file = UploadedFile::fake()->image('uploaded-logo.png', 100, 100)->size(30);
+        $storedPath = $file->store('sponsor-deals/logos', 'public');
+
+        $submission = SponsorDealSubmission::create([
+            'event_id' => $event->id,
+            'sponsor_name' => 'Elementor',
+            'title' => '50% off Elementor Pro',
+            'description' => 'Build websites faster with WordPress Elementor.',
+            'url' => 'https://elementor.com',
+            'submitter_name' => 'Yoni',
+            'submitter_email' => 'yoni@elementor.com',
+            'logo_path' => $storedPath,
+            'logo_url' => Storage::disk('public')->url($storedPath),
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->post(route('admin.deal-submissions.approve', $submission), [
+            'publish' => 1,
+        ]);
+
+        $response->assertRedirect(route('admin.deal-submissions.index'));
+
+        $submission->refresh();
+        $offer = Offer::find($submission->approved_offer_id);
+        $this->assertNotNull($offer);
+        $this->assertNotNull($offer->media_asset_id);
+
+        $mediaAsset = MediaAsset::find($offer->media_asset_id);
+        $this->assertNotNull($mediaAsset);
+        $this->assertEquals($storedPath, $mediaAsset->path);
+        $this->assertEquals('image/png', $mediaAsset->mime_type);
+    }
+
+    public function test_rejecting_submission_purges_uploaded_logo_from_storage(): void
+    {
+        Storage::fake('public');
+        $admin = $this->adminUser();
+        $event = $this->createEvent();
+
+        $file = UploadedFile::fake()->image('spam-logo.png', 100, 100)->size(20);
+        $storedPath = $file->store('sponsor-deals/logos', 'public');
+        Storage::disk('public')->assertExists($storedPath);
+
+        $submission = SponsorDealSubmission::create([
+            'event_id' => $event->id,
+            'sponsor_name' => 'Malicious Corp',
+            'title' => 'Bad deal',
+            'description' => 'Bad deal details.',
+            'url' => 'https://badsite.com',
+            'submitter_name' => 'Malicious',
+            'submitter_email' => 'bad@badsite.com',
+            'logo_path' => $storedPath,
+            'logo_url' => Storage::disk('public')->url($storedPath),
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.deal-submissions.destroy', $submission));
+
+        $response->assertRedirect(route('admin.deal-submissions.index'));
+        $this->assertDatabaseMissing('sponsor_deal_submissions', ['id' => $submission->id]);
+        Storage::disk('public')->assertMissing($storedPath);
+    }
+
+    public function test_xss_payloads_in_all_fields_are_safely_escaped(): void
+    {
+        $admin = $this->adminUser();
+        $event = $this->createEvent();
+
+        $xssTitle = '<script>alert("xss-title")</script>';
+        $xssBrand = '<img src=x onerror="alert(\'xss-brand\')">';
+        $xssDesc = '<svg onload="alert(\'xss-desc\')">';
+        $xssTerms = '<b onmouseover="alert(\'xss-terms\')">Hover</b>';
+        $xssSubmitter = '<span onclick="alert(\'xss-name\')">Hacker</span>';
+        $xssNotes = '<iframe src="javascript:alert(1)"></iframe>';
+
+        $submission = SponsorDealSubmission::create([
+            'event_id' => $event->id,
+            'sponsor_name' => 'Attack Co',
+            'brand' => $xssBrand,
+            'title' => $xssTitle,
+            'description' => $xssDesc,
+            'terms' => $xssTerms,
+            'url' => 'https://safe-domain.com/perk',
+            'submitter_name' => $xssSubmitter,
+            'submitter_email' => 'attacker@attackco.com',
+            'notes' => $xssNotes,
+            'status' => 'pending',
+        ]);
+
+        // 1. Index page escape test
+        $indexResponse = $this->actingAs($admin)->get(route('admin.deal-submissions.index'));
+        $indexResponse->assertOk();
+        // Raw unescaped executable script tags must NOT be present
+        $indexResponse->assertDontSee($xssTitle, false);
+        $indexResponse->assertDontSee($xssBrand, false);
+        // HTML entities must be escaped
+        $indexResponse->assertSee(e($xssTitle), false);
+        $indexResponse->assertSee(e($xssBrand), false);
+
+        // 2. Show review page escape test
+        $showResponse = $this->actingAs($admin)->get(route('admin.deal-submissions.show', $submission));
+        $showResponse->assertOk();
+        $showResponse->assertDontSee($xssTitle, false);
+        $showResponse->assertDontSee($xssDesc, false);
+        $showResponse->assertDontSee($xssNotes, false);
+        $showResponse->assertSee(e($xssTitle), false);
+        $showResponse->assertSee(e($xssDesc), false);
+        $showResponse->assertSee(e($xssNotes), false);
+    }
+
+    public function test_javascript_url_scheme_is_strictly_rejected(): void
+    {
+        $event = $this->createEvent();
+        $token = Crypt::encryptString(json_encode([
+            'time' => now()->subSeconds(10)->timestamp,
+            'ip' => '127.0.0.1',
+        ]));
+
+        $response = $this->from(route('sponsor-deals.create'))->post(route('sponsor-deals.store'), [
+            'event_id' => $event->id,
+            'sponsor_name' => 'XSS Vector Corp',
+            'title' => 'Malicious URL Deal',
+            'description' => 'Trying to inject javascript: pseudo-protocol.',
+            'url' => 'javascript:alert(document.cookie)',
+            'submitter_name' => 'Attacker',
+            'submitter_email' => 'attacker@example.com',
+            'submission_token' => $token,
+        ]);
+
+        $response->assertRedirect(route('sponsor-deals.create'));
+        $response->assertSessionHasErrors('url');
+        $this->assertDatabaseMissing('sponsor_deal_submissions', ['sponsor_name' => 'XSS Vector Corp']);
+    }
+
+    public function test_performance_queries_are_bounded_on_admin_index(): void
+    {
+        $admin = $this->adminUser();
+        $event = $this->createEvent();
+
+        // Seed 15 submissions
+        for ($i = 1; $i <= 15; $i++) {
+            SponsorDealSubmission::create([
+                'event_id' => $event->id,
+                'sponsor_name' => "Sponsor {$i}",
+                'title' => "Offer {$i}",
+                'description' => "Description {$i}",
+                'url' => "https://sponsor{$i}.com",
+                'submitter_name' => "Person {$i}",
+                'submitter_email' => "person{$i}@sponsor{$i}.com",
+                'status' => 'pending',
+            ]);
+        }
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $start = microtime(true);
+        $response = $this->actingAs($admin)->get(route('admin.deal-submissions.index'));
+        $duration = microtime(true) - $start;
+
+        $response->assertOk();
+        $queries = DB::getQueryLog();
+        DB::disableQueryLog();
+
+        // Page should render in well under 500ms
+        $this->assertLessThan(1.0, $duration, "Admin index render took too long: {$duration}s");
+
+        // Queries should be bounded (no N+1 for events or approved offers)
+        $this->assertLessThan(15, count($queries), "Too many queries executed: ".count($queries));
+    }
 }

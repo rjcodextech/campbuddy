@@ -112,6 +112,14 @@ class SponsorDealSubmission extends Model
         return false;
     }
 
+    /** @var array<int, list<string>> */
+    protected static array $officialSponsorsCache = [];
+
+    public static function clearOfficialSponsorsCache(): void
+    {
+        static::$officialSponsorsCache = [];
+    }
+
     /**
      * Check whether this sponsor appears in the event's official ingested sponsor list.
      */
@@ -121,11 +129,19 @@ class SponsorDealSubmission extends Model
             return false;
         }
 
-        $sponsors = EventData::get($this->event_id, 'sponsors') ?? [];
+        if (! array_key_exists($this->event_id, static::$officialSponsorsCache)) {
+            $sponsors = EventData::get($this->event_id, 'sponsors') ?? [];
+            static::$officialSponsorsCache[$this->event_id] = collect($sponsors)
+                ->pluck('name')
+                ->filter()
+                ->map(fn ($n) => mb_strtolower(trim((string) $n)))
+                ->values()
+                ->all();
+        }
+
         $submittedName = mb_strtolower(trim($this->sponsor_name));
 
-        foreach ($sponsors as $sponsor) {
-            $name = mb_strtolower(trim((string) ($sponsor['name'] ?? '')));
+        foreach (static::$officialSponsorsCache[$this->event_id] as $name) {
             if ($name !== '' && ($name === $submittedName || Str::contains($submittedName, $name) || Str::contains($name, $submittedName))) {
                 return true;
             }

@@ -7,6 +7,7 @@ use App\Models\MediaAsset;
 use App\Models\Offer;
 use App\Models\SponsorDealSubmission;
 use App\Support\DataVersion;
+use App\Support\EventData;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -32,6 +33,10 @@ class SponsorDealSubmissionController extends Controller
         }
 
         $submissions = $query->paginate(25)->withQueryString();
+
+        // Bulk-prime sponsors cache to prevent N+1 queries when checking isOfficialSponsor
+        $eventIds = $submissions->pluck('event_id')->unique()->filter()->values()->all();
+        EventData::getMany($eventIds, 'sponsors');
 
         $pendingCount = SponsorDealSubmission::pending()->count();
         $approvedCount = SponsorDealSubmission::approved()->count();
