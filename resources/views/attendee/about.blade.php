@@ -32,26 +32,7 @@
     <div class="app-frame">
         @include('attendee.partials.desktop-notice')
 
-        <header class="topbar">
-            <div class="topbar__inner">
-                <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
-                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-                </a>
-                <div class="topbar__actions">
-                    <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <rect x="7" y="2" width="10" height="20" rx="2" />
-                            <path d="M11 18h2" />
-                        </svg>
-                        <span>Open on phone</span>
-                    </button>
-                    <a href="{{ route('home') }}" class="topbar__text-btn" data-track="home_link_click" data-track-target="wordcamps">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-                        <span>All WordCamps</span>
-                    </a>
-                </div>
-            </div>
-        </header>
+        @include('attendee.partials.public-header')
 
         <main id="main-content" class="landing-main site-main about-page" tabindex="-1">
             {{-- Creative Hero Section --}}
@@ -102,10 +83,10 @@
 
             {{-- Quick Jump Navigation --}}
             <nav class="guide-jump" aria-label="Page sections">
-                <a class="chip" href="#attendee-features"><x-attendee.line-icon name="sparkles" /> Attendee Features</a>
-                <a class="chip" href="#organizer-features"><x-attendee.line-icon name="megaphone" /> For Organizers</a>
-                <a class="chip" href="#core-promises"><x-attendee.line-icon name="heart" /> Core Promises</a>
-                <a class="chip" href="#faq"><x-attendee.line-icon name="help-circle" /> FAQ</a>
+                <a class="chip" href="#attendee-features"><x-attendee.line-icon name="sparkles" /> <span>Attendee Features</span></a>
+                <a class="chip" href="#organizer-features"><x-attendee.line-icon name="megaphone" /> <span>For Organizers</span></a>
+                <a class="chip" href="#core-promises"><x-attendee.line-icon name="heart" /> <span>Core Promises</span></a>
+                <a class="chip" href="#faq"><x-attendee.line-icon name="help-circle" /> <span>FAQ</span></a>
             </nav>
 
             {{-- Section 1: Attendee Superpowers (Bento Grid) --}}

@@ -14,20 +14,9 @@
     @vite(['resources/css/fonts.css', 'resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
 <body class="app-shell" data-page-type="legal">
+    @include('attendee.partials.line-icons')
     <div class="app-frame">
-        <header class="topbar">
-            <div class="topbar__inner">
-                <a href="{{ route('home') }}" class="brand">
-                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-                </a>
-                <div class="topbar__actions">
-                    <a href="{{ route('home') }}" class="topbar__text-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-                        <span>All WordCamps</span>
-                    </a>
-                </div>
-            </div>
-        </header>
+        @include('attendee.partials.public-header')
 
         <main id="main-content" class="landing-main site-main legal-main" tabindex="-1">
             <div class="legal-shell">

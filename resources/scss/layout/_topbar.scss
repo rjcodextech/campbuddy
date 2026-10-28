@@ -199,3 +199,138 @@
         padding: 0 v.$space-2;
     }
 }
+
+// --- Public Header Styling (Linear / Apple Tier UI) ---
+.topbar--public {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+
+    .topbar__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: v.$space-3;
+        flex-wrap: nowrap;
+    }
+
+    .topbar__nav {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: rgba(15, 23, 42, 0.03);
+        padding: 3px;
+        border-radius: v.$radius-full;
+        border: 1px solid rgba(15, 23, 42, 0.05);
+
+        .topbar__text-btn {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid transparent;
+            border-radius: v.$radius-full;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            padding: 0 14px;
+            min-height: 32px;
+            gap: 6px;
+            box-shadow: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+            svg {
+                width: 14px;
+                height: 14px;
+                opacity: 0.75;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+            }
+
+            &:hover {
+                color: var(--ink);
+                background: rgba(255, 255, 255, 0.85);
+
+                svg {
+                    opacity: 1;
+                    transform: scale(1.08);
+                }
+            }
+
+            &--active {
+                background: #ffffff;
+                color: var(--brand-primary);
+                font-weight: 700;
+                border-color: rgba(15, 23, 42, 0.07);
+                box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+
+                svg {
+                    opacity: 1;
+                    color: var(--brand-primary);
+                }
+
+                &:hover {
+                    background: #ffffff;
+                    color: var(--brand-primary);
+                }
+            }
+        }
+    }
+
+    .topbar__actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .topbar__text-btn--ghost {
+            background: #ffffff;
+            color: var(--ink);
+            border: 1px solid rgba(15, 23, 42, 0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+            &:hover {
+                border-color: var(--brand-primary);
+                color: var(--brand-primary);
+                background: var(--paper-soft);
+            }
+        }
+
+        .topbar__text-btn--install {
+            background: var(--brand-primary);
+            color: #ffffff;
+            border: 1px solid var(--brand-primary);
+            box-shadow: 0 2px 8px -2px rgba(195, 58, 25, 0.4);
+
+            &:hover {
+                background: var(--wine-700);
+                border-color: var(--wine-700);
+                color: #ffffff;
+            }
+        }
+    }
+
+    @media (max-width: #{v.$bp-tablet - 1px}) {
+        .topbar__inner {
+            flex-wrap: wrap;
+            padding: 8px 16px;
+            gap: 8px;
+        }
+
+        .topbar__nav {
+            order: 3;
+            width: 100%;
+            justify-content: center;
+            padding: 3px;
+            gap: 3px;
+
+            .topbar__text-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 0 8px;
+                font-size: 0.78rem;
+                min-height: 32px;
+            }
+        }
+
+        .topbar__actions {
+            order: 2;
+        }
+    }
+}

@@ -11,6 +11,7 @@
     justify-content: center;
     gap: 8px;
     min-height: 40px;
+    max-width: 420px;
     padding: 8px 18px;
     border-radius: v.$radius-full;
     font-weight: 600;
@@ -81,6 +82,9 @@
 
     &--full {
         width: 100%;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     // Destructive actions: pairs with --outline (e.g. `btn btn--outline
@@ -110,4 +114,16 @@
         text-decoration: underline;
         text-underline-offset: 2px;
     }
+}
+
+// Global button constraint: no action button in the app exceeds 420px in width
+button.btn,
+a.btn,
+.btn,
+.hero-cta,
+button[type="submit"]:not(.action-card),
+input[type="submit"],
+input[type="button"],
+.event-card__export {
+    max-width: 420px;
 }

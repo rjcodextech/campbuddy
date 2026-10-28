@@ -73,7 +73,7 @@ const oldHeroActions = `                    <div class="landing-hero__actions">
                             <span aria-hidden="true">&darr;</span>
                         </a>
                         <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                            <span>First WordCamp? Read this first</span>
+                            <span>First WordCamp?</span>
                             <span aria-hidden="true">&rarr;</span>
                         </a>
                     </div>
@@ -85,7 +85,7 @@ const newHeroActions = `                    <div class="landing-hero__actions">
                             <span aria-hidden="true">&darr;</span>
                         </a>
                         <a class="btn btn--outline btn--hero-guide" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                            <span>First WordCamp? Read this first</span>
+                            <span>First WordCamp?</span>
                             <span aria-hidden="true">&rarr;</span>
                         </a>
                     </div>

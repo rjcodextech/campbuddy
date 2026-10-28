@@ -255,6 +255,8 @@
     justify-content: center;
     gap: v.$space-2;
     width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
     min-height: 48px;
     padding: v.$space-3 v.$space-4;
     border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));

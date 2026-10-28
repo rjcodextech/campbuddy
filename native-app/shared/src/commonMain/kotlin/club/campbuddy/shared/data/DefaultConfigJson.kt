@@ -218,7 +218,7 @@ internal const val DEFAULT_CONFIG_JSON = """
             "picker.title": "Make the most of your WordCamp",
             "picker.lead": "See what's on, plan your talks and meet people who share your interests. All on your phone.",
             "picker.choose": "Choose your WordCamp",
-            "picker.first_timer": "First WordCamp? Read this first",
+            "picker.first_timer": "First WordCamp?",
             "picker.empty": "No WordCamp is open yet. Events show up here a few weeks before they start.",
             "picker.free": "Free",
             "picker.no_signup": "No sign-up",

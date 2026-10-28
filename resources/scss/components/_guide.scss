@@ -121,47 +121,91 @@
     }
 }
 
-// Section shortcuts: one scrollable row, never wrapping into a wall of
-// chips on a phone. The row scrolls, the page doesn't.
+// Section shortcuts: modern Linear/Stripe-tier frosted glass capsule dock
 .guide-jump {
     display: flex;
-    gap: v.$space-2;
+    align-items: center;
+    gap: 8px;
     overflow-x: auto;
     margin: 0 (-(v.$space-4)) v.$space-6;
-    padding: v.$space-2 v.$space-4;
+    padding: 10px v.$space-4 14px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    position: sticky;
-    top: v.$topbar-height;
-    z-index: 10;
-    background: rgba(250, 250, 253, 0.94);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 
     &::-webkit-scrollbar {
         display: none;
     }
 
     @media (min-width: v.$bp-tablet) {
-        margin: 0 0 v.$space-6;
-        padding: v.$space-3 0;
+        position: sticky;
+        top: 64px;
+        z-index: 15;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+        box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.04);
+        margin: 0 0 v.$space-8;
+        padding: 12px 0;
         border-radius: 0;
+        flex-wrap: wrap;
+        transition: background 0.2s ease, box-shadow 0.2s ease;
     }
 
     .chip {
         flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 36px;
+        padding: 0 16px;
         white-space: nowrap;
         text-decoration: none;
         background: #ffffff;
-        border: 1px solid var(--line);
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-        transition: all 0.15s ease;
+        color: var(--ink);
+        border: 1px solid rgba(15, 23, 42, 0.09);
+        border-radius: v.$radius-full;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+        svg,
+        .line-icon {
+            width: 14px;
+            height: 14px;
+            color: var(--brand-primary);
+            opacity: 0.85;
+            flex-shrink: 0;
+            transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+        }
+
+        span {
+            line-height: 1;
+        }
 
         &:hover {
-            border-color: var(--brand-primary);
+            border-color: rgba(195, 58, 25, 0.35);
             color: var(--brand-primary);
-            transform: translateY(-1px);
+            background: #ffffff;
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 14px -2px rgba(195, 58, 25, 0.16), 0 2px 4px rgba(15, 23, 42, 0.04);
+
+            svg,
+            .line-icon {
+                opacity: 1;
+                transform: scale(1.15);
+            }
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        &:focus-visible {
+            @include m.focus-ring;
         }
     }
 }

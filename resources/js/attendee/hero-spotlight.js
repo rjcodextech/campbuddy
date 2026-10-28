@@ -87,6 +87,7 @@ export function initHeroSpotlight() {
     }
     if (headerNameEl && item.event_name) {
       headerNameEl.textContent = item.event_name;
+      headerNameEl.title = item.event_name;
     }
     if (eventEl) eventEl.textContent = item.event_name || 'WordCamp';
     if (badgeEl) badgeEl.textContent = item.badge || 'WordCamp Spotlight';

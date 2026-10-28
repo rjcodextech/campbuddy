@@ -87,16 +87,43 @@
 
 <nav class="guide-jump" aria-label="Guide sections">
     @if ($event && ($practical || $cocUrl))
-        <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">At this event</a>
+        <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">
+            <x-attendee.line-icon name="map-pin" />
+            <span>At this event</span>
+        </a>
     @endif
-        <a class="chip" href="#guide-why" data-track="guide_section_jump" data-track-section="why">Superpowers</a>
-<a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">What is it?</a>
-    <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">Your day</a>
-    <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">Words you'll hear</a>
-    <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">Tips</a>
-    <a class="chip" href="#guide-students" data-track="guide_section_jump" data-track-section="students">Students</a>
-    <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">What to bring</a>
-    <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">FAQ</a>
+    <a class="chip" href="#guide-why" data-track="guide_section_jump" data-track-section="why">
+        <x-attendee.line-icon name="sparkles" />
+        <span>Superpowers</span>
+    </a>
+    <a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">
+        <x-attendee.line-icon name="help-circle" />
+        <span>What is it?</span>
+    </a>
+    <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">
+        <x-attendee.line-icon name="calendar" />
+        <span>Your day</span>
+    </a>
+    <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">
+        <x-attendee.line-icon name="message-circle" />
+        <span>Words you'll hear</span>
+    </a>
+    <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">
+        <x-attendee.line-icon name="lightbulb" />
+        <span>Tips</span>
+    </a>
+    <a class="chip" href="#guide-students" data-track="guide_section_jump" data-track-section="students">
+        <x-attendee.line-icon name="graduation-cap" />
+        <span>Students</span>
+    </a>
+    <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">
+        <x-attendee.line-icon name="briefcase" />
+        <span>What to bring</span>
+    </a>
+    <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">
+        <x-attendee.line-icon name="help-circle" />
+        <span>FAQ</span>
+    </a>
 </nav>
 
 

@@ -112,7 +112,7 @@ class FirstTimerExperienceTest extends TestCase
 
     public function test_the_picker_points_newcomers_to_the_guide(): void
     {
-        $this->get(route('home'))->assertOk()->assertSee(route('guide'), false)->assertSee('First WordCamp? Read this first');
+        $this->get(route('home'))->assertOk()->assertSee(route('guide'), false)->assertSee('First WordCamp?');
     }
 
     public function test_every_moment_the_guide_matches_on_is_a_real_key(): void
