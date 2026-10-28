@@ -154,9 +154,15 @@
                                 <span class="h-2 w-2 rounded-full bg-emerald-600"></span>
                                 Common Co-Branded Logo
                             </p>
-                            <a href="/media/campbuddy-wpsimplified-logo.svg" target="_blank" download="campbuddy-wpsimplified-logo.svg" class="text-xs text-primary hover:underline font-medium">
-                                Download SVG
-                            </a>
+                            <div class="flex items-center gap-2">
+                                <a href="/media/campbuddy-wpsimplified-logo.svg" target="_blank" download="campbuddy-wpsimplified-logo.svg" class="text-xs text-primary hover:underline font-medium">
+                                    SVG
+                                </a>
+                                <span class="text-muted/50">•</span>
+                                <a href="/media/campbuddy-wpsimplified-logo.figcraft" download="CampBuddy-WPSimplified-CoBranded-Logo.figcraft" class="text-xs text-emerald-700 hover:underline font-semibold">
+                                    FigCraft (.figcraft)
+                                </a>
+                            </div>
                         </div>
                         <div class="rounded-lg border border-line bg-white p-3 flex items-center justify-center min-h-[64px]">
                             <img src="/media/campbuddy-wpsimplified-logo.svg?v={{ @filemtime(public_path('media/campbuddy-wpsimplified-logo.svg')) }}" alt="CampBuddy | WPSimplified" class="h-11 max-h-12 w-auto max-w-full object-contain">

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="PEcqZOL5WH3PnMksgXNzNm1qmKOOgYjAXCSMnR07">
+        <meta name="robots" content="noindex, nofollow">
+
+        <title>Dashboard | CampBuddy Admin</title>
+
+        <link rel="icon" type="image/png" sizes="32x32" href="/media/icons/favicon-32.png">
+
+        <link rel="preload" as="style" href="http://localhost/build/assets/fonts-BT3TLcDB.css" /><link rel="preload" as="style" href="http://localhost/build/assets/app-XzcOch-T.css" /><link rel="modulepreload" as="script" href="http://localhost/build/assets/app-Cjza0xGq.js" /><link rel="modulepreload" as="script" href="http://localhost/build/assets/preload-helper-I4rgV-VL.js" /><link rel="stylesheet" href="http://localhost/build/assets/fonts-BT3TLcDB.css" /><link rel="stylesheet" href="http://localhost/build/assets/app-XzcOch-T.css" /><script type="module" src="http://localhost/build/assets/app-Cjza0xGq.js"></script>    </head>
+    <body class="min-h-full bg-paper font-sans text-ink antialiased">
+        <div x-data="{ sidebarOpen: false }" x-on:keydown.escape.window="sidebarOpen = false" class="min-h-screen lg:flex">
+            <a href="#main-content" class="sr-only z-60 rounded-md bg-white px-4 py-2 text-sm font-medium text-ink shadow-sm focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+                Skip to content
+            </a>
+
+            
+            <div x-show="sidebarOpen" x-cloak x-transition.opacity
+                 class="fixed inset-0 z-40 bg-ink/50 lg:hidden" x-on:click="sidebarOpen = false" aria-hidden="true"></div>
+
+            <aside id="admin-sidebar"
+                   x-bind:class="{ 'max-lg:translate-x-0': sidebarOpen }"
+                   class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 -translate-x-full flex-col bg-navy transition-transform duration-200 lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:translate-x-0">
+                <div class="flex items-center justify-between border-b border-white/10 px-5 py-5">
+                    <a href="http://localhost/admin" class="group relative after:absolute after:-inset-y-1 after:inset-x-0 after:content-[''] flex items-center gap-2.5 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
+                        <img src="/media/icons/icon-192.png" alt="" class="cb-logo-in h-8 w-8 shrink-0 rounded-lg motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
+                        <span class="leading-tight">
+                            <span class="block text-sm font-semibold text-white">CampBuddy</span>
+                            <span class="block text-xs font-medium uppercase tracking-[0.15em] text-white/50">Admin</span>
+                        </span>
+                    </a>
+
+                    <button type="button" class="rounded-md p-1.5 text-white/70 hover:bg-white/10 hover:text-white lg:hidden"
+                            x-on:click="sidebarOpen = false" aria-label="Close menu">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+</svg>
+                    </button>
+                </div>
+
+                <nav class="flex-1 space-y-1 overflow-y-auto px-3 py-5" aria-label="Main">
+                                                                        <a href="http://localhost/admin"
+                                aria-current="page"                                class="group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 bg-white/10 text-white">
+                                                                    <span class="absolute inset-y-1.5 left-0 w-1 rounded-r-sm bg-maroon" aria-hidden="true"></span>
+                                                                <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+</svg>
+                                Dashboard
+                            </a>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-events"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+</svg>
+                                    <span class="flex-1">Events</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-events" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/events"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>All events</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/events/create"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Add event</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/media-pitch"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Media Partner Pitch</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-deals-offers"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z" />
+</svg>
+                                    <span class="flex-1">Deals &amp; offers</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-deals-offers" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/deals"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Default deals</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/free-steals"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Free Steals</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/deal-submissions"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Deal submissions</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-people"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+</svg>
+                                    <span class="flex-1">People</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-people" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/event-managers"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Event managers</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/event-managers/activity"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Manager activity</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/feedback"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Feedback</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-mobile-app"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+</svg>
+                                    <span class="flex-1">Mobile app</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-mobile-app" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Overview</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=navigation"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Navigation</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=home"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Home</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=text"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Text &amp; languages</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=look"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Look</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=banner"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Banner</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=switches"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Switches</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=updates"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>App updates</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/mobile-app?tab=history"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>History</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-reports"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+</svg>
+                                    <span class="flex-1">Reports</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-reports" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/analytics"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Analytics</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/analytics/usage-post"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Usage post</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/errors"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Errors</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                                                                                <div x-data="{ open: false }">
+                                <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open.toString()" aria-expanded="false"
+                                        aria-controls="nav-settings"
+                                        class="group flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/70 hover:bg-white/5 hover:text-white">
+                                    <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+</svg>
+                                    <span class="flex-1">Settings</span>
+                                    <svg class="h-5 w-5 h-4 w-4 shrink-0 text-white/50 motion-safe:transition-transform motion-safe:duration-200" x-bind:class="open ? 'rotate-0' : '-rotate-90'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+</svg>
+                                </button>
+                                <ul id="nav-settings" x-show="open"  style="display: none"                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/media"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Media Library</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/legal"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Legal documents</span>
+                                                                                            </a>
+                                        </li>
+                                                                                                                    <li>
+                                            <a href="http://localhost/admin/commands"
+                                                                                              class="relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 text-white/65 hover:bg-white/5 hover:text-white">
+                                                                                                <span>Commands</span>
+                                                                                            </a>
+                                        </li>
+                                                                    </ul>
+                            </div>
+                                            
+                    <div class="pt-4">
+                        <a href="http://localhost" target="_blank" rel="noopener"
+                           class="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
+                            <svg class="h-5 w-5 h-5 w-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+</svg>
+                            View attendee app
+                        </a>
+                    </div>
+                </nav>
+
+                <div class="border-t border-white/10 p-3">
+                    <a href="http://localhost/admin/profile"
+                                              class="flex items-center gap-3 rounded-md px-3 py-2 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60 hover:bg-white/5">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-maroon text-sm font-semibold text-white" aria-hidden="true">
+                            C
+                        </span>
+                        <span class="min-w-0 leading-tight">
+                            <span class="block truncate text-sm font-medium text-white">CampBuddy Admin</span>
+                            <span class="block truncate text-xs text-white/50">hello@wpsimplified.in</span>
+                        </span>
+                    </a>
+
+                    <form method="POST" action="http://localhost/admin/logout" class="mt-1">
+                        <input type="hidden" name="_token" value="PEcqZOL5WH3PnMksgXNzNm1qmKOOgYjAXCSMnR07" autocomplete="off">                        <button type="submit"
+                                class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60">
+                            <svg class="h-5 w-5 h-5 w-5 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+</svg>
+                            Sign out
+                        </button>
+                    </form>
+                </div>
+            </aside>
+
+            <div class="flex min-w-0 flex-1 flex-col">
+                
+                <div class="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-white px-4 lg:hidden">
+                    <button type="button" class="-ml-1 rounded-md p-2 text-ink hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40"
+                            x-on:click="sidebarOpen = true" aria-controls="admin-sidebar" x-bind:aria-expanded="sidebarOpen.toString()" aria-label="Open menu">
+                        <svg class="h-5 w-5 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+</svg>
+                    </button>
+                    <img src="/media/icons/icon-192.png" alt="" class="h-7 w-7 rounded-md">
+                    <span class="text-sm font-semibold">CampBuddy Admin</span>
+                </div>
+
+                <header class="border-b border-line bg-white">
+                    <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-5 sm:px-6 lg:px-8">
+                        <div class="min-w-0">
+                            
+                            <h1 class="cb-enter truncate text-xl font-semibold tracking-tight text-ink sm:text-2xl">Dashboard</h1>
+                                                            <p class="mt-0.5 text-sm text-muted">What needs your attention across every WordCamp.</p>
+                                                    </div>
+
+                                                    <div class="flex flex-wrap items-center gap-2"><form method="POST" action="http://localhost/admin/events/discover" class="inline"
+      >
+    <input type="hidden" name="_token" value="PEcqZOL5WH3PnMksgXNzNm1qmKOOgYjAXCSMnR07" autocomplete="off">    
+    <button type="submit" class="cb-btn cb-btn-secondary">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+</svg>
+        Discover WordCamps
+    </button>
+</form>
+        <a href="http://localhost/admin/events/create" class="cb-btn cb-btn-primary">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+</svg>
+        Add event
+    </a></div>
+                                            </div>
+                </header>
+
+                <main id="main-content" tabindex="-1" class="cb-enter cb-enter-late mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-hidden sm:px-6 lg:px-8">
+                    
+                    
+                    
+                    
+                    
+                    <a href="http://localhost/admin/errors"
+           class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-4 py-3 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 border-danger/30 bg-danger-soft hover:border-danger/50">
+            <svg class="h-5 w-5 h-5 w-5 shrink-0 motion-safe:animate-pulse text-danger" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+</svg>
+            <span class="min-w-0 flex-1">
+                <span class="font-semibold">1 problem needs attention</span>
+                <span class="text-muted">
+                    — 1 system check (1 critical),
+                    0 fetch problems in the last 7 days
+                </span>
+            </span>
+            <span class="inline-flex items-center gap-1 font-medium text-maroon">View errors <svg class="h-5 w-5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+</span>
+        </a>
+    
+    
+    <div class="grid gap-6 lg:grid-cols-3">
+        
+        <section class="lg:col-span-2" aria-labelledby="coming-up">
+            <h2 id="coming-up" class="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">Coming up</h2>
+
+                                            <div class="cb-hero relative overflow-hidden rounded-2xl bg-navy p-6 text-white shadow-md sm:p-7">
+                    <span class="cb-hero-glow" aria-hidden="true"></span>
+
+                    <div class="relative flex flex-wrap items-start justify-between gap-6">
+                        <div class="flex min-w-0 items-start gap-4">
+                            <span class="cb-logo-in flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-xs">
+                                                                    <img src="/storage/branding/29/logo.png?v=1792157425" alt="" class="h-full w-full object-contain">
+                                                            </span>
+                            <div class="min-w-0">
+                                <p class="text-xs font-medium uppercase tracking-[0.15em] text-white/60">Next WordCamp</p>
+                                <h3 class="mt-1 wrap-break-word text-xl font-semibold tracking-tight sm:text-2xl">WordCamp Johannesburg 2026</h3>
+                                <p class="mt-1 text-sm text-white/70">30 Oct 2026</p>
+                            </div>
+                        </div>
+
+                        <div class="cb-enter text-right" aria-label="2 days to go">
+                            <span class="block text-5xl font-bold tabular-nums leading-none tracking-tight text-gold">2</span>
+                            <span class="mt-1 block text-xs font-medium uppercase tracking-wide text-white/60">days to go</span>
+                        </div>
+                    </div>
+
+                    <div class="relative mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                        <span class="flex items-center gap-4 text-sm text-white/80">
+                            <span class="inline-flex items-center gap-1.5"><svg class="h-5 w-5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+</svg>
+ 46 on the roster</span>
+                            
+                            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset bg-teal/10 text-[#035d5f] ring-teal/25 bg-white/15! text-white! ring-white/30!">Active</span>
+                        </span>
+                        <span class="flex flex-wrap gap-2">
+                            <a href="http://localhost/event/wordcamp-johannesburg-2026" target="_blank" rel="noopener"
+                               class="cb-btn cb-btn-sm border-white/20 bg-white/10 text-white hover:bg-white/20 focus-visible:ring-white/60 focus-visible:ring-offset-navy">
+                                <svg class="h-5 w-5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+</svg>
+ Open app
+                            </a>
+                            <a href="http://localhost/admin/events/29/edit" class="cb-btn cb-btn-sm cb-btn-primary focus-visible:ring-offset-navy">Manage</a>
+                        </span>
+                    </div>
+                </div>
+
+                                    <ul class="mt-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-1 2xl:grid-cols-3">
+                                                                                <li>
+                                <a href="http://localhost/admin/events/32/edit"
+                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-xs transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
+                                        <span class="text-base font-bold tabular-nums leading-none">8</span>
+                                        <span class="text-xs font-semibold uppercase leading-tight">days</span>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block wrap-break-word text-sm font-medium leading-snug text-ink">WordCamp Canada 2026</span>
+                                        <span class="block text-xs text-muted">5 Nov – 6 Nov 2026</span>
+                                    </span>
+                                </a>
+                            </li>
+                                                                                <li>
+                                <a href="http://localhost/admin/events/42/edit"
+                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-xs transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
+                                        <span class="text-base font-bold tabular-nums leading-none">9</span>
+                                        <span class="text-xs font-semibold uppercase leading-tight">days</span>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block wrap-break-word text-sm font-medium leading-snug text-ink">WordCamp Manchester 2026</span>
+                                        <span class="block text-xs text-muted">6 Nov 2026</span>
+                                    </span>
+                                </a>
+                            </li>
+                                                                                <li>
+                                <a href="http://localhost/admin/events/33/edit"
+                                   class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-xs transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
+                                        <span class="text-base font-bold tabular-nums leading-none">15</span>
+                                        <span class="text-xs font-semibold uppercase leading-tight">days</span>
+                                    </span>
+                                    <span class="min-w-0">
+                                        <span class="block wrap-break-word text-sm font-medium leading-snug text-ink">WordCamp Netherlands 2026</span>
+                                        <span class="block text-xs text-muted">12 Nov – 13 Nov 2026</span>
+                                    </span>
+                                </a>
+                            </li>
+                                            </ul>
+                                    </section>
+
+        
+        <section aria-labelledby="needs-approval">
+            <h2 id="needs-approval" class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                Needs approval
+                                    <span class="rounded-full bg-maroon px-2 py-0.5 text-xs font-semibold tabular-nums text-white">12</span>
+                            </h2>
+
+            <div class="rounded-2xl border border-line bg-white p-2 shadow-xs">
+                                    <a href="http://localhost/admin/events/46/edit"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block wrap-break-word font-medium leading-snug">WordCamp Nairobi 2026</span>
+                                                            <span class="block text-xs text-muted">26 Nov 2026</span>
+                                                    </span>
+                        <svg class="h-5 w-5 h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+                    </a>
+                                    <a href="http://localhost/admin/events/45/edit"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block wrap-break-word font-medium leading-snug">WordCamp Nepal 2027</span>
+                                                            <span class="block text-xs text-muted">28 Jan 2027</span>
+                                                    </span>
+                        <svg class="h-5 w-5 h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+                    </a>
+                                    <a href="http://localhost/admin/events/44/edit"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block wrap-break-word font-medium leading-snug">WordCamp Bandung 2026</span>
+                                                            <span class="block text-xs text-muted">4 Dec 2026</span>
+                                                    </span>
+                        <svg class="h-5 w-5 h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+                    </a>
+                                    <a href="http://localhost/admin/events/22/edit"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block wrap-break-word font-medium leading-snug">WordCamp Managua 2026</span>
+                                                            <span class="block text-xs text-muted">26 Sep 2026</span>
+                                                    </span>
+                        <svg class="h-5 w-5 h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+                    </a>
+                                    <a href="http://localhost/admin/events/24/edit"
+                       class="group flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-paper-soft focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                        <span class="min-w-0">
+                            <span class="block wrap-break-word font-medium leading-snug">WordCamp Wrocław 2026</span>
+                                                            <span class="block text-xs text-muted">2 Oct 2026</span>
+                                                    </span>
+                        <svg class="h-5 w-5 h-4 w-4 shrink-0 text-muted motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+</svg>
+                    </a>
+                
+                                    <a href="http://localhost/admin/events" class="block border-t border-line px-3 py-2.5 text-sm font-medium text-maroon hover:underline">
+                        All 12 drafts
+                    </a>
+                            </div>
+        </section>
+    </div>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-3">
+        <a  href="http://localhost/admin/events"     class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-xs motion-safe:transition motion-safe:duration-200 hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+</svg>
+        </span>
+        <span class="min-w-0">
+        <span class="block text-sm text-muted">Upcoming WordCamps</span>
+        <span class="mt-0.5 block font-display text-2xl font-semibold tabular-nums tracking-tight text-ink">10</span>
+                    <span class="mt-0.5 block text-xs text-muted">Approved or active, not over yet</span>
+            </span>
+</a>
+        <div     class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-xs motion-safe:transition motion-safe:duration-200">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+</svg>
+        </span>
+        <span class="min-w-0">
+        <span class="block text-sm text-muted">Attendees listed</span>
+        <span class="mt-0.5 block font-display text-2xl font-semibold tabular-nums tracking-tight text-ink">1,960</span>
+                    <span class="mt-0.5 block text-xs text-muted">Public, not suppressed</span>
+            </span>
+</div>
+        <div     class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 shadow-xs motion-safe:transition motion-safe:duration-200">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3zM6 6h.008v.008H6V6z" />
+</svg>
+        </span>
+        <span class="min-w-0">
+        <span class="block text-sm text-muted">Deal leads</span>
+        <span class="mt-0.5 block font-display text-2xl font-semibold tabular-nums tracking-tight text-ink">0</span>
+                    <span class="mt-0.5 block text-xs text-muted">0 in the last 7 days</span>
+            </span>
+</div>
+    </div>
+
+    
+    <section class="mt-6 grid gap-4 md:grid-cols-2" aria-label="Maintenance">
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
+            <div>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><svg class="h-5 w-5 h-4 w-4 text-maroon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+</svg>
+ Event data</h2>
+                <p class="mt-1 text-xs text-muted">Updates by itself every 15 minutes; open apps update on their own.</p>
+                <p class="mt-2 text-xs text-muted">
+                                            <span class="font-medium text-ink">Last fetched 4 minutes ago</span>
+                         — WordCamp Pune 2027                                     </p>
+            </div>
+            <form method="POST" action="http://localhost/admin/data/refresh" class="inline"
+      >
+    <input type="hidden" name="_token" value="PEcqZOL5WH3PnMksgXNzNm1qmKOOgYjAXCSMnR07" autocomplete="off">    
+    <button type="submit" class="cb-btn cb-btn-primary">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+</svg>
+        Refresh event data now
+    </button>
+</form>
+        </div>
+
+        <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
+            <div>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><svg class="h-5 w-5 h-4 w-4 text-maroon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+</svg>
+ Cache</h2>
+                <p class="mt-1 text-xs text-muted">
+                    Clears the server's caches and Cloudflare and makes every open app reload.
+                    Saved sessions and Camp Cards aren't touched.
+                </p>
+                                <p class="mt-2 text-xs text-muted">
+                                            <span class="font-medium text-ink">Last cleared 10 hours ago</span>
+                         by deploy                          — Slider and left align update                                     </p>
+            </div>
+            <form method="POST" action="http://localhost/admin/cache/purge" class="inline"
+       x-data x-on:submit="if (! confirm('Clear all caches? Every open app will reload.')) $event.preventDefault()" >
+    <input type="hidden" name="_token" value="PEcqZOL5WH3PnMksgXNzNm1qmKOOgYjAXCSMnR07" autocomplete="off">    
+    <button type="submit" class="cb-btn cb-btn-secondary">
+        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+</svg>
+        Clear cache
+    </button>
+</form>
+        </div>
+    </section>
+                </main>
+            </div>
+        </div>
+    </body>
+</html>
