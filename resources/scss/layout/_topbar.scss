@@ -292,16 +292,27 @@
             }
         }
 
+        #install-app-btn,
         .topbar__text-btn--install {
-            background: var(--brand-primary);
-            color: #ffffff;
-            border: 1px solid var(--brand-primary);
-            box-shadow: 0 2px 8px -2px rgba(195, 58, 25, 0.4);
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+            color: #ffffff !important;
+            border: 1px solid transparent;
+            box-shadow: 0 2px 8px -2px rgba(255, 77, 45, 0.4);
+
+            svg {
+                color: #ffffff !important;
+            }
 
             &:hover {
-                background: var(--wine-700);
-                border-color: var(--wine-700);
-                color: #ffffff;
+                background: linear-gradient(135deg, #e03a1b 0%, #b45309 100%) !important;
+                border-color: transparent !important;
+                color: #ffffff !important;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 14px -2px rgba(255, 77, 45, 0.5);
+
+                svg {
+                    color: #ffffff !important;
+                }
             }
         }
     }

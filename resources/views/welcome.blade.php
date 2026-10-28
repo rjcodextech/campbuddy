@@ -194,59 +194,14 @@
 
                     <div class="card-grid" data-picker-list>
                         @foreach ($events as $event)
-                            {{-- "21–22 Nov 2026": the short form fits a phone-width card on one line. --}}
-                            @php($dateLabel = $event->starts_on ? \App\Support\SocialKit::dates($event) : null)
-
                             @php($isCompleted = isset($completed[$event->id]))
-                            {{-- A finished WordCamp: the card (still opens the event) plus its own
-                            "Save your WordCamp Data" button below it, outside the link, that makes
-                            the PDF right here (thank-you.js). The wrapper is what the filter counts. --}}
-                            @if ($isCompleted)
-                                <div class="event-card-wrap" data-picker-card data-country="{{ $eventCountries[$event->id] ?? '' }}">
-                            @endif
                             <x-attendee.event-card
-                                :href="route('event.home', $event)"
-                                @class(['event-card--completed' => $isCompleted])
-                                data-track="select_event"
-                                :data-track-event-slug="$event->slug"
-                                :title="$event->display_name"
-                                :media-url="$event->markUrl() ?? '/media/icons/icon-192.png'"
-                                media-fallback="/media/icons/icon-192.png"
-                                media-shape="avatar"
-                                :data-picker-card="! $isCompleted"
-                                :data-country="$isCompleted ? null : ($eventCountries[$event->id] ?? '')"
-                                :date="$dateLabel"
-                                :location="$event->info['venue'] ?? null"
-                                location-layout="row"
-                            >
-                                <x-slot:footer>
-                                    @if ($isCompleted)
-                                        {{-- Finished: listed for three months (EventTime::LISTED_DAYS), for the PDF export, the thank-you card and the memories. --}}
-                                        <span class="event-card__status"><x-attendee.line-icon name="party" /> Completed</span>
-                                        <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
-                                    @else
-                                        <span class="event-card__cta">Open event <span aria-hidden="true">→</span></span>
-                                    @endif
-                                </x-slot:footer>
-                            </x-attendee.event-card>
-                            @if ($isCompleted)
-                                    {{-- Its photo album and talks on WordPress.tv, once the organizers add them (EventMemories). --}}
-                                    @php($memoryLinks = \App\Support\EventMemories::links($event))
-                                    @if ($memoryLinks !== [])
-                                        <div class="event-card__memories">
-                                            @isset($memoryLinks['photos'])
-                                                <a href="{{ $memoryLinks['photos'] }}" target="_blank" rel="noopener" data-track="memories_open" data-track-target="photos"><x-attendee.line-icon name="camera" /> Photos</a>
-                                            @endisset
-                                            @isset($memoryLinks['videos'])
-                                                <a href="{{ $memoryLinks['videos'] }}" target="_blank" rel="noopener" data-track="memories_open" data-track-target="videos"><x-attendee.line-icon name="play" /> Talks on WordPress.tv</a>
-                                            @endisset
-                                        </div>
-                                    @endif
-                                    <button type="button" class="event-card__export" data-export-event="{{ $event->id }}">
-                                        <x-attendee.line-icon name="download" /> Save your WordCamp Data
-                                    </button>
-                                </div>
-                            @endif
+                                :event="$event"
+                                :is-completed="$isCompleted"
+                                :country="$eventCountries[$event->id] ?? ''"
+                                :date="$event->starts_on ? \App\Support\SocialKit::dates($event) : null"
+                                :memory-links="$isCompleted ? \App\Support\EventMemories::links($event) : []"
+                            />
                         @endforeach
                     </div>
 

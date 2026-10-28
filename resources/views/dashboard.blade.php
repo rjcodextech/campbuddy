@@ -4,6 +4,18 @@
         <x-button :href="route('admin.events.create')" icon="plus">Add event</x-button>
     </x-slot:actions>
 
+    @if ($pendingDealSubmissionsCount > 0)
+        <a href="{{ route('admin.deal-submissions.index') }}"
+           class="mb-6 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm transition-colors hover:border-gold focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+            <x-icon name="tag" class="h-5 w-5 shrink-0 text-gold" />
+            <span class="min-w-0 flex-1">
+                <span class="font-semibold">{{ $pendingDealSubmissionsCount }} sponsor {{ \Illuminate\Support\Str::plural('deal submission', $pendingDealSubmissionsCount) }} {{ $pendingDealSubmissionsCount === 1 ? 'is' : 'are' }} waiting for verification</span>
+                <span class="text-muted">— staged in review queue until approved into event deals</span>
+            </span>
+            <span class="inline-flex items-center gap-1 font-medium text-maroon">Review submissions <x-icon name="chevron-right" class="h-4 w-4" /></span>
+        </a>
+    @endif
+
     {{-- What's silently broken on this install (system checks + failed fetches) is
     on its own page — Errors — so the dashboard stays a glance. One line says
     whether it's worth a look; it turns red when a system check is failing. --}}

@@ -7,6 +7,7 @@ use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Models\OfferLead;
+use App\Models\SponsorDealSubmission;
 use App\Support\CacheVersion;
 use App\Support\ErrorReport;
 use Illuminate\View\View;
@@ -37,6 +38,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             // What's wrong lives on the Errors page; the dashboard shows one line.
             'errorSummary' => ErrorReport::summary(),
+            'pendingDealSubmissionsCount' => SponsorDealSubmission::pending()->count(),
             'draftCount' => Event::where('status', 'draft')->count(),
             'draftEvents' => Event::where('status', 'draft')->latest()->limit(5)->get(),
             'upcomingCount' => (clone $upcoming)->count(),

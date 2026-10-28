@@ -134,6 +134,15 @@ Route::middleware('event.public')->group(function () {
     });
 });
 
+// Sponsor deal submission: unlisted portal for sponsors to submit attendee offers.
+// Not linked in public navigation. Protected with rate limiting, honeypots, and timing tokens.
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'create'])->name('sponsor-deals.create');
+    Route::get('/sponsor-deals/events/{event}/sponsors', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'sponsors'])->name('sponsor-deals.sponsors');
+    Route::get('/sponsor-deals/success', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'success'])->name('sponsor-deals.success');
+    Route::post('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'store'])->middleware('throttle:5,10')->name('sponsor-deals.store');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Admin panel — Breeze-scaffolded, session-based auth
@@ -227,6 +236,12 @@ Route::prefix('admin')->group(function () {
         // Free Steals: hand-picked free plugins and tools, one list for every event.
         Route::resource('free-steals', FreeStealController::class)->except('show')->names('admin.free-steals');
         Route::delete('free-steal-suggestions/{suggestion}', [FreeStealController::class, 'dismiss'])->name('admin.free-steals.suggestions.dismiss');
+
+        // Sponsor deal submissions: staged submissions awaiting verification/approval
+        Route::get('deal-submissions', [\App\Http\Controllers\Admin\SponsorDealSubmissionController::class, 'index'])->name('admin.deal-submissions.index');
+        Route::get('deal-submissions/{submission}', [\App\Http\Controllers\Admin\SponsorDealSubmissionController::class, 'show'])->name('admin.deal-submissions.show');
+        Route::post('deal-submissions/{submission}/approve', [\App\Http\Controllers\Admin\SponsorDealSubmissionController::class, 'approve'])->name('admin.deal-submissions.approve');
+        Route::delete('deal-submissions/{submission}', [\App\Http\Controllers\Admin\SponsorDealSubmissionController::class, 'destroy'])->name('admin.deal-submissions.destroy');
 
         Route::get('events/{event}/roster', [RosterController::class, 'index'])->name('admin.events.roster.index');
         Route::get('events/{event}/qr', [SocialController::class, 'qr'])->name('admin.events.qr');

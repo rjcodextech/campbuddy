@@ -3,6 +3,7 @@
     // A group with the open page starts unfolded; the others fold away until clicked.
     $is = fn (string ...$names) => request()->routeIs(...$names);
     $mobileTab = $is('admin.mobile.*') ? (in_array(request()->query('tab'), \App\Http\Controllers\Admin\MobileAppController::TABS, true) ? request()->query('tab') : 'overview') : null;
+    $pendingDealSubmissionsCount = \App\Models\SponsorDealSubmission::pending()->count();
     $navGroups = [
         ['label' => 'Dashboard', 'icon' => 'dashboard', 'href' => route('dashboard'), 'items' => [], 'active' => $is('dashboard')],
         ['label' => 'Events', 'icon' => 'calendar', 'items' => [
@@ -13,6 +14,7 @@
         ['label' => 'Deals & offers', 'icon' => 'tag', 'items' => [
             ['Default deals', route('admin.deals.index'), $is('admin.deals.*')],
             ['Free Steals', route('admin.free-steals.index'), $is('admin.free-steals.*')],
+            ['Deal submissions', route('admin.deal-submissions.index'), $is('admin.deal-submissions.*'), $pendingDealSubmissionsCount > 0 ? $pendingDealSubmissionsCount : null],
         ]],
         ['label' => 'People', 'icon' => 'users', 'items' => [
             ['Event managers', route('admin.event-managers.index'), $is('admin.event-managers.*') && ! $is('admin.event-managers.activity')],
@@ -120,19 +122,26 @@
                                 </button>
                                 <ul id="nav-{{ \Illuminate\Support\Str::slug($group['label']) }}" x-show="open" @unless ($group['active']) style="display: none" @endunless
                                     class="mt-0.5 mb-1 ml-5 space-y-0.5 border-l border-white/10 pl-3">
-                                    @foreach ($group['items'] as [$label, $href, $active])
+                                    @foreach ($group['items'] as $item)
+                                        @php
+                                            [$label, $href, $active] = $item;
+                                            $badge = $item[3] ?? null;
+                                        @endphp
                                         <li>
                                             <a href="{{ $href }}"
                                                @if ($active) aria-current="page" @endif
                                                @class([
-                                                   'relative block rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60',
+                                                   'relative flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-white/60',
                                                    'bg-white/10 font-medium text-white' => $active,
                                                    'text-white/65 hover:bg-white/5 hover:text-white' => ! $active,
                                                ])>
                                                 @if ($active)
                                                     <span class="absolute inset-y-1 -left-3.5 w-0.5 rounded-r-sm bg-maroon" aria-hidden="true"></span>
                                                 @endif
-                                                {{ $label }}
+                                                <span>{{ $label }}</span>
+                                                @if ($badge)
+                                                    <span class="rounded-full bg-gold/25 px-1.5 py-0.2 text-[11px] font-bold text-gold">{{ $badge }}</span>
+                                                @endif
                                             </a>
                                         </li>
                                     @endforeach
