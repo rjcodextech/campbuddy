@@ -53,6 +53,11 @@ class FirstTimerExperienceTest extends TestCase
         }
     }
 
+    public function test_about_page_loads_without_an_event(): void
+    {
+        $this->get(route('about'))->assertOk()->assertSee('About CampBuddy');
+    }
+
     public function test_the_general_guide_sets_no_cookies(): void
     {
         $this->get(route('guide'))->assertOk()->assertCookieMissing(config('session.cookie'));
@@ -168,17 +173,9 @@ class FirstTimerExperienceTest extends TestCase
         $response = $this->get(route('home'))->assertOk();
 
         $response->assertSee('How CampBuddy helps you at WordCamp')
-            ->assertSee('See it in action')
-            ->assertSee('data-tour', false)
-            ->assertSee("Who it's for", false)
-            ->assertSee('College students')
+            ->assertSee('College Fresher Tips')
             ->assertSee('Is it free?')
             ->assertSee('data-tag="student"', false);
-
-        foreach (['1-home', '2-schedule', '3-people', '4-guide', '5-camp-card'] as $screen) {
-            $response->assertSee("/media/tour/{$screen}.jpg", false);
-            $this->assertFileExists(public_path("media/tour/{$screen}.jpg"));
-        }
     }
 
     public function test_the_guide_has_a_section_for_college_students(): void

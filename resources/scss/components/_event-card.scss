@@ -119,9 +119,12 @@
 
 .event-card__title {
     margin: 0;
-    font-size: clamp(1rem, 0.92rem + 0.35vw, #{v.$font-size-md});
-    line-height: v.$line-height-heading;
-    font-weight: v.$font-weight-bold;
+    font-family: v.$font-display;
+    font-size: clamp(1.08rem, 0.95rem + 0.4vw, 1.25rem);
+    line-height: 1.25;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
 }
 
 .event-card__subtitle,
@@ -190,8 +193,13 @@
 // layout for free.
 .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: v.$space-4;
+
+    @media (min-width: v.$bp-tablet) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: v.$space-5;
+    }
 }
 
 // A WordCamp that's over but still inside its retention week (HomeController):

@@ -1,39 +1,70 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
-// Tablets and laptops/desktops. The app is designed for a phone, but on a
-// big screen every section must still read properly — not stretched across
-// 1440px. So:
-//   - tablet (640px+): content in a comfortable centred column, tab bar kept;
-//   - desktop (1024px+): a centred shell — the tab bar becomes a left
-//     sidebar, content sits in a readable column beside it, and the top bar
-//     lines up with both. (A popup also suggests the phone:
-//     components/_desktop-notice.scss.)
+// ==========================================================================
+// UNIFIED CONTAINER ARCHITECTURE
+// Enforces that Header (.topbar__inner), Body (#main-content, .landing-main,
+// .legal-main), and Footer (.site-footer__inner) share the EXACT same 1120px
+// container width, margins, and padding across all viewports.
+// ==========================================================================
 
 $shell-max: 1120px;
 $sidebar-width: 220px;
 $content-max: 868px;
-// Pages without the sidebar (the picker, the general guide) read better narrower.
 $reading-max: 760px;
-// The gap from the screen edge to the shell, on any width.
 $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 
-@media (min-width: v.$bp-tablet) {
-    #main-content,
-    .landing-main {
-        width: 100%;
-        max-width: $reading-max;
-        margin-right: auto;
-        margin-left: auto;
-        padding-right: v.$space-6;
-        padding-left: v.$space-6;
+// Standalone pages (Home, About, Guide, Brand Guidelines, Legal):
+// EXACT identical container on all viewports!
+.app-frame:not(.app-frame--with-nav) {
+    .topbar {
+        padding: 0;
     }
 
-    .landing-footer {
+    .topbar__inner,
+    #main-content,
+    .site-main,
+    .landing-main,
+    .legal-main,
+    .bg-page,
+    .site-footer__inner {
+        width: 100%;
+        max-width: $shell-max;
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box;
+        padding-left: 16px;
+        padding-right: 16px;
+
+        @media (min-width: v.$bp-tablet) {
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+    }
+
+    .landing-footer,
+    .legal-footer {
         text-align: center;
     }
+}
 
-    // The tab bar's items stay a thumb's reach apart, not spread edge to edge.
+// In-event pages (with sidebar on desktop)
+@media (min-width: v.$bp-tablet) {
+    .app-frame--with-nav {
+        .topbar {
+            padding-right: v.$space-6;
+            padding-left: v.$space-6;
+        }
+        #main-content {
+            width: 100%;
+            max-width: $reading-max;
+            margin-right: auto;
+            margin-left: auto;
+            padding-right: v.$space-6;
+            padding-left: v.$space-6;
+        }
+    }
+
     .bottom-nav {
         justify-content: center;
     }
@@ -44,42 +75,10 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 }
 
 @media (min-width: v.$bp-desktop) {
-    .topbar {
-        padding-right: $shell-gutter;
-        padding-left: $shell-gutter;
-        min-height: 64px;
-    }
-
     .brand__logo--wordmark {
         height: 38px;
     }
 
-    // Unified desktop container across header, body, and footer:
-    // Standalone pages (welcome picker, about, guide, brand guidelines, legal)
-    // match the exact $shell-max container width so header logo, body, and footer align.
-    .app-frame:not(.app-frame--with-nav) {
-        #main-content,
-        .landing-main {
-            max-width: $shell-max;
-            padding-right: 0;
-            padding-left: 0;
-            margin-right: auto;
-            margin-left: auto;
-            width: 100%;
-        }
-
-        .landing-footer {
-            max-width: $shell-max;
-            margin-right: auto;
-            margin-left: auto;
-            padding-right: 0;
-            padding-left: 0;
-            width: 100%;
-            text-align: center;
-        }
-    }
-
-    // --- The tab bar, as a sidebar -------------------------------------
     .app-frame--with-nav {
         padding-bottom: 0;
 
@@ -89,64 +88,51 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
             margin-left: calc(#{$shell-gutter} + #{$sidebar-width} + #{v.$space-4});
             padding-top: v.$space-6;
             padding-left: v.$space-4;
-            // Don't pass the shell's right edge.
-            width: min(#{$content-max}, calc(100vw - #{$shell-gutter} * 2 - #{$sidebar-width} - #{v.$space-4}));
         }
-    }
 
-    .bottom-nav {
-        top: calc(64px + #{v.$space-6});
-        right: auto;
-        bottom: auto;
-        left: $shell-gutter;
-        flex-direction: column;
-        justify-content: flex-start;
-        gap: 2px;
-        width: $sidebar-width;
-        height: auto;
-        padding: v.$space-2;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        box-shadow: v.$shadow-card;
-    }
-
-    .bottom-nav__item {
-        flex: 0 0 auto;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: v.$space-3;
-        min-height: 44px;
-        padding: v.$space-2 v.$space-3;
-        border-radius: 8px;
-        font-size: v.$font-size-sm;
-        font-weight: v.$font-weight-bold;
-
-        @include m.hover {
+        .bottom-nav {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: $shell-gutter;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: v.$space-1;
+            width: $sidebar-width;
+            height: 100vh;
+            padding: calc(#{v.$topbar-height} + #{v.$space-4}) v.$space-2 v.$space-4;
             background: var(--paper-soft);
-            color: var(--ink);
+            border-top: 0;
+            border-right: 1px solid var(--line);
         }
 
-        &--active {
-            background: var(--peach);
-            // Deeper maroon on peach for AA contrast (brand maroon is 4.35:1 there).
-            color: var(--brand-accent);
+        .bottom-nav__item {
+            flex: 0 0 auto;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: v.$space-3;
+            width: 100%;
+            min-height: 44px;
+            padding: v.$space-2 v.$space-3;
+            border-radius: 12px;
+            font-size: v.$font-size-sm;
+
+            &::before {
+                top: 50%;
+                bottom: auto;
+                left: 0;
+                width: 3px;
+                height: 20px;
+                transform: translateY(-50%);
+                border-radius: 0 v.$radius-full v.$radius-full 0;
+            }
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
         }
-
-        &:focus-visible {
-            @include m.focus-ring;
-        }
-    }
-
-    .bottom-nav__label {
-        text-align: left;
-    }
-
-    // A calmer, roomier reading width for long pages.
-    .guide-hero {
-        padding: v.$space-8;
-    }
-
-    .toast {
-        bottom: v.$space-6;
     }
 }

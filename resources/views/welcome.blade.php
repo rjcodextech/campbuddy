@@ -30,30 +30,37 @@
         @include('attendee.partials.desktop-notice')
 
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
-                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-            </a>
-
-            <div class="topbar__actions">
-                <a href="{{ route('about') }}" class="topbar__text-btn" data-track="about_open" data-track-surface="topbar">
-                    <span>About</span>
+            <div class="topbar__inner">
+                <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
+                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
                 </a>
-        <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="7" y="2" width="10" height="20" rx="2" />
-                <path d="M11 18h2" />
-            </svg>
-            <span>Open on phone</span>
-        </button>
 
-                <button type="button" id="install-app-btn" class="topbar__text-btn" hidden>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M12 3v12" />
-                        <path d="M7 10l5 5 5-5" />
-                        <path d="M5 21h14" />
-                    </svg>
-                    <span>Install app</span>
-                </button>
+                <div class="topbar__actions">
+                    <a href="{{ route('about') }}" class="topbar__text-btn" data-track="about_open" data-track-surface="topbar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                        <span>About</span>
+                    </a>
+                    <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="7" y="2" width="10" height="20" rx="2" />
+                            <path d="M11 18h2" />
+                        </svg>
+                        <span>Open on phone</span>
+                    </button>
+
+                    <button type="button" id="install-app-btn" class="topbar__text-btn" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 3v12" />
+                            <path d="M7 10l5 5 5-5" />
+                            <path d="M5 21h14" />
+                        </svg>
+                        <span>Install app</span>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -67,36 +74,46 @@
                 <div class="landing-hero__text">
                     <div class="hero-kicker">
                         <x-attendee.line-icon name="sparkles" />
-                        <span>Zero Sign-Up &middot; 100% Offline Companion</span>
+                        <span>Open-Source Community Companion</span>
                     </div>
                     <h1 id="landing-hero-title" class="landing-hero__title">
                         Make the most of your <span class="landing-hero__highlight">WordCamp</span>
                     </h1>
                     <p class="landing-hero__lead">
-                        See what's on now, plan your talks into "My Day", and exchange digital Camp Cards via QR code. Works offline on crowded venue Wi-Fi.
+                        Navigate multi-track halls, star talks into your personal "My Day", and exchange contacts in seconds via phone camera &mdash; zero paper cards and no login needed.
                     </p>
                     <ul class="landing-hero__promises" aria-label="Key promises">
-                        <li><span>&#10003;</span> 100% Free</li>
-                        <li><span>&#10003;</span> Zero Sign-Up (DPDPA 2023)</li>
-                        <li><span>&#10003;</span> Works Offline</li>
-                        <li><span>&#10003;</span> Instant PWA (No App Store)</li>
+                        <li>100% Free &amp; Open Source</li>
+                        <li>No Account or Login Needed</li>
+                        <li>Runs 100% Offline in Venue</li>
+                        <li>Instant Progressive Web App</li>
                     </ul>
                     <div class="landing-hero__actions">
-                        <a class="btn btn--primary" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">
+                        <a class="btn btn--primary btn--hero-cta" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">
                             <span>Choose your WordCamp</span>
                             <span aria-hidden="true">&darr;</span>
                         </a>
-                        <a class="btn btn--outline" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                            <span>First WordCamp? Read Guide</span>
+                        <a class="btn btn--outline btn--hero-guide" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
+                            <span>First WordCamp? Read this first</span>
                             <span aria-hidden="true">&rarr;</span>
                         </a>
+                    </div>
+                    <div class="hero-trust-bar">
+                        <span><x-attendee.line-icon name="shield" /> Built by WPSimplified</span>
+                        <span class="hero-trust-bar__sep">&middot;</span>
+                        <span><x-attendee.line-icon name="heart" /> Open Source Initiative</span>
+                        <span class="hero-trust-bar__sep">&middot;</span>
+                        <span><x-attendee.line-icon name="lock" /> DPDP Act 2023 Compliant</span>
                     </div>
                 </div>
 
                 {{-- Interactive Live App Stage on Desktop / Floating Orbit on Mobile --}}
-                <div class="landing-hero__visual" aria-hidden="true">
+                <div class="landing-hero__visual">
+                    {{-- Embedded Live Spotlights Data from Active WordCamps --}}
+                    <script type="application/json" id="hero-spotlights-data">@json($heroSpotlights ?? [])</script>
+
                     {{-- Mobile line icon orbit --}}
-                    <div class="hero-orbit">
+                    <div class="hero-orbit" aria-hidden="true">
                         <span class="hero-orbit__ring"></span>
                         <span class="hero-orbit__ring hero-orbit__ring--inner"></span>
                         <span class="hero-orbit__core"><img src="/media/icons/icon-192.png" alt="" width="72" height="72"></span>
@@ -106,58 +123,73 @@
                         <span class="hero-orbit__item hero-orbit__item--4"><x-attendee.line-icon name="qr-code" /><b>Camp Card</b></span>
                     </div>
 
-                    </div>
-            </section>
-
-            {{-- 4 Pillars Bento Grid on Desktop & Web (hidden in standalone PWA for speed) --}}
-            <section class="landing-bento hide-in-pwa" aria-labelledby="bento-heading">
-                <div class="section-head section-head--center">
-                    <h2 id="bento-heading" class="section-head__title">How CampBuddy Powers Your WordCamp</h2>
-                    <span class="section-head__desc">Four zero-friction features built directly into your browser</span>
-                </div>
-
-                <div class="bento-grid">
-                    <div class="bento-card bento-card--schedule">
-                        <div class="bento-card__icon"><x-attendee.line-icon name="calendar" /></div>
-                        <span class="bento-card__badge">Works Offline</span>
-                        <h3 class="bento-card__title">Smart Multi-Track Schedule</h3>
-                        <p class="bento-card__desc">Multi-hall tracks, conflict detection, and 1-tap "My Day" agenda. Updates stay cached on your device.</p>
-                        <div class="bento-card__footer">
-                            <span class="bento-pill">Conflict Warnings</span>
-                            <span class="bento-pill">Talk Bookmarks</span>
+                    {{-- Live WordCamp Companion Stage on Desktop/Tablet --}}
+                    @php
+                        $firstSpotlight = ($heroSpotlights ?? [])[0] ?? [
+                            'event_name' => 'WordCamp Delhi 2026',
+                            'event_logo' => '/media/icons/icon-192.png',
+                            'badge' => 'Speaker Spotlight',
+                            'title' => 'Aditya Vikram Singh',
+                            'meta' => 'Sharing knowledge with the WordPress community',
+                            'url' => '#find-your-camp',
+                        ];
+                    @endphp
+                    <div class="hero-stage">
+                        <div class="hero-stage__header">
+                            <div class="hero-stage__brand" id="hero-stage-event-brand">
+                                <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="26" height="26" class="hero-stage__event-logo">
+                                <span id="hero-stage-event-name" class="hero-stage__event-name">{{ $firstSpotlight['event_name'] ?? 'WordCamp Delhi 2026' }}</span>
+                            </div>
+                            <button type="button" class="hero-stage__shuffle-btn" id="hero-shuffle-btn" title="Shuffle community spotlight" aria-label="Shuffle community spotlight">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                                </svg>
+                                <span>Shuffle</span>
+                            </button>
+                            <span class="hero-stage__live-badge">
+                                <span class="live-dot live-dot--green live-dot--pulse"></span>
+                                <span>Live Now</span>
+                            </span>
                         </div>
-                    </div>
 
-                    <div class="bento-card bento-card--networking">
-                        <div class="bento-card__icon"><x-attendee.line-icon name="qr-code" /></div>
-                        <span class="bento-card__badge">Zero Paper</span>
-                        <h3 class="bento-card__title">Digital Camp Card</h3>
-                        <p class="bento-card__desc">Exchange social profiles and contact info in 2 seconds via camera QR code. Never lose business cards.</p>
-                        <div class="bento-card__footer">
-                            <span class="bento-pill">P2P Camera Swap</span>
-                            <span class="bento-pill">Phone Contact Save</span>
+                        {{-- Card 1: Dynamic Community Spotlight (Real Sessions, Speakers, Organizers, Sponsors) --}}
+                        <div class="hero-stage__card hero-stage__card--spotlight" id="hero-spotlight-card">
+                            <div class="hero-stage__meta">
+                                <span class="track-pill" id="hero-spotlight-badge">{{ $firstSpotlight['badge'] ?? 'Speaker Spotlight' }}</span>
+                            </div>
+                            <div class="hero-stage__talk-title" id="hero-spotlight-title">{{ $firstSpotlight['title'] ?? 'Aditya Vikram Singh' }}</div>
+                            <div class="hero-stage__speaker">
+                                <span class="speaker-avatar" id="hero-spotlight-avatar">AV</span>
+                                <span class="star-badge" id="hero-spotlight-meta">{{ $firstSpotlight['meta'] ?? 'Sharing knowledge with the WordPress community' }}</span>
+                            </div>
+                            <div class="hero-stage__card-footer">
+                                <a href="{{ $firstSpotlight['url'] ?? '#find-your-camp' }}" class="hero-stage__view-btn" id="hero-spotlight-link">
+                                    <span>Explore this WordCamp</span>
+                                    <span aria-hidden="true">&rarr;</span>
+                                </a>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="bento-card bento-card--contribute">
-                        <div class="bento-card__icon"><x-attendee.line-icon name="wrench" /></div>
-                        <span class="bento-card__badge">Hands-On Guide</span>
-                        <h3 class="bento-card__title">Contributor Day Matchmaker</h3>
-                        <p class="bento-card__desc">Find your ideal open-source table with a 30-second skill quiz. Interactive checklists for core, docs, and design.</p>
-                        <div class="bento-card__footer">
-                            <span class="bento-pill">Skill Quiz</span>
-                            <span class="bento-pill">Table Routing</span>
+                        {{-- Card 2: Digital Camp Card Swap --}}
+                        <div class="hero-stage__card hero-stage__card--card-swap">
+                            <div class="swap-row">
+                                <div class="qr-mini">
+                                    <x-attendee.line-icon name="qr-code" />
+                                </div>
+                                <div class="swap-info">
+                                    <strong>Instant Digital Camp Card (P2P Swap)</strong>
+                                    <span>Swap LinkedIn, website &amp; contacts via camera &mdash; zero paper cards</span>
+                                </div>
+                                <span class="offline-tag">P2P QR Swap</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="bento-card bento-card--privacy">
-                        <div class="bento-card__icon"><x-attendee.line-icon name="lock" /></div>
-                        <span class="bento-card__badge">DPDPA 2023 Compliant</span>
-                        <h3 class="bento-card__title">Zero Sign-Up &amp; Privacy</h3>
-                        <p class="bento-card__desc">No passwords, no email registration, and zero third-party tracking. All personal data lives in IndexedDB on your phone.</p>
-                        <div class="bento-card__footer">
-                            <span class="bento-pill">Client-Side Only</span>
-                            <span class="bento-pill">Instant Web App</span>
+                        {{-- Quick Feature Chips --}}
+                        <div class="hero-stage__chips">
+                            <span class="stage-chip"><x-attendee.line-icon name="calendar" /> Multi-Track</span>
+                            <span class="stage-chip"><x-attendee.line-icon name="qr-code" /> Camp Card</span>
+                            <span class="stage-chip"><x-attendee.line-icon name="wrench" /> Contributor Day</span>
+                            <span class="stage-chip"><x-attendee.line-icon name="ticket" /> Quests</span>
                         </div>
                     </div>
                 </div>
@@ -167,8 +199,9 @@
             hero. Personalising is optional and follows it. --}}
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
+                    <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> Active &amp; Upcoming Events</span>
                     <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
-                    <span class="section-head__desc">Tap your event to see its schedule, people and guide</span>
+                    <span class="section-head__desc">Tap your event to see its multi-track schedule, attendees, and guide</span>
                 </div>
 
                 @if (($events ?? collect())->isEmpty())
@@ -248,7 +281,7 @@
                         @endforeach
                     </div>
 
-                    <button type="button" class="btn btn--outline btn--full picker-more" data-picker-more hidden></button>
+                    <button type="button" class="btn btn--outline picker-more" data-picker-more hidden></button>
 
                     {{-- A thank-you card per "Completed" WordCamp; thank-you.js opens the first one this phone has data for. --}}
                     @foreach ($events as $event)
@@ -390,14 +423,13 @@
 
             @include('attendee.partials.about-campbuddy', ['part' => 'steps'])
 
-
             @include('attendee.partials.about-campbuddy', ['part' => 'more'])
         </main>
 
+        @include('attendee.partials.footer')
+
         {{-- Shown by native-bridge.js, in the store app only: event staff sign in to the panel there. --}}
         <p class="footer-note landing-footer" data-app-only hidden>Event staff: <a href="{{ route('manager.login') }}">Event manager sign in</a> &middot; <a href="{{ route('login') }}">Admin sign in</a></p>
-        <p class="footer-note landing-footer" style="display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center"><a href="{{ route('about') }}">About CampBuddy</a> <a href="{{ route('privacy') }}">Privacy notice</a> <a href="{{ route('terms') }}">Terms of use</a> <a href="mailto:{{ config('campbuddy.legal.grievance_email') }}?subject=CampBuddy%20data%20request">Data request or complaint</a> @include('attendee.partials.apk-link')</p>
-        <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }} &middot; Built by <a href="https://wpsimplified.in" target="_blank" rel="noopener" style="font-weight:600;color:inherit;text-decoration:underline">WPSimplified</a> for the WordPress community.</footer>
 
         @if (($events ?? collect())->isNotEmpty())
             {{-- Starts tucked away; landing-bar.js brings it up once the hero's own

@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\EventManagerController;
 use App\Http\Controllers\Admin\FeedbackController;
 use App\Http\Controllers\Admin\FreeStealController;
 use App\Http\Controllers\Admin\MediaController;
+use App\Http\Controllers\Admin\MediaPitchController;
 use App\Http\Controllers\Admin\MobileAppController;
 use App\Http\Controllers\Admin\MemoriesController;
 use App\Http\Controllers\Admin\NotificationsController;
@@ -196,6 +197,8 @@ Route::prefix('admin')->group(function () {
         Route::resource('event-managers', EventManagerController::class)->except('show')->names('admin.event-managers');
 
         Route::resource('events', EventController::class)->except('show')->names('admin.events');
+        Route::get('media-pitch', [MediaPitchController::class, 'index'])->name('admin.media-pitch.index');
+        Route::get('media-pitch/print', [MediaPitchController::class, 'print'])->name('admin.media-pitch.print');
         Route::post('events/discover', [EventController::class, 'discover'])->name('admin.events.discover');
         Route::post('events/{event}/refresh', [EventController::class, 'refresh'])->name('admin.events.refresh');
         Route::post('events/{event}/refresh-branding', [EventController::class, 'refreshBranding'])->name('admin.events.refresh-branding');

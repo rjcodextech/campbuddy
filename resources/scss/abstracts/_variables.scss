@@ -5,26 +5,26 @@
 
 // --- Colors (compile-time — mirrored as CSS custom properties in
 // base/_root.scss so JS-driven markup can read them via var(...)) ---
-$color-ink: #231f20;
-$color-paper: #fffaf4;
-$color-paper-soft: #fff0df;
-$color-muted: #6b625e;
-$color-line: #eadfd6;
-$color-peach: #ffe4c4;
+$color-ink: #0f172a;
+$color-paper: #fafafd;
+$color-paper-soft: #fff7ed;
+$color-muted: #475569;
+$color-line: #e2e8f0;
+$color-peach: #ffedd5;
 
-$color-maroon: #c33a19;
-$color-maroon-dark: #a12f14;
-$color-gold: #e39d1c;
-$color-navy: #0d2343;
+$color-maroon: #ff4d2d;
+$color-maroon-dark: #e03616;
+$color-gold: #d97706;
+$color-navy: #1e293b;
 // The logo's wine — the brand gradient's partner (maroon → wine, 135°).
-$color-wine: #721313;
+$color-wine: #ea580c;
 // Darkened from V1's #049395 (3.6:1) so teal can be text on paper (4.96:1).
-$color-teal: #047a7c;
+$color-teal: #2563eb;
 // Meta and captions (4.6:1 on paper); body copy stays $color-muted.
-$color-subtle: #7a706b;
+$color-subtle: #64748b;
 
-$color-danger: #b3261e;
-$color-success: #1f7a4d;
+$color-danger: #ef4444;
+$color-success: #10b981;
 
 // Camp Card's own accent palette — deliberately scoped to the 5 Camp
 // Card layouts only (components/_camp-card.scss), not the app's global
@@ -119,7 +119,7 @@ $radius-lg: $radius-card;
 
 $shadow-card: 0 1px 2px rgba(35, 31, 32, 0.05), 0 10px 28px -16px rgba(35, 31, 32, 0.18);
 $shadow-raised: 0 20px 45px -20px rgba(35, 31, 32, 0.35);
-$shadow-focus: 0 0 0 3px rgba(195, 58, 25, 0.32);
+$shadow-focus: 0 0 0 3px rgba(255, 77, 45, 0.32);
 
 // Elevation scale (brand guideline §5): ink-tinted, two layers (contact +
 // ambient), from WPSimplified's Daylight. lg is a hovered card.
@@ -129,13 +129,13 @@ $shadow-lg: 0 4px 12px -4px rgba(35, 31, 32, 0.07), 0 24px 48px -20px rgba(35, 3
 $shadow-xl: 0 8px 16px -8px rgba(35, 31, 32, 0.08), 0 36px 72px -32px rgba(35, 31, 32, 0.26);
 // The primary button's warm lift and the ochre glow it gains on hover — the
 // only coloured shadows (§5).
-$shadow-glow-lift: 0 12px 28px -12px rgba(161, 47, 20, 0.45);
-$shadow-glow-sm: 0 0 16px rgba(227, 157, 28, 0.3);
+$shadow-glow-lift: 0 12px 28px -12px rgba(255, 77, 45, 0.35);
+$shadow-glow-sm: 0 0 16px rgba(245, 158, 11, 0.3);
 
 // Light for backgrounds: a soft ochre and maroon wash (hero aurora, section
 // spotlight). Never under text as its only ground.
-$color-glow: rgba(227, 157, 28, 0.16);
-$color-glow-primary: rgba(195, 58, 25, 0.09);
+$color-glow: rgba(245, 158, 11, 0.16);
+$color-glow-primary: rgba(255, 77, 45, 0.12);
 
 // --- Motion (§5) ---
 $duration-fast: 0.15s;

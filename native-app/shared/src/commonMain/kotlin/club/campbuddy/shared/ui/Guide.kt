@@ -205,7 +205,7 @@ private fun GuideHero(tag: String?) {
             .patternBackground(Res.drawable.pattern_guide, null, alpha = 0.9f)
             .drawBehind {
                 drawRect(Brush.radialGradient(listOf(Color(0x59F4A629), Color.Transparent), center = Offset(size.width * 0.92f, size.height * 0.12f), radius = size.width * 0.45f))
-                drawRect(Brush.radialGradient(listOf(Color(0x8CC33A19), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
+                drawRect(Brush.radialGradient(listOf(Color(0x8CFF4D2D), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
                 // The gold ticket-stub edge along the top.
                 var x = 0f
                 while (x < size.width) { drawRect(Color(0xCCD98A1C), Offset(x, 0f), androidx.compose.ui.geometry.Size(18.dp.toPx(), 5.dp.toPx())); x += 26.dp.toPx() }

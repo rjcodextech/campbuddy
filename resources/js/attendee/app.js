@@ -78,6 +78,16 @@ async function init() {
     import('./picker-filter.js').then(({ initPickerFilter }) => initPickerFilter()).catch(() => {});
   }
 
+  // Dynamic live WordCamp spotlight stage on the picker page ("/")
+  if (document.getElementById('hero-spotlight-card')) {
+    import('./hero-spotlight.js').then(({ initHeroSpotlight }) => initHeroSpotlight()).catch(() => {});
+  }
+
+  // CSS Slider for Reel USPs on the picker page ("/")
+  if (document.getElementById('usp-slider-root')) {
+    import('./usp-slider.js').then(({ initUspSlider }) => initUspSlider()).catch(() => {});
+  }
+
   // The picker's bottom bar waits until the hero's own button has scrolled away.
   if (document.querySelector('.landing-bottom-bar')) {
     import('./landing-bar.js')

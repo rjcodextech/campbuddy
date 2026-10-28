@@ -50,7 +50,9 @@ class LegalPagesTest extends TestCase
 
     public function test_the_home_page_and_the_guide_link_to_them(): void
     {
-        foreach (['/', '/guide'] as $url) {
+        $this->get('/')->assertOk()->assertSee(route('privacy'), false)->assertSee(route('terms'), false);
+
+        foreach (['/guide', '/about'] as $url) {
             $this->get($url)->assertOk()->assertSee(route('privacy'), false)->assertSee(route('terms'), false)
                 ->assertSee('mailto:'.config('campbuddy.legal.grievance_email'), false);
         }

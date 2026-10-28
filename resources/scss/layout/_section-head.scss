@@ -2,29 +2,72 @@
 
 .section-head {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    // A long description drops under the title on a narrow phone instead of
-    // squeezing the title into a two-line column beside it.
-    flex-wrap: wrap;
-    gap: v.$space-1 v.$space-3;
-    margin-bottom: v.$space-3;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 6px;
+    margin-bottom: v.$space-5;
+
+    &--center {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    &:has(.section-head__link) {
+        flex-direction: row;
+        align-items: baseline;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}
+
+.section-head .u-eyebrow,
+.section-head > .u-eyebrow {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: v.$radius-full;
+    background: linear-gradient(135deg, rgba(255, 77, 45, 0.08) 0%, rgba(217, 119, 6, 0.12) 100%);
+    border: 1px solid rgba(255, 77, 45, 0.22);
+    box-shadow: 0 2px 6px rgba(255, 77, 45, 0.05);
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brand-primary);
+    width: fit-content;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+
+    svg {
+        width: 14px;
+        height: 14px;
+        stroke-width: 2.2;
+        color: var(--brand-primary);
+    }
 }
 
 .section-head__title {
-    font-size: 1.05rem;
+    margin: 4px 0 0;
+    font-family: v.$font-display;
+    font-size: clamp(1.65rem, 3.2vw, 2.25rem);
     font-weight: 800;
+    line-height: 1.22;
+    letter-spacing: -0.02em;
     color: var(--ink);
 }
 
 .section-head__desc {
-    font-size: 0.82rem;
+    margin: 4px 0 0;
+    font-size: clamp(0.95rem, 1.8vw, 1.05rem);
     color: var(--muted);
+    line-height: 1.6;
+    max-width: 720px;
 }
 
 // A quiet "see all →" link on the right of a section heading.
 .section-head__link {
-    // A 44px-tall tap target that doesn't push the heading around.
     display: inline-flex;
     align-items: center;
     min-height: 44px;

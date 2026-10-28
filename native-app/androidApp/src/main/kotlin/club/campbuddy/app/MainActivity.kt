@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                             .setShowTitle(true)
                             .setUrlBarHidingEnabled(false)
                             .setShareState(androidx.browser.customtabs.CustomTabsIntent.SHARE_STATE_ON)
-                            .setDefaultColorSchemeParams(androidx.browser.customtabs.CustomTabColorSchemeParams.Builder().setToolbarColor(0xFFFFF0DF.toInt()).build())
+                            .setDefaultColorSchemeParams(androidx.browser.customtabs.CustomTabColorSchemeParams.Builder().setToolbarColor(0xFFFFF7ED.toInt()).build())
                             .build()
                         runCatching { tab.launchUrl(this@MainActivity, Uri.parse(url)) }.onFailure { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
                     },

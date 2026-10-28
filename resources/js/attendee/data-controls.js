@@ -6,6 +6,7 @@ import { apiMutate } from './api.js';
 import { track } from './analytics.js';
 import { clearAll, exportAll, kvGet, kvSet } from './db.js';
 import { showToast } from './toast.js';
+import { LOCAL_KEYS } from './transfer-crypto.js';
 
 // The card itself is attendee/partials/data-controls.blade.php, included
 // inside #data-controls on the pages that offer it — this only wires it.
@@ -100,6 +101,14 @@ async function clearData(root) {
   }
 
   await clearAll();
+  try {
+    for (const k of LOCAL_KEYS) localStorage.removeItem(k);
+    localStorage.removeItem('campbuddy:my-day-track-choice');
+    localStorage.removeItem('campbuddy:wave-name');
+    sessionStorage.clear();
+  } catch {
+    // Ignore storage errors during clear
+  }
   track('data_clear');
   alert('Your local CampBuddy data has been cleared.');
   window.location.reload();

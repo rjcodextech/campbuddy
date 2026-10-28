@@ -65,7 +65,7 @@
         height: 28px;
         z-index: -1;
         pointer-events: none;
-        background: linear-gradient(90deg, rgba(227, 157, 28, 0.22), rgba(195, 58, 25, 0.14));
+        background: linear-gradient(90deg, rgba(217, 119, 6, 0.22), rgba(255, 77, 45, 0.14));
         mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
         -webkit-mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
     }
@@ -96,21 +96,33 @@
     }
 }
 
-// The site's headlines carry a short wave under them; here, every section title.
+// Creative modern underline accent on every section title.
 .section-head__title {
     position: relative;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
 
     &::after {
         content: '';
         position: absolute;
         left: 0;
         bottom: 0;
-        width: 44px;
-        height: 7px;
-        background: linear-gradient(90deg, var(--brand-primary), v.$color-gold);
-        mask: v.$art-wave-line 0 50% / 22px 100% repeat-x;
-        -webkit-mask: v.$art-wave-line 0 50% / 22px 100% repeat-x;
+        width: 48px;
+        height: 4px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--brand-primary) 0%, v.$color-gold 100%);
+        box-shadow: 0 2px 8px rgba(255, 77, 45, 0.35);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 54px;
+        bottom: 0px;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: v.$color-gold;
+        box-shadow: 0 0 6px rgba(217, 119, 6, 0.6);
     }
 }
 
@@ -130,11 +142,11 @@
 @keyframes cb-node-pulse {
     0%,
     100% {
-        box-shadow: 0 0 0 3px rgba(227, 157, 28, 0.25), 0 0 10px rgba(227, 157, 28, 0.45);
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25), 0 0 10px rgba(217, 119, 6, 0.45);
     }
 
     50% {
-        box-shadow: 0 0 0 6px rgba(227, 157, 28, 0.12), 0 0 18px rgba(227, 157, 28, 0.55);
+        box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.12), 0 0 18px rgba(217, 119, 6, 0.55);
     }
 }
 
@@ -152,7 +164,7 @@
         height: 12px;
         transform: translate(-50%, -50%);
         pointer-events: none;
-        background: linear-gradient(90deg, transparent, rgba(195, 58, 25, 0.35) 22%, v.$color-gold 50%, rgba(195, 58, 25, 0.35) 78%, transparent);
+        background: linear-gradient(90deg, transparent, rgba(255, 77, 45, 0.35) 22%, v.$color-gold 50%, rgba(255, 77, 45, 0.35) 78%, transparent);
         mask: v.$art-wave-line 0 50% / 64px 100% repeat-x;
         -webkit-mask: v.$art-wave-line 0 50% / 64px 100% repeat-x;
 
@@ -173,7 +185,7 @@
         transform: translate(-50%, -50%);
         pointer-events: none;
         background: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(227, 157, 28, 0.25), 0 0 10px rgba(227, 157, 28, 0.45);
+        box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25), 0 0 10px rgba(217, 119, 6, 0.45);
 
         @include motion-safe {
             animation: cb-node-pulse 2.4s ease-in-out infinite;
@@ -251,7 +263,7 @@
     transition: transform v.$duration-normal v.$ease-standard, box-shadow v.$duration-normal v.$ease-standard, border-color v.$duration-normal v.$ease-standard;
 
     @include m.hover {
-        border-color: rgba(195, 58, 25, 0.28);
+        border-color: rgba(255, 77, 45, 0.28);
         box-shadow: v.$shadow-lg;
 
         @include motion-safe {
@@ -263,7 +275,7 @@
 // ---- Frosted top bar -------------------------------------------------------
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .topbar {
-        background: rgba(255, 240, 223, 0.82);
+        background: rgba(255, 247, 237, 0.88);
         backdrop-filter: saturate(1.4) blur(12px);
         -webkit-backdrop-filter: saturate(1.4) blur(12px);
     }

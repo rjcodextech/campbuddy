@@ -112,7 +112,7 @@ fun CampCardFace(layout: String, data: CardFaceData, modifier: Modifier = Modifi
                     if (layout == "classic") {
                         // faint diagonal stripes
                         var x = -size.height
-                        while (x < size.width) { drawLine(Color(0x1AC33A19), Offset(x, size.height), Offset(x + size.height, 0f), 1.d().toPx()); x += 22.d().toPx() }
+                        while (x < size.width) { drawLine(Color(0x1AFF4D2D), Offset(x, size.height), Offset(x + size.height, 0f), 1.d().toPx()); x += 22.d().toPx() }
                     }
                     if (layout == "pass") {
                         val corner = 60.d().toPx()

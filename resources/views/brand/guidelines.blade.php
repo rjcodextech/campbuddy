@@ -29,14 +29,16 @@ Same shell as /guide: no event, no tab bar. Data: App\Support\BrandTokens. --}}
     @include('attendee.partials.line-icons')
     <div class="app-frame">
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
-                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-            </a>
-            <div class="topbar__actions">
-                <a href="{{ route('home') }}" class="topbar__text-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-                    <span>All WordCamps</span>
+            <div class="topbar__inner">
+                <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
+                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
                 </a>
+                <div class="topbar__actions">
+                    <a href="{{ route('home') }}" class="topbar__text-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+                        <span>All WordCamps</span>
+                    </a>
+                </div>
             </div>
         </header>
 
@@ -344,7 +346,7 @@ Same shell as /guide: no event, no tab bar. Data: App\Support\BrandTokens. --}}
             </section>
         </main>
 
-        <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made by WPSimplified for the WordPress community.</footer>
+        @include('attendee.partials.footer')
     </div>
 </body>
 </html>

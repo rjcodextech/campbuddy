@@ -105,7 +105,7 @@ Display 56 (landing only) · H1 32 · H2 24 · H3 20 · H4 18 · Lead 18 · Body
 
 - **Space:** 4px scale — 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96. (12 is allowed for dense app rows; no other half steps.)
 - **Radius grows with the surface:** chips 6 · inputs 10 · rows/list items 14 · cards 20 · sheets/modals/players 28 · hero stages 40 · buttons, pills, avatars round.
-- **Shadows:** ink-tinted (`rgba(35,31,32,…)`), two layers, `--shadow-sm … xl`. Never black, never coloured except the ochre glow on a primary orb.
+- **Shadows:** ink-tinted (`rgba(15,23,42,…)`), two layers, `--shadow-sm … xl`. Never black, never coloured except the ochre glow on a primary orb.
 - **Motif:** smooth sine waves, a dot grid (2px dots every 26px, ≈12%), a soft ochre/maroon glow. A kicker always starts with a short wave. No zig-zags or squiggles.
 - **Motion:** slow and ambient (drift 9–18s), UI transitions 150–250ms. Infinite animations only behind `prefers-reduced-motion: no-preference`; reduced motion freezes everything (native: respect the system "remove animations").
 - **Effects (after WPSimplified's site, `components/_effects.scss`, admin `app.css`):**

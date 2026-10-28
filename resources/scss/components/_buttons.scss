@@ -9,12 +9,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: v.$space-2;
-    min-height: 44px;
-    padding: v.$space-3 v.$space-6;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 18px;
     border-radius: v.$radius-full;
-    font-weight: v.$font-weight-bold;
-    font-size: v.$font-size-base;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.25;
     border: 1px solid transparent;
     transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 
@@ -25,13 +26,21 @@
     color: var(--ink);
 
     &--primary {
-        background: var(--brand-primary);
-        border-color: var(--brand-primary);
+        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+        border-color: transparent;
         color: #fff;
+        box-shadow: 0 4px 14px -2px rgba(255, 77, 45, 0.38);
 
         @include m.hover {
-            background: var(--brand-accent);
-            border-color: var(--brand-accent);
+            background: linear-gradient(135deg, #e03a1b 0%, #b45309 100%);
+            border-color: transparent;
+            box-shadow: 0 8px 22px -3px rgba(255, 77, 45, 0.48);
+            transform: translateY(-1.5px);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px -2px rgba(255, 77, 45, 0.4);
         }
     }
 
@@ -45,21 +54,29 @@
     }
 
     &--outline {
-        background: transparent;
-        border-color: var(--line);
+        background: #fff;
+        border: 1.5px solid var(--line);
         color: var(--ink);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 
         @include m.hover {
-            background: var(--peach);
-            border-color: var(--peach);
+            background: var(--paper-soft);
+            border-color: rgba(255, 77, 45, 0.35);
+            color: var(--brand-primary);
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+        }
+
+        &:active {
+            transform: translateY(0);
         }
     }
 
-    // Smaller type and padding, not a smaller target: still 44px tall.
+    // Sleek compact variant for inline controls and toolbars
     &--compact {
-        min-height: 44px;
-        padding: v.$space-2 v.$space-3;
-        font-size: v.$font-size-sm;
+        min-height: 34px;
+        padding: 5px 12px;
+        font-size: 0.8125rem;
     }
 
     &--full {

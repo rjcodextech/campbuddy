@@ -302,7 +302,7 @@ private fun HeroOrbit(talks: String, people: String, reminders: String, campCard
     val breathe by motion.animateFloat(1f, 1.045f, infiniteRepeatable(tween(2_000, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "breathe")
     val rippleA by motion.animateFloat(0f, 1f, infiniteRepeatable(tween(3_200, easing = LinearOutSlowInEasing)), label = "rippleA")
     val rippleB by motion.animateFloat(0f, 1f, infiniteRepeatable(tween(3_200, easing = LinearOutSlowInEasing), initialStartOffset = StartOffset(1_600, StartOffsetType.FastForward)), label = "rippleB")
-    val outer = Color(0xFFC33A19).copy(alpha = 0.28f)
+    val outer = Color(0xFFFF4D2D).copy(alpha = 0.28f)
     val inner = Color(0xFFF4A629).copy(alpha = 0.35f)
     val ringRadius = 72.dp
 
@@ -318,7 +318,7 @@ private fun HeroOrbit(talks: String, people: String, reminders: String, campCard
             Box(
                 Modifier.size(100.dp)
                     .graphicsLayer { scaleX = 1f + 0.7f * p; scaleY = 1f + 0.7f * p; alpha = 0.9f * (1f - p) }
-                    .border(2.dp, Color(0xFFC33A19).copy(alpha = 0.35f), RoundedCornerShape(24.dp)),
+                    .border(2.dp, Color(0xFFFF4D2D).copy(alpha = 0.35f), RoundedCornerShape(24.dp)),
             )
         }
         Box(

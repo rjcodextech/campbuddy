@@ -13,47 +13,47 @@ class BrandTokens
 {
     /** Approximate share of a screen (§3). */
     public const SHARE = [
-        ['Paper', 56, '#FFFAF4', '#231F20'],
-        ['Ink', 20, '#231F20', '#FFFFFF'],
-        ['Maroon', 12, '#C33A19', '#FFFFFF'],
-        ['Wine', 5, '#721313', '#FFFFFF'],
-        ['Ochre', 4, '#E39D1C', '#231F20'],
-        ['Roles', 3, '#047A7C', '#FFFFFF'],
+        ['Paper', 56, '#FAFAFD', '#0F172A'],
+        ['Ink', 20, '#0F172A', '#FFFFFF'],
+        ['Primary Coral', 12, '#FF4D2D', '#FFFFFF'],
+        ['Amber Glow', 5, '#EA580C', '#FFFFFF'],
+        ['Sunny Gold', 4, '#d97706', '#0F172A'],
+        ['Roles Indigo', 3, '#2563EB', '#FFFFFF'],
     ];
 
     /** group => [token, hex, use] */
     public const COLOURS = [
         'Grounds and text' => [
-            ['--paper', '#FFFAF4', 'Page ground, cards in the app'],
-            ['--paper-soft', '#FFF0DF', 'App background, soft bands, selected rows'],
-            ['--line', '#EADFD6', 'Borders and dividers'],
-            ['--ink', '#231F20', 'Text, deep bands'],
-            ['--muted', '#6B625E', 'Secondary copy'],
-            ['--subtle', '#7A706B', 'Meta and captions'],
+            ['--paper', '#FAFAFD', 'Page ground, cards in the app'],
+            ['--paper-soft', '#FFF7ED', 'App background, soft bands, selected rows'],
+            ['--line', '#E2E8F0', 'Borders and dividers'],
+            ['--ink', '#0F172A', 'Text, deep bands'],
+            ['--muted', '#475569', 'Secondary copy'],
+            ['--subtle', '#64748B', 'Meta and captions'],
         ],
         'Brand' => [
-            ['--brand-primary', '#C33A19', 'Maroon — the one brand voice: links, primary buttons'],
-            ['--brand-accent', '#A12F14', 'Hover and pressed maroon'],
-            ['--wine', '#721313', 'The logo’s wine — gradient partner'],
-            ['--gold', '#E39D1C', 'Ochre — light only: glows, waves, highlights on ink. Never text on paper.'],
-            ['--peach', '#FFE4C4', 'Secondary buttons, soft chips'],
+            ['--brand-primary', '#FF4D2D', 'Maroon — the one brand voice: links, primary buttons'],
+            ['--brand-accent', '#E03616', 'Hover and pressed maroon'],
+            ['--wine', '#EA580C', 'The logo’s wine — gradient partner'],
+            ['--gold', '#d97706', 'Ochre — light only: glows, waves, highlights on ink. Never text on paper.'],
+            ['--peach', '#FFEDD5', 'Secondary buttons, soft chips'],
         ],
         'Roles and status' => [
-            ['--teal', '#047A7C', 'Sessions, “now”, together'],
-            ['--navy', '#0D2343', 'Events, travel; the organizer console band'],
-            ['--success', '#1F7A4D', 'Done, saved, checked in'],
-            ['--danger', '#B3261E', 'Errors, deletes, LIVE'],
+            ['--teal', '#2563EB', 'Sessions, “now”, together'],
+            ['--navy', '#1E293B', 'Events, travel; the organizer console band'],
+            ['--success', '#10B981', 'Done, saved, checked in'],
+            ['--danger', '#EF4444', 'Errors, deletes, LIVE'],
         ],
     ];
 
     /** [label, foreground, background] pairs every screen relies on (§3). */
     public const CONTRAST = [
-        ['Ink on paper', '#231F20', '#FFFAF4'],
-        ['Maroon on paper', '#C33A19', '#FFFAF4'],
-        ['White on maroon', '#FFFFFF', '#C33A19'],
-        ['Muted on paper', '#6B625E', '#FFFAF4'],
-        ['Ochre on ink', '#E39D1C', '#231F20'],
-        ['Ochre text on paper', '#E39D1C', '#FFFAF4'],
+        ['Ink on paper', '#0F172A', '#FAFAFD'],
+        ['Primary Coral on paper', '#FF4D2D', '#FAFAFD'],
+        ['White on Primary Coral', '#FFFFFF', '#FF4D2D'],
+        ['Muted on paper', '#475569', '#FAFAFD'],
+        ['Sunny Gold on ink', '#d97706', '#0F172A'],
+        ['Sunny Gold text on paper', '#d97706', '#FAFAFD'],
     ];
 
     /** [role, family, weight, size px, sample] (§4). */

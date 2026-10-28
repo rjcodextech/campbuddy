@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Support\EventCountry;
 use App\Support\EventTime;
+use App\Support\HeroSpotlights;
 use Illuminate\View\View;
 
 /**
@@ -71,6 +72,7 @@ class HomeController extends Controller
             'eventCountries' => $countries->all(),
             'countryNames' => $codes->mapWithKeys(fn ($code) => [$code => EventCountry::name($code)])->all(),
             'countryZones' => EventCountry::timezones($codes),
+            'heroSpotlights' => HeroSpotlights::forEvents($events),
         ]);
     }
 }

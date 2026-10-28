@@ -37,8 +37,8 @@ return [
         'name' => 'CampBuddy | Your WordCamp Companion',
         'short_name' => 'CampBuddy',
         'description' => 'The mobile-first companion for WordCamp attendees — what to do next, session planning, Contributor Day matching and a digital Camp Card.',
-        'theme_color' => '#c33a19',
-        'background_color' => '#fffaf4',
+        'theme_color' => '#ff4d2d',
+        'background_color' => '#fafafd',
     ],
 
     /*

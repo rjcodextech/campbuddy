@@ -5,8 +5,7 @@ in this skill's `brand/` folder (written 22 Oct 2026, modelled on WPSimplified's
 `../brand/WPSIMPLIFIED-BRAND-GUIDELINES.md`, but in CampBuddy's own maroon, logo and name). This page says where each
 rule lives in the code, so a change lands everywhere at once.
 
-Owner decisions (22 Oct 2026, confirmed twice): keep CampBuddy maroon `#C33A19` as the one brand
-voice (logo wine `#721313` as gradient partner, gold/ochre `#E39D1C` light only); Baloo 2 + Poppins
+Owner decisions (27 Oct 2026, Daylight 2.0 update): CampBuddy Electric Fire Coral `#FF4D2D` as the primary brand voice (Radiant Amber `#EA580C` as gradient partner, Sunny Gold `#F59E0B` for stars/highlights, Tech Indigo `#2563EB` for session tracks); Baloo 2 + Poppins
 everywhere; the guideline's radius scale (cards 20, buttons pills); roll out to admin, manager,
 attendee site/PWA, Android, iOS, social posts and reels. Camp Card keeps its own badge look.
 

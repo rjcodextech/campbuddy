@@ -33,31 +33,35 @@ picker page (welcome.blade.php): no event, so no tab bar. --}}
         @include('attendee.partials.desktop-notice')
 
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
-                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-            </a>
-            <div class="topbar__actions">
-        <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="7" y="2" width="10" height="20" rx="2" />
-                <path d="M11 18h2" />
-            </svg>
-            <span>Open on phone</span>
-        </button>
-
-                <a href="{{ route('home') }}" class="topbar__text-btn" data-track="home_link_click" data-track-target="wordcamps">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-                    <span>All WordCamps</span>
+            <div class="topbar__inner">
+                <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
+                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
                 </a>
+                <div class="topbar__actions">
+                    <button type="button" id="open-on-phone-btn" class="topbar__text-btn" hidden>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="7" y="2" width="10" height="20" rx="2" />
+                            <path d="M11 18h2" />
+                        </svg>
+                        <span>Open on phone</span>
+                    </button>
+
+                    <a href="{{ route('home') }}" class="topbar__text-btn" data-track="home_link_click" data-track-target="wordcamps">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+                        <span>All WordCamps</span>
+                    </a>
+                </div>
             </div>
         </header>
 
-        <main id="main-content" class="landing-main guide" tabindex="-1">
+        <main id="main-content" class="landing-main site-main guide" tabindex="-1">
             @include('attendee.partials.guide-body', ['event' => null])
+
+            {{-- Data Request & Grievance Complaint --}}
+            @include('attendee.partials.data-request-section')
         </main>
 
-        <p class="footer-note landing-footer" style="display:flex;flex-wrap:wrap;gap:4px 14px;justify-content:center"><a href="{{ route('privacy') }}">Privacy notice</a> <a href="{{ route('terms') }}">Terms of use</a> <a href="mailto:{{ config('campbuddy.legal.grievance_email') }}?subject=CampBuddy%20data%20request">Data request or complaint</a> @include('attendee.partials.apk-link')</p>
-        <footer class="footer-note landing-footer">&copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.</footer>
+        @include('attendee.partials.footer')
     </div>
 
     @include('attendee.templates.shared')

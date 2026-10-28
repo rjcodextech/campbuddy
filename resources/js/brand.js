@@ -5,17 +5,17 @@
 // CAMPBUDDY-BRAND-GUIDELINES.md §0); `npm run brand` fails if they drift.
 
 export const BRAND = {
-  maroon: '#c33a19',
-  maroonDark: '#a12f14',
-  wine: '#721313',
-  gold: '#e39d1c',
-  ink: '#231f20',
-  paper: '#fffaf4',
-  paperSoft: '#fff0df',
-  line: '#eadfd6',
-  muted: '#6b625e',
-  teal: '#047a7c',
-  navy: '#0d2343',
+  maroon: '#ff4d2d',
+  maroonDark: '#e03616',
+  wine: '#ea580c',
+  gold: '#d97706',
+  ink: '#0f172a',
+  paper: '#fafafd',
+  paperSoft: '#fff7ed',
+  line: '#e2e8f0',
+  muted: '#475569',
+  teal: '#2563eb',
+  navy: '#1e293b',
 };
 
 // Poppins for every line of text, Baloo 2 for headlines and big numbers (§4).

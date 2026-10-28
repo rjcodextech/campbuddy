@@ -271,6 +271,9 @@ export function initPickerFilter({
     choice = next;
     shown = FIRST;
     render();
+    try {
+      window.dispatchEvent(new CustomEvent('campbuddy:country-changed', { detail: { country: next } }));
+    } catch {}
   }
 
   select?.addEventListener('change', () => { choose(select.value); track('picker_filter', { target: select.value || 'all' }); });

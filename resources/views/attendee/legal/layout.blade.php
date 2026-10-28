@@ -16,18 +16,20 @@
 <body class="app-shell" data-page-type="legal">
     <div class="app-frame">
         <header class="topbar">
-            <a href="{{ route('home') }}" class="brand">
-                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-            </a>
-            <div class="topbar__actions">
-                <a href="{{ route('home') }}" class="topbar__text-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
-                    <span>All WordCamps</span>
+            <div class="topbar__inner">
+                <a href="{{ route('home') }}" class="brand">
+                    <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
                 </a>
+                <div class="topbar__actions">
+                    <a href="{{ route('home') }}" class="topbar__text-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
+                        <span>All WordCamps</span>
+                    </a>
+                </div>
             </div>
         </header>
 
-        <main id="main-content" class="legal-main" tabindex="-1">
+        <main id="main-content" class="landing-main site-main legal-main" tabindex="-1">
             <div class="legal-shell">
                 {{-- Top document switcher: fast toggle between Privacy Notice & Terms of Use --}}
                 <div class="legal-nav">
@@ -45,19 +47,11 @@
 
                 @yield('content')
 
-                <footer class="legal-footer">
-                    <div class="legal-footer-links">
-                        <a href="{{ route('privacy') }}">Privacy notice</a>
-                        <a href="{{ route('terms') }}">Terms of use</a>
-                        <a href="mailto:{{ config('campbuddy.legal.grievance_email') }}?subject=CampBuddy%20data%20request">Data request or complaint</a>
-                        @include('attendee.partials.apk-link')
-                    </div>
-                    <div class="legal-footer-copy">
-                        &copy; {{ date('Y') }} {{ config('campbuddy.name') }}. Made for the WordPress community.
-                    </div>
-                </footer>
+                @include('attendee.partials.data-request-section')
             </div>
         </main>
+
+        @include('attendee.partials.footer')
     </div>
 </body>
 </html>

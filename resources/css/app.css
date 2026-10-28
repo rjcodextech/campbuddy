@@ -32,21 +32,21 @@
     --radius-2xl: 28px;
     --radius-3xl: 40px;
 
-    --shadow-focus: 0 0 0 3px rgba(195, 58, 25, 0.32);
+    --shadow-focus: 0 0 0 3px rgba(255, 77, 45, 0.32);
 
-    --color-ink: #231f20;
-    --color-paper: #fffaf4;
-    --color-paper-soft: #fff0df;
-    --color-muted: #6b625e;
-    --color-subtle: #7a706b;
-    --color-line: #eadfd6;
-    --color-maroon: #c33a19;
-    --color-maroon-dark: #a12f14;
-    --color-navy: #0d2343;
+    --color-ink: #0f172a;
+    --color-paper: #fafafd;
+    --color-paper-soft: #fff7ed;
+    --color-muted: #475569;
+    --color-subtle: #64748b;
+    --color-line: #e2e8f0;
+    --color-maroon: #ff4d2d;
+    --color-maroon-dark: #e03616;
+    --color-navy: #1e293b;
     /* Light only: highlights on ink, glows. Never text on paper (2.2:1). */
-    --color-gold: #e39d1c;
-    --color-wine: #721313;
-    --color-teal: #047a7c;
+    --color-gold: #d97706;
+    --color-wine: #ea580c;
+    --color-teal: #2563eb;
     /* Destructive actions get their own red so "Delete" never reads as the maroon primary "Save". */
     --color-danger: #b42318;
     --color-danger-dark: #912018;

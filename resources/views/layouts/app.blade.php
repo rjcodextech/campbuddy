@@ -8,6 +8,7 @@
         ['label' => 'Events', 'icon' => 'calendar', 'items' => [
             ['All events', route('admin.events.index'), $is('admin.events.*') && ! $is('admin.events.create')],
             ['Add event', route('admin.events.create'), $is('admin.events.create')],
+            ['Media Partner Pitch', route('admin.media-pitch.index'), $is('admin.media-pitch.*')],
         ]],
         ['label' => 'Deals & offers', 'icon' => 'tag', 'items' => [
             ['Default deals', route('admin.deals.index'), $is('admin.deals.*')],

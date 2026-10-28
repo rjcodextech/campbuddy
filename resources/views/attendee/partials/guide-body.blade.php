@@ -37,6 +37,8 @@
         <span class="hero-breadcrumb__current" aria-current="page">WordCamp Guide</span>
     </nav>
 
+
+
     <div class="hero-kicker">
         <x-attendee.line-icon name="sprout" />
         <span>5-Minute First-Timer Handbook</span>
@@ -44,9 +46,9 @@
 
     <h1 id="guide-title" class="hero-creative__title">
         @if ($event)
-            New to {{ $event->short_name ?: 'WordCamp' }}? <span class="hero-creative__highlight">Start Here</span>
+            New to {{ $event->short_name ?: 'WordCamp' }}? <span class="hero-creative__highlight">Start here.</span>
         @else
-            Your First WordCamp? <span class="hero-creative__highlight">Start Here</span>
+            Your first WordCamp? <span class="hero-creative__highlight">Start here.</span>
         @endif
     </h1>
 
@@ -87,7 +89,8 @@
     @if ($event && ($practical || $cocUrl))
         <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">At this event</a>
     @endif
-    <a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">What is it?</a>
+        <a class="chip" href="#guide-why" data-track="guide_section_jump" data-track-section="why">Superpowers</a>
+<a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">What is it?</a>
     <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">Your day</a>
     <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">Words you'll hear</a>
     <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">Tips</a>
@@ -95,6 +98,39 @@
     <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">What to bring</a>
     <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">FAQ</a>
 </nav>
+
+
+<section id="guide-why" class="guide-section" aria-labelledby="guide-why-heading">
+    <div class="card guide-why-card">
+        <div class="section-head" style="margin-bottom:16px">
+            <span class="u-eyebrow"><x-attendee.line-icon name="sparkles" /> Why Use CampBuddy?</span>
+            <h2 id="guide-why-heading" class="guide-section__title" style="margin:4px 0 6px">Your 4 WordCamp Superpowers</h2>
+            <p class="guide-section__desc" style="margin:0">Open CampBuddy on your phone once, and everything stays ready &mdash; even without internet.</p>
+        </div>
+        <div class="guide-superpowers-grid">
+            <div class="superpower-col">
+                <div class="superpower-icon"><x-attendee.line-icon name="calendar" /></div>
+                <strong>1. Never Miss a Talk</strong>
+                <span>Track multiple halls live with real-time "Now &amp; Next" and 1-tap bookmarks in "My Day".</span>
+            </div>
+            <div class="superpower-col">
+                <div class="superpower-icon"><x-attendee.line-icon name="qr-code" /></div>
+                <strong>2. Swap Camp Cards in 2s</strong>
+                <span>Exchange LinkedIn and website via your phone camera. No paper cards, zero sign-up required.</span>
+            </div>
+            <div class="superpower-col">
+                <div class="superpower-icon"><x-attendee.line-icon name="wrench" /></div>
+                <strong>3. Find Contributor Tables</strong>
+                <span>A 30-second skill quiz points you to the exact table (Core, Docs, Design, Polyglots) for your skills.</span>
+            </div>
+            <div class="superpower-col">
+                <div class="superpower-icon"><x-attendee.line-icon name="lock" /></div>
+                <strong>4. 100% Offline &amp; Private</strong>
+                <span>Zero login, no passwords, no trackers. All data is saved on your device (DPDPA 2023 compliant).</span>
+            </div>
+        </div>
+    </div>
+</section>
 
 @if ($event && ($practical || $cocUrl))
     <section id="guide-here" class="guide-section" data-track-section-view="here" aria-labelledby="guide-here-heading">
@@ -124,22 +160,36 @@
 @endif
 
 <section id="guide-what" class="guide-section" data-track-section-view="what" aria-labelledby="guide-what-heading">
-    <h2 id="guide-what-heading" class="guide-section__title">What is a WordCamp?</h2>
-    <div class="card guide-prose">
-        <p>A <strong>WordCamp</strong> is a conference about WordPress, the free software that runs a large part of the web. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
-        <p>It's for <strong>everyone who uses WordPress</strong> or is curious about it: bloggers, small-business owners, designers, developers, marketers, students and writers. You don't need to be an expert, and nobody will quiz you.</p>
-        <p><strong>Sponsors</strong> pay for much of it, so tickets stay cheap. Speakers and organizers are volunteers, not paid staff, which is a big part of why people are so easy to talk to.</p>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="compass" /> Conference Orientation</span>
+        <h2 id="guide-what-heading" class="guide-section__title">What is a WordCamp?</h2>
+        <span class="section-head__desc">The global community conference that anyone can attend</span>
+    </div>
+    <div class="card guide-prose guide-what-card">
+        <div class="guide-what-body">
+            <p>A <strong>WordCamp</strong> is a conference about WordPress, the free software that runs a large part of the web. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
+            <p>It's for <strong>everyone who uses WordPress</strong> or is curious about it: bloggers, small-business owners, designers, developers, marketers, students and writers. You don't need to be an expert, and nobody will quiz you.</p>
+            <p><strong>Sponsors</strong> pay for much of it, so tickets stay cheap. Speakers and organizers are volunteers, not paid staff, which is a big part of why people are so easy to talk to.</p>
+        </div>
+        <div class="guide-what-highlights">
+            <div class="highlight-chip"><x-attendee.line-icon name="heart" /> 100% Volunteer-Organized</div>
+            <div class="highlight-chip"><x-attendee.line-icon name="ticket" /> Heavily Subsidized Tickets</div>
+            <div class="highlight-chip"><x-attendee.line-icon name="users" /> Open to All Experience Levels</div>
+        </div>
     </div>
 </section>
 
 <section id="guide-day" class="guide-section" data-track-section-view="day" aria-labelledby="guide-day-heading">
-    <h2 id="guide-day-heading" class="guide-section__title">How the day usually goes</h2>
-    <p class="guide-section__desc">
-        Every WordCamp is a little different, but most follow this shape.
-        @if ($event)
-            Where we could find it in this event's schedule, you'll see the real time.
-        @endif
-    </p>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="clock" /> Conference Timeline</span>
+        <h2 id="guide-day-heading" class="guide-section__title">How the day usually goes</h2>
+        <span class="section-head__desc">
+            Every WordCamp is a little different, but most follow this shape.
+            @if ($event)
+                Where we could find it in this event's schedule, you'll see the real time.
+            @endif
+        </span>
+    </div>
     <ol class="guide-timeline">
         @foreach (FirstTimerGuide::day() as $step)
             <li class="guide-step" data-guide-match="{{ implode('|', $step['match']) }}" data-guide-talk="{{ ($step['talk'] ?? false) ? '1' : '0' }}">
@@ -156,8 +206,11 @@
 </section>
 
 <section id="guide-words" class="guide-section" data-track-section-view="words" aria-labelledby="guide-words-heading">
-    <h2 id="guide-words-heading" class="guide-section__title">Words you'll hear</h2>
-    <p class="guide-section__desc">Tap a word to see what it means.</p>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="book-open" /> Community Glossary</span>
+        <h2 id="guide-words-heading" class="guide-section__title">Words you'll hear</h2>
+        <span class="section-head__desc">Tap any word to see what it means in plain English</span>
+    </div>
     <div class="guide-accordion">
         @foreach (FirstTimerGuide::glossary() as $entry)
             <details class="guide-accordion__item" data-track-open="glossary_open" data-track-term="{{ $entry['term'] }}">
@@ -169,7 +222,11 @@
 </section>
 
 <section id="guide-tips" class="guide-section" data-track-section-view="tips" aria-labelledby="guide-tips-heading">
-    <h2 id="guide-tips-heading" class="guide-section__title">Tips from WordCamp regulars</h2>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="sparkles" /> Hallway Wisdom</span>
+        <h2 id="guide-tips-heading" class="guide-section__title">Tips from WordCamp regulars</h2>
+        <span class="section-head__desc">Small habits that make the day twice as fun and relaxing</span>
+    </div>
     <div class="guide-tips">
         @foreach (FirstTimerGuide::tips() as $tip)
             <div class="guide-tip">
@@ -205,7 +262,11 @@
 </section>
 
 <section id="guide-bring" class="guide-section" data-track-section-view="bring" aria-labelledby="guide-bring-heading">
-    <h2 id="guide-bring-heading" class="guide-section__title">What to bring</h2>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="check-square" /> Packing Checklist</span>
+        <h2 id="guide-bring-heading" class="guide-section__title">What to bring</h2>
+        <span class="section-head__desc">Essentials to keep in your conference day bag</span>
+    </div>
     <ul class="card guide-bring">
         @foreach (FirstTimerGuide::bring() as $item)
             <li>{{ $item }}</li>
@@ -214,7 +275,11 @@
 </section>
 
 <section id="guide-faq" class="guide-section" data-track-section-view="faq" aria-labelledby="guide-faq-heading">
-    <h2 id="guide-faq-heading" class="guide-section__title">Questions newcomers ask</h2>
+    <div class="section-head">
+        <span class="u-eyebrow"><x-attendee.line-icon name="help-circle" /> Common Concerns</span>
+        <h2 id="guide-faq-heading" class="guide-section__title">Questions newcomers ask</h2>
+        <span class="section-head__desc">Real answers to what first-timers worry about</span>
+    </div>
     <div class="guide-accordion">
         @foreach (FirstTimerGuide::faq() as $entry)
             <details class="guide-accordion__item" data-track-open="faq_open" data-track-question="{{ $entry['q'] }}">
