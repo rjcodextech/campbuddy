@@ -100,8 +100,8 @@
                                 <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="32" height="32" class="hero-stage__event-logo">
                                 <div class="hero-stage__brand-text">
                                     <div class="hero-stage__brand-eyebrow">
-                                        <span class="live-dot live-dot--green live-dot--pulse" aria-hidden="true"></span>
-                                        <span>Active WordCamp</span>
+                                        <span class="live-dot live-dot--green live-dot--pulse" id="hero-stage-live-dot" aria-hidden="true" @if($firstSpotlight['is_over'] ?? false) style="display:none" @endif></span>
+                                        <span id="hero-stage-event-eyebrow">{{ $firstSpotlight['eyebrow'] ?? 'Active WordCamp' }}</span>
                                     </div>
                                     <span id="hero-stage-event-name" class="hero-stage__event-name" title="{{ $firstSpotlight['event_name'] ?? 'WordCamp Delhi 2026' }}">{{ $firstSpotlight['event_name'] ?? 'WordCamp Delhi 2026' }}</span>
                                 </div>
@@ -127,13 +127,19 @@
                             <div class="hero-stage__talk-title" id="hero-spotlight-title">{{ $firstSpotlight['title'] ?? 'Aditya Vikram Singh' }}</div>
 
                             <div class="hero-stage__speaker">
-                                <span class="speaker-avatar" id="hero-spotlight-avatar">AV</span>
+                                <span class="speaker-avatar" id="hero-spotlight-avatar">
+                                    @if (!empty($firstSpotlight['icon']))
+                                        <x-attendee.line-icon :name="$firstSpotlight['icon']" />
+                                    @else
+                                        {{ !empty($firstSpotlight['title']) ? strtoupper(substr(trim($firstSpotlight['title']), 0, 2)) : '★' }}
+                                    @endif
+                                </span>
                                 <span class="star-badge" id="hero-spotlight-meta">{{ $firstSpotlight['meta'] ?? 'Sharing knowledge with the WordPress community' }}</span>
                             </div>
 
                             <div class="hero-stage__card-footer">
                                 <a href="{{ $firstSpotlight['url'] ?? '#find-your-camp' }}" class="hero-stage__view-btn" id="hero-spotlight-link">
-                                    <span>Explore this WordCamp</span>
+                                    <span id="hero-spotlight-action">{{ ($firstSpotlight['type'] ?? '') === 'album' ? 'View Photo Album' : 'Explore this WordCamp' }}</span>
                                     <span class="hero-stage__arrow" aria-hidden="true">&rarr;</span>
                                 </a>
                             </div>

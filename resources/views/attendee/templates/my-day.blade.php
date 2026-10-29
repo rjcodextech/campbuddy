@@ -21,6 +21,9 @@
         <img src="/media/illustrations/schedule.svg" alt="" width="160" height="120">
         <p class="empty-state__title">Your day is still empty</p>
         <p class="empty-state__text">Tap the <x-attendee.line-icon name="star" /> next to any session in Full schedule to save it here. Tip: pick three or four, and leave room for the hallway track.</p>
+        <button type="button" class="btn btn--secondary btn--compact" onclick="document.querySelector('[data-view-tab=\'full\']')?.click()" style="margin-top:14px">
+            Browse full schedule →
+        </button>
     </div>
 </template>
 

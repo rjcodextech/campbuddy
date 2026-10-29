@@ -4,16 +4,16 @@
 .card {
     @include m.card-surface;
     padding: v.$space-5;
-    border-radius: 18px;
+    border-radius: v.$radius-card;
     background: #ffffff;
-    border: 1px solid rgba(15, 23, 42, 0.08);
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px -4px rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--line);
+    box-shadow: v.$shadow-sm;
     transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
 
     @media (hover: hover) and (pointer: fine) {
         &:hover {
-            box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.08);
-            border-color: rgba(15, 23, 42, 0.12);
+            box-shadow: v.$shadow-md;
+            border-color: rgba(195, 58, 25, 0.2);
         }
     }
 

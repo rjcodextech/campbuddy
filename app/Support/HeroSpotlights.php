@@ -3,6 +3,10 @@
 namespace App\Support;
 
 use App\Models\Event;
+use App\Support\EventCountry;
+use App\Support\EventData;
+use App\Support\EventTime;
+use App\Support\SafeUrl;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,12 +25,38 @@ class HeroSpotlights
             return [];
         }
 
-        return Cache::remember('home:hero-spotlights:v3', now()->addMinutes(30), function () use ($events) {
+        return Cache::remember('home:hero-spotlights:v4', now()->addMinutes(30), function () use ($events) {
             $spotlights = [];
 
             foreach ($events as $event) {
                 $country = EventCountry::code($event) ?: 'ALL';
                 $eventLogo = $event->markUrl() ?? '/media/icons/icon-192.png';
+
+                // Check if WordCamp has ended
+                if (EventTime::isOver($event)) {
+                    $photoUrl = SafeUrl::web($event->photo_album_url);
+                    // If completed event has photo album: show it as a memory spotlight
+                    if ($photoUrl) {
+                        $spotlights[] = [
+                            'event_id' => $event->id,
+                            'event_name' => $event->display_name,
+                            'event_slug' => $event->slug,
+                            'event_logo' => $eventLogo,
+                            'country' => $country,
+                            'type' => 'album',
+                            'is_over' => true,
+                            'eyebrow' => 'Event Memories',
+                            'badge' => 'Official Photo Album',
+                            'title' => "Photos & Memories · {$event->display_name}",
+                            'meta' => 'Browse official photos and community moments',
+                            'icon' => 'camera',
+                            'url' => route('event.memories', $event),
+                        ];
+                    }
+                    // If no photo album for ended WordCamp, show NOTHING about this event in hero section
+                    continue;
+                }
+
                 $sessions = EventData::get($event->id, 'sessions') ?? [];
                 $speakers = EventData::get($event->id, 'speakers') ?? [];
                 $sponsors = EventData::get($event->id, 'sponsors') ?? [];
@@ -49,6 +79,8 @@ class HeroSpotlights
                             'event_logo' => $eventLogo,
                             'country' => $country,
                             'type' => 'session',
+                            'is_over' => false,
+                            'eyebrow' => 'Active WordCamp',
                             'badge' => 'Featured Session',
                             'title' => $title,
                             'meta' => $speakerName ? "Speaker: {$speakerName}" . ($s['starts_at'] ? ' · ' . substr($s['starts_at'], 11, 5) : '') : (($s['track_names'][0] ?? 'Main Track') . ($s['starts_at'] ? ' · ' . substr($s['starts_at'], 11, 5) : '')),
@@ -70,6 +102,8 @@ class HeroSpotlights
                         'event_logo' => $eventLogo,
                         'country' => $country,
                         'type' => 'speaker',
+                        'is_over' => false,
+                        'eyebrow' => 'Active WordCamp',
                         'badge' => 'Speaker Spotlight',
                         'title' => $sp['name'],
                         'meta' => 'Sharing knowledge with the WordPress community',
@@ -88,6 +122,8 @@ class HeroSpotlights
                         'event_logo' => $eventLogo,
                         'country' => $country,
                         'type' => 'organizer',
+                        'is_over' => false,
+                        'eyebrow' => 'Active WordCamp',
                         'badge' => 'Community Organizer',
                         'title' => $org['name'],
                         'meta' => 'Volunteer driven · Community powered',
@@ -106,6 +142,8 @@ class HeroSpotlights
                         'event_logo' => $eventLogo,
                         'country' => $country,
                         'type' => 'sponsor',
+                        'is_over' => false,
+                        'eyebrow' => 'Active WordCamp',
                         'badge' => 'Community Sponsor',
                         'title' => $spons['name'],
                         'meta' => 'Supporting the WordPress community',

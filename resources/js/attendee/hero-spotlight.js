@@ -96,18 +96,36 @@ export function initHeroSpotlight() {
       metaEl.textContent = item.meta || '';
       metaEl.hidden = !item.meta;
     }
+    const eyebrowEl = document.getElementById('hero-stage-event-eyebrow');
+    const liveDotEl = document.getElementById('hero-stage-live-dot');
+    const actionEl = document.getElementById('hero-spotlight-action');
+
+    if (eyebrowEl) {
+      eyebrowEl.textContent = item.eyebrow || (item.is_over ? 'Event Memories' : 'Active WordCamp');
+    }
+    if (liveDotEl) {
+      liveDotEl.style.display = item.is_over ? 'none' : 'inline-block';
+    }
+    if (actionEl) {
+      actionEl.textContent = item.type === 'album' ? 'View Photo Album' : 'Explore this WordCamp';
+    }
+
     if (avatarEl) {
-      const initials = (item.title || item.event_name || 'CB')
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((w) => w[0].toUpperCase())
-        .join('');
-      avatarEl.textContent = initials || '★';
+      if (item.icon) {
+        avatarEl.innerHTML = `<svg class="line-icon line-icon--${item.icon}" aria-hidden="true" focusable="false"><use href="#li-${item.icon}"></use></svg>`;
+      } else {
+        const initials = (item.title || item.event_name || 'CB')
+          .split(' ')
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((w) => w[0].toUpperCase())
+          .join('');
+        avatarEl.textContent = initials || '★';
+      }
     }
     if (linkEl && item.url) {
       linkEl.href = item.url;
-      linkEl.setAttribute('aria-label', `Explore ${item.event_name}`);
+      linkEl.setAttribute('aria-label', `${item.type === 'album' ? 'View Photo Album' : 'Explore'} ${item.event_name}`);
     }
 
     card.classList.remove('is-refreshing');

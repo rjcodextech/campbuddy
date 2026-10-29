@@ -4,7 +4,10 @@
 .contributor-result {
     @include m.card-surface;
     padding: v.$space-5;
-    text-align: center;
+    text-align: left;
+    border-left: 4px solid var(--brand-primary);
+    background: linear-gradient(135deg, #ffffff 0%, #fffbf6 100%);
+    box-shadow: v.$shadow-sm;
 }
 
 .install-steps {
@@ -115,6 +118,19 @@
     > * {
         flex-shrink: 0;
         white-space: nowrap;
+    }
+
+    .btn[aria-selected='true'],
+    .btn:not(.btn--outline) {
+        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+        color: #ffffff;
+        border-color: transparent;
+        box-shadow: 0 4px 12px -2px rgba(195, 58, 25, 0.35);
+
+        .line-icon {
+            color: #ffffff;
+            stroke: #ffffff;
+        }
     }
 }
 

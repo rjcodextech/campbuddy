@@ -79,7 +79,7 @@
 }
 
 @mixin card-surface {
-    background: var(--paper);
+    background: #ffffff;
     border: 1px solid var(--line);
     border-radius: v.$radius-card;
     box-shadow: v.$shadow-card;

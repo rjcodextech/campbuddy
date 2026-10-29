@@ -14,9 +14,9 @@
 
                     @include('attendee.partials.camp-card-face', ['key' => $key, 'event' => $event])
 
-                    {{-- Two equal buttons, together as wide as the card. camp-card.js only changes the label beside the icon. --}}
+                    {{-- Clear visual hierarchy: Share leads as primary, Download as secondary. --}}
                     <div class="qr__actions">
-                        <button type="button" class="btn btn--outline" data-share-card="{{ $key }}"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
+                        <button type="button" class="btn btn--primary" data-share-card="{{ $key }}"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
                         <button type="button" class="btn btn--outline" data-download-card="{{ $key }}"><x-attendee.line-icon name="download" /><span data-export-label>Download</span></button>
                     </div>
                 </div>
