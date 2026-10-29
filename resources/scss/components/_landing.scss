@@ -576,14 +576,17 @@
 .landing-hero__visual {
     position: relative;
     width: 100%;
+    max-width: 100%;
+    overflow: clip;
 }
 
 .hero-ambient-glow {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 130%;
-    height: 130%;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle at 50% 50%, rgba(255, 77, 45, 0.07) 0%, rgba(217, 119, 6, 0.04) 40%, transparent 70%);
     filter: blur(40px);
@@ -726,10 +729,12 @@
 }
 
 .hero-stage__shuffle-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 5px 12px;
+    padding: 6px 14px;
+    min-height: 36px;
     border: 1px solid rgba(15, 23, 42, 0.1);
     border-radius: v.$radius-full;
     background: #ffffff;
@@ -740,6 +745,12 @@
     flex-shrink: 0;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -6px -2px;
+    }
 
     svg {
         transition: transform 0.4s ease;
@@ -913,6 +924,7 @@
 }
 
 .hero-stage__view-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -920,9 +932,16 @@
     font-weight: 700;
     color: var(--brand-primary);
     text-decoration: none;
-    padding: 3px 8px;
+    padding: 6px 12px;
+    min-height: 34px;
     border-radius: 6px;
     transition: all 0.2s ease;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -6px -2px;
+    }
 
     .hero-stage__arrow {
         transition: transform 0.2s ease;
@@ -1332,6 +1351,7 @@
 }
 
 .usp-slider__dot {
+    position: relative;
     width: 10px;
     height: 10px;
     border-radius: 50%;
@@ -1340,6 +1360,12 @@
     padding: 0;
     cursor: pointer;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -15px -8px;
+    }
 
     &.is-active {
         width: 32px;
@@ -1448,6 +1474,10 @@
     font-weight: 600;
     color: var(--muted);
 
+    @media (max-width: 480px) {
+        gap: 6px 10px;
+    }
+
     span {
         display: inline-flex;
         align-items: center;
@@ -1462,6 +1492,10 @@
 
     &__sep {
         opacity: 0.4;
+
+        @media (max-width: 480px) {
+            display: none;
+        }
     }
 }
 
@@ -1508,10 +1542,21 @@
     font-size: 0.88rem;
 
     a {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 4px 6px;
         color: var(--muted);
         text-decoration: none;
         font-weight: 500;
         transition: color 0.15s ease;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -4px -6px;
+        }
 
         &:hover {
             color: var(--brand-primary);
@@ -1522,6 +1567,31 @@
 
 .footer-social-wrap {
     padding: 4px 0;
+}
+
+.social-icon-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    border-radius: 50%;
+    background: var(--paper, #fffaf4);
+    border: 1px solid var(--line, #eadfd6);
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+    }
+
+    &:hover {
+        transform: translateY(-1.5px);
+        border-color: var(--brand-primary);
+    }
 }
 
 .footer-copy {

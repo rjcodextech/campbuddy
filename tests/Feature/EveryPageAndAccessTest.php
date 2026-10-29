@@ -72,11 +72,23 @@ class EveryPageAndAccessTest extends TestCase
             'size' => 8339, 'sha256' => str_repeat('a', 64), 'cert_sha256' => str_repeat('b', 64), 'status' => AppRelease::DRAFT,
         ]);
 
+        $dealSubmission = \App\Models\SponsorDealSubmission::create([
+            'event_id' => $this->event->id,
+            'sponsor_name' => 'Hostinger',
+            'title' => 'Special Deal',
+            'description' => 'Great deal for attendees',
+            'url' => 'https://hostinger.example/deal',
+            'submitter_name' => 'John',
+            'submitter_email' => 'john@example.com',
+            'status' => 'pending',
+        ]);
+
         $this->params = [
             'event' => $this->event->id,
             'eventId' => $this->event->id,
             'offer' => $offer->id,
             'deal' => $deal->id,
+            'submission' => $dealSubmission->id,
             'free_steal' => $steal->id,
             'media' => MediaAsset::create(['disk' => 'public', 'path' => 'media-library/2026/09/logo.png', 'filename' => 'logo.png', 'mime_type' => 'image/png', 'size' => 3])->id,
             'suggestion' => FreeStealSuggestion::value('id'),

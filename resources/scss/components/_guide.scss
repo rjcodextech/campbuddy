@@ -162,11 +162,12 @@
     }
 
     .chip {
+        position: relative;
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
         gap: 7px;
-        min-height: 36px;
+        min-height: 38px;
         padding: 0 16px;
         white-space: nowrap;
         text-decoration: none;
@@ -179,6 +180,12 @@
         letter-spacing: 0.01em;
         box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -4px 0;
+        }
 
         svg,
         .line-icon {
@@ -215,6 +222,232 @@
 
         &:focus-visible {
             @include m.focus-ring;
+        }
+    }
+}
+
+// Section anchors offset for smooth scrolling under sticky topbar
+.guide-section,
+[id^="guide-"],
+#attendee-features,
+#organizer-features,
+#core-promises,
+#faq {
+    scroll-margin-top: 144px;
+
+    @media (min-width: v.$bp-tablet) {
+        scroll-margin-top: 110px;
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        scroll-margin-top: 84px;
+    }
+}
+
+// =============================================================================
+// GUIDE & ABOUT 2-COLUMN DOCUMENTATION LAYOUT
+// Left Side: Sticky Section Navigation Menu
+// Right Side: Complete Page Content (Hero + All Sections)
+// =============================================================================
+
+.guide-doc-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+
+    @media (min-width: v.$bp-desktop) {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 36px;
+        align-items: start;
+    }
+}
+
+// Left Sidebar
+.guide-doc-sidebar {
+    @media (max-width: #{v.$bp-desktop - 1px}) {
+        order: 2; // Below hero on mobile
+        position: sticky;
+        top: 88px;
+        z-index: 20;
+        margin: -8px -16px 16px;
+        padding: 8px 16px;
+        background: rgba(250, 250, 253, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--line);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        @media (min-width: v.$bp-tablet) {
+            top: 64px;
+        }
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        grid-column: 1;
+        position: sticky;
+        top: 80px;
+        z-index: 15;
+        align-self: start;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+        padding-bottom: 24px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
+
+        &::-webkit-scrollbar {
+            width: 4px;
+        }
+        &::-webkit-scrollbar-thumb {
+            background: rgba(15, 23, 42, 0.15);
+            border-radius: 4px;
+        }
+    }
+}
+
+.guide-doc-sidebar__card {
+    @media (min-width: v.$bp-desktop) {
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 18px;
+        padding: 16px 12px;
+        box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+}
+
+.guide-doc-sidebar__head {
+    display: none;
+
+    @media (min-width: v.$bp-desktop) {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 10px 12px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+}
+
+.guide-doc-sidebar__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+
+    svg,
+    .line-icon {
+        width: 14px;
+        height: 14px;
+        color: var(--brand-primary);
+    }
+}
+
+// Right Content Column
+.guide-doc-content {
+    min-width: 0;
+
+    @media (max-width: #{v.$bp-desktop - 1px}) {
+        display: contents; // Hero is order 1, sections are order 3
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        grid-column: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+    }
+}
+
+// Sidebar styling for guide-jump on desktop
+@media (min-width: v.$bp-desktop) {
+    .guide-jump.guide-jump--sidebar {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 3px;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        position: static;
+        overflow: visible;
+
+        .chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: transparent;
+            border: 1px solid transparent;
+            box-shadow: none;
+            color: var(--muted);
+            font-size: 0.84rem;
+            font-weight: 500;
+            text-align: left;
+            white-space: normal;
+            transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+
+            svg,
+            .line-icon {
+                width: 15px;
+                height: 15px;
+                color: var(--muted);
+                opacity: 0.75;
+                transition: all 0.16s ease;
+                flex-shrink: 0;
+            }
+
+            span {
+                flex: 1;
+                line-height: 1.35;
+            }
+
+            &:hover {
+                background: rgba(15, 23, 42, 0.04);
+                color: var(--ink);
+                transform: translateX(3px);
+
+                svg,
+                .line-icon {
+                    color: var(--brand-primary);
+                    opacity: 1;
+                    transform: scale(1.1);
+                }
+            }
+
+            &.is-active {
+                background: #ffffff;
+                color: var(--brand-primary);
+                font-weight: 700;
+                border-color: rgba(15, 23, 42, 0.08);
+                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+
+                svg,
+                .line-icon {
+                    color: var(--brand-primary);
+                    opacity: 1;
+                    transform: scale(1.08);
+                }
+            }
         }
     }
 }
@@ -626,6 +859,9 @@
 }
 
 .start-here__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
     color: inherit;
     text-decoration: none;
 

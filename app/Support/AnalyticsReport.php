@@ -146,6 +146,10 @@ class AnalyticsReport
             if ($hideBots) {
                 $base[] = ['notExpression' => ['filter' => ['fieldName' => 'screenResolution', 'inListFilter' => ['values' => self::BOT_SCREENS]]]];
             }
+            $excludedHosts = config('analytics.excluded_hosts', []);
+            if (! empty($excludedHosts)) {
+                $base[] = ['notExpression' => ['filter' => ['fieldName' => 'hostName', 'inListFilter' => ['values' => array_values($excludedHosts)]]]];
+            }
 
             $requests = [];
             foreach (self::definitions() as $name => $def) {

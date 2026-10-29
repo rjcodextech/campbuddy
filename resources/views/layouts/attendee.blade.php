@@ -69,7 +69,7 @@
 
     @vite(['resources/css/fonts.css', 'resources/scss/main.scss', 'resources/js/attendee/app.js'])
 </head>
-<body class="app-shell" data-page-type="{{ $pageType }}" data-event-phase="{{ $eventPhase }}">
+<body class="app-shell" data-page-type="{{ $pageType }}" data-event-phase="{{ $eventPhase }}" data-event-slug="{{ $event->slug }}">
     {{-- --with-nav reserves room under the page for the fixed tab bar. --}}
     <div class="app-frame app-frame--with-nav">
         @include('attendee.partials.desktop-notice')

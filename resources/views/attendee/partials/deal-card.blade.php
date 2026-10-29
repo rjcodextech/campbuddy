@@ -46,7 +46,7 @@
 
     {{-- The perforation. Phones: the description (and small print) start closed under its "Details" tab (explore.js adds .is-collapsible; wider screens and no-JS show all). --}}
     <div class="deal-card__perf">
-        <button type="button" class="deal-card__toggle" aria-expanded="false" aria-controls="deal-more-{{ $offer->id }}" data-card-details>
+        <button type="button" class="deal-card__toggle" aria-expanded="false" aria-controls="deal-more-{{ $offer->id }}" data-card-details data-target="details_toggle">
             <span class="deal-card__toggle-open">Details</span><span class="deal-card__toggle-close">Hide details</span>
             <x-attendee.line-icon name="chevron-down" />
         </button>
@@ -66,7 +66,7 @@
         <div class="deal-card__code">
             <span class="deal-card__code-label">Code</span>
             <code class="deal-card__code-value">{{ $offer->coupon_code }}</code>
-            <button type="button" class="btn btn--outline btn--compact" data-copy-code="{{ $offer->coupon_code }}">Copy</button>
+            <button type="button" class="btn btn--outline btn--compact" data-copy-code="{{ $offer->coupon_code }}" data-target="copy_code">Copy</button>
         </div>
     @endif
 
@@ -77,15 +77,18 @@
                     data-lead-offer-url="{{ $offer->url }}"
                     data-lead-offer-title="{{ $name }}"
                     data-lead-new-tab="{{ $offer->opens_in_app ? '0' : '1' }}"
-                    data-lead-form="{{ json_encode($offer->leadForm()) }}">{{ $cta }} →</button>
+                    data-lead-form="{{ json_encode($offer->leadForm()) }}"
+                    data-target="lead_form_cta">{{ $cta }} →</button>
             <span class="deal-card__note"><x-attendee.line-icon name="clipboard" /> Short form first</span>
         @elseif ($offer->opens_in_app)
             <button type="button" class="btn btn--primary btn--full deal-card__cta"
                     data-inapp-url="{{ $offer->url }}"
-                    data-inapp-title="{{ $name }}">{{ $cta }} →</button>
+                    data-inapp-title="{{ $name }}"
+                    data-target="in_app_cta">{{ $cta }} →</button>
         @else
             <a href="{{ $offer->url }}" target="_blank" rel="noopener sponsored" class="btn btn--primary btn--full deal-card__cta"
-               data-deal-link data-deal-title="{{ $name }}">{{ $cta }} <x-attendee.line-icon name="external" /></a>
+               data-deal-link data-deal-title="{{ $name }}"
+               data-target="external_cta">{{ $cta }} <x-attendee.line-icon name="external" /></a>
         @endif
     </div>
     </div>

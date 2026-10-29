@@ -152,6 +152,9 @@ class AdminAnalyticsPageTest extends TestCase
                 $filters = json_encode($req['dimensionFilter']);
                 $this->assertStringContainsString('"value":"222"', $filters);
                 $this->assertStringContainsString('800x600', $filters);
+                $this->assertStringContainsString('campbuddy.club.rjcodex.com', $filters);
+                $this->assertStringContainsString('campbuddy.test', $filters);
+                $this->assertStringContainsString('127.0.0.1', $filters);
             }
         }
     }

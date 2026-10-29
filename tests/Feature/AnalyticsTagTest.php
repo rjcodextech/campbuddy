@@ -11,8 +11,10 @@ use Tests\TestCase;
  */
 class AnalyticsTagTest extends TestCase
 {
-    private function render(array $data = []): string
+    private function render(array $data = [], string $host = 'campbuddy.club'): string
     {
+        request()->headers->set('HOST', $host);
+
         return view('attendee.partials.analytics', $data)->render();
     }
 
@@ -21,6 +23,28 @@ class AnalyticsTagTest extends TestCase
         config(['services.google_analytics.measurement_id' => null]);
 
         $this->assertSame('', trim($this->render(['eventSlug' => 'wc-test'])));
+    }
+
+    public function test_renders_nothing_on_excluded_domains(): void
+    {
+        config(['services.google_analytics.measurement_id' => 'G-TEST123']);
+
+        $excludedHosts = [
+            'campbuddy.club.rjcodex.com',
+            'campbuddy.test',
+            '127.0.0.1',
+            'localhost',
+            'subdomain.campbuddy.test',
+            'dev.local',
+        ];
+
+        foreach ($excludedHosts as $host) {
+            $this->assertSame(
+                '',
+                trim($this->render(['eventSlug' => 'wc-test'], $host)),
+                "Expected analytics tag to be completely suppressed on {$host}"
+            );
+        }
     }
 
     public function test_renders_the_tag_when_a_measurement_id_is_set(): void
@@ -32,6 +56,10 @@ class AnalyticsTagTest extends TestCase
         $this->assertStringContainsString("})('G-TEST123');", $html);
         $this->assertStringContainsString('googletagmanager.com/gtag/js', $html);
         $this->assertStringContainsString("gtag('config', id", $html);
+        $this->assertStringContainsString('excludedHosts.indexOf(host) !== -1', $html);
+        $this->assertStringContainsString('campbuddy.club.rjcodex.com', $html);
+        $this->assertStringContainsString('campbuddy.test', $html);
+        $this->assertStringContainsString('127.0.0.1', $html);
     }
 
     public function test_urls_are_scrubbed_before_any_hit_is_sent(): void

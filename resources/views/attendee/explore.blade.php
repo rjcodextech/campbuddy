@@ -65,14 +65,40 @@
                     <p class="u-eyebrow">{{ $tier }}</p>
                     <div class="sponsor-group__row">
                         @foreach ($tierSponsors as $sponsor)
-                            {{-- Display only: a sponsor chip opens nothing. Sponsor links live on their deals (Deals tab). --}}
-                            <span class="sponsor-chip {{ $tierClass($tier) }}">
-                                @if (! empty($sponsor['logo_url']))
-                                    <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
-                                @else
-                                    {{ $sponsor['name'] }}
-                                @endif
-                            </span>
+                            @php
+                                $sponsorUrl = $webUrl($sponsor['website'] ?? $sponsor['link'] ?? null);
+                            @endphp
+                            @if ($sponsorUrl)
+                                <button type="button" class="sponsor-chip {{ $tierClass($tier) }} sponsor-chip--interactive"
+                                        data-sponsor-chip
+                                        data-inapp-url="{{ $sponsorUrl }}"
+                                        data-inapp-title="{{ $sponsor['name'] }}"
+                                        data-track="sponsor_open"
+                                        data-track-sponsor-name="{{ $sponsor['name'] }}"
+                                        data-track-link-domain="{{ parse_url($sponsorUrl, PHP_URL_HOST) }}"
+                                        data-track-target="sponsor_chip"
+                                        title="{{ $sponsor['name'] }} (opens website)">
+                                    @if (! empty($sponsor['logo_url']))
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                    @else
+                                        {{ $sponsor['name'] }}
+                                    @endif
+                                </button>
+                            @else
+                                <span class="sponsor-chip {{ $tierClass($tier) }} sponsor-chip--interactive"
+                                      data-sponsor-chip
+                                      data-inapp-title="{{ $sponsor['name'] }}"
+                                      data-track="sponsor_open"
+                                      data-track-sponsor-name="{{ $sponsor['name'] }}"
+                                      data-track-target="sponsor_chip"
+                                      title="{{ $sponsor['name'] }}">
+                                    @if (! empty($sponsor['logo_url']))
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                    @else
+                                        {{ $sponsor['name'] }}
+                                    @endif
+                                </span>
+                            @endif
                         @endforeach
                     </div>
                 </div>
@@ -109,7 +135,7 @@
             <div class="free-steal-suggest">
                 <p class="free-steal-suggest__title">Built a free tool, or know a good one?</p>
                 <p class="free-steal-suggest__text">Tell us. The team looks at every suggestion before anything is added.</p>
-                <button type="button" class="btn btn--outline btn--compact" data-suggest-steal>Suggest a Free Steal</button>
+                <button type="button" class="btn btn--outline btn--compact" data-suggest-steal data-track="free_steal_suggest_open" data-track-target="suggest_button">Suggest a Free Steal</button>
             </div>
         </div>
 

@@ -40,6 +40,14 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
             padding-left: 24px;
             padding-right: 24px;
         }
+
+        @media (min-width: 1200px) {
+            &.about-page,
+            &.guide,
+            &.guide-page {
+                max-width: 1240px;
+            }
+        }
     }
 
     .landing-footer,

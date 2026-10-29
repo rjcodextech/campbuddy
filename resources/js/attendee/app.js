@@ -204,6 +204,44 @@ async function init() {
     const { initFreeStealSuggest } = await import('./free-steal-suggest.js');
     initFreeStealSuggest(root.dataset.eventSlug);
   }
+
+  initDocSidebarScrollSpy();
+}
+
+function initDocSidebarScrollSpy() {
+  const sidebar = document.querySelector('.guide-doc-sidebar');
+  if (!sidebar) return;
+  const links = Array.from(sidebar.querySelectorAll('.guide-jump a[href^="#"]'));
+  if (!links.length) return;
+
+  const targets = links
+    .map((l) => document.querySelector(l.getAttribute('href')))
+    .filter(Boolean);
+  if (!targets.length) return;
+
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      let currentId = targets[0]?.id || '';
+      for (const target of targets) {
+        const top = target.getBoundingClientRect().top + scrollY - 140;
+        if (scrollY >= top) {
+          currentId = target.id;
+        }
+      }
+      links.forEach((l) => {
+        const active = l.getAttribute('href') === `#${currentId}`;
+        l.classList.toggle('is-active', active);
+      });
+      ticking = false;
+    });
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 }
 
 if (document.readyState === 'loading') {

@@ -20,13 +20,31 @@
         analytics, not advertising.
       - Browsers that send Global Privacy Control / Do Not Track get no tag
         at all.
+      - Excluded domains (campbuddy.club.rjcodex.com, campbuddy.test, 127.0.0.1,
+        localhost) never render or execute analytics.
 --}}
-@php($gaId = config('services.google_analytics.measurement_id'))
-@if ($gaId)
+@php
+    $gaId = config('services.google_analytics.measurement_id');
+    $excludedHosts = config('analytics.excluded_hosts', [
+        'campbuddy.club.rjcodex.com',
+        'campbuddy.test',
+        '127.0.0.1',
+        'localhost',
+    ]);
+    $currentHost = strtolower((string) request()->getHost());
+    $isExcludedHost = in_array($currentHost, $excludedHosts, true)
+        || str_ends_with($currentHost, '.test')
+        || str_ends_with($currentHost, '.local');
+@endphp
+@if ($gaId && ! $isExcludedHost)
 <script>
     (function (id) {
         var nav = window.navigator;
         if (nav.globalPrivacyControl || nav.doNotTrack === '1') return;
+
+        var host = (window.location && window.location.hostname) ? window.location.hostname.toLowerCase() : '';
+        var excludedHosts = @js($excludedHosts);
+        if (excludedHosts.indexOf(host) !== -1 || host.endsWith('.test') || host.endsWith('.local')) return;
 
         // Query params that are safe (and useful) to keep on a reported URL.
         var keep = /^(utm_[a-z_]+|gclid|dclid|fbclid|msclkid|tab)$/i;
@@ -47,6 +65,10 @@
         window.gtag = function () { window.dataLayer.push(arguments); };
 
         gtag('js', new Date());
+        @isset($eventSlug)
+        gtag('set', { event_slug: @js($eventSlug) });
+        window.__CB_EVENT_SLUG = @js($eventSlug);
+        @endisset
         gtag('config', id, {
             page_location: scrub(location.href),
             page_referrer: scrub(document.referrer),

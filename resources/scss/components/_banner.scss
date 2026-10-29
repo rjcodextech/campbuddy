@@ -99,6 +99,7 @@
     }
 
     &__close {
+        position: relative;
         width: 28px;
         height: 28px;
         border-radius: 50%;
@@ -112,6 +113,12 @@
         padding: 0;
         transition: transform 0.15s ease, background-color 0.15s ease;
         flex-shrink: 0;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+        }
 
         &:hover {
             transform: scale(1.1);
@@ -143,10 +150,12 @@
     }
 
     &__cta {
+        position: relative;
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 6px 14px;
+        min-height: 36px;
         border-radius: 9999px;
         background-color: #ffffff;
         border: 1px solid var(--banner-border, #f7d5c1);
@@ -156,6 +165,12 @@
         text-decoration: none;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -4px 0;
+        }
 
         &:hover {
             transform: translateY(-1px);

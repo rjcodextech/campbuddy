@@ -30,101 +30,113 @@
     $cocUrl = $webUrl($info['code_of_conduct_url'] ?? null);
 @endphp
 
-<section class="hero-creative" aria-labelledby="guide-title">
-    <nav class="hero-breadcrumb" aria-label="Breadcrumb">
-        <a href="{{ route('home') }}">Home</a>
-        <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
-        <span class="hero-breadcrumb__current" aria-current="page">WordCamp Guide</span>
-    </nav>
+<div class="guide-doc-layout">
+    {{-- Left Side: Sticky Navigation Menu --}}
+    <aside class="guide-doc-sidebar" aria-label="Guide Navigation">
+        <div class="guide-doc-sidebar__card">
+            <div class="guide-doc-sidebar__head">
+                <span class="guide-doc-sidebar__title">
+                    <x-attendee.line-icon name="book-open" />
+                    <span>Guide Sections</span>
+                </span>
+            </div>
+            <nav class="guide-jump guide-jump--sidebar" aria-label="Guide sections">
+                @if ($event && ($practical || $cocUrl))
+                    <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">
+                        <x-attendee.line-icon name="map-pin" />
+                        <span>At this event</span>
+                    </a>
+                @endif
+                <a class="chip" href="#guide-why" data-track="guide_section_jump" data-track-section="why">
+                    <x-attendee.line-icon name="sparkles" />
+                    <span>Superpowers</span>
+                </a>
+                <a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">
+                    <x-attendee.line-icon name="help-circle" />
+                    <span>What is it?</span>
+                </a>
+                <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">
+                    <x-attendee.line-icon name="calendar" />
+                    <span>Your day</span>
+                </a>
+                <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">
+                    <x-attendee.line-icon name="message-circle" />
+                    <span>Words you'll hear</span>
+                </a>
+                <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">
+                    <x-attendee.line-icon name="lightbulb" />
+                    <span>Tips</span>
+                </a>
+                <a class="chip" href="#guide-students" data-track="guide_section_jump" data-track-section="students">
+                    <x-attendee.line-icon name="graduation-cap" />
+                    <span>Students</span>
+                </a>
+                <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">
+                    <x-attendee.line-icon name="briefcase" />
+                    <span>What to bring</span>
+                </a>
+                <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">
+                    <x-attendee.line-icon name="help-circle" />
+                    <span>FAQ</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
 
+    {{-- Right Side: Complete Page Content --}}
+    <div class="guide-doc-content">
+        <section class="hero-creative" aria-labelledby="guide-title">
+            <nav class="hero-breadcrumb" aria-label="Breadcrumb">
+                <a href="{{ route('home') }}">Home</a>
+                <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
+                <span class="hero-breadcrumb__current" aria-current="page">WordCamp Guide</span>
+            </nav>
 
+            <div class="hero-kicker">
+                <x-attendee.line-icon name="sprout" />
+                <span>5-Minute First-Timer Handbook</span>
+            </div>
 
-    <div class="hero-kicker">
-        <x-attendee.line-icon name="sprout" />
-        <span>5-Minute First-Timer Handbook</span>
-    </div>
+            <h1 id="guide-title" class="hero-creative__title">
+                @if ($event)
+                    New to {{ $event->short_name ?: 'WordCamp' }}? <span class="hero-creative__highlight">Start here.</span>
+                @else
+                    Your first WordCamp? <span class="hero-creative__highlight">Start here.</span>
+                @endif
+            </h1>
 
-    <h1 id="guide-title" class="hero-creative__title">
-        @if ($event)
-            New to {{ $event->short_name ?: 'WordCamp' }}? <span class="hero-creative__highlight">Start here.</span>
-        @else
-            Your first WordCamp? <span class="hero-creative__highlight">Start here.</span>
-        @endif
-    </h1>
+            <p class="hero-creative__lead">
+                How the day runs, the words people throw around, what to bring, and how to start talking to people you don't know yet in the hallway track.
+            </p>
 
-    <p class="hero-creative__lead">
-        How the day runs, the words people throw around, what to bring, and how to start talking to people you don't know yet in the hallway track.
-    </p>
+            <div class="hero-creative__pills">
+                <span class="hero-pill"><x-attendee.line-icon name="clock" /> 5-minute read</span>
+                @if ($event && filled($event->venue))
+                    <span class="hero-pill"><x-attendee.line-icon name="map-pin" /> {{ $event->venue }}</span>
+                @else
+                    <span class="hero-pill"><x-attendee.line-icon name="ticket" /> Free community guide</span>
+                @endif
+                <span class="hero-pill"><x-attendee.line-icon name="wifi" /> Works offline</span>
+                <span class="hero-pill"><x-attendee.line-icon name="users" /> Hallway tips</span>
+            </div>
 
-    <div class="hero-creative__pills">
-        <span class="hero-pill"><x-attendee.line-icon name="clock" /> 5-minute read</span>
-        @if ($event && filled($event->venue))
-            <span class="hero-pill"><x-attendee.line-icon name="map-pin" /> {{ $event->venue }}</span>
-        @else
-            <span class="hero-pill"><x-attendee.line-icon name="ticket" /> Free community guide</span>
-        @endif
-        <span class="hero-pill"><x-attendee.line-icon name="wifi" /> Works offline</span>
-        <span class="hero-pill"><x-attendee.line-icon name="users" /> Hallway tips</span>
-    </div>
+            <div class="hero-creative__actions">
+                <a href="#guide-what" class="btn btn--primary">
+                    <span>Read WordCamp 101</span>
+                    <span aria-hidden="true">&darr;</span>
+                </a>
+                <a href="{{ route('home') }}#find-your-camp" class="btn btn--outline">
+                    <span>Select WordCamp</span>
+                    <span aria-hidden="true">&rarr;</span>
+                </a>
+            </div>
 
-    <div class="hero-creative__actions">
-        <a href="#guide-what" class="btn btn--primary">
-            <span>Read WordCamp 101</span>
-            <span aria-hidden="true">&darr;</span>
-        </a>
-        <a href="{{ route('home') }}#find-your-camp" class="btn btn--outline">
-            <span>Select WordCamp</span>
-            <span aria-hidden="true">&rarr;</span>
-        </a>
-    </div>
-
-    <div class="hero-creative__waves" aria-hidden="true">
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
-        </svg>
-    </div>
-</section>
-
-<nav class="guide-jump" aria-label="Guide sections">
-    @if ($event && ($practical || $cocUrl))
-        <a class="chip" href="#guide-here" data-track="guide_section_jump" data-track-section="here">
-            <x-attendee.line-icon name="map-pin" />
-            <span>At this event</span>
-        </a>
-    @endif
-    <a class="chip" href="#guide-why" data-track="guide_section_jump" data-track-section="why">
-        <x-attendee.line-icon name="sparkles" />
-        <span>Superpowers</span>
-    </a>
-    <a class="chip" href="#guide-what" data-track="guide_section_jump" data-track-section="what">
-        <x-attendee.line-icon name="help-circle" />
-        <span>What is it?</span>
-    </a>
-    <a class="chip" href="#guide-day" data-track="guide_section_jump" data-track-section="day">
-        <x-attendee.line-icon name="calendar" />
-        <span>Your day</span>
-    </a>
-    <a class="chip" href="#guide-words" data-track="guide_section_jump" data-track-section="words">
-        <x-attendee.line-icon name="message-circle" />
-        <span>Words you'll hear</span>
-    </a>
-    <a class="chip" href="#guide-tips" data-track="guide_section_jump" data-track-section="tips">
-        <x-attendee.line-icon name="lightbulb" />
-        <span>Tips</span>
-    </a>
-    <a class="chip" href="#guide-students" data-track="guide_section_jump" data-track-section="students">
-        <x-attendee.line-icon name="graduation-cap" />
-        <span>Students</span>
-    </a>
-    <a class="chip" href="#guide-bring" data-track="guide_section_jump" data-track-section="bring">
-        <x-attendee.line-icon name="briefcase" />
-        <span>What to bring</span>
-    </a>
-    <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">
-        <x-attendee.line-icon name="help-circle" />
-        <span>FAQ</span>
-    </a>
-</nav>
+            <div class="hero-creative__waves" aria-hidden="true">
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+                </svg>
+            </div>
+        </section>
 
 
 <section id="guide-why" class="guide-section" aria-labelledby="guide-why-heading">
@@ -338,3 +350,5 @@
         <a class="btn btn--primary btn--full" href="{{ route('home') }}#find-your-camp" data-track="home_link_click" data-track-target="find_your_camp">Choose your WordCamp →</a>
     @endif
 </section>
+    </div>
+</div>

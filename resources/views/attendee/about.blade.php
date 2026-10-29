@@ -35,59 +35,72 @@
         @include('attendee.partials.public-header')
 
         <main id="main-content" class="landing-main site-main about-page" tabindex="-1">
-            {{-- Creative Hero Section --}}
-            <section class="hero-creative" aria-labelledby="about-hero-title">
-                <nav class="hero-breadcrumb" aria-label="Breadcrumb">
-                    <a href="{{ route('home') }}">Home</a>
-                    <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
-                    <span class="hero-breadcrumb__current" aria-current="page">About CampBuddy</span>
-                </nav>
+            <div class="guide-doc-layout">
+                {{-- Left Side: Sticky Navigation Menu --}}
+                <aside class="guide-doc-sidebar" aria-label="Page Navigation">
+                    <div class="guide-doc-sidebar__card">
+                        <div class="guide-doc-sidebar__head">
+                            <span class="guide-doc-sidebar__title">
+                                <x-attendee.line-icon name="compass" />
+                                <span>On This Page</span>
+                            </span>
+                        </div>
+                        <nav class="guide-jump guide-jump--sidebar" aria-label="Page sections">
+                            <a class="chip" href="#attendee-features"><x-attendee.line-icon name="sparkles" /> <span>Attendee Features</span></a>
+                            <a class="chip" href="#organizer-features"><x-attendee.line-icon name="megaphone" /> <span>For Organizers</span></a>
+                            <a class="chip" href="#core-promises"><x-attendee.line-icon name="heart" /> <span>Core Promises</span></a>
+                            <a class="chip" href="#faq"><x-attendee.line-icon name="help-circle" /> <span>FAQ</span></a>
+                        </nav>
+                    </div>
+                </aside>
 
-                <div class="hero-kicker">
-                    <x-attendee.line-icon name="sparkles" />
-                    <span>A Community Initiative by WPSimplified</span>
-                </div>
+                {{-- Right Side: Complete Page Content --}}
+                <div class="guide-doc-content">
+                    {{-- Creative Hero Section --}}
+                    <section class="hero-creative" aria-labelledby="about-hero-title">
+                        <nav class="hero-breadcrumb" aria-label="Breadcrumb">
+                            <a href="{{ route('home') }}">Home</a>
+                            <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
+                            <span class="hero-breadcrumb__current" aria-current="page">About CampBuddy</span>
+                        </nav>
 
-                <h1 id="about-hero-title" class="hero-creative__title">
-                    The <span class="hero-creative__highlight">Zero-Signup</span> Offline Companion for WordCamp
-                </h1>
+                        <div class="hero-kicker">
+                            <x-attendee.line-icon name="sparkles" />
+                            <span>A Community Initiative by WPSimplified</span>
+                        </div>
 
-                <p class="hero-creative__lead">
-                    CampBuddy is the privacy-first mobile companion and event engine for WordCamps worldwide. Built by WPSimplified as a 100% free community gift &mdash; zero login, zero paper cards, and runs entirely offline.
-                </p>
+                        <h1 id="about-hero-title" class="hero-creative__title">
+                            The <span class="hero-creative__highlight">Zero-Signup</span> Offline Companion for WordCamp
+                        </h1>
 
-                <div class="hero-creative__pills">
-                    <span class="hero-pill"><x-attendee.line-icon name="lock" /> Zero sign-up (DPDPA 2023)</span>
-                    <span class="hero-pill"><x-attendee.line-icon name="wifi" /> 100% Offline-Ready</span>
-                    <span class="hero-pill"><x-attendee.line-icon name="zap" /> Instant PWA (No app store)</span>
-                    <span class="hero-pill"><x-attendee.line-icon name="heart" /> 100% Free Forever</span>
-                </div>
+                        <p class="hero-creative__lead">
+                            CampBuddy is the privacy-first mobile companion and event engine for WordCamps worldwide. Built by WPSimplified as a 100% free community gift &mdash; zero login, zero paper cards, and runs entirely offline.
+                        </p>
 
-                <div class="hero-creative__actions">
-                    <a href="{{ route('home') }}#find-your-camp" class="btn btn--primary">
-                        <span>Explore WordCamps</span>
-                        <span aria-hidden="true">&rarr;</span>
-                    </a>
-                    <a href="#attendee-features" class="btn btn--outline">
-                        <span>Core Features</span>
-                        <span aria-hidden="true">&darr;</span>
-                    </a>
-                </div>
+                        <div class="hero-creative__pills">
+                            <span class="hero-pill"><x-attendee.line-icon name="lock" /> Zero sign-up (DPDPA 2023)</span>
+                            <span class="hero-pill"><x-attendee.line-icon name="wifi" /> 100% Offline-Ready</span>
+                            <span class="hero-pill"><x-attendee.line-icon name="zap" /> Instant PWA (No app store)</span>
+                            <span class="hero-pill"><x-attendee.line-icon name="heart" /> 100% Free Forever</span>
+                        </div>
 
-                <div class="hero-creative__waves" aria-hidden="true">
-                    <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                        <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
-                    </svg>
-                </div>
-            </section>
+                        <div class="hero-creative__actions">
+                            <a href="{{ route('home') }}#find-your-camp" class="btn btn--primary">
+                                <span>Explore WordCamps</span>
+                                <span aria-hidden="true">&rarr;</span>
+                            </a>
+                            <a href="#attendee-features" class="btn btn--outline">
+                                <span>Core Features</span>
+                                <span aria-hidden="true">&darr;</span>
+                            </a>
+                        </div>
 
-            {{-- Quick Jump Navigation --}}
-            <nav class="guide-jump" aria-label="Page sections">
-                <a class="chip" href="#attendee-features"><x-attendee.line-icon name="sparkles" /> <span>Attendee Features</span></a>
-                <a class="chip" href="#organizer-features"><x-attendee.line-icon name="megaphone" /> <span>For Organizers</span></a>
-                <a class="chip" href="#core-promises"><x-attendee.line-icon name="heart" /> <span>Core Promises</span></a>
-                <a class="chip" href="#faq"><x-attendee.line-icon name="help-circle" /> <span>FAQ</span></a>
-            </nav>
+                        <div class="hero-creative__waves" aria-hidden="true">
+                            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                                <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+                            </svg>
+                        </div>
+                    </section>
 
             {{-- Section 1: Attendee Superpowers (Bento Grid) --}}
             <section id="attendee-features" class="guide-section" aria-labelledby="features-heading">
@@ -338,7 +351,9 @@
                     </div>
                 </div>
             </section>
-        </main>
+        </div>
+    </div>
+</main>
 
         @include('attendee.partials.footer')
     </div>

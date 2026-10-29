@@ -136,6 +136,10 @@ class UsagePost
             ['filter' => ['fieldName' => 'customEvent:event_slug', 'stringFilter' => ['value' => $slug, 'matchType' => 'EXACT']]],
             ['notExpression' => ['filter' => ['fieldName' => 'screenResolution', 'inListFilter' => ['values' => AnalyticsReport::BOT_SCREENS]]]],
         ];
+        $excludedHosts = config('analytics.excluded_hosts', []);
+        if (! empty($excludedHosts)) {
+            $base[] = ['notExpression' => ['filter' => ['fieldName' => 'hostName', 'inListFilter' => ['values' => array_values($excludedHosts)]]]];
+        }
         $dates = [['startDate' => $range['from'], 'endDate' => $range['to']]];
         $reports = AnalyticsReport::runReports([
             'totals' => ['dateRanges' => $dates, 'metrics' => [['name' => 'totalUsers'], ['name' => 'screenPageViews'], ['name' => 'userEngagementDuration']], 'dimensionFilter' => ['andGroup' => ['expressions' => $base]]],

@@ -38,7 +38,7 @@
                 $actionLabel = $isHindi ? 'इवेंट खोलें →' : 'View WordCamp →';
             } elseif ($action['type'] === 'url' && ! empty($action['url'])) {
                 $actionUrl = $action['url'];
-                $actionLabel = $isHindi ? 'लिंक खोलें ↗' : 'Open Link ↗';
+                $actionLabel = $isHindi ? 'लिंक खोलें →' : 'Open Link →';
                 $actionIsExternal = true;
             }
         }

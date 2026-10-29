@@ -25,6 +25,14 @@ return [
     'property_id' => env('GA_PROPERTY_ID'),
     'credentials' => env('GA_CREDENTIALS_PATH'),
 
+    // Domains excluded from analytics tracking and reports (local dev, staging).
+    // The tag is not rendered on these domains, the client script drops all hits,
+    // and GA Data API reports filter them out.
+    'excluded_hosts' => array_values(array_filter(array_map('trim', explode(',', env(
+        'ANALYTICS_EXCLUDED_HOSTS',
+        'campbuddy.club.rjcodex.com,campbuddy.test,127.0.0.1,localhost'
+    ))))),
+
     'dimensions' => [
         // Every hit
         'event_slug' => 'Which WordCamp the page belongs to',

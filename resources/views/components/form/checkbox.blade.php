@@ -32,7 +32,7 @@
 @endphp
 
 <div {{ $attributes->only('class')->class('min-w-0') }}>
-    <label for="{{ $id }}" class="inline-flex cursor-pointer items-start gap-2.5">
+    <label for="{{ $id }}" class="inline-flex min-h-10 cursor-pointer {{ $hint ? 'items-start py-2' : 'items-center py-1' }} gap-2.5">
         @if ($unchecked !== null)
             <input type="hidden" name="{{ $name }}" value="{{ $unchecked }}">
         @endif

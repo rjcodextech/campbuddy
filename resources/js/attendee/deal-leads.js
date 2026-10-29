@@ -38,10 +38,10 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle, le
     dialog.remove();
   };
 
-  track('deal_lead_form_open', { offer_id: leadOfferId, offer_title: leadOfferTitle });
+  track('deal_lead_form_open', { offer_id: leadOfferId, offer_title: leadOfferTitle, target: 'lead_form_cta' });
 
   dialog.querySelectorAll('[data-action="close"]').forEach((btn) => btn.addEventListener('click', () => {
-    if (!formEl.hidden) track('deal_lead_form_cancel', { offer_id: leadOfferId });
+    if (!formEl.hidden) track('deal_lead_form_cancel', { offer_id: leadOfferId, target: 'lead_form_cancel' });
     close();
   }));
 
@@ -64,8 +64,8 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle, le
 
     try {
       await apiMutate(eventSlug, `/offers/${leadOfferId}/leads`, 'POST', body);
-      track('generate_lead', { offer_id: leadOfferId, offer_title: leadOfferTitle });
-      track('deal_open', { offer_title: leadOfferTitle, link_domain: linkDomain(leadOfferUrl), lead_capture: true });
+      track('generate_lead', { offer_id: leadOfferId, offer_title: leadOfferTitle, target: 'lead_form_submit' });
+      track('deal_open', { offer_title: leadOfferTitle, link_domain: linkDomain(leadOfferUrl), lead_capture: true, target: 'lead_deal_cta' });
 
       if (newTab) {
         // A real link the attendee taps: opening a tab by script after the

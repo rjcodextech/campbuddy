@@ -29,9 +29,9 @@ export function renderExplore() {
       const domain = linkDomain(btn.dataset.inappUrl);
 
       if (panel === 'deals') {
-        track('deal_open', { offer_title: btn.dataset.inappTitle, link_domain: domain, lead_capture: false });
+        track('deal_open', { offer_title: btn.dataset.inappTitle, link_domain: domain, lead_capture: false, target: btn.dataset.target || 'in_app_cta' });
       } else {
-        track('sponsor_open', { sponsor_name: btn.dataset.inappTitle, link_domain: domain });
+        track('sponsor_open', { sponsor_name: btn.dataset.inappTitle, link_domain: domain, target: btn.dataset.target || 'sponsor_chip' });
       }
 
       const { openInAppBrowser } = await import('./in-app-browser.js');
@@ -39,11 +39,31 @@ export function renderExplore() {
     });
   });
 
+  document.querySelectorAll('[data-sponsor-chip]').forEach((chip) => {
+    chip.addEventListener('click', async (e) => {
+      const name = chip.dataset.inappTitle || chip.dataset.trackSponsorName;
+      if (!name) return;
+      const url = chip.dataset.inappUrl;
+      const domain = url ? linkDomain(url) : (chip.dataset.trackLinkDomain || 'booth');
+      track('sponsor_open', {
+        sponsor_name: name,
+        link_domain: domain,
+        target: 'sponsor_chip',
+      });
+      if (url && !chip.dataset.inappUrlAttached) {
+        chip.dataset.inappUrlAttached = 'true';
+        e.preventDefault();
+        const { openInAppBrowser } = await import('./in-app-browser.js');
+        openInAppBrowser(url, name);
+      }
+    });
+  });
+
   // A deal that opens in a new tab is a plain link (so a referral or
   // affiliate link keeps its credit); only report it.
   document.querySelectorAll('[data-deal-link]').forEach((link) => {
     link.addEventListener('click', () => {
-      track('deal_open', { offer_title: link.dataset.dealTitle, link_domain: linkDomain(link.href), lead_capture: false });
+      track('deal_open', { offer_title: link.dataset.dealTitle, link_domain: linkDomain(link.href), lead_capture: false, target: link.dataset.target || 'external_cta' });
     });
   });
 
@@ -53,7 +73,7 @@ export function renderExplore() {
       try {
         await navigator.clipboard.writeText(btn.dataset.copyCode);
         const deal = btn.closest('[data-promo-id]');
-        if (deal) track('deal_code_copy', { offer_id: deal.dataset.promoId, offer_title: deal.dataset.promoName });
+        if (deal) track('deal_code_copy', { offer_id: deal.dataset.promoId, offer_title: deal.dataset.promoName, target: btn.dataset.target || 'copy_code' });
         else track('useful_link_click', { link_type: 'wifi_copy' });
         btn.textContent = 'Copied';
       } catch {
@@ -114,6 +134,16 @@ export function setUpCardDetails(root = document) {
       const open = btn.getAttribute('aria-expanded') !== 'true';
       btn.setAttribute('aria-expanded', String(open));
       card.classList.toggle('is-open', open);
+      if (open && card.dataset) {
+        const title = card.dataset.promoName || card.dataset.promoCreative || '';
+        const link = card.querySelector?.('.deal-card__cta')?.href || card.querySelector?.('[data-inapp-url]')?.dataset?.inappUrl || '';
+        track('deal_open', {
+          offer_title: title,
+          link_domain: link ? linkDomain(link) : 'details',
+          lead_capture: false,
+          target: 'details_toggle',
+        });
+      }
     });
   });
 }
@@ -127,7 +157,24 @@ export function setUpStealSheets(root = document) {
     if (!dialog || typeof dialog.showModal !== 'function') return;
 
     const close = () => dialog.close();
-    btn.addEventListener('click', () => dialog.showModal());
+    btn.addEventListener('click', () => {
+      const card = btn.closest('.steal-row');
+      if (card && card.dataset?.stealName) {
+        const cta = dialog.querySelector?.('.deal-card__cta');
+        const domain = cta?.dataset?.trackLinkDomain || (cta?.href ? linkDomain(cta.href) : '');
+        track('free_steal_open', {
+          offer_title: card.dataset.stealName,
+          link_domain: domain || 'sheet',
+          target: btn.dataset?.target || 'steal_row',
+        });
+        track('select_item', {
+          ...STEAL_LIST,
+          items: [stealItem(card)],
+          target: btn.dataset?.target || 'steal_row',
+        });
+      }
+      dialog.showModal();
+    });
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) close();
     });
@@ -151,7 +198,11 @@ function reportCards() {
     cards.forEach((card) => seen.observe(card));
   }
 
-  cards.forEach((card) => card.querySelector('.deal-card__cta')?.addEventListener('click', () => (card.dataset.promoId
-    ? track('select_promotion', { items: [promoItem(card)] })
-    : track('select_item', { ...STEAL_LIST, items: [stealItem(card)] }))));
+  cards.forEach((card) => card.querySelector('.deal-card__cta')?.addEventListener('click', () => {
+    const cta = card.querySelector('.deal-card__cta');
+    const target = cta?.dataset.target || (card.dataset.promoId ? 'deal_cta' : 'sheet_cta');
+    return card.dataset.promoId
+      ? track('select_promotion', { items: [promoItem(card)], target })
+      : track('select_item', { ...STEAL_LIST, items: [stealItem(card)], target });
+  }));
 }

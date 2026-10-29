@@ -5,7 +5,7 @@ import { test } from 'node:test';
 
 const sent = [];
 globalThis.window = { gtag: (_kind, name, params) => sent.push([name, params]) };
-globalThis.location = { href: 'http://campbuddy.test/event/x/explore', search: '' };
+globalThis.location = { href: 'https://campbuddy.club/event/x/explore', origin: 'https://campbuddy.club', search: '' };
 
 const { track, normalizeItems } = await import('../../resources/js/attendee/analytics.js');
 const { promoItem, stealItem } = await import('../../resources/js/attendee/explore.js');
@@ -111,4 +111,21 @@ test('a Free Steal row opens its sheet; the backdrop, close and the link shut it
   on.link();
   await new Promise((resolve) => setTimeout(resolve, 5));
   assert.ok(!open);
+});
+
+test('sponsors, deals, and free steals track button target, item details and event slug', () => {
+  sent.length = 0;
+  track('sponsor_open', { sponsor_name: 'Automattic', link_domain: 'automattic.com', target: 'sponsor_chip', event_slug: 'wc-mumbai' });
+  track('deal_open', { offer_title: '100 free transactions', link_domain: 'knitpay.org', lead_capture: false, target: 'in_app_cta', event_slug: 'wc-mumbai' });
+  track('deal_code_copy', { offer_id: '5', offer_title: '100 free transactions', target: 'copy_code', event_slug: 'wc-mumbai' });
+  track('free_steal_open', { offer_title: 'WordPress Skills', link_domain: 'github.com', target: 'steal_row', event_slug: 'wc-mumbai' });
+  track('free_steal_open', { offer_title: 'WordPress Skills', link_domain: 'github.com', target: 'sheet_cta', event_slug: 'wc-mumbai' });
+
+  assert.deepEqual(sent, [
+    ['sponsor_open', { sponsor_name: 'Automattic', link_domain: 'automattic.com', target: 'sponsor_chip', event_slug: 'wc-mumbai' }],
+    ['deal_open', { offer_title: '100 free transactions', link_domain: 'knitpay.org', lead_capture: 'false', target: 'in_app_cta', event_slug: 'wc-mumbai' }],
+    ['deal_code_copy', { offer_id: '5', offer_title: '100 free transactions', target: 'copy_code', event_slug: 'wc-mumbai' }],
+    ['free_steal_open', { offer_title: 'WordPress Skills', link_domain: 'github.com', target: 'steal_row', event_slug: 'wc-mumbai' }],
+    ['free_steal_open', { offer_title: 'WordPress Skills', link_domain: 'github.com', target: 'sheet_cta', event_slug: 'wc-mumbai' }],
+  ]);
 });

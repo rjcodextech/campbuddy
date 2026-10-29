@@ -6,13 +6,14 @@
 // layer on top of one of the 3, not additional styles of their own.
 .btn {
     @include m.pressable;
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 40px;
+    min-height: 44px;
     max-width: 420px;
-    padding: 8px 18px;
+    padding: 9px 18px;
     border-radius: v.$radius-full;
     font-weight: 600;
     font-size: 0.9rem;
@@ -75,9 +76,16 @@
 
     // Sleek compact variant for inline controls and toolbars
     &--compact {
-        min-height: 34px;
-        padding: 5px 12px;
+        position: relative;
+        min-height: 40px;
+        padding: 8px 14px;
         font-size: 0.8125rem;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -2px 0;
+        }
     }
 
     &--full {

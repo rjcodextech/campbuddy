@@ -6,7 +6,7 @@
     align-items: flex-start;
     text-align: left;
     gap: 6px;
-    margin-bottom: v.$space-5;
+    margin-bottom: clamp(1rem, 2.5vw, #{v.$space-5});
 
     &--center {
         align-items: flex-start;
@@ -51,7 +51,7 @@
 .section-head__title {
     margin: 4px 0 0;
     font-family: v.$font-display;
-    font-size: clamp(1.65rem, 3.2vw, 2.25rem);
+    font-size: clamp(1.45rem, 4.2vw, 2.25rem);
     font-weight: 800;
     line-height: 1.22;
     letter-spacing: -0.02em;

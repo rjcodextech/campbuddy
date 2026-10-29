@@ -39,7 +39,7 @@
 
             <main class="flex flex-col items-center justify-center px-4 py-10 sm:px-8">
                 <div class="w-full max-w-md">
-                    <a href="{{ url('/') }}" class="mb-8 flex w-fit items-center gap-2.5 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 lg:hidden">
+                    <a href="{{ url('/') }}" class="mb-8 flex w-fit min-h-11 items-center gap-2.5 rounded-md py-1 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 lg:hidden">
                         <img src="/media/icons/icon-192.png" alt="" class="h-9 w-9 rounded-lg">
                         <span class="text-base font-semibold">{{ config('app.name') }}</span>
                     </a>
