@@ -12,13 +12,26 @@
     padding: 0 v.$space-3;
     border: 1px solid var(--brand-primary);
     border-radius: v.$radius-full;
-    background: #fff;
+    background: var(--paper);
     color: var(--brand-primary);
     font: inherit;
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
     white-space: nowrap;
     cursor: pointer;
+    box-shadow: v.$shadow-sm;
+    transition: transform v.$duration-fast var(--ease-spring), box-shadow v.$duration-fast ease, background-color v.$duration-fast ease, color v.$duration-fast ease;
+
+    &:hover {
+        transform: translateY(-1.5px);
+        box-shadow: var(--shadow-btn-hover);
+        background: var(--brand-primary);
+        color: #fff;
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
 
     &:focus-visible {
         @include m.focus-ring;
@@ -29,6 +42,12 @@
     border-color: transparent;
     background: var(--peach);
     color: var(--ink);
+    box-shadow: none;
+
+    &:hover {
+        background: var(--peach);
+        color: var(--ink);
+    }
 }
 
 // --- The meet sheet: a bottom sheet on phones, a centred card on wide screens --
@@ -39,13 +58,14 @@ dialog.meet-sheet {
     margin: auto auto 0;
     padding: 0;
     border: 0;
-    border-radius: 16px 16px 0 0;
+    border-radius: v.$radius-sheet v.$radius-sheet 0 0;
     background: var(--paper);
     color: var(--ink);
     box-shadow: v.$shadow-raised;
 
     &::backdrop {
         background: rgba(35, 31, 32, 0.45);
+        backdrop-filter: blur(4px);
     }
 
     &[open] {
@@ -54,7 +74,7 @@ dialog.meet-sheet {
 
     @media (min-width: v.$bp-tablet) {
         margin: auto;
-        border-radius: 14px;
+        border-radius: v.$radius-card;
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -189,9 +209,12 @@ dialog.meet-sheet {
 // --- My schedule ---------------------------------------------------------------
 .plan-summary {
     @include m.card-surface;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
     margin-bottom: v.$space-5;
-    padding: v.$space-4;
-    background: linear-gradient(135deg, #fff, var(--peach));
+    padding: v.$space-5;
+    background: linear-gradient(135deg, var(--paper), var(--peach));
 }
 
 .plan-summary__top {
@@ -259,10 +282,19 @@ dialog.meet-sheet {
 
 .plan-person {
     @include m.card-surface;
+    border-radius: v.$radius-row;
+    border: 1px solid var(--surface-border);
+    box-shadow: v.$shadow-sm;
     display: flex;
     gap: v.$space-3;
     margin-bottom: v.$space-2;
     padding: v.$space-3;
+    transition: transform v.$duration-fast var(--ease-spring), border-color v.$duration-fast ease;
+
+    &:hover {
+        border-color: var(--brand-border-glow);
+        transform: translateY(-1.5px);
+    }
 }
 
 .plan-person--done {

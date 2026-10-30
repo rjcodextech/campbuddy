@@ -13,14 +13,15 @@
     gap: v.$space-3;
     margin: 0 0 v.$space-5;
     padding: v.$space-6 v.$space-5;
-    border-radius: 14px;
+    border-radius: v.$radius-card;
     overflow: hidden;
     color: #fbefd9;
     background:
-        radial-gradient(circle at 92% 12%, rgba(217, 119, 6, 0.12), transparent 42%),
+        radial-gradient(circle at 92% 12%, rgba(217, 119, 6, 0.16), transparent 42%),
         radial-gradient(circle at 0% 100%, rgba(195, 58, 25, 0.55), transparent 55%),
         linear-gradient(150deg, #6d2021, #4a1415);
-    box-shadow: v.$shadow-raised;
+    box-shadow: var(--shadow-card-elevated);
+    border: 1px solid rgba(251, 239, 217, 0.15);
 
     // A faint bunting line along the top — WordCamp's festive feel, quietly.
     &::before {
@@ -48,9 +49,11 @@
     align-items: center;
     gap: v.$space-2;
     margin: 0 0 v.$space-3;
-    padding: 4px 10px 4px 4px;
+    padding: v.$space-1 10px v.$space-1 v.$space-1;
     border-radius: v.$radius-full;
-    background: rgba(251, 239, 217, 0.12);
+    background: rgba(251, 239, 217, 0.14);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(251, 239, 217, 0.2);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     letter-spacing: v.$letter-spacing-caps;
@@ -66,6 +69,7 @@
 
 .guide-hero__title {
     margin: 0 0 v.$space-2;
+    font-family: v.$font-display;
     font-size: clamp(1.5rem, 6.4vw, 2.25rem);
     font-weight: v.$font-weight-black;
     line-height: v.$line-height-tight;
@@ -125,11 +129,11 @@
 .guide-jump {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: v.$space-2;
     overflow-x: auto;
     margin: 0 0 v.$space-6;
-    padding: 8px 16px;
-    border-radius: 9999px;
+    padding: v.$space-2 v.$space-4;
+    border-radius: v.$radius-full;
     background: transparent;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -138,18 +142,18 @@
     border-bottom: none;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    transition: background 0.25s cubic-bezier(0.16, 1, 0.3, 1), backdrop-filter 0.25s ease, -webkit-backdrop-filter 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    transition: background v.$duration-normal var(--ease-smooth), backdrop-filter v.$duration-normal ease, -webkit-backdrop-filter v.$duration-normal ease, box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
 
     &::-webkit-scrollbar {
         display: none;
     }
 
     &:hover {
-        background: rgba(255, 255, 255, 0.88);
+        background: var(--surface-glass);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border-color: rgba(15, 23, 42, 0.08);
-        box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.06);
+        border-color: var(--surface-border);
+        box-shadow: var(--shadow-card-elevated);
     }
 
     @media (min-width: v.$bp-tablet) {
@@ -157,7 +161,7 @@
         top: 64px;
         z-index: 15;
         margin: 0 0 v.$space-8;
-        padding: 10px 20px;
+        padding: 10px v.$space-5;
         flex-wrap: wrap;
     }
 
@@ -168,18 +172,18 @@
         align-items: center;
         gap: 7px;
         min-height: 38px;
-        padding: 0 16px;
+        padding: 0 v.$space-4;
         white-space: nowrap;
         text-decoration: none;
-        background: #ffffff;
+        background: var(--paper);
         color: var(--ink);
-        border: 1px solid rgba(15, 23, 42, 0.09);
+        border: 1px solid var(--surface-border);
         border-radius: v.$radius-full;
         font-size: 0.8125rem;
         font-weight: 600;
         letter-spacing: 0.01em;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: v.$shadow-sm;
+        transition: transform v.$duration-fast var(--ease-spring), border-color v.$duration-fast ease, color v.$duration-fast ease, box-shadow v.$duration-fast ease;
 
         &::after {
             content: '';
@@ -194,7 +198,7 @@
             color: var(--brand-primary);
             opacity: 0.85;
             flex-shrink: 0;
-            transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+            transition: transform v.$duration-fast var(--ease-spring), opacity v.$duration-fast ease, color v.$duration-fast ease;
         }
 
         span {
@@ -202,11 +206,11 @@
         }
 
         &:hover {
-            border-color: rgba(195, 58, 25, 0.35);
+            border-color: var(--brand-border-glow);
             color: var(--brand-primary);
-            background: #ffffff;
-            transform: translateY(-1.5px);
-            box-shadow: 0 4px 14px -2px rgba(195, 58, 25, 0.16), 0 2px 4px rgba(15, 23, 42, 0.04);
+            background: var(--paper);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-btn-hover);
 
             svg,
             .line-icon {
@@ -216,8 +220,8 @@
         }
 
         &:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+            transform: translateY(0) scale(0.98);
+            box-shadow: v.$shadow-sm;
         }
 
         &:focus-visible {
@@ -253,13 +257,13 @@
 .guide-doc-layout {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: v.$space-4;
     width: 100%;
 
     @media (min-width: v.$bp-desktop) {
         display: grid;
         grid-template-columns: 260px minmax(0, 1fr);
-        gap: 36px;
+        gap: v.$space-8;
         align-items: start;
     }
 }
@@ -271,9 +275,9 @@
         position: sticky;
         top: 88px;
         z-index: 20;
-        margin: -8px -16px 16px;
-        padding: 8px 16px;
-        background: rgba(250, 250, 253, 0.94);
+        margin: calc(-1 * #{v.$space-2}) calc(-1 * #{v.$space-4}) v.$space-4;
+        padding: v.$space-2 v.$space-4;
+        background: var(--surface-glass);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
         border-bottom: 1px solid var(--line);
@@ -298,7 +302,7 @@
         align-self: start;
         max-height: calc(100vh - 100px);
         overflow-y: auto;
-        padding-bottom: 24px;
+        padding-bottom: v.$space-6;
         scrollbar-width: thin;
         scrollbar-color: rgba(15, 23, 42, 0.15) transparent;
 
@@ -314,13 +318,13 @@
 
 .guide-doc-sidebar__card {
     @media (min-width: v.$bp-desktop) {
-        background: rgba(255, 255, 255, 0.94);
+        background: var(--surface-glass);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        border-radius: 18px;
-        padding: 16px 12px;
-        box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+        border: 1px solid var(--surface-border);
+        border-radius: v.$radius-card;
+        padding: v.$space-4 v.$space-3;
+        box-shadow: var(--shadow-card-elevated);
     }
 }
 
@@ -332,8 +336,8 @@
         align-items: center;
         justify-content: space-between;
         padding: 4px 10px 12px;
-        margin-bottom: 8px;
-        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        margin-bottom: v.$space-2;
+        border-bottom: 1px solid var(--surface-border);
     }
 }
 
@@ -395,7 +399,7 @@
             width: 100%;
             min-height: 38px;
             padding: 8px 12px;
-            border-radius: 10px;
+            border-radius: v.$radius-input;
             background: transparent;
             border: 1px solid transparent;
             box-shadow: none;
@@ -404,7 +408,7 @@
             font-weight: 500;
             text-align: left;
             white-space: normal;
-            transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all v.$duration-fast var(--ease-smooth);
 
             svg,
             .line-icon {
@@ -412,7 +416,7 @@
                 height: 15px;
                 color: var(--muted);
                 opacity: 0.75;
-                transition: all 0.16s ease;
+                transition: all v.$duration-fast ease;
                 flex-shrink: 0;
             }
 
@@ -435,11 +439,11 @@
             }
 
             &.is-active {
-                background: #ffffff;
+                background: var(--paper);
                 color: var(--brand-primary);
                 font-weight: 700;
-                border-color: rgba(15, 23, 42, 0.08);
-                box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+                border-color: var(--surface-border);
+                box-shadow: v.$shadow-sm;
 
                 svg,
                 .line-icon {
@@ -523,9 +527,9 @@
     justify-content: center;
     width: 48px;
     height: 48px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-    border: 2px solid #ffffff;
+    border-radius: v.$radius-row;
+    background: linear-gradient(135deg, var(--paper-soft) 0%, var(--peach) 100%);
+    border: 2px solid var(--paper);
     box-shadow: 0 4px 14px -2px rgba(255, 77, 45, 0.25);
     color: var(--brand-primary);
     font-size: 1.25rem;
@@ -539,17 +543,17 @@
 .guide-step__body {
     min-width: 0;
     flex: 1;
-    background: #ffffff;
-    border: 1.5px solid rgba(15, 23, 42, 0.08);
-    border-radius: 18px;
+    background: var(--paper);
+    border: 1px solid var(--surface-border);
+    border-radius: v.$radius-card;
     padding: v.$space-4 v.$space-5;
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
-    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-card-elevated);
+    transition: transform v.$duration-normal var(--ease-spring), border-color v.$duration-normal ease, box-shadow v.$duration-normal ease;
 
     &:hover {
-        border-color: rgba(255, 77, 45, 0.35);
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08);
+        border-color: var(--brand-border-glow);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-card-hover);
     }
 }
 
@@ -570,7 +574,7 @@
     margin: 0 0 v.$space-2;
     padding: 3px v.$space-2;
     // A soft rectangle, not a pill: a long track name wraps onto two lines.
-    border-radius: 10px;
+    border-radius: v.$radius-input;
     line-height: v.$line-height-snug;
     background: var(--brand-primary);
     color: #fff;
@@ -596,10 +600,10 @@
     margin: v.$space-3 0 0;
     padding: v.$space-3 v.$space-4;
     border-left: 4px solid var(--brand-accent);
-    background: #fffbeb;
+    background: var(--paper-soft);
     border: 1px solid rgba(217, 119, 6, 0.18);
     border-left-width: 4px;
-    border-radius: 10px;
+    border-radius: v.$radius-input;
 
     strong {
         color: #92400e;
@@ -623,24 +627,24 @@
 }
 
 .guide-accordion__item {
-    background: #ffffff;
-    border: 1.5px solid rgba(15, 23, 42, 0.08);
-    border-radius: 14px;
+    background: var(--paper);
+    border: 1px solid var(--surface-border);
+    border-radius: v.$radius-row;
     overflow: hidden;
-    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    transition: border-color v.$duration-fast ease, box-shadow v.$duration-fast ease, transform v.$duration-fast var(--ease-spring);
 
     &:hover {
-        border-color: rgba(255, 77, 45, 0.3);
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        border-color: var(--brand-border-glow);
+        box-shadow: var(--shadow-card-elevated);
     }
 
     &[open] {
-        border-color: rgba(255, 77, 45, 0.38);
-        box-shadow: 0 6px 20px -4px rgba(255, 77, 45, 0.12);
+        border-color: var(--brand-border-glow);
+        box-shadow: 0 8px 24px -4px rgba(255, 77, 45, 0.14);
 
         summary {
             color: var(--brand-primary);
-            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+            border-bottom: 1px solid var(--surface-border);
         }
     }
 
@@ -658,7 +662,7 @@
         color: var(--ink);
         cursor: pointer;
         list-style: none;
-        transition: color 0.18s ease, background-color 0.18s ease;
+        transition: color v.$duration-fast ease, background-color v.$duration-fast ease;
 
         &:hover {
             color: var(--brand-primary);
@@ -682,7 +686,7 @@
             font-weight: 500;
             line-height: 1;
             color: var(--brand-primary);
-            transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease;
+            transition: transform v.$duration-normal var(--ease-spring), background-color v.$duration-fast ease;
         }
 
         &:focus-visible {
@@ -693,7 +697,7 @@
 
     &[open] summary::after {
         transform: rotate(45deg);
-        background: rgba(255, 77, 45, 0.15);
+        background: rgba(255, 77, 45, 0.16);
     }
 
     p {
@@ -930,12 +934,12 @@
 .guide-why-card {
     background:
         radial-gradient(circle at 90% 10%, rgba(217, 119, 6, 0.12) 0%, transparent 50%),
-        linear-gradient(145deg, #ffffff 0%, #fafafd 50%, #fff7ed 100%);
-    border: 1.5px solid rgba(255, 77, 45, 0.2);
-    border-radius: 22px;
+        linear-gradient(145deg, var(--paper) 0%, #fafafd 50%, var(--paper-soft) 100%);
+    border: 1px solid var(--brand-border-glow);
+    border-radius: v.$radius-card;
     padding: v.$space-6;
     margin-bottom: v.$space-6;
-    box-shadow: 0 16px 40px -12px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-card-elevated);
 }
 
 .guide-superpowers-grid {
@@ -960,16 +964,16 @@
         flex-direction: column;
         gap: 6px;
         padding: v.$space-4;
-        background: #ffffff;
-        border: 1.5px solid rgba(15, 23, 42, 0.08);
-        border-radius: 16px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+        background: var(--paper);
+        border: 1px solid var(--surface-border);
+        border-radius: v.$radius-card;
+        box-shadow: v.$shadow-sm;
+        transition: transform v.$duration-normal var(--ease-spring), box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
 
         &:hover {
             transform: translateY(-3px);
-            box-shadow: 0 12px 24px -6px rgba(15, 23, 42, 0.1);
-            border-color: rgba(255, 77, 45, 0.35);
+            box-shadow: var(--shadow-card-hover);
+            border-color: var(--brand-border-glow);
         }
 
         strong {
@@ -989,7 +993,7 @@
         .superpower-icon {
             width: 42px;
             height: 42px;
-            border-radius: 12px;
+            border-radius: v.$radius-row;
             background: linear-gradient(135deg, rgba(255, 77, 45, 0.12), rgba(217, 119, 6, 0.12));
             color: var(--brand-primary);
             display: inline-flex;
@@ -1009,11 +1013,11 @@
     display: flex;
     flex-direction: column;
     gap: v.$space-4;
-    background: #ffffff;
-    border: 1.5px solid rgba(15, 23, 42, 0.08);
-    border-radius: 20px;
+    background: var(--paper);
+    border: 1px solid var(--surface-border);
+    border-radius: v.$radius-card;
     padding: v.$space-6;
-    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04);
+    box-shadow: var(--shadow-card-elevated);
 }
 
 .guide-what-highlights {

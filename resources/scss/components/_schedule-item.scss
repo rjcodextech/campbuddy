@@ -5,8 +5,12 @@
 // never blur into one long list — MD1's schedule-separation requirement.
 .schedule-day {
     @include m.card-surface;
-    padding: v.$space-4;
-    margin-bottom: v.$space-3;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
+    background: var(--paper);
+    padding: v.$space-5;
+    margin-bottom: v.$space-4;
 }
 
 .schedule-day-heading {
@@ -48,7 +52,9 @@
 // not on .schedule-item itself, since that's no longer reliably the
 // last element in the list once a detail panel can follow it.
 .schedule-item-row {
-    border-bottom: 1px solid var(--line);
+    position: relative;
+    border-bottom: 1px solid var(--surface-border);
+    transition: background-color v.$duration-fast var(--ease-smooth);
 
     &:last-child {
         border-bottom: none;
@@ -170,7 +176,16 @@
     // page's border colour (1.2:1 against the card), now a 3:1 grey.
     color: #9c8f86;
     line-height: 1;
-    transition: transform 0.1s ease, color 0.15s ease;
+    transition: transform v.$duration-fast var(--ease-spring), color v.$duration-fast ease;
+
+    &:hover {
+        transform: scale(1.18);
+        color: var(--gold);
+    }
+
+    &:active {
+        transform: scale(0.92);
+    }
 
     &--saved {
         color: var(--gold);
@@ -196,8 +211,9 @@
 .schedule-item-detail__speaker-block {
     padding: v.$space-3;
     margin-bottom: v.$space-2;
-    border-radius: v.$radius-sm;
+    border-radius: v.$radius-row;
     background: var(--paper-soft);
+    border: 1px solid var(--surface-border);
 
     &:last-child {
         margin-bottom: 0;
@@ -264,10 +280,10 @@
     margin: 0 (-(v.$space-2));
     padding-right: v.$space-2;
     padding-left: v.$space-2;
-    border-radius: v.$radius-sm;
-    background: linear-gradient(135deg, #ffffff 0%, #fff7ed 100%);
+    border-radius: v.$radius-row;
+    background: linear-gradient(135deg, var(--paper) 0%, var(--paper-soft) 100%);
     border-left: 3px solid var(--brand-primary);
-    box-shadow: 0 2px 8px -2px rgba(195, 58, 25, 0.15);
+    box-shadow: 0 4px 16px -4px rgba(255, 77, 45, 0.2);
 }
 
 .schedule-item__live {

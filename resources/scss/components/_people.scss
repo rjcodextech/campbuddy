@@ -17,7 +17,8 @@
     align-items: center;
     column-gap: v.$space-3;
     padding: v.$space-3 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--surface-border);
+    transition: background-color v.$duration-fast var(--ease-smooth);
 
     &:last-child {
         border-bottom: none;
@@ -335,7 +336,7 @@ button.roster-row__name {
     background: var(--peach);
     color: var(--ink);
     flex-shrink: 0;
-    transition: transform 0.1s ease, background 0.15s ease, color 0.15s ease;
+    transition: transform v.$duration-fast var(--ease-spring), background v.$duration-fast ease, color v.$duration-fast ease;
 
     // The badge is 30px; this invisible margin makes the tappable area 44px.
     &::after {
@@ -347,6 +348,7 @@ button.roster-row__name {
     @include m.hover {
         background: var(--brand-primary);
         color: #fff;
+        transform: scale(1.12);
     }
 }
 
@@ -583,6 +585,16 @@ button.roster-row__name {
     position: relative;
     padding: v.$space-4;
     margin-bottom: v.$space-3;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
+    transition: transform v.$duration-normal var(--ease-spring), box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-card-hover);
+        border-color: var(--brand-border-glow);
+    }
 }
 
 .person-card__head {

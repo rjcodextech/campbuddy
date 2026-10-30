@@ -36,6 +36,18 @@
     --surface-border: rgba(15, 23, 42, 0.08);
     --surface-specular: inset 0 1px 0 rgba(255, 255, 255, 0.95);
 
+    --color-glow: #{v.$color-glow};
+    --color-glow-primary: #{v.$color-glow-primary};
+    --radius-chip: #{v.$radius-chip};
+    --radius-input: #{v.$radius-input};
+    --radius-row: #{v.$radius-row};
+    --radius-card: #{v.$radius-card};
+    --radius-sheet: #{v.$radius-sheet};
+    --radius-stage: #{v.$radius-stage};
+    --radius-full: #{v.$radius-full};
+    --brand-highlight: linear-gradient(135deg, #{v.$color-maroon} 0%, #{v.$color-wine} 45%, #{v.$color-gold} 100%);
+    --brand-border-glow: rgba(255, 77, 45, 0.35);
+
     // The fixed tab bar's full height — the bar itself plus the iPhone
     // home-indicator inset beneath it. One number shared by the bar, the
     // page's bottom padding (layout/_app-frame.scss) and the toast, so the

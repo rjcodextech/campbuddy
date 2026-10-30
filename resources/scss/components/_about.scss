@@ -8,10 +8,10 @@
 .about-steps {
     margin: v.$space-8 0 v.$space-6;
     padding: v.$space-6 v.$space-5;
-    border-radius: 20px;
-    background: #fff;
-    border: 1px solid var(--line);
-    box-shadow: v.$shadow-card;
+    border-radius: v.$radius-card;
+    background: var(--paper);
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
     color: var(--ink);
 }
 
@@ -47,9 +47,16 @@
     flex-direction: column;
     gap: v.$space-2;
     padding: v.$space-3;
-    border-radius: 14px;
-    background: var(--paper);
-    border: 1px solid rgba(195, 58, 25, 0.08);
+    border-radius: v.$radius-row;
+    background: var(--paper-soft);
+    border: 1px solid var(--surface-border);
+    transition: transform v.$duration-fast var(--ease-spring), border-color v.$duration-fast ease, box-shadow v.$duration-fast ease;
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: var(--brand-border-glow);
+        box-shadow: v.$shadow-sm;
+    }
 }
 
 .about-step__icon {
@@ -330,14 +337,15 @@
     position: relative;
     margin: 0 0 v.$space-5;
     padding: v.$space-6 v.$space-5;
-    border-radius: 16px;
+    border-radius: v.$radius-card;
     overflow: hidden;
     color: #fbefd9;
     background:
-        radial-gradient(circle at 92% 12%, rgba(217, 119, 6, 0.12), transparent 42%),
+        radial-gradient(circle at 92% 12%, rgba(217, 119, 6, 0.16), transparent 42%),
         radial-gradient(circle at 0% 100%, rgba(195, 58, 25, 0.55), transparent 55%),
         linear-gradient(150deg, #6d2021, #4a1415);
-    box-shadow: v.$shadow-raised;
+    box-shadow: var(--shadow-card-elevated);
+    border: 1px solid rgba(251, 239, 217, 0.15);
 
     &::before {
         content: '';
@@ -444,13 +452,15 @@
     flex-direction: column;
     gap: v.$space-2;
     padding: clamp(v.$space-4, 3vw, v.$space-6);
-    border-radius: 16px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
+    transition: transform v.$duration-normal var(--ease-spring), box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
 
     @include m.hover {
-        transform: translateY(-3px);
-        border-color: rgba(255, 77, 45, 0.28);
-        box-shadow: v.$shadow-raised;
+        transform: translateY(-4px);
+        border-color: var(--brand-border-glow);
+        box-shadow: var(--shadow-card-hover);
     }
 }
 
@@ -528,13 +538,15 @@
     flex-direction: column;
     gap: v.$space-2;
     padding: v.$space-5;
-    border-radius: 16px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
+    transition: transform v.$duration-normal var(--ease-spring), box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
 
     @include m.hover {
-        transform: translateY(-3px);
-        border-color: rgba(255, 77, 45, 0.28);
-        box-shadow: v.$shadow-raised;
+        transform: translateY(-4px);
+        border-color: var(--brand-border-glow);
+        box-shadow: var(--shadow-card-hover);
     }
 }
 
@@ -902,13 +914,13 @@
     overflow: hidden;
     margin: 0 0 v.$space-6;
     padding: v.$space-6 v.$space-5 calc(v.$space-6 + 32px);
-    border-radius: 20px;
+    border-radius: v.$radius-stage;
     background:
-        radial-gradient(circle at 50% 0%, rgba(4, 120, 87, 0.08) 0%, transparent 65%),
-        radial-gradient(circle at 95% 95%, rgba(227, 157, 28, 0.08) 0%, transparent 55%),
+        radial-gradient(circle at 50% 0%, rgba(255, 77, 45, 0.08) 0%, transparent 65%),
+        radial-gradient(circle at 95% 95%, rgba(217, 119, 6, 0.08) 0%, transparent 55%),
         var(--paper);
-    border: 1px solid var(--line);
-    box-shadow: v.$shadow-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-card-elevated);
 
     // Architectural dot grid aura
     &::before {
@@ -985,7 +997,7 @@
     padding: 5px 14px;
     border-radius: v.$radius-full;
     background: rgba(255, 77, 45, 0.08);
-    border: 1px solid rgba(255, 77, 45, 0.2);
+    border: 1px solid var(--brand-border-glow);
     color: var(--brand-primary);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
