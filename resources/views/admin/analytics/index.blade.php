@@ -94,7 +94,7 @@
 
             <div class="flex flex-wrap items-center gap-3 sm:col-span-2 lg:col-span-1">
                 <label class="inline-flex items-center gap-2 text-sm text-ink">
-                    <input type="checkbox" name="hide_bots" value="1" @checked($filters['bots']) class="rounded border-line text-maroon focus:ring-maroon/40">
+                    <input type="checkbox" name="hide_bots" value="1" @checked($filters['bots']) class="rounded border-line text-maroon-text focus:ring-maroon/40">
                     Hide bots
                 </label>
                 <x-button icon="search">Show</x-button>
@@ -122,7 +122,7 @@
             <span>{{ $filters['bots'] ? 'Bots hidden' : 'Bots included' }}</span>
             <span aria-hidden="true">·</span>
             <span>Fetched {{ \Illuminate\Support\Carbon::parse($report['fetched_at'])->diffForHumans() }}; kept for an hour</span>
-            <a href="{{ request()->fullUrlWithQuery(['fresh' => 1]) }}" class="font-medium text-maroon hover:underline">Fetch again now</a>
+            <a href="{{ request()->fullUrlWithQuery(['fresh' => 1]) }}" class="font-medium text-maroon-text hover:underline">Fetch again now</a>
         </p>
 
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

@@ -83,7 +83,7 @@
                     @if ($filtering)
                         <x-icon name="search" class="mx-auto h-8 w-8 text-muted/50" />
                         <p class="mt-2 text-sm font-medium">No events match these filters</p>
-                        <p class="mx-auto mt-1 max-w-sm text-sm text-muted">Try a different search, or <a href="{{ route('admin.events.index') }}" class="font-medium text-maroon hover:underline">reset the filters</a>.</p>
+                        <p class="mx-auto mt-1 max-w-sm text-sm text-muted">Try a different search, or <a href="{{ route('admin.events.index') }}" class="font-medium text-maroon-text hover:underline">reset the filters</a>.</p>
                     @else
                         <x-icon name="calendar" class="mx-auto h-8 w-8 text-muted/50" />
                         <p class="mt-2 text-sm font-medium">No events yet</p>
@@ -124,7 +124,7 @@
                         {{-- The transparent bar keeps every row's text on the same line as the highlighted ones. --}}
                         <td @class(['border-l-4 border-transparent' => ! $soon])>
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <a href="{{ route('admin.events.edit', $event) }}" class="font-medium hover:text-maroon hover:underline">{{ $event->display_name }}</a>
+                                <a href="{{ route('admin.events.edit', $event) }}" class="font-medium hover:text-maroon-text hover:underline">{{ $event->display_name }}</a>
                                 @if ($soon && $timing['state'] === 'ongoing')
                                     <x-badge variant="success">Happening now</x-badge>
                                 @elseif ($event->id === $nextUpId)
@@ -145,7 +145,7 @@
                             @if ($event->starts_on)
                                 <span class="text-muted">{{ $event->starts_on->format('j M Y') }}@if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) – {{ $event->ends_on->format('j M Y') }}@endif</span>
                                 @if ($timing)
-                                    <div @class(['text-xs', 'font-medium text-maroon' => $timing['state'] !== 'past', 'text-muted' => $timing['state'] === 'past'])>{{ $timing['label'] }}</div>
+                                    <div @class(['text-xs', 'font-medium text-maroon-text' => $timing['state'] !== 'past', 'text-muted' => $timing['state'] === 'past'])>{{ $timing['label'] }}</div>
                                 @endif
                             @else
                                 <span class="text-muted">—</span>
@@ -167,7 +167,7 @@
                 @empty
                     @if ($filtering)
                         <x-table.empty :colspan="7" icon="search" title="No events match these filters">
-                            Try a different search, or <a href="{{ route('admin.events.index', ['view' => 'table']) }}" class="font-medium text-maroon hover:underline">reset the filters</a>.
+                            Try a different search, or <a href="{{ route('admin.events.index', ['view' => 'table']) }}" class="font-medium text-maroon-text hover:underline">reset the filters</a>.
                         </x-table.empty>
                     @else
                         <x-table.empty :colspan="7" icon="calendar" title="No events yet">

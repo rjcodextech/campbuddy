@@ -13,7 +13,7 @@
         </x-button>
 
         <p class="text-center text-sm">
-            <a href="{{ route('login') }}" class="rounded font-medium text-maroon hover:text-maroon-dark hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">Back to sign in</a>
+            <a href="{{ route('login') }}" class="rounded font-medium text-maroon-text hover:text-maroon-text-dark hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">Back to sign in</a>
         </p>
     </form>
 </x-guest-layout>

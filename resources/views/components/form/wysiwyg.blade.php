@@ -20,7 +20,7 @@
             <label for="{{ $id }}" class="block text-sm font-semibold text-ink">
                 {{ $label }}
                 @if ($required)
-                    <span class="text-maroon">*</span>
+                    <span class="text-maroon-text">*</span>
                 @endif
             </label>
             <div class="flex items-center gap-2 text-xs text-muted">
@@ -57,7 +57,7 @@
 
                 {{-- Bold --}}
                 <button type="button" data-cmd="bold" title="Bold (Ctrl+B)"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
                         <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
@@ -66,7 +66,7 @@
 
                 {{-- Italic --}}
                 <button type="button" data-cmd="italic" title="Italic (Ctrl+I)"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="4" x2="10" y2="4"></line>
                         <line x1="14" y1="20" x2="5" y2="20"></line>
@@ -76,7 +76,7 @@
 
                 {{-- Underline --}}
                 <button type="button" data-cmd="underline" title="Underline (Ctrl+U)"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path>
                         <line x1="4" y1="21" x2="20" y2="21"></line>
@@ -85,7 +85,7 @@
 
                 {{-- Strike --}}
                 <button type="button" data-cmd="strikeThrough" title="Strikethrough"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M16 4H9a3 3 0 0 0-2.83 4"></path>
                         <path d="M14 12a4 4 0 0 1 0 8H6"></path>
@@ -95,7 +95,7 @@
 
                 {{-- Inline code --}}
                 <button type="button" id="{{ $id }}-code-inline-btn" title="Inline code"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="16 18 22 12 16 6"></polyline>
                         <polyline points="8 6 2 12 8 18"></polyline>
@@ -106,7 +106,7 @@
 
                 {{-- Unordered list --}}
                 <button type="button" data-cmd="insertUnorderedList" title="Bullet List"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="8" y1="6" x2="21" y2="6"></line>
                         <line x1="8" y1="12" x2="21" y2="12"></line>
@@ -119,7 +119,7 @@
 
                 {{-- Ordered list --}}
                 <button type="button" data-cmd="insertOrderedList" title="Numbered List"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="10" y1="6" x2="21" y2="6"></line>
                         <line x1="10" y1="12" x2="21" y2="12"></line>
@@ -134,7 +134,7 @@
 
                 {{-- Link --}}
                 <button type="button" id="{{ $id }}-link-btn" title="Insert / Edit Link"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -143,7 +143,7 @@
 
                 {{-- Unlink --}}
                 <button type="button" data-cmd="unlink" title="Remove Link"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18.84 12.25l1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M5.16 11.75l-1.72 1.71a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
@@ -155,7 +155,7 @@
 
                 {{-- Insert Table --}}
                 <button type="button" id="{{ $id }}-table-btn" title="Insert Responsive Table"
-                        class="wysiwyg-btn inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs font-medium text-ink shadow-xs hover:border-maroon hover:text-maroon focus:outline-hidden">
+                        class="wysiwyg-btn inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs font-medium text-ink shadow-xs hover:border-maroon hover:text-maroon-text focus:outline-hidden">
                     <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="3" y1="9" x2="21" y2="9"></line>
@@ -167,7 +167,7 @@
 
                 {{-- Callout Box (The signature peach box in CampBuddy) --}}
                 <button type="button" id="{{ $id }}-callout-btn" title="Insert Highlight / Callout Box"
-                        class="wysiwyg-btn inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs font-medium text-ink shadow-xs hover:border-maroon hover:text-maroon focus:outline-hidden">
+                        class="wysiwyg-btn inline-flex items-center gap-1 rounded-lg border border-line bg-white px-2 py-1 text-xs font-medium text-ink shadow-xs hover:border-maroon hover:text-maroon-text focus:outline-hidden">
                     <svg class="h-3.5 w-3.5 text-peach-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="3"></rect>
                         <line x1="7" y1="8" x2="17" y2="8"></line>
@@ -179,7 +179,7 @@
 
                 {{-- Horizontal line --}}
                 <button type="button" data-cmd="insertHorizontalRule" title="Horizontal line"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
@@ -197,14 +197,14 @@
 
                 {{-- Undo / Redo --}}
                 <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="1 4 1 10 7 10"></polyline>
                         <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
                     </svg>
                 </button>
                 <button type="button" data-cmd="redo" title="Redo (Ctrl+Y)"
-                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon focus:outline-hidden active:bg-paper">
+                        class="wysiwyg-btn inline-flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-ink hover:bg-white hover:border-line hover:text-maroon-text focus:outline-hidden active:bg-paper">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="23 4 23 10 17 10"></polyline>
                         <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
@@ -217,7 +217,7 @@
                 
                 {{-- Source Code mode toggle --}}
                 <button type="button" id="{{ $id }}-mode-toggle"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:border-maroon hover:text-maroon focus:outline-hidden transition-colors"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:border-maroon hover:text-maroon-text focus:outline-hidden transition-colors"
                         title="Toggle HTML Source Code View">
                     <svg class="h-3.5 w-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="16 18 22 12 16 6"></polyline>
@@ -228,7 +228,7 @@
 
                 {{-- Live preview button --}}
                 <button type="button" id="{{ $id }}-preview-btn"
-                        class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:border-maroon hover:text-maroon focus:outline-hidden transition-colors"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:border-maroon hover:text-maroon-text focus:outline-hidden transition-colors"
                         title="Live Preview of Document">
                     <svg class="h-3.5 w-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -308,7 +308,7 @@
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-ink mb-1">Target URL or Mailto <span class="text-maroon">*</span></label>
+                    <label class="block text-xs font-semibold text-ink mb-1">Target URL or Mailto <span class="text-maroon-text">*</span></label>
                     <input type="text" id="{{ $id }}-link-url" placeholder="https://... or mailto:..." class="cb-input w-full text-xs">
                 </div>
                 <div>
@@ -316,7 +316,7 @@
                     <input type="text" id="{{ $id }}-link-text" placeholder="e.g. Data Protection Notice" class="cb-input w-full text-xs">
                 </div>
                 <div class="flex items-center gap-2 pt-1">
-                    <input type="checkbox" id="{{ $id }}-link-newtab" class="rounded border-line text-maroon focus:ring-maroon">
+                    <input type="checkbox" id="{{ $id }}-link-newtab" class="rounded border-line text-maroon-text focus:ring-maroon">
                     <label for="{{ $id }}-link-newtab" class="text-xs text-ink">Open link in new browser tab</label>
                 </div>
             </div>
@@ -698,7 +698,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fullscreenBtn.addEventListener('click', () => {
             box.classList.toggle('is-fullscreen');
             const isFull = box.classList.contains('is-fullscreen');
-            fullscreenBtn.classList.toggle('text-maroon', isFull);
+            fullscreenBtn.classList.toggle('text-maroon-text', isFull);
         });
     }
 

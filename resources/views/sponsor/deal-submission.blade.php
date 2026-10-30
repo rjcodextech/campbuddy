@@ -115,7 +115,7 @@
                 </a>
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold tracking-wide text-maroon uppercase">{{ config('app.name') }}</span>
+                        <span class="text-sm font-semibold tracking-wide text-maroon-text uppercase">{{ config('app.name') }}</span>
                         <span class="text-xs px-2 py-0.5 rounded-full bg-navy/10 text-navy font-medium">Sponsor Portal</span>
                     </div>
                     <h1 class="text-2xl font-bold tracking-tight text-ink sm:text-3xl">Submit Your WordCamp Deal</h1>
@@ -208,7 +208,7 @@
                                 </select>
 
                                 <div x-show="loadingSponsors" class="text-xs text-muted mt-1 flex items-center gap-1.5">
-                                    <x-icon name="arrow-path" class="h-3.5 w-3.5 animate-spin text-maroon" />
+                                    <x-icon name="arrow-path" class="h-3.5 w-3.5 animate-spin text-maroon-text" />
                                     <span>Fetching event sponsors...</span>
                                 </div>
                             </div>
@@ -217,7 +217,7 @@
                             <div x-show="sponsorType === 'custom'" x-cloak class="mt-3 space-y-2">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-muted">Enter sponsor / company name:</span>
-                                    <button type="button" x-on:click="sponsorType = 'select'" class="text-xs text-maroon hover:underline">
+                                    <button type="button" x-on:click="sponsorType = 'select'" class="text-xs text-maroon-text hover:underline">
                                         &larr; Choose from ingested sponsor list
                                     </button>
                                 </div>
@@ -333,7 +333,7 @@
 
                         <div>
                             <label for="logo_image" class="block text-xs font-semibold uppercase tracking-wider text-muted mb-1.5">
-                                Logo / Deal Image <span class="text-xs font-bold text-maroon">(PNG only, max 100 KB)</span>
+                                Logo / Deal Image <span class="text-xs font-bold text-maroon-text">(PNG only, max 100 KB)</span>
                             </label>
                             <input type="file" id="logo_image" name="logo_image" accept=".png,image/png"
                                    x-on:change="onImageChange($event)"
@@ -356,7 +356,7 @@
                         </div>
 
                         <div class="rounded-lg bg-paper-soft p-3.5 border border-line text-xs text-muted flex items-start gap-2.5">
-                            <x-icon name="information-circle" class="h-4 w-4 text-maroon shrink-0 mt-0.5" />
+                            <x-icon name="information-circle" class="h-4 w-4 text-maroon-text shrink-0 mt-0.5" />
                             <span>
                                 <strong>Authenticity Check:</strong> To prevent spoofed or unauthorized submissions, please provide your corporate contact details.
                                 Submissions from corporate email addresses matching the sponsor brand domain are verified immediately.
@@ -479,7 +479,7 @@
                         <div x-show="couponCode" x-cloak class="mt-4 flex items-center justify-between gap-2 rounded-lg bg-white border border-line px-3 py-2">
                             <div class="min-w-0">
                                 <span class="block text-[10px] uppercase font-semibold text-muted">Promo Code</span>
-                                <code class="text-xs font-mono font-bold text-maroon" x-text="couponCode"></code>
+                                <code class="text-xs font-mono font-bold text-maroon-text" x-text="couponCode"></code>
                             </div>
                             <span class="text-xs font-medium px-2 py-1 rounded bg-paper text-muted border border-line">Copy</span>
                         </div>

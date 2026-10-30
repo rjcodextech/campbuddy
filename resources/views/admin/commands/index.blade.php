@@ -21,7 +21,7 @@
                 <tr data-task="{{ $task['name'] }}">
                     <td class="whitespace-nowrap font-mono text-xs">
                         @if ($task['command'])
-                            <a href="#cmd-{{ str_replace(':', '-', $task['command']) }}" class="text-maroon hover:underline">{{ $task['name'] }}</a>
+                            <a href="#cmd-{{ str_replace(':', '-', $task['command']) }}" class="text-maroon-text hover:underline">{{ $task['name'] }}</a>
                         @else
                             {{ $task['name'] }}
                         @endif

@@ -93,7 +93,7 @@
                 {{-- The rest of what the site has: any of it can take a place ("Use this"). --}}
                 @if (! empty($site['more']))
                     <details class="mt-4">
-                        <summary class="cursor-pointer text-sm font-medium text-maroon">More from the site ({{ count($site['more']) }})</summary>
+                        <summary class="cursor-pointer text-sm font-medium text-maroon-text">More from the site ({{ count($site['more']) }})</summary>
                         <p class="mt-1 text-xs text-muted">"Use this" puts a piece first; the last piece CampBuddy picked by itself makes room.</p>
                         <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                             @foreach ($site['more'] as $piece)
@@ -155,11 +155,11 @@
         <div class="grid gap-4 sm:grid-cols-3">
             @foreach ([['posts', 'Posts', count($kit['posts']).' posts, in the order to share them', 'image'], ['people', 'People cards', $peopleCount.' '.($peopleCount === 1 ? 'card' : 'cards').' for speakers, organizers, volunteers…', 'users'], ['reels', 'Reels', 'Videos with music, 30 s or more, five templates', 'megaphone']] as [$key, $label, $hint, $icon])
                 <button type="button" data-studio-open="{{ $key }}" class="group flex items-start gap-4 rounded-xl border border-line bg-white p-5 text-left shadow-xs transition hover:-translate-y-1 hover:border-maroon/30 hover:shadow-lg focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
-                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon"><x-icon :name="$icon" class="h-5 w-5" /></span>
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon-text"><x-icon :name="$icon" class="h-5 w-5" /></span>
                     <span class="min-w-0">
                         <span class="block font-display text-lg font-bold text-ink">{{ $label }}</span>
                         <span class="block text-sm text-muted">{{ $hint }}</span>
-                        <span class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-maroon">Open studio <span aria-hidden="true">→</span></span>
+                        <span class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-maroon-text">Open studio <span aria-hidden="true">→</span></span>
                     </span>
                 </button>
             @endforeach
@@ -173,7 +173,7 @@
         @php($phase = fn (string $key) => match (true) {
             in_array($key, ['save-the-date', 'venue', 'speakers', 'sponsors', 'schedule'], true) => 'bg-navy/10 text-navy ring-navy/20',
             in_array($key, ['first-timer', 'contributor', 'wpsimplified', 'app', 'meet', 'countdown'], true) => 'bg-teal/10 text-teal ring-teal/20',
-            in_array($key, ['today', 'spotlight', 'moments'], true) => 'bg-maroon/10 text-maroon ring-maroon/20',
+            in_array($key, ['today', 'spotlight', 'moments'], true) => 'bg-maroon/10 text-maroon-text ring-maroon/20',
             default => 'bg-gold/15 text-ink ring-gold/30',
         })
         <x-card title="Posting plan" description="A tentative day to share each post, counted back from the event's first day. Click a post to open it in the studio.">
@@ -210,7 +210,7 @@
                                         @if ($day['month'])
                                             <span class="font-semibold uppercase tracking-wide text-muted">{{ $day['month'] }}</span>
                                         @elseif ($day['event'])
-                                            <span class="font-semibold text-maroon">Event</span>
+                                            <span class="font-semibold text-maroon-text">Event</span>
                                         @endif
                                     </div>
                                     @foreach ($day['posts'] as $post)
@@ -230,7 +230,7 @@
                     <form method="POST" action="{{ $remindersUrl }}" class="flex flex-wrap items-center gap-3">
                         @csrf
                         <input type="hidden" name="on" value="{{ ($remindersOn ?? false) ? 0 : 1 }}">
-                        <x-icon name="megaphone" class="h-5 w-5 text-maroon" />
+                        <x-icon name="megaphone" class="h-5 w-5 text-maroon-text" />
                         <span class="text-sm">
                             <span class="font-semibold">Remind me on my phone when a post is due</span>
                             <span class="block text-xs text-muted">
@@ -261,7 +261,7 @@
                 </div>
                 <nav class="flex gap-1 rounded-full bg-paper-soft p-1" role="tablist" aria-label="Studio">
                     @foreach (['posts' => 'Posts', 'people' => 'People cards', 'reels' => 'Reels'] as $key => $label)
-                        <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="rounded-full px-4 py-1.5 text-sm font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon aria-selected:shadow-xs">{{ $label }}</button>
+                        <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="rounded-full px-4 py-1.5 text-sm font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon-text aria-selected:shadow-xs">{{ $label }}</button>
                     @endforeach
                 </nav>
                 <div class="ml-auto flex flex-wrap items-center gap-2">

@@ -13,7 +13,7 @@
                 @php $timing = \App\Support\EventListing::timing($event, $today); @endphp
                 <li class="flex flex-col rounded-xl border border-line bg-white p-5 shadow-xs">
                     <div class="flex items-start gap-3">
-                        <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-sm font-semibold text-maroon" aria-hidden="true">
+                        <span class="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-sm font-semibold text-maroon-text" aria-hidden="true">
                             @if ($event->markUrl())
                                 <img src="{{ $event->markUrl() }}" alt="" class="max-h-9 max-w-9 object-contain">
                             @else
@@ -22,13 +22,13 @@
                         </span>
                         <div class="min-w-0 flex-1">
                             <h2 class="text-base font-semibold leading-snug">
-                                <a href="{{ route('manager.events.details', $event) }}" class="hover:text-maroon hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                                <a href="{{ route('manager.events.details', $event) }}" class="hover:text-maroon-text hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
                             </h2>
                             <p class="mt-0.5 text-sm text-muted">
                                 @if ($event->starts_on)
                                     {{ $event->starts_on->format('j M Y') }}@if ($event->ends_on && ! $event->ends_on->isSameDay($event->starts_on)) – {{ $event->ends_on->format('j M Y') }}@endif
                                     @if ($timing)
-                                        · <span @class(['font-medium text-maroon' => $timing['state'] !== 'past'])>{{ $timing['label'] }}</span>
+                                        · <span @class(['font-medium text-maroon-text' => $timing['state'] !== 'past'])>{{ $timing['label'] }}</span>
                                     @endif
                                 @else
                                     Date not set yet

@@ -38,6 +38,8 @@ data class MinApp(val android: String = "0.0.1", val ios: String = "0.0.1")
 @Serializable
 data class ThemeConfig(
     val primary: String = "#FF4D2D",
+    /** The main colour as small text (links, the active tab): WCAG AA. The website's --brand-text. */
+    @SerialName("primary_text") val primaryText: String = "#D33417",
     val accent: String = "#d97706",
     val background: String = "#FFF7ED",
     val surface: String = "#FAFAFD",

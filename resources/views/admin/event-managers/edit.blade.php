@@ -32,7 +32,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
                         <span class="text-sm font-medium">
                             @if ($change->event)
-                                <a href="{{ route('admin.events.edit', $change->event) }}" class="hover:text-maroon hover:underline">{{ $change->event->display_name }}</a>
+                                <a href="{{ route('admin.events.edit', $change->event) }}" class="hover:text-maroon-text hover:underline">{{ $change->event->display_name }}</a>
                             @endif
                         </span>
                         <span class="text-xs text-muted" title="{{ $change->created_at }}">{{ $change->created_at->diffForHumans() }}</span>

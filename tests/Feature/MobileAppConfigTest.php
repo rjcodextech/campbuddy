@@ -213,4 +213,21 @@ class MobileAppConfigTest extends TestCase
         $this->assertSame(['draft', 'publish'], \DB::table('mobile_app_config_audit')->orderBy('id')->pluck('action')->all());
         $this->assertSame($admin->id, (int) \DB::table('mobile_app_config_audit')->value('user_id'));
     }
+
+    public function test_the_main_colour_as_text_must_be_readable_and_old_saved_configs_get_it(): void
+    {
+        // One token for coral as small text: $color-brand-text on the web, --color-maroon-text in the panel,
+        // theme.primary_text in the app (npm run brand keeps them equal).
+        $this->assertSame('#D33417', MobileAppDefaults::config()['theme']['primary_text']);
+
+        $config = MobileAppDefaults::config();
+        $config['theme']['primary_text'] = '#FF9A85';
+        $this->assertContains('The main colour as text is too faint on cards (needs contrast 4.5:1): pick a deeper shade.', MobileAppConfig::validate($config));
+
+        // A config saved before this colour existed still validates: the default fills it in.
+        $saved = MobileAppDefaults::config();
+        unset($saved['theme']['primary_text']);
+        $this->assertSame('#D33417', MobileAppConfig::merged($saved)['theme']['primary_text']);
+        $this->assertSame([], MobileAppConfig::validate(MobileAppConfig::merged($saved)));
+    }
 }

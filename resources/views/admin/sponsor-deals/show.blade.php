@@ -64,7 +64,7 @@
 
                             <div>
                                 <span class="block text-xs font-semibold uppercase tracking-wider text-muted">Work Email</span>
-                                <a href="mailto:{{ $submission->submitter_email }}" class="text-sm font-medium text-maroon hover:underline">
+                                <a href="mailto:{{ $submission->submitter_email }}" class="text-sm font-medium text-maroon-text hover:underline">
                                     {{ $submission->submitter_email }}
                                 </a>
                             </div>
@@ -170,7 +170,7 @@
                         <div class="py-2.5 flex justify-between gap-4">
                             <dt class="text-muted">Deal URL</dt>
                             <dd class="font-medium text-ink text-right truncate max-w-xs">
-                                <a href="{{ $submission->url }}" target="_blank" class="text-maroon underline">
+                                <a href="{{ $submission->url }}" target="_blank" class="text-maroon-text underline">
                                     {{ $submission->url }}
                                 </a>
                             </dd>
@@ -256,7 +256,7 @@
                             <div class="mt-4 flex items-center justify-between gap-2 rounded-lg bg-white border border-line px-3 py-2">
                                 <div class="min-w-0">
                                     <span class="block text-[10px] uppercase font-semibold text-muted">Promo Code</span>
-                                    <code class="text-xs font-mono font-bold text-maroon">{{ $submission->coupon_code }}</code>
+                                    <code class="text-xs font-mono font-bold text-maroon-text">{{ $submission->coupon_code }}</code>
                                 </div>
                                 <span class="text-xs font-medium px-2 py-1 rounded bg-paper text-muted border border-line">Copy</span>
                             </div>

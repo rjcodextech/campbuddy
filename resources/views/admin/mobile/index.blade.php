@@ -27,7 +27,7 @@
                 @foreach ($tabs as $key)
                     <li>
                         <a href="{{ route('admin.mobile.index', ['tab' => $key]) }}" @if ($tab === $key) aria-current="page" @endif
-                           @class(['-mb-px inline-flex items-center border-b-2 px-3 py-3 text-sm font-medium', 'border-maroon text-maroon' => $tab === $key, 'border-transparent text-muted hover:border-line hover:text-ink' => $tab !== $key])>{{ $labels[$key] }}</a>
+                           @class(['-mb-px inline-flex items-center border-b-2 px-3 py-3 text-sm font-medium', 'border-maroon text-maroon-text' => $tab === $key, 'border-transparent text-muted hover:border-line hover:text-ink' => $tab !== $key])>{{ $labels[$key] }}</a>
                     </li>
                 @endforeach
             </ul>
@@ -147,7 +147,7 @@
                 @csrf
                 <x-card title="Colours and logo" description="Text must stay readable: the editor checks contrast and refuses colours that are too faint.">
                     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        @foreach (['primary' => 'Main colour (buttons)', 'accent' => 'Accent (stars, highlights)', 'background' => 'Page background', 'surface' => 'Cards', 'peach' => 'Soft highlight', 'line' => 'Borders', 'ink' => 'Text', 'muted' => 'Quiet text', 'danger' => 'Warnings', 'success' => 'Success'] as $token => $label)
+                        @foreach (['primary' => 'Main colour (buttons)', 'primary_text' => 'Main colour as text (links)', 'accent' => 'Accent (stars, highlights)', 'background' => 'Page background', 'surface' => 'Cards', 'peach' => 'Soft highlight', 'line' => 'Borders', 'ink' => 'Text', 'muted' => 'Quiet text', 'danger' => 'Warnings', 'success' => 'Success'] as $token => $label)
                             <label class="text-sm font-medium">{{ $label }}
                                 <span class="mt-1 flex items-center gap-2">
                                     <input type="color" value="{{ $config['theme'][$token] }}" oninput="this.nextElementSibling.value = this.value.toUpperCase()" class="h-9 w-12 rounded border-line">
@@ -319,13 +319,13 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-ink mb-1.5">Action behavior</label>
                                     <div class="grid grid-cols-3 gap-2">
-                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === '' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="">
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === '' ? 'border-maroon bg-peach/40 text-maroon-text font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="">
                                             <span>None (Read-only)</span>
                                         </div>
-                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'event' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="event">
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'event' ? 'border-maroon bg-peach/40 text-maroon-text font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="event">
                                             <span>Open a WordCamp</span>
                                         </div>
-                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'url' ? 'border-maroon bg-peach/40 text-maroon font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="url">
+                                        <div class="action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all {{ $initialActionType === 'url' ? 'border-maroon bg-peach/40 text-maroon-text font-semibold' : 'border-line bg-white text-muted hover:border-muted font-medium' }}" data-type="url">
                                             <span>Open web link</span>
                                         </div>
                                     </div>
@@ -698,7 +698,7 @@
                         actionTypePills.forEach(function (p) {
                             const t = p.getAttribute('data-type');
                             if (t === chosen) {
-                                p.className = 'action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all border-maroon bg-peach/40 text-maroon font-semibold';
+                                p.className = 'action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all border-maroon bg-peach/40 text-maroon-text font-semibold';
                             } else {
                                 p.className = 'action-type-pill flex items-center justify-center p-2.5 rounded-lg border text-xs cursor-pointer transition-all border-line bg-white text-muted hover:border-muted font-medium';
                             }

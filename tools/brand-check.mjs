@@ -27,6 +27,7 @@ const colours = {
   line: token('color-line'),
   peach: token('color-peach'),
   maroon: token('color-maroon'),
+  brandText: token('color-brand-text'),
   maroonDark: token('color-maroon-dark'),
   wine: token('color-wine'),
   gold: token('color-gold'),
@@ -53,6 +54,7 @@ expect(where, 'subtle', twVar('color-subtle'), colours.subtle);
 expect(where, 'line', twVar('color-line'), colours.line);
 expect(where, 'maroon', twVar('color-maroon'), colours.maroon);
 expect(where, 'maroon-dark', twVar('color-maroon-dark'), colours.maroonDark);
+expect(where, 'maroon-text', twVar('color-maroon-text'), colours.brandText);
 expect(where, 'wine', twVar('color-wine'), colours.wine);
 expect(where, 'gold', twVar('color-gold'), colours.gold);
 expect(where, 'navy', twVar('color-navy'), colours.navy);
@@ -79,9 +81,9 @@ const kotlin = read('native-app/shared/src/commonMain/kotlin/club/campbuddy/shar
 const kt = (key) => kotlin.match(new RegExp(`val ${key}: String = "(#[0-9A-Fa-f]{6})"`))?.[1];
 const php = read('app/Support/MobileAppDefaults.php');
 const ph = (key) => php.match(new RegExp(`'${key}' => '(#[0-9A-Fa-f]{6})'`))?.[1];
-const appMap = { primary: 'maroon', accent: 'gold', background: 'paperSoft', surface: 'paper', peach: 'peach', line: 'line', ink: 'ink', muted: 'muted', danger: 'danger', success: 'success' };
+const appMap = { primary: 'maroon', primary_text: 'brandText', accent: 'gold', background: 'paperSoft', surface: 'paper', peach: 'peach', line: 'line', ink: 'ink', muted: 'muted', danger: 'danger', success: 'success' };
 for (const [key, src] of Object.entries(appMap)) {
-  expect('ConfigModels.kt (ThemeConfig)', key, kt(key), colours[src]);
+  expect('ConfigModels.kt (ThemeConfig)', key, kt(key.replace(/_([a-z])/g, (m, c) => c.toUpperCase())), colours[src]);
   expect('MobileAppDefaults.php (theme)', key, ph(key), colours[src]);
 }
 expect('ConfigModels.kt (ThemeConfig)', 'radius', kotlin.match(/val radius: Int = (\d+)/)?.[1] + 'px', token('radius-card'));

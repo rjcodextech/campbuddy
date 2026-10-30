@@ -55,7 +55,7 @@ class Brand(theme: ThemeConfig) {
      * for WCAG AA 4.5:1 on the page (the website's --brand-text, #D33417 for the default coral). Fills,
      * buttons and icons keep [primary].
      */
-    val primaryText: Color = readable(primary, surface)
+    val primaryText: Color = readable(color(theme.primaryText, 0xFFD33417), surface)
 
     private fun readable(c: Color, ground: Color): Color {
         var x = c

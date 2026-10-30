@@ -42,6 +42,9 @@
     --color-line: #e2e8f0;
     --color-maroon: #ff4d2d;
     --color-maroon-dark: #e03616;
+    /* Coral as small TEXT (links, active tabs, badges): WCAG AA. Mirrors $color-brand-text (npm run brand). */
+    --color-maroon-text: #d33417;
+    --color-maroon-text-dark: #b0280f;
     --color-navy: #1e293b;
     /* Light only: highlights on ink, glows. Never text on paper (2.2:1). */
     --color-gold: #d97706;
@@ -465,7 +468,7 @@ html.has-app-tabbar body {
 }
 
 .app-tabbar__item--active {
-    color: var(--color-maroon);
+    color: var(--color-maroon-text);
 }
 
 .app-tabbar__item:focus-visible {

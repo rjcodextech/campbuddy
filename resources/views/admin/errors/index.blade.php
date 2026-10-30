@@ -67,7 +67,7 @@
                 <tr class="align-top">
                     <td class="font-medium">
                         @if ($row->event)
-                            <a href="{{ route('admin.events.edit', $row->event) }}" class="hover:text-maroon hover:underline">{{ $row->event->display_name }}</a>
+                            <a href="{{ route('admin.events.edit', $row->event) }}" class="hover:text-maroon-text hover:underline">{{ $row->event->display_name }}</a>
                         @else
                             <span class="text-muted">All events</span>
                         @endif
@@ -88,7 +88,7 @@
             @empty
                 <x-table.empty :colspan="6" icon="check-circle" title="{{ $filtering ? 'No fetch problems match these filters' : 'No fetch problems' }}">
                     @if ($filtering)
-                        Try a wider period, or <a href="{{ route('admin.errors.index') }}" class="font-medium text-maroon hover:underline">reset the filters</a>.
+                        Try a wider period, or <a href="{{ route('admin.errors.index') }}" class="font-medium text-maroon-text hover:underline">reset the filters</a>.
                     @else
                         Every fetch in the {{ strtolower($periods[$filters['period']]) }} finished cleanly.
                     @endif

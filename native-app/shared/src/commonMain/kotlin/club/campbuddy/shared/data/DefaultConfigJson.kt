@@ -19,6 +19,7 @@ internal const val DEFAULT_CONFIG_JSON = """
     },
     "theme": {
         "primary": "#FF4D2D",
+        "primary_text": "#D33417",
         "accent": "#d97706",
         "background": "#FFF7ED",
         "surface": "#FAFAFD",

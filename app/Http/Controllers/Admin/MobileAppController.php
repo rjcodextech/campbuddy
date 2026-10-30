@@ -173,7 +173,7 @@ class MobileAppController extends Controller
 
     private function look(Request $request, array $config): array
     {
-        foreach (['primary', 'accent', 'background', 'surface', 'peach', 'line', 'ink', 'muted', 'danger', 'success'] as $token) {
+        foreach (['primary', 'primary_text', 'accent', 'background', 'surface', 'peach', 'line', 'ink', 'muted', 'danger', 'success'] as $token) {
             $config['theme'][$token] = strtoupper(trim((string) $request->input($token, $config['theme'][$token])));
         }
         $config['theme']['radius'] = (int) $request->input('radius', $config['theme']['radius']);

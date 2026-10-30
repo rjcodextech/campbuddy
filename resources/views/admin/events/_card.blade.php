@@ -14,7 +14,7 @@
 
 <li @class(['cb-event-card', 'cb-event-card-soon' => $soon])>
     <div class="flex items-start gap-3 p-4 sm:p-5">
-        <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-base font-semibold text-maroon" aria-hidden="true">
+        <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-base font-semibold text-maroon-text" aria-hidden="true">
             @if ($event->markUrl())
                 <img src="{{ $event->markUrl() }}" alt="" class="max-h-10 max-w-10 object-contain">
             @else
@@ -27,7 +27,7 @@
                 <x-badge :variant="$tag[1]" class="mb-1">{{ $tag[0] }}</x-badge>
             @endif
             <h2 class="text-base font-semibold leading-snug">
-                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] hover:text-maroon hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
+                <a href="{{ route('admin.events.edit', $event) }}" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] hover:text-maroon-text hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">{{ $event->display_name }}</a>
             </h2>
             <p class="mt-0.5 truncate text-xs text-muted" title="{{ $event->slug }}">{{ $event->slug }}</p>
         </div>
@@ -47,7 +47,7 @@
                 @endif
             </dd>
             @if ($timing)
-                <dd @class(['text-xs', 'font-medium text-maroon' => $timing['state'] !== 'past', 'text-muted' => $timing['state'] === 'past'])>{{ $timing['label'] }}</dd>
+                <dd @class(['text-xs', 'font-medium text-maroon-text' => $timing['state'] !== 'past', 'text-muted' => $timing['state'] === 'past'])>{{ $timing['label'] }}</dd>
             @endif
         </div>
 

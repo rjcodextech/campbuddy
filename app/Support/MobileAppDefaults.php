@@ -39,6 +39,8 @@ class MobileAppDefaults
             // The same palette as the website and the PWA (resources/scss/abstracts/_variables.scss).
             'theme' => [
                 'primary' => '#FF4D2D',
+                // The main colour as small text (links, the active tab): AA 4.5:1. Mirrors $color-brand-text.
+                'primary_text' => '#D33417',
                 'accent' => '#d97706',
                 'background' => '#FFF7ED',
                 'surface' => '#FAFAFD',

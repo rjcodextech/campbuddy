@@ -23,7 +23,7 @@
                     <td>{{ $lead->event?->display_name ?? '—' }}</td>
                 @endif
                 <td class="font-medium">{{ $lead->name ?? '—' }}</td>
-                <td><a href="mailto:{{ $lead->email }}" class="text-maroon hover:underline">{{ $lead->email }}</a></td>
+                <td><a href="mailto:{{ $lead->email }}" class="text-maroon-text hover:underline">{{ $lead->email }}</a></td>
                 <td class="whitespace-nowrap">{{ $lead->mobile ?? '—' }}</td>
                 <td class="text-muted">
                     @if ($lead->company)

@@ -12,7 +12,7 @@
             @forelse ($summary as $row)
                 <tr>
                     <td class="font-medium">
-                        <a href="{{ route('admin.feedback.index', ['event' => $row->event_id]) }}" class="hover:text-maroon hover:underline">{{ $row->event?->display_name ?? 'Deleted event' }}</a>
+                        <a href="{{ route('admin.feedback.index', ['event' => $row->event_id]) }}" class="hover:text-maroon-text hover:underline">{{ $row->event?->display_name ?? 'Deleted event' }}</a>
                     </td>
                     <td class="text-right tabular-nums">{{ number_format($row->answers) }}</td>
                     <td class="whitespace-nowrap text-right tabular-nums"><span class="text-gold" aria-hidden="true">★</span> {{ number_format($row->average, 1) }}</td>

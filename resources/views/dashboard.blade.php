@@ -12,7 +12,7 @@
                 <span class="font-semibold">{{ $pendingDealSubmissionsCount }} sponsor {{ \Illuminate\Support\Str::plural('deal submission', $pendingDealSubmissionsCount) }} {{ $pendingDealSubmissionsCount === 1 ? 'is' : 'are' }} waiting for verification</span>
                 <span class="text-muted">— staged in review queue until approved into event deals</span>
             </span>
-            <span class="inline-flex items-center gap-1 font-medium text-maroon">Review submissions <x-icon name="chevron-right" class="h-4 w-4" /></span>
+            <span class="inline-flex items-center gap-1 font-medium text-maroon-text">Review submissions <x-icon name="chevron-right" class="h-4 w-4" /></span>
         </a>
     @endif
 
@@ -35,13 +35,13 @@
                     {{ $errorSummary['fetch'] }} {{ \Illuminate\Support\Str::plural('fetch problem', $errorSummary['fetch']) }} in the last 7 days
                 </span>
             </span>
-            <span class="inline-flex items-center gap-1 font-medium text-maroon">View errors <x-icon name="chevron-right" class="h-4 w-4" /></span>
+            <span class="inline-flex items-center gap-1 font-medium text-maroon-text">View errors <x-icon name="chevron-right" class="h-4 w-4" /></span>
         </a>
     @else
         <p class="mb-6 flex items-center gap-2 text-sm text-muted">
             <x-icon name="check-circle" class="h-5 w-5 text-teal" />
             No problems — every check passes and every fetch finished cleanly.
-            <a href="{{ route('admin.errors.index') }}" class="font-medium text-maroon hover:underline">Errors</a>
+            <a href="{{ route('admin.errors.index') }}" class="font-medium text-maroon-text hover:underline">Errors</a>
         </p>
     @endif
 
@@ -78,7 +78,7 @@
                                 @if ($next->logoUrl())
                                     <img src="{{ $next->logoUrl() }}" alt="" class="h-full w-full object-contain">
                                 @else
-                                    <x-icon name="calendar" class="h-7 w-7 text-maroon" />
+                                    <x-icon name="calendar" class="h-7 w-7 text-maroon-text" />
                                 @endif
                             </span>
                             <div class="min-w-0">
@@ -117,7 +117,7 @@
                             <li>
                                 <a href="{{ route('admin.events.edit', $event) }}"
                                    class="group flex h-full items-center gap-3 rounded-xl border border-line bg-white p-3 shadow-xs transition hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
-                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
+                                    <span class="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-maroon/10 text-maroon-text motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-6">
                                         <span class="text-base font-bold tabular-nums leading-none">{{ $big }}</span>
                                         <span class="text-xs font-semibold uppercase leading-tight">{{ $big === 'Live' ? 'now' : 'days' }}</span>
                                     </span>
@@ -167,7 +167,7 @@
                 @endforelse
 
                 @if ($draftCount > $draftEvents->count())
-                    <a href="{{ route('admin.events.index') }}" class="block border-t border-line px-3 py-2.5 text-sm font-medium text-maroon hover:underline">
+                    <a href="{{ route('admin.events.index') }}" class="block border-t border-line px-3 py-2.5 text-sm font-medium text-maroon-text hover:underline">
                         All {{ $draftCount }} drafts
                     </a>
                 @endif
@@ -189,7 +189,7 @@
     <section class="mt-6 grid gap-4 md:grid-cols-2" aria-label="Maintenance">
         <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
             <div>
-                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="refresh" class="h-4 w-4 text-maroon" /> Event data</h2>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="refresh" class="h-4 w-4 text-maroon-text" /> Event data</h2>
                 <p class="mt-1 text-xs text-muted">Updates by itself every 15 minutes; open apps update on their own.</p>
                 <p class="mt-2 text-xs text-muted">
                     @if ($lastDataFetch)
@@ -205,7 +205,7 @@
 
         <div class="flex flex-col justify-between gap-4 rounded-xl border border-line bg-white p-5 shadow-xs">
             <div>
-                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="trash" class="h-4 w-4 text-maroon" /> Cache</h2>
+                <h2 class="flex items-center gap-2 text-sm font-semibold"><x-icon name="trash" class="h-4 w-4 text-maroon-text" /> Cache</h2>
                 <p class="mt-1 text-xs text-muted">
                     Clears the server's caches{{ $cloudflareConfigured ? ' and Cloudflare' : '' }} and makes every open app reload.
                     Saved sessions and Camp Cards aren't touched.

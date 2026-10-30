@@ -43,7 +43,7 @@
 
                         @if ($document && !empty(trim($document->content ?? '')))
                             <a href="{{ route( $docMeta['view_route'] ) }}" target="_blank" rel="noopener noreferrer"
-                               class="text-xs text-maroon hover:underline">
+                               class="text-xs text-maroon-text hover:underline">
                                 Preview live page &rarr;
                             </a>
                         @endif

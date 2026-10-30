@@ -34,7 +34,7 @@
                    @if ($current === $key) aria-current="page" @endif
                    @class([
                        '-mb-px inline-flex items-center border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40 lg:mb-0 lg:flex lg:w-full lg:rounded-lg lg:border-b-0',
-                       'border-maroon text-maroon lg:bg-maroon/10' => $current === $key,
+                       'border-maroon text-maroon-text lg:bg-maroon/10' => $current === $key,
                        'border-transparent text-muted hover:border-line hover:text-ink lg:hover:bg-paper-soft' => $current !== $key,
                    ])>
                     {{ $label }}

@@ -184,7 +184,7 @@ class MobileAppConfig
         }
 
         // Theme: colours, and text that stays readable.
-        foreach (['primary', 'accent', 'background', 'surface', 'peach', 'line', 'ink', 'muted', 'danger', 'success'] as $token) {
+        foreach (['primary', 'primary_text', 'accent', 'background', 'surface', 'peach', 'line', 'ink', 'muted', 'danger', 'success'] as $token) {
             if (! preg_match('/^#[0-9A-Fa-f]{6}$/', (string) ($c['theme'][$token] ?? ''))) {
                 $e[] = "Colour \"{$token}\" must be like #60121C.";
             }
@@ -192,6 +192,9 @@ class MobileAppConfig
         if (! $e) {
             if (self::contrast($c['theme']['ink'], $c['theme']['background']) < 4.5) {
                 $e[] = 'Text colour on the background is too faint to read (needs contrast 4.5:1).';
+            }
+            if (self::contrast($c['theme']['primary_text'], $c['theme']['surface']) < 4.5) {
+                $e[] = 'The main colour as text is too faint on cards (needs contrast 4.5:1): pick a deeper shade.';
             }
             if (self::contrast('#FFFFFF', $c['theme']['primary']) < 3.0) {
                 $e[] = 'White text on the main colour is too faint to read (needs contrast 3.0:1).';

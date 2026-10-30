@@ -38,7 +38,7 @@
                     <td class="whitespace-nowrap text-muted" title="{{ $change->created_at }}">{{ $change->created_at->diffForHumans() }}</td>
                     <td class="font-medium">
                         @if ($change->event_manager_id)
-                            <a href="{{ route('admin.event-managers.edit', $change->event_manager_id) }}" class="hover:text-maroon hover:underline">{{ $change->manager_name }}</a>
+                            <a href="{{ route('admin.event-managers.edit', $change->event_manager_id) }}" class="hover:text-maroon-text hover:underline">{{ $change->manager_name }}</a>
                         @else
                             {{ $change->manager_name }} <span class="text-xs font-normal text-muted">(account deleted)</span>
                         @endif
@@ -46,7 +46,7 @@
                     </td>
                     <td class="hidden sm:table-cell">
                         @if ($change->event)
-                            <a href="{{ route('admin.events.edit', $change->event) }}" class="hover:text-maroon hover:underline">{{ $change->event->display_name }}</a>
+                            <a href="{{ route('admin.events.edit', $change->event) }}" class="hover:text-maroon-text hover:underline">{{ $change->event->display_name }}</a>
                         @endif
                     </td>
                     <td class="hidden md:table-cell"><x-badge variant="info">{{ $sections[$change->section] ?? $change->section }}</x-badge></td>
@@ -55,7 +55,7 @@
             @empty
                 <x-table.empty :colspan="5" icon="{{ $filtering ? 'search' : 'pencil' }}" title="{{ $filtering ? 'No changes match these filters' : 'No changes yet' }}">
                     @if ($filtering)
-                        <a href="{{ route('admin.event-managers.activity') }}" class="font-medium text-maroon hover:underline">Reset the filters</a>.
+                        <a href="{{ route('admin.event-managers.activity') }}" class="font-medium text-maroon-text hover:underline">Reset the filters</a>.
                     @else
                         When an event manager saves something, it shows up here.
                     @endif

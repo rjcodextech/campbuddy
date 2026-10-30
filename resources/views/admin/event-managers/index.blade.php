@@ -19,7 +19,7 @@
             @forelse ($managers as $manager)
                 <tr>
                     <td>
-                        <a href="{{ route('admin.event-managers.edit', $manager) }}" class="font-medium hover:text-maroon hover:underline">{{ $manager->name }}</a>
+                        <a href="{{ route('admin.event-managers.edit', $manager) }}" class="font-medium hover:text-maroon-text hover:underline">{{ $manager->name }}</a>
                         <div class="text-xs text-muted">{{ $manager->email }}</div>
                         <p class="mt-1.5 text-xs text-muted md:hidden">
                             @if ($manager->events->isEmpty())

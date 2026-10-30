@@ -15,7 +15,7 @@
                     @if ($pendingCount > 0)
                         <span @class([
                             'rounded-full px-2 py-0.5 text-xs font-bold',
-                            'bg-white text-maroon' => $status === 'pending',
+                            'bg-white text-maroon-text' => $status === 'pending',
                             'bg-gold/20 text-gold-dark' => $status !== 'pending',
                         ])>{{ $pendingCount }}</span>
                     @endif
@@ -43,7 +43,7 @@
             </div>
 
             <div class="text-xs text-muted">
-                <a href="{{ route('sponsor-deals.create') }}" target="_blank" class="inline-flex items-center gap-1.5 text-maroon hover:underline font-medium">
+                <a href="{{ route('sponsor-deals.create') }}" target="_blank" class="inline-flex items-center gap-1.5 text-maroon-text hover:underline font-medium">
                     <x-icon name="external" class="h-3.5 w-3.5" />
                     Open Submission Form
                 </a>
@@ -94,7 +94,7 @@
                                         <div class="font-semibold text-ink">
                                             {{ $sub->displayBrand() }}
                                         </div>
-                                        <div class="text-xs text-maroon font-medium">
+                                        <div class="text-xs text-maroon-text font-medium">
                                             {{ $sub->event?->display_name ?? '—' }}
                                         </div>
                                         @if ($sub->isOfficialSponsor())

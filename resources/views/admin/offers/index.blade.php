@@ -53,7 +53,7 @@
             @if ($defaults->isEmpty())
                 <div class="px-5 py-8 text-center text-sm text-muted sm:px-6">
                     No default deal covers this event's country.
-                    <a href="{{ route('admin.deals.index') }}" class="font-medium text-maroon underline">Manage default deals</a>
+                    <a href="{{ route('admin.deals.index') }}" class="font-medium text-maroon-text underline">Manage default deals</a>
                 </div>
             @else
                 <ul class="divide-y divide-line">

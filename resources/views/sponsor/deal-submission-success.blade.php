@@ -32,7 +32,7 @@
                 </h1>
 
                 @if (session('submitted_sponsor'))
-                    <p class="mt-2 text-base font-semibold text-maroon">
+                    <p class="mt-2 text-base font-semibold text-maroon-text">
                         {{ session('submitted_sponsor') }}
                     </p>
                 @endif

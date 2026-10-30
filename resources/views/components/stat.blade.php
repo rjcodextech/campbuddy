@@ -12,7 +12,7 @@
         'hover:border-maroon/40 hover:shadow-md motion-safe:hover:-translate-y-0.5 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40' => $href,
     ]) }}>
     @if ($icon)
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-maroon/10 text-maroon-text motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out motion-safe:group-hover:-rotate-6 motion-safe:group-hover:scale-110">
             <x-icon :name="$icon" class="h-5 w-5" />
         </span>
     @endif

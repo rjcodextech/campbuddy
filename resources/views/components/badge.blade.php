@@ -16,7 +16,7 @@
         'warning' => 'bg-gold/15 text-[#8a5a00] ring-gold/40',
         'danger' => 'bg-danger-soft text-danger ring-danger/25',
         'info' => 'bg-navy/5 text-navy ring-navy/20',
-        'brand' => 'bg-maroon/10 text-maroon-dark ring-maroon/25',
+        'brand' => 'bg-maroon/10 text-maroon-text-dark ring-maroon/25',
     ][$variant] ?? 'bg-paper-soft text-[#574f4b] ring-line';
 @endphp
 

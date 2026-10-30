@@ -498,7 +498,7 @@ export function initUsagePost() {
         li.className = 'shrink-0';
         const b = document.createElement('button');
         b.type = 'button';
-        b.className = `flex w-36 flex-col items-center gap-1 rounded-lg p-2 text-xs font-semibold ${i === current ? 'bg-maroon/10 text-maroon' : 'text-ink hover:bg-paper-soft'}`;
+        b.className = `flex w-36 flex-col items-center gap-1 rounded-lg p-2 text-xs font-semibold ${i === current ? 'bg-maroon/10 text-maroon-text' : 'text-ink hover:bg-paper-soft'}`;
         const thumb = document.createElement('canvas');
         thumb.className = 'h-28 w-auto rounded border border-line';
         paint(thumb, i, 0.1);

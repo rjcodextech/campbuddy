@@ -24,7 +24,7 @@
                                         <span class="text-xs text-muted">by {{ $suggestion->maker }}</span>
                                     @endif
                                 </div>
-                                <a href="{{ $suggestion->url }}" target="_blank" rel="noopener noreferrer" class="break-all text-sm text-maroon underline">{{ $suggestion->url }}</a>
+                                <a href="{{ $suggestion->url }}" target="_blank" rel="noopener noreferrer" class="break-all text-sm text-maroon-text underline">{{ $suggestion->url }}</a>
                                 @if ($suggestion->why)
                                     <p class="mt-0.5 text-sm text-muted">{{ $suggestion->why }}</p>
                                 @endif

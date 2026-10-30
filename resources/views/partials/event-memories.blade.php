@@ -31,7 +31,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <x-button>Save links</x-button>
                     @if ($pagePublic)
-                        <a href="{{ route('event.memories', $event) }}" target="_blank" rel="noopener" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] text-sm font-medium text-maroon hover:underline">Preview the Memories page</a>
+                        <a href="{{ route('event.memories', $event) }}" target="_blank" rel="noopener" class="relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] text-sm font-medium text-maroon-text hover:underline">Preview the Memories page</a>
                     @endif
                 </div>
             </x-slot:footer>
@@ -47,7 +47,7 @@
                     <div class="min-w-0">
                         <p class="text-sm font-semibold">{{ $meta['label'] }}</p>
                         @if ($url)
-                            <a href="{{ $url }}" target="_blank" rel="noopener" class="block truncate text-xs text-muted hover:text-maroon hover:underline">{{ $url }}</a>
+                            <a href="{{ $url }}" target="_blank" rel="noopener" class="block truncate text-xs text-muted hover:text-maroon-text hover:underline">{{ $url }}</a>
                         @else
                             <p class="text-xs text-muted">Add the link first.</p>
                         @endif

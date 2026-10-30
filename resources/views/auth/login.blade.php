@@ -18,7 +18,7 @@
 
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}"
-                   class="inline-flex min-h-10 items-center rounded py-1 text-sm font-medium text-maroon hover:text-maroon-dark hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
+                   class="inline-flex min-h-10 items-center rounded py-1 text-sm font-medium text-maroon-text hover:text-maroon-text-dark hover:underline focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40">
                     Forgot your password?
                 </a>
             @endif

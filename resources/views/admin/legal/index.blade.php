@@ -63,7 +63,7 @@
         <div class="rounded-lg border border-line bg-paper/60 p-5 text-xs text-muted">
             <h4 class="font-semibold text-ink">API &amp; Mobile App Synchronization</h4>
             <p class="mt-1">
-                The native Android app and PWA fetch legal content directly via <code class="font-mono text-maroon">/api/legal/{slug}</code>.
+                The native Android app and PWA fetch legal content directly via <code class="font-mono text-maroon-text">/api/legal/{slug}</code>.
                 Any updates made here take effect immediately for mobile app users without requiring an app store update.
             </p>
         </div>
