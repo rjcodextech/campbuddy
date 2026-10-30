@@ -11,6 +11,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const componentsKt0 = () => read('native-app/shared/src/commonMain/kotlin/club/campbuddy/shared/ui/Components.kt');
 const scss = read('resources/scss/abstracts/_variables.scss');
 const token = (name) => {
   const m = scss.match(new RegExp(`^\\$${name}:\\s*([^;]+);`, 'm'));
@@ -55,6 +56,9 @@ expect(where, 'line', twVar('color-line'), colours.line);
 expect(where, 'maroon', twVar('color-maroon'), colours.maroon);
 expect(where, 'maroon-dark', twVar('color-maroon-dark'), colours.maroonDark);
 expect(where, 'maroon-text', twVar('color-maroon-text'), colours.brandText);
+expect(where, 'wine-deep', twVar('color-wine-deep'), token('color-wine-deep'));
+const wineDeepKt = componentsKt0().match(/val BRAND_WINE_DEEP = Color\(0xFF([0-9A-Fa-f]{6})\)/)?.[1];
+expect('Components.kt', 'BRAND_WINE_DEEP', wineDeepKt ? `#${wineDeepKt}` : null, token('color-wine-deep'));
 expect(where, 'wine', twVar('color-wine'), colours.wine);
 expect(where, 'gold', twVar('color-gold'), colours.gold);
 expect(where, 'navy', twVar('color-navy'), colours.navy);

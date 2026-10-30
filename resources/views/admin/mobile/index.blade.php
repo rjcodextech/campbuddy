@@ -213,7 +213,7 @@
                                 </div>
                                 <label class="relative inline-flex cursor-pointer items-center">
                                     <input type="checkbox" name="banner_on" id="banner_on" value="1" @checked($bannerOn) class="peer sr-only">
-                                    <div class="h-7 w-12 rounded-full bg-line peer-checked:bg-maroon peer-focus:outline-hidden peer-focus:ring-2 peer-focus:ring-maroon/30 after:absolute after:left-[3px] after:top-[3px] after:h-5.5 after:w-5.5 after:rounded-full after:border after:border-line after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
+                                    <div class="h-7 w-12 rounded-full bg-line peer-checked:bg-maroon-text peer-focus:outline-hidden peer-focus:ring-2 peer-focus:ring-maroon/30 after:absolute after:left-[3px] after:top-[3px] after:h-5.5 after:w-5.5 after:rounded-full after:border after:border-line after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-5 peer-checked:after:border-white"></div>
                                 </label>
                             </div>
                         </div>
@@ -396,7 +396,7 @@
                                 </div>
                                 {{-- Language preview toggle --}}
                                 <div class="flex items-center rounded-lg border border-line bg-white p-0.5 text-xs font-semibold">
-                                    <button type="button" id="lang-btn-en" class="px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer">English</button>
+                                    <button type="button" id="lang-btn-en" class="px-2.5 py-1 rounded-md bg-maroon-text text-white transition-all cursor-pointer">English</button>
                                     <button type="button" id="lang-btn-hi" class="px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer">हिन्दी</button>
                                 </div>
                             </div>
@@ -662,13 +662,13 @@
                 if (langBtnEn && langBtnHi) {
                     langBtnEn.addEventListener('click', function () {
                         currentLang = 'en';
-                        langBtnEn.className = 'px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer';
+                        langBtnEn.className = 'px-2.5 py-1 rounded-md bg-maroon-text text-white transition-all cursor-pointer';
                         langBtnHi.className = 'px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer';
                         updatePreview();
                     });
                     langBtnHi.addEventListener('click', function () {
                         currentLang = 'hi';
-                        langBtnHi.className = 'px-2.5 py-1 rounded-md bg-maroon text-white transition-all cursor-pointer';
+                        langBtnHi.className = 'px-2.5 py-1 rounded-md bg-maroon-text text-white transition-all cursor-pointer';
                         langBtnEn.className = 'px-2.5 py-1 rounded-md text-muted hover:text-ink transition-all cursor-pointer';
                         updatePreview();
                     });

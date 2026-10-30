@@ -64,3 +64,17 @@ Tests: `tests/Feature/ApiHandshakeTest.php`, `tests/js/api-handshake.test.mjs`, 
   content hash still uses the site's raw name so suppressed entries stay suppressed.
 - Verified 30 Oct 2026 against live data: Bengaluru 2026 25/25 and Delhi 2026 21/21 sessions identical to
   production (title + start); Asia 2027 has no sessions published yet (2 sponsors, 3 organizers).
+
+## Colour contrast (WCAG AA), 30 Oct 2026 follow-up
+
+- Small coral text everywhere uses `--brand-text` `#D33417` (hover `--brand-text-dark` `#B0280F`); white labels
+  sit on `--gradient-button` (`#D33417` → `#C2410C`). Panel: `text-maroon-text`, `bg-maroon-text`, `.cb-btn-primary`.
+  App: `Brand.primaryText` (server `theme.primary_text`), `BRAND_WINE_DEEP`. Bright coral `#FF4D2D` stays for
+  borders, icons, glows and large type. `npm run brand` checks every mirror.
+- 12px is the smallest type (guideline §4); the tab bar goes to 11px only below ~390px wide.
+- Verified with a contrast probe (gradient-aware, positive control included) on 20 pages at 390 and 1280px:
+  only decorative/false hits left (aria-hidden "|" separator, text on a 90% dark overlay, the Camp Card's own plate).
+- Admin → Legal warns when a saved document is older than the built-in one (`LegalDocument::defaultChangedAt`)
+  and lists what the live page is missing.
+- iOS Kotlin type-checks on Windows: `gradle :shared:compileKotlinIosArm64 -Pkotlin.native.enableKlibsCrossCompilation=true`
+  with `KONAN_DATA_DIR=native-app/Tools/konan` (passed 30 Oct 2026). Linking and Xcode still need a Mac.

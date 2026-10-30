@@ -223,12 +223,12 @@
 }
 
 .btn--primary {
-    background: var(--gradient-brand);
+    background: var(--gradient-button);
     border-color: transparent;
     box-shadow: v.$shadow-glow-lift;
 
     @include m.hover {
-        background: var(--gradient-brand);
+        background: var(--gradient-button);
         border-color: transparent;
         box-shadow: v.$shadow-glow-lift, v.$shadow-glow-sm;
     }
@@ -244,7 +244,7 @@
     @include m.hover {
         background: #fff;
         border-color: var(--brand-primary);
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 

@@ -25,7 +25,7 @@
     &:hover {
         transform: translateY(-1.5px);
         box-shadow: var(--shadow-btn-hover);
-        background: var(--brand-primary);
+        background: var(--brand-text);
         color: #fff;
     }
 
@@ -124,7 +124,7 @@ dialog.meet-sheet {
     font-weight: v.$font-weight-bold;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .meet-sheet__name {
@@ -238,7 +238,7 @@ dialog.meet-sheet {
 .plan-summary__ring {
     font-size: v.$font-size-lg;
     font-weight: v.$font-weight-black;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .plan-summary__bar {
@@ -353,7 +353,7 @@ dialog.meet-sheet {
     padding: 0 v.$space-2;
     border: 0;
     background: none;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font: inherit;
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
@@ -486,8 +486,8 @@ dialog.meet-sheet {
 }
 
 .wave-btn--back {
-    border-color: var(--brand-primary);
-    background: var(--brand-primary);
+    border-color: var(--brand-text);
+    background: var(--brand-text);
     color: #fff;
 }
 
@@ -505,7 +505,7 @@ dialog.meet-sheet {
     margin: 0 0 v.$space-2;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .person-card__message,
@@ -668,14 +668,14 @@ dialog.meet-sheet {
     }
 
     &:hover {
-        color: var(--brand-primary);
+        color: var(--brand-text);
         background: rgba(255, 77, 45, 0.08);
     }
 }
 
 .delay-banner__icon {
     font-size: 1.4rem;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .delay-banner__body p {

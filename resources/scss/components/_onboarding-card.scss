@@ -43,7 +43,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--brand-accent);
+    color: var(--brand-text-dark);
 }
 
 // "Make CampBuddy yours" as a stepper (onboarding.js): one question at a time,
@@ -97,7 +97,7 @@
     margin-bottom: v.$space-3;
     border-radius: 50%;
     background: var(--peach);
-    color: var(--brand-primary);
+    color: var(--brand-text);
 
     .line-icon {
         width: 24px;
@@ -163,7 +163,7 @@
     .line-icon {
         width: 26px;
         height: 26px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 
     &:focus-visible {

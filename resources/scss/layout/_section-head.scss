@@ -36,7 +36,7 @@
     font-weight: v.$font-weight-black;
     text-transform: uppercase;
     letter-spacing: v.$letter-spacing-caps;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     width: fit-content;
     transition: transform v.$duration-fast ease, border-color v.$duration-fast ease;
 
@@ -44,7 +44,7 @@
         width: 14px;
         height: 14px;
         stroke-width: 2.2;
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 

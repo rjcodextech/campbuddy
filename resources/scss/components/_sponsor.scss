@@ -86,7 +86,7 @@
     border-radius: v.$radius-sm;
     border: 1px solid var(--line);
     background: #fff;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font-size: 1.4rem;
 
     img {
@@ -355,7 +355,7 @@
     color: var(--muted);
 
     .line-icon {
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 
@@ -417,7 +417,7 @@
     margin-top: 4px;
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .steal-row__side {
@@ -548,7 +548,7 @@ dialog.steal-sheet {
     font-weight: v.$font-weight-bold;
 
     .line-icon {
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 

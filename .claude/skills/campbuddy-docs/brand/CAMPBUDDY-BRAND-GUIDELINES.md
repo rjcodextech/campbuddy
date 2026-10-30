@@ -81,11 +81,13 @@ this table, the admin theme, the canvas tokens, the app or the server defaults s
 | `--success` / `success` | `#10B981` | Done, saved, checked in — as a fill or icon only (2.4:1 as text) |
 | `--danger` / `danger` | `#EF4444` | Errors, destructive actions, LIVE badges (3.6:1 as text) |
 | `--brand-text` | `#D33417` | Coral for **small text** and small white-on-coral chips: links, the active tab, badges (4.7:1 on paper, white on it 4.9:1). One token: `$color-brand-text` → panel `--color-maroon-text` (`text-maroon-text`) → app `theme.primary_text`; `npm run brand` keeps them equal. To go back to bright coral text, change all three to `#FF4D2D` (fails AA) |
+| `--brand-text-dark` | `#B0280F` | Hover / pressed state of coral text, and coral text on the peach card (5.6:1) |
+| `--wine-deep` / `--gradient-button` | `#C2410C` | Primary buttons and any chip with a **white label**: deep coral `#D33417` → deep amber `#C2410C` (white 4.9–5.2:1). Panel: `--color-wine-deep`, app: `BRAND_WINE_DEEP` |
 | `--danger-text` | `#DC2626` | Danger as text (required-field stars, Delete labels) |
 | `--success-text` | `#047857` | Success as text ("DPDP Act 2023 Compliant", Free tags) |
 
 **Contrast rule (30 Oct 2026 audit, 6 widths):** Daylight 2.0's coral, success and danger are bright. They stay
-for fills, buttons, gradients, icons and large type; **small text uses the `-text` shade** (same hue, deep enough
+for borders, icons, glows and large type; **small text uses the `-text` shade and white labels sit on the deep fill** (`--gradient-button`) (same hue, deep enough
 for WCAG AA 4.5:1). The app does the same by itself: `Brand.primaryText` deepens whatever primary the
 server sends until it reaches 4.6:1.
 The Camp Card keeps its own badge palette (`components/_camp-card.scss`, `CampCardFaces.kt`).

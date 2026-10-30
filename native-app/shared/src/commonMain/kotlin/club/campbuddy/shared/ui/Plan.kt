@@ -66,7 +66,7 @@ fun MeetButton(person: RosterEntry, slug: String) {
 
     Text(
         meetLabel(meeting), style = MaterialTheme.typography.labelLarge.copy(color = if (saved) Color.White else brand.primary),
-        modifier = Modifier.heightIn(min = 32.dp).background(if (saved) brand.primary else Color.White, pill).border(1.dp, brand.primary, pill)
+        modifier = Modifier.heightIn(min = 32.dp).background(if (saved) brand.primaryText else Color.White, pill).border(1.dp, brand.primary, pill)
             .clickable(role = Role.Button, onClickLabel = if (saved) "Edit your note about meeting ${person.name}" else "Plan to meet ${person.name}") { open = true }
             .padding(horizontal = 14.dp, vertical = 5.dp),
     )

@@ -236,7 +236,7 @@ fun ActionButton(text: String, filled: Boolean, onClick: () -> Unit) {
     val shape = Radii.pill
     Box(
         Modifier.heightIn(min = 44.dp)
-            .background(if (filled) brand.primary else androidx.compose.ui.graphics.Color.Transparent, shape)
+            .background(if (filled) brand.primaryText else androidx.compose.ui.graphics.Color.Transparent, shape)
             .border(1.dp, if (filled) brand.primary else brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -336,7 +336,7 @@ fun ContributeTab(slug: String) {
                     Text(
                         "CONTRIBUTE",
                         style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold, letterSpacing = 1.sp),
-                        modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 4.dp),
+                        modifier = Modifier.background(brand.primaryText, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 4.dp),
                     )
                     Text("Where could you help?", style = MaterialTheme.typography.headlineSmall.copy(fontSize = 24.sp, lineHeight = 27.6.sp, letterSpacing = (-0.48).sp))
                     Text(

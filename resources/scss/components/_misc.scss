@@ -52,7 +52,7 @@
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
     letter-spacing: v.$letter-spacing-caps;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     margin-bottom: v.$space-1;
 }
 
@@ -122,7 +122,7 @@
 
     .btn[aria-selected='true'],
     .btn:not(.btn--outline) {
-        background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+        background: var(--gradient-button);
         color: #ffffff;
         border-color: transparent;
         box-shadow: 0 4px 12px -2px rgba(255, 77, 45, 0.35);
@@ -210,7 +210,7 @@
     border: 0;
     background: none;
     font: inherit;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
@@ -263,7 +263,7 @@
     gap: 6px;
     font-size: 0.82rem !important;
     font-weight: 600;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 6px;
@@ -350,7 +350,7 @@
     justify-content: center;
     font-weight: 700;
     font-size: 1.1rem;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     background: rgba(192, 56, 24, 0.1);
 }
 
@@ -376,7 +376,7 @@
     margin-top: 2px !important;
     font-size: 0.82rem !important;
     font-weight: 600;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .contrib-lead-card__bio {
@@ -417,7 +417,7 @@
     }
 
     &:hover {
-        color: var(--brand-primary);
+        color: var(--brand-text);
         border-color: var(--brand-primary);
     }
 }
@@ -429,5 +429,5 @@
     margin-top: 4px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }

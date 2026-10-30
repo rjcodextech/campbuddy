@@ -47,7 +47,7 @@
             {{ number_format($events->total()) }} {{ \Illuminate\Support\Str::plural('event', $events->total()) }}@if ($filtering) match @endif
             @if ($highlightedIds !== [])
                 <span class="ml-3 inline-flex items-center gap-2">
-                    <span class="h-3 w-1 rounded-full bg-maroon" aria-hidden="true"></span>
+                    <span class="h-3 w-1 rounded-full bg-maroon-text" aria-hidden="true"></span>
                     Highlighted: the next {{ count($highlightedIds) }} by date
                 </span>
             @endif
@@ -59,7 +59,7 @@
                @if (! $tableView) aria-current="true" @endif
                @class([
                    'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
-                   'bg-maroon text-white' => ! $tableView,
+                   'bg-maroon-text text-white' => ! $tableView,
                    'text-muted hover:text-ink' => $tableView,
                ])>
                 <x-icon name="dashboard" class="h-4 w-4" /> Cards
@@ -68,7 +68,7 @@
                @if ($tableView) aria-current="true" @endif
                @class([
                    'relative after:absolute after:-inset-y-1 after:inset-x-0 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 transition-colors focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/40',
-                   'bg-maroon text-white' => $tableView,
+                   'bg-maroon-text text-white' => $tableView,
                    'text-muted hover:text-ink' => ! $tableView,
                ])>
                 <x-icon name="menu" class="h-4 w-4" /> Table

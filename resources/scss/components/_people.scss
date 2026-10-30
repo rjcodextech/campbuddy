@@ -117,7 +117,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font-weight: v.$font-weight-bold;
     font-size: v.$font-size-md;
 }
@@ -221,7 +221,7 @@
 .role-badge--card {
     background: #fff;
     border-color: var(--brand-primary);
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .roster-role-filters {
@@ -346,7 +346,7 @@ button.roster-row__name {
     }
 
     @include m.hover {
-        background: var(--brand-primary);
+        background: var(--brand-text);
         color: #fff;
         transform: scale(1.12);
     }

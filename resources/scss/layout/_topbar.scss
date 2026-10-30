@@ -114,7 +114,7 @@
     }
 
     @include m.hover {
-        background: var(--brand-primary);
+        background: var(--brand-text);
         color: #fff;
     }
 
@@ -264,12 +264,12 @@
 
                 svg {
                     opacity: 1;
-                    color: var(--brand-primary);
+                    color: var(--brand-text);
                 }
 
                 &:hover {
                     background: #ffffff;
-                    color: var(--brand-primary);
+                    color: var(--brand-text);
                 }
             }
         }
@@ -288,14 +288,14 @@
 
             &:hover {
                 border-color: var(--brand-primary);
-                color: var(--brand-primary);
+                color: var(--brand-text);
                 background: var(--paper-soft);
             }
         }
 
         #install-app-btn,
         .topbar__text-btn--install {
-            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
+            background: var(--gradient-button);
             color: #ffffff !important;
             border: 1px solid transparent;
             box-shadow: 0 2px 8px -2px rgba(255, 77, 45, 0.4);

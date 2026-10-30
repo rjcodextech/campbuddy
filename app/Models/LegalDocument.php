@@ -48,6 +48,27 @@ class LegalDocument extends Model
     /**
      * Default rich HTML content for privacy policy and terms of use.
      */
+    /** When the built-in text of a document last changed (config campbuddy.legal.updated, for both documents). */
+    public static function defaultChangedAt(string $slug): \Illuminate\Support\Carbon
+    {
+        return \Illuminate\Support\Carbon::parse((string) config('campbuddy.legal.updated'))->endOfDay();
+    }
+
+    /**
+     * What the latest built-in change added, shown in Admin → Legal next to a saved copy older than it.
+     *
+     * @return array<int, string>
+     */
+    public static function defaultChanges(string $slug): array
+    {
+        return $slug === 'privacy' ? [
+            'Consent tick ("I agree … 18 or older, or a parent or guardian agrees") and the consent records it keeps',
+            'Google Analytics only after "Allow", with an "Analytics choice" to change it',
+            'Suggest a Free Steal and the sponsor deal form: what they keep and that they are deleted about 90 days after the event',
+            'Notifications: live announcements and which WordCamps a phone opened',
+        ] : [];
+    }
+
     public static function defaultContent(string $slug): string
     {
         $entity = config('campbuddy.legal.entity', 'WPSimplified');

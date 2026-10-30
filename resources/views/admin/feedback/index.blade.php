@@ -18,7 +18,7 @@
                     <td class="whitespace-nowrap text-right tabular-nums"><span class="text-gold" aria-hidden="true">★</span> {{ number_format($row->average, 1) }}</td>
                     <td class="hidden md:table-cell">
                         <div class="flex h-2.5 w-48 overflow-hidden rounded bg-paper-soft" title="5★ {{ $row->r5 }} · 4★ {{ $row->r4 }} · 3★ {{ $row->r3 }} · 2★ {{ $row->r2 }} · 1★ {{ $row->r1 }}">
-                            @foreach ([5 => 'bg-teal', 4 => 'bg-teal/60', 3 => 'bg-gold', 2 => 'bg-maroon/60', 1 => 'bg-maroon'] as $stars => $color)
+                            @foreach ([5 => 'bg-teal', 4 => 'bg-teal/60', 3 => 'bg-gold', 2 => 'bg-maroon/60', 1 => 'bg-maroon-text'] as $stars => $color)
                                 <span class="{{ $color }}" style="width: {{ $row->answers ? round($row->{'r'.$stars} / $row->answers * 100, 1) : 0 }}%"></span>
                             @endforeach
                         </div>

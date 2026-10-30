@@ -145,7 +145,7 @@
                                 @if (count($daily) <= 31)
                                     <span class="mb-1 text-xs tabular-nums text-muted">{{ $num($d['activeUsers']) }}</span>
                                 @endif
-                                <span class="block w-full max-w-10 rounded-t-sm bg-maroon group-hover:bg-maroon-dark" style="height: {{ max(1, $d['activeUsers'] / $dailyMax * 100) }}%"></span>
+                                <span class="block w-full max-w-10 rounded-t-sm bg-maroon-text group-hover:bg-maroon-text-dark" style="height: {{ max(1, $d['activeUsers'] / $dailyMax * 100) }}%"></span>
                             </div>
                         @endforeach
                     </div>
@@ -222,7 +222,7 @@
                         @for ($h = 0; $h < 24; $h++)
                             @php $v = $hours[$h]['activeUsers'] ?? 0; @endphp
                             <div class="flex h-full flex-1 items-end" title="{{ sprintf('%02d:00–%02d:59', $h, $h) }}: {{ $num($v) }} people">
-                                <span class="block w-full rounded-t-sm bg-maroon hover:bg-maroon-dark" style="height: {{ $v ? max(1, $v / $hourMax * 100) : 0 }}%"></span>
+                                <span class="block w-full rounded-t-sm bg-maroon-text hover:bg-maroon-text-dark" style="height: {{ $v ? max(1, $v / $hourMax * 100) : 0 }}%"></span>
                             </div>
                         @endfor
                     </div>

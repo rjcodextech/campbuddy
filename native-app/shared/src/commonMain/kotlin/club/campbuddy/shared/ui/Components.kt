@@ -124,9 +124,9 @@ fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifi
     val shape = Radii.pill
     Box(
         modifier.heightIn(min = 44.dp)
-            // The website's gradient pill with its warm lift (guideline §5): coral → amber, 135°.
+            // The website's primary button (--gradient-button): deep coral → deep amber, so the white label is 4.9–5.2:1.
             .then(if (enabled) Modifier.shadow(6.dp, shape, clip = false, ambientColor = brand.primary, spotColor = brand.primary) else Modifier)
-            .background(Brush.linearGradient(listOf(brand.primary, BRAND_WINE)), shape, alpha = if (enabled) 1f else 0.4f)
+            .background(Brush.linearGradient(listOf(brand.primaryText, BRAND_WINE_DEEP)), shape, alpha = if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
@@ -179,6 +179,9 @@ fun SectionTitle(text: String) {
 
 /** The brand gradient's partner: Radiant Amber, $color-wine in _variables.scss (Daylight 2.0, guideline §3). */
 val BRAND_WINE = Color(0xFFEA580C)
+
+/** The gradient's partner behind white text (primary buttons): $color-wine-deep, white on it 5.2:1. */
+val BRAND_WINE_DEEP = Color(0xFFC2410C)
 
 /** The brand's smooth sine stroke (guideline §5), maroon fading to ochre; [waves] crests across its width. */
 @Composable

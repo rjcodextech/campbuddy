@@ -45,6 +45,8 @@
     /* Coral as small TEXT (links, active tabs, badges): WCAG AA. Mirrors $color-brand-text (npm run brand). */
     --color-maroon-text: #d33417;
     --color-maroon-text-dark: #b0280f;
+    /* The primary button's partner when white text sits on it. Mirrors $color-wine-deep. */
+    --color-wine-deep: #c2410c;
     --color-navy: #1e293b;
     /* Light only: highlights on ink, glows. Never text on paper (2.2:1). */
     --color-gold: #d97706;
@@ -254,14 +256,15 @@ h3,
     transform: translateX(-110%);
 }
 
+/* White label on it: deep coral → deep amber (4.9–5.2:1), the website's --gradient-button. */
 .cb-btn-primary,
 .cb-btn-primary:hover {
-    background-image: linear-gradient(135deg, var(--color-maroon), var(--color-wine));
-    box-shadow: 0 12px 28px -12px rgb(161 47 20 / 0.45);
+    background-image: linear-gradient(135deg, var(--color-maroon-text), var(--color-wine-deep));
+    box-shadow: 0 12px 28px -12px rgb(255 77 45 / 0.35);
 }
 
 .cb-btn-primary:hover {
-    box-shadow: 0 12px 28px -12px rgb(161 47 20 / 0.45), 0 0 16px rgb(227 157 28 / 0.3);
+    box-shadow: 0 12px 28px -12px rgb(255 77 45 / 0.35), 0 0 16px rgb(245 158 11 / 0.3);
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {

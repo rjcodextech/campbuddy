@@ -178,4 +178,24 @@ class LegalPagesTest extends TestCase
         $this->getJson('/api/v1/legal/unknown-slug')->assertNotFound();
         $this->getJson('/api/legal/unknown-slug')->assertNotFound();
     }
+
+    public function test_a_saved_notice_older_than_the_built_in_one_is_flagged_in_admin(): void
+    {
+        // Production shows the admin-saved copy, not the built-in notice: a copy saved before the notice
+        // last changed must not go unnoticed.
+        $admin = \App\Models\User::factory()->create();
+        $doc = \App\Models\LegalDocument::create(['slug' => 'privacy', 'title' => 'Privacy notice', 'content' => '<p>Old copy</p>']);
+        $doc->forceFill(['updated_at' => \App\Models\LegalDocument::defaultChangedAt('privacy')->subDays(10)])->saveQuietly();
+
+        $this->actingAs($admin)->get(route('admin.legal.index'))
+            ->assertOk()
+            ->assertSee('The built-in notice changed after this copy was saved')
+            ->assertSee('Analytics choice');
+
+        $doc->forceFill(['updated_at' => \App\Models\LegalDocument::defaultChangedAt('privacy')->addDay()])->saveQuietly();
+
+        $this->actingAs($admin)->get(route('admin.legal.index'))
+            ->assertOk()
+            ->assertDontSee('The built-in notice changed after this copy was saved');
+    }
 }

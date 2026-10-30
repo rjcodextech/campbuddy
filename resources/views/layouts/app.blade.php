@@ -102,7 +102,7 @@
                                    'text-white/70 hover:bg-white/5 hover:text-white' => ! $group['active'],
                                ])>
                                 @if ($group['active'])
-                                    <span class="absolute inset-y-1.5 left-0 w-1 rounded-r-sm bg-maroon" aria-hidden="true"></span>
+                                    <span class="absolute inset-y-1.5 left-0 w-1 rounded-r-sm bg-maroon-text" aria-hidden="true"></span>
                                 @endif
                                 <x-icon :name="$group['icon']" class="h-5 w-5 shrink-0 motion-safe:transition-transform motion-safe:duration-200 motion-safe:group-hover:scale-110" />
                                 {{ $group['label'] }}
@@ -136,7 +136,7 @@
                                                    'text-white/65 hover:bg-white/5 hover:text-white' => ! $active,
                                                ])>
                                                 @if ($active)
-                                                    <span class="absolute inset-y-1 -left-3.5 w-0.5 rounded-r-sm bg-maroon" aria-hidden="true"></span>
+                                                    <span class="absolute inset-y-1 -left-3.5 w-0.5 rounded-r-sm bg-maroon-text" aria-hidden="true"></span>
                                                 @endif
                                                 <span>{{ $label }}</span>
                                                 @if ($badge)
@@ -167,7 +167,7 @@
                            'bg-white/10' => request()->routeIs('profile.*'),
                            'hover:bg-white/5' => ! request()->routeIs('profile.*'),
                        ])>
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-maroon text-sm font-semibold text-white" aria-hidden="true">
+                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-maroon-text text-sm font-semibold text-white" aria-hidden="true">
                             {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($user?->name ?? '?', 0, 1)) }}
                         </span>
                         <span class="min-w-0 leading-tight">

@@ -332,7 +332,7 @@
         <div class="flex flex-col h-full max-h-[90vh]">
             <div class="flex items-center justify-between border-b border-line px-6 py-4 bg-paper/60">
                 <div class="flex items-center gap-2">
-                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-maroon"></span>
+                    <span class="inline-flex h-2.5 w-2.5 rounded-full bg-maroon-text"></span>
                     <h3 class="text-sm font-bold text-ink">Live Attendee Preview</h3>
                     <span class="text-xs text-muted">(Matches exact frontend stylesheet)</span>
                 </div>
@@ -409,7 +409,7 @@
         background: #fffdfb;
     }
     .wysiwyg-content a {
-        color: #ff4d2d;
+        color: #d33417;
         text-decoration: underline;
     }
     .wysiwyg-content code {

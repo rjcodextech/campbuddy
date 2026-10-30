@@ -195,7 +195,7 @@
         .line-icon {
             width: 14px;
             height: 14px;
-            color: var(--brand-primary);
+            color: var(--brand-text);
             opacity: 0.85;
             flex-shrink: 0;
             transition: transform v.$duration-fast var(--ease-spring), opacity v.$duration-fast ease, color v.$duration-fast ease;
@@ -207,7 +207,7 @@
 
         &:hover {
             border-color: var(--brand-border-glow);
-            color: var(--brand-primary);
+            color: var(--brand-text);
             background: var(--paper);
             transform: translateY(-2px);
             box-shadow: var(--shadow-btn-hover);
@@ -345,7 +345,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -355,7 +355,7 @@
     .line-icon {
         width: 14px;
         height: 14px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 
@@ -432,7 +432,7 @@
 
                 svg,
                 .line-icon {
-                    color: var(--brand-primary);
+                    color: var(--brand-text);
                     opacity: 1;
                     transform: scale(1.1);
                 }
@@ -447,7 +447,7 @@
 
                 svg,
                 .line-icon {
-                    color: var(--brand-primary);
+                    color: var(--brand-text);
                     opacity: 1;
                     transform: scale(1.08);
                 }
@@ -531,7 +531,7 @@
     background: linear-gradient(135deg, var(--paper-soft) 0%, var(--peach) 100%);
     border: 2px solid var(--paper);
     box-shadow: 0 4px 14px -2px rgba(255, 77, 45, 0.25);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font-size: 1.25rem;
 
     svg {
@@ -643,7 +643,7 @@
         box-shadow: 0 8px 24px -4px rgba(255, 77, 45, 0.14);
 
         summary {
-            color: var(--brand-primary);
+            color: var(--brand-text);
             border-bottom: 1px solid var(--surface-border);
         }
     }
@@ -665,7 +665,7 @@
         transition: color v.$duration-fast ease, background-color v.$duration-fast ease;
 
         &:hover {
-            color: var(--brand-primary);
+            color: var(--brand-text);
         }
 
         &::-webkit-details-marker {
@@ -685,7 +685,7 @@
             font-size: 1.25rem;
             font-weight: 500;
             line-height: 1;
-            color: var(--brand-primary);
+            color: var(--brand-text);
             transition: transform v.$duration-normal var(--ease-spring), background-color v.$duration-fast ease;
         }
 
@@ -832,9 +832,9 @@
         padding: 2px 6px;
         border: 2px solid var(--paper);
         border-radius: v.$radius-full;
-        background: var(--brand-primary);
+        background: var(--brand-text);
         color: #fff;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: v.$font-weight-black;
         letter-spacing: 0.02em;
     }
@@ -859,7 +859,7 @@
     margin-top: v.$space-2;
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
-    color: var(--brand-primary);
+    color: var(--brand-text-dark); // on the peach card: 5.6:1 (the lighter shade is 4.3:1 there)
 }
 
 .start-here__link {
@@ -995,7 +995,7 @@
             height: 42px;
             border-radius: v.$radius-row;
             background: linear-gradient(135deg, rgba(255, 77, 45, 0.12), rgba(217, 119, 6, 0.12));
-            color: var(--brand-primary);
+            color: var(--brand-text);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1042,7 +1042,7 @@
         svg {
             width: 14px;
             height: 14px;
-            color: var(--brand-primary);
+            color: var(--brand-text);
         }
     }
 }
@@ -1081,7 +1081,7 @@
 }
 
 .offline-explainer__card--yes .offline-explainer__title .line-icon {
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .offline-explainer__card--no .offline-explainer__title .line-icon {
@@ -1116,7 +1116,7 @@
 
 .offline-explainer__card--yes li::before {
     content: '✓';
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .offline-explainer__card--no li::before {

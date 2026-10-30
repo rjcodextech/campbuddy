@@ -144,7 +144,7 @@
             <h2 id="needs-approval" class="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
                 Needs approval
                 @if ($draftCount > 0)
-                    <span class="rounded-full bg-maroon px-2 py-0.5 text-xs font-semibold tabular-nums text-white">{{ $draftCount }}</span>
+                    <span class="rounded-full bg-maroon-text px-2 py-0.5 text-xs font-semibold tabular-nums text-white">{{ $draftCount }}</span>
                 @endif
             </h2>
 

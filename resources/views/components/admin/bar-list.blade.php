@@ -16,7 +16,7 @@
             <li class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded px-1 py-0.5 text-sm hover:bg-paper sm:grid-cols-[minmax(0,40%)_1fr_auto]" title="{{ $title }}">
                 <span class="wrap-break-word leading-snug text-ink">{{ $row[0] }}</span>
                 <span class="col-span-2 row-start-2 h-2.5 overflow-hidden rounded-r-sm bg-paper-soft sm:col-span-1 sm:row-start-auto">
-                    <span class="block h-full min-w-[2px] rounded-r-sm bg-maroon" style="width: {{ round($row[1] / $max * 100, 1) }}%"></span>
+                    <span class="block h-full min-w-[2px] rounded-r-sm bg-maroon-text" style="width: {{ round($row[1] / $max * 100, 1) }}%"></span>
                 </span>
                 <span class="text-right text-xs tabular-nums text-muted">{{ number_format($row[1]) }}</span>
             </li>

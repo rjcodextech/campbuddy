@@ -438,7 +438,7 @@ private fun TabPill(label: String, icon: String, selected: Boolean, onClick: () 
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.height(38.dp).clip(shape).background(if (selected) brand.primary else brand.background, shape)
+        Modifier.height(38.dp).clip(shape).background(if (selected) brand.primaryText else brand.background, shape)
             .border(1.dp, if (selected) brand.primary else brand.line, shape)
             .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),

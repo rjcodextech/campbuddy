@@ -164,7 +164,7 @@
                     {{-- Step 1 & 2: Event and Sponsor Selection --}}
                     <div class="rounded-xl border border-line bg-white p-6 shadow-xs space-y-5">
                         <div class="flex items-center gap-2 border-b border-line pb-3">
-                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon text-xs font-bold text-white">1</span>
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon-text text-xs font-bold text-white">1</span>
                             <h2 class="text-base font-semibold text-ink">Select WordCamp Event & Sponsor</h2>
                         </div>
 
@@ -234,7 +234,7 @@
                     {{-- Step 3: Deal Details --}}
                     <div class="rounded-xl border border-line bg-white p-6 shadow-xs space-y-5">
                         <div class="flex items-center gap-2 border-b border-line pb-3">
-                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon text-xs font-bold text-white">2</span>
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon-text text-xs font-bold text-white">2</span>
                             <h2 class="text-base font-semibold text-ink">Deal Information</h2>
                         </div>
 
@@ -337,7 +337,7 @@
                             </label>
                             <input type="file" id="logo_image" name="logo_image" accept=".png,image/png"
                                    x-on:change="onImageChange($event)"
-                                   class="block w-full text-xs text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-maroon file:text-white hover:file:bg-maroon-dark file:cursor-pointer border border-line rounded-lg bg-paper-soft p-1.5 focus:outline-hidden" />
+                                   class="block w-full text-xs text-muted file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-maroon-text file:text-white hover:file:bg-maroon-text-dark file:cursor-pointer border border-line rounded-lg bg-paper-soft p-1.5 focus:outline-hidden" />
                             <p class="mt-1 text-xs text-muted">Upload a square or transparent PNG logo (maximum 100 KB). This image will appear on the deal ticket.</p>
                             <template x-if="imageError">
                                 <p class="mt-1.5 text-xs text-danger font-medium flex items-center gap-1">
@@ -351,7 +351,7 @@
                     {{-- Step 4: Submitter Verification & Authenticity --}}
                     <div class="rounded-xl border border-line bg-white p-6 shadow-xs space-y-5">
                         <div class="flex items-center gap-2 border-b border-line pb-3">
-                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon text-xs font-bold text-white">3</span>
+                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-maroon-text text-xs font-bold text-white">3</span>
                             <h2 class="text-base font-semibold text-ink">Submitter Verification Details</h2>
                         </div>
 
@@ -408,7 +408,7 @@
                     {{-- Submission action --}}
                     <div class="pt-2">
                         <button type="submit"
-                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-maroon px-8 py-3.5 text-sm font-semibold text-white shadow-xs hover:bg-maroon-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/60 transition-colors">
+                                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-maroon-text px-8 py-3.5 text-sm font-semibold text-white shadow-xs hover:bg-maroon-text-dark focus:outline-hidden focus-visible:ring-2 focus-visible:ring-maroon/60 transition-colors">
                             <x-icon name="paper-airplane" class="h-4 w-4" />
                             <span>Submit Deal for Review & Verification</span>
                         </button>

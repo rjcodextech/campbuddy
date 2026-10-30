@@ -87,9 +87,9 @@
     height: 22px;
     border: 2px solid #fff;
     border-radius: v.$radius-full;
-    background: var(--brand-primary);
+    background: var(--brand-text);
     color: #fff;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: v.$font-weight-black;
 }
 
@@ -229,7 +229,7 @@
     transition: transform 0.1s ease;
 
     &--play {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
     }
 
     &:focus-visible {
@@ -324,7 +324,7 @@
     padding-top: v.$space-2;
     font-size: v.$font-size-sm;
     font-weight: v.$font-weight-bold;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 }
 
 .about-faq {
@@ -472,11 +472,11 @@
     border-radius: v.$radius-full;
     background: linear-gradient(135deg, rgba(255, 77, 45, 0.08) 0%, rgba(217, 119, 6, 0.12) 100%);
     border: 1px solid rgba(255, 77, 45, 0.18);
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     width: fit-content;
 
     svg {
@@ -527,7 +527,7 @@
     svg {
         width: 13px;
         height: 13px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
         stroke-width: 2.2;
     }
 }
@@ -560,7 +560,7 @@
     font-size: 1.3rem;
     margin-bottom: v.$space-1;
     background: var(--paper-soft);
-    color: var(--brand-primary);
+    color: var(--brand-text);
 
     svg {
         width: 22px;
@@ -575,7 +575,7 @@
 
     &--primary {
         background: rgba(255, 77, 45, 0.1);
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 
     &--gold {
@@ -610,7 +610,7 @@
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--brand-primary);
+    color: var(--brand-text);
 
     svg {
         width: 14px;
@@ -653,7 +653,7 @@
     padding: 3px 10px;
     border-radius: v.$radius-full;
     background: var(--paper-soft);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     margin-bottom: v.$space-2;
@@ -694,7 +694,7 @@
     strong {
         display: block;
         margin-bottom: 3px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
         font-weight: v.$font-weight-bold;
     }
 }
@@ -731,7 +731,7 @@
     height: 40px;
     border-radius: 10px;
     background: var(--paper-soft);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     margin-bottom: v.$space-1;
 }
 
@@ -898,7 +898,7 @@
     display: inline-block;
     padding: 2px 8px;
     border-radius: 4px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
 
     &--green {
@@ -974,7 +974,7 @@
         }
 
         &:hover {
-            color: var(--brand-primary);
+            color: var(--brand-text);
         }
     }
 
@@ -998,7 +998,7 @@
     border-radius: v.$radius-full;
     background: rgba(255, 77, 45, 0.08);
     border: 1px solid var(--brand-border-glow);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
     letter-spacing: 0.04em;
@@ -1026,7 +1026,7 @@
 .hero-creative__highlight {
     position: relative;
     display: inline-block;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     padding: 0 4px;
     
     // Highlighter marker sweep
@@ -1091,7 +1091,7 @@
     svg {
         width: 14px;
         height: 14px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 
@@ -1139,7 +1139,7 @@
 
 .about-who__badge {
     align-self: flex-start;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -1167,7 +1167,7 @@
 
     &--first {
         background: linear-gradient(135deg, rgba(255, 77, 45, 0.15), rgba(217, 119, 6, 0.12));
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 
     &--student {

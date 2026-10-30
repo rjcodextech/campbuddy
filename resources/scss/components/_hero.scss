@@ -43,7 +43,7 @@
     font-weight: v.$font-weight-bold;
     text-transform: uppercase;
     letter-spacing: v.$letter-spacing-caps;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     margin: 0 0 v.$space-1;
 }
 
@@ -157,7 +157,7 @@
         align-items: center;
         min-height: 44px;
         // The deeper maroon: brand maroon on the peach "Happening now" card is 4.35:1, under AA.
-        color: var(--brand-accent);
+        color: var(--brand-text-dark);
         font-weight: v.$font-weight-bold;
         text-decoration: underline;
         text-underline-offset: 2px;

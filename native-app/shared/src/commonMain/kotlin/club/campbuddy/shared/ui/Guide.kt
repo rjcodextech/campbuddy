@@ -333,7 +333,7 @@ private fun DayStep(step: GuideDay, whenText: String?, last: Boolean) {
             whenText?.let {
                 Text(
                     it, style = MaterialTheme.typography.labelMedium.copy(color = Color.White),
-                    modifier = Modifier.padding(bottom = 8.dp).background(brand.primary, RoundedCornerShape(10.dp)).padding(horizontal = 8.dp, vertical = 3.dp),
+                    modifier = Modifier.padding(bottom = 8.dp).background(brand.primaryText, RoundedCornerShape(10.dp)).padding(horizontal = 8.dp, vertical = 3.dp),
                 )
             }
             Text(step.what, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 8.dp))

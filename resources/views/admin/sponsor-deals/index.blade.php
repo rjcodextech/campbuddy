@@ -8,7 +8,7 @@
                 <a href="{{ route('admin.deal-submissions.index', ['status' => 'pending']) }}"
                    @class([
                        'inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors',
-                       'bg-maroon text-white shadow-2xs' => $status === 'pending',
+                       'bg-maroon-text text-white shadow-2xs' => $status === 'pending',
                        'text-muted hover:bg-paper-soft hover:text-ink' => $status !== 'pending',
                    ])>
                     <span>Pending Review</span>
@@ -24,7 +24,7 @@
                 <a href="{{ route('admin.deal-submissions.index', ['status' => 'approved']) }}"
                    @class([
                        'inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors',
-                       'bg-maroon text-white shadow-2xs' => $status === 'approved',
+                       'bg-maroon-text text-white shadow-2xs' => $status === 'approved',
                        'text-muted hover:bg-paper-soft hover:text-ink' => $status !== 'approved',
                    ])>
                     <span>Approved</span>
@@ -34,7 +34,7 @@
                 <a href="{{ route('admin.deal-submissions.index', ['status' => 'all']) }}"
                    @class([
                        'inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-sm font-medium transition-colors',
-                       'bg-maroon text-white shadow-2xs' => $status === 'all',
+                       'bg-maroon-text text-white shadow-2xs' => $status === 'all',
                        'text-muted hover:bg-paper-soft hover:text-ink' => $status !== 'all',
                    ])>
                     <span>All Submissions</span>

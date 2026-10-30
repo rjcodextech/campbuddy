@@ -283,7 +283,7 @@ private fun StartHere(title: String, slug: String, onGuide: () -> Unit) {
                 }
                 Text(
                     "101", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontSize = 11.sp),
-                    modifier = Modifier.align(Alignment.BottomEnd).background(brand.primary, RoundedCornerShape(50)).border(2.dp, brand.surface, RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 1.dp),
+                    modifier = Modifier.align(Alignment.BottomEnd).background(brand.primaryText, RoundedCornerShape(50)).border(2.dp, brand.surface, RoundedCornerShape(50)).padding(horizontal = 6.dp, vertical = 1.dp),
                 )
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -484,7 +484,7 @@ private fun HappeningNow(section: SectionConfig, phase: Phase, sessions: List<Se
             Text(
                 "NOW",
                 style = MaterialTheme.typography.labelMedium.copy(color = Color.White, letterSpacing = 0.72.sp),
-                modifier = Modifier.background(brand.primary, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 3.dp),
+                modifier = Modifier.background(brand.primaryText, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 3.dp),
             )
             current.forEachIndexed { i, session ->
                 if (i > 0) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.primary.copy(alpha = 0.18f)))

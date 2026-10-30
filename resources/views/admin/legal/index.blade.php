@@ -29,6 +29,17 @@
                                 @endif
                             </div>
                             <p class="mt-1 text-sm text-muted">{{ $doc->description }}</p>
+                            @if ($doc->is_outdated && $doc->changes)
+                                <div class="mt-3 rounded-lg border border-gold/40 bg-gold/10 p-3 text-sm text-ink" role="status">
+                                    <p class="font-semibold">The built-in notice changed after this copy was saved ({{ \App\Models\LegalDocument::defaultChangedAt($doc->slug)->format('j M Y') }}). The live page does not show:</p>
+                                    <ul class="mt-1 list-disc pl-5">
+                                        @foreach ($doc->changes as $change)
+                                            <li>{{ $change }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <p class="mt-1">Reset to default (or add these in Edit) so the notice matches what the app does.</p>
+                                </div>
+                            @endif
                             <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted">
                                 <span>Headline: <strong class="text-ink">{{ $doc->title }}</strong></span>
                                 @if ($doc->updated_at)

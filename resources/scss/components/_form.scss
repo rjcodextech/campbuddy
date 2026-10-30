@@ -425,7 +425,7 @@ dialog {
         &:focus-visible {
             background: var(--paper-soft);
             border-color: var(--brand-primary);
-            color: var(--brand-primary);
+            color: var(--brand-text);
         }
     }
 }

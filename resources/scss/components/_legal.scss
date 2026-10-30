@@ -156,7 +156,7 @@
     svg {
         width: 14px;
         height: 14px;
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 
@@ -192,7 +192,7 @@
 
     &:hover {
         border-color: var(--brand-primary);
-        color: var(--brand-primary);
+        color: var(--brand-text);
         background: var(--paper);
     }
 }
@@ -243,7 +243,7 @@
 }
 
 .legal-box__badge {
-    background: var(--brand-primary);
+    background: var(--brand-text);
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: 700;
@@ -299,7 +299,7 @@
     width: 32px;
     height: 32px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ff4d2d, #d97706);
+    background: var(--gradient-button);
     color: #ffffff;
     font-size: 0.88rem;
     font-weight: 800;
@@ -338,13 +338,13 @@
     }
 
     a {
-        color: var(--brand-primary);
+        color: var(--brand-text);
         font-weight: 600;
         text-decoration: underline;
         text-underline-offset: 2px;
 
         &:hover {
-            color: var(--brand-accent);
+            color: var(--brand-text-dark);
         }
     }
 }
@@ -442,7 +442,7 @@
         overflow-wrap: anywhere;
 
         &:hover {
-            color: var(--brand-accent);
+            color: var(--brand-text-dark);
         }
     }
 
@@ -593,7 +593,7 @@
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--brand-primary);
+            color: var(--brand-text);
             margin-bottom: 2px;
         }
     }
@@ -619,7 +619,7 @@
             font-weight: 700;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--brand-primary);
+            color: var(--brand-text);
             margin-bottom: 2px;
         }
     }
@@ -661,7 +661,7 @@
     height: 32px;
     border-radius: 8px;
     background: var(--peach);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     flex-shrink: 0;
 
     svg {
@@ -819,11 +819,11 @@
     border-radius: v.$radius-full;
     background: rgba(255, 77, 45, 0.08);
     border: 1px solid rgba(255, 77, 45, 0.18);
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     margin-bottom: 6px;
 
     svg {
@@ -901,7 +901,7 @@
         transition: color 0.15s ease;
 
         &:hover {
-            color: var(--brand-primary);
+            color: var(--brand-text);
             text-decoration: underline;
         }
     }

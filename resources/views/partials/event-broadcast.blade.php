@@ -28,7 +28,7 @@
                         @foreach ($presets as $i => $preset)
                             <label class="cursor-pointer">
                                 <input type="radio" name="kind" value="{{ $preset['key'] }}" class="peer sr-only" @checked(old('kind', 'opening') === $preset['key']) data-preset-title="{{ $preset['title'] }}" data-preset-body="{{ $preset['body'] }}">
-                                <span class="cb-btn cb-btn-sm cb-btn-secondary peer-checked:border-maroon peer-checked:bg-maroon peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-maroon"><span aria-hidden="true">{{ $preset['emoji'] }}</span> {{ $preset['label'] }}</span>
+                                <span class="cb-btn cb-btn-sm cb-btn-secondary peer-checked:border-maroon peer-checked:bg-maroon-text peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-maroon"><span aria-hidden="true">{{ $preset['emoji'] }}</span> {{ $preset['label'] }}</span>
                             </label>
                         @endforeach
                     </div>

@@ -203,7 +203,7 @@
                                     <div class="flex items-center justify-between">
                                         <span @class([
                                             'inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 font-semibold tabular-nums',
-                                            'bg-maroon text-white' => $day['today'],
+                                            'bg-maroon-text text-white' => $day['today'],
                                             'text-muted' => ! $day['today'] && $day['past'],
                                             'text-ink' => ! $day['today'] && ! $day['past'],
                                         ])>{{ $day['day'] }}</span>

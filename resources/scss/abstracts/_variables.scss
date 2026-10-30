@@ -27,8 +27,11 @@ $color-danger: #ef4444;
 // Small text in the brand or danger colour (WCAG AA 4.5:1 on paper and paper-soft; white on it 4.9:1).
 // The bright coral and red stay for fills, buttons, icons and large type.
 $color-brand-text: #d33417;
+$color-brand-text-dark: #b0280f;
 $color-danger-text: #dc2626;
 $color-success-text: #047857;
+// The gradient's partner when white text sits on it (primary buttons): amber, deep enough for 4.5:1.
+$color-wine-deep: #c2410c;
 $color-success: #10b981;
 
 // Camp Card's own accent palette — deliberately scoped to the 5 Camp

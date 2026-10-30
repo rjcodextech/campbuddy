@@ -43,6 +43,9 @@ class LegalDocumentController extends Controller
                 'description' => $meta['description'],
                 'view_route' => $meta['view_route'],
                 'is_customized' => $hasCustom,
+                // Saved before the built-in notice last changed: the live page lacks what was added since.
+                'is_outdated' => $hasCustom && $doc->updated_at !== null && $doc->updated_at->lt(LegalDocument::defaultChangedAt($slug)),
+                'changes' => LegalDocument::defaultChanges($slug),
                 'title' => $doc?->title ?: $defaultMeta['title'],
                 'updated_at' => $doc?->updated_at,
             ];
