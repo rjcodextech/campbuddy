@@ -291,32 +291,118 @@ function brandLockup() {
   return lockup;
 }
 
+// A picture is drawn only once it has fully loaded and decoded. One that fails is tried again (TRIES
+// rounds, a little further apart each time, no new try after IMAGE_BUDGET); one that never answers is
+// given up after IMAGE_WAIT (CampBuddy's copy gives up on the WordCamp site after 10 s), so a card is never
+// stuck. One that failed every try is left out for FAILED_FOR (the card draws initials or a name), so
+// typing in a post doesn't wait on it at every key; the first redraw after that tries again.
+const TRIES = 3;
+const IMAGE_WAIT = 15000;
+const IMAGE_BUDGET = 12000;
+const FAILED_FOR = 60000;
+const failed = new Map();
+
+/** One go at a picture: loaded, decoded and with a size of its own, or null. */
+function fetchImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    let timer = 0;
+    const done = (ok) => {
+      clearTimeout(timer);
+      img.onload = null;
+      img.onerror = null;
+      resolve(ok ? img : null);
+    };
+    timer = setTimeout(() => { done(false); img.src = ''; }, IMAGE_WAIT);
+    img.onload = () => {
+      Promise.resolve(img.decode?.()).catch(() => {}).then(() => done(img.naturalWidth > 0 || /\.svg(?:[?#]|$)/i.test(url)));
+    };
+    img.onerror = () => done(false);
+    img.src = url;
+  });
+}
+
+/** Each address in turn until one works, up to TRIES rounds. */
+async function firstImage(urls) {
+  const start = Date.now();
+  for (let round = 0; round < TRIES; round++) {
+    if (round) await new Promise((r) => setTimeout(r, 700 * round));
+    for (const [i, url] of urls.entries()) {
+      if ((round || i) && Date.now() - start > IMAGE_BUDGET) return null;
+      const img = await fetchImage(url);
+      if (img) return img;
+    }
+  }
+  return null;
+}
+
+function remembered(key, load) {
+  if (images.has(key)) return images.get(key);
+  if (Date.now() - (failed.get(key) ?? -Infinity) < FAILED_FOR) return Promise.resolve(null);
+  const got = load().then((img) => {
+    if (!img) {
+      images.delete(key);
+      failed.set(key, Date.now());
+    }
+    return img;
+  });
+  images.set(key, got);
+  return got;
+}
+
 function loadImage(url) {
   if (!url) return Promise.resolve(null);
-  if (!images.has(url)) {
-    images.set(url, new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      // A failed image isn't remembered: the next redraw tries again.
-      // (A Gravatar asked with d=404 that fails simply has no picture: that answer is kept.)
-      img.onerror = () => { if (!url.includes('d=404')) images.delete(url); resolve(null); };
-      img.src = url;
-    }));
+  // A Gravatar asked with d=404 that fails simply has no picture: one try, and that answer is kept.
+  if (url.includes('d=404')) {
+    if (!images.has(url)) images.set(url, fetchImage(url));
+    return images.get(url);
   }
-  return images.get(url);
+  return remembered(url, () => firstImage([url]));
 }
 
 /**
- * A picture from a WordCamp site (a sponsor's logo, a photo, artwork): CampBuddy's own copy first
- * (proxied), and when that copy can't be had (the server couldn't fetch it), the same file from
- * WordPress.com's image CDN, which lets any page draw it — so a logo is never just its name for that.
+ * A picture from a WordCamp site (a sponsor's logo, a photo, artwork), from wherever it can be had
+ * (remoteSources): CampBuddy's own copy, WordPress.com's image CDN, the file on its own site — so a
+ * logo is never just its name because one of them failed.
  */
-async function loadRemote(kit, url) {
-  const img = await loadImage(proxied(kit, url));
-  if (img || !url) return img;
-  const cdn = photonUrl(url);
-  return cdn && cdn !== proxied(kit, url) ? loadImage(cdn) : null;
+function loadRemote(kit, url) {
+  if (!url) return Promise.resolve(null);
+  if (url.includes('d=404')) return loadImage(url);
+  return remembered(`remote:${url}`, () => firstImage(remoteSources(url, (u) => proxied(kit, u))));
+}
+
+/**
+ * Where a remote picture can come from, best first: CampBuddy's own copy (`proxy`), the same file on
+ * WordPress.com's image CDN, and — for a CDN address (Jetpack serves WordCamp sites' images from
+ * i0.wp.com, which sometimes fails) — the file on its own site, then the address itself. A picture on
+ * this site is just that.
+ */
+export function remoteSources(url, proxy = (u) => u) {
+  if (!url) return [];
+  let here = false;
+  try {
+    here = typeof location !== 'undefined' && new URL(url, location.href).origin === location.origin;
+  } catch {
+    here = false;
+  }
+  if (here) return [url];
+  const origin = unphoton(url);
+  return [...new Set([proxy(url), photonUrl(url), origin && proxy(origin), origin, url].filter(Boolean))];
+}
+
+/** The file behind a WordPress.com image CDN address (i0.wp.com/<site>/<path>?resize=…) on its own site, or null. */
+export function unphoton(url) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  if (!/^i\d+\.wp\.com$/.test(u.hostname)) return null;
+  // The CDN's own query (size, crop, ssl) means nothing to the site.
+  const m = u.pathname.match(/^\/([a-z0-9-]+(?:\.[a-z0-9-]+)+)(\/.+)$/i);
+  return m ? `https://${m[1]}${m[2]}` : null;
 }
 
 /** The address of a WordCamp / WordPress.com image on WordPress.com's CDN (i0.wp.com), or null (SVGs, other hosts). */
@@ -1544,7 +1630,7 @@ function proxied(kit, url) {
 }
 
 /** The picture of a picture-led card, in its own box: speakers' faces, a session's speakers, or the site's photo of the place. */
-async function paintPicture(ctx, box, content, pal, round) {
+async function paintPicture(ctx, box, content, pal, round, kit) {
   const body = content.body;
   const tones = [pal.primary, pal.deep, ...pal.extras];
   ctx.save();
@@ -1562,7 +1648,7 @@ async function paintPicture(ctx, box, content, pal, round) {
     const cw = few ? box.w / 3 : box.w / cols;
     const ch = box.h / rows;
     const x0 = box.x + (box.w - cw * cols) / 2;
-    const imgs = await Promise.all(list.map((p) => loadImage(p.photo)));
+    const imgs = await Promise.all(list.map((p) => loadRemote(kit, p.photo)));
     for (let i = 0; i < rows * cols; i++) {
       const cx = x0 + (i % cols) * cw;
       const cy = box.y + Math.floor(i / cols) * ch;
@@ -1754,7 +1840,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
 
   if (picture) {
     // The picture in its own box; the words below it, never on it.
-    await paintPicture(ctx, box, content, pal, Boolean(L.panel || L.ticket || L.split || L.frameLine));
+    await paintPicture(ctx, box, content, pal, Boolean(L.panel || L.ticket || L.split || L.frameLine), kit);
     useArt(content.artIndex ?? 0);
     paintWords(ctx, m, L.area.x, top, L);
   } else {
@@ -2252,10 +2338,10 @@ function nameAndRole(ctx, person, cx, y, w, size, c) {
 }
 
 /** The people of a speakers or session card in `box`: one hero, two or three cards, or an even grid. */
-async function paintDaylightPeople(ctx, box, people, c, pal, g) {
+async function paintDaylightPeople(ctx, box, people, c, pal, g, kit) {
   const list = people.length ? people : [];
   if (!list.length) return;
-  const imgs = await Promise.all(list.map((p) => loadImage(p.photo)));
+  const imgs = await Promise.all(list.map((p) => loadRemote(kit, p.photo)));
   const ring = g.square ? 6 : 9;
   const ringColor = c.dark ? c.accent : c.white;
   const n = list.length;
@@ -2364,7 +2450,7 @@ async function drawDaylightPost(ctx, W, H, content, kit, pal, page, side = 0) {
   if (people) {
     const box = { x: g.x, y: y + (g.square ? 26 : 44), w: g.w, h: g.bottom - y - (g.square ? 26 : 44) };
     paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
-    await paintDaylightPeople(ctx, box, people, c, pal, g);
+    await paintDaylightPeople(ctx, box, people, c, pal, g, kit);
   } else {
     const bH = bodyHeight(content.body, H, m.room);
     const withBody = bH > 0 && m.room >= 100;
@@ -2390,7 +2476,7 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors, side = 0)
   const g = { ...daylightGrid(W, H, side), effects: { ...EFFECTS_ON, ...(person.effects ?? {}) } };
   const rc = roleColor(person, colors);
   const c = daylightColors('paper', { ...pal, secondary: rc });
-  const [photo, brand, logo] = await Promise.all([loadImage(person.photo), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, brand, logo] = await Promise.all([loadRemote(kit, person.photo), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -2506,7 +2592,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors, side);
     return;
   }
-  const [photo, mark, brand, eventLogo] = await Promise.all([loadImage(person.photo), loadImage(kit.event.mark), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, mark, brand, eventLogo] = await Promise.all([loadRemote(kit, person.photo), loadImage(kit.event.mark), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   // The WordCamp's logo, on every people card.
   const LW = H < 1100 ? 150 : 180;
@@ -2933,6 +3019,60 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
   foot(pal.paper);
 }
 
+// ---- On screen ------------------------------------------------------------
+
+const REVEAL_MS = 260;
+const revealing = new WeakMap();
+
+/**
+ * Shows a card drawn off screen (`next`, every picture already in) on the studio's canvas: it fades
+ * in over the card on show, so every edit replays the card without a blank or half-drawn moment.
+ * Instant when the viewer asks for less motion.
+ */
+function reveal(canvas, next) {
+  cancelAnimationFrame(revealing.get(canvas) ?? 0);
+  let old = null;
+  if (canvas.dataset.shown && canvas.width === next.width && canvas.height === next.height) {
+    old = document.createElement('canvas');
+    old.width = canvas.width;
+    old.height = canvas.height;
+    old.getContext('2d').drawImage(canvas, 0, 0);
+  }
+  canvas.width = next.width;
+  canvas.height = next.height;
+  canvas.dataset.shown = '1';
+  delete canvas.dataset.drawing;
+  const ctx = canvas.getContext('2d');
+  const frame = (p) => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (old && p < 1) ctx.drawImage(old, 0, 0);
+    ctx.globalAlpha = p;
+    ctx.drawImage(next, 0, 0);
+    ctx.globalAlpha = 1;
+  };
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    frame(1);
+    return;
+  }
+  const t0 = performance.now();
+  const tick = () => {
+    const p = Math.min(1, (performance.now() - t0) / REVEAL_MS);
+    frame(1 - (1 - p) ** 3);
+    if (p < 1) revealing.set(canvas, requestAnimationFrame(tick));
+    else revealing.delete(canvas);
+  };
+  tick();
+}
+
+/** A studio canvas before its first card: the card's own shape, pulsing gently (app.css) until it is drawn. */
+function awaitFirst(canvas, size) {
+  if (canvas.dataset.shown) return;
+  const [w, h] = SIZES[size] ?? SIZES['1080x1350'];
+  canvas.width = w;
+  canvas.height = h;
+  canvas.dataset.drawing = '1';
+}
+
 // ---- Files ----------------------------------------------------------------
 
 async function canvasBlob(canvas, quality = 'social') {
@@ -3001,7 +3141,8 @@ function choiceGroup(attr, onChange, initial = null) {
  */
 async function loadSiteFonts(kit) {
   const out = {};
-  for (const [role, font] of Object.entries(kit.site?.fonts ?? {})) {
+  // The heading and text fonts load side by side, not one after the other.
+  await Promise.all(Object.entries(kit.site?.fonts ?? {}).map(async ([role, font]) => {
     const family = `CB Site ${role}`;
     const faces = (font.faces ?? []).map((f) => new FontFace(family, `url(${proxied(kit, f.url)})`, {
       weight: f.weight || '400',
@@ -3011,7 +3152,7 @@ async function loadSiteFonts(kit) {
     const loaded = (await Promise.allSettled(faces.map((face) => face.load()))).filter((r) => r.status === 'fulfilled').map((r) => r.value);
     loaded.forEach((face) => document.fonts.add(face));
     if (loaded.length) out[role] = `"${family}", ${role === 'heading' ? FONT_DISPLAY : DEFAULT_FONT}`;
-  }
+  }));
   return out;
 }
 
@@ -3023,7 +3164,8 @@ function useSiteFonts(fonts, on) {
 
 /** Loads every ticked piece of the site's artwork, by kind. */
 async function setSiteArt(kit, enabled) {
-  for (const kind of ['pattern', 'illustration', 'photo']) {
+  // Every kind at once, not one after the other.
+  await Promise.all(['pattern', 'illustration', 'photo'].map(async (kind) => {
     const pieces = (kit.site?.art ?? []).filter((a, i) => a.kind === kind && enabled.has(i));
     // A site piece too small to stay sharp at card size (an old 20 px sprite, a thumbnail) is left out;
     // a pattern repeats, so it may be small; an upload was chosen by someone, so it stays.
@@ -3032,7 +3174,7 @@ async function setSiteArt(kit, enabled) {
     const kept = loaded.filter((img, i) => img && (pieces[i].uploaded || Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height) >= minSide));
     // An illustration without its empty margins, so it fills the room it gets (a pattern keeps its spacing, a photo is solid).
     SITE_ART[kind] = kind === 'illustration' ? kept.map(trimmed) : kept;
-  }
+  }));
   useArt(0);
 }
 
@@ -3049,6 +3191,11 @@ export function initSocialKit() {
   const style = choiceGroup('social-style', () => redrawAll(), look.style);
   const design = choiceGroup('people-design', () => people?.redraw(), look.design);
   const quality = choiceGroup('social-quality', () => {}, 'social');
+  // Nothing is drawn on screen before the fonts, the site's artwork and the colours are in (the start
+  // below), so no card shows first without them; after 30 s the cards are drawn whatever is missing.
+  let kitIsReady = () => {};
+  const kitReady = new Promise((resolve) => { kitIsReady = resolve; });
+  setTimeout(() => kitIsReady(), 30000);
 
   // Each post and each person takes the next piece of the site's artwork.
   // Same role, same artwork: every organizer's card has one piece, every speaker's the next…
@@ -3100,7 +3247,7 @@ export function initSocialKit() {
     };
     restore();
     let pages = [];
-    let drawing = Promise.resolve();
+    let drawing = kitReady;
 
     // The countdown's headline and caption follow the number of days as it changes.
     let shownDays = post.key === 'countdown' ? post.days : null;
@@ -3123,18 +3270,29 @@ export function initSocialKit() {
       if (pageLabel) pageLabel.textContent = `Card ${pageIndex + 1} of ${pages.length}`;
     };
     const thumb = document.querySelector(`[data-studio-thumb="${post.key}"]`);
-    const paintThumb = () => {
-      if (!thumb || !canvas.width) return;
+    const paintThumb = (from) => {
+      if (!thumb || !from.width) return;
       const t = thumb.getContext('2d');
-      const k = Math.min(thumb.width / canvas.width, thumb.height / canvas.height);
+      const k = Math.min(thumb.width / from.width, thumb.height / from.height);
       t.clearRect(0, 0, thumb.width, thumb.height);
-      t.drawImage(canvas, (thumb.width - canvas.width * k) / 2, (thumb.height - canvas.height * k) / 2, canvas.width * k, canvas.height * k);
+      t.drawImage(from, (thumb.width - from.width * k) / 2, (thumb.height - from.height * k) / 2, from.width * k, from.height * k);
     };
+    // Each card is drawn off screen once the kit is ready (fonts, artwork, colours), then shown (reveal);
+    // of a burst of edits (typing) only the last is drawn. `drawn` is the card as it stands, for Publish.
+    let drawn = null;
+    let wanted = 0;
+    awaitFirst(canvas, size());
     const redraw = () => {
-      drawing = drawing.then(() => {
+      const mine = ++wanted;
+      drawing = drawing.then(async () => {
+        if (mine !== wanted) return;
         replan();
-        return drawEventPost(canvas, size(), style(), pages[pageIndex], kit, postColors(), { index: pageIndex + 1, total: pages.length });
-      }).then(paintThumb).catch(() => {});
+        const next = document.createElement('canvas');
+        await drawEventPost(next, size(), style(), pages[pageIndex], kit, postColors(), { index: pageIndex + 1, total: pages.length });
+        drawn = next;
+        reveal(canvas, next);
+        paintThumb(next);
+      }).catch(() => { delete canvas.dataset.drawing; });
       return drawing;
     };
 
@@ -3217,7 +3375,7 @@ export function initSocialKit() {
         return i ? [' · ', a] : [a];
       }));
     });
-    card.querySelector('[data-action="publish"]')?.addEventListener('click', (e) => publish(e.currentTarget, kit, canvas, redraw, () => ({ ...post, ...fields() })));
+    card.querySelector('[data-action="publish"]')?.addEventListener('click', (e) => publish(e.currentTarget, kit, () => drawn ?? canvas, redraw, () => ({ ...post, ...fields() })));
 
     // For the reels (social-reels.js): this post as it stands now, its words included.
     socialContext.posts.push({
@@ -3231,7 +3389,7 @@ export function initSocialKit() {
     allPosts.push({ post, renderAll, caption: () => field('caption').value });
     return redraw;
   });
-  Object.assign(socialContext, { kit, colors, style });
+  Object.assign(socialContext, { kit, colors, style, ready: kitReady });
 
   // Download all posts: every card of every post at the chosen quality, the captions and the posting plan, one ZIP.
   const zipBtns = [...document.querySelectorAll('[data-posts-zip]')];
@@ -3264,7 +3422,7 @@ export function initSocialKit() {
     }
   }));
 
-  people = setUpPeople(kit, colors, size, design, quality);
+  people = setUpPeople(kit, colors, size, design, quality, kitReady);
   redrawAll = () => { posts.forEach((r) => r()); people?.redraw(); };
   sizeEl?.addEventListener('change', redrawAll);
 
@@ -3309,6 +3467,26 @@ export function initSocialKit() {
   const artBoxes = [...document.querySelectorAll('[data-site-art]')];
   const enabledArt = () => new Set(artBoxes.filter((b) => b.checked).map((b) => Number(b.dataset.siteArt)));
   artBoxes.forEach((b) => b.addEventListener('change', async () => { await setSiteArt(kit, enabledArt()); redrawAll(); }));
+  // Their thumbnails: one that fails tries the image CDN and the file on its own site (remoteSources);
+  // when nothing works it says so, instead of the browser's broken picture.
+  document.querySelectorAll('img[data-art-thumb]').forEach((img) => {
+    const sources = remoteSources(img.dataset.artThumb, (u) => proxied(kit, u)).filter((u) => u !== img.getAttribute('src'));
+    const next = () => {
+      const src = sources.shift();
+      if (src) {
+        img.src = src;
+        return;
+      }
+      img.removeEventListener('error', next);
+      img.hidden = true;
+      const note = document.createElement('span');
+      note.className = 'px-2 text-center text-xs text-muted';
+      note.textContent = 'Picture not available';
+      img.after(note);
+    };
+    img.addEventListener('error', next);
+    if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) next();
+  });
   const fromLogo = async (announce = true) => {
     const logo = await loadImage(kit.event.logo || kit.event.mark);
     let palette = null;
@@ -3335,6 +3513,8 @@ export function initSocialKit() {
   // Start: the site's fonts and artwork, and — until colours are saved — the
   // site's colours (or the logo's, when the site names none).
   (async () => {
+    // The artwork loads while the fonts do.
+    const art = setSiteArt(kit, enabledArt()).catch(() => {});
     try {
       siteFonts = await loadSiteFonts(kit);
       useSiteFonts(siteFonts, fontsBox?.checked ?? false);
@@ -3342,20 +3522,19 @@ export function initSocialKit() {
     } catch {
       // CampBuddy's fonts then.
     }
-    await setSiteArt(kit, enabledArt()).catch(() => {});
+    await art;
     await loadBrandFonts();
     await document.fonts?.ready;
     // The site's own colours come first; saved colours are for a site that names none.
     if (sitePalette) setColors(sitePalette, 'From the WordCamp site.');
     else if (!kit.colorsSaved) await fromLogo(false);
     showContrast();
-    redrawAll();
-  })();
+  })().catch(() => {}).finally(() => { kitIsReady(); redrawAll(); });
   showContrast();
   redrawAll();
 }
 
-function setUpPeople(kit, colors, size, design, quality) {
+function setUpPeople(kit, colors, size, design, quality, kitReady) {
   const grid = document.querySelector('[data-people-grid]');
   if (!grid) return null;
   const roleEl = document.querySelector('[data-people-role]');
@@ -3394,7 +3573,7 @@ function setUpPeople(kit, colors, size, design, quality) {
       return li;
     }));
     const person = list.find((p) => idOf(p) === selected);
-    if (person) grid.replaceChildren(personRow(person));
+    if (person) grid.replaceChildren(personRow(person, grid.querySelector('canvas')));
     else {
       const empty = document.createElement('p');
       empty.className = 'p-8 text-center text-sm text-muted';
@@ -3406,7 +3585,8 @@ function setUpPeople(kit, colors, size, design, quality) {
 
   // One person per row: the card on the left; their caption, colours and effects on the right,
   // kept in this browser per event and person (like the posts above).
-  function personRow(person) {
+  // `before`: the card on show until now (another person, another design): the new one fades in over it.
+  function personRow(person, before = null) {
     const store = `cb-social:${kit.event.slug}:person:${person.id ?? slugify(person.name)}`;
     const saved = (() => { try { return JSON.parse(localStorage.getItem(store) ?? 'null') ?? {}; } catch { return {}; } })();
     const el = (tag, cls, text) => {
@@ -3452,7 +3632,25 @@ function setUpPeople(kit, colors, size, design, quality) {
     });
     const now = () => ({ ...person, caption: caption.value, effects: Object.fromEntries(fxEls.map((i) => [i.dataset.key, i.checked])) });
     const cardColors = () => (own.checked ? { ...colors, ...Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])) } : colors);
-    const draw = () => drawPersonCard(canvas, size(), design(), now(), kit, cardColors());
+    // Drawn off screen once the kit is ready, then shown (reveal); of a burst of edits only the last is drawn.
+    if (before?.dataset.shown) {
+      canvas.width = before.width;
+      canvas.height = before.height;
+      canvas.getContext('2d').drawImage(before, 0, 0);
+      canvas.dataset.shown = '1';
+    } else awaitFirst(canvas, size());
+    let drawing = kitReady;
+    let wanted = 0;
+    const draw = () => {
+      const mine = ++wanted;
+      drawing = drawing.then(async () => {
+        if (mine !== wanted) return;
+        const next = document.createElement('canvas');
+        await drawPersonCard(next, size(), design(), now(), kit, cardColors());
+        reveal(canvas, next);
+      }).catch(() => { delete canvas.dataset.drawing; });
+      return drawing;
+    };
     const keep = () => {
       try {
         localStorage.setItem(store, JSON.stringify({ caption: caption.value, ownColors: own.checked, colors: Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])), effects: now().effects }));
@@ -3525,7 +3723,8 @@ function setUpPeople(kit, colors, size, design, quality) {
 
 // ---- Publish (webhook) ------------------------------------------------------
 
-async function publish(btn, kit, canvas, redraw, current) {
+// `card`: the finished card (never the one on screen mid-fade).
+async function publish(btn, kit, card, redraw, current) {
   if (!kit.publishUrl || btn.disabled) return;
   const post = current();
   btn.disabled = true;
@@ -3534,7 +3733,7 @@ async function publish(btn, kit, canvas, redraw, current) {
   try {
     await redraw();
     const body = new FormData();
-    body.append('image', await canvasBlob(canvas), `${post.key}.png`);
+    body.append('image', await canvasBlob(card()), `${post.key}.png`);
     body.append('title', post.headline || post.label);
     body.append('caption', post.caption);
     body.append('kind', post.key);
@@ -3554,7 +3753,7 @@ async function publish(btn, kit, canvas, redraw, current) {
 // ---- For the reels (social-reels.js) ----------------------------------------
 // The page's live state (filled by initSocialKit) and the drawing helpers the
 // reels share with the cards, so a reel looks like the event's posts.
-export const socialContext = { kit: null, colors: null, style: null, posts: [] };
+export const socialContext = { kit: null, colors: null, style: null, posts: [], ready: Promise.resolve() };
 
 export const reelTools = {
   brandLockup, loadImage, loadRemote, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,

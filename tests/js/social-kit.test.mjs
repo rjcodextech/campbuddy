@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, remoteSources, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption, unphoton } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -182,4 +182,31 @@ test('a WordCamp picture the server could not copy comes from WordPress.com’s 
   assert.equal(photonUrl('https://evil.example/logo.png'), null);
   assert.equal(photonUrl('/storage/art/1.png'), null);
   assert.equal(photonUrl(null), null);
+});
+
+test('a Jetpack CDN address (i0.wp.com) gives back the file on its own site, without the CDN’s query', () => {
+  assert.equal(unphoton('https://i0.wp.com/canada.wordcamp.org/2026/files/a.png?fit=768%2C210&ssl=1'), 'https://canada.wordcamp.org/2026/files/a.png');
+  assert.equal(unphoton('https://i2.wp.com/delhi.wordcamp.org/files/2026/10/logo.webp?resize=300%2C200'), 'https://delhi.wordcamp.org/files/2026/10/logo.webp');
+  assert.equal(unphoton('https://i10.wp.com/sponsor.example.com/logo.png'), 'https://sponsor.example.com/logo.png');
+  assert.equal(unphoton('https://delhi.wordcamp.org/files/logo.png'), null);
+  assert.equal(unphoton('https://i0.wp.com/'), null);
+  assert.equal(unphoton('https://i0.wp.com/no-dot/logo.png'), null);
+  assert.equal(unphoton('/storage/art/1.png'), null);
+  assert.equal(unphoton(null), null);
+});
+
+test('a remote picture is tried from CampBuddy’s copy, the CDN, then (for a CDN address) the file on its own site', () => {
+  const proxy = (u) => `/admin/events/1/social/image?u=${encodeURIComponent(u)}`;
+  const site = 'https://delhi.wordcamp.org/2026/files/logo.png';
+  assert.deepEqual(remoteSources(site, proxy), [proxy(site), 'https://i0.wp.com/delhi.wordcamp.org/2026/files/logo.png', site]);
+  const cdn = 'https://i0.wp.com/canada.wordcamp.org/2026/files/a.png?fit=768%2C210&ssl=1';
+  const own = 'https://canada.wordcamp.org/2026/files/a.png';
+  assert.deepEqual(remoteSources(cdn, proxy), [proxy(cdn), cdn, proxy(own), own]);
+  // No proxy (a page without one): each address once.
+  assert.deepEqual(remoteSources(cdn), [cdn, own]);
+  // A Gravatar or a picture on CampBuddy itself has nowhere else to come from.
+  const face = 'https://secure.gravatar.com/avatar/abc?s=600&d=404';
+  assert.deepEqual(remoteSources(face, (u) => (/gravatar\.com\//.test(u) ? u : proxy(u))), [face]);
+  assert.deepEqual(remoteSources('/storage/people/1.jpg', (u) => (u.startsWith('/') ? u : proxy(u))), ['/storage/people/1.jpg']);
+  assert.deepEqual(remoteSources(null, proxy), []);
 });

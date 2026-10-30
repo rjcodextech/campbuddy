@@ -52,7 +52,7 @@
                     @foreach ($site['art'] as $i => $art)
                         <div class="flex flex-col gap-1 text-xs">
                             <span class="flex h-24 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
-                                <img src="{{ ($art['uploaded'] ?? false) ? $art['url'] : $imageUrl.'?u='.urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
+                                <img src="{{ ($art['uploaded'] ?? false) ? $art['url'] : $imageUrl.'?u='.urlencode($art['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" data-art-thumb="{{ ($art['uploaded'] ?? false) ? '' : $art['url'] }}">
                             </span>
                             <label class="flex items-center gap-1"><input type="checkbox" class="cb-check" data-site-art="{{ $i }}" checked> Use{{ ($art['uploaded'] ?? false) ? ' · uploaded' : '' }}</label>
                             <span class="truncate text-muted" title="{{ $art['name'] }}{{ isset($art['width'], $art['height']) ? ' · '.$art['width'].' × '.$art['height'].' px' : '' }}">{{ $art['name'] }}</span>
@@ -99,7 +99,7 @@
                             @foreach ($site['more'] as $piece)
                                 <div class="flex flex-col gap-1 text-xs">
                                     <span class="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft">
-                                        <img src="{{ $imageUrl.'?u='.urlencode($piece['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy">
+                                        <img src="{{ $imageUrl.'?u='.urlencode($piece['url']) }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" data-art-thumb="{{ $piece['url'] }}">
                                     </span>
                                     <span class="truncate text-muted" title="{{ $piece['name'] }}">{{ ucfirst($piece['kind']) }} · {{ $piece['name'] }}{{ $piece['hidden'] ? ' (taken off)' : '' }}</span>
                                     <form method="POST" action="{{ $artUseUrl }}">
@@ -317,7 +317,7 @@
                         @foreach ($kit['posts'] as $post)
                             <div class="grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]" data-social-post="{{ $post['key'] }}" hidden>
                                 <div class="flex min-h-0 flex-col items-center justify-center gap-3 bg-paper-soft p-4">
-                                    <canvas class="block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg" data-preview></canvas>
+                                    <canvas class="block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg" width="1080" height="1350" data-preview data-drawing></canvas>
                                     <div class="hidden items-center justify-center gap-2 text-sm [&:not(.hidden)]:flex" data-pager>
                                         <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-prev aria-label="Previous card">‹</button>
                                         <span data-page-label class="tabular-nums text-muted"></span>

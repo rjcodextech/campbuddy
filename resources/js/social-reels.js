@@ -3201,6 +3201,8 @@ export function initSocialReels() {
   const say = (text) => { if (status) status.textContent = text; };
 
   const build = async (item) => {
+    // The kit's fonts, artwork and colours first (social-kit.js), so no reel is built without them.
+    await C.ready;
     await loadBrandFonts();
     await document.fonts?.ready;
     const own = typeof item.colors === 'function' ? item.colors() : item.colors;
@@ -3218,7 +3220,7 @@ export function initSocialReels() {
   const play = async (item, canvas = preview) => {
     stop();
     stopLive();
-    const run = { cancelled: false };
+    const run = { cancelled: false, key: item.key };
     playing = run;
     say(`Getting “${item.title}” ready…`);
     const reel = await build(item);
@@ -3285,7 +3287,7 @@ export function initSocialReels() {
   const rows = [];
   const railButtons = [];
   // The chosen reel plays by itself, silently and on a loop, while the reels tab is open, and is
-  // rebuilt a moment after every edit, so a change shows straight away. "Preview" plays it once with music.
+  // rebuilt a moment after every edit, so a change shows straight away. "Play with music" plays it once with music.
   const byKey = new Map();
   let current = null;
   let live = null;
@@ -3323,11 +3325,18 @@ export function initSocialReels() {
     };
     tick();
   };
+  // Every edit replays the chosen reel from its start, with the edit in: with music when the music is
+  // what changed (`sound`) or when it was playing with music, else the silent loop. Not while a video is made.
   let soon = 0;
-  const refreshLive = (key) => {
-    if (key !== current) return;
+  const replay = (key, sound = false) => {
+    if (key !== current || busy) return;
     clearTimeout(soon);
-    soon = setTimeout(startLive, 350);
+    soon = setTimeout(() => {
+      const entry = byKey.get(key);
+      if (!entry || key !== current || busy || !panelOpen()) return;
+      if (sound || playing?.key === key) play(entry.item, entry.canvas).catch((e) => say(`Preview failed: ${e?.message ?? e}`));
+      else startLive();
+    }, 350);
   };
   const pickReel = (key) => {
     current = key;
@@ -3489,8 +3498,9 @@ export function initSocialReels() {
     rows.push(row);
     listEl.append(row);
     byKey.set(item.key, { item, canvas, status: liveStatus });
-    [hook, ...colorEls].forEach((i) => i.addEventListener('input', () => refreshLive(item.key)));
-    [own, mood, pics, animSel, tplSel, ...fxEls].forEach((i) => i.addEventListener('change', () => refreshLive(item.key)));
+    [hook, ...colorEls].forEach((i) => i.addEventListener('input', () => replay(item.key)));
+    [own, pics, animSel, tplSel, ...fxEls].forEach((i) => i.addEventListener('change', () => replay(item.key)));
+    mood.addEventListener('change', () => replay(item.key, true));
 
     const li = el('li', 'shrink-0');
     const b = el('button', 'flex w-48 flex-col rounded-lg px-3 py-2 text-left hover:bg-paper-soft aria-[current=true]:bg-maroon/10 lg:w-full');
@@ -3503,6 +3513,12 @@ export function initSocialReels() {
     rail?.append(li);
   });
   if (items[0]) pickReel(items[0].key);
+  // The music: another choice, track, file or volume replays the chosen reel with it (the volume once it
+  // is let go; "My own track" once a file is chosen).
+  [musicEl, trackEl, fileEl, volumeEl].forEach((input) => input?.addEventListener('change', () => {
+    if (musicEl?.value === 'file' && !fileEl?.files?.[0]) return;
+    replay(current, true);
+  }));
   // Closing the studio stops a preview that is playing, and the live loop.
   document.addEventListener('studio:close', () => { stop(); stopLive(); });
 

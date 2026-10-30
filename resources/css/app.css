@@ -375,10 +375,22 @@ html.cb-studio-open {
     mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 480 60' preserveAspectRatio='none'%3E%3Cpath d='M0 30 C80 6 160 6 240 30 S400 54 480 30 V60 H0 Z' fill='%23000'/%3E%3C/svg%3E") 0 100% / 100% 100% no-repeat;
 }
 
+/* Social media studio: a card still being drawn for the first time (its pictures loading) pulses gently, never half-drawn (social-kit.js). */
+canvas[data-drawing] {
+    animation: cb-drawing 1.4s ease-in-out infinite;
+}
+
+@keyframes cb-drawing {
+    50% {
+        opacity: 0.5;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .cb-enter,
     .cb-logo-in,
-    .cb-hero-glow {
+    .cb-hero-glow,
+    canvas[data-drawing] {
         animation: none;
     }
 }
