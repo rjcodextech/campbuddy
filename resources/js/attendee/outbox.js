@@ -91,9 +91,14 @@ export function createOutbox({ kvGet, kvSet, now = Date.now }) {
   };
 }
 
-/** Whether a failed request is the server's final answer (retrying can't help): a 4xx, except "busy" and "timed out". */
+/**
+ * Whether a failed request is the server's final answer (retrying can't help): a 4xx, except "busy",
+ * "timed out" and the handshake's "your clock is off" (error.transient, api.js) — a phone whose clock is
+ * wrong must not lose what it queued.
+ */
 export function isPermanentFailure(error) {
   const status = error?.status;
+  if (error?.transient) return false;
 
   return Number.isInteger(status) && status >= 400 && status < 500 && status !== 408 && status !== 429;
 }

@@ -26,7 +26,25 @@ return [
         // Promised time to answer a request or complaint.
         'reply_days' => 30,
         // The date the notice was last changed (shown on the page).
-        'updated' => '21 October 2026',
+        'updated' => '30 October 2026',
+        // Saved with every consent (consent_logs.notice_version): which wording the person agreed to.
+        'notice_version' => '2026-10-30',
+    ],
+
+    /*
+    | The API handshake (App\Http\Middleware\VerifyApiHandshake). Every call from the
+    | website/PWA and the app says who it is (X-CampBuddy-Client, X-CampBuddy-Device)
+    | and when it was sent (X-CampBuddy-Timestamp); the server checks them and signs
+    | its answer (X-CampBuddy-Handshake). A phone whose clock is wrong is told the
+    | server's time and retries once with it.
+    |
+    | strict = false (the default) lets requests without the headers through — the
+    | app versions and cached web pages already on phones don't send them. Turn it on
+    | (API_HANDSHAKE_STRICT=true) once every phone runs a version that does.
+    */
+    'handshake' => [
+        'strict' => (bool) env('API_HANDSHAKE_STRICT', false),
+        'max_skew_seconds' => (int) env('API_HANDSHAKE_MAX_SKEW', 300),
     ],
 
     // <title> of the WordCamp picker ("/"): "CampBuddy | Your WordCamp companion".

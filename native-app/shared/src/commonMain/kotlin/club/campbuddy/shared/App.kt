@@ -90,9 +90,9 @@ private sealed interface Screen {
 /** The whole app. Both platform shells call this and nothing else. */
 @Composable
 fun App(deps: AppDeps) {
-    val api = remember { ApiClient(baseUrl = deps.apiBase, appVersion = deps.appVersion, platform = deps.platform) }
-    val repository = remember { Repository(api, deps.store) }
     val user = remember { UserData(deps.store) }
+    val api = remember { ApiClient(baseUrl = deps.apiBase, appVersion = deps.appVersion, platform = deps.platform, deviceId = { user.deviceId() }) }
+    val repository = remember { Repository(api, deps.store) }
     val env = remember { Env(deps, api, repository, user) }
     coil3.compose.setSingletonImageLoaderFactory { context ->
         coil3.ImageLoader.Builder(context).components { add(coil3.network.ktor3.KtorNetworkFetcherFactory()) }.build()

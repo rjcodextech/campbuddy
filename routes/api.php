@@ -35,7 +35,7 @@ use Illuminate\Support\Facades\Route;
 | CDN-edge limiting — 60/min general, tighter on discovery
 | writes specifically.
 */
-Route::prefix('v1')->middleware('throttle:api-general')->group(function () {
+Route::prefix('v1')->middleware(['throttle:api-general', 'api.handshake'])->group(function () {
     Route::get('/health', HealthController::class)->name('api.health');
     Route::get('/cache-version', CacheVersionController::class)->name('api.cache-version');
     // The native app start-up check: minimum build, store link, feature switches.

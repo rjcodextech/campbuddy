@@ -67,7 +67,9 @@ import io.ktor.http.encodeURLParameter
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.plugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -112,6 +114,8 @@ class ApiClient(
     private val appVersion: String = "0.0.1",
     private val platform: String = "android",
     client: HttpClient? = null,
+    /** This phone's anonymous id (UserData.deviceId): the server counts its rate limits per phone, not per venue wifi. */
+    private val deviceId: (() -> String)? = null,
 ) {
     private val http = client ?: HttpClient {
         install(ContentNegotiation) { json(AppJson) }
@@ -120,6 +124,27 @@ class ApiClient(
             connectTimeoutMillis = 10_000
         }
     }
+
+    /** Seconds this phone's clock is behind (or ahead of) the server's, learnt from the handshake. */
+    internal var clockOffsetSeconds = 0L
+        private set
+
+    init {
+        // The handshake's freshness step (VerifyApiHandshake): a write from a phone whose clock is wrong is
+        // answered 401 with the server's time. Learn it and send the same request once more with that time.
+        http.plugin(HttpSend).intercept { request ->
+            val call = execute(request)
+            val response = call.response
+            val server = response.headers["X-CampBuddy-Server-Time"]?.toLongOrNull()
+            if (response.status.value != 401 || response.headers["X-CampBuddy-Handshake-Error"] != "time-skew" || server == null) return@intercept call
+            clockOffsetSeconds = server - kotlinx.datetime.Clock.System.now().epochSeconds
+            request.headers.remove("X-CampBuddy-Timestamp")
+            request.headers.append("X-CampBuddy-Timestamp", handshakeTime())
+            execute(request)
+        }
+    }
+
+    private fun handshakeTime(): String = (kotlinx.datetime.Clock.System.now().epochSeconds + clockOffsetSeconds).toString()
 
     suspend fun config(): AppConfig = get("/app/config")
 
@@ -529,6 +554,9 @@ class ApiClient(
         header("Accept", "application/json")
         header("X-App-Version", appVersion)
         header("X-Platform", platform)
+        header("X-CampBuddy-Client", "native")
+        deviceId?.invoke()?.let { header("X-CampBuddy-Device", uuidShape(it)) }
+        header("X-CampBuddy-Timestamp", handshakeTime())
         header("X-Schema", "1")
     }
 
@@ -539,6 +567,16 @@ class ApiClient(
         val text = runCatching { response.bodyAsText() }.getOrDefault("")
         throw ApiException(response.status.value, errorMessage(text) ?: "Something went wrong (${response.status.value}).")
     }
+}
+
+/**
+ * The phone's id (32 hex characters) written the way the server's rate limiter reads one (ApiClient.php):
+ * 8-4-4-4-12. Anything else is sent as it is — the server then only gives it the anonymous allowance.
+ */
+internal fun uuidShape(id: String): String {
+    val hex = id.lowercase()
+    if (!Regex("^[0-9a-f]{32}$").matches(hex)) return id
+    return "${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}"
 }
 
 /** The plain-words reason in a server error body: the first validation message, else its own message. */

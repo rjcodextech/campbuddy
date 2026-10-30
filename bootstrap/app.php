@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'event.public' => EnsureEventIsPublic::class,
+            'api.handshake' => \App\Http\Middleware\VerifyApiHandshake::class,
         ]);
 
         // Production sits behind Cloudflare (docs: deployment). Without this
