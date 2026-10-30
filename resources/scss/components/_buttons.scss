@@ -18,8 +18,9 @@
     font-weight: 600;
     font-size: 0.9rem;
     line-height: 1.25;
+    letter-spacing: -0.01em;
     border: 1px solid transparent;
-    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 
     // Same look as --secondary by default, so a bare .btn with no style
     // modifier never renders unstyled — every call site should still
@@ -31,46 +32,55 @@
         background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
         border-color: transparent;
         color: #fff;
-        box-shadow: 0 4px 14px -2px rgba(255, 77, 45, 0.38);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 14px -2px rgba(255, 77, 45, 0.38);
 
         @include m.hover {
             background: linear-gradient(135deg, #e03a1b 0%, #b45309 100%);
             border-color: transparent;
-            box-shadow: 0 8px 22px -3px rgba(255, 77, 45, 0.48);
-            transform: translateY(-1.5px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.32), 0 8px 24px -3px rgba(255, 77, 45, 0.48);
+            transform: translateY(-2px);
         }
 
         &:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px -2px rgba(255, 77, 45, 0.4);
+            transform: translateY(0.5px) scale(0.985);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 8px -2px rgba(255, 77, 45, 0.4);
         }
     }
 
     &--secondary {
         background: var(--peach);
         color: var(--ink);
+        border-color: rgba(217, 119, 6, 0.12);
 
         @include m.hover {
             background: var(--gold);
+            color: #fff;
+            transform: translateY(-1.5px);
+            box-shadow: 0 4px 14px -2px rgba(217, 119, 6, 0.28);
+        }
+
+        &:active {
+            transform: translateY(0.5px) scale(0.985);
         }
     }
 
     &--outline {
-        background: #fff;
-        border: 1.5px solid var(--line);
+        background: #ffffff;
+        border: 1.5px solid rgba(15, 23, 42, 0.1);
         color: var(--ink);
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 3px rgba(15, 23, 42, 0.04);
 
         @include m.hover {
-            background: var(--paper-soft);
+            background: linear-gradient(145deg, #ffffff 0%, #fff7ed 100%);
             border-color: rgba(255, 77, 45, 0.35);
             color: var(--brand-primary);
-            transform: translateY(-1.5px);
-            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+            transform: translateY(-2px);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), 0 6px 18px -3px rgba(15, 23, 42, 0.08);
         }
 
         &:active {
-            transform: translateY(0);
+            transform: translateY(0.5px) scale(0.985);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 1px 3px rgba(15, 23, 42, 0.04);
         }
     }
 

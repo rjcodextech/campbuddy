@@ -19,10 +19,11 @@
     // The iPhone home indicator sits in this inset, below the tappable
     // area — and in landscape the notch/rounded corners sit at the sides.
     padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    background: rgba(255, 250, 244, 0.94);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-top: 1px solid var(--line);
+    background: rgba(255, 250, 244, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 -4px 16px -4px rgba(15, 23, 42, 0.04);
 
     // A little air between "Camp Card" and the screen edge where there is room
     // (at 320px every pixel goes to the six labels).
