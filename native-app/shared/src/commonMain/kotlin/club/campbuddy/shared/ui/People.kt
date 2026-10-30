@@ -190,7 +190,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
     val byId = model.cards.associateBy { it.discoveryId }
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        model.message?.let { Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.primary)) }
+        model.message?.let { Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.primaryText)) }
 
         if (joining) {
             JoinForm(model, roster, env.user.profile.interests, onClose = { joining = false })
@@ -232,7 +232,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
                                 Column(Modifier.weight(1f)) {
                                     Text("A match waved at you", style = MaterialTheme.typography.titleMedium)
                                     who?.fields?.tags?.takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                                    if (id in waves.receivedWithMessage) Text("They wrote something. Wave back to read it.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary))
+                                    if (id in waves.receivedWithMessage) Text("They wrote something. Wave back to read it.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText))
                                 }
                                 who?.let { ActionButton("Wave back", filled = true) { waveFor = it } }
                             }
@@ -333,7 +333,7 @@ private fun MatchCard(
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(44.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
-                    Text((card.name ?: "?").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primary))
+                    Text((card.name ?: "?").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText))
                 }
                 Column(Modifier.weight(1f)) {
                     Text(card.name ?: "Someone at this WordCamp", style = MaterialTheme.typography.titleLarge)
@@ -342,7 +342,7 @@ private fun MatchCard(
             }
             card.fields.whoToMeet?.let { Text("Looking to meet: $it", style = MaterialTheme.typography.bodyLarge) }
             TagRow(card.fields.tags, common)
-            if (common.isNotEmpty()) Text("${common.size} in common", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+            if (common.isNotEmpty()) Text("${common.size} in common", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 when {
                     mutual -> ActionButton("Chat", filled = true, onClick = onChat)
@@ -541,7 +541,7 @@ private fun WhoToMeetField(
                                 },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("×", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                            Text("×", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
                         }
                     }
                 }

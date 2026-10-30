@@ -230,7 +230,7 @@ private fun DefaultPrivacyContent(grievanceEmail: String) {
             )
             Text(
                 "Contact: $grievanceEmail",
-                style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+                style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold),
             )
         }
 
@@ -555,7 +555,7 @@ private fun LegalSectionHeader(number: String, title: String) {
                 number,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Bold,
-                    color = brand.primary,
+                    color = brand.primaryText,
                     fontSize = 11.sp,
                 ),
             )
@@ -591,7 +591,7 @@ private fun BulletRow(text: String) {
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+        Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
         Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.ink, lineHeight = 20.sp))
     }
 }

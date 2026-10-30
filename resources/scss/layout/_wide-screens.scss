@@ -91,9 +91,12 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
     .app-frame--with-nav {
         padding-bottom: 0;
 
+        // The column right of the side nav: what is left of the screen, at most the shell's width.
+        // (width: 100% plus this left margin ran 120px past the right edge from 1024 to 1167px,
+        // and the frame's overflow clip cut the cards off.)
         #main-content {
-            width: 100%;
-            max-width: calc(#{$shell-max} - #{$sidebar-width} - 28px);
+            width: min(calc(#{$shell-max} - #{$sidebar-width} - 28px), calc(100% - #{$shell-gutter} - #{$sidebar-width} - 28px - #{v.$space-6}));
+            max-width: none;
             margin-right: auto;
             margin-left: calc(#{$shell-gutter} + #{$sidebar-width} + 28px);
             padding-top: v.$space-6;
@@ -171,7 +174,7 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 
             &--active {
                 background: #ffffff;
-                color: var(--brand-primary);
+                color: var(--brand-text);
                 font-weight: 700;
                 border-color: rgba(15, 23, 42, 0.08);
                 box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
@@ -184,7 +187,7 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 
                 &:hover {
                     background: #ffffff;
-                    color: var(--brand-primary);
+                    color: var(--brand-text);
                     transform: none;
                 }
             }

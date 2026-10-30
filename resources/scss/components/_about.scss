@@ -135,7 +135,7 @@
     width: min(250px, 70vw);
     padding: 10px;
     border-radius: 34px;
-    background: #231f20;
+    background: #0f172a;
     box-shadow: v.$shadow-raised, inset 0 0 0 2px #3a3435;
 }
 
@@ -342,7 +342,7 @@
     color: #fbefd9;
     background:
         radial-gradient(circle at 92% 12%, rgba(217, 119, 6, 0.16), transparent 42%),
-        radial-gradient(circle at 0% 100%, rgba(195, 58, 25, 0.55), transparent 55%),
+        radial-gradient(circle at 0% 100%, rgba(255, 77, 45, 0.55), transparent 55%),
         linear-gradient(150deg, #6d2021, #4a1415);
     box-shadow: var(--shadow-card-elevated);
     border: 1px solid rgba(251, 239, 217, 0.15);
@@ -927,7 +927,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background-image: radial-gradient(rgba(35, 31, 32, 0.055) 1.2px, transparent 1.2px);
+        background-image: radial-gradient(rgba(15, 23, 42, 0.055) 1.2px, transparent 1.2px);
         background-size: 20px 20px;
         pointer-events: none;
         mask-image: radial-gradient(ellipse 90% 80% at 50% 30%, #000 30%, transparent 85%);

@@ -117,20 +117,20 @@ fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = fals
     }
 }
 
-/** The website's button: 50 high, a pill (brand guideline §5), 16 bold (the compact one, [ActionButton], is 44 high and 14). */
+/** The website's .btn: at least 44 high, a pill (brand guideline §5), 14.4 w600 (the compact one, [ActionButton], is 40 high). */
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val brand = LocalBrand.current
     val shape = Radii.pill
     Box(
-        modifier.heightIn(min = 50.dp)
-            // The website's gradient pill with its warm lift (guideline §5): maroon → wine.
-            .then(if (enabled) Modifier.shadow(6.dp, shape, clip = false, ambientColor = BRAND_WINE, spotColor = BRAND_WINE) else Modifier)
+        modifier.heightIn(min = 44.dp)
+            // The website's gradient pill with its warm lift (guideline §5): coral → amber, 135°.
+            .then(if (enabled) Modifier.shadow(6.dp, shape, clip = false, ambientColor = brand.primary, spotColor = brand.primary) else Modifier)
             .background(Brush.linearGradient(listOf(brand.primary, BRAND_WINE)), shape, alpha = if (enabled) 1f else 0.4f)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
-    ) { Text(text, style = MaterialTheme.typography.titleMedium.copy(color = Color.White), textAlign = TextAlign.Center) }
+    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = Color.White), textAlign = TextAlign.Center) }
 }
 
 @Composable
@@ -138,12 +138,14 @@ fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
     val brand = LocalBrand.current
     val shape = Radii.pill
     Box(
-        modifier.heightIn(min = 50.dp)
+        modifier.heightIn(min = 44.dp)
+            // The website's .btn--outline: white, a thin line, ink words.
+            .background(Color.White, shape)
             .border(1.dp, brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
+            .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
-    ) { Text(text, style = MaterialTheme.typography.titleMedium.copy(color = brand.ink), textAlign = TextAlign.Center) }
+    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink), textAlign = TextAlign.Center) }
 }
 
 @Composable
@@ -153,7 +155,8 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
     val base = modifier
         .fillMaxWidth()
         .shadow(4.dp, shape, clip = false, ambientColor = brand.ink.copy(alpha = 0.14f), spotColor = brand.ink.copy(alpha = 0.14f))
-        .background(brand.surface, shape)
+        // The website's card surface is white (mixins card-surface), on the warm page.
+        .background(Color.White, shape)
         .border(1.dp, brand.line, shape)
         .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
         .padding(16.dp)
@@ -162,15 +165,20 @@ fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: 
 
 @Composable
 fun SectionTitle(text: String) {
-    // The website's section title: the words, then a short wave under them (guideline §5).
+    // The website's section title (.section-head__title): Baloo 2 28, then a short rounded bar under it,
+    // coral fading to gold, 48 × 4 (components/_effects.scss).
+    val brand = LocalBrand.current
     Column(Modifier.padding(top = 8.dp, bottom = 4.dp)) {
         Text(text, style = MaterialTheme.typography.headlineSmall)
-        WaveLine(Modifier.padding(top = 4.dp).width(44.dp).height(7.dp))
+        Box(
+            Modifier.padding(top = 8.dp).width(48.dp).height(4.dp)
+                .background(Brush.horizontalGradient(listOf(brand.primary, brand.accent)), Radii.pill),
+        )
     }
 }
 
-/** The logo's wine, the brand gradient's partner (CAMPBUDDY-BRAND-GUIDELINES.md §3). */
-val BRAND_WINE = Color(0xFF721313)
+/** The brand gradient's partner: Radiant Amber, $color-wine in _variables.scss (Daylight 2.0, guideline §3). */
+val BRAND_WINE = Color(0xFFEA580C)
 
 /** The brand's smooth sine stroke (guideline §5), maroon fading to ochre; [waves] crests across its width. */
 @Composable
@@ -406,7 +414,7 @@ fun BannerCard(
     }
 }
 
-/** A choice chip: dark text on white, filled maroon with white text when chosen (readable on the cream page). */
+/** A choice chip, as the website's .chip: ink on the page colour with a thin line; chosen = gold with ink words. */
 @Composable
 fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit) {
     val brand = LocalBrand.current
@@ -417,10 +425,10 @@ fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit
         colors = FilterChipDefaults.filterChipColors(
             containerColor = brand.surface,
             labelColor = brand.ink,
-            selectedContainerColor = brand.primary,
-            selectedLabelColor = Color.White,
+            selectedContainerColor = brand.accent,
+            selectedLabelColor = brand.ink,
         ),
-        border = FilterChipDefaults.filterChipBorder(enabled = true, selected = selected, borderColor = brand.line, selectedBorderColor = brand.primary),
+        border = FilterChipDefaults.filterChipBorder(enabled = true, selected = selected, borderColor = brand.line, selectedBorderColor = brand.accent),
     )
 }
 

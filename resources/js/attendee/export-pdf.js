@@ -212,8 +212,8 @@ async function drawAsPictures(doc, model) {
     return node;
   };
   const newSheet = () => {
-    const sheet = el('div', `box-sizing:border-box;width:${SHEET.w}px;height:${SHEET.h}px;padding:${SHEET.pad}px;background:#fff;color:#231f20;font-family:${font};position:relative;overflow:hidden;`);
-    sheet.appendChild(el('div', 'position:absolute;left:0;top:0;right:0;height:10px;background:#c33a19;'));
+    const sheet = el('div', `box-sizing:border-box;width:${SHEET.w}px;height:${SHEET.h}px;padding:${SHEET.pad}px;background:#fff;color:#0f172a;font-family:${font};position:relative;overflow:hidden;`);
+    sheet.appendChild(el('div', 'position:absolute;left:0;top:0;right:0;height:10px;background:#ff4d2d;'));
     // Blocks go in here; its own height says when the page is full.
     sheet.content = el('div', '');
     sheet.appendChild(sheet.content);
@@ -226,17 +226,17 @@ async function drawAsPictures(doc, model) {
   // Blocks in reading order; each goes on the current sheet, or starts a new one if it doesn't fit.
   const blocks = [
     el('h1', 'margin:0 0 6px;font-size:30px;line-height:1.2;font-weight:800;', model.title),
-    el('p', 'margin:0 0 18px;font-size:13px;color:#6b625e;', `Saved from CampBuddy on ${new Date().toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}`),
+    el('p', 'margin:0 0 18px;font-size:13px;color:#475569;', `Saved from CampBuddy on ${new Date().toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}`),
   ];
   for (const section of model.sections) {
-    blocks.push(el('h2', 'margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #eadfd6;font-size:18px;font-weight:700;color:#c33a19;', section.heading));
+    blocks.push(el('h2', 'margin:22px 0 10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;font-size:18px;font-weight:700;color:#ff4d2d;', section.heading));
     for (const row of section.rows) {
       const [head, ...details] = String(row).split('\n');
       const item = el('div', 'display:flex;gap:10px;margin:0 0 8px;font-size:14px;line-height:1.45;');
       item.appendChild(el('span', 'flex:none;', '•'));
       const body = el('div', 'min-width:0;overflow-wrap:anywhere;');
       body.appendChild(el('div', '', head));
-      details.forEach((d) => body.appendChild(el('div', 'font-size:12.5px;color:#6b625e;', d)));
+      details.forEach((d) => body.appendChild(el('div', 'font-size:12.5px;color:#475569;', d)));
       item.appendChild(body);
       blocks.push(item);
     }
@@ -262,7 +262,7 @@ async function drawAsPictures(doc, model) {
     const h = doc.internal.pageSize.getHeight();
 
     for (let i = 0; i < sheets.length; i++) {
-      sheets[i].appendChild(el('div', `position:absolute;left:${SHEET.pad}px;bottom:28px;font-size:11px;color:#6b625e;`, `campbuddy.club  ·  ${i + 1} / ${sheets.length}`));
+      sheets[i].appendChild(el('div', `position:absolute;left:${SHEET.pad}px;bottom:28px;font-size:11px;color:#475569;`, `campbuddy.club  ·  ${i + 1} / ${sheets.length}`));
       const canvas = await html2canvas(sheets[i], { backgroundColor: '#ffffff', scale: SHEET.scale, logging: false, width: SHEET.w, height: SHEET.h, windowWidth: SHEET.w });
       if (i > 0) doc.addPage();
       doc.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, w, h);

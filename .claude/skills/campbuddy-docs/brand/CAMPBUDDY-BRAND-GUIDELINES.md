@@ -55,29 +55,40 @@ mirror. `npm run brand` (`tools/brand-check.mjs`) fails when a mirror drifts.
 - **Never:** stretch, squash, rotate, recolour, outline, add shadows/glows, retype the wordmark, put it on a busy image without a plate.
 - The event's own logo may sit **next to** CampBuddy's (event pages, posts), never inside or over it.
 
-## 3. Colour — "Campfire Daylight"
+## 3. Colour — "Daylight 2.0" (owner, 27 Oct 2026)
 
-Warm paper ground, ink text, **one** maroon brand voice; the logo's wine and
-ochre are its partners. Approximate share of a screen:
-paper 56% · ink 20% · maroon 12% · wine 5% · ochre 4% · role colours 3%.
+Warm paper ground, slate ink text, **one** coral brand voice; amber is its gradient partner and
+gold its highlight. Approximate share of a screen:
+paper 56% · ink 20% · coral 12% · amber 5% · gold 4% · role colours 3%.
+The source of every value is `resources/scss/abstracts/_variables.scss`; `npm run brand` fails when
+this table, the admin theme, the canvas tokens, the app or the server defaults say otherwise.
 
-| Token | Hex | Use |
+| Token | Hex | Use (contrast measured on paper unless noted) |
 | --- | --- | --- |
-| `--color-bg` / `paper` | `#FFFAF4` | Page ground |
-| `--color-bg-soft` / `paper-soft` | `#FFF0DF` | Soft bands, selected rows, app background |
+| `--paper` / `paper` | `#FAFAFD` | Page ground, chips |
+| `--paper-soft` / `paper-soft` | `#FFF7ED` | Soft bands, selected rows, app background |
 | `--color-surface-card` | `#FFFFFF` | Cards, sheets, inputs |
-| `--color-line` | `#EADFD6` | Borders, dividers |
-| `--color-text` / `ink` | `#231F20` | Text, deep bands (5.73:1 … 16.3:1) |
-| `--color-text-muted` | `#6B625E` | Secondary copy (5.7:1 on paper) |
-| `--color-text-subtle` | `#7A706B` | Meta, captions (4.6:1 on paper) |
-| `--color-primary` / `maroon` | `#C33A19` | Brand, links, primary buttons (white label 5.3:1) |
-| `--color-primary-dark` | `#A12F14` | Hover / pressed primary |
-| `--color-wine` | `#721313` | Gradient partner (logo wine): `--gradient-brand` = maroon → wine, 135° |
-| `--color-ochre` / `gold` | `#E39D1C` | **Light only** — highlights on ink, glows, waves, stars. Never text on paper (2.2:1). |
-| `--color-teal` | `#047A7C` | Role: sessions / schedule / "now" (4.96:1) |
-| `--color-navy` | `#0D2343` | Role: events / travel; alternative deep band |
-| `--color-success` | `#1F7A4D` | Done, saved, checked in |
-| `--color-danger` | `#B3261E` | Errors, destructive actions, LIVE badges |
+| `--line` / `line` | `#E2E8F0` | Borders, dividers |
+| `--ink` / `ink` | `#0F172A` | Text, deep bands (17.1:1) |
+| `--muted` / `muted` | `#475569` | Secondary copy (7.3:1) |
+| `--subtle` / `subtle` | `#64748B` | Meta, captions (4.6:1) |
+| `--brand-primary` / `maroon` | `#FF4D2D` | Electric Fire Coral: brand, primary buttons, icons. **White label 3.3:1 and coral text 3.2:1 — below 4.5:1 for small text** (see the note below) |
+| `maroon-dark` | `#E03616` | Hover / pressed primary (white label 4.5:1 at 18px+ bold only) |
+| `--wine` / `wine` | `#EA580C` | Radiant Amber, the gradient partner: `--gradient-brand` = coral → amber, 135° |
+| `--gold` / `gold` | `#D97706` | Selected chips (ink on gold 5.6:1), stars, highlights. Never text on paper (3.1:1). Glows use Sunny Gold `#F59E0B` |
+| `--teal` / `teal` | `#2563EB` | Tech Indigo — role: sessions / schedule / "now" (5.0:1) |
+| `--navy` / `navy` | `#1E293B` | Role: events / travel; alternative deep band |
+| `--success` / `success` | `#10B981` | Done, saved, checked in — as a fill or icon only (2.4:1 as text) |
+| `--danger` / `danger` | `#EF4444` | Errors, destructive actions, LIVE badges (3.6:1 as text) |
+| `--brand-text` | `#D33417` | Coral for **small text** and small white-on-coral chips: links, the active tab, badges (4.7:1 on paper, white on it 4.9:1) |
+| `--danger-text` | `#DC2626` | Danger as text (required-field stars, Delete labels) |
+| `--success-text` | `#047857` | Success as text ("DPDP Act 2023 Compliant", Free tags) |
+
+**Contrast rule (30 Oct 2026 audit, 6 widths):** Daylight 2.0's coral, success and danger are bright. They stay
+for fills, buttons, gradients, icons and large type; **small text uses the `-text` shade** (same hue, deep enough
+for WCAG AA 4.5:1). The app does the same by itself: `Brand.primaryText` deepens whatever primary the
+server sends until it reaches 4.6:1.
+The Camp Card keeps its own badge palette (`components/_camp-card.scss`, `CampCardFaces.kt`).
 
 - Every text colour reaches **4.5:1** on its ground (3:1 for text ≥ 24px and icons). Check hover, focus, active and disabled too.
 - Badges: a soft tint of the role colour (≈10%) + the role colour as text.

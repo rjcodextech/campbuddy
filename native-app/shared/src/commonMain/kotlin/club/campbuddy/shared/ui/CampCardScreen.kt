@@ -216,7 +216,7 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
                 }
             }
         }
-        note?.let { n -> item { Text(n, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.SemiBold)) } }
+        note?.let { n -> item { Text(n, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.SemiBold)) } }
 
         // ---- Edit Camp Card ----
         item {
@@ -447,7 +447,7 @@ private fun TagInput(tags: List<String>, onChange: (List<String>) -> Unit) {
                         modifier = Modifier.fillMaxWidth().semantics { contentDescription = "Add an interest" },
                     )
                 }
-                if (text.isNotBlank()) Text("Add", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary), modifier = Modifier.clickable(role = Role.Button) { add(text); text = "" }.padding(8.dp))
+                if (text.isNotBlank()) Text("Add", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText), modifier = Modifier.clickable(role = Role.Button) { add(text); text = "" }.padding(8.dp))
             }
         }
         Text("${tags.size} of ${CampCard.MAX_INTERESTS} added. Press Enter or comma after each one.", style = MaterialTheme.typography.bodySmall)
@@ -459,7 +459,7 @@ private fun TagInput(tags: List<String>, onChange: (List<String>) -> Unit) {
                         .clickable(role = Role.Button) { add(s) }.padding(horizontal = 14.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("+", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold))
+                    Text("+", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
                     Text(s, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
                 }
             }

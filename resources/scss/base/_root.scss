@@ -24,6 +24,9 @@
     --gradient-brand: linear-gradient(135deg, #{v.$color-maroon}, #{v.$color-wine});
     --font-display: #{v.$font-display};
     --shadow-focus: #{v.$shadow-focus};
+    --brand-text: #{v.$color-brand-text};
+    --danger-text: #{v.$color-danger-text};
+    --success-text: #{v.$color-success-text};
 
     // Modern Design System Tokens (Awwwards-grade tactile depth & micro-physics)
     --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);

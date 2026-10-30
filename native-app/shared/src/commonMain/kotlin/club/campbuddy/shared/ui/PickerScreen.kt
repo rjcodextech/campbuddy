@@ -209,7 +209,7 @@ fun PickerScreen(
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(words("picker.kicker").uppercase(), style = MaterialTheme.typography.labelLarge.copy(color = brand.primary, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold))
+                    Text(words("picker.kicker").uppercase(), style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText, letterSpacing = 1.5.sp, fontWeight = FontWeight.Bold))
                     Text(words("picker.title"), style = MaterialTheme.typography.headlineSmall.copy(fontSize = 28.sp, lineHeight = 32.2.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.28).sp))
                     Text(words("picker.lead"), style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -218,7 +218,7 @@ fun PickerScreen(
                                 Modifier.background(brand.peach, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 8.dp),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
-                                Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+                                Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
                                 Text(words(key), style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
                             }
                         }
@@ -326,7 +326,7 @@ private fun HeroOrbit(talks: String, people: String, reminders: String, campCard
                 .shadow(8.dp, RoundedCornerShape(24.dp), clip = false).background(Color.White, RoundedCornerShape(24.dp)).border(2.dp, brand.peach, RoundedCornerShape(24.dp)),
             contentAlignment = Alignment.Center,
         ) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(76.dp)) }
-        listOf(Triple("coffee", Color(0xFFE39D1C), 0f), Triple("map-pin", Color(0xFF049395), 180f)).forEach { (icon, tint, offset) ->
+        listOf(Triple("coffee", brand.accent, 0f), Triple("map-pin", brand.primary, 180f)).forEach { (icon, tint, offset) ->
             val angle = (travel + offset) * (PI.toFloat() / 180f)
             Box(
                 Modifier.offset(ringRadius * cos(angle), ringRadius * sin(angle)).size(30.dp).shadow(3.dp, CircleShape, clip = false).background(Color.White, CircleShape),
@@ -376,13 +376,13 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
-    // A finished WordCamp gets the website's cool teal wash and a "Completed" pill, so it reads as done.
+    // A finished WordCamp, as the website's .event-card--completed: white, a fainter line, the same coral
+    // call to action, and a "Completed" pill so it reads as done.
     val done = event.completed
-    val teal = Color(0xFF049395)
-    val fill = if (done) androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.07f) else brand.surface
-    val edge = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.30f) else brand.line
-    val divider = if (done) androidx.compose.ui.graphics.lerp(brand.line, teal, 0.22f) else brand.line
-    val cta = if (done) androidx.compose.ui.graphics.lerp(brand.ink, teal, 0.70f) else brand.primary
+    val fill = if (done) Color.White else brand.surface
+    val edge = if (done) brand.ink.copy(alpha = 0.08f) else brand.line
+    val divider = if (done) brand.ink.copy(alpha = 0.06f) else brand.line
+    val cta = brand.primary
     val photos = event.memories?.photos?.takeIf { it.isNotBlank() }
     val videos = event.memories?.videos?.takeIf { it.isNotBlank() }
     Column(
@@ -397,15 +397,17 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
             }
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 datesText(event.startsOn, event.endsOn)?.let {
-                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.67.sp, fontSize = 12.sp))
+                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.67.sp, fontSize = 12.sp))
                 }
                 Text(event.name, style = MaterialTheme.typography.titleMedium)
+                // The website's .event-card__status: a quiet grey pill, the icon in coral.
                 if (done) Row(
-                    Modifier.padding(top = 4.dp).background(androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.14f), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+                    Modifier.padding(top = 4.dp).background(brand.ink.copy(alpha = 0.05f), RoundedCornerShape(50))
+                        .border(1.dp, brand.ink.copy(alpha = 0.07f), RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 3.dp),
                     horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    LineIcon("party", cta, size = 13.dp)
-                    Text("Completed", style = MaterialTheme.typography.labelMedium.copy(color = cta, fontWeight = FontWeight.Bold))
+                    LineIcon("party", brand.primary, size = 13.dp)
+                    Text("Completed", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold))
                 }
             }
         }
@@ -422,7 +424,7 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
         if (photos != null || videos != null) {
             Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
             Row(
-                Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.lerp(brand.surface, teal, 0.08f)),
+                Modifier.fillMaxWidth().background(Color(0xD9F8FAFC)),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (photos != null) {
@@ -510,7 +512,7 @@ private fun CountryFilter(countries: List<String>, events: List<EventCard>, chos
                 horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
             ) {
                 LineIcon("x", brand.primary, size = 14.dp)
-                Text("Show all", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+                Text("Show all", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
             }
         }
     }

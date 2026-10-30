@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.TextStyle
 import org.jetbrains.compose.resources.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -48,6 +49,28 @@ class Brand(theme: ThemeConfig) {
     val danger = color(theme.danger, 0xFFEF4444)
     val success = color(theme.success, 0xFF10B981)
     val radius = theme.radius.coerceIn(0, 28)
+
+    /**
+     * The primary colour for small text (labels, links, the active tab): the same hue, deepened just enough
+     * for WCAG AA 4.5:1 on the page (the website's --brand-text, #D33417 for the default coral). Fills,
+     * buttons and icons keep [primary].
+     */
+    val primaryText: Color = readable(primary, surface)
+
+    private fun readable(c: Color, ground: Color): Color {
+        var x = c
+        repeat(24) {
+            if (contrast(x, ground) >= 4.6f) return x
+            x = androidx.compose.ui.graphics.lerp(x, Color.Black, 0.04f)
+        }
+        return x
+    }
+
+    private fun contrast(a: Color, b: Color): Float {
+        val la = a.luminance() + 0.05f
+        val lb = b.luminance() + 0.05f
+        return if (la > lb) la / lb else lb / la
+    }
 
     private fun color(hex: String, fallback: Long): Color {
         val value = hex.removePrefix("#").takeIf { it.length == 6 }?.toLongOrNull(16)
@@ -108,16 +131,17 @@ fun CampBuddyTheme(words: Words, content: @Composable () -> Unit) {
     val shape = RoundedCornerShape(brand.radius.dp)
     val family = poppinsFamily()
     val display = balooFamily()
-    // The website's own sizes (measured on the live site): section/page title 16.8 w800, card title 18 w700,
-    // body 16 / 14, small 13.12, badge 12 w700. Buttons are 16 w700 (compact 14 w700). Titles in Baloo 2.
+    // The website's own sizes, measured on the PWA at phone width (Daylight 2.0, 30 Oct 2026): section/page
+    // title Baloo 2 28 w800 (line 32.2, -0.02em), its line under it 15.2; card title Baloo 18 w800; body 16 / 14,
+    // small 13.12, badge 12 w700; buttons 14.4 w600 (.btn), chips 14 w600.
     val typography = Typography(
-        headlineSmall = style(display, 17, FontWeight.ExtraBold, 22, brand.ink).copy(fontSize = 16.8.sp, lineHeight = 21.84.sp),
-        titleLarge = style(display, 18, FontWeight.Bold, 24, brand.ink),
+        headlineSmall = style(display, 28, FontWeight.ExtraBold, 32, brand.ink).copy(lineHeight = 32.2.sp, letterSpacing = (-0.56).sp),
+        titleLarge = style(display, 18, FontWeight.ExtraBold, 24, brand.ink).copy(lineHeight = 24.3.sp),
         titleMedium = style(family, 16, FontWeight.Bold, 24, brand.ink),
         bodyLarge = style(family, 16, FontWeight.Normal, 24, brand.ink),
         bodyMedium = style(family, 14, FontWeight.Normal, 21, brand.ink),
         bodySmall = style(family, 13, FontWeight.Normal, 20, brand.muted).copy(fontSize = 13.12.sp, lineHeight = 19.68.sp),
-        labelLarge = style(family, 14, FontWeight.Bold, 21, Color.Unspecified),
+        labelLarge = style(family, 14, FontWeight.SemiBold, 18, Color.Unspecified).copy(fontSize = 14.4.sp),
         labelMedium = style(family, 12, FontWeight.Bold, 18, brand.muted),
     )
 

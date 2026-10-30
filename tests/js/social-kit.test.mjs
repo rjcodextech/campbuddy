@@ -42,7 +42,7 @@ test('the palette comes from the logo: all four colours', () => {
 });
 
 test('text colour, names, share links, card headline', () => {
-  assert.equal(textOn('#fff8ee'), '#231f20');
+  assert.equal(textOn('#fff8ee'), '#0f172a', 'dark text is the brand ink (Daylight 2.0)');
   assert.equal(textOn('#0c2343'), '#ffffff');
   assert.equal(textOn('#0c2343', '#231f20', '#fff8ee'), '#fff8ee', 'light text is the brand light colour, not white');
   assert.equal(slugify('Aachal Pardeshi'), 'aachal-pardeshi');

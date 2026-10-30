@@ -223,7 +223,7 @@
     left: 50%;
     height: 92%;
     aspect-ratio: 1;
-    border: 1.5px dashed rgba(195, 58, 25, 0.28);
+    border: 1.5px dashed rgba(255, 77, 45, 0.28);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     animation: hero-orbit-turn 60s linear infinite;
@@ -260,7 +260,7 @@
         inset: 0;
         z-index: -1;
         border-radius: inherit;
-        border: 2px solid rgba(195, 58, 25, 0.35);
+        border: 2px solid rgba(255, 77, 45, 0.35);
         animation: hero-orbit-ripple 3.2s ease-out infinite;
     }
 
@@ -322,7 +322,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: rgba(195, 58, 25, 0.35);
+            border-color: rgba(255, 77, 45, 0.35);
             box-shadow: 0 10px 24px -12px rgba(92, 26, 27, 0.45);
         }
     }
@@ -521,7 +521,7 @@
     border-radius: v.$radius-full;
     background: #ffffff;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    color: var(--brand-primary);
+    color: var(--brand-text);
     font: inherit;
     font-size: 0.85rem;
     font-weight: 700;
@@ -531,7 +531,7 @@
 
     &:hover {
         transform: translateY(-1.5px);
-        border-color: var(--brand-primary);
+        border-color: var(--brand-text);
         box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
     }
 
@@ -932,15 +932,15 @@
 .hero-stage__card-tag {
     font-size: 0.68rem;
     font-weight: 600;
-    color: #059669;
+    color: var(--success-text);
     background: rgba(16, 185, 129, 0.08);
     padding: 2px 8px;
     border-radius: 4px;
 }
 
 .track-pill {
-    color: var(--brand-primary);
-    background: rgba(195, 58, 25, 0.08);
+    color: var(--brand-text);
+    background: rgba(255, 77, 45, 0.08);
     padding: 3px 9px;
     border-radius: 6px;
     font-size: 0.72rem;
@@ -983,7 +983,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(195, 58, 25, 0.28);
+    box-shadow: 0 2px 6px rgba(255, 77, 45, 0.28);
     border: 1.5px solid rgba(255, 255, 255, 0.95);
 
     .line-icon {
@@ -1001,7 +1001,7 @@
     font-size: 0.8125rem;
     font-weight: 500;
     background: rgba(255, 240, 223, 0.9);
-    border: 1px solid rgba(195, 58, 25, 0.18);
+    border: 1px solid rgba(255, 77, 45, 0.18);
     padding: 4px 10px;
     border-radius: v.$radius-full;
     line-height: 1.35;
@@ -1024,7 +1024,7 @@
     gap: 6px;
     font-size: 0.8rem;
     font-weight: 700;
-    color: var(--brand-primary);
+    color: var(--brand-text);
     text-decoration: none;
     padding: 6px 12px;
     min-height: 34px;
@@ -1042,7 +1042,7 @@
     }
 
     &:hover {
-        background: rgba(195, 58, 25, 0.08);
+        background: rgba(255, 77, 45, 0.08);
 
         .hero-stage__arrow {
             transform: translateX(3px);
@@ -1070,7 +1070,7 @@
         width: 34px;
         height: 34px;
         border-radius: 8px;
-        background: rgba(195, 58, 25, 0.08);
+        background: rgba(255, 77, 45, 0.08);
         color: var(--brand-primary);
         display: flex;
         align-items: center;
@@ -1108,7 +1108,7 @@
         padding: 3px 7px;
         border-radius: 4px;
         background: #ecfdf5;
-        color: #059669;
+        color: var(--success-text);
         border: 1px solid rgba(16, 185, 129, 0.2);
         white-space: nowrap;
     }
@@ -1722,8 +1722,8 @@
     height: 36px;
     min-height: 36px;
     border-radius: 50%;
-    background: var(--paper, #fffaf4);
-    border: 1px solid var(--line, #eadfd6);
+    background: var(--paper, #fafafd);
+    border: 1px solid var(--line, #e2e8f0);
     transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 
     &::after {

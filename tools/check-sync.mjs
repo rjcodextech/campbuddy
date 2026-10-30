@@ -8,8 +8,9 @@ import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
 const env = { ...process.env };
-const wamp = 'C:/wamp64/bin/php/php8.3.28/extras/ssl/openssl.cnf';
-if (!env.OPENSSL_CONF && existsSync(wamp)) env.OPENSSL_CONF = wamp; // local Windows PHP needs it for key tests
+// Local Windows PHP needs it for key tests. Whichever WAMP PHP is installed (8.3.28 was replaced by 8.3.35).
+const wamp = ['8.3.35', '8.3.28'].map((v) => `C:/wamp64/bin/php/php${v}/extras/ssl/openssl.cnf`).find((p) => existsSync(p));
+if (!env.OPENSSL_CONF && wamp) env.OPENSSL_CONF = wamp;
 
 const checks = [
   { layer: 'Brand', name: 'Colours, fonts and corners match CAMPBUDDY-BRAND-GUIDELINES.md (_variables.scss mirrors)', cmd: 'node', args: ['tools/brand-check.mjs'] },

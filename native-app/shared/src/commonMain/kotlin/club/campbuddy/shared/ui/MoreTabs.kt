@@ -291,7 +291,7 @@ fun ContributeTab(slug: String) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(team.name, style = MaterialTheme.typography.titleMedium)
                     Text(team.description, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                    if (where.isNotBlank()) Text("Table: $where", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.SemiBold))
+                    if (where.isNotBlank()) Text("Table: $where", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.SemiBold))
                 }
             }
         }
@@ -300,7 +300,7 @@ fun ContributeTab(slug: String) {
     open?.let { team ->
         val where = whereText(byTeam[team.id].orEmpty())
         Sheet(team.name, onClose = { open = null }, actions = { SheetActions("Got it", { open = null }) }) {
-            Text(if (team.technical) "TECHNICAL BACKGROUND HELPS" else "NO TECHNICAL BACKGROUND NEEDED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+            Text(if (team.technical) "TECHNICAL BACKGROUND HELPS" else "NO TECHNICAL BACKGROUND NEEDED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
             Text(team.description, style = MaterialTheme.typography.bodyLarge)
             Text("Who it suits", style = MaterialTheme.typography.titleMedium)
             Text(team.whoItSuits, style = MaterialTheme.typography.bodyMedium)
@@ -434,7 +434,7 @@ fun ContributeTab(slug: String) {
                                                 Text(
                                                     table.place,
                                                     style = MaterialTheme.typography.labelSmall.copy(
-                                                        color = brand.primary,
+                                                        color = brand.primaryText,
                                                         fontWeight = FontWeight.SemiBold
                                                     )
                                                 )
@@ -520,7 +520,7 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                             ) {
                                 Text(
                                     lead.name.take(1).uppercase(),
-                                    style = MaterialTheme.typography.titleMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold)
+                                    style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold)
                                 )
                             }
                         }
@@ -557,7 +557,7 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
                         Text(
                             desig,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                color = brand.primary,
+                                color = brand.primaryText,
                                 fontWeight = FontWeight.Medium
                             )
                         )
@@ -798,7 +798,7 @@ private fun SponsorList(slug: String) {
                 tiers.forEach { (tier, list) ->
                     item(key = "tier-$tier") {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            if (tier.isNotBlank()) Text(tier.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                            if (tier.isNotBlank()) Text(tier.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
                             FlowRow(maxItemsInEachRow = 2, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 list.forEach { sponsor ->
                                     val key = tier.lowercase()
@@ -854,7 +854,7 @@ private fun DealList(slug: String) {
                     Modifier.size(48.dp).background(Color.White, Radii.input).border(1.dp, brand.line, Radii.input).padding(1.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    RemoteImage(deal.logo, Modifier.size(44.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary)) }
+                    RemoteImage(deal.logo, Modifier.size(44.dp)) { Text((deal.brand.ifBlank { deal.title }).take(1).uppercase(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primaryText)) }
                 }
                 Column(Modifier.weight(1f)) {
                     Text(deal.brand.ifBlank { deal.title }, style = MaterialTheme.typography.titleMedium)
@@ -863,7 +863,7 @@ private fun DealList(slug: String) {
                 deal.highlight?.takeIf { it.isNotBlank() }?.let { tag ->
                     Text(
                         tag.uppercase(), textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp, lineHeight = 14.sp),
+                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp, lineHeight = 14.sp),
                         modifier = Modifier.widthIn(max = 130.dp).rotate(-3f).background(brand.surface, Radii.input).border(2.dp, brand.primary, Radii.input).padding(horizontal = 7.dp, vertical = 3.dp),
                     )
                 }
@@ -885,7 +885,7 @@ private fun DealList(slug: String) {
                         Modifier.heightIn(min = 40.dp).background(brand.surface, pill).border(1.dp, brand.line, pill).clickable(role = Role.Button) { open = !open }.padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text("Details", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+                        Text("Details", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
                         Box(Modifier.rotate(if (open) 180f else 0f)) { LineIcon("chevron-down", brand.primary, size = 16.dp) }
                     }
                 } else Box(Modifier.height(24.dp))
@@ -1092,7 +1092,7 @@ private fun StealLogo(steal: FreeSteal, size: androidx.compose.ui.unit.Dp) {
 private fun FeaturedTag() {
     val brand = LocalBrand.current
     Text(
-        "FEATURED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp),
+        "FEATURED", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold, letterSpacing = 0.48.sp),
         modifier = Modifier.rotate(-3f).background(brand.surface, Radii.input).border(2.dp, brand.primary, Radii.input).padding(horizontal = 7.dp, vertical = 3.dp),
     )
 }
@@ -1152,7 +1152,7 @@ fun MemoriesTab(slug: String, onHome: () -> Unit = {}) {
                             RemoteImage(e.logo, Modifier.size(96.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(72.dp)) }
                         }
                         Column(Modifier.weight(1f)) {
-                            Text("MEMORIES", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
+                            Text("MEMORIES", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
                             Text(e.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
                             heroDates(e.startsOn, e.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
                         }

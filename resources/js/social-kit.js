@@ -105,7 +105,7 @@ function contrast(a, b) {
 }
 
 /** The light or the dark brand colour, whichever reads better on `background`. */
-export function textOn(background, dark = '#231f20', light = '#ffffff') {
+export function textOn(background, dark = '#0f172a', light = '#ffffff') {
   return contrast(background, dark) >= contrast(background, light) ? dark : light;
 }
 
@@ -283,7 +283,7 @@ function brandLockup() {
     c.height = h;
     const x = c.getContext('2d');
     x.drawImage(cb, 0, 0);
-    x.fillStyle = 'rgba(35,31,32,0.28)';
+    x.fillStyle = 'rgba(15, 23, 42,0.28)';
     x.fillRect(cb.width + gap, h * 0.18, 4, h * 0.64);
     x.drawImage(wps, cb.width + gap * 2 + 4, (h - wh) / 2, ww, wh);
     return c;

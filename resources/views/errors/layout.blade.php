@@ -15,7 +15,7 @@
     error). No app bundle here, so just the tag. --}}
     @include('attendee.partials.analytics')
     <style>
-        :root { --ink:#2b1a14; --muted:#6b5a52; --paper:#fffaf4; --line:#eaded3; --brand:#c33a19; --brand-dark:#8f2a12; }
+        :root { --ink:#0f172a; --muted:#475569; --paper:#fafafd; --line:#e2e8f0; --brand:#ff4d2d; --brand-dark:#e03616; }
         * { box-sizing: border-box; }
         body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px;
                font-family: Poppins, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--paper); color:var(--ink); }

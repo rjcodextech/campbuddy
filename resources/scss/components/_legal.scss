@@ -73,7 +73,7 @@
     }
 
     &.is-active {
-        background: var(--brand-primary);
+        background: var(--brand-text);
         color: #ffffff;
         box-shadow: 0 2px 6px rgba(255, 77, 45, 0.25);
 
@@ -95,7 +95,7 @@
     align-items: center;
     gap: 6px;
     background: rgba(16, 185, 129, 0.1);
-    color: var(--success);
+    color: var(--success-text);
     border: 1px solid rgba(16, 185, 129, 0.25);
     padding: 4px 10px;
     border-radius: 9999px;
@@ -435,7 +435,7 @@
     }
 
     a {
-        color: var(--brand-primary);
+        color: var(--brand-text);
         font-weight: 600;
         text-decoration: underline;
         text-underline-offset: 2px;

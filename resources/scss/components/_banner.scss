@@ -20,15 +20,15 @@
         left: 0;
         bottom: 0;
         width: 4px;
-        background-color: var(--banner-accent, var(--color-primary, #c33a19));
+        background-color: var(--banner-accent, var(--color-primary, #ff4d2d));
     }
 
     &--info {
         --banner-bg: #fff5ee;
         --banner-border: #f7d5c1;
-        --banner-accent: #c33a19;
-        --banner-icon-tint: #c33a19;
-        --banner-badge-bg: rgba(195, 58, 25, 0.12);
+        --banner-accent: #ff4d2d;
+        --banner-icon-tint: #ff4d2d;
+        --banner-badge-bg: rgba(255, 77, 45, 0.12);
     }
 
     &--warning {
@@ -64,8 +64,8 @@
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
-        color: var(--banner-icon-tint, #c33a19);
+        background-color: var(--banner-badge-bg, rgba(255, 77, 45, 0.12));
+        color: var(--banner-icon-tint, #ff4d2d);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -83,8 +83,8 @@
         gap: 6px;
         padding: 4px 10px;
         border-radius: 9999px;
-        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
-        color: var(--banner-icon-tint, #c33a19);
+        background-color: var(--banner-badge-bg, rgba(255, 77, 45, 0.12));
+        color: var(--banner-icon-tint, #ff4d2d);
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 0.05em;
@@ -104,8 +104,8 @@
         height: 28px;
         border-radius: 50%;
         border: none;
-        background-color: var(--banner-badge-bg, rgba(195, 58, 25, 0.12));
-        color: var(--banner-icon-tint, #c33a19);
+        background-color: var(--banner-badge-bg, rgba(255, 77, 45, 0.12));
+        color: var(--banner-icon-tint, #ff4d2d);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -140,7 +140,7 @@
         font-size: 14px;
         font-weight: 500;
         line-height: 1.45;
-        color: var(--color-ink, #231f20);
+        color: var(--color-ink, #0f172a);
     }
 
     &__footer {
@@ -159,7 +159,7 @@
         border-radius: 9999px;
         background-color: #ffffff;
         border: 1px solid var(--banner-border, #f7d5c1);
-        color: var(--banner-icon-tint, #c33a19);
+        color: var(--banner-icon-tint, #ff4d2d);
         font-size: 12px;
         font-weight: 700;
         text-decoration: none;
@@ -176,7 +176,7 @@
             transform: translateY(-1px);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
             text-decoration: none;
-            color: var(--banner-icon-tint, #c33a19);
+            color: var(--banner-icon-tint, #ff4d2d);
         }
 
         svg {

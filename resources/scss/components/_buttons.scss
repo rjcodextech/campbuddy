@@ -109,11 +109,11 @@
     // btn--danger`) rather than being a 4th base style.
     &--danger {
         border-color: var(--danger);
-        color: var(--danger);
+        color: var(--danger-text);
 
         @include m.hover {
-            background: var(--danger);
-            border-color: var(--danger);
+            background: var(--danger-text);
+            border-color: var(--danger-text);
             color: #fff;
         }
     }

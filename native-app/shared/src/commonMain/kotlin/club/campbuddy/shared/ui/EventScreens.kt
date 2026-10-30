@@ -230,7 +230,7 @@ private fun SectionHead(title: String, link: String? = null, onLink: () -> Unit 
     Column(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 10.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(title, style = MaterialTheme.typography.headlineSmall)
-            if (link != null) Text(link, style = MaterialTheme.typography.bodySmall.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.clickable(role = Role.Button, onClick = onLink).padding(vertical = 8.dp))
+            if (link != null) Text(link, style = MaterialTheme.typography.bodySmall.copy(color = brand.primaryText, fontWeight = FontWeight.Bold), modifier = Modifier.clickable(role = Role.Button, onClick = onLink).padding(vertical = 8.dp))
         }
         desc?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
     }
@@ -249,7 +249,7 @@ private fun NowCard(content: @Composable () -> Unit) {
 private fun Guidance(text: String) {
     val brand = LocalBrand.current
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
         Text(text, style = MaterialTheme.typography.bodyMedium)
     }
 }
@@ -259,7 +259,7 @@ private fun LinkBullet(text: String, onClick: () -> Unit) {
     val brand = LocalBrand.current
     Row(Modifier.padding(start = 4.dp, top = 6.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("•", style = MaterialTheme.typography.bodyMedium)
-        Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline), modifier = Modifier.clickable(role = Role.Button, onClick = onClick))
+        Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold, textDecoration = TextDecoration.Underline), modifier = Modifier.clickable(role = Role.Button, onClick = onClick))
     }
 }
 
@@ -289,7 +289,7 @@ private fun StartHere(title: String, slug: String, onGuide: () -> Unit) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold))
                 Text("How the day runs, the words you'll hear, and how to meet people. A 5-minute read.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                Text("Read the guide →", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 4.dp))
+                Text("Read the guide →", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold), modifier = Modifier.padding(top = 4.dp))
             }
         }
         Box(
@@ -374,7 +374,7 @@ private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Inst
                 contentAlignment = Alignment.Center,
             ) { RemoteImage(event.logo, Modifier.size(logo - 8.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(logo * 0.7f)) } }
             Column(Modifier.weight(1f)) {
-                Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
+                Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
                 Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
                 heroDates(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
                 Box(Modifier.padding(top = 8.dp)) { StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During) }
@@ -524,7 +524,7 @@ private fun UpNext(section: SectionConfig, sessions: List<Session>, now: Instant
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("$untimed sessions announced, times still to come", style = MaterialTheme.typography.titleMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                        Text("→", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
                         Text(
                             buildAnnotatedString {
                                 append("Browse them now and star the ones you'd enjoy: ")
@@ -730,7 +730,7 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
                     // 11sp, never cut off: FitTabsRow gives a long label the width it needs.
                     Text(
                         words(tab.title),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primary else brand.muted),
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primaryText else brand.muted),
                         maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp),
                     )
                 }

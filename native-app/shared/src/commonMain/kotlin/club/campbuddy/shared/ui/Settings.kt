@@ -64,7 +64,7 @@ fun DataControls(slug: String) {
             QuietButton("Download my data (JSON)", { env.deps.shareFile("campbuddy-my-data.json", "application/json", env.user.exportJson().encodeToByteArray()); note = "Your data is ready. Choose where to save it." }, Modifier.fillMaxWidth())
             QuietButton("Clear my data on this phone", { asking = true }, Modifier.fillMaxWidth())
             PrivacyLinks()
-            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) }
+            note?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText)) }
         }
     }
 
@@ -108,7 +108,7 @@ fun PrivacyLinks(modifier: Modifier = Modifier, centered: Boolean = false) {
     val brand = LocalBrand.current
     var sheetDoc by remember { mutableStateOf<String?>(null) }
     val style = MaterialTheme.typography.bodyMedium.copy(
-        color = brand.primary,
+        color = brand.primaryText,
         textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
     )
 

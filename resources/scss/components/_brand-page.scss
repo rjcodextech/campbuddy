@@ -245,7 +245,7 @@
         max-width: 70%;
         height: auto;
         padding: 14px;
-        outline: 2px dashed rgba(195, 58, 25, 0.45);
+        outline: 2px dashed rgba(255, 77, 45, 0.45);
     }
 
     figcaption {
@@ -325,9 +325,9 @@
 
     &--busy > span {
         background:
-            radial-gradient(circle at 25% 30%, #e39d1c 0 22%, transparent 23%),
-            radial-gradient(circle at 75% 70%, #047a7c 0 26%, transparent 27%),
-            linear-gradient(135deg, #c33a19, #0d2343);
+            radial-gradient(circle at 25% 30%, #d97706 0 22%, transparent 23%),
+            radial-gradient(circle at 75% 70%, #2563eb 0 26%, transparent 27%),
+            linear-gradient(135deg, #ff4d2d, #1e293b);
     }
 }
 
@@ -668,8 +668,8 @@
 
 .bg-motif__glow {
     background-image:
-        radial-gradient(70% 90% at 100% 0%, rgba(227, 157, 28, 0.45), transparent 70%),
-        radial-gradient(60% 90% at 0% 100%, rgba(195, 58, 25, 0.3), transparent 72%) !important;
+        radial-gradient(70% 90% at 100% 0%, rgba(245, 158, 11, 0.45), transparent 70%),
+        radial-gradient(60% 90% at 0% 100%, rgba(255, 77, 45, 0.3), transparent 72%) !important;
 }
 
 .bg-motif__swell {
@@ -681,7 +681,7 @@
         position: absolute;
         inset: auto 0 0;
         height: 34px;
-        background: linear-gradient(90deg, rgba(227, 157, 28, 0.5), rgba(195, 58, 25, 0.35));
+        background: linear-gradient(90deg, rgba(245, 158, 11, 0.5), rgba(255, 77, 45, 0.35));
         mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
         -webkit-mask: v.$art-wave-soft 0 100% / 100% 100% no-repeat;
     }

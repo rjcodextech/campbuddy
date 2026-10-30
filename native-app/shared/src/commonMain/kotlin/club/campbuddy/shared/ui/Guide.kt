@@ -167,7 +167,7 @@ fun GuideScreen(slug: String, onBack: () -> Unit, onTab: (String) -> Unit = {}) 
                         item {
                             Card {
                                 Column {
-                                    Text("YOUR 15-SECOND INTRO", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                                    Text("YOUR 15-SECOND INTRO", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
                                     Text(guide.students.intro, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp, lineHeight = 24.sp), modifier = Modifier.padding(top = 4.dp, bottom = 8.dp))
                                     Text("End with a question. Then it's their turn to talk, and the conversation keeps going.", style = MaterialTheme.typography.bodySmall)
                                 }
@@ -363,7 +363,7 @@ private fun Accordion(items: List<Pair<String, String>>) {
                     horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(title, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold), modifier = Modifier.weight(1f))
-                    Text(if (open) "×" else "+", style = MaterialTheme.typography.titleLarge.copy(color = brand.primary, fontWeight = FontWeight.Normal, fontSize = 22.sp), modifier = Modifier.padding(start = 12.dp))
+                    Text(if (open) "×" else "+", style = MaterialTheme.typography.titleLarge.copy(color = brand.primaryText, fontWeight = FontWeight.Normal, fontSize = 22.sp), modifier = Modifier.padding(start = 12.dp))
                 }
                 if (open) Text(body, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(bottom = 12.dp))
                 if (i < items.lastIndex) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))

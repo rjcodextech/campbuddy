@@ -136,7 +136,7 @@ fun MeetSheet(slug: String, rosterId: Long, name: String, avatarUrl: String?, su
                     RemoteImage(avatarUrl, Modifier.size(48.dp)) { Image(painterResource(Res.drawable.art_avatar), null, Modifier.size(48.dp)) }
                 }
                 Column(Modifier.weight(1f)) {
-                    Text("ADD TO PEOPLE TO MEET", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                    Text("ADD TO PEOPLE TO MEET", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
                     Text(name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp))
                     if (sub.isNotBlank()) Text(sub, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, color = brand.muted))
                 }
@@ -210,14 +210,14 @@ fun PlanSummary(done: Int, total: Int, onCalendar: () -> Unit = {}) {
                 Text("Your plan", style = MaterialTheme.typography.titleLarge)
                 Text(if (done == total) "All $total done" else "$done of $total done · ${total - done} left", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
             }
-            Text("$pct%", style = MaterialTheme.typography.titleLarge.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold))
+            Text("$pct%", style = MaterialTheme.typography.titleLarge.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
         }
         Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
             if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
         }
         Row(Modifier.clickable(role = Role.Button, onClick = onCalendar).padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             LineIcon("calendar", brand.primary, size = 16.dp)
-            Text("Add all to calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary))
+            Text("Add all to calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
         }
     }
 }
@@ -249,7 +249,7 @@ fun PersonPlanCard(slug: String, m: Meeting, hidden: Boolean) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(m.name, style = MaterialTheme.typography.titleMedium)
-                    if (state.isNotBlank()) Text(state, style = MaterialTheme.typography.labelMedium.copy(color = brand.primary))
+                    if (state.isNotBlank()) Text(state, style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText))
                 }
                 Text(
                     m.at?.let { "At ${it.substringBefore('T')}, ${it.substringAfter('T').take(5)}" } ?: "Any time at the event",
@@ -262,7 +262,7 @@ fun PersonPlanCard(slug: String, m: Meeting, hidden: Boolean) {
                     FlowRow2 {
                         StatusButton("✓ Met", m.status == "met", false) { env.user.saveMeeting(slug, m.copy(status = if (m.status == "met") null else "met")) }
                         StatusButton("✗ Couldn't meet", m.status == "missed", true) { env.user.saveMeeting(slug, m.copy(status = if (m.status == "missed") null else "missed")) }
-                        Text("Edit · Calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primary), modifier = Modifier.clickable(role = Role.Button) { edit = true }.padding(vertical = 10.dp, horizontal = 6.dp))
+                        Text("Edit · Calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText), modifier = Modifier.clickable(role = Role.Button) { edit = true }.padding(vertical = 10.dp, horizontal = 6.dp))
                     }
                 }
             }

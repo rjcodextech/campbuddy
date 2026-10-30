@@ -361,7 +361,7 @@ private fun FeedbackPage(api: ApiClient, token: String, onExpired: () -> Unit) {
                                 Text(s.event ?: "WordCamp", style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp))
                                 Text(plural(s.answers, "answer") + " · " + plural(s.comments, "comment"), style = MaterialTheme.typography.bodySmall)
                             }
-                            Text("★ " + ((s.average * 10).toInt() / 10.0).toString(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primary, fontWeight = FontWeight.ExtraBold))
+                            Text("★ " + ((s.average * 10).toInt() / 10.0).toString(), style = MaterialTheme.typography.titleLarge.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
                         }
                         s.stars.forEachIndexed { i, n ->
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {

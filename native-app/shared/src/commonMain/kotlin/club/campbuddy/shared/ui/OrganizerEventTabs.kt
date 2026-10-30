@@ -503,7 +503,7 @@ private fun AttendeeRow(entry: OrganizerAttendeeEntry, roles: List<KeyLabel>, on
     Card(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.size(42.dp).clip(CircleShape).background(brand.peach), contentAlignment = Alignment.Center) {
-                RemoteImage(entry.avatarUrl, Modifier.size(42.dp)) { Text(entry.name.take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primary)) }
+                RemoteImage(entry.avatarUrl, Modifier.size(42.dp)) { Text(entry.name.take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText)) }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(entry.name, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp))

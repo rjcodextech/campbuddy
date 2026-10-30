@@ -244,7 +244,7 @@ internal fun OrgBottomBar(tabs: List<Triple<String, String, String>>, selected: 
                     Box(Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
                         LineIcon(icon, if (on) brand.primary else brand.muted, size = 20.dp)
                     }
-                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primary else brand.muted), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp))
+                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primaryText else brand.muted), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp))
                 }
             }
         }

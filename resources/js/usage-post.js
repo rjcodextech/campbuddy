@@ -122,7 +122,7 @@ function footPills(ctx, d, assets, y) {
   const url = 'campbuddy.club';
   const uw = ctx.measureText(url).width + h * 0.8;
   pill(W - 80 - uw, uw);
-  ctx.fillStyle = '#231f20';
+  ctx.fillStyle = '#0f172a';
   ctx.textAlign = 'center';
   ctx.fillText(url, W - 80 - uw / 2, y + h / 2 + 11);
   ctx.textAlign = 'left';
@@ -190,7 +190,7 @@ function frame(ctx, d, assets, page, total, title) {
   ctx.restore();
   if (assets.logo) contain(ctx, assets.logo, 90, 90, 114, 114);
   else {
-    ctx.fillStyle = tpl === 'bold' ? '#231f20' : pal.primary;
+    ctx.fillStyle = tpl === 'bold' ? '#0f172a' : pal.primary;
     ctx.font = `900 56px ${FONT}`;
     ctx.textAlign = 'center';
     ctx.fillText(d.event.short.replace(/^WordCamp\s+/i, '').split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase() || 'WC', 147, 168);
@@ -273,7 +273,7 @@ function tiles(ctx, d) {
     const y = top + Math.floor(i / cols) * (th + gap);
     const bg = i % 3 === 0 ? pal.primary : i % 3 === 1 ? pal.secondary : '#ffffff';
     // Words on a tile always read on that tile, whatever the template's ground.
-    const fg = textOn(bg, '#231f20', '#ffffff');
+    const fg = textOn(bg, '#0f172a', '#ffffff');
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.10)';
     ctx.shadowBlur = 24 * RES;
@@ -281,7 +281,7 @@ function tiles(ctx, d) {
     roundRect(ctx, x, y, tw, th, 32);
     ctx.fill();
     ctx.restore();
-    ctx.fillStyle = bg === '#ffffff' ? reelTools.readableOn([pal.primary, d.colors?.primary ?? '#c33a19', '#231f20'], ['#ffffff']) : fg;
+    ctx.fillStyle = bg === '#ffffff' ? reelTools.readableOn([pal.primary, d.colors?.primary ?? '#ff4d2d', '#0f172a'], ['#ffffff']) : fg;
     ctx.font = `900 92px ${FONT}`;
     ctx.fillText(big(t.value), x + 34, y + 106, tw - 68);
     const label = fit(ctx, t.label, tw - 68, 32, 22, 2, 700);

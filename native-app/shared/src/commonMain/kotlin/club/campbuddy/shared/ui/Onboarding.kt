@@ -82,7 +82,7 @@ fun OnboardingCard(onDone: () -> Unit) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Onboarding.summary(done!!).forEach {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold))
+                                Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
                                 Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                             }
                         }
@@ -92,7 +92,7 @@ fun OnboardingCard(onDone: () -> Unit) {
                 !started -> {
                     Text(
                         "Optional · 30 seconds",
-                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold),
                         modifier = Modifier.background(brand.peach, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 2.dp),
                     )
                     Text(words("onboarding.title"), style = MaterialTheme.typography.titleLarge)

@@ -19,7 +19,7 @@
     // The iPhone home indicator sits in this inset, below the tappable
     // area — and in landscape the notch/rounded corners sit at the sides.
     padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    background: rgba(255, 250, 244, 0.92);
+    background: rgba(250, 250, 253, 0.92);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-top: 1px solid rgba(15, 23, 42, 0.08);
@@ -54,7 +54,7 @@
     transition: transform 0.1s ease, color 0.15s ease;
 
     &--active {
-        color: var(--brand-primary);
+        color: var(--brand-text);
     }
 }
 

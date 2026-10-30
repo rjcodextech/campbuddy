@@ -373,7 +373,7 @@
     .wysiwyg-content ol { padding-left: 1.3rem; margin: 6px 0 12px; list-style-type: decimal; }
     .wysiwyg-content li + li { margin-top: 4px; }
     .wysiwyg-content blockquote {
-        border-left: 3px solid #c33a19;
+        border-left: 3px solid #ff4d2d;
         background: #fff8f5;
         padding: 8px 14px;
         margin: 12px 0;
@@ -409,7 +409,7 @@
         background: #fffdfb;
     }
     .wysiwyg-content a {
-        color: #c33a19;
+        color: #ff4d2d;
         text-decoration: underline;
     }
     .wysiwyg-content code {

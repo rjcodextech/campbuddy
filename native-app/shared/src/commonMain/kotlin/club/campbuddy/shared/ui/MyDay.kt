@@ -161,7 +161,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
             }
         }
         item { SearchField(query) { query = it } }
-        message?.let { text -> item { Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary)) } }
+        message?.let { text -> item { Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText)) } }
         if (days.size > 1) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -369,7 +369,7 @@ private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: k
                 val tags = listOfNotNull(session.trackNames.firstOrNull(), type).joinToString(" · ").uppercase()
                 if (live || tags.isNotEmpty()) {
                     Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primary, letterSpacing = 0.72.sp))
+                        if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
                         if (tags.isNotEmpty()) Text(tags, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp, fontWeight = FontWeight.SemiBold))
                     }
                 }

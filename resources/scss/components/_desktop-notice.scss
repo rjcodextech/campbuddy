@@ -13,7 +13,7 @@ dialog.desktop-notice {
     border-radius: 16px;
     overflow: hidden;
     background: var(--paper);
-    box-shadow: 0 40px 80px -30px rgba(35, 31, 32, 0.55);
+    box-shadow: 0 40px 80px -30px rgba(15, 23, 42, 0.55);
 
     &[open] {
         display: grid;
@@ -32,8 +32,8 @@ dialog.desktop-notice {
     justify-content: center;
     padding: v.$space-6;
     background:
-        radial-gradient(circle at 80% 15%, rgba(217, 119, 6, 0.12), transparent 45%),
-        linear-gradient(150deg, #6d2021, #4a1415);
+        radial-gradient(circle at 80% 15%, rgba(255, 77, 45, 0.18), transparent 45%),
+        linear-gradient(150deg, #1e293b, #0f172a);
 
     img {
         width: 100%;

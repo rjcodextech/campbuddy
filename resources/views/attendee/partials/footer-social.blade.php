@@ -3,7 +3,7 @@
     Clean, accessible SVG icon badges for all official channels.
     Phone and WhatsApp are deliberately excluded here for public privacy.
 --}}
-<div class="footer-social-block" style="margin: 20px 0 10px; padding: 18px 14px; background: rgba(0,0,0,0.025); border-radius: 14px; border: 1px solid var(--line, #eadfd6); text-align: center;">
+<div class="footer-social-block" style="margin: 20px 0 10px; padding: 18px 14px; background: rgba(0,0,0,0.025); border-radius: 14px; border: 1px solid var(--line, #e2e8f0); text-align: center;">
     <p style="margin: 0 0 12px; font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted, #706863);">
         Connect with our Community &amp; Updates
     </p>
@@ -11,14 +11,14 @@
     <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 28px; align-items: center;">
         {{-- CampBuddy Channels --}}
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;">
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-ink, #231f20); display: inline-flex; align-items: center; gap: 4px;">
-                <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #c33a19;"></span>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-ink, #0f172a); display: inline-flex; align-items: center; gap: 4px;">
+                <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #ff4d2d;"></span>
                 CampBuddy:
             </span>
             <div style="display: inline-flex; gap: 8px; align-items: center;">
                 {{-- Website --}}
                 <a href="https://campbuddy.club/" target="_blank" rel="noopener noreferrer" title="CampBuddy Website (Live Companion)" aria-label="CampBuddy Website"
-                   class="social-icon-btn" style="color: var(--color-ink, #231f20);">
+                   class="social-icon-btn" style="color: var(--color-ink, #0f172a);">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
                     </svg>
@@ -42,7 +42,7 @@
 
                 {{-- X (Twitter) --}}
                 <a href="https://x.com/CampBuddyClub" target="_blank" rel="noopener noreferrer" title="CampBuddy on X (@CampBuddyClub)" aria-label="CampBuddy X"
-                   class="social-icon-btn" style="color: var(--color-ink, #231f20);">
+                   class="social-icon-btn" style="color: var(--color-ink, #0f172a);">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>
@@ -50,11 +50,11 @@
             </div>
         </div>
 
-        <span style="color: var(--line, #eadfd6); display: inline-block;" aria-hidden="true">|</span>
+        <span style="color: var(--line, #e2e8f0); display: inline-block;" aria-hidden="true">|</span>
 
         {{-- WPSimplified Channels --}}
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center;">
-            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-ink, #231f20); display: inline-flex; align-items: center; gap: 4px;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-ink, #0f172a); display: inline-flex; align-items: center; gap: 4px;">
                 <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #047857;"></span>
                 WPSimplified:
             </span>
@@ -85,7 +85,7 @@
 
                 {{-- X (Twitter) --}}
                 <a href="https://x.com/iwpsimplified" target="_blank" rel="noopener noreferrer" title="WPSimplified on X (@iwpsimplified)" aria-label="WPSimplified X"
-                   class="social-icon-btn" style="color: var(--color-ink, #231f20);">
+                   class="social-icon-btn" style="color: var(--color-ink, #0f172a);">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
                         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                     </svg>

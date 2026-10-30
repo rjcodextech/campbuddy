@@ -24,7 +24,7 @@
 // (attendee/partials/form-field.blade.php builds a text field this way.)
 // Choice chips live in components/_pill.scss.
 
-$form-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
+$form-focus-ring: 0 0 0 3px rgba(255, 77, 45, 0.16);
 
 // ---- Controls ---------------------------------------------------------------
 //
@@ -146,7 +146,7 @@ dialog {
 
 .form-field__req {
     margin-left: 3px;
-    color: var(--danger);
+    color: var(--danger-text);
     text-decoration: none;
 }
 

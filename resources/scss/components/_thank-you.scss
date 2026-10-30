@@ -17,7 +17,7 @@ dialog.thank-you {
     overscroll-behavior: contain;
     background: var(--paper);
     color: var(--ink);
-    box-shadow: 0 40px 80px -30px rgba(35, 31, 32, 0.55);
+    box-shadow: 0 40px 80px -30px rgba(15, 23, 42, 0.55);
 
     &::backdrop {
         background: rgba(35, 20, 20, 0.55);

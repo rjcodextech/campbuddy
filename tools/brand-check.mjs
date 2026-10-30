@@ -106,6 +106,34 @@ for (const view of walk('resources/views')) {
   if (/fonts\.googleapis\.com\/css2\?[^"']*family=(Inter|Poppins|Baloo)/.test(html)) problems.push(`${view}: loads a brand font from Google Fonts (self-host it: resources/css/fonts.css)`);
 }
 
+// The guideline's own colour table (§3) says what the code says — it once kept the old palette for days.
+const guide = read('.claude/skills/campbuddy-docs/brand/CAMPBUDDY-BRAND-GUIDELINES.md');
+const guideHex = (name) => guide.match(new RegExp(`\\| \`--${name}\` / \`[^\`]+\` \\| \`(#[0-9A-Fa-f]{6})\``))?.[1];
+for (const [name, src] of Object.entries({ paper: 'paper', 'paper-soft': 'paperSoft', line: 'line', ink: 'ink', muted: 'muted', subtle: 'subtle', 'brand-primary': 'maroon', wine: 'wine', gold: 'gold', teal: 'teal', navy: 'navy', success: 'success', danger: 'danger' })) {
+  expect('CAMPBUDDY-BRAND-GUIDELINES.md §3', name, guideHex(name), colours[src]);
+}
+
+// The native gradient partner (Components.kt BRAND_WINE) is the web's wine.
+const componentsKt = read('native-app/shared/src/commonMain/kotlin/club/campbuddy/shared/ui/Components.kt');
+const wineKt = componentsKt.match(/val BRAND_WINE = Color\(0xFF([0-9A-Fa-f]{6})\)/)?.[1];
+expect('Components.kt', 'BRAND_WINE', wineKt ? `#${wineKt}` : null, colours.wine);
+
+// No literal of the retired palette (before Daylight 2.0) left in the web's styles, views or scripts.
+// The Camp Card keeps its own badge palette and is not checked.
+const retired = /#c33a19\b|#721313\b|#e39d1c\b|#231f20\b|#fffaf4\b|#eadfd6\b|#6b625e\b|rgba?\(\s*195,\s*58,\s*25\b|rgba?\(\s*35,\s*31,\s*32\b/i;
+const sources = (dir, ext, out = []) => {
+  for (const name of readdirSync(new URL(`../${dir}`, import.meta.url))) {
+    const path = `${dir}/${name}`;
+    if (statSync(new URL(`../${path}`, import.meta.url)).isDirectory()) sources(path, ext, out);
+    else if (ext.test(path) && !/_camp-card(-form)?\.scss$|abstracts\/_variables\.scss$/.test(path)) out.push(path);
+  }
+  return out;
+};
+for (const file of [...sources('resources/scss', /\.scss$/), ...sources('resources/views', /\.blade\.php$/), ...sources('resources/js', /\.js$/), 'public/sw.js']) {
+  const hit = read(file).match(retired);
+  if (hit) problems.push(`${file}: "${hit[0]}" is from the retired palette (use its Daylight 2.0 token)`);
+}
+
 // "Light only" colours (§3): gold is never text on paper.
 for (const file of ['resources/css/app.css']) {
   if (/text-gold\b/.test(read(file))) problems.push(`${file}: gold used as text (2.2:1 on paper)`);

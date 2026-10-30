@@ -305,20 +305,20 @@
         height: 7px;
         border-radius: 50%;
         background: var(--brand-primary);
-        box-shadow: 0 0 0 0 rgba(195, 58, 25, 0.6);
+        box-shadow: 0 0 0 0 rgba(255, 77, 45, 0.6);
         animation: live-dot-pulse 1.8s infinite;
     }
 }
 
 @keyframes live-dot-pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(195, 58, 25, 0.6);
+        box-shadow: 0 0 0 0 rgba(255, 77, 45, 0.6);
     }
     70% {
-        box-shadow: 0 0 0 6px rgba(195, 58, 25, 0);
+        box-shadow: 0 0 0 6px rgba(255, 77, 45, 0);
     }
     100% {
-        box-shadow: 0 0 0 0 rgba(195, 58, 25, 0);
+        box-shadow: 0 0 0 0 rgba(255, 77, 45, 0);
     }
 }
 
