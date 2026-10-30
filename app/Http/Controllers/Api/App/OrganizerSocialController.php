@@ -37,14 +37,14 @@ class OrganizerSocialController extends Controller
             'colors_saved' => (bool) $kit['colorsSaved'],
             'posts' => collect($kit['posts'])->map(fn (array $p) => [
                 'key' => $p['key'], 'label' => $p['label'] ?? $p['key'], 'kicker' => $p['kicker'] ?? '', 'headline' => $p['headline'] ?? '',
-                'line' => $p['line'] ?? '', 'body' => $p['body'] ?? 'none', 'caption' => $p['caption'] ?? '', 'days' => $p['days'] ?? null,
+                'line' => $p['line'] ?? '', 'body' => $p['body'] ?? 'none', 'caption' => $p['caption'] ?? '', 'captions' => $p['captions'] ?? null, 'days' => $p['days'] ?? null,
                 'picker' => $p['picker'] ?? null,
                 'link' => SocialKit::link($event, $p['key']),
             ])->values(),
             'people' => collect($kit['people'])->map(fn (array $p) => [
                 'id' => $p['id'], 'name' => $p['name'], 'photo' => $p['photo'], 'roles' => $p['role_labels'] ?? [],
                 'role_keys' => $p['roles'] ?? [], 'has_card' => ! empty($p['card']), 'card_role' => $p['card']['role'] ?? null,
-                'talk' => $p['talk'] ?? null, 'caption' => $p['caption'] ?? '', 'link' => $p['link'] ?? null,
+                'talk' => $p['talk'] ?? null, 'caption' => $p['caption'] ?? '', 'captions' => $p['captions'] ?? null, 'link' => $p['link'] ?? null,
             ])->values(),
             'speakers' => $kit['speakers'],
             'sponsors' => $kit['sponsors'],

@@ -29,7 +29,8 @@
 // recorded in real time instead (MediaRecorder).
 
 import { ArrayBufferTarget, Muxer } from 'mp4-muxer';
-import { contrastRatio, daysToGo, drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaption } from './social-kit.js';
+import { contrastRatio, daysToGo, drawEventPost, planPost, postContent, qrLink, reelTools as T, socialContext as C, spotlightCaptions } from './social-kit.js';
+import { asCaptions, captionBox, captionsText, forReel, makeCaptions, names, networkLabel } from './social-captions.js';
 import { loadBrandFonts } from './brand.js';
 import { zipStore } from './zip-store.js';
 
@@ -2532,7 +2533,8 @@ export function reelList(kit, posts) {
     key: `post-${post.key}`,
     title: post.label,
     mood: POST_MOODS[post.key] ?? 'bright',
-    caption: post.caption,
+    // The post's captions as they stand, the Instagram one pointing to the QR at the reel's end.
+    captions: () => forReel(post.captions?.() ?? asCaptions(post.caption?.() ?? '')),
     build: (style, colors) => {
       const content = post.content();
       const pages = planPost(content, '1080x1920', style, colors);
@@ -2546,7 +2548,7 @@ export function reelList(kit, posts) {
       key: `spotlight-${session.id}`,
       title: `Spotlight: ${session.title}`,
       mood: 'drive',
-      caption: () => spotlightCaption(kit, session),
+      captions: () => spotlightCaptions(kit, session, 'reel'),
       build: () => ({ kind: 'session', session, label: 'Session spotlight', utm: `spotlight-${session.id}` }),
     });
   });
@@ -2562,7 +2564,7 @@ export function reelList(kit, posts) {
         key: `${role.replace('_', '-')}${chunks.length > 1 ? `-${i + 1}` : ''}`,
         title: `${title} (${group.length})`,
         mood,
-        caption: () => groupCaption(role, kit, group),
+        captions: () => groupCaptions(role, kit, group, { first, total: role === 'speaker' ? people.length : group.length }),
         build: () => ({ kind: 'people', role, label, people: group, first, total: role === 'speaker' ? people.length : group.length, utm: `people-${role.replace('_', '-')}` }),
       });
     });
@@ -2630,11 +2632,33 @@ const PEOPLE_HOOKS = {
   table_lead: (n) => (n === 1 ? 'Meet the *table lead*' : `Meet the *${n} table leads*`),
 };
 
-function groupCaption(role, kit, group) {
+// A people reel's caption opens with who and how many, then names every one of them, whole.
+const GROUP_HOOKS = {
+  organizer: (n, at) => (n === 1 ? `Meet the organizer of ${at}.` : `Meet the ${n} organizers of ${at}.`),
+  speaker: (n, at, spec) => (spec.total > n ? `Meet the speakers of ${at}, ${spec.first + 1}–${spec.first + n} of ${spec.total}.` : (n === 1 ? `Meet the speaker of ${at}.` : `Meet the ${n} speakers of ${at}.`)),
+  volunteer: (n, at) => (n === 1 ? `Meet the volunteer of ${at}.` : `Meet the ${n} volunteers of ${at}.`),
+  media_partner: (n, at) => (n === 1 ? `Meet the media partner of ${at}.` : `Meet the ${n} media partners of ${at}.`),
+  table_lead: (n, at) => (n === 1 ? `Meet the Contributor Day table lead of ${at}.` : `Meet the ${n} Contributor Day table leads of ${at}.`),
+};
+const GROUP_BODIES = {
+  organizer: (short) => `The people making ${short} happen. Say thanks when you see them!`,
+  speaker: () => 'Their talks are in the schedule, with a reminder before each one.',
+  volunteer: (short) => `They keep ${short} running. Say thanks when you see them!`,
+  media_partner: (short) => `Follow their coverage of ${short}.`,
+  table_lead: () => 'Join a table and give back to WordPress. Many tables need no coding at all.',
+};
+const GROUP_CTAS = { speaker: 'Save their talks in CampBuddy', table_lead: 'Pick your table in CampBuddy' };
+
+function groupCaptions(role, kit, group, spec = { first: 0, total: group.length }) {
   const short = kit.short ?? kit.event.name;
-  const names = group.map((p) => p.name).join(', ');
-  const [title, line] = GROUP_WORDS[role](short);
-  return `${title} of ${kit.event.name}: ${names}.\n\n${line}. Open ${kit.event.name} in CampBuddy, free and without a sign-up.\n\n${kit.event.hashtags ?? ''} #CampBuddy #WPSimplified`.trim();
+  return makeCaptions({
+    hook: GROUP_HOOKS[role](group.length, kit.event.name, spec),
+    extra: `${names(group.map((p) => p.name))}.`,
+    body: GROUP_BODIES[role](short),
+    cta: GROUP_CTAS[role] ?? 'Find them in CampBuddy',
+    link: qrLink(kit.event.qr, `people-${role.replace('_', '-')}`),
+    media: 'reel',
+  }, kit.event.hashtags);
 }
 
 /** The scenes of one reel, its music's mood and its pictures, ready to draw. */
@@ -3254,7 +3278,7 @@ export function initSocialReels() {
     const fast = await canEncode();
     const blob = fast ? await encodeMp4(reel, audio, onProgress) : await recordRealtime(reel, audio, onProgress);
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
-    return { blob, silent: Boolean(reel.silent), name: `${C.kit.event.slug}-reel-${item.key}.${ext}`, caption: typeof item.caption === 'function' ? item.caption() : '' };
+    return { blob, silent: Boolean(reel.silent), name: `${C.kit.event.slug}-reel-${item.key}.${ext}`, captions: item.captionsNow?.() ?? item.captions?.() ?? asCaptions('') };
   };
 
   const guard = async (btn, work) => {
@@ -3340,6 +3364,9 @@ export function initSocialReels() {
   };
   const pickReel = (key) => {
     current = key;
+    // Its captions follow the post's as they stand now (where they weren't edited here).
+    const entry = byKey.get(key);
+    entry?.captions.refresh(entry.item.captions?.() ?? asCaptions(''));
     rows.forEach((row) => { row.hidden = row.dataset.reel !== key; });
     railButtons.forEach((b) => b.setAttribute('aria-current', String(b.dataset.reel === key)));
     startLive();
@@ -3447,7 +3474,7 @@ export function initSocialReels() {
       try {
         localStorage.setItem(store, JSON.stringify({
           hook: hook.value, ownColors: own.checked, colors: Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])), mood: mood.value, pictures: pics.checked,
-          template: tplSel.value, anim: animSel.value, effects: ownFx ? item.effects : undefined,
+          template: tplSel.value, anim: animSel.value, effects: ownFx ? item.effects : undefined, captions: captions.edited(),
         }));
       } catch {
         // Private mode: the edits last this visit.
@@ -3476,7 +3503,24 @@ export function initSocialReels() {
       save(out.blob, out.name);
       say(`“${item.title}” downloaded (${(out.blob.size / 1048576).toFixed(1)} MB)${out.silent ? ', without music: this browser would not play sound here' : ''}.`);
     }));
-    buttons.append(playBtn, makeBtn);
+    // Its captions, one per network (social-captions.js); only the ones edited here are kept.
+    const captions = captionBox({ defaults: item.captions?.() ?? asCaptions(''), edited: saved.captions, onEdit: () => keep(), rows: 6 });
+    item.captionsNow = () => captions.values();
+    const copyBtn = el('button', 'cb-btn cb-btn-secondary cb-btn-sm');
+    copyBtn.type = 'button';
+    const copyLabel = () => { copyBtn.textContent = `Copy for ${networkLabel()}`; };
+    copyLabel();
+    document.addEventListener('caption:network', copyLabel);
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(captions.current());
+        copyBtn.textContent = 'Copied ✓';
+      } catch {
+        copyBtn.textContent = 'Select and copy';
+      }
+      setTimeout(copyLabel, 2000);
+    });
+    buttons.append(playBtn, makeBtn, copyBtn);
     side.append(
       name,
       tplLabel,
@@ -3489,6 +3533,7 @@ export function initSocialReels() {
       swatches,
       moodLabel,
       picsLabel,
+      captions.root,
       buttons,
     );
     const left = el('div', 'flex min-h-0 flex-col items-center justify-center gap-2 bg-paper-soft p-4');
@@ -3497,7 +3542,7 @@ export function initSocialReels() {
     row.append(left, side);
     rows.push(row);
     listEl.append(row);
-    byKey.set(item.key, { item, canvas, status: liveStatus });
+    byKey.set(item.key, { item, canvas, status: liveStatus, captions });
     [hook, ...colorEls].forEach((i) => i.addEventListener('input', () => replay(item.key)));
     [own, pics, animSel, tplSel, ...fxEls].forEach((i) => i.addEventListener('change', () => replay(item.key)));
     mood.addEventListener('change', () => replay(item.key, true));
@@ -3529,7 +3574,7 @@ export function initSocialReels() {
     for (const [i, item] of items.entries()) {
       const out = await make(item, (p) => say(`Reel ${i + 1} of ${items.length}: “${item.title}”… ${Math.round(p * 100)} %`));
       files.push({ name: out.name, data: new Uint8Array(await out.blob.arrayBuffer()) });
-      captions.push(`${out.name}\n${out.caption}\n`);
+      captions.push(`${out.name}\n\n${captionsText(out.captions)}\n`);
     }
     files.push({ name: 'captions.txt', data: new TextEncoder().encode(captions.join('\n')) });
     save(new Blob([zipStore(files)], { type: 'application/zip' }), `${C.kit.event.slug}-reels.zip`);

@@ -67,11 +67,13 @@ class SocialPublisher
     }
 
     /**
-     * Saves the image and calls the webhook.
+     * Saves the image and calls the webhook. `captions`: one per network
+     * (instagram, linkedin, x; SocialCaptions), sent as they are when given.
      *
+     * @param  array<string, string>  $captions
      * @return array{ok: bool, message: string, image_url?: string}
      */
-    public static function publish(Event $event, UploadedFile $image, string $title, string $caption, string $kind, string $by): array
+    public static function publish(Event $event, UploadedFile $image, string $title, string $caption, string $kind, string $by, array $captions = []): array
     {
         if (! self::configured($event) || ! self::allowed((string) $event->social_webhook)) {
             return ['ok' => false, 'message' => 'Set a webhook first.'];
@@ -85,6 +87,7 @@ class SocialPublisher
             'kind' => $kind,
             'title' => $title,
             'caption' => $caption,
+            ...($captions !== [] ? ['captions' => $captions] : []),
             'hashtags' => SocialKit::hashtags($event),
             'image_url' => $imageUrl,
             'sent_by' => $by,

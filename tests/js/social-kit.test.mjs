@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, remoteSources, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, textOn, todayCaption, unphoton } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, remoteSources, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, spotlightCaptions, textOn, todayCaption, todayCaptions, unphoton } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -50,6 +50,9 @@ test('text colour, names, share links, card headline', () => {
   const links = Object.fromEntries(shareLinks('x'.repeat(400), 'https://rajasthan.wordcamp.org/2026'));
   assert.ok(links.LinkedIn.includes(encodeURIComponent('https://rajasthan.wordcamp.org/2026')));
   assert.ok(decodeURIComponent(links.X.split('text=')[1]).length <= 270, 'X text fits');
+  const own = Object.fromEntries(shareLinks({ instagram: 'I', linkedin: 'L https://x.test', x: 'X words' }, 'https://rajasthan.wordcamp.org/2026'));
+  assert.equal(decodeURIComponent(own.X.split('text=')[1]), 'X words', 'X gets its own caption');
+  assert.equal(decodeURIComponent(own.WhatsApp.split('text=')[1]), 'L https://x.test', 'WhatsApp the LinkedIn one, with its link');
   assert.equal(personHeadline({ roles: ['speaker'], role_labels: ['Speaker'] }, { short: 'WordCamp Delhi' }), 'Speaker at WordCamp Delhi');
   assert.equal(personHeadline({ roles: [], role_labels: [] }, { short: 'WordCamp Delhi' }), 'See you at WordCamp Delhi');
 });
@@ -90,6 +93,13 @@ test('captions for a day and a session', () => {
   assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /Up next at WordCamp Test 2026: "Blocks" with Rahul, 10:00 AM in Track 1\./);
   assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /utm_content=spotlight/);
   assert.match(spotlightCaption(kit, kit.schedule.sessions[1]), /CampBuddy/);
+  const day = todayCaptions(kit, '2026-10-03', sessionsOfDay(kit.schedule.sessions, '2026-10-03'));
+  assert.deepEqual(Object.keys(day), ['instagram', 'linkedin', 'x']);
+  assert.ok(!day.instagram.includes('https://'), 'no link on Instagram: the QR');
+  assert.match(day.x, /^Sat 3 Oct at WordCamp Test 2026:\n\n10:00 AM {2}Blocks \(Rahul\)/);
+  const spot = spotlightCaptions(kit, kit.schedule.sessions[1], 'reel');
+  assert.match(spot.instagram, /scan the QR at the end of the reel/);
+  assert.match(spot.x, /#WCTest #CampBuddy #WPSimplified$/);
 });
 
 test('content that does not fit is split over cards, never cut or overlapped', () => {

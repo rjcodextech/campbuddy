@@ -1,7 +1,9 @@
 {{--
     Admin / manager → Event → Social media. Everything is drawn in the browser
     (resources/js/social-kit.js) from App\Support\SocialKit::data(): brand
-    colours, event posts with captions, people cards (one ZIP), and the QR codes.
+    colours, event posts with captions (one each for Instagram, LinkedIn and X,
+    App\Support\SocialCaptions + resources/js/social-captions.js), people
+    cards (one ZIP), and the QR codes.
 
       @include('partials.social-media', ['event' => $event, 'kit' => $kit, 'codes' => $codes, 'colorsUrl' => …,
           'publishUrl' => …|null, 'webhookUrl' => …, 'webhookSet' => bool,
@@ -367,9 +369,10 @@
                                             <label class="cb-label" for="post-{{ $post['key'] }}-line">Line under it</label>
                                             <input id="post-{{ $post['key'] }}-line" type="text" maxlength="90" value="{{ $post['line'] }}" class="cb-input" data-field="line">
                                         </div>
-                                        <div>
+                                        {{-- The caption box (social-captions.js): Instagram / LinkedIn / X, each in its limits. --}}
+                                        <div data-caption-slot>
                                             <label class="cb-label" for="post-{{ $post['key'] }}-caption">Caption</label>
-                                            <textarea id="post-{{ $post['key'] }}-caption" rows="5" class="cb-input text-sm" data-field="caption">{{ $post['caption'] }}</textarea>
+                                            <textarea id="post-{{ $post['key'] }}-caption" rows="5" class="cb-input text-sm" readonly>{{ $post['caption'] }}</textarea>
                                         </div>
                                     </fieldset>
 

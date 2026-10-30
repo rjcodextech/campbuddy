@@ -23,6 +23,7 @@ import QRCode from 'qrcode-generator';
 import { zipStore } from './zip-store.js';
 import { withPngDpi } from './attendee/png-dpi.js';
 import { FONT_DISPLAY, FONT_TEXT, loadBrandFonts } from './brand.js';
+import { asCaptions, captionBox, captionsText, makeCaptions, names, networkLabel, xLength } from './social-captions.js';
 
 // Instagram portrait, square (Instagram, LinkedIn), story / reel cover, X (16:9) and LinkedIn / blog link (1.91:1).
 const SIZES = { '1080x1350': [1080, 1350], '1080x1080': [1080, 1080], '1080x1920': [1080, 1920], '1600x900': [1600, 900], '1200x627': [1200, 627] };
@@ -932,18 +933,38 @@ export function sessionsOfDay(sessions, day) {
   return talks.length >= 3 ? talks : ofDay;
 }
 
-export function todayCaption(kit, day, list) {
+/** A day's captions (social-captions.js): its talks one per line, as many as each network has room for. */
+export function todayCaptions(kit, day, list, media = 'card') {
   const label = kit.schedule.days.find((d) => d.key === day)?.label ?? '';
-  const lines = list.map((s) => `${s.time}  ${s.title}${s.speakers?.length ? ` (${s.speakers.join(', ')})` : ''}`);
-  return `${label} at ${kit.event.name}:\n\n${lines.join('\n')}\n\nSave your picks and get a reminder before each talk in CampBuddy: ${qrLink(kit.event.qr, 'today')}\n\n${kit.event.hashtags} #CampBuddy`;
+  return makeCaptions({
+    hook: `${label} at ${kit.event.name}:`,
+    lines: list.map((s) => `${s.time}  ${s.title}${s.speakers?.length ? ` (${names(s.speakers)})` : ''}`),
+    body: 'Save your picks and get a reminder before each talk, even offline.',
+    cta: 'Plan your day in CampBuddy',
+    link: qrLink(kit.event.qr, 'today'),
+    media,
+  }, kit.event.hashtags);
 }
 
-export function spotlightCaption(kit, s) {
-  if (!s) return '';
-  const who = s.speakers?.length ? ` with ${s.speakers.join(', ')}` : '';
+/** The LinkedIn one: what takes a single caption. */
+export const todayCaption = (kit, day, list) => todayCaptions(kit, day, list).linkedin;
+
+/** A session's captions; on X the fullest first line that fits (with its speakers, time and track, or less). */
+export function spotlightCaptions(kit, s, media = 'card') {
+  if (!s) return asCaptions('');
+  const who = s.speakers?.length ? ` with ${names(s.speakers)}` : '';
   const where = s.track ? ` in ${s.track}` : '';
-  return `Up next at ${kit.event.name}: "${s.title}"${who}, ${s.time}${where}.\n\nSave it in CampBuddy and get a reminder before it starts: ${qrLink(kit.event.qr, 'spotlight')}\n\n${kit.event.hashtags} #CampBuddy`;
+  const hook = `Up next at ${kit.event.name}: "${s.title}"${who}, ${s.time}${where}.`;
+  return makeCaptions({
+    hook,
+    xhook: [hook, `"${s.title}"${who}, ${s.time}.`, `Up next: "${s.title}"`],
+    cta: 'Save it in CampBuddy and get a reminder before it starts',
+    link: qrLink(kit.event.qr, 'spotlight'),
+    media,
+  }, kit.event.hashtags);
 }
+
+export const spotlightCaption = (kit, s) => (s ? spotlightCaptions(kit, s).linkedin : '');
 
 const FEATURES = ['The full schedule, with reminders', 'People who share your interests', 'Your Contributor Day team', 'Deals and free tools for you'];
 
@@ -3095,14 +3116,29 @@ export function slugify(text) {
   return String(text ?? '').toLowerCase().normalize('NFKD').replace(/\p{M}/gu, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'post';
 }
 
+/** `caption`: the captions (social-captions.js) or one text. X gets its own (cut only if an edit made it too long). */
 export function shareLinks(caption, site) {
-  const text = caption.length > 270 ? `${caption.slice(0, 267)}…` : caption;
+  const set = asCaptions(caption);
+  const text = xLength(set.x) > 280 ? `${set.x.slice(0, 267)}…` : set.x;
   return [
     ['LinkedIn', `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(site)}`],
     ['X', `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`],
     ['Facebook', `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(site)}`],
-    ['WhatsApp', `https://wa.me/?text=${encodeURIComponent(caption)}`],
+    ['WhatsApp', `https://wa.me/?text=${encodeURIComponent(set.linkedin)}`],
   ];
+}
+
+/** A Copy button that says which network it copies for, and follows the caption boxes' choice. */
+function copyButtonFollows(btn) {
+  if (!btn) return;
+  const label = () => {
+    // A button taken off the page (another person picked) stops listening.
+    if (!btn.isConnected && btn.dataset.followed) document.removeEventListener('caption:network', label);
+    else if (!btn.disabled) btn.textContent = `Copy for ${networkLabel()}`;
+  };
+  label();
+  btn.dataset.followed = '1';
+  document.addEventListener('caption:network', label);
 }
 
 async function copy(text, btn) {
@@ -3209,18 +3245,22 @@ export function initSocialKit() {
     const canvas = card.querySelector('[data-preview]');
     const pager = card.querySelector('[data-pager]');
     const pageLabel = card.querySelector('[data-page-label]');
-    const fields = () => ({ kicker: field('kicker')?.value ?? '', headline: field('headline').value, line: field('line').value, caption: field('caption').value });
+    const fields = () => ({ kicker: field('kicker')?.value ?? '', headline: field('headline').value, line: field('line').value });
     let pageIndex = 0;
 
     // This post's own edits (colours, artwork, effects, words), kept in this browser per event and post.
     const store = `cb-social:${kit.event.slug}:${post.key}`;
     const saved = (() => { try { return JSON.parse(localStorage.getItem(store) ?? 'null') ?? {}; } catch { return {}; } })();
+    // Its captions, one per network (social-captions.js); only the ones edited here are kept.
+    // (A caption kept before 30 Oct 2026, one for every network, is left behind: the new ones show.)
+    const captions = captionBox({ defaults: post.captions ?? post.caption, edited: saved.captions, onEdit: () => remember() });
+    card.querySelector('[data-caption-slot]')?.replaceChildren(captions.root);
     const ownColorsEl = card.querySelector('[data-post-own-colors]');
     const colorEls = [...card.querySelectorAll('[data-post-color]')];
     const artEl = card.querySelector('[data-post-art]');
     const effectEls = [...card.querySelectorAll('[data-post-effect]')];
     const restore = () => {
-      for (const name of ['kicker', 'headline', 'line', 'caption']) if (typeof saved[name] === 'string' && field(name)) field(name).value = saved[name];
+      for (const name of ['kicker', 'headline', 'line']) if (typeof saved[name] === 'string' && field(name)) field(name).value = saved[name];
       if (ownColorsEl) ownColorsEl.checked = Boolean(saved.ownColors);
       colorEls.forEach((el) => { el.value = saved.colors?.[el.dataset.postColor] ?? colors[el.dataset.postColor]; });
       if (artEl && saved.art !== undefined && [...artEl.options].some((o) => o.value === String(saved.art))) artEl.value = String(saved.art);
@@ -3229,6 +3269,7 @@ export function initSocialKit() {
     const remember = () => {
       const now = {
         ...fields(),
+        captions: captions.edited(),
         ownColors: Boolean(ownColorsEl?.checked),
         colors: Object.fromEntries(colorEls.map((el) => [el.dataset.postColor, el.value])),
         art: artEl?.value ?? 'auto',
@@ -3255,10 +3296,10 @@ export function initSocialKit() {
       if (post.key !== 'countdown') return;
       const now = daysToGo(kit);
       if (!now || !shownDays || now === shownDays) return;
-      for (const name of ['headline', 'caption']) {
-        const el = field(name);
-        if (el) el.value = el.value.replace(new RegExp(`\\b${shownDays}\\b`, 'g'), String(now));
-      }
+      const days = (text) => text.replace(new RegExp(`\\b${shownDays}\\b`, 'g'), String(now));
+      const el = field('headline');
+      if (el) el.value = days(el.value);
+      captions.map(days);
       shownDays = now;
     };
     const replan = () => {
@@ -3302,10 +3343,10 @@ export function initSocialKit() {
     // Today / Spotlight: the caption follows the chosen day or session.
     const refreshCaption = () => {
       if (post.key === 'today') {
-        field('caption').value = todayCaption(kit, pickEl.value, sessionsOfDay(kit.schedule.sessions, pickEl.value));
+        captions.refresh(todayCaptions(kit, pickEl.value, sessionsOfDay(kit.schedule.sessions, pickEl.value)), true);
       } else if (post.key === 'spotlight') {
         const s = kit.schedule.sessions.find((x) => String(x.id) === String(pickEl.value));
-        field('caption').value = spotlightCaption(kit, s);
+        captions.refresh(spotlightCaptions(kit, s), true);
         field('headline').value = '';
         field('line').value = '';
         field('headline').placeholder = s?.title ?? '';
@@ -3319,7 +3360,6 @@ export function initSocialKit() {
 
     const changed = () => { remember(); redraw(); };
     for (const name of ['kicker', 'headline', 'line']) field(name)?.addEventListener('input', changed);
-    field('caption').addEventListener('input', remember);
     [ownColorsEl, artEl, ...colorEls, ...effectEls].filter(Boolean).forEach((el) => el.addEventListener(el.type === 'color' ? 'input' : 'change', changed));
     card.querySelector('[data-post-colors-reset]')?.addEventListener('click', () => { colorEls.forEach((el) => { el.value = colors[el.dataset.postColor]; }); changed(); });
     card.querySelector('[data-post-reset]')?.addEventListener('click', () => {
@@ -3347,14 +3387,16 @@ export function initSocialKit() {
       if (files.length === 1) save(files[0].blob, files[0].name);
       else {
         const entries = await Promise.all(files.map(async (f) => ({ name: f.name, data: new Uint8Array(await f.blob.arrayBuffer()) })));
-        entries.push({ name: 'caption.txt', data: new TextEncoder().encode(field('caption').value) });
+        entries.push({ name: 'caption.txt', data: new TextEncoder().encode(captionsText(captions.values())) });
         save(new Blob([zipStore(entries)], { type: 'application/zip' }), `${kit.event.slug}-${post.key}-${quality()}.zip`);
       }
       btn.disabled = false;
     });
-    card.querySelector('[data-action="copy"]').addEventListener('click', (e) => copy(field('caption').value, e.currentTarget));
+    const copyBtn = card.querySelector('[data-action="copy"]');
+    copyButtonFollows(copyBtn);
+    copyBtn.addEventListener('click', (e) => copy(captions.current(), e.currentTarget));
     card.querySelector('[data-action="share"]').addEventListener('click', async () => {
-      const caption = field('caption').value;
+      const caption = captions.current();
       const files = (await renderAll()).map((f) => new File([f.blob], f.name, { type: 'image/png' }));
       if (navigator.canShare?.({ files })) {
         try {
@@ -3365,7 +3407,7 @@ export function initSocialKit() {
         }
       }
       const linksEl = card.querySelector('[data-share-links]');
-      linksEl.replaceChildren('Copy the caption and download the image, then: ', ...shareLinks(caption, qrLink(kit.event.qr, post.key)).flatMap(([label, href], i) => {
+      linksEl.replaceChildren('Copy the caption and download the image, then: ', ...shareLinks(captions.values(), qrLink(kit.event.qr, post.key)).flatMap(([label, href], i) => {
         const a = document.createElement('a');
         a.href = href;
         a.target = '_blank';
@@ -3375,7 +3417,7 @@ export function initSocialKit() {
         return i ? [' · ', a] : [a];
       }));
     });
-    card.querySelector('[data-action="publish"]')?.addEventListener('click', (e) => publish(e.currentTarget, kit, () => drawn ?? canvas, redraw, () => ({ ...post, ...fields() })));
+    card.querySelector('[data-action="publish"]')?.addEventListener('click', (e) => publish(e.currentTarget, kit, () => drawn ?? canvas, redraw, () => ({ ...post, ...fields(), caption: captions.values().linkedin, captions: captions.values() })));
 
     // For the reels (social-reels.js): this post as it stands now, its words included.
     socialContext.posts.push({
@@ -3383,10 +3425,10 @@ export function initSocialKit() {
       label: post.label,
       content: () => { syncDays(); return contentNow(); },
       colors: postColors,
-      caption: () => field('caption').value,
+      captions: () => captions.values(),
     });
 
-    allPosts.push({ post, renderAll, caption: () => field('caption').value });
+    allPosts.push({ post, renderAll, captions: () => captions.values() });
     return redraw;
   });
   Object.assign(socialContext, { kit, colors, style, ready: kitReady });
@@ -3408,7 +3450,7 @@ export function initSocialKit() {
         const n = String(i + 1).padStart(2, '0');
         const files = await item.renderAll();
         for (const f of files) entries.push({ name: `${n}-${f.name}`, data: new Uint8Array(await f.blob.arrayBuffer()) });
-        captions.push(`${n}. ${item.post.label}\n${item.caption()}\n`);
+        captions.push(`${n}. ${item.post.label}\n\n${captionsText(item.captions())}\n`);
         plan.push(`${n}. ${item.post.date_label ? `${item.post.date_label} — ` : ''}${item.post.label}${item.post.when ? ` (${item.post.when})` : ''}: ${files.map((f) => `${n}-${f.name}`).join(', ')}`);
       }
       entries.push({ name: 'captions.txt', data: new TextEncoder().encode(captions.join('\n')) });
@@ -3583,12 +3625,17 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
     if (status) status.textContent = `${list.length} ${list.length === 1 ? 'card' : 'cards'}`;
   };
 
+  // Each person's edits, kept in this browser per event and person; their captions as they stand (for the ZIP too).
+  const storeOf = (person) => `cb-social:${kit.event.slug}:person:${person.id ?? slugify(person.name)}`;
+  const savedOf = (person) => { try { return JSON.parse(localStorage.getItem(storeOf(person)) ?? 'null') ?? {}; } catch { return {}; } };
+  const captionsOf = (person) => ({ ...asCaptions(person.captions ?? person.caption), ...(savedOf(person).captions ?? {}) });
+
   // One person per row: the card on the left; their caption, colours and effects on the right,
   // kept in this browser per event and person (like the posts above).
   // `before`: the card on show until now (another person, another design): the new one fades in over it.
   function personRow(person, before = null) {
-    const store = `cb-social:${kit.event.slug}:person:${person.id ?? slugify(person.name)}`;
-    const saved = (() => { try { return JSON.parse(localStorage.getItem(store) ?? 'null') ?? {}; } catch { return {}; } })();
+    const store = storeOf(person);
+    const saved = savedOf(person);
     const el = (tag, cls, text) => {
       const n = document.createElement(tag);
       if (cls) n.className = cls;
@@ -3598,11 +3645,8 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
     const box = el('div', 'grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]');
     const canvas = el('canvas', 'block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg');
     const side = el('div', 'min-h-0 space-y-4 overflow-y-auto border-l border-line bg-white p-4');
-    const caption = el('textarea', 'cb-input mt-1 text-sm');
-    caption.rows = 4;
-    caption.value = typeof saved.caption === 'string' ? saved.caption : person.caption;
-    const capLabel = el('label', 'cb-label', 'Caption');
-    capLabel.append(caption);
+    // Their captions, one per network (social-captions.js); only the ones edited here are kept.
+    const captions = captionBox({ defaults: person.captions ?? person.caption, edited: saved.captions, onEdit: () => keep(), rows: 6 });
     const own = el('input', 'cb-check');
     own.type = 'checkbox';
     own.checked = Boolean(saved.ownColors);
@@ -3630,7 +3674,7 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
       fxRow.append(label);
       return input;
     });
-    const now = () => ({ ...person, caption: caption.value, effects: Object.fromEntries(fxEls.map((i) => [i.dataset.key, i.checked])) });
+    const now = () => ({ ...person, caption: captions.values().linkedin, captions: captions.values(), effects: Object.fromEntries(fxEls.map((i) => [i.dataset.key, i.checked])) });
     const cardColors = () => (own.checked ? { ...colors, ...Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])) } : colors);
     // Drawn off screen once the kit is ready, then shown (reveal); of a burst of edits only the last is drawn.
     if (before?.dataset.shown) {
@@ -3653,12 +3697,11 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
     };
     const keep = () => {
       try {
-        localStorage.setItem(store, JSON.stringify({ caption: caption.value, ownColors: own.checked, colors: Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])), effects: now().effects }));
+        localStorage.setItem(store, JSON.stringify({ captions: captions.edited(), ownColors: own.checked, colors: Object.fromEntries(colorEls.map((i) => [i.dataset.key, i.value])), effects: now().effects }));
       } catch {
         // Private mode: the edits last this visit.
       }
     };
-    caption.addEventListener('input', keep);
     [own, ...fxEls].forEach((i) => i.addEventListener('change', () => { keep(); draw(); }));
     colorEls.forEach((i) => i.addEventListener('input', () => { keep(); draw(); }));
     const actions = el('div', 'flex flex-wrap gap-2 border-t border-line pt-4');
@@ -3671,11 +3714,12 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
     });
     const cp = el('button', 'cb-btn cb-btn-secondary cb-btn-sm', 'Copy caption');
     cp.type = 'button';
-    cp.addEventListener('click', () => copy(caption.value, cp));
+    copyButtonFollows(cp);
+    cp.addEventListener('click', () => copy(captions.current(), cp));
     actions.append(dl, cp);
     side.append(
       el('p', 'text-base font-semibold', person.name),
-      capLabel,
+      captions.root,
       el('p', 'text-xs font-semibold uppercase tracking-wide text-muted', 'Colours'),
       ownLabel,
       swatches,
@@ -3709,7 +3753,7 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
       for (let n = 2; used.has(name); n++) name = `${slugify(person.name)}-${n}.png`;
       used.add(name);
       files.push({ name, data: new Uint8Array(await (await canvasBlob(canvas, quality())).arrayBuffer()) });
-      captions.push(`${name}\n${person.caption}\n`);
+      captions.push(`${name}\n\n${captionsText(captionsOf(person))}\n`);
     }
     files.push({ name: 'captions.txt', data: new TextEncoder().encode(captions.join('\n')) });
     save(new Blob([zipStore(files)], { type: 'application/zip' }), `${kit.event.slug}-people-${roleEl?.value || 'all'}-${design()}-${quality()}.zip`);
@@ -3736,6 +3780,8 @@ async function publish(btn, kit, card, redraw, current) {
     body.append('image', await canvasBlob(card()), `${post.key}.png`);
     body.append('title', post.headline || post.label);
     body.append('caption', post.caption);
+    // One per network too (social-captions.js), for a webhook that posts to each.
+    for (const [network, text] of Object.entries(post.captions ?? {})) body.append(`captions[${network}]`, text);
     body.append('kind', post.key);
     const res = await fetch(kit.publishUrl, {
       method: 'POST',

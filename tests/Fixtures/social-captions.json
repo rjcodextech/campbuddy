@@ -1,0 +1,129 @@
+[
+    {
+        "name": "post with the site tagline",
+        "parts": {
+            "opening": "Padharo mhare des.",
+            "hook": "Save the date: WordCamp Test 2026 is on 3–4 Oct 2026 at Rajasthan International Centre.",
+            "body": "Going? CampBuddy is your free WordCamp companion: the schedule, the people to meet and Contributor Day tips, all in one place. No sign-up, nothing to install.",
+            "cta": "Plan your days in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=save-the-date"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "Padharo mhare des.\n\nSave the date: WordCamp Test 2026 is on 3–4 Oct 2026 at Rajasthan International Centre.\n\nGoing? CampBuddy is your free WordCamp companion: the schedule, the people to meet and Contributor Day tips, all in one place. No sign-up, nothing to install.\n\nPlan your days in CampBuddy: scan the QR on the card, or open campbuddy.club.\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "Padharo mhare des.\n\nSave the date: WordCamp Test 2026 is on 3–4 Oct 2026 at Rajasthan International Centre.\n\nGoing? CampBuddy is your free WordCamp companion: the schedule, the people to meet and Contributor Day tips, all in one place. No sign-up, nothing to install.\n\nPlan your days in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=save-the-date\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "Padharo mhare des.\n\nSave the date: WordCamp Test 2026 is on 3–4 Oct 2026 at Rajasthan International Centre.\n\nPlan your days in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=save-the-date\n\n#WCTest #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "a speaker with a long talk",
+        "parts": {
+            "hook": "Aachal Pardeshi Venkataraman is speaking at WordCamp Test 2026.",
+            "xhook": "Aachal Pardeshi Venkataraman is speaking at WordCamp Test 2026: \"Performance budgets with the Interactivity API, block bindings and a very long talk title that keeps going on and on until it is far too long\"",
+            "body": "Talk: \"Performance budgets with the Interactivity API, block bindings and a very long talk title that keeps going on and on until it is far too long\"",
+            "xbody": "Get a reminder before it starts.",
+            "cta": "Save the talk in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-speaker"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "Aachal Pardeshi Venkataraman is speaking at WordCamp Test 2026.\n\nTalk: \"Performance budgets with the Interactivity API, block bindings and a very long talk title that keeps going on and on until it is far too long\"\n\nSave the talk in CampBuddy: scan the QR on the card, or open campbuddy.club.\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "Aachal Pardeshi Venkataraman is speaking at WordCamp Test 2026.\n\nTalk: \"Performance budgets with the Interactivity API, block bindings and a very long talk title that keeps going on and on until it is far too long\"\n\nSave the talk in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-speaker\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "Aachal Pardeshi Venkataraman is speaking at WordCamp Test 2026.\n\nGet a reminder before it starts.\n\nSave the talk in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-speaker\n\n#WCTest #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "a day of talks",
+        "parts": {
+            "hook": "Sat 3 Oct at WordCamp Test 2026:",
+            "lines": [
+                "9:15 AM  Talk number 1 about blocks, themes and performance (Speaker 1 and Speaker 2)",
+                "9:30 AM  Talk number 2 about blocks, themes and performance (Speaker 2 and Speaker 3)",
+                "9:45 AM  Talk number 3 about blocks, themes and performance (Speaker 3 and Speaker 4)",
+                "10:00 AM  Talk number 4 about blocks, themes and performance (Speaker 4 and Speaker 5)",
+                "10:15 AM  Talk number 5 about blocks, themes and performance (Speaker 5 and Speaker 6)",
+                "10:30 AM  Talk number 6 about blocks, themes and performance (Speaker 6 and Speaker 7)",
+                "10:45 AM  Talk number 7 about blocks, themes and performance (Speaker 7 and Speaker 8)",
+                "11:00 AM  Talk number 8 about blocks, themes and performance (Speaker 8 and Speaker 9)",
+                "11:15 AM  Talk number 9 about blocks, themes and performance (Speaker 9 and Speaker 10)",
+                "11:30 AM  Talk number 10 about blocks, themes and performance (Speaker 10 and Speaker 11)",
+                "11:45 AM  Talk number 11 about blocks, themes and performance (Speaker 11 and Speaker 12)",
+                "12:00 AM  Talk number 12 about blocks, themes and performance (Speaker 12 and Speaker 13)",
+                "12:15 AM  Talk number 13 about blocks, themes and performance (Speaker 13 and Speaker 14)",
+                "12:30 AM  Talk number 14 about blocks, themes and performance (Speaker 14 and Speaker 15)"
+            ],
+            "body": "Save your picks and get a reminder before each talk, even offline.",
+            "cta": "Plan your day in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=today"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "Sat 3 Oct at WordCamp Test 2026:\n\n9:15 AM  Talk number 1 about blocks, themes and performance (Speaker 1 and Speaker 2)\n9:30 AM  Talk number 2 about blocks, themes and performance (Speaker 2 and Speaker 3)\n9:45 AM  Talk number 3 about blocks, themes and performance (Speaker 3 and Speaker 4)\n10:00 AM  Talk number 4 about blocks, themes and performance (Speaker 4 and Speaker 5)\n10:15 AM  Talk number 5 about blocks, themes and performance (Speaker 5 and Speaker 6)\n10:30 AM  Talk number 6 about blocks, themes and performance (Speaker 6 and Speaker 7)\n10:45 AM  Talk number 7 about blocks, themes and performance (Speaker 7 and Speaker 8)\n11:00 AM  Talk number 8 about blocks, themes and performance (Speaker 8 and Speaker 9)\n11:15 AM  Talk number 9 about blocks, themes and performance (Speaker 9 and Speaker 10)\n11:30 AM  Talk number 10 about blocks, themes and performance (Speaker 10 and Speaker 11)\n11:45 AM  Talk number 11 about blocks, themes and performance (Speaker 11 and Speaker 12)\n12:00 AM  Talk number 12 about blocks, themes and performance (Speaker 12 and Speaker 13)\n12:15 AM  Talk number 13 about blocks, themes and performance (Speaker 13 and Speaker 14)\n12:30 AM  Talk number 14 about blocks, themes and performance (Speaker 14 and Speaker 15)\n\nSave your picks and get a reminder before each talk, even offline.\n\nPlan your day in CampBuddy: scan the QR on the card, or open campbuddy.club.\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "Sat 3 Oct at WordCamp Test 2026:\n\n9:15 AM  Talk number 1 about blocks, themes and performance (Speaker 1 and Speaker 2)\n9:30 AM  Talk number 2 about blocks, themes and performance (Speaker 2 and Speaker 3)\n9:45 AM  Talk number 3 about blocks, themes and performance (Speaker 3 and Speaker 4)\n10:00 AM  Talk number 4 about blocks, themes and performance (Speaker 4 and Speaker 5)\n10:15 AM  Talk number 5 about blocks, themes and performance (Speaker 5 and Speaker 6)\n10:30 AM  Talk number 6 about blocks, themes and performance (Speaker 6 and Speaker 7)\n10:45 AM  Talk number 7 about blocks, themes and performance (Speaker 7 and Speaker 8)\n11:00 AM  Talk number 8 about blocks, themes and performance (Speaker 8 and Speaker 9)\n11:15 AM  Talk number 9 about blocks, themes and performance (Speaker 9 and Speaker 10)\n11:30 AM  Talk number 10 about blocks, themes and performance (Speaker 10 and Speaker 11)\n11:45 AM  Talk number 11 about blocks, themes and performance (Speaker 11 and Speaker 12)\n12:00 AM  Talk number 12 about blocks, themes and performance (Speaker 12 and Speaker 13)\n12:15 AM  Talk number 13 about blocks, themes and performance (Speaker 13 and Speaker 14)\n12:30 AM  Talk number 14 about blocks, themes and performance (Speaker 14 and Speaker 15)\n\nSave your picks and get a reminder before each talk, even offline.\n\nPlan your day in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=today\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "Sat 3 Oct at WordCamp Test 2026:\n\n9:15 AM  Talk number 1 about blocks, themes and performance (Speaker 1 and Speaker 2)\n\nSave your picks and get a reminder before each talk, even offline.\n\nPlan your day in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=today\n\n#WCTest #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "the event hashtag in the words",
+        "parts": {
+            "hook": "At WordCamp Test 2026? Share your favourite moments with #WCTest.",
+            "body": "Your talks, notes and the people you met stay in CampBuddy Memories.",
+            "cta": "Open your Memories in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=moments"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "At WordCamp Test 2026? Share your favourite moments with #WCTest.\n\nYour talks, notes and the people you met stay in CampBuddy Memories.\n\nOpen your Memories in CampBuddy: scan the QR on the card, or open campbuddy.club.\n\n#WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "At WordCamp Test 2026? Share your favourite moments with #WCTest.\n\nYour talks, notes and the people you met stay in CampBuddy Memories.\n\nOpen your Memories in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=moments\n\n#WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "At WordCamp Test 2026? Share your favourite moments with #WCTest.\n\nYour talks, notes and the people you met stay in CampBuddy Memories.\n\nOpen your Memories in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=moments\n\n#WordCamp #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "a reel with a web address",
+        "parts": {
+            "hook": "Learn a little WordPress before WordCamp Test 2026.",
+            "body": "WPSimplified's free videos, podcasts and shorts make it simple: https://wpsimplified.in\n\nSee you there, with CampBuddy on your phone.",
+            "xbody": "Free tutorials in Hindi and English: https://wpsimplified.in",
+            "cta": "Plan your day in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=wpsimplified",
+            "media": "reel"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "Learn a little WordPress before WordCamp Test 2026.\n\nWPSimplified's free videos, podcasts and shorts make it simple: wpsimplified.in\n\nSee you there, with CampBuddy on your phone.\n\nPlan your day in CampBuddy: scan the QR at the end of the reel, or open campbuddy.club.\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "Learn a little WordPress before WordCamp Test 2026.\n\nWPSimplified's free videos, podcasts and shorts make it simple: https://wpsimplified.in\n\nSee you there, with CampBuddy on your phone.\n\nPlan your day in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=wpsimplified\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "Learn a little WordPress before WordCamp Test 2026.\n\nFree tutorials in Hindi and English: https://wpsimplified.in\n\nPlan your day in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=wpsimplified\n\n#WCTest #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "more names than Instagram has room for",
+        "parts": {
+            "hook": "Meet the 150 volunteers of WordCamp Test 2026.",
+            "extra": "Volunteer Person Number 1, Volunteer Person Number 2, Volunteer Person Number 3, Volunteer Person Number 4, Volunteer Person Number 5, Volunteer Person Number 6, Volunteer Person Number 7, Volunteer Person Number 8, Volunteer Person Number 9, Volunteer Person Number 10, Volunteer Person Number 11, Volunteer Person Number 12, Volunteer Person Number 13, Volunteer Person Number 14, Volunteer Person Number 15, Volunteer Person Number 16, Volunteer Person Number 17, Volunteer Person Number 18, Volunteer Person Number 19, Volunteer Person Number 20, Volunteer Person Number 21, Volunteer Person Number 22, Volunteer Person Number 23, Volunteer Person Number 24, Volunteer Person Number 25, Volunteer Person Number 26, Volunteer Person Number 27, Volunteer Person Number 28, Volunteer Person Number 29, Volunteer Person Number 30, Volunteer Person Number 31, Volunteer Person Number 32, Volunteer Person Number 33, Volunteer Person Number 34, Volunteer Person Number 35, Volunteer Person Number 36, Volunteer Person Number 37, Volunteer Person Number 38, Volunteer Person Number 39, Volunteer Person Number 40, Volunteer Person Number 41, Volunteer Person Number 42, Volunteer Person Number 43, Volunteer Person Number 44, Volunteer Person Number 45, Volunteer Person Number 46, Volunteer Person Number 47, Volunteer Person Number 48, Volunteer Person Number 49, Volunteer Person Number 50, Volunteer Person Number 51, Volunteer Person Number 52, Volunteer Person Number 53, Volunteer Person Number 54, Volunteer Person Number 55, Volunteer Person Number 56, Volunteer Person Number 57, Volunteer Person Number 58, Volunteer Person Number 59, Volunteer Person Number 60, Volunteer Person Number 61, Volunteer Person Number 62, Volunteer Person Number 63, Volunteer Person Number 64, Volunteer Person Number 65, Volunteer Person Number 66, Volunteer Person Number 67, Volunteer Person Number 68, Volunteer Person Number 69, Volunteer Person Number 70, Volunteer Person Number 71, Volunteer Person Number 72, Volunteer Person Number 73, Volunteer Person Number 74, Volunteer Person Number 75, Volunteer Person Number 76, Volunteer Person Number 77, Volunteer Person Number 78, Volunteer Person Number 79, Volunteer Person Number 80, Volunteer Person Number 81, Volunteer Person Number 82, Volunteer Person Number 83, Volunteer Person Number 84, Volunteer Person Number 85, Volunteer Person Number 86, Volunteer Person Number 87, Volunteer Person Number 88, Volunteer Person Number 89, Volunteer Person Number 90, Volunteer Person Number 91, Volunteer Person Number 92, Volunteer Person Number 93, Volunteer Person Number 94, Volunteer Person Number 95, Volunteer Person Number 96, Volunteer Person Number 97, Volunteer Person Number 98, Volunteer Person Number 99, Volunteer Person Number 100, Volunteer Person Number 101, Volunteer Person Number 102, Volunteer Person Number 103, Volunteer Person Number 104, Volunteer Person Number 105, Volunteer Person Number 106, Volunteer Person Number 107, Volunteer Person Number 108, Volunteer Person Number 109, Volunteer Person Number 110, Volunteer Person Number 111, Volunteer Person Number 112, Volunteer Person Number 113, Volunteer Person Number 114, Volunteer Person Number 115, Volunteer Person Number 116, Volunteer Person Number 117, Volunteer Person Number 118, Volunteer Person Number 119, Volunteer Person Number 120, Volunteer Person Number 121, Volunteer Person Number 122, Volunteer Person Number 123, Volunteer Person Number 124, Volunteer Person Number 125, Volunteer Person Number 126, Volunteer Person Number 127, Volunteer Person Number 128, Volunteer Person Number 129, Volunteer Person Number 130, Volunteer Person Number 131, Volunteer Person Number 132, Volunteer Person Number 133, Volunteer Person Number 134, Volunteer Person Number 135, Volunteer Person Number 136, Volunteer Person Number 137, Volunteer Person Number 138, Volunteer Person Number 139, Volunteer Person Number 140, Volunteer Person Number 141, Volunteer Person Number 142, Volunteer Person Number 143, Volunteer Person Number 144, Volunteer Person Number 145, Volunteer Person Number 146, Volunteer Person Number 147, Volunteer Person Number 148, Volunteer Person Number 149 and Volunteer Person Number 150.",
+            "body": "They keep WordCamp Test running. Say thanks when you see them!",
+            "cta": "Find them in CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-volunteer",
+            "media": "reel"
+        },
+        "hashtags": "#WordCamp #WordPress #WCTest #WCTest2026",
+        "captions": {
+            "instagram": "Meet the 150 volunteers of WordCamp Test 2026.\n\nThey keep WordCamp Test running. Say thanks when you see them!\n\nFind them in CampBuddy: scan the QR at the end of the reel, or open campbuddy.club.\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "Meet the 150 volunteers of WordCamp Test 2026.\n\nThey keep WordCamp Test running. Say thanks when you see them!\n\nFind them in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-volunteer\n\n#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "Meet the 150 volunteers of WordCamp Test 2026.\n\nThey keep WordCamp Test running. Say thanks when you see them!\n\nFind them in CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=people-volunteer\n\n#WCTest #CampBuddy #WPSimplified"
+        }
+    },
+    {
+        "name": "an emoji counts twice on X",
+        "parts": {
+            "hook": "WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp 🎉",
+            "cta": "Open CampBuddy",
+            "link": "https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=app"
+        },
+        "hashtags": "#WordCamp #WordPress",
+        "captions": {
+            "instagram": "WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp 🎉\n\nOpen CampBuddy: scan the QR on the card, or open campbuddy.club.\n\n#WordCamp #WordPress #CampBuddy #WPSimplified",
+            "linkedin": "WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp 🎉\n\nOpen CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=app\n\n#WordCamp #WordPress #CampBuddy #WPSimplified",
+            "x": "WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp WordCamp 🎉\n\nOpen CampBuddy: https://campbuddy.club/event/wordcamp-test-2026?utm_source=campbuddy&utm_medium=social&utm_campaign=wordcamp-test-2026&utm_content=app\n\n#WordCamp #CampBuddy #WPSimplified"
+        }
+    }
+]

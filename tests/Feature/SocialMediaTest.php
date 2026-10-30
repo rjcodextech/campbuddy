@@ -62,6 +62,47 @@ class SocialMediaTest extends TestCase
         }
     }
 
+    public function test_every_post_and_person_has_a_caption_for_each_network_inside_its_limits(): void
+    {
+        // A busy event: a long tagline, 40 speakers with long names and talks, 25 sponsors.
+        $this->event->forceFill(['site_theme' => ['colors' => [], 'fonts' => [], 'art' => [], 'tagline' => 'Dil se Dilli, code se community', 'fetched_at' => now()->toIso8601String()]])->save();
+        $speakers = collect(range(1, 40))->map(fn ($i) => ['id' => $i, 'name' => "Aachal Pardeshi Venkataraman {$i}"])->all();
+        EventData::put($this->event->id, 'speakers', $speakers);
+        EventData::put($this->event->id, 'sponsors', collect(range(1, 25))->map(fn ($i) => ['id' => $i, 'name' => "Sponsor Company Private Limited {$i}"])->all());
+        EventData::put($this->event->id, 'sessions', collect(range(1, 40))->map(fn ($i) => [
+            'id' => $i, 'title' => "Performance budgets with the Interactivity API and block bindings, part {$i} of a long series", 'speaker_ids' => [$i],
+            'starts_at' => '2026-10-03T0'.($i % 9).':00:00+00:00',
+        ])->all());
+        foreach (['Rahul Sharma' => 'speaker', 'Asha Rao' => 'organizer', 'Mia Wong' => 'volunteer'] as $name => $role) {
+            AttendeeRoster::create(['event_id' => $this->event->id, 'name' => $name, 'links' => [], 'content_hash' => $name, 'is_suppressed' => false]);
+        }
+        $event = $this->event->fresh();
+
+        $posts = collect(SocialKit::posts($event, CarbonImmutable::parse('2026-09-21 10:00', 'Asia/Kolkata')))->keyBy('key');
+        $people = SocialKit::people($event);
+        $all = [...$posts->map(fn ($p) => ['post '.$p['key'], $p])->values()->all(), ...array_map(fn ($p) => ['person '.$p['name'], $p], $people)];
+        foreach ($all as [$label, $item]) {
+            if (in_array($item['key'] ?? null, ['today', 'spotlight'], true)) {
+                continue; // written in the browser (tests/js)
+            }
+            $this->assertSame(['instagram', 'linkedin', 'x'], array_keys($item['captions']), $label);
+            \Tests\Unit\SocialCaptionsTest::assertInLimits($item['captions'], $label);
+            $this->assertSame($item['captions']['linkedin'], $item['caption'], "{$label}: the single caption is the LinkedIn one");
+            foreach ($item['captions'] as $network => $text) {
+                $this->assertStringContainsString('#CampBuddy', $text, "{$label} / {$network}");
+                $this->assertStringContainsString('#WPSimplified', $text, "{$label} / {$network}");
+                $this->assertStringNotContainsString('…', $text, "{$label} / {$network}: nothing cut");
+            }
+            $this->assertStringContainsString('utm_campaign=wordcamp-rajasthan-2026', $item['captions']['x'], "{$label}: X has the tagged link");
+            $this->assertStringContainsString('scan the QR on the card, or open campbuddy.club.', $item['captions']['instagram'], "{$label}: Instagram points to the QR");
+        }
+
+        $this->assertStringNotContainsString('With Aachal', $posts['speakers']['captions']['linkedin'], 'over 30 speakers: no list (their cards and reels name them)');
+        $this->assertStringContainsString('Thank you, Sponsor Company Private Limited 1, Sponsor Company Private Limited 2,', $posts['sponsors']['captions']['instagram'], 'every sponsor, by its whole name');
+        $this->assertStringContainsString(' and Sponsor Company Private Limited 25.', $posts['sponsors']['captions']['linkedin']);
+        $this->assertStringStartsWith("Dil se Dilli, code se community.\n\n", $posts['save-the-date']['captions']['instagram']);
+    }
+
     public function test_every_event_gets_its_own_words_and_the_sites_tagline(): void
     {
         $other = Event::create(['slug' => 'wordcamp-pune-2027', 'display_name' => 'WordCamp Pune 2027', 'source_site_url' => 'https://pune.wordcamp.org/2027', 'status' => 'active', 'is_visible' => true, 'starts_on' => '2027-01-10']);
@@ -214,7 +255,15 @@ class SocialMediaTest extends TestCase
             && $request['caption'] === 'See you there'
             && str_contains($request['image_url'], '/storage/social/')
             && $request['event']['name'] === 'WordCamp Rajasthan 2026'
-            && $request['sent_by'] === 'admin: Asha');
+            && $request['sent_by'] === 'admin: Asha'
+            && ! isset($request['captions']), 'no captions sent: none added');
+
+        // The studio sends one caption per network too; only the networks it knows go on.
+        $this->post(route('admin.events.social.publish', $this->event), [
+            'image' => UploadedFile::fake()->image('post.png', 1080, 1350), 'caption' => 'Long one', 'kind' => 'save-the-date',
+            'captions' => ['instagram' => 'For Instagram', 'linkedin' => 'Long one', 'x' => 'Short one', 'tiktok' => 'no'],
+        ], ['Accept' => 'application/json'])->assertOk();
+        Http::assertSent(fn (Request $request) => ($request['captions'] ?? null) === ['instagram' => 'For Instagram', 'linkedin' => 'Long one', 'x' => 'Short one']);
     }
 
     public function test_a_manager_uses_it_for_their_own_events_and_it_is_logged(): void

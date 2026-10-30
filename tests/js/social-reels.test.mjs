@@ -8,8 +8,8 @@ const { reelList, lookFor, _internals } = await import('../../resources/js/socia
 const person = (id, role, extra = {}) => ({ id, name: `Person ${id}`, photo: null, roles: [role], role_labels: [role], talk: null, card: null, ...extra });
 const kit = (people) => ({ event: { name: 'WordCamp Test 2026', hashtags: '#WCTest' }, short: 'WordCamp Test', people });
 const posts = [
-  { key: 'save-the-date', label: 'Coming up', content: () => ({}), caption: () => 'c1' },
-  { key: 'countdown', label: 'Countdown', content: () => ({}), caption: () => 'c2' },
+  { key: 'save-the-date', label: 'Coming up', content: () => ({}), captions: () => ({ instagram: 'Go: scan the QR on the card, or open campbuddy.club.', linkedin: 'c1', x: 'c1x' }) },
+  { key: 'countdown', label: 'Countdown', content: () => ({}), captions: () => ({ instagram: 'c2', linkedin: 'c2', x: 'c2' }) },
 ];
 
 test('one reel per post, then one per group, and one per five speakers', () => {
@@ -37,11 +37,21 @@ test('someone with two roles is in both reels; a group with nobody has no reel',
   assert.equal(reelList(kit([]), []).length, 0);
 });
 
-test('a group caption names everyone and credits CampBuddy and WPSimplified', () => {
-  const list = reelList(kit([person('a', 'volunteer'), person('b', 'volunteer')]), []);
-  const caption = list[0].caption();
-  assert.match(caption, /Person a, Person b/);
-  assert.match(caption, /#WCTest #CampBuddy #WPSimplified/);
+test('a group caption names everyone, whole, and credits CampBuddy and WPSimplified, on every network', () => {
+  const list = reelList(kit([person('a', 'volunteer'), person('b', 'volunteer'), person('c', 'volunteer')]), []);
+  const { instagram, linkedin, x } = list[0].captions();
+  assert.match(linkedin, /^Meet the 3 volunteers of WordCamp Test 2026\.\n\nPerson a, Person b and Person c\./);
+  assert.match(instagram, /Person a, Person b and Person c\./);
+  assert.match(instagram, /scan the QR at the end of the reel, or open campbuddy\.club\./, 'a reel points to its own end card');
+  assert.match(x, /#WCTest #CampBuddy #WPSimplified$/);
+  assert.match(linkedin, /#WCTest #WordCamp #WordPress #CampBuddy #WPSimplified$/);
+  const speakers = reelList(kit(Array.from({ length: 7 }, (_, i) => person(`s${i}`, 'speaker'))), []);
+  assert.match(speakers[1].captions().linkedin, /^Meet the speakers of WordCamp Test 2026, 6–7 of 7\./);
+});
+
+test('a post reel takes the post’s captions as they stand, its Instagram one pointing to the reel’s end', () => {
+  const list = reelList(kit([]), posts);
+  assert.deepEqual(list[0].captions(), { instagram: 'Go: scan the QR at the end of the reel, or open campbuddy.club.', linkedin: 'c1', x: 'c1x' });
 });
 
 test('text is never cut short: it gets smaller, or takes more lines, instead', () => {

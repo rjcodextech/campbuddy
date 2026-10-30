@@ -118,9 +118,13 @@ class SocialKit
         $place = self::venue($event) !== '' ? self::venue($event) : self::place($event);
         $when = trim($dates.($place !== '' ? ' · '.$place : ''));
         $at = $place !== '' ? " at {$place}" : '';
-        $tags = self::hashtags($event).' #CampBuddy';
         $sessions = count(EventData::get($event->id, 'sessions') ?? []);
         $speakers = count(EventData::get($event->id, 'speakers') ?? []);
+        $count = fn (int $n, string $one, string $many) => $n.' '.($n === 1 ? $one : $many);
+        // The people and sponsors by name in the long captions (every name, whole), when there are 30 or fewer.
+        $named = fn (array $list) => $list !== [] && count($list) <= 30 ? SocialCaptions::names(array_column($list, 'name')) : null;
+        $speakerNames = $named(self::speakers($event));
+        $sponsorNames = $named(self::sponsors($event));
         $sched = self::schedule($event, $now);
         $timed = $sched['sessions'] !== [];
         $dayCount = count($sched['days']);
@@ -128,7 +132,7 @@ class SocialKit
         $link = fn (string $key) => self::link($event, $key);
         // The site's own tagline ("Dil se Dilli, code se community"), as the site says it.
         $tagline = SiteTheme::tagline($event);
-        $opening = $tagline !== null ? $tagline.(preg_match('/[.!?]$/u', $tagline) ? '' : '.')."\n\n" : '';
+        $opening = $tagline !== null ? $tagline.(preg_match('/[.!?]$/u', $tagline) ? '' : '.') : null;
         // Every event gets its own wording: the same event always the same, the next one different.
         $pick = fn (string $key, array $options) => $options[crc32($event->slug.'|'.$key) % count($options)];
 
@@ -145,11 +149,11 @@ class SocialKit
                 'headline' => $pick('std-head', ["{$short} is coming", "See you at {$short}", "{$short}, here we come"]),
                 'line' => $when,
                 'body' => 'none',
-                'caption' => $opening.$pick('std-caption', [
-                    "{$name} is on {$dates}{$at}.\n\nGoing? Open it in CampBuddy, your free WordCamp companion: the schedule, people to meet and Contributor Day tips in one place. No sign-up, no download.",
-                    "Save the dates: {$name}, {$dates}{$at}.\n\nPlanning to go? CampBuddy keeps the schedule, the people to meet and Contributor Day tips in one place. Free, no sign-up, nothing to install.",
-                    "{$dates}{$at}: that's {$name}.\n\nGet ready with CampBuddy, your free WordCamp companion. Save the talks you want, find people with the same interests and keep it all on your phone, even offline.",
-                ])."\n\n{$link('save-the-date')}\n\n{$tags}",
+                'parts' => ['opening' => $opening, 'cta' => 'Plan your days in CampBuddy'] + $pick('std-caption', [
+                    ['hook' => "Save the date: {$name} is on {$dates}{$at}.", 'body' => 'Going? CampBuddy is your free WordCamp companion: the schedule, the people to meet and Contributor Day tips, all in one place. No sign-up, nothing to install.'],
+                    ['hook' => "{$dates}{$at}: that's {$name}. Mark your calendar.", 'body' => 'Planning to go? Save the talks you want, find people who share your interests and keep it all on your phone, even offline. Free, no sign-up.'],
+                    ['hook' => "{$name} is coming: {$dates}{$at}.", 'body' => 'Get ready early with CampBuddy: the full schedule with reminders, people worth meeting and Contributor Day tips. Free, nothing to install.'],
+                ]),
             ],
             [
                 'key' => 'countdown',
@@ -159,12 +163,15 @@ class SocialKit
                 'line' => $pick('cd-line', ['Get ready with CampBuddy', 'Plan your days in CampBuddy', 'Your schedule is ready in CampBuddy']),
                 'body' => 'countdown',
                 'days' => $days,
-                'caption' => ($days === null ? "{$name} is here!" : ($days === 1 ? "{$name} is tomorrow!" : "{$days} days to go until {$name}.")).
-                    "\n\n".$pick('cd-caption', [
-                        'Pick your sessions, find people to meet and pack the right things with CampBuddy. Free, no sign-up:',
-                        'Time to plan: save the talks you want, see who shares your interests and get a reminder before each session. All in CampBuddy, free:',
-                        'Make a plan now and enjoy the day: CampBuddy has the schedule, reminders and a packing list. Free, no sign-up:',
-                    ])."\n\n{$link('countdown')}\n\n{$tags}",
+                // No other number in these words: the studio changes the count of days as the days pass.
+                'parts' => [
+                    'hook' => $days === null ? "{$name} is here!" : ($days === 1 ? "{$name} is tomorrow!" : "{$days} days to go until {$name}."),
+                    'cta' => 'Get ready in CampBuddy',
+                ] + $pick('cd-caption', [
+                    ['body' => 'Pick your sessions, find people to meet and pack the right things. CampBuddy has the schedule, reminders and a packing list, free and without a sign-up.'],
+                    ['body' => 'Time to plan: save the talks you want, see who shares your interests and get a reminder before each session.'],
+                    ['body' => 'Make your plan now and enjoy the day: the schedule, reminders and a packing list are all in CampBuddy.'],
+                ]),
             ],
             [
                 'key' => 'schedule',
@@ -179,12 +186,14 @@ class SocialKit
                     'Save a talk, get a reminder before it',
                     'Your own day, in one tap',
                 ])),
-                'caption' => "The {$name} schedule is in CampBuddy".($sessions ? ": {$sessions} sessions" : '').($speakers ? " and {$speakers} speakers" : '').'. '.
-                    $pick('sch-caption', [
-                        'Save the talks you like and get a reminder before each one, even offline.',
-                        'Tap a talk to save it, and CampBuddy reminds you before it starts. Works offline too.',
-                        'Build your own day in a minute and never miss the talk you came for.',
-                    ])."\n\n{$link('schedule')}\n\n{$tags}",
+                'parts' => [
+                    'hook' => "The {$name} schedule is in CampBuddy".($sessions ? ': '.$count($sessions, 'session', 'sessions').($speakers ? ' and '.$count($speakers, 'speaker', 'speakers') : '') : '').'.',
+                    'cta' => 'See the full schedule',
+                ] + $pick('sch-caption', [
+                    ['body' => 'Save the talks you like and get a reminder before each one, even offline.'],
+                    ['body' => 'Tap a talk to save it, and CampBuddy reminds you before it starts. Works offline too.'],
+                    ['body' => 'Build your own day in a minute and never miss the talk you came for.'],
+                ]),
             ],
             [
                 'key' => 'app',
@@ -193,11 +202,11 @@ class SocialKit
                 'headline' => $pick('app-head', ['Your WordCamp companion', "Your {$short} companion", 'One app for your whole WordCamp']),
                 'line' => $pick('app-line', ["For everyone at {$short}", 'Schedule, people and reminders', "Everything for {$short}, in one place"]),
                 'body' => 'features',
-                'caption' => $pick('app-caption', [
-                    "Going to {$name}? CampBuddy puts the schedule, the people you want to meet, Contributor Day tips and deals in one place. Free, no sign-up, works offline.",
-                    "One link for all of {$name}: your schedule with reminders, people who share your interests, your Contributor Day team and deals. That's CampBuddy, free and without a sign-up.",
-                    "Make the most of {$name} with CampBuddy: save talks, get reminders, find people to meet and pick a Contributor Day table. Free, nothing to install.",
-                ])."\n\nScan the code or open: {$link('app')}\n\n{$tags}",
+                'parts' => ['cta' => "Get CampBuddy for {$short}", 'xbody' => 'Schedule, reminders, people to meet and deals. Free, no sign-up.'] + $pick('app-caption', [
+                    ['hook' => "Going to {$name}? Keep the whole day in one link.", 'body' => 'CampBuddy puts the schedule, the people you want to meet, Contributor Day tips and deals in one place. Free, no sign-up, works offline.'],
+                    ['hook' => "One link for all of {$name}.", 'body' => "Your schedule with reminders, people who share your interests, your Contributor Day team and deals. That's CampBuddy, free and without a sign-up."],
+                    ['hook' => "Make the most of {$name} with CampBuddy.", 'body' => 'Save talks, get reminders, find people to meet and pick a Contributor Day table. Free, nothing to install.'],
+                ]),
             ],
             [
                 'key' => 'speakers',
@@ -206,12 +215,15 @@ class SocialKit
                 'headline' => $pick('spk-head', ["Meet the {$short} speakers", "The voices of {$short}", "On stage at {$short}"]),
                 'line' => $pick('spk-line', ['Their talks are in CampBuddy', 'Save their talks in CampBuddy', 'Get a reminder before each talk']),
                 'body' => 'photos',
-                'caption' => "Meet the speakers of {$name}".($speakers ? ": {$speakers} people sharing what they know" : '').'. '.
-                    $pick('spk-caption', [
-                        'Find every talk, save the ones you want and get a reminder in CampBuddy.',
-                        "See who is talking about what, and save the talks you don't want to miss in CampBuddy.",
-                        'Their talks are in CampBuddy: save yours and get a nudge before they start.',
-                    ])."\n\n{$link('speakers')}\n\n{$tags}",
+                'parts' => [
+                    'hook' => "Meet the speakers of {$name}".($speakers ? ': '.$count($speakers, 'person sharing what they know', 'people sharing what they know') : '').'.',
+                    'extra' => $speakerNames !== null ? "With {$speakerNames}." : null,
+                    'cta' => 'Save their talks in CampBuddy',
+                ] + $pick('spk-caption', [
+                    ['body' => 'Find every talk, save the ones you want and get a reminder before it starts.'],
+                    ['body' => "See who is talking about what, and save the talks you don't want to miss."],
+                    ['body' => 'Their talks are in CampBuddy: save yours and get a nudge before they start.'],
+                ]),
             ],
             [
                 'key' => 'sponsors',
@@ -220,11 +232,14 @@ class SocialKit
                 'headline' => $pick('spo-head', ['The sponsors who make it happen', "The sponsors behind {$short}", 'Thanks to these sponsors']),
                 'line' => 'Their deals are in CampBuddy',
                 'body' => 'logos',
-                'caption' => $pick('spo-caption', [
-                    "These sponsors help keep {$name} affordable. Stop by their booths, and find their deals for attendees in CampBuddy.",
-                    "{$name} happens with help from these sponsors. Visit their booths and see their attendee deals in CampBuddy.",
-                    "Say thanks to the sponsors of {$name}: drop by their booths, and check CampBuddy for the deals they offer attendees.",
-                ])."\n\n{$link('sponsors')}\n\n{$tags}",
+                'parts' => [
+                    'extra' => $sponsorNames !== null ? "Thank you, {$sponsorNames}." : null,
+                    'cta' => 'See their attendee deals in CampBuddy',
+                ] + $pick('spo-caption', [
+                    ['hook' => "These sponsors help keep {$name} affordable.", 'body' => 'Stop by their booths to say thanks, and find the deals they offer attendees in CampBuddy.'],
+                    ['hook' => "{$name} happens with help from these sponsors.", 'body' => 'Visit their booths and see their attendee deals in CampBuddy.'],
+                    ['hook' => "Say thanks to the sponsors of {$name}.", 'body' => 'Drop by their booths, and check CampBuddy for the deals they offer attendees.'],
+                ]),
             ],
             [
                 'key' => 'today',
@@ -253,11 +268,11 @@ class SocialKit
                 'headline' => $pick('con-head', ['Find your Contributor Day table', 'Give back to WordPress', 'Pick your Contributor Day team']),
                 'line' => $pick('con-line', ['CampBuddy matches you with a team', 'No coding needed, every table welcomes you', 'Three questions, one team for you']),
                 'body' => 'tables',
-                'caption' => "Contributor Day at {$name}: ".$pick('con-caption', [
-                    'not sure which table to join? Answer three quick questions in CampBuddy and it suggests the team for you. No coding needed, every table welcomes beginners.',
-                    'translators, designers, writers, testers and developers all have a place. CampBuddy asks three questions and points you to your table.',
-                    'your first contribution to WordPress can happen here. Let CampBuddy suggest a team that fits you, no coding needed.',
-                ])."\n\n{$link('contributor')}\n\n{$tags}",
+                'parts' => ['cta' => 'Find your table in CampBuddy'] + $pick('con-caption', [
+                    ['hook' => "Not sure which Contributor Day table to join at {$name}?", 'body' => 'Answer three quick questions in CampBuddy and it suggests a team for you. No coding needed, every table welcomes beginners.'],
+                    ['hook' => "Contributor Day at {$name} has a place for you.", 'body' => 'Translators, designers, writers, testers and developers all have a table. CampBuddy asks three questions and points you to yours.'],
+                    ['hook' => "Your first contribution to WordPress can happen at {$name}.", 'body' => 'On Contributor Day, let CampBuddy suggest a team that fits you. No coding needed.'],
+                ]),
             ],
             [
                 'key' => 'meet',
@@ -267,11 +282,11 @@ class SocialKit
                 'line' => 'CampBuddy shows who shares your interests',
                 'body' => 'points',
                 'points' => ['See who shares your interests', 'Say hi with one tap', 'Swap Camp Cards with a QR', 'Your Contributor Day table'],
-                'caption' => $pick('meet-caption', [
-                    "First WordCamp, or don't know anyone at {$name}? CampBuddy shows attendees who share your interests, and gives you an easy way to say hi.",
-                    "The best part of {$name} is the people. CampBuddy shows who shares your interests, so the first hello is easy.",
-                    "Going to {$name} alone? You won't be for long: CampBuddy shows attendees with the same interests and helps you say hi.",
-                ])."\n\n{$link('meet')}\n\n{$tags}",
+                'parts' => ['cta' => 'Find your people in CampBuddy'] + $pick('meet-caption', [
+                    ['hook' => "First WordCamp, or don't know anyone at {$name}?", 'body' => 'CampBuddy shows attendees who share your interests, and gives you an easy way to say hi.'],
+                    ['hook' => "The best part of {$name} is the people.", 'body' => 'CampBuddy shows who shares your interests, so the first hello is easy. When you meet, swap Camp Cards with a QR.'],
+                    ['hook' => "Going to {$name} alone? You won't be for long.", 'body' => 'CampBuddy shows attendees with the same interests and helps you say hi.'],
+                ]),
             ],
             [
                 'key' => 'thank-you',
@@ -281,11 +296,16 @@ class SocialKit
                 'line' => 'Your day is saved in CampBuddy',
                 'body' => 'points',
                 'points' => ['Your talks and notes stay in the app', 'The people you met, all in one place', 'Save your whole day as a PDF', 'See you at the next WordCamp'],
-                'caption' => $opening."Thank you for using CampBuddy at {$name}! ".$pick('ty-caption', [
-                    'Your sessions, notes and the people you met stay in the app, and you can save it all as a PDF.',
-                    'Everything from your day stays in the app: talks, notes and new friends. Save it as a PDF to keep.',
-                    'Your notes and the people you met are still in the app, ready to save as a PDF.',
-                ])."\n\nSee you at the next WordCamp.\n\n{$link('thank-you')}\n\n{$tags}",
+                'parts' => [
+                    'opening' => $opening,
+                    'hook' => "Thank you for using CampBuddy at {$name}!",
+                    'xbody' => 'See you at the next WordCamp.',
+                    'cta' => 'Open your day in CampBuddy',
+                ] + $pick('ty-caption', [
+                    ['body' => "Your sessions, notes and the people you met stay in the app, and you can save it all as a PDF.\n\nThank you to the organizers, volunteers, speakers and sponsors who made it happen. See you at the next WordCamp."],
+                    ['body' => "Everything from your day stays in the app: talks, notes and new friends. Save it as a PDF to keep.\n\nA big thank you to everyone who made {$short} happen. See you at the next WordCamp."],
+                    ['body' => "Your notes and the people you met are still in the app, ready to save as a PDF.\n\nThanks to the organizers, volunteers, speakers and sponsors. See you at the next WordCamp."],
+                ]),
             ],
         ];
 
@@ -305,11 +325,11 @@ class SocialKit
                     $dates !== '' ? $dates : null,
                     'Directions, Wi-Fi and food in CampBuddy',
                 ])),
-                'caption' => $pick('ven-caption', [
-                    "{$name} happens{$at} on {$dates}.\n\nDirections, Wi-Fi, food and everything you need on the day are in CampBuddy, free and without a sign-up.",
-                    "Where is {$name}?".($place !== '' ? " Right here: {$place}." : '').' Plan your way in, and find the Wi-Fi, food and help desk in CampBuddy.',
-                    "Mark the place: {$name}{$at}, {$dates}. CampBuddy has the venue details, the schedule and the people to meet, all on your phone.",
-                ])."\n\n{$link('venue')}\n\n{$tags}",
+                'parts' => ['cta' => 'Get the venue details in CampBuddy'] + $pick('ven-caption', [
+                    ['hook' => "{$name} happens{$at} on {$dates}.", 'body' => 'Directions, Wi-Fi, food and everything you need on the day are in CampBuddy, free and without a sign-up.'],
+                    ['hook' => "Where is {$name}?".($place !== '' ? " Right here: {$place}." : ''), 'body' => 'Plan your way in, and find the Wi-Fi, food and help desk in CampBuddy.'],
+                    ['hook' => "Mark the place: {$name}{$at}, {$dates}.", 'body' => 'CampBuddy has the venue details, the schedule and the people to meet, all on your phone.'],
+                ]),
             ],
             [
                 'key' => 'first-timer',
@@ -319,11 +339,14 @@ class SocialKit
                 'line' => 'A 5-minute guide in CampBuddy',
                 'body' => 'points',
                 'points' => ['What happens on the day', "Words you'll hear", 'What to bring', 'How to meet people'],
-                'caption' => $pick('ft-caption', [
-                    "Going to your first WordCamp? {$name} is for you too. CampBuddy's 5-minute guide explains the day, the words you'll hear, what to bring and how to meet people.",
-                    "First WordCamp? Everyone has one. Read the CampBuddy guide before {$name}: how the day runs, what to bring and how to say hi.",
-                    "Never been to a WordCamp? Start with CampBuddy's short guide for {$name}, then save your talks and find people with the same interests.",
-                ])."\n\n".route('event.guide', $event).'?'.http_build_query(['utm_source' => 'campbuddy', 'utm_medium' => 'social', 'utm_campaign' => $event->slug, 'utm_content' => 'first-timer'])."\n\n{$tags}",
+                'parts' => [
+                    'cta' => 'Read the 5-minute guide',
+                    'link' => route('event.guide', $event).'?'.http_build_query(['utm_source' => 'campbuddy', 'utm_medium' => 'social', 'utm_campaign' => $event->slug, 'utm_content' => 'first-timer']),
+                ] + $pick('ft-caption', [
+                    ['hook' => "Going to your first WordCamp? {$name} is for you too.", 'body' => "CampBuddy's 5-minute guide explains the day, the words you'll hear, what to bring and how to meet people."],
+                    ['hook' => 'First WordCamp? Everyone has one.', 'body' => "Read the CampBuddy guide before {$name}: how the day runs, what to bring and how to say hi."],
+                    ['hook' => 'Never been to a WordCamp? Start here.', 'body' => "Read CampBuddy's short guide for {$name}, then save your talks and find people with the same interests."],
+                ]),
             ],
             [
                 'key' => 'wpsimplified',
@@ -333,11 +356,11 @@ class SocialKit
                 'line' => 'Free tutorials by WPSimplified, in Hindi and English',
                 'body' => 'points',
                 'points' => ['Step-by-step video tutorials', 'Podcasts with the community', 'Shorts: one tip in a minute'],
-                'caption' => $pick('wps-caption', [
-                    "Get ready for {$name} with free WordPress tutorials, podcasts and shorts from WPSimplified, in Hindi and English: https://wpsimplified.in\n\nThen plan your day in CampBuddy, made by WPSimplified for the WordPress community.",
-                    "New to WordPress or want to go deeper before {$name}? WPSimplified has free step-by-step tutorials in Hindi and English: https://wpsimplified.in\n\nAnd CampBuddy, also by WPSimplified, keeps your WordCamp day in one place.",
-                    "Learn a little WordPress before {$name}: WPSimplified's free videos, podcasts and shorts make it simple. https://wpsimplified.in\n\nSee you there, with CampBuddy on your phone.",
-                ])."\n\n{$link('wpsimplified')}\n\n{$tags} #WPSimplified",
+                'parts' => ['cta' => 'Plan your day in CampBuddy', 'xbody' => 'Free tutorials in Hindi and English: https://wpsimplified.in'] + $pick('wps-caption', [
+                    ['hook' => "Get ready for {$name} with free WordPress tutorials.", 'body' => "WPSimplified makes free tutorials, podcasts and shorts in Hindi and English: https://wpsimplified.in\n\nThen plan your day in CampBuddy, made by WPSimplified for the WordPress community."],
+                    ['hook' => "New to WordPress, or want to go deeper before {$name}?", 'body' => "WPSimplified has free step-by-step tutorials in Hindi and English: https://wpsimplified.in\n\nAnd CampBuddy, also by WPSimplified, keeps your WordCamp day in one place."],
+                    ['hook' => "Learn a little WordPress before {$name}.", 'body' => "WPSimplified's free videos, podcasts and shorts make it simple: https://wpsimplified.in\n\nSee you there, with CampBuddy on your phone."],
+                ]),
             ],
             [
                 'key' => 'moments',
@@ -351,11 +374,11 @@ class SocialKit
                     'Add #CampBuddy and #WPSimplified',
                     'Save your day in CampBuddy Memories',
                 ])),
-                'caption' => $pick('mom-caption', [
-                    "At {$name}? Share your favourite moments".($hashtag !== '' ? " with {$hashtag}" : '').". Your talks, notes and the people you met stay in CampBuddy Memories.",
-                    "Talks, hallway chats, selfies with new friends: post your {$name} moments".($hashtag !== '' ? " with {$hashtag}" : '').'. CampBuddy keeps your day in Memories.',
-                    "Make {$name} last: share your photos".($hashtag !== '' ? " with {$hashtag}" : '').' and keep your day, with the people you met, in CampBuddy.',
-                ])."\n\n{$link('moments')}\n\n{$tags} #WPSimplified",
+                'parts' => ['cta' => 'Open your Memories in CampBuddy'] + $pick('mom-caption', [
+                    ['hook' => "At {$name}? Share your favourite moments".($hashtag !== '' ? " with {$hashtag}" : '').'.', 'body' => 'Your talks, notes and the people you met stay in CampBuddy Memories.'],
+                    ['hook' => "Talks, hallway chats, selfies with new friends: post your {$name} moments".($hashtag !== '' ? " with {$hashtag}" : '').'.', 'body' => 'CampBuddy keeps your day in Memories.'],
+                    ['hook' => "Make {$name} last: share your photos".($hashtag !== '' ? " with {$hashtag}" : '').'.', 'body' => 'Keep your day, with the people you met, in CampBuddy.'],
+                ]),
             ],
         ]);
         $plan = [
@@ -385,6 +408,19 @@ class SocialKit
                 'date_label' => $dates[$post['key']]['label'] ?? null,
             ])
             ->values()->all();
+
+        // One caption per network (SocialCaptions), each post with its own tagged link; `caption` is the
+        // LinkedIn one, the fullest, for what takes a single caption (the native app, Publish).
+        // The day list and the spotlight write theirs in the browser, from the day or session picked.
+        $tags = self::hashtags($event);
+        $posts = array_map(function (array $post) use ($link, $tags) {
+            $parts = $post['parts'] ?? null;
+            unset($post['parts']);
+            $post['captions'] = $parts !== null ? SocialCaptions::make($parts + ['link' => $link($post['key'])], $tags) : ['instagram' => '', 'linkedin' => '', 'x' => ''];
+            $post['caption'] = $post['captions']['linkedin'];
+
+            return $post;
+        }, $posts);
 
         // A day list or a spotlight needs a schedule with times: without one they'd be empty cards.
         return array_values(array_filter($posts, fn ($post) => $timed || ! in_array($post['key'], ['today', 'spotlight'], true)));
@@ -535,7 +571,6 @@ class SocialKit
 
             $labels = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $personRoles);
             $talk = $roles[$entry->id]['talks'][0] ?? null;
-            $main = $labels[0] ?? 'Attendee';
 
             $role = $personRoles[0] ?? 'camp-card';
             $link = self::link($event, 'people-'.str_replace('_', '-', $role));
@@ -549,13 +584,45 @@ class SocialKit
                 'talk' => $talk,
                 'card' => $card,
                 'link' => $link,
-                'caption' => $talk
-                    ? "{$entry->name} is speaking at {$event->display_name}: \"{$talk}\". Save the talk in CampBuddy and get a reminder before it starts.\n\n{$link}\n\n{$tags} #CampBuddy"
-                    : "Say hi to {$entry->name}".($main === 'Attendee' ? '' : ', '.strtolower($main))." at {$event->display_name}! Find them, and everyone else worth meeting, in CampBuddy.\n\n{$link}\n\n{$tags} #CampBuddy",
             ];
         }
 
+        // Their captions once their roles are all in (one person, two tickets: both roles).
+        // `caption` is the LinkedIn one, for what takes a single caption (the native app).
+        foreach ($people as $i => $person) {
+            $people[$i]['captions'] = SocialCaptions::make(self::personParts($event, $person) + ['link' => $person['link']], $tags);
+            $people[$i]['caption'] = $people[$i]['captions']['linkedin'];
+        }
+
         return $people;
+    }
+
+    /**
+     * What a person's caption says, by their first role: a speaker's talk, an
+     * organizer's or volunteer's thanks, a table lead's table… Always their
+     * whole name; nothing about them beyond their public name, role and talk.
+     *
+     * @param  array<string, mixed>  $person
+     * @return array<string, mixed>
+     */
+    private static function personParts(Event $event, array $person): array
+    {
+        $name = trim((string) $person['name']);
+        $at = $event->display_name;
+        $talk = trim((string) ($person['talk'] ?? ''));
+
+        return match ($person['roles'][0] ?? 'camp-card') {
+            'speaker' => $talk !== ''
+                ? ['hook' => "{$name} is speaking at {$at}.", 'xhook' => "{$name} is speaking at {$at}: \"{$talk}\"", 'body' => "Talk: \"{$talk}\"", 'xbody' => 'Get a reminder before it starts.', 'cta' => 'Save the talk in CampBuddy']
+                : ['hook' => "{$name} is speaking at {$at}.", 'body' => 'Find their talk in the schedule and get a reminder before it starts.', 'cta' => 'Save the talk in CampBuddy'],
+            'organizer' => ['hook' => "Meet {$name}, one of the organizers of {$at}.", 'body' => 'Organizers are the people who make a WordCamp happen. Say thanks when you see them!', 'cta' => 'Find everyone worth meeting in CampBuddy'],
+            'volunteer' => ['hook' => "Meet {$name}, volunteering at {$at}.", 'body' => 'Volunteers keep the day running. Say thanks when you see them!', 'cta' => 'Find everyone worth meeting in CampBuddy'],
+            'sponsor' => ['hook' => "Meet {$name} from the sponsors of {$at}.", 'body' => 'Say hi when you see them at the event.', 'cta' => "See the sponsors' attendee deals in CampBuddy"],
+            'microsponsor' => ['hook' => "{$name} is a microsponsor of {$at}.", 'body' => 'Thank you for supporting your WordPress community!', 'cta' => 'Find everyone worth meeting in CampBuddy'],
+            'media_partner' => ['hook' => "Meet {$name}, media partner of {$at}.", 'body' => 'Follow their coverage of the event, and say hi when you see them.', 'cta' => 'Find everyone worth meeting in CampBuddy'],
+            'table_lead' => ['hook' => "Meet {$name}, a Contributor Day table lead at {$at}.", 'body' => 'Join their table and give back to WordPress. Many tables need no coding at all.', 'cta' => 'Pick your table in CampBuddy'],
+            default => ['hook' => "Say hi to {$name} at {$at}!", 'body' => 'CampBuddy shows who shares your interests, so the first hello is easy.', 'cta' => 'Find them in CampBuddy'],
+        };
     }
 
     /** @return array<string, mixed> everything social-kit.js needs */

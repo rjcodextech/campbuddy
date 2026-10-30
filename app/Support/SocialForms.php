@@ -54,10 +54,17 @@ class SocialForms
             'image' => ['required', 'file', 'mimetypes:image/png', 'max:8192'],
             'title' => ['nullable', 'string', 'max:120'],
             'caption' => ['required', 'string', 'max:3000'],
+            'captions' => ['nullable', 'array'],
+            'captions.*' => ['nullable', 'string', 'max:5000'],
             'kind' => ['required', 'string', 'max:40'],
         ]);
+        // One caption per network (the web studio sends them), only the networks it knows.
+        $captions = array_map('strval', array_filter(
+            array_intersect_key((array) ($data['captions'] ?? []), SocialCaptions::NETWORKS),
+            fn ($text) => is_string($text) && $text !== '',
+        ));
 
-        $result = SocialPublisher::publish($event, $request->file('image'), (string) ($data['title'] ?? ''), $data['caption'], $data['kind'], $by);
+        $result = SocialPublisher::publish($event, $request->file('image'), (string) ($data['title'] ?? ''), $data['caption'], $data['kind'], $by, $captions);
 
         return response()->json($result, $result['ok'] ? 200 : 422);
     }
