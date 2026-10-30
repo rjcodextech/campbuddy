@@ -177,3 +177,27 @@ pages exactly as they were:
   in a view still wins: `cb-input w-auto`); compound ones (`.cb-table tbody td`, `select.cb-input`,
   `.cb-input[aria-invalid]`) outside the layers, so they still beat a single utility as they did by specificity.
 - New views should use Tailwind 4 names (`shadow-xs`, `rounded-sm`, `outline-hidden`, `max-w-36`…).
+### Media Partner Pitch (30 Oct 2026, owner confirmed)
+
+Admin → Events → **Media Partner Pitch** (`MediaPitchController`, views `admin/media-pitch/index` and `print`).
+All the words live in one place, `App\Support\MediaPitch`: the four bios (CampBuddy, WPSimplified, Sunil Kumar
+Sharma, CampBuddy × WPSimplified, each a ~60-word *short* listing version and a *full* one), the plain-text email
+template (headings in capitals, no Markdown, so it reads the same in any mail app), the subject, and
+`sections()` for the printable proposal, so the page, the copied email and the PDF always say the same thing.
+
+- **Event fields come from the database** (`MediaPitch::events()`): name, dates ("12–13 Dec 2026"), venue (its
+  name only: the part of `info.venue` before " — "), organizer email (the address the site publishes in
+  `info.emergency_contact`, else `<city>@wordcamp.org` from `source_site_url`, never one made from the slug) and
+  the event's CampBuddy page (only when the event is active and visible). The old page asked for columns
+  `events` does not have, swallowed the error and always showed an empty list.
+- **Edits stay**: the subject and email are editable; a field change no longer overwrites them, and
+  *Rebuild from the fields* starts again. Bios can be edited per tab (short/full); edited full bios go to the PDF.
+- **Claims are only what is true** (`MediaPitchTest` blocks the old ones: "collects no personal data",
+  "100% offline", "premier", …). Numbers used: 18+ community events, 13 cities, five years, media partner of
+  WordCamp Rajasthan 2026 and WordCamp Bengaluru 2026 (from wpsimplified.in), and how many upcoming WordCamps
+  CampBuddy is ready for (`upcomingCount()`, only said when 2 or more). No subscriber or view counts.
+- **Logo with clear space**: `public/media/campbuddy-wpsimplified-logo-clear.png` (1732 × 368),
+  `…-clear-900dpi.png` (print) and `…-clear.svg` (viewBox with the same margin; it holds the picture, not vector
+  paths). Made by `php -d memory_limit=2G tools/logo-clear-space.php` (28 % of the artwork's height on every side);
+  the tight-crop originals stay for our own headers.
+- The print page drops anything but an http(s) event link (`SafeUrl::web`).

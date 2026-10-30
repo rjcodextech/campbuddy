@@ -1,31 +1,14 @@
 <x-app-layout title="Media Partner Pitch" subtitle="Generate, customize, and export media partnership proposals for any WordCamp event."
               :breadcrumbs="[['Events', route('admin.events.index')], ['Media Partner Pitch']]">
 
-    @php
-        $eventsJson = $events->map(function ($e) {
-            $dates = '';
-            if ($e->starts_on) {
-                $dates = $e->starts_on->format('j M Y');
-                if ($e->ends_on && ! $e->ends_on->isSameDay($e->starts_on)) {
-                    $dates .= ' – ' . $e->ends_on->format('j M Y');
-                }
-            }
-            $venue = $e->venue_name ? $e->venue_name . ($e->city ? ', ' . $e->city : '') : ($e->city ? $e->city . ($e->country ? ', ' . $e->country : '') : '');
-            return [
-                'id' => $e->id,
-                'slug' => $e->slug,
-                'name' => $e->display_name,
-                'dates' => $dates,
-                'venue' => $venue,
-                'email' => $e->slug ? $e->slug . '@wordcamp.org' : '',
-            ];
-        })->values()->toJson();
-    @endphp
-
     <div x-data="mediaPitch({
-        events: {{ $eventsJson }},
-        defaultEvent: '{{ $selectedEvent?->slug ?? '' }}',
-        defaults: {{ json_encode($defaults) }}
+        events: @js($events->values()),
+        selected: @js($selected),
+        applicant: @js($applicant),
+        bios: @js($bios),
+        emailTemplate: @js($emailTemplate),
+        subjectTemplate: @js($subjectTemplate),
+        readyLines: @js($readyLines),
     })" class="space-y-6">
 
         {{-- Top Bar / Event Selector & Quick Actions --}}
@@ -38,18 +21,7 @@
                         class="cb-input text-sm sm:max-w-md">
                     <option value="custom">-- Custom / Other WordCamp --</option>
                     @foreach ($events as $ev)
-                        @php
-                            $d = '';
-                            if ($ev->starts_on) {
-                                $d = $ev->starts_on->format('j M Y');
-                                if ($ev->ends_on && ! $ev->ends_on->isSameDay($ev->starts_on)) {
-                                    $d .= ' – ' . $ev->ends_on->format('j M Y');
-                                }
-                            }
-                        @endphp
-                        <option value="{{ $ev->slug }}">
-                            {{ $ev->display_name }}{{ $d ? ' (' . $d . ')' : '' }}
-                        </option>
+                        <option value="{{ $ev['slug'] }}">{{ $ev['name'] }}{{ $ev['dates'] ? ' ('.$ev['dates'].')' : '' }}</option>
                     @endforeach
                 </select>
                 <span x-show="selectedSlug !== 'custom'" class="text-xs text-muted">
@@ -114,6 +86,12 @@
                             <input type="text" id="pitch-event-venue" x-model="eventVenue" class="cb-input" placeholder="e.g. Dr. Ambedkar International Centre, New Delhi">
                         </div>
 
+                        <div>
+                            <label class="cb-label" for="pitch-event-link">Event's CampBuddy page</label>
+                            <input type="url" id="pitch-event-link" x-model="eventLink" class="cb-input" placeholder="https://campbuddy.club/event/…">
+                            <p class="mt-1 text-xs text-muted">Organizers can open it and try the app before they reply. Empty when the event is not public on CampBuddy yet.</p>
+                        </div>
+
                         <hr class="border-line">
 
                         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -147,32 +125,23 @@
 
                 {{-- Reference Card: Social Links & Common Logo --}}
                 <x-card title="Brand Assets & Channels">
-                    {{-- Common Logo Preview --}}
+                    {{-- Common Logo Preview: the lockup with the guideline's clear space (tools/logo-clear-space.php) --}}
                     <div class="rounded-lg border border-line bg-paper-soft p-3 mb-3">
-                        <div class="flex items-center justify-between mb-2">
-                            <p class="font-semibold text-ink text-xs flex items-center gap-1.5">
-                                <span class="h-2 w-2 rounded-full bg-emerald-600"></span>
-                                Common Co-Branded Logo
-                            </p>
-                            <div class="flex items-center gap-2">
-                                <a href="/media/campbuddy-wpsimplified-logo.svg" target="_blank" download="campbuddy-wpsimplified-logo.svg" class="text-xs text-primary hover:underline font-medium">
-                                    SVG
-                                </a>
-                                <span class="text-muted/50">•</span>
-                                <a href="/media/campbuddy-wpsimplified-logo.figcraft" download="CampBuddy-WPSimplified-CoBranded-Logo.figcraft" class="text-xs text-emerald-700 hover:underline font-semibold">
-                                    FigCraft (.figcraft)
-                                </a>
-                            </div>
+                        <p class="font-semibold text-ink text-xs flex items-center gap-1.5 mb-2">
+                            <span class="h-2 w-2 rounded-full bg-emerald-600"></span>
+                            Common Co-Branded Logo
+                        </p>
+                        <div class="rounded-lg border border-line bg-white p-2 flex items-center justify-center min-h-[64px]">
+                            <img src="{{ \App\Support\MediaPitch::LOGO_SVG }}?v={{ @filemtime(public_path('media/campbuddy-wpsimplified-logo-clear.svg')) }}" alt="CampBuddy × WPSimplified" class="h-14 w-auto max-w-full object-contain">
                         </div>
-                        <div class="rounded-lg border border-line bg-white p-3 flex items-center justify-center min-h-[64px]">
-                            <img src="/media/campbuddy-wpsimplified-logo.svg?v={{ @filemtime(public_path('media/campbuddy-wpsimplified-logo.svg')) }}" alt="CampBuddy | WPSimplified" class="h-11 max-h-12 w-auto max-w-full object-contain">
+                        <p class="mt-2 text-[12px] text-muted">With clear space on every side (brand guideline), so a partner's page can't crowd it.</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                            <a href="{{ \App\Support\MediaPitch::LOGO_PNG }}" download="CampBuddy-WPSimplified-logo.png" class="text-primary hover:underline font-medium">PNG for websites</a>
+                            <a href="{{ \App\Support\MediaPitch::LOGO_PRINT_PNG }}" download="CampBuddy-WPSimplified-logo-900dpi.png" class="text-primary hover:underline font-medium">PNG 900 DPI (print)</a>
+                            <a href="{{ \App\Support\MediaPitch::LOGO_SVG }}" download="CampBuddy-WPSimplified-logo.svg" class="text-primary hover:underline font-medium">SVG</a>
+                            <a href="/media/campbuddy-wpsimplified-logo.figcraft" download="CampBuddy-WPSimplified-CoBranded-Logo.figcraft" class="text-emerald-700 hover:underline font-semibold">FigCraft (.figcraft)</a>
                         </div>
-                        <div class="flex items-center justify-between mt-2 text-[11px] text-muted">
-                            <span>Print-Ready 900 DPI • Zero Margins</span>
-                            <a href="/media/campbuddy-wpsimplified-logo-900dpi.png" target="_blank" download="campbuddy-wpsimplified-logo-900dpi.png" class="text-primary hover:underline font-medium">
-                                Download 900 DPI PNG
-                            </a>
-                        </div>
+                        <p class="mt-1 text-[12px] text-muted">The SVG holds the same high-resolution picture (not vector paths); for print, the 900 DPI PNG is the sharper choice.</p>
                     </div>
 
                     <p class="text-xs text-muted mb-3">
@@ -228,12 +197,16 @@
                                     <span x-text="copiedSubject ? 'Copied!' : 'Copy Subject'"></span>
                                 </button>
                             </div>
-                            <input type="text" id="pitch-subject" x-model="subject" class="cb-input font-medium text-ink">
+                            <input type="text" id="pitch-subject" x-model="subject" x-on:input="subjectEdited = true" class="cb-input font-medium text-ink">
                         </div>
 
                         <div>
                             <label class="cb-label" for="pitch-body">Full Email Text</label>
-                            <textarea id="pitch-body" x-model="emailBody" rows="16"
+                            <div class="mb-1 flex items-center justify-between" x-show="emailEdited" x-cloak>
+                                <span class="text-xs text-muted">You edited this text: changing the event won't overwrite it.</span>
+                                <button type="button" x-on:click="regenerate(true)" class="text-xs text-primary hover:underline">Rebuild from the fields</button>
+                            </div>
+                            <textarea id="pitch-body" x-model="emailBody" x-on:input="emailEdited = true" rows="16"
                                       class="cb-input font-mono text-xs leading-relaxed"
                                       style="white-space: pre-wrap;"></textarea>
                         </div>
@@ -295,9 +268,19 @@
                                     ? 'border-emerald-600 bg-emerald-700 text-white shadow-xs' 
                                     : 'border-line bg-white text-ink hover:bg-emerald-50/50 hover:border-emerald-300'"
                                 class="flex flex-col items-center justify-center rounded-lg border p-2.5 text-center transition-all">
-                            <span class="text-xs font-bold leading-tight">CampBuddy | WPS</span>
+                            <span class="text-xs font-bold leading-tight">CampBuddy × WPS</span>
                             <span :class="activeTab === 'joint' ? 'text-emerald-100' : 'text-muted'" class="text-[10px] mt-0.5">Joint Partner Bio</span>
                         </button>
+                    </div>
+
+                    {{-- Short (a website listing) or full (an about page) --}}
+                    <div class="mb-3 inline-flex rounded-lg border border-line bg-white p-0.5 text-xs" role="group" aria-label="Bio length">
+                        <button type="button" x-on:click="bioLength = 'short'" :aria-pressed="bioLength === 'short'"
+                                :class="bioLength === 'short' ? 'bg-emerald-700 text-white' : 'text-ink hover:bg-emerald-50'"
+                                class="rounded-md px-3 py-1.5 font-semibold transition-colors">Short (~60 words)</button>
+                        <button type="button" x-on:click="bioLength = 'full'" :aria-pressed="bioLength === 'full'"
+                                :class="bioLength === 'full' ? 'bg-emerald-700 text-white' : 'text-ink hover:bg-emerald-50'"
+                                class="rounded-md px-3 py-1.5 font-semibold transition-colors">Full</button>
                     </div>
 
                     {{-- Textarea Info Bar --}}
@@ -308,7 +291,7 @@
 
                     {{-- Active Bio Textarea --}}
                     <div>
-                        <textarea id="active-bio-textarea" x-model="bios[activeTab]" rows="9"
+                        <textarea id="active-bio-textarea" x-model="bios[activeTab][bioLength]" rows="9"
                                   class="cb-input font-sans text-xs leading-relaxed border-emerald-300 bg-white p-3 shadow-2xs focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 min-h-[190px]"
                                   style="white-space: pre-wrap;"></textarea>
                     </div>
@@ -323,7 +306,7 @@
                                 </svg>
                                 1-Click Quick Copy:
                             </span>
-                            <span class="text-[11px] text-muted">Directly copy any bio without switching tabs</span>
+                            <span class="text-[12px] text-muted" x-text="'Copies the ' + bioLength + ' version'"></span>
                         </div>
                         <div class="grid grid-cols-2 lg:grid-cols-4 gap-2">
                             <button type="button" x-on:click="copyBioByKey('campbuddy')"
@@ -351,83 +334,72 @@
 
     <script>
         function mediaPitch(config) {
+            const firstEvent = config.selected || config.events[0] || {};
+            const originals = JSON.parse(JSON.stringify(config.bios));
             return {
                 events: config.events || [],
-                selectedSlug: config.defaultEvent || (config.events[0]?.slug || 'custom'),
-                eventName: config.defaults.event_name || 'WordCamp Delhi 2026',
-                eventDates: config.defaults.event_dates || '12–13 December 2026',
-                eventVenue: config.defaults.event_venue || 'Dr. Ambedkar International Centre, New Delhi',
-                eventEmail: config.defaults.event_email || 'delhi@wordcamp.org',
-                applicantName: config.defaults.applicant_name || 'Sunil Kumar Sharma',
-                applicantRole: config.defaults.applicant_role || 'Lead — WPSimplified & CampBuddy',
-                applicantEmail: config.defaults.applicant_email || 'hello@wpsimplified.in',
-                applicantPhone: config.defaults.applicant_phone || '+91-7877994704',
+                selectedSlug: firstEvent.slug || 'custom',
+                eventName: firstEvent.name || 'WordCamp Delhi 2026',
+                eventDates: firstEvent.dates || '',
+                eventVenue: firstEvent.venue || '',
+                eventEmail: firstEvent.email || '',
+                eventLink: firstEvent.link || '',
+                applicantName: config.applicant.name,
+                applicantRole: config.applicant.role,
+                applicantEmail: config.applicant.email,
+                applicantPhone: config.applicant.phone,
                 includePhone: true,
+                subject: '',
+                emailBody: '',
+                subjectEdited: false,
+                emailEdited: false,
                 copiedSubject: false,
                 copiedEmail: false,
                 copiedActiveBio: false,
                 copiedKeys: {},
                 activeTab: 'campbuddy',
+                bioLength: 'short',
+                bios: JSON.parse(JSON.stringify(config.bios)),
 
-                bios: {
-                    campbuddy: config.defaults.campbuddy_bio || 'CampBuddy (by WPSimplified) is an intelligent, mobile companion app engineered to transform how attendees experience WordCamps and developer conferences. Built from the ground up with a "guidance over information" philosophy, CampBuddy answers the one question every first-timer and seasoned attendee asks standing in a crowded venue: "What should I do right now?" Rather than serving static timetables, CampBuddy acts as a live on-ground co-pilot. Key features include real-time multi-track schedule tracking with bookmarking and timely session alerts, digital networking Camp Cards equipped with dynamic LinkedIn QR codes for instant connections, and interest-based attendee matching to help community members find like-minded collaborators effortlessly. To elevate event participation, CampBuddy integrates gamified exploration quests that guide attendees through the venue and directly toward sponsor booths. For Contributor Day, it features a skill-based table navigator that demystifies open collaboration, helping newcomers confidently find suitable teams to contribute. Sponsors benefit from interactive, ticket-style deal showcases featuring frictionless in-app lead capture forms that deliver verified attendee leads with genuine return on investment. Designed with a strict privacy-first architecture, CampBuddy requires no account creation, no logins, and collects no personal data—storing attendee preferences locally on the device while operating reliably offline even across congested conference Wi-Fi networks. CampBuddy bridges the gap between feeling lost and feeling connected, empowering every attendee to make the most of their event experience.',
-                    wpsimplified: config.defaults.wpsimplified_bio || 'WPSimplified is a premier WordPress education platform and community led by senior technical architect and community leader Sunil Kumar Sharma. Operating with an uncompromising "zero gatekeeping" ethos, the platform is on a mission to democratize modern web engineering and empower the next generation of developers, freelancers, and digital creators. WPSimplified breaks down complex enterprise web topics—custom plugin architecture, theme development, scalable systems design, API integrations, and performance optimization—into simple, practical, step-by-step learning paths that anyone can follow with complete confidence. Recognizing that language barriers often hold back exceptional talent, WPSimplified actively bridges the regional divide in tech by delivering high-impact bilingual education in Hindi and English. Through comprehensive video tutorials, hands-on architectural workshops, live developer masterclasses, and practical podcasts, the platform demystifies coding fundamentals and real-world engineering standards. Beyond technical training, WPSimplified offers actionable career coaching and freelancing guidance, helping learners transition from feeling stuck to building scalable digital solutions, launching successful agencies, and mastering client communication. Supported by a vibrant, rapidly growing community of passionate developers and creators across South Asia and worldwide, WPSimplified provides the continuous mentorship, real-world insights, and community support needed to thrive. At WPSimplified, WordPress development is made simple, practical, and profitable—ensuring top-tier technical education is accessible to everyone with zero barriers.',
-                    sunil: config.defaults.sunil_bio || 'Sunil Kumar Sharma is a Senior WordPress Developer and Technical Architect with over a decade of hands-on experience designing and engineering scalable web platforms, high-traffic digital ecosystems, and custom plugins. Deeply engaged in the WordPress community, Sunil has contributed extensively across South Asia as a speaker, organizer, volunteer, and mentor at numerous regional conferences, including WordCamp Kolhapur, WordCamp Nepal, WordCamp Bhopal, WordCamp Rajasthan, WordCamp Bengaluru, WordCamp Delhi, and WordCamp Asia. As the Lead at WPSimplified and CampBuddy, Sunil combines enterprise-level engineering acumen with an authentic commitment to grassroots impact. He is passionate about bridging the language divide in technology, dedicating his work to empowering non-metro developers and creators through regional language masterclasses, actionable content creation, and developer training. Sunil operates under a straightforward guiding philosophy: "zero gatekeeping—tech sabko sikhana is the vibe." His mission is ensuring that modern web development is never locked behind complex jargon or inaccessible barriers. Whether architecting scalable backend solutions, speaking on stage at tech conferences, or mentoring young developers taking their first steps in tech, Sunil brings a genuine community-first mindset to everything he builds. His focus remains steadfast on creating intelligent tools that enhance event experiences and producing practical educational resources that enable developers to build sustainable, scalable, and profitable digital careers.',
-                    joint: config.defaults.joint_bio || 'CampBuddy | WPSimplified is a collaborative initiative led by WordPress architect Sunil Kumar Sharma, created to empower the global WordPress community through intelligent event tools and accessible developer education. By bringing together on-ground utility and high-value media reach, this partnership provides comprehensive support to conference organizers, attendees, and sponsors alike. CampBuddy functions as an intelligent mobile companion app for WordCamp attendees, turning busy schedules into real-time guidance. Operating with a strict "guidance over information" philosophy, it features live multi-track session navigation, digital networking Camp Cards with instant LinkedIn QR codes, gamified exploration quests, and guided Contributor Day table onboarding. Sponsors receive high-impact visibility through interactive deal showcases and zero-friction lead capture forms, all delivered within a 100% account-free, privacy-first, offline-ready architecture. Working hand in hand, WPSimplified serves as the educational powerhouse and media amplifier. With an active following of ambitious developers, freelancers, and creators, WPSimplified provides pre-event hype campaigns, on-site attendee reaction video coverage, and post-event retrospective articles published on official channels. Operating with a "zero gatekeeping" philosophy, WPSimplified bridges regional language divides, ensuring event takeaways and developer insights reach a wider, highly engaged South Asian audience. Together, CampBuddy and WPSimplified deliver unmatched attendee utility, memorable event energy, and measurable sponsor engagement.'
+                init() {
+                    this.regenerate();
+                    // The email follows the fields until someone edits the text itself.
+                    this.$watch(() => [this.eventName, this.eventDates, this.eventVenue, this.eventLink, this.applicantName, this.applicantRole, this.applicantEmail, this.applicantPhone, this.includePhone].join('|'), () => this.regenerate());
+                },
+
+                regenerate(force = false) {
+                    const details = [this.eventDates, this.eventVenue].filter((v) => v && v.trim()).join(', ');
+                    const tokens = {
+                        event: this.eventName || 'your WordCamp',
+                        details: details ? ` (${details})` : '',
+                        link: (this.eventLink || '').trim(),
+                        name: this.applicantName,
+                        role: this.applicantRole,
+                        email: this.applicantEmail,
+                        phone: this.includePhone && this.applicantPhone ? `\nWhatsApp: ${this.applicantPhone}` : '',
+                    };
+                    const fill = (text) => text.replace(/\{(event|details|link|name|role|email|phone)\}/g, (m, key) => tokens[key]);
+                    // The event on CampBuddy: a link to try it, or the promise to set it up (MediaPitch::readyLine).
+                    const ready = fill(tokens.link ? config.readyLines.link : config.readyLines.none);
+                    const body = fill(config.emailTemplate).replace('{ready}', ready);
+                    if (force || !this.emailEdited) {
+                        this.emailBody = body;
+                        this.emailEdited = false;
+                    }
+                    if (force || !this.subjectEdited) {
+                        this.subject = fill(config.subjectTemplate);
+                        this.subjectEdited = false;
+                    }
                 },
 
                 get activeTabLabel() {
-                    const labels = {
-                        campbuddy: 'CampBuddy — Attendee Companion App Bio (All USPs Included)',
-                        wpsimplified: 'WPSimplified — Developer Education Platform Bio',
-                        sunil: 'Sunil Kumar Sharma — Lead Architect Bio',
-                        joint: 'CampBuddy | WPSimplified — Joint Partnership Bio'
-                    };
-                    return labels[this.activeTab] || 'Website Bio';
+                    const bio = this.bios[this.activeTab];
+                    return bio ? `${bio.label} (${this.bioLength === 'short' ? 'short, for a listing' : 'full, for an about page'})` : 'Website Bio';
                 },
 
                 get wordCountText() {
-                    const text = (this.bios[this.activeTab] || '').trim();
-                    if (!text) return '0 words';
-                    const words = text.split(/\s+/).length;
-                    return `${words} words • Ready to publish`;
-                },
-
-                get subject() {
-                    return `Media Partnership Proposal: ${this.eventName} × CampBuddy & WPSimplified`;
-                },
-
-                get emailBody() {
-                    const phoneLine = (this.includePhone && this.applicantPhone) ? `\nWhatsApp: ${this.applicantPhone}` : '';
-                    return `Dear ${this.eventName} Organizing Team,\n\n` +
-`Greetings from the team at CampBuddy and WPSimplified!\n\n` +
-`We are writing to officially apply for the Media Partnership for ${this.eventName}` + (this.eventDates ? ` (${this.eventDates}` + (this.eventVenue ? `, ${this.eventVenue}` : '') + `)` : '') + `.\n\n` +
-`We want to keep our proposal focused, transparent, and grounded strictly in high-value deliverables that we will genuinely execute to support your attendees, speakers, and sponsors.\n\n` +
-`### Who We Are\n` +
-`* CampBuddy (https://campbuddy.club/): An intelligent mobile companion app built for WordCamp attendees. Guided by a "guidance over information" philosophy, it answers the #1 first-timer question: "What should I do right now?" — featuring live multi-track session guidance, digital Camp Cards with instant LinkedIn QR networking, interest-based attendee matching, gamified sponsor quests, and guided Contributor Day table onboarding. Operates 100% offline-ready with zero accounts and complete on-device privacy.\n` +
-`* WPSimplified (https://wpsimplified.in/): A premier WordPress education platform and community led by technical architect Sunil Kumar Sharma. Dedicated to zero gatekeeping in tech, it bridges regional language barriers through actionable tutorials, custom plugin/theme development, and practical developer mentorship.\n\n` +
-`### Our Committed Deliverables (Clear & Focused)\n\n` +
-`A. Before the Event (Awareness & Excitement):\n` +
-`* Targeted Social Media Promotion: Announcement graphics, stories, and hype reels across our official channels (Instagram, X / Twitter, and YouTube Shorts/Reels) highlighting event dates, speaker lineups, ticket updates, and venue information.\n` +
-`* Ready-to-Use Attendee Companion: Configuring a dedicated ${this.eventName} instance of CampBuddy with the full schedule, track details, and venue guide pre-loaded so attendees can access everything instantly on mobile without needing an app store download.\n\n` +
-`B. During the Event (Attendee Utility & On-Ground Video Coverage):\n` +
-`* On-Ground Interactive Companion: Attendees use CampBuddy to see live "Happening Now" sessions, save talks to "My Day", swap digital Camp Cards with LinkedIn QR codes, and navigate Contributor Day tables easily.\n` +
-`* On-Site Video Bites & Reactions: We will record short video glimpses, speaker reactions, and attendee interview bites during both days to document the vibrancy and energy of the event.\n\n` +
-`C. After the Event (Recap & Community Amplification):\n` +
-`* YouTube Video Coverage: Curated video coverage and highlight reels published directly on our official YouTube channels (@WPSimplifiedBySunil and @CampBuddyClub).\n` +
-`* Official Recap Article: A detailed ${this.eventName} retrospective article published on the official WPSimplified website (wpsimplified.in) covering highlights, session takeaways, and photos.\n\n` +
-`### What We Seek from ${this.eventName}:\n` +
-`* Official Listing: Recognition as an official Media Partner on the ${this.eventName} website (name, logo, short bio, and backlink).\n` +
-`* Media Passes: Standard media access passes for our team to facilitate on-site video recording, coverage, and attendee assistance.\n` +
-`* Companion QR Visibility: Permission to display or share a simple QR code so attendees can scan and open their digital companion app seamlessly.\n\n` +
-`### Official Links & Verification Channels:\n` +
-`* CampBuddy (Attendee Companion): https://campbuddy.club/ | YouTube: @CampBuddyClub | Instagram: @campbuddyclub | X: @CampBuddyClub\n` +
-`* WPSimplified (Developer Education): https://wpsimplified.in/ | YouTube: @WPSimplifiedBySunil | Instagram: @wpsimplified | X: @iwpsimplified | LinkedIn: company/wpsimplified\n\n` +
-`We look forward to hearing from you and partnering to make ${this.eventName} a grand success!\n\n` +
-`Warm regards,\n\n` +
-`${this.applicantName}\n` +
-`${this.applicantRole}\n` +
-`Email: ${this.applicantEmail}${phoneLine}`;
+                    const text = (this.bios[this.activeTab]?.[this.bioLength] || '').trim();
+                    return text ? `${text.split(/\s+/).length} words` : '0 words';
                 },
 
                 get printUrl() {
@@ -436,16 +408,18 @@
                         event_dates: this.eventDates,
                         event_venue: this.eventVenue,
                         event_email: this.eventEmail,
+                        event_link: this.eventLink,
                         applicant_name: this.applicantName,
                         applicant_role: this.applicantRole,
                         applicant_email: this.applicantEmail,
                         applicant_phone: this.applicantPhone,
                         show_phone: this.includePhone ? '1' : '0',
                         subject: this.subject,
-                        campbuddy_bio: this.bios.campbuddy,
-                        wpsimplified_bio: this.bios.wpsimplified,
-                        sunil_bio: this.bios.sunil
                     });
+                    // Only bios someone changed travel in the address; the PDF has the rest.
+                    for (const [key, bio] of Object.entries(this.bios)) {
+                        if (bio.full !== originals[key].full) params.set(`${key}_bio`, bio.full);
+                    }
                     return '{{ route('admin.media-pitch.print') }}?' + params.toString();
                 },
 
@@ -453,12 +427,13 @@
                     if (this.selectedSlug === 'custom') {
                         return;
                     }
-                    const ev = this.events.find(e => e.slug === this.selectedSlug);
+                    const ev = this.events.find((e) => e.slug === this.selectedSlug);
                     if (ev) {
                         this.eventName = ev.name;
                         this.eventDates = ev.dates || '';
                         this.eventVenue = ev.venue || '';
-                        this.eventEmail = ev.email || (ev.slug + '@wordcamp.org');
+                        this.eventEmail = ev.email || '';
+                        this.eventLink = ev.link || '';
                     }
                 },
 
@@ -470,31 +445,21 @@
                     });
                 },
 
-                copySubject() {
-                    navigator.clipboard.writeText(this.subject);
-                    this.copiedSubject = true;
-                    setTimeout(() => { this.copiedSubject = false; }, 2000);
-                },
-
-                copyEmail() {
-                    navigator.clipboard.writeText(this.emailBody);
-                    this.copiedEmail = true;
-                    setTimeout(() => { this.copiedEmail = false; }, 2000);
-                },
-
-                copyActiveBio() {
-                    navigator.clipboard.writeText(this.bios[this.activeTab]);
-                    this.copiedActiveBio = true;
-                    setTimeout(() => { this.copiedActiveBio = false; }, 2000);
-                },
-
-                copyBioByKey(key) {
-                    if (this.bios[key]) {
-                        navigator.clipboard.writeText(this.bios[key]);
+                copy(text, flag, key = null) {
+                    navigator.clipboard.writeText(text);
+                    if (key) {
                         this.copiedKeys[key] = true;
                         setTimeout(() => { this.copiedKeys[key] = false; }, 2000);
+                        return;
                     }
-                }
+                    this[flag] = true;
+                    setTimeout(() => { this[flag] = false; }, 2000);
+                },
+
+                copySubject() { this.copy(this.subject, 'copiedSubject'); },
+                copyEmail() { this.copy(this.emailBody, 'copiedEmail'); },
+                copyActiveBio() { this.copy(this.bios[this.activeTab][this.bioLength], 'copiedActiveBio'); },
+                copyBioByKey(key) { if (this.bios[key]) this.copy(this.bios[key][this.bioLength], null, key); },
             };
         }
     </script>

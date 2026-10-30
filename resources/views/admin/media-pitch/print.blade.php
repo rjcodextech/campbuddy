@@ -323,7 +323,7 @@
     <div class="container">
         <header class="header">
             <div class="logo-wrap">
-                <img src="/media/campbuddy-wpsimplified-logo.svg?v={{ @filemtime(public_path('media/campbuddy-wpsimplified-logo.svg')) }}" alt="CampBuddy | WPSimplified">
+                <img src="/media/campbuddy-wpsimplified-logo.svg?v={{ @filemtime(public_path('media/campbuddy-wpsimplified-logo.svg')) }}" alt="CampBuddy × WPSimplified">
             </div>
             <div class="brand-meta">
                 <div class="badge-status">Official Partnership Proposal</div>
@@ -333,10 +333,10 @@
 
         <div class="meta-box">
             <div class="meta-label">To:</div>
-            <div class="meta-value">{{ $event_name }} Organizing Team ({{ $event_email }})</div>
+            <div class="meta-value">{{ $event_name }} organizing team{{ $event_email ? ' ('.$event_email.')' : '' }}</div>
 
             <div class="meta-label">Event:</div>
-            <div class="meta-value"><strong>{{ $event_name }}</strong> &bull; {{ $event_dates }} &bull; {{ $event_venue }}</div>
+            <div class="meta-value"><strong>{{ $event_name }}</strong>{{ $event_dates ? ' · '.$event_dates : '' }}{{ $event_venue ? ' · '.$event_venue : '' }}</div>
 
             <div class="meta-label">From:</div>
             <div class="meta-value">{{ $applicant_name }} ({{ $applicant_role }})</div>
@@ -345,88 +345,65 @@
             <div class="meta-value"><strong>{{ $subject }}</strong></div>
         </div>
 
-        <p>Dear {{ $event_name }} Organizing Team,</p>
-        <p>Greetings from the team at CampBuddy and WPSimplified!</p>
-        <p>We are writing to officially submit our application for the <strong>Media Partnership for {{ $event_name }}</strong> ({{ $event_dates }}, {{ $event_venue }}). We propose a transparent, high-value collaboration strictly focused on practical deliverables that genuinely support your attendees, speakers, and sponsors.</p>
+        {{-- The words: App\Support\MediaPitch::sections(), the same as the copied email. --}}
+        <p>Dear {{ $event_name }} organizing team,</p>
+        @foreach ($sections['intro'] as $paragraph)
+            <p>{{ $paragraph }}</p>
+        @endforeach
 
         <h2>Who We Are</h2>
         <div class="brand-highlight-grid">
-            <div class="brand-card">
-                <div class="brand-card-title">
-                    <span>CampBuddy</span>
-                    <small style="font-size: 11px; font-weight: 500; color: #475569;">campbuddy.club</small>
+            @foreach ($sections['who'] as $who => $text)
+                @php([$brand, $site] = array_pad(explode(' (', rtrim($who, ')'), 2), 2, ''))
+                <div class="brand-card">
+                    <div class="brand-card-title">
+                        <span>{{ $brand }}</span>
+                        <small style="font-size: 11px; font-weight: 500; color: #475569;">{{ preg_replace('#^https?://#', '', $site) }}</small>
+                    </div>
+                    <div class="brand-card-desc">{{ $text }}</div>
                 </div>
-                <div class="brand-card-desc">
-                    An intelligent mobile companion app engineered to transform how attendees experience WordCamps. Built on the <em>"guidance over information"</em> principle, it answers the #1 first-timer question: <em>"What do I do next?"</em> Features live multi-track session guidance, digital networking Camp Cards with instant LinkedIn QR codes, interest-based attendee matching, gamified sponsor quests, Contributor Day table guides, and exclusive sponsor deals. Works 100% offline with zero sign-ups and complete on-device privacy.
-                </div>
-            </div>
-
-            <div class="brand-card">
-                <div class="brand-card-title">
-                    <span>WPSimplified</span>
-                    <small style="font-size: 11px; font-weight: 500; color: #475569;">wpsimplified.in</small>
-                </div>
-                <div class="brand-card-desc">
-                    A dedicated developer education platform and community led by WordPress architect Sunil Kumar Sharma. Committed to <em>zero gatekeeping</em> in tech, it bridges regional language barriers through actionable video tutorials, plugin architecture masterclasses, hands-on workshops, and practical career mentorship for freelancers and engineers.
-                </div>
-            </div>
+            @endforeach
         </div>
 
-        <h2>Committed Deliverables (Clear &amp; Focused)</h2>
-        
-        <div class="deliverable-card">
-            <div class="deliverable-phase-title">
-                <span class="deliverable-phase-badge">Phase 1</span>
-                <span>Before the Event (Awareness &amp; Excitement)</span>
+        <h2>What We Will Do</h2>
+        @foreach (['before' => 'Before the event', 'during' => 'During the event', 'after' => 'After the event'] as $phase => $title)
+            <div class="deliverable-card">
+                <div class="deliverable-phase-title">
+                    <span class="deliverable-phase-badge">Phase {{ $loop->iteration }}</span>
+                    <span>{{ $title }}</span>
+                </div>
+                <ul>
+                    @foreach ($sections[$phase] as $item)
+                        <li>{{ $item }}</li>
+                    @endforeach
+                </ul>
             </div>
-            <ul>
-                <li><strong>Targeted Social Media Promotion:</strong> Announcement graphics, stories, and hype reels across our official channels (Instagram, X / Twitter, and YouTube Shorts/Reels) highlighting event dates, speaker lineups, ticket updates, and venue information.</li>
-                <li><strong>Ready-to-Use Attendee Companion:</strong> Configuring a dedicated {{ $event_name }} instance of CampBuddy with the full schedule, track details, and venue guide pre-loaded so attendees can access everything instantly on mobile without an app store download.</li>
-            </ul>
-        </div>
+        @endforeach
+        <p>{{ $sections['promise'] }}</p>
 
-        <div class="deliverable-card">
-            <div class="deliverable-phase-title">
-                <span class="deliverable-phase-badge">Phase 2</span>
-                <span>During the Event (Attendee Utility &amp; On-Ground Video Coverage)</span>
-            </div>
-            <ul>
-                <li><strong>On-Ground Interactive Companion:</strong> Attendees use CampBuddy to see live "Happening Now" sessions, save talks to "My Day", swap digital Camp Cards with LinkedIn QR codes, and navigate Contributor Day tables easily.</li>
-                <li><strong>On-Site Video Bites &amp; Reactions:</strong> Recording short video glimpses, speaker reactions, and attendee interview bites during both days to document the vibrancy and energy of the event.</li>
-            </ul>
-        </div>
-
-        <div class="deliverable-card">
-            <div class="deliverable-phase-title">
-                <span class="deliverable-phase-badge">Phase 3</span>
-                <span>After the Event (Recap &amp; Community Amplification)</span>
-            </div>
-            <ul>
-                <li><strong>YouTube Video Coverage:</strong> Curated video coverage and highlight reels published directly on our official YouTube channels (@WPSimplifiedBySunil and @CampBuddyClub).</li>
-                <li><strong>Official Recap Article:</strong> A detailed {{ $event_name }} retrospective article published on the official WPSimplified website (wpsimplified.in) covering highlights, session takeaways, and photos.</li>
-            </ul>
-        </div>
-
-        <h2>What We Seek from {{ $event_name }}</h2>
+        <h2>What We Ask For</h2>
         <ul>
-            <li><strong>Official Listing:</strong> Recognition as an official Media Partner on the {{ $event_name }} website (name, logo, and backlink).</li>
-            <li><strong>Media Passes:</strong> Standard media access passes for our team to facilitate on-site video recording, coverage, and attendee assistance.</li>
-            <li><strong>Companion QR Visibility:</strong> Permission to display or share a simple QR code so attendees can scan and open their digital companion app seamlessly.</li>
+            @foreach ($sections['ask'] as $item)
+                <li>{{ $item }}</li>
+            @endforeach
         </ul>
 
         <h2>Official Links &amp; Verified Channels</h2>
         <div class="channels-list">
             <div class="channel-row">
-                <div class="channel-entity">CampBuddy App:</div>
+                <div class="channel-entity">CampBuddy:</div>
                 <div class="channel-links">
                     <strong>Web:</strong> https://campbuddy.club/ <span>|</span>
                     <strong>YouTube:</strong> @CampBuddyClub <span>|</span>
                     <strong>Instagram:</strong> @campbuddyclub <span>|</span>
                     <strong>X:</strong> @CampBuddyClub
+                    @if ($event_link)
+                        <br><strong>{{ $event_name }} on CampBuddy:</strong> {{ $event_link }}
+                    @endif
                 </div>
             </div>
             <div class="channel-row">
-                <div class="channel-entity">WPSimplified Hub:</div>
+                <div class="channel-entity">WPSimplified:</div>
                 <div class="channel-links">
                     <strong>Web:</strong> https://wpsimplified.in/ <span>|</span>
                     <strong>YouTube:</strong> @WPSimplifiedBySunil <span>|</span>
@@ -437,31 +414,22 @@
             </div>
         </div>
 
-        <h2>Ready-to-Publish Website Bios (For Event Website)</h2>
+        <h2>Bios for Your Website</h2>
         <div class="bios-box">
-            <div class="bio-item">
-                <div class="bio-title">1. CampBuddy (Mobile Companion App Bio)</div>
-                <div class="bio-text">
-                    {{ $campbuddy_bio ?: 'CampBuddy (by WPSimplified) is an intelligent, mobile companion app engineered to transform how attendees experience WordCamps and developer conferences. Built from the ground up with a "guidance over information" philosophy, CampBuddy answers the one question every first-timer and seasoned attendee asks standing in a crowded venue: "What should I do right now?" Rather than serving static timetables, CampBuddy acts as a live on-ground co-pilot. Key features include real-time multi-track schedule tracking with bookmarking and timely session alerts, digital networking Camp Cards equipped with dynamic LinkedIn QR codes for instant connections, and interest-based attendee matching to help community members find like-minded collaborators effortlessly. To elevate event participation, CampBuddy integrates gamified exploration quests that guide attendees through the venue and directly toward sponsor booths. For Contributor Day, it features a skill-based table navigator that demystifies open collaboration, helping newcomers confidently find suitable teams to contribute. Sponsors benefit from interactive, ticket-style deal showcases featuring frictionless in-app lead capture forms that deliver verified attendee leads with genuine return on investment. Designed with a strict privacy-first architecture, CampBuddy requires no account creation, no logins, and collects no personal data—storing attendee preferences locally on the device while operating reliably offline even across congested conference Wi-Fi networks. CampBuddy bridges the gap between feeling lost and feeling connected, empowering every attendee to make the most of their event experience.' }}
+            @foreach ($bios as $bio)
+                <div class="bio-item">
+                    <div class="bio-title">{{ $loop->iteration }}. {{ $bio['label'] }}</div>
+                    <div class="bio-text">
+                        <p style="margin: 0 0 6px;"><em>Short:</em> {{ $bio['short'] }}</p>
+                        @foreach (preg_split('/\n\s*\n/', $bio['full']) as $paragraph)
+                            <p style="margin: 0 0 6px;">{{ $paragraph }}</p>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
-
-            <div class="bio-item">
-                <div class="bio-title">2. WPSimplified (Developer Education Platform Bio)</div>
-                <div class="bio-text">
-                    {{ $wpsimplified_bio ?: 'WPSimplified is a premier WordPress education platform and community led by senior technical architect and community leader Sunil Kumar Sharma. Operating with an uncompromising "zero gatekeeping" ethos, the platform is on a mission to democratize modern web engineering and empower the next generation of developers, freelancers, and digital creators. WPSimplified breaks down complex enterprise web topics—custom plugin architecture, theme development, scalable systems design, API integrations, and performance optimization—into simple, practical, step-by-step learning paths that anyone can follow with complete confidence. Recognizing that language barriers often hold back exceptional talent, WPSimplified actively bridges the regional divide in tech by delivering high-impact bilingual education in Hindi and English. Through comprehensive video tutorials, hands-on architectural workshops, live developer masterclasses, and practical podcasts, the platform demystifies coding fundamentals and real-world engineering standards. Beyond technical training, WPSimplified offers actionable career coaching and freelancing guidance, helping learners transition from feeling stuck to building scalable digital solutions, launching successful agencies, and mastering client communication. Supported by a vibrant, rapidly growing community of passionate developers and creators across South Asia and worldwide, WPSimplified provides the continuous mentorship, real-world insights, and community support needed to thrive. At WPSimplified, WordPress development is made simple, practical, and profitable—ensuring top-tier technical education is accessible to everyone with zero barriers.' }}
-                </div>
-            </div>
-
-            <div class="bio-item">
-                <div class="bio-title">3. Sunil Kumar Sharma (Lead Bio)</div>
-                <div class="bio-text">
-                    {{ $sunil_bio ?: 'Sunil Kumar Sharma is a Senior WordPress Developer and Technical Architect with over a decade of hands-on experience designing and engineering scalable web platforms, high-traffic digital ecosystems, and custom plugins. Deeply engaged in the WordPress community, Sunil has contributed extensively across South Asia as a speaker, organizer, volunteer, and mentor at numerous regional conferences, including WordCamp Kolhapur, WordCamp Nepal, WordCamp Bhopal, WordCamp Rajasthan, WordCamp Bengaluru, WordCamp Delhi, and WordCamp Asia. As the Lead at WPSimplified and CampBuddy, Sunil combines enterprise-level engineering acumen with an authentic commitment to grassroots impact. He is passionate about bridging the language divide in technology, dedicating his work to empowering non-metro developers and creators through regional language masterclasses, actionable content creation, and developer training. Sunil operates under a straightforward guiding philosophy: "zero gatekeeping—tech sabko sikhana is the vibe." His mission is ensuring that modern web development is never locked behind complex jargon or inaccessible barriers. Whether architecting scalable backend solutions, speaking on stage at tech conferences, or mentoring young developers taking their first steps in tech, Sunil brings a genuine community-first mindset to everything he builds. His focus remains steadfast on creating intelligent tools that enhance event experiences and producing practical educational resources that enable developers to build sustainable, scalable, and profitable digital careers.' }}
-                </div>
-            </div>
+            @endforeach
         </div>
 
-        <p>We look forward to partnering with you to make {{ $event_name }} a grand success for the entire community!</p>
+        <p>{{ $sections['closing'] }}</p>
 
         <div class="signoff">
             <div class="signoff-name">{{ $applicant_name }}</div>
