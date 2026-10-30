@@ -85,6 +85,11 @@
         </div>
         @include('attendee.partials.form-field', ['id' => 'join-wporg', 'label' => 'WordPress.org username', 'placeholder' => 'e.g. yourname', 'hint' => 'Optional. Links to your profiles.wordpress.org page. Pasting the full profile link works too.', 'dataSlot' => 'wporg', 'maxlength' => 120, 'errorLine' => false])
 
+        {{-- Only when joining; an edit (people.js) hides it — they agreed already. --}}
+        <div data-slot="consent">
+            @include('attendee.partials.consent-check', ['id' => 'join-consent', 'what' => 'what I filled in here with attendees of this WordCamp'])
+        </div>
+
         <p class="form-error" data-join-error role="alert" hidden></p>
         <button type="button" class="btn btn--primary btn--full" id="join-submit" data-slot="submit">Join</button>
     </div>

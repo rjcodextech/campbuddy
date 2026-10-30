@@ -40,7 +40,7 @@ function holdOff(nav) {
 /** The addresses of the event's pages: the known screens plus every event link the page shows. */
 export function pageAddresses(slug, doc, origin) {
   const base = `/event/${slug}`;
-  const paths = new Set([base, `${base}/my-day`, `${base}/quest`, `${base}/contribute`, `${base}/explore`, `${base}/camp-card`, `${base}/guide`, `${base}/manifest.json`, '/', '/guide']);
+  const paths = new Set([base, `${base}/my-day`, `${base}/quest`, `${base}/contribute`, `${base}/explore`, `${base}/camp-card`, `${base}/guide`, `${base}/manifest.json`, '/', '/guide', '/about', '/privacy', '/terms']);
 
   for (const anchor of doc.querySelectorAll('a[href]')) {
     try {

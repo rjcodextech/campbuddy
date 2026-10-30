@@ -471,6 +471,10 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
     })
   );
 
+  // The consent tick is asked once, when joining (DPDP Act; App\Support\Consent on the server).
+  const consentBox = el.querySelector('#join-consent');
+  if (existing) consentBox?.closest('.consent-check')?.remove();
+
   const errorEl = el.querySelector('[data-join-error]');
   const showError = (message) => {
     errorEl.textContent = message;
@@ -547,6 +551,13 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
       blocked('no_tags');
       return;
     }
+    if (!existing && consentBox && !consentBox.checked) {
+      showError('Please tick the box to agree before you join.');
+      blocked('no_consent');
+      consentBox.focus();
+      return;
+    }
+    if (!existing) body.consent = true;
 
     showError('');
     submitBtn.disabled = true;
@@ -602,7 +613,8 @@ function showJoinForm(el, eventSlug, eventId, discoveryKey, existing = null, opt
  */
 function savedFields(body, card) {
   const match = /^https:\/\/profiles\.wordpress\.org\/([^/]+)\/$/.exec(card?.wporg_url ?? '');
-  return { ...body, wporg_username: match ? decodeURIComponent(match[1]) : null };
+  const { consent, ...fields } = body; // the tick is the server's proof, not a profile field
+  return { ...fields, wporg_username: match ? decodeURIComponent(match[1]) : null };
 }
 
 /**

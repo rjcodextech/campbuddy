@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Consent;
 use App\Support\SafeUrl;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -42,6 +43,9 @@ class ShareCampCardRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // "I agree … and I'm 18 or older, or my parent or guardian agrees" (DPDP Act s.6, s.9) — asked when
+            // the card is first shared; an update only changes what it shows.
+            'consent' => $this->isMethod('POST') ? Consent::rule($this) : ['sometimes', 'accepted'],
             'attendee_roster_id' => ['required', 'integer'],
             // Proof that a discovery profile on this same name is this phone's (optional).
             'discovery_id' => ['nullable', 'string', 'max:64'],
@@ -61,6 +65,12 @@ class ShareCampCardRequest extends FormRequest
                 }
             }],
         ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return ['consent.accepted' => Consent::MESSAGE];
     }
 
     /**

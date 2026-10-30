@@ -157,6 +157,108 @@ dialog {
     color: var(--muted);
 }
 
+// The consent tick before sharing (attendee/partials/consent-check.blade.php).
+// A 44px-tall tap row, the box in the brand colour, the words beside it.
+.consent-check {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    margin: v.$space-4 0 v.$space-3;
+    padding: v.$space-3;
+    min-height: 44px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-input;
+    background: var(--paper);
+    cursor: pointer;
+    transition: border-color v.$duration-fast ease, background-color v.$duration-fast ease;
+
+    &:has(.consent-check__box:checked) {
+        border-color: var(--brand-primary);
+        background: var(--paper-soft);
+    }
+
+    &:has(.consent-check__box:focus-visible) {
+        box-shadow: var(--shadow-focus);
+    }
+}
+
+.consent-check__box {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    accent-color: var(--brand-primary);
+}
+
+.consent-check__text {
+    min-width: 0;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+    color: var(--ink);
+    overflow-wrap: anywhere;
+
+    a {
+        color: inherit;
+        font-weight: v.$font-weight-medium;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}
+
+// The analytics question (attendee/partials/analytics.blade.php): a card at the
+// foot of the screen, above the tab bar and the home indicator, never over a
+// whole page. Phone: full width less the 16px gutter; wider: a 420px card.
+.consent-bar {
+    position: fixed;
+    z-index: 60;
+    left: v.$space-4;
+    right: v.$space-4;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + #{v.$space-3});
+    display: grid;
+    gap: v.$space-3;
+    max-width: 420px;
+    margin-inline: auto;
+    padding: v.$space-4;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-card;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: v.$shadow-xl;
+    animation: consent-bar-in v.$duration-normal ease-out both;
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+
+    // Event pages: above the tab bar.
+    body:has(.bottom-nav) & {
+        bottom: calc(var(--bottom-nav-space) + #{v.$space-3});
+    }
+}
+
+@keyframes consent-bar-in {
+    from { opacity: 0; transform: translateY(8px); }
+}
+
+.consent-bar__text {
+    margin: 0;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+
+    a {
+        color: inherit;
+        font-weight: v.$font-weight-medium;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+}
+
+.consent-bar__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+}
+
 .form-field__error {
     margin: 6px 0 0;
     font-size: v.$font-size-xs;

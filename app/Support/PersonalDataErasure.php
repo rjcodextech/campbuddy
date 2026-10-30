@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Event;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Actually deletes what an attendee shared with CampBuddy once the purpose is served (DPDPA Act 2023, s.8(7)).
@@ -30,6 +31,10 @@ class PersonalDataErasure
         'native_push_tokens',
         'session_bookmarks',
         'offer_leads',
+        // A suggested Free Steal (the suggester's name and email) and a sponsor's deal form (the sponsor
+        // contact's name, email, phone, address). An approved deal lives on as an Offer, which stays.
+        'free_steal_suggestions',
+        'sponsor_deal_submissions',
         'consent_logs',
         'event_device_visits',
     ];
@@ -57,10 +62,32 @@ class PersonalDataErasure
         Event::query()->get()->filter(fn (Event $event) => self::due($event, $now))->each(function (Event $event) use (&$removed, $dryRun) {
             foreach (self::TABLES as $table) {
                 $query = DB::table($table)->where('event_id', $event->id);
+                if ($table === 'sponsor_deal_submissions' && ! $dryRun) {
+                    self::deleteUnusedLogos((clone $query)->pluck('logo_path')->filter()->all());
+                }
                 $removed[$table] += $dryRun ? $query->count() : $query->delete();
             }
         });
 
         return $removed;
+    }
+
+    /**
+     * A sponsor's uploaded logo goes with the form — unless an approved deal shows it (it then belongs to
+     * the media library, media_assets).
+     *
+     * @param  array<int, string>  $paths
+     */
+    public static function deleteUnusedLogos(array $paths): void
+    {
+        if ($paths === []) {
+            return;
+        }
+
+        $used = DB::table('media_assets')->whereIn('path', $paths)->pluck('path')->all();
+
+        foreach (array_diff($paths, $used) as $path) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

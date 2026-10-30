@@ -102,8 +102,23 @@ class LegalDocument extends Model
             <td data-label="Where and how long">Our server and the sponsor. We <strong>delete our copy about 90 days after the event</strong>. The sponsor keeps their own copy under their own privacy policy; ask them or us to help.</td>
         </tr>
         <tr>
-            <td data-label="What"><strong>Notifications</strong>, only if you allow them: a notification address from Google (Firebase) or your browser, a random device ID, the sessions you asked to be reminded about, and the app version.</td>
-            <td data-label="Why">To send session reminders and a few event updates.</td>
+            <td data-label="What"><strong>Suggest a Free Steal</strong>, only if you send one: the tool's name and link, why you like it, and your name and email if you add them.</td>
+            <td data-label="Why">So we can look at the suggestion and thank you for it.</td>
+            <td data-label="Where and how long">Our server. <strong>Deleted about 90 days after the event</strong>.</td>
+        </tr>
+        <tr>
+            <td data-label="What"><strong>Sponsor deal form</strong> (for sponsors, not attendees): the contact person's name, work email and phone if given, the deal and its logo, and the IP address and browser the form was sent from.</td>
+            <td data-label="Why">To check that a deal really comes from the sponsor, and to contact them about it.</td>
+            <td data-label="Where and how long">Our server, and an email to our team. <strong>Deleted about 90 days after the event</strong>. An approved deal's public text and logo stay on the deal.</td>
+        </tr>
+        <tr>
+            <td data-label="What"><strong>Consent records</strong>: when you ticked "I agree" (or sent a deal form), for which feature, which version of this notice, and the IP address and browser name.</td>
+            <td data-label="Why">The DPDP Act asks us to be able to show that you agreed.</td>
+            <td data-label="Where and how long">Our server. <strong>Deleted with that feature's data, about 90 days after the event</strong>.</td>
+        </tr>
+        <tr>
+            <td data-label="What"><strong>Notifications</strong>, only if you allow them: a notification address from Google (Firebase) or your browser, a random device ID, the sessions you asked to be reminded about, the app version, and which WordCamps you opened from three days before the event (and when).</td>
+            <td data-label="Why">To send session reminders, a few event updates and the organizers' live announcements during the event ("Lunch is served").</td>
             <td data-label="Where and how long">Our server. Removed when you turn notifications off (or the address stops working), or <strong>deleted about 90 days after the event</strong>.</td>
         </tr>
         <tr>
@@ -129,11 +144,11 @@ class LegalDocument extends Model
         <tr>
             <td data-label="What"><strong>Website visit statistics</strong> (Google Analytics, website only): which pages and buttons are used. No names, no text you type, no discovery or Camp Card data, no query strings.</td>
             <td data-label="Why">To improve CampBuddy.</td>
-            <td data-label="Where and how long">Google Analytics. We do not load it at all if your browser sends "Do Not Track" or "Global Privacy Control". <strong>The Android and iPhone apps contain no analytics</strong>.</td>
+            <td data-label="Where and how long">Google Analytics, <strong>only if you tap "Allow" when the website asks</strong>; until then it is not loaded at all, and never if your browser sends "Do Not Track" or "Global Privacy Control". You can change your answer at the end of any page ("Analytics choice"). <strong>The Android and iPhone apps contain no analytics</strong>.</td>
         </tr>
     </tbody>
 </table>
-<p>We use your data only for the reasons in the table. We ask for your consent each time you start one of the sharing features, and the app tells you what is shared before you share it. Nothing in the first list is shared unless you choose to.</p>
+<p>We use your data only for the reasons in the table. Before you join attendee discovery or share your Camp Card you tick "I agree", right where it says what is shared and with whom; a deal form says it above its Continue button. We keep a record of that consent. Nothing in the first list is shared unless you choose to.</p>
 
 <h2>3. Who else sees it</h2>
 <ul>
@@ -166,7 +181,7 @@ class LegalDocument extends Model
 <p>If you are not satisfied with our resolution, you have the right to escalate your complaint to the <strong>Data Protection Board of India</strong>.</p>
 
 <h2>5. Protection of minors (Children)</h2>
-<p>CampBuddy is designed for WordCamp attendees of all ages. We do not knowingly solicit personal data from individuals under 18 years of age without parental consent, nor do we track their behaviour or target advertising. All schedule viewing, personal planning, and quests work entirely offline without collecting personal data. If you are under 18, please seek parental or guardian guidance before joining discovery or submitting deal forms. Parents or guardians may request the immediate erasure of a minor's information by emailing us.</p>
+<p>CampBuddy is designed for WordCamp attendees of all ages. We do not knowingly solicit personal data from individuals under 18 years of age without parental consent, nor do we track their behaviour or target advertising. All schedule viewing, personal planning, and quests work entirely offline without collecting personal data. Before attendee discovery or Camp Card sharing, the tick box asks you to confirm that you are 18 or older, or that a parent or guardian agrees. If you are under 18, please also ask them before deal forms or notifications. Parents or guardians may request the immediate erasure of a minor's information by emailing us.</p>
 
 <h2>6. Data Security</h2>
 <p>We implement robust technical and organizational security measures. All communications occur over encrypted TLS/HTTPS. Discovery tokens and Camp Card secret codes are stored using salted cryptographic hashes. Administrative endpoints require strong authentication, and rate limiting protects against abuse. In the unlikely event of a personal data breach, we will notify affected individuals and the Data Protection Board of India in accordance with applicable legal requirements.</p>

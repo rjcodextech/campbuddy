@@ -103,6 +103,14 @@ fun EventScreen(
         val token = runCatching { env.deps.push.token() }.getOrNull() ?: return@LaunchedEffect
         runCatching { env.api.registerPush(slug, token, env.user.deviceId()) }
     }
+    // Save the whole event for offline use once it is open, so a tab nobody visited yet still works with no connection —
+    // after this screen's own data is in, so on slow venue wifi the warm-up never queues ahead of what is on screen.
+    val screenReady = event is LoadState.Ready && sessions !is LoadState.Loading
+    LaunchedEffect(slug, screenReady) {
+        if (!screenReady) return@LaunchedEffect
+        kotlinx.coroutines.delay(1_500)
+        runCatching { env.repository.warmUp(slug) }
+    }
     val tabs = words.config.enabledTabs()
     var selected by rememberSaveable(slug) { mutableStateOf(startTab?.takeIf { t -> tabs.any { it.key == t } } ?: tabs.firstOrNull()?.key ?: "home") }
     var guide by rememberSaveable(slug) { mutableStateOf(startInGuide) }

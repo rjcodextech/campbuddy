@@ -109,10 +109,26 @@ export async function initCardShare({ eventSlug, eventId, current, resolveLink }
     };
   };
 
+  // The consent tick before the card is first shared (DPDP Act; App\Support\Consent). Resolves false on Cancel.
+  const askConsent = () => new Promise((resolve) => {
+    const step = render('tpl-cc-share-consent');
+    body.replaceChildren(step);
+    const box = step.querySelector('[data-consent]');
+    const go = step.querySelector('[data-consent-continue]');
+    box?.addEventListener('change', () => { go.disabled = !box.checked; });
+    go?.addEventListener('click', () => resolve(Boolean(box?.checked)));
+    step.querySelector('[data-share-cancel]')?.addEventListener('click', () => {
+      toggle.checked = false;
+      body.replaceChildren();
+      resolve(false);
+    });
+    box?.focus();
+  });
+
   const share = async (rosterId, name) => {
     busy = true;
     try {
-      const reply = await apiMutate(eventSlug, '/camp-card-share', 'POST', await payload(rosterId));
+      const reply = await apiMutate(eventSlug, '/camp-card-share', 'POST', { ...(await payload(rosterId)), consent: true });
       state = { shareId: reply.share_id, ownerToken: reply.owner_token, rosterId, name };
       await kvSet(shareKey(eventId), state);
       toggle.checked = true;
@@ -167,6 +183,11 @@ export async function initCardShare({ eventSlug, eventId, current, resolveLink }
       if (!canShare(card, qrField, resolveLink)) {
         toggle.checked = false;
         showToast('Save your Camp Card first: your name and at least one link.');
+        return;
+      }
+
+      if (!(await askConsent())) {
+        toggle.checked = false;
         return;
       }
 

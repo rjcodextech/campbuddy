@@ -1046,3 +1046,88 @@
         }
     }
 }
+
+// "What works offline, and what needs internet" (attendee/partials/offline-explainer.blade.php).
+// One column on a phone, two side by side from a tablet; each list marked ✓ or a quiet dot.
+.offline-explainer__grid {
+    display: grid;
+    gap: v.$space-4;
+
+    @media (min-width: 720px) {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.offline-explainer__card {
+    min-width: 0;
+}
+
+.offline-explainer__title {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    margin: 0 0 v.$space-3;
+    font-family: v.$font-display;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-black;
+    line-height: v.$line-height-tight;
+    color: var(--ink);
+
+    .line-icon {
+        flex: none;
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.offline-explainer__card--yes .offline-explainer__title .line-icon {
+    color: var(--brand-primary);
+}
+
+.offline-explainer__card--no .offline-explainer__title .line-icon {
+    color: var(--muted);
+}
+
+.offline-explainer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    li {
+        position: relative;
+        padding: v.$space-2 0 v.$space-2 v.$space-6;
+        font-size: v.$font-size-sm;
+        line-height: v.$line-height-body;
+        border-bottom: 1px dashed var(--line);
+        overflow-wrap: anywhere;
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        &::before {
+            position: absolute;
+            left: 0;
+            top: v.$space-2;
+            font-weight: v.$font-weight-bold;
+        }
+    }
+}
+
+.offline-explainer__card--yes li::before {
+    content: '✓';
+    color: var(--brand-primary);
+}
+
+.offline-explainer__card--no li::before {
+    content: '•';
+    color: var(--muted);
+}
+
+.offline-explainer__note {
+    margin: v.$space-4 0 0;
+    max-width: 70ch;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-body;
+    color: var(--muted);
+}

@@ -38,6 +38,8 @@ data class DiscoveryForm(
     @SerialName("display_name") val displayName: String? = null,
     @SerialName("wporg_username") val wporgUsername: String? = null,
     @SerialName("attendee_roster_id") val attendeeRosterId: Long? = null,
+    /** The consent tick, sent when joining (left out when editing: null is the default, so not sent). */
+    val consent: Boolean? = null,
 )
 
 @Serializable

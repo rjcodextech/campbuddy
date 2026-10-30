@@ -22,8 +22,8 @@
 // browser runs short of space — activating a new version drops no cache, and
 // saved pages are only ever replaced by fresh ones (saved-copies.js does that
 // from the page; offline-warmup.js adds the pages nobody opened yet). The one
-// exception is a signed-in /admin or /manager page a worker may have saved, removed
-// on activation because it should never have been stored.
+// exception is a page that should never have been stored — a signed-in /admin or
+// /manager page, a roster-removal search, the sponsor deal form — removed on activation.
 //
 // Stale-while-revalidate for page opens is built in but OFF: the worker reads
 // /sw-flags.json (a tiny file next to this one) and only when it says
@@ -68,15 +68,22 @@ const OFFLINE_HTML = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Offline | CampBuddy</title>
 <style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-       font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#fffaf4;color:#2b1a14;text-align:center;padding:24px}
-  h1{font-size:1.25rem;margin:0 0 8px} p{margin:0 0 20px;color:#6b5a52}
-  button{font:inherit;font-weight:600;padding:12px 20px;border:0;border-radius:6px;background:#c33a19;color:#fff}
+  body{margin:0;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;box-sizing:border-box;
+       font-family:'Poppins',system-ui,-apple-system,'Segoe UI',sans-serif;background:#fff7ed;color:#0f172a;text-align:center;padding:16px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:32px 24px;max-width:380px;width:100%;box-sizing:border-box;
+        box-shadow:0 1px 3px rgba(15,23,42,.03),0 8px 24px -4px rgba(15,23,42,.05)}
+  h1{font-family:'Baloo 2','Poppins',system-ui,sans-serif;font-size:1.75rem;font-weight:800;line-height:1.15;letter-spacing:-.02em;margin:0 0 10px}
+  p{margin:0 0 20px;color:#475569;font-size:.95rem;line-height:1.5}
+  button{font:inherit;font-weight:600;font-size:.9rem;padding:12px 28px;border:0;border-radius:999px;color:#fff;cursor:pointer;
+         background:linear-gradient(135deg,#ff4d2d,#ea580c);box-shadow:0 12px 28px -12px rgba(255,77,45,.35)}
+  button:focus-visible{outline:3px solid rgba(255,77,45,.32);outline-offset:2px}
+  a{color:#0f172a;font-size:.85rem}
 </style></head>
-<body><main>
+<body><main class="card">
   <h1>You're offline</h1>
-  <p>This page hasn't been saved on your device yet. Reconnect and try again.</p>
+  <p>This page wasn't saved on this phone yet. Every page of a WordCamp you opened once while online still works: schedule, My Day, Quest, Explore, Guide and your Camp Card.</p>
   <button type="button" onclick="location.reload()">Try again</button>
+  <p style="margin:16px 0 0"><a href="/guide#offline">What works offline</a></p>
 </main></body></html>`;
 
 self.addEventListener('install', () => {
@@ -104,7 +111,8 @@ async function removeSavedAdminPages() {
       for (const request of await cache.keys()) {
         const path = new URL(request.url).pathname;
 
-        if (isPrivatePath(path)) await cache.delete(request);
+        // Also a roster-removal search or sponsor form an older worker may have saved.
+        if (isPrivatePath(path) || neverSaved(request)) await cache.delete(request);
       }
     }
   } catch (err) {
@@ -305,13 +313,29 @@ async function staleWhileRevalidate(request, event) {
   return cached;
 }
 
-// Only a plain, complete, non-redirected response is worth keeping.
+// Only a plain, complete, non-redirected response is worth keeping — and never
+// one the server marked no-store.
 function isCacheable(response) {
-  return response.status === 200 && response.type === 'basic' && !response.redirected;
+  return response.status === 200 && response.type === 'basic' && !response.redirected && !/no-store/i.test(response.headers.get('Cache-Control') ?? '');
+}
+
+// Pages that are personal or one-time, never kept on the phone: a roster
+// removal search (its address holds the name searched for) and the sponsor
+// deal form (its security code expires).
+const NEVER_SAVED = [/^\/event\/[^/]+\/roster-removal(\/|$)/, /^\/sponsor-deals(\/|$)/];
+
+function neverSaved(request) {
+  try {
+    const path = new URL(request.url).pathname;
+
+    return NEVER_SAVED.some((pattern) => pattern.test(path));
+  } catch {
+    return false;
+  }
 }
 
 async function store(request, response) {
-  if (!isCacheable(response)) return;
+  if (!isCacheable(response) || neverSaved(request)) return;
 
   try {
     const cache = await caches.open(CACHE_NAME);

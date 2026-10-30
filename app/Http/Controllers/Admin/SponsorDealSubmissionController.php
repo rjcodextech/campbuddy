@@ -8,6 +8,7 @@ use App\Models\Offer;
 use App\Models\SponsorDealSubmission;
 use App\Support\DataVersion;
 use App\Support\EventData;
+use App\Support\PersonalDataErasure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -120,8 +121,9 @@ class SponsorDealSubmissionController extends Controller
     {
         $brand = $submission->displayBrand();
 
-        if ($submission->logo_path && Storage::disk('public')->exists($submission->logo_path)) {
-            Storage::disk('public')->delete($submission->logo_path);
+        // An approved deal still shows this logo (it is in the media library): keep the file then.
+        if ($submission->logo_path) {
+            PersonalDataErasure::deleteUnusedLogos([$submission->logo_path]);
         }
 
         $submission->delete();

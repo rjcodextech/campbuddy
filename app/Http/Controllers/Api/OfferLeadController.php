@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ConsentLog;
+use App\Support\Consent;
 use App\Models\Event;
 use App\Models\Offer;
 use App\Models\OfferLead;
@@ -46,17 +46,8 @@ class OfferLeadController extends Controller
             ]
         );
 
-        // Record lawful consent under DPDPA 2023 s.6
-        ConsentLog::create([
-            'event_id' => $event->id,
-            'subject_type' => 'offer_lead',
-            'subject_identifier' => hash('sha256', $email),
-            'purpose' => "offer_lead:{$offer->id}",
-            'notice_version' => '1.0',
-            'ip_address' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 500),
-            'consented_at' => now(),
-        ]);
+        // The proof of the person's tick (DPDP Act s.6): which notice, when.
+        Consent::record($request, $event, 'offer_lead', hash('sha256', $email), "offer_lead:{$offer->id}", actionIsConsent: true);
 
         return response()->json(null, 201);
     }

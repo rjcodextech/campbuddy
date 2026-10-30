@@ -120,6 +120,8 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
     // ---- the attendee-list copy ----
     var share by remember { mutableStateOf(env.user.share(slug)) }
     var picking by remember { mutableStateOf(false) }
+    // The consent tick before the card is first shared (DPDP Act; App\Support\Consent).
+    var agreed by remember { mutableStateOf(false) }
     var shareBusy by remember { mutableStateOf(false) }
     val rosterLoader = rememberLoader("roster:$slug") { env.repository.roster(slug) }
 
@@ -129,6 +131,7 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
             put("attendee_roster_id", rosterId)
             mine?.let { put("discovery_id", it.discoveryId); put("discovery_token", it.ownerToken) }
             put("card", sharedFields(card))
+            put("consent", true)
         }
     }
 
@@ -307,8 +310,12 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
                             else picking = true
                         }
                     }
-                    if (share != null) Text("Shown on the attendee list as ${share?.name.orEmpty()}.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primary, fontWeight = FontWeight.SemiBold))
-                    if (picking && share == null) SharePicker(rosterLoader.state.value, onPick = { turnOn(it.id, it.name) }, onCancel = { picking = false })
+                    if (share != null) Text("Shown on the attendee list as ${share?.name.orEmpty()}.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.SemiBold))
+                    if (picking && share == null) {
+                        ConsentCheck("what is on my Camp Card with attendees of this WordCamp", agreed) { agreed = it }
+                        if (agreed) SharePicker(rosterLoader.state.value, onPick = { turnOn(it.id, it.name) }, onCancel = { picking = false; agreed = false })
+                        else QuietButton("Cancel", { picking = false })
+                    }
                 }
             }
         }

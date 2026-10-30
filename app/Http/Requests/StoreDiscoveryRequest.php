@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Consent;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -64,6 +65,8 @@ class StoreDiscoveryRequest extends FormRequest
             'display_name' => ['nullable', 'string', 'min:2', 'max:60'],
             // WordPress.org usernames: letters, digits and . _ - (and @ inside, from old email-style logins).
             'wporg_username' => ['nullable', 'string', 'max:60', 'regex:/^[a-z0-9][a-z0-9._@-]*$/'],
+            // "I agree … and I'm 18 or older, or my parent or guardian agrees" (DPDP Act s.6, s.9).
+            'consent' => Consent::rule($this),
         ];
     }
 
@@ -73,6 +76,8 @@ class StoreDiscoveryRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'consent.accepted' => Consent::MESSAGE,
+            'consent.required' => Consent::MESSAGE,
             'wporg_username.regex' => 'That doesn\'t look like a WordPress.org username — it\'s the part after profiles.wordpress.org/.',
         ];
     }

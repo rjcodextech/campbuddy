@@ -85,4 +85,34 @@ class PersonalDataErasureTest extends TestCase
     {
         $this->artisan('schedule:list')->expectsOutputToContain('erase-expired-personal-data')->assertSuccessful();
     }
+
+    public function test_free_steal_suggestions_and_sponsor_deal_forms_are_erased_too(): void
+    {
+        // The bug this guards: both hold a person's name and email (a sponsor form also a phone and IP
+        // address) but were never in the erasure list, so they were kept for ever.
+        \Illuminate\Support\Facades\Storage::fake('public');
+        Carbon::setTestNow('2026-12-31 12:00:00');
+        $old = $this->event('wc-old', '2026-09-25');
+        $recent = $this->event('wc-recent', '2026-11-20');
+
+        foreach ([$old, $recent] as $event) {
+            DB::table('free_steal_suggestions')->insert(['event_id' => $event->id, 'name' => 'Tool', 'url' => 'https://tool.example', 'email' => 'me@example.com', 'created_at' => now(), 'updated_at' => now()]);
+        }
+        \Illuminate\Support\Facades\Storage::disk('public')->put('sponsor-deals/logos/kept.png', 'png');
+        \Illuminate\Support\Facades\Storage::disk('public')->put('sponsor-deals/logos/gone.png', 'png');
+        DB::table('media_assets')->insert(['disk' => 'public', 'path' => 'sponsor-deals/logos/kept.png', 'filename' => 'kept.png', 'mime_type' => 'image/png', 'size' => 3, 'created_at' => now(), 'updated_at' => now()]);
+        foreach (['kept.png', 'gone.png'] as $logo) {
+            DB::table('sponsor_deal_submissions')->insert(['event_id' => $old->id, 'sponsor_name' => 'S', 'title' => 'T', 'description' => 'D', 'url' => 'https://s.example', 'submitter_name' => 'Asha', 'submitter_email' => 'asha@example.com', 'submitter_phone' => '+91 98765 43210', 'ip_address' => '203.0.113.9', 'logo_path' => "sponsor-deals/logos/{$logo}", 'status' => 'pending', 'created_at' => now(), 'updated_at' => now()]);
+        }
+
+        $removed = PersonalDataErasure::run();
+
+        $this->assertSame(1, $removed['free_steal_suggestions']);
+        $this->assertSame(2, $removed['sponsor_deal_submissions']);
+        $this->assertSame(0, DB::table('free_steal_suggestions')->where('event_id', $old->id)->count());
+        $this->assertSame(1, DB::table('free_steal_suggestions')->where('event_id', $recent->id)->count(), 'not before its time');
+        $this->assertSame(0, DB::table('sponsor_deal_submissions')->count());
+        \Illuminate\Support\Facades\Storage::disk('public')->assertMissing('sponsor-deals/logos/gone.png');
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists('sponsor-deals/logos/kept.png'); // an approved deal still shows this logo
+    }
 }

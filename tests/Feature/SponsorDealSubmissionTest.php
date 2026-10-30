@@ -605,4 +605,33 @@ class SponsorDealSubmissionTest extends TestCase
         // Queries should be bounded (no N+1 for events or approved offers)
         $this->assertLessThan(15, count($queries), "Too many queries executed: ".count($queries));
     }
+
+    public function test_deleting_an_approved_submission_keeps_the_logo_the_live_deal_shows(): void
+    {
+        // The bug this guards: delete removed the uploaded file even after approval, when the published
+        // offer's media asset points at that same file — the live deal lost its logo.
+        Storage::fake('public');
+        $admin = $this->adminUser();
+        $event = $this->createEvent();
+        $storedPath = UploadedFile::fake()->image('logo.png', 100, 100)->size(20)->store('sponsor-deals/logos', 'public');
+
+        $submission = SponsorDealSubmission::create([
+            'event_id' => $event->id, 'sponsor_name' => 'Elementor', 'title' => '50% off', 'description' => 'Deal.',
+            'url' => 'https://elementor.com', 'submitter_name' => 'Yoni', 'submitter_email' => 'yoni@elementor.com',
+            'logo_path' => $storedPath, 'logo_url' => Storage::disk('public')->url($storedPath), 'status' => 'pending',
+        ]);
+        $this->actingAs($admin)->post(route('admin.deal-submissions.approve', $submission), ['publish' => 1])->assertRedirect();
+
+        $this->actingAs($admin)->delete(route('admin.deal-submissions.destroy', $submission->fresh()))->assertRedirect();
+
+        $this->assertDatabaseMissing('sponsor_deal_submissions', ['id' => $submission->id]);
+        Storage::disk('public')->assertExists($storedPath);
+        $this->assertSame($storedPath, MediaAsset::find(Offer::first()->media_asset_id)->path);
+    }
+
+    public function test_the_form_and_its_success_page_are_never_stored_by_a_browser(): void
+    {
+        $this->get(route('sponsor-deals.create'))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+        $this->get(route('sponsor-deals.success'))->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+    }
 }

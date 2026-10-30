@@ -8,6 +8,7 @@ use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
 use App\Models\SharedCampCard;
+use App\Support\Consent;
 use App\Support\EventTime;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -46,6 +47,9 @@ class SharedCampCardController extends Controller
         }
 
         RosterController::forget($event);
+
+        // The person's tick (DPDP Act s.6), with which notice they agreed to.
+        Consent::record($request, $event, 'camp_card_share', $credentials['share_id'], 'camp_card_share');
 
         return response()->json([...$this->reply($card), 'owner_token' => $credentials['owner_token']], 201);
     }

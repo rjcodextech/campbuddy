@@ -17,7 +17,7 @@
                 ['What is CampBuddy?', 'CampBuddy is a free, zero-signup, offline-ready mobile companion designed specifically for WordCamp attendees, organizers, and media partners. Built by WPSimplified, it helps attendees navigate multi-track schedules, exchange digital contact cards via QR codes, find Contributor Day tables, and complete conference quests.'],
                 ['Is CampBuddy free for attendees and organizers?', 'Yes, CampBuddy is 100% free and open to the WordPress community. There are no paid tiers, no ads, and no hidden subscriptions.'],
                 ['Does CampBuddy require creating an account or downloading an app from the App Store?', 'No. CampBuddy requires zero account creation, zero email registration, and no password. It opens directly in any mobile web browser and can be installed to your home screen as a Progressive Web App (PWA). All personal data stays securely on your phone in IndexedDB.'],
-                ['How does CampBuddy work offline on crowded venue Wi-Fi?', 'CampBuddy leverages Service Workers and client-side browser caching (IndexedDB). Once loaded, your schedule, starred sessions, guide, and digital Camp Card work without an internet connection. Per-device rate limits ensure 1,000+ attendees sharing a single venue Wi-Fi NAT IP never face rate limit errors.'],
+                ['How does CampBuddy work offline on crowded venue Wi-Fi?', 'CampBuddy leverages Service Workers and client-side browser caching (IndexedDB). Once loaded, your schedule, starred sessions, guide, and digital Camp Card work without an internet connection. What needs a connection: attendee discovery, live announcements, sharing and forms (the full list is in the guide: campbuddy.club/guide#offline). Per-device rate limits ensure 1,000+ attendees sharing a single venue Wi-Fi NAT IP never face rate limit errors.'],
                 ['How can WordCamp organizers list their event or partner as a media partner?', 'Organizers can connect their official WordCamp website schedule, enable real-time schedule delay broadcasts, send push announcements, and partner with WPSimplified for automated 1080x1920 social reels, video coverage, and social marketing kits.'],
             ]),
             \App\Support\Seo::breadcrumbs([['CampBuddy', route('home')], ['About CampBuddy', route('about')]]),
@@ -260,6 +260,7 @@
                         <h3 class="about-card__title">Works 100% Offline</h3>
                         <p class="about-card__text">
                             Instant Progressive Web App cached locally on first load. Per-device rate limits ensure 1,500+ attendees sharing venue Wi-Fi NAT gateways never experience connection lockouts.
+                            <a href="{{ route('guide') }}#offline">What works offline, and what needs internet</a>
                         </p>
                         <span class="about-card__stat">
                             <x-attendee.line-icon name="wifi" /> Service Worker Cached

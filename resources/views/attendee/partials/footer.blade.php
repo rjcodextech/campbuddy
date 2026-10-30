@@ -14,6 +14,8 @@
             <a href="{{ route('guide') }}">Guide</a>
             <a href="{{ route('privacy') }}">Privacy Policy</a>
             <a href="{{ route('terms') }}">Terms of use</a>
+            {{-- Shown by the analytics partial where Google Analytics can run: asks the consent question again. --}}
+            <button type="button" class="footer-nav-links__choice" data-analytics-choice hidden>Analytics choice</button>
             @include('attendee.partials.apk-link')
         </nav>
 

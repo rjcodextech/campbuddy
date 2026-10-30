@@ -30,6 +30,17 @@
     </div>
 </template>
 
+{{-- card-share.js: the consent tick before the card is first shared --}}
+<template id="tpl-cc-share-consent">
+    <div class="cc-share__picker">
+        @include('attendee.partials.consent-check', ['id' => 'cc-share-consent', 'what' => 'what is on my Camp Card with attendees of this WordCamp'])
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button type="button" class="btn btn--compact btn--primary" data-consent-continue disabled>Continue</button>
+            <button type="button" class="btn btn--compact btn--outline" data-share-cancel>Cancel</button>
+        </div>
+    </div>
+</template>
+
 <template id="tpl-cc-share-result">
     <button type="button" class="cc-share__result" data-slot="name"></button>
 </template>

@@ -9,6 +9,7 @@ use App\Models\AttendeeRoster;
 use App\Models\DiscoveryProfile;
 use App\Models\Event;
 use App\Support\ConditionalJson;
+use App\Support\Consent;
 use App\Support\EventTime;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -85,6 +86,9 @@ class DiscoveryController extends Controller
         }
 
         Cache::forget(self::listKey($event));
+
+        // The person's tick (DPDP Act s.6), with which notice they agreed to.
+        Consent::record($request, $event, 'discovery_profile', $credentials['discovery_id'], 'attendee_discovery');
 
         return response()->json([
             ...$profile->load('rosterEntry')->publicCard(),

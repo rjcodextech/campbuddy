@@ -75,6 +75,10 @@
                     <x-attendee.line-icon name="briefcase" />
                     <span>What to bring</span>
                 </a>
+                <a class="chip" href="#offline" data-track="guide_section_jump" data-track-section="offline">
+                    <x-attendee.line-icon name="wifi" />
+                    <span>Offline</span>
+                </a>
                 <a class="chip" href="#guide-faq" data-track="guide_section_jump" data-track-section="faq">
                     <x-attendee.line-icon name="help-circle" />
                     <span>FAQ</span>
@@ -165,7 +169,7 @@
             <div class="superpower-col">
                 <div class="superpower-icon"><x-attendee.line-icon name="lock" /></div>
                 <strong>4. 100% Offline &amp; Private</strong>
-                <span>Zero login, no passwords, no trackers. All data is saved on your device (DPDPA 2023 compliant).</span>
+                <span>Zero login, no passwords. Your own things are saved on your phone; website statistics only if you allow them (DPDP Act 2023). <a href="#offline">What works offline</a></span>
             </div>
         </div>
     </div>
@@ -312,6 +316,8 @@
         @endforeach
     </ul>
 </section>
+
+@include('attendee.partials.offline-explainer')
 
 <section id="guide-faq" class="guide-section" data-track-section-view="faq" aria-labelledby="guide-faq-heading">
     <div class="section-head">

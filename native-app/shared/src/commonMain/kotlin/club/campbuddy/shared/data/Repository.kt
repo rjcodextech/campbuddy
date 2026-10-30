@@ -17,6 +17,8 @@ import club.campbuddy.shared.model.EventCard
 import club.campbuddy.shared.model.EventDetail
 import club.campbuddy.shared.model.Session
 import club.campbuddy.shared.model.Speaker
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 
@@ -80,15 +82,57 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
 
     suspend fun legal(slug: String): Loaded<LegalDoc> = cached("legal:$slug", LegalDoc.serializer()) { api.legal(slug) }
 
-    private suspend fun <T> cached(key: String, serializer: kotlinx.serialization.KSerializer<T>, fetch: suspend () -> T): Loaded<T> =
-        try {
-            val value = fetch()
-            store.put("cache:$key", AppJson.encodeToString(serializer, value))
-            Loaded(value, fromCache = false)
-        } catch (error: Exception) {
-            val saved = store.get("cache:$key")?.let { runCatching { AppJson.decodeFromString(serializer, it) }.getOrNull() }
-            if (saved != null) Loaded(saved, fromCache = true) else throw error
+    /**
+     * The whole event saved on the phone in one go (like the website's offline warm-up), so a screen nobody
+     * opened yet still has its data with no connection. Quietly does nothing offline; at most every 30 minutes.
+     */
+    suspend fun warmUp(slug: String, now: Long = kotlinx.datetime.Clock.System.now().epochSeconds) {
+        val last = store.get("warm:$slug")?.toLongOrNull() ?: 0L
+        if (now - last < WARM_EVERY_SECONDS) return
+        val loads: List<suspend () -> Any> = listOf(
+            { event(slug) }, { sessions(slug) }, { speakers(slug) }, { sponsors(slug) }, { deals(slug) }, { freeSteals(slug) },
+            { quests(slug) }, { tables(slug) }, { info(slug) }, { guide(slug) }, { roster(slug) }, { delays(slug) },
+        )
+        val done = kotlinx.coroutines.coroutineScope {
+            loads.map { load -> async { runCatching { load() }.getOrNull() } }.awaitAll()
         }
+        // Only a run that reached the server counts; offline, the next open tries again.
+        if (done.any { (it as? Loaded<*>)?.fromCache == false }) store.put("warm:$slug", now.toString())
+    }
+
+    /**
+     * The server's answer, saved for offline use. With a saved copy already on the phone a slow network
+     * (venue wifi that connects but barely moves) gets [SLOW_NETWORK_MS]: then the saved copy shows and the
+     * answer, when it comes, is saved for next time. With no saved copy it waits as long as it takes.
+     */
+    private suspend fun <T> cached(key: String, serializer: kotlinx.serialization.KSerializer<T>, fetch: suspend () -> T): Loaded<T> {
+        val saved = store.get("cache:$key")?.let { runCatching { AppJson.decodeFromString(serializer, it) }.getOrNull() }
+        val fresh = background.async {
+            fetch().also { store.put("cache:$key", AppJson.encodeToString(serializer, it)) }
+        }
+        if (saved == null) return Loaded(fresh.await(), fromCache = false)
+
+        val outcome: Result<T>? = kotlinx.coroutines.withTimeoutOrNull(SLOW_NETWORK_MS) {
+            try {
+                Result.success(fresh.await())
+            } catch (stop: kotlinx.coroutines.CancellationException) {
+                throw stop
+            } catch (error: Exception) {
+                Result.failure(error)
+            }
+        }
+
+        return when {
+            // Slow, not offline: the saved copy shows quietly, like the website's service worker does.
+            outcome == null -> Loaded(saved, fromCache = false)
+            outcome.isSuccess -> Loaded(outcome.getOrThrow(), fromCache = false)
+            // The server could not be reached: the saved copy, with the "you are offline" line.
+            else -> Loaded(saved, fromCache = true)
+        }
+    }
+
+    /** Refreshes outlive the screen that asked (a slow answer is still saved). */
+    private val background = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
 
     // ---- organizer token (kept in the platform secure store by the app shell) ----
 
@@ -111,6 +155,8 @@ class Repository(private val api: ApiClient, private val store: KeyValueStore) {
     }
 
     private companion object {
+        const val SLOW_NETWORK_MS = 4_000L
+        const val WARM_EVERY_SECONDS = 30 * 60L
         const val KEY_CONFIG = "config"
         const val KEY_TOKEN = "organizer.token"
         const val KEY_ROLE = "organizer.role"

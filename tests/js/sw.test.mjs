@@ -428,3 +428,55 @@ test('a switch file that could not be read is looked at again within a minute, n
     Date.now = realNow;
   }
 });
+
+// ---------------------------------------------------------------- personal and one-time pages are never kept
+
+test('a roster-removal search and the sponsor deal form are shown but never saved on the phone', async () => {
+  const sw = loadServiceWorker({ network: () => page('results for Priya Sharma') });
+
+  for (const path of ['/event/wc-test/roster-removal/search?name=Priya+Sharma', '/event/wc-test/roster-removal', '/sponsor-deals/submit', '/sponsor-deals/success']) {
+    const result = await sw.request(path, { mode: 'navigate' });
+    assert.equal(result.handled, true, path);
+    assert.equal(result.response.status, 200, `${path} still opens online`);
+  }
+  await sw.request('/event/wc-test/my-day', { mode: 'navigate' });
+  await settle();
+
+  assert.equal((await sw.caches.match(MY_DAY)).status, 200, 'an ordinary page is still saved');
+  for (const path of ['/event/wc-test/roster-removal/search?name=Priya+Sharma', '/event/wc-test/roster-removal', '/sponsor-deals/submit', '/sponsor-deals/success']) {
+    assert.equal(await sw.caches.match(`${ORIGIN}${path}`), undefined, `not saved: ${path}`);
+  }
+});
+
+test('a page the server marks no-store is not saved', async () => {
+  const sw = loadServiceWorker({ network: () => page('private', { headers: { 'cache-control': 'no-store, private' } }) });
+
+  await sw.request('/event/wc-test/something-private', { mode: 'navigate' });
+  await settle();
+
+  assert.equal(await sw.caches.match(`${ORIGIN}/event/wc-test/something-private`), undefined);
+});
+
+test('activating also removes a roster-removal search an older worker saved, and nothing of the event', async () => {
+  const caches = fakeCacheStorage({
+    [CACHE]: { [HOME]: page('home'), [`${ORIGIN}/event/wc-test/roster-removal/search?name=Priya`]: page('Priya'), [`${ORIGIN}/sponsor-deals/submit`]: page('form') },
+  });
+  const sw = loadServiceWorker({ caches });
+
+  await sw.lifecycle('activate');
+
+  assert.deepEqual(caches.log.deletedEntries.sort(), [`${CACHE}:${ORIGIN}/event/wc-test/roster-removal/search?name=Priya`, `${CACHE}:${ORIGIN}/sponsor-deals/submit`].sort());
+  assert.equal((await caches.match(HOME)).status, 200);
+});
+
+test('the offline page uses the brand and links to what works offline', async () => {
+  const sw = loadServiceWorker();
+  const result = await sw.request('/event/wc-test/never-seen', { mode: 'navigate' });
+  const html = await result.response.text();
+
+  assert.equal(result.response.status, 503);
+  assert.match(html, /#fff7ed/);
+  assert.match(html, /#ff4d2d/);
+  assert.match(html, /href="\/guide#offline"/);
+  assert.doesNotMatch(html, /#f8fafc|#64748b/, 'no colours outside the brand palette');
+});

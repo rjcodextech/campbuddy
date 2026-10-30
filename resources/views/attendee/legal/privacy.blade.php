@@ -96,7 +96,7 @@
                 <span class="legal-section-num">2</span>
                 <h2 class="legal-section-title">What we keep, why, and for how long</h2>
             </div>
-            <p class="legal-p">We use your data only for the reasons stated below. We ask for your consent each time you start one of the sharing features, and the app tells you what is shared before you share it.</p>
+            <p class="legal-p">We use your data only for the reasons stated below. Before you join attendee discovery or share your Camp Card you tick "I agree", right where it says what is shared and with whom; a deal form says it above its Continue button. We keep a record of that consent.</p>
 
             <div class="legal-table-container">
                 <table class="legal-table">
@@ -129,6 +129,21 @@
                             <td data-label="Where, and how long">Our server and the sponsor. We <strong>delete our copy about 90 days after the event</strong>. The sponsor keeps their own copy under their own privacy policy; ask them or us to help.</td>
                         </tr>
                         <tr>
+                            <td data-label="What"><strong>Suggest a Free Steal</strong>, only if you send one: the tool's name and link, why you like it, and your name and email if you add them.</td>
+                            <td data-label="Why">So we can look at the suggestion and thank you for it.</td>
+                            <td data-label="Where, and how long">Our server. <strong>Deleted about 90 days after the event</strong>.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="What"><strong>Sponsor deal form</strong> (for sponsors, not attendees): the contact person's name, work email and phone if given, the deal and its logo, and the IP address and browser the form was sent from.</td>
+                            <td data-label="Why">To check that a deal really comes from the sponsor, and to contact them about it.</td>
+                            <td data-label="Where, and how long">Our server, and an email to our team. <strong>Deleted about 90 days after the event</strong>. An approved deal's public text and logo stay on the deal.</td>
+                        </tr>
+                        <tr>
+                            <td data-label="What"><strong>Consent records</strong>: when you ticked "I agree" (or sent a deal form), for which feature, which version of this notice, and the IP address and browser name.</td>
+                            <td data-label="Why">The DPDP Act asks us to be able to show that you agreed.</td>
+                            <td data-label="Where, and how long">Our server. <strong>Deleted with that feature's data, about 90 days after the event</strong>.</td>
+                        </tr>
+                        <tr>
                             <td data-label="What"><strong>Notifications</strong>, only if you allow them: a notification address from Google (Firebase) or your browser, a random device ID, the sessions you asked to be reminded about, the app version, and which WordCamps you opened from three days before the event (and when).</td>
                             <td data-label="Why">To send session reminders, a few event updates and the organizers' live announcements during the event ("Lunch is served").</td>
                             <td data-label="Where, and how long">Our server. Removed when you turn notifications off (or the address stops working), or <strong>deleted about 90 days after the event</strong>.</td>
@@ -156,7 +171,7 @@
                         <tr>
                             <td data-label="What"><strong>Website visit statistics</strong> (Google Analytics, website only): which pages and buttons are used. No names, no text you type, no discovery or Camp Card data, no query strings.</td>
                             <td data-label="Why">To improve CampBuddy.</td>
-                            <td data-label="Where, and how long">Google Analytics. We do not load it at all if your browser sends "Do Not Track" or "Global Privacy Control". <strong>The Android and iPhone apps contain no analytics</strong>.</td>
+                            <td data-label="Where, and how long">Google Analytics, <strong>only if you tap "Allow" when the website asks</strong>; until then it is not loaded at all, and never if your browser sends "Do Not Track" or "Global Privacy Control". <span data-analytics-choice hidden>Change your answer any time: <button type="button" class="legal-inline-btn" data-analytics-choice>Analytics choice</button>.</span> <strong>The Android and iPhone apps contain no analytics</strong>.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -275,7 +290,7 @@
                 <span class="legal-section-num">5</span>
                 <h2 class="legal-section-title">Children</h2>
             </div>
-            <p class="legal-p">CampBuddy is a general guide to WordCamp events. We do not knowingly ask for personal information from anyone under 18, and we do not track their behaviour or target anything at them. The schedule, guide and quests work without sharing anything. If you are under 18, please ask a parent or guardian before using attendee discovery, Camp Card sharing, deal forms or notifications. A parent or guardian who wants a child's data erased can write to us and we will do it.</p>
+            <p class="legal-p">CampBuddy is a general guide to WordCamp events. We do not knowingly ask for personal information from anyone under 18, and we do not track their behaviour or target anything at them. The schedule, guide and quests work without sharing anything. Before attendee discovery or Camp Card sharing, the tick box asks you to confirm that you are 18 or older, or that a parent or guardian agrees. If you are under 18, please also ask them before deal forms or notifications. A parent or guardian who wants a child's data erased can write to us and we will do it.</p>
         </section>
 
         {{-- Section 6 & 7 --}}

@@ -127,6 +127,12 @@ window.addEventListener('load', async () => {
 
     if (route === `/event/${SLUG}/manifest.json`) return send(200, 'application/manifest+json', JSON.stringify({ name: 'WordCamp Test', start_url: `/event/${SLUG}` }));
 
+    // The site-wide pages the warm-up also saves (offline-warmup.js): about, the privacy notice, the terms.
+    if (['/about', '/privacy', '/terms'].includes(route)) {
+      count(route);
+      return send(200, 'text/html; charset=utf-8', page(route.slice(1)));
+    }
+
     if (route === '/' || route === '/guide' || route.startsWith(`/event/${SLUG}`)) {
       count(route);
       if (route.endsWith('/roster-removal')) return send(200, 'text/html', page('roster-removal'));

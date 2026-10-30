@@ -128,15 +128,16 @@ Route::withoutMiddleware([
 Route::middleware('event.public')->group(function () {
     // The takedown path — public, no login, throttled against abuse.
     Route::middleware('throttle:20,1')->group(function () {
-        Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->name('event.roster-removal.show');
-        Route::get('/event/{event:slug}/roster-removal/search', [RosterRemovalController::class, 'search'])->name('event.roster-removal.search');
+        Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->middleware('cache.headers:no_store;private')->name('event.roster-removal.show');
+        Route::get('/event/{event:slug}/roster-removal/search', [RosterRemovalController::class, 'search'])->middleware('cache.headers:no_store;private')->name('event.roster-removal.search');
         Route::post('/event/{event:slug}/roster-removal/{entry}', [RosterRemovalController::class, 'remove'])->name('event.roster-removal.remove');
     });
 });
 
 // Sponsor deal submission: unlisted portal for sponsors to submit attendee offers.
 // Not linked in public navigation. Protected with rate limiting, honeypots, and timing tokens.
-Route::middleware('throttle:30,1')->group(function () {
+// no-store: the form's security code expires, and the page is never kept offline (public/sw.js).
+Route::middleware(['throttle:30,1', 'cache.headers:no_store;private'])->group(function () {
     Route::get('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'create'])->name('sponsor-deals.create');
     Route::get('/sponsor-deals/events/{event}/sponsors', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'sponsors'])->name('sponsor-deals.sponsors');
     Route::get('/sponsor-deals/success', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'success'])->name('sponsor-deals.success');

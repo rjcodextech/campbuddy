@@ -427,6 +427,8 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
         )
     }
     var wporg by remember { mutableStateOf(profile.wporg.orEmpty()) }
+    val joining = model.mine == null
+    var agreed by remember { mutableStateOf(false) }
 
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -462,7 +464,10 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
             )
             OutlinedTextField(wporg, { wporg = it.take(120) }, label = { Text("WordPress.org username (optional)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
 
-            val ready = tags.isNotEmpty() && (how != "typed" || typed.trim().length >= 2) && (how != "list" || pick != null)
+            // Asked once, when joining (DPDP Act; App\Support\Consent on the server).
+            if (joining) ConsentCheck("what I filled in here with attendees of this WordCamp", agreed) { agreed = it }
+
+            val ready = tags.isNotEmpty() && (how != "typed" || typed.trim().length >= 2) && (how != "list" || pick != null) && (!joining || agreed)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PrimaryButton(if (model.busy) "Saving…" else "Save", {
                     if (ready && !model.busy) model.join(
@@ -472,6 +477,7 @@ private fun JoinForm(model: DiscoveryModel, roster: List<RosterEntry>, startTags
                             displayName = if (how == "typed") typed.trim() else null,
                             wporgUsername = wporg.trim().ifEmpty { null },
                             attendeeRosterId = if (how == "list") pick else null,
+                            consent = if (joining) true else null,
                         ),
                         onDone = onClose,
                     )
