@@ -22,18 +22,35 @@ class WordCampNormalizer
      * @param  array<int, array<string, mixed>>  $sessions
      * @param  array<int, string>  $trackNames
      * @param  array<int, string>  $categoryNames
+     * @param  array<string, array<int, int>>  $shownOnSchedule  normalized title => minutes on the site's schedule page
+     * @param  ?string  $eventStartDate  the event's first and last day ("2026-11-21"), to place a page-only time
+     * @param  array<string, array<int, array{minutes: int, date: ?string}>>  $scheduleSlots  SchedulePageProbe::slotsFor()
      * @return array<int, array<string, mixed>>
      */
-    public function normalizeSessions(array $sessions, array $trackNames, array $categoryNames = [], ?\DateTimeZone $zone = null, array $shownOnSchedule = []): array
-    {
+    public function normalizeSessions(
+        array $sessions,
+        array $trackNames,
+        array $categoryNames = [],
+        ?\DateTimeZone $zone = null,
+        array $shownOnSchedule = [],
+        ?string $eventStartDate = null,
+        array $scheduleSlots = [],
+        ?string $eventEndDate = null,
+    ): array {
         $clock = $zone ? self::sessionClock($sessions, $zone, $shownOnSchedule) : null;
 
-        return array_map(function (array $session) use ($trackNames, $categoryNames, $zone, $clock) {
+        return array_map(function (array $session) use ($trackNames, $categoryNames, $zone, $clock, $eventStartDate, $eventEndDate, $scheduleSlots) {
             $meta = is_array($session['meta'] ?? null) ? $session['meta'] : [];
             $trackIds = $this->ids($session['session_track'] ?? []);
             $categoryIds = $this->ids($session['session_category'] ?? []);
             $startsAt = is_numeric($meta['_wcpt_session_time'] ?? null) ? (int) $meta['_wcpt_session_time'] : 0;
             $duration = is_numeric($meta['_wcpt_session_duration'] ?? null) ? (int) $meta['_wcpt_session_duration'] : null;
+
+            // The site's own time when it has one; else, only if its schedule page shows this session at one
+            // time on one of the event's days. Otherwise none ("Time to be announced") — never a guess.
+            $startsAtInstant = $startsAt > 0
+                ? self::sessionInstant($startsAt, $zone, $clock)
+                : self::shownOnPage($session, $zone, $scheduleSlots, $eventStartDate, $eventEndDate);
 
             return [
                 'id' => $session['id'],
@@ -43,7 +60,7 @@ class WordCampNormalizer
                 'track_ids' => $trackIds,
                 'track_names' => $this->names($trackIds, $trackNames),
                 'category_names' => $this->names($categoryIds, $categoryNames),
-                'starts_at' => $startsAt > 0 ? self::sessionInstant($startsAt, $zone, $clock) : null,
+                'starts_at' => $startsAtInstant,
                 'duration_seconds' => $duration !== null && $duration > 0 ? $duration : null,
                 'session_type' => is_string($meta['_wcpt_session_type'] ?? null) ? $meta['_wcpt_session_type'] : null,
                 // What the talk is about — the one thing a first-timer needs to
@@ -228,6 +245,64 @@ class WordCampNormalizer
     }
 
     /**
+     * A session the site has not timed in its settings, timed from its own schedule page — only when
+     * the page shows it at exactly one time on one of the event's days.
+     *
+     * @param  array<string, array<int, array{minutes: int, date: ?string}>>  $slots
+     */
+    private static function shownOnPage(array $session, ?\DateTimeZone $zone, array $slots, ?string $start, ?string $end): ?string
+    {
+        if ($zone === null) {
+            return null;
+        }
+
+        $placed = [];
+        foreach ($slots[SchedulePageProbe::normalizeTitle((string) ($session['title']['rendered'] ?? ''))] ?? [] as $slot) {
+            $date = self::slotDate($slot['date'] ?? null, $start, $end);
+            if ($date !== null && isset($slot['minutes'])) {
+                $placed["{$date} {$slot['minutes']}"] = [$date, (int) $slot['minutes']];
+            }
+        }
+        // Not on the page, or on it at two different times: no time rather than a wrong one.
+        if (count($placed) !== 1) {
+            return null;
+        }
+
+        [$date, $minutes] = reset($placed);
+
+        return (new \DateTimeImmutable(sprintf('%s %02d:%02d:00', $date, intdiv($minutes, 60), $minutes % 60), $zone))->format('c');
+    }
+
+    /**
+     * Which of the event's days a schedule-page date heading means: "2026-11-22" if it is one of them,
+     * "--11-22" (no year on the page) in the event's own year, no heading only for a one-day event.
+     */
+    public static function slotDate(?string $date, ?string $start, ?string $end): ?string
+    {
+        if ($start === null) {
+            return null;
+        }
+        $end ??= $start;
+
+        if ($date === null) {
+            return $start === $end ? $start : null;
+        }
+
+        if (str_starts_with($date, '--')) {
+            foreach (array_unique([substr($start, 0, 4), substr($end, 0, 4)]) as $year) {
+                $candidate = $year.substr($date, 1);
+                if ($candidate >= $start && $candidate <= $end) {
+                    return $candidate;
+                }
+            }
+
+            return null;
+        }
+
+        return $date >= $start && $date <= $end ? $date : null;
+    }
+
+    /**
      * WordPress's REST API returns `title.rendered` (and any other
      * "rendered" field meant for display) with HTML entities already
      * encoded — e.g. a real apostrophe comes through as `&#8217;`. That's
@@ -235,12 +310,24 @@ class WordCampNormalizer
      * title as plain text (JS's textContent-based escaping, Blade's
      * {{ }}) it would otherwise double-encode: the literal `&` gets
      * re-escaped to `&amp;`, and the raw entity code shows up on screen
-     * instead of the character it represents. Decoding once here, at the
-     * source, means every consumer downstream just gets plain text.
+     * instead of the character it represents.
+     *
+     * We strip all tags and recursively decode HTML entities up to 5 passes
+     * until the string stabilizes, cleanly resolving double/triple encoded
+     * feeds (`&amp;amp;`, `&amp;#8211;`, etc.) without leaving entity noise.
      */
-    private function decodeTitle(string $title): string
+    public function decodeTitle(string $title): string
     {
-        return html_entity_decode($title, ENT_QUOTES | ENT_HTML5);
+        $title = strip_tags($title);
+        for ($i = 0; $i < 5; $i++) {
+            $decoded = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            if ($decoded === $title) {
+                break;
+            }
+            $title = $decoded;
+        }
+
+        return trim(preg_replace('/\s+/u', ' ', $title) ?? '');
     }
 
     /**

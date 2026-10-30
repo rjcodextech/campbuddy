@@ -72,7 +72,7 @@ class FetchBrandingAssetsJob implements ShouldQueue
                     : 'Fetched: '.implode(', ', $found)
             );
         } catch (Throwable $e) {
-            $this->log('error', substr($e->getMessage(), 0, 500));
+            $this->log('error', mb_substr($e->getMessage(), 0, 500));
 
             throw $e;
         }

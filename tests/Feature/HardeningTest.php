@@ -268,7 +268,7 @@ class HardeningTest extends TestCase
 
         // (CSRF checking itself is switched off while tests run; what matters
         // here is that the flow still has a session to carry its message.)
-        $this->post(route('event.roster-removal.remove', [$event, $entry]))
+        $this->post(route('event.roster-removal.remove', [$event, $entry]), ['removal_token' => \App\Http\Controllers\RosterRemovalController::removalToken($entry)])
             ->assertRedirect(route('event.roster-removal.show', $event))
             ->assertSessionHas('status');
 

@@ -65,7 +65,7 @@ class ParseAttendeeRosterJob implements ShouldQueue
             // microsponsor if either listing says so (their block and the main list).
             $rows = [];
             foreach ($entries as $entry) {
-                $hash = $scraper->contentHash($entry['name'], $entry['links']);
+                $hash = $scraper->contentHash($entry['raw_name'] ?? $entry['name'], $entry['links']);
                 $entry['microsponsor'] = ($entry['microsponsor'] ?? false) || ($rows[$hash]['microsponsor'] ?? false);
                 $rows[$hash] = $entry;
             }
@@ -117,7 +117,7 @@ class ParseAttendeeRosterJob implements ShouldQueue
             ));
         } catch (Throwable $e) {
             Log::warning('ParseAttendeeRosterJob failed', ['event_id' => $this->event->id, 'error' => $e->getMessage()]);
-            $this->log('error', substr($e->getMessage(), 0, 500));
+            $this->log('error', mb_substr($e->getMessage(), 0, 500));
 
             throw $e;
         }

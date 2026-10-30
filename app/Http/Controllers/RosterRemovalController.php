@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AttendeeRoster;
 use App\Models\Event;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,10 +27,14 @@ class RosterRemovalController extends Controller
     {
         $name = $request->validate(['name' => ['required', 'string', 'max:191']])['name'];
 
-        $matches = $event->attendeeRoster()
+        // Compared without invisible characters and doubled spaces on either side (PersonName), so
+        // "Arif" finds an entry the site stored as "Arif\u{200B}" — nobody can type what they can't see.
+        $wanted = PersonName::key($name);
+        $matches = $wanted === '' ? collect() : $event->attendeeRoster()
             ->where('is_suppressed', false)
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim($name))])
-            ->get();
+            ->get()
+            ->filter(fn ($entry) => PersonName::key((string) $entry->name) === $wanted)
+            ->values();
 
         return view('attendee.roster-removal', ['event' => $event, 'matches' => $matches, 'searchedName' => $name]);
     }
@@ -38,10 +43,8 @@ class RosterRemovalController extends Controller
     {
         abort_unless($entry->event_id === $event->id, 404);
 
-        $expectedToken = hash_hmac('sha256', $entry->id . ':' . $entry->content_hash, (string) config('app.key'));
-        $providedToken = (string) $request->input('removal_token');
-
-        if (! hash_equals($expectedToken, $providedToken) && ! (app()->environment('testing') && ! $request->has('removal_token'))) {
+        // No exceptions, not even for tests: the token comes with the search result (removalToken()).
+        if (! hash_equals(self::removalToken($entry), (string) $request->input('removal_token'))) {
             abort(403, 'Invalid or expired removal token.');
         }
 
@@ -50,5 +53,11 @@ class RosterRemovalController extends Controller
         return redirect()
             ->route('event.roster-removal.show', $event)
             ->with('status', "{$entry->name} has been removed from the public roster.");
+    }
+
+    /** The proof that a removal came from a search result for that entry (shown in the result's form). */
+    public static function removalToken(AttendeeRoster $entry): string
+    {
+        return hash_hmac('sha256', $entry->id.':'.$entry->content_hash, (string) config('app.key'));
     }
 }

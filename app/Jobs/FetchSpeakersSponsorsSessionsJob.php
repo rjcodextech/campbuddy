@@ -70,7 +70,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
 
-            $this->log('error', substr('Sessions: '.$this->describe($e), 0, 500));
+            $this->log('error', mb_substr('Sessions: '.$this->describe($e), 0, 500));
 
             throw $e;
         }
@@ -79,10 +79,21 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
         // for the time zone, and a check on every session time below.
         $page = $this->schedulePage();
         $zone = $this->resolveTimezone($client, $notes, $page['zone_token'] ?? null);
-        $shown = $page ? SchedulePageProbe::timesFor($page, array_map(fn ($s) => (string) ($s['title']['rendered'] ?? ''), $rawSessions)) : [];
+        $rawTitles = array_map(fn ($s) => (string) ($s['title']['rendered'] ?? ''), $rawSessions);
+        $shown = $page ? SchedulePageProbe::timesFor($page, $rawTitles) : [];
+        $slots = $page ? SchedulePageProbe::slotsFor($page, $rawTitles) : [];
 
         try {
-            $sessions = $normalizer->normalizeSessions($rawSessions, $trackNames, $categoryNames, $zone, $shown);
+            $sessions = $normalizer->normalizeSessions(
+                $rawSessions,
+                $trackNames,
+                $categoryNames,
+                $zone,
+                $shown,
+                $this->event->starts_on?->toDateString(),
+                $slots,
+                $this->event->ends_on?->toDateString() ?? $this->event->starts_on?->toDateString(),
+            );
             $this->verifyAgainstSchedulePage($sessions, $shown, $zone, $page['zone_token'] ?? null, $problems, $notes);
         } catch (Throwable $e) {
             Log::warning('FetchSpeakersSponsorsSessionsJob failed', [
@@ -90,7 +101,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
                 'error' => $e->getMessage(),
             ]);
 
-            $this->log('error', substr('Sessions: '.$this->describe($e), 0, 500));
+            $this->log('error', mb_substr('Sessions: '.$this->describe($e), 0, 500));
 
             throw $e;
         }
@@ -132,7 +143,7 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
 
         $this->log(
             $problems === [] ? 'ok' : 'partial',
-            substr($summary.($problems === [] ? '' : ' — '.implode('; ', $problems)).($notes === [] ? '' : ' · Note: '.implode('; ', $notes)), 0, 500)
+            mb_substr($summary.($problems === [] ? '' : ' — '.implode('; ', $problems)).($notes === [] ? '' : ' · Note: '.implode('; ', $notes)), 0, 500)
         );
     }
 

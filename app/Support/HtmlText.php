@@ -49,6 +49,12 @@ class HtmlText
 
         $text = $document->getElementsByTagName('body')->item(0)?->textContent ?? '';
 
+        // A site that escaped its text twice ("Media &amp;amp; Text") still has entities after the
+        // parse; people would see "&amp;". Decode what is left (a few passes, until it stops changing).
+        for ($i = 0; $i < 3 && preg_match('/&(?:[a-z][a-z0-9]{1,30}|#\d{1,7}|#x[0-9a-f]{1,6});/i', $text); $i++) {
+            $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
         return array_values(array_filter(
             array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $text))),
             fn (string $line) => $line !== ''

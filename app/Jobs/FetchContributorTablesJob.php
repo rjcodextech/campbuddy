@@ -41,7 +41,7 @@ class FetchContributorTablesJob implements ShouldQueue
         try {
             [$found, $pages] = $this->read();
         } catch (Throwable $e) {
-            $this->log('error', 'Could not read the site: '.substr($e->getMessage(), 0, 300));
+            $this->log('error', 'Could not read the site: '.mb_substr($e->getMessage(), 0, 300));
 
             return;
         }

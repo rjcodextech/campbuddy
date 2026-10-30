@@ -53,7 +53,7 @@ class FetchEventInfoJob implements ShouldQueue
             $fetched = $fetcher->fetch();
         } catch (Throwable $e) {
             Log::warning('FetchEventInfoJob failed', ['event_id' => $this->event->id, 'error' => $e->getMessage()]);
-            $this->log('error', substr($e->getMessage(), 0, 500));
+            $this->log('error', mb_substr($e->getMessage(), 0, 500));
 
             throw $e;
         }
@@ -183,7 +183,7 @@ class FetchEventInfoJob implements ShouldQueue
             'source' => 'event_info',
             'job_type' => 'event_info',
             'status' => $status,
-            'message' => substr($message, 0, 500),
+            'message' => mb_substr($message, 0, 500),
             'fetched_at' => now(),
         ]);
     }

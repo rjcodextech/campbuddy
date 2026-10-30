@@ -171,7 +171,7 @@ class DiscoveryIdentityTest extends TestCase
         $ada = $this->attendee('Ada Lovelace');
         $this->join(['attendee_roster_id' => $ada->id])->assertCreated();
 
-        $this->post(route('event.roster-removal.remove', [$this->event, $ada]))->assertRedirect();
+        $this->post(route('event.roster-removal.remove', [$this->event, $ada]), ['removal_token' => \App\Http\Controllers\RosterRemovalController::removalToken($ada)])->assertRedirect();
 
         $this->assertNull(DiscoveryProfile::first()->attendee_roster_id);
         $this->assertNull($this->cards()[0]['name']);

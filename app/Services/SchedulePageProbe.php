@@ -42,16 +42,20 @@ class SchedulePageProbe
     }
 
     /**
-     * @return array{zone_token: ?string, tokens: array<int, array{at: int, end: int, minutes: int}>, text: string}
+     * @return array{zone_token: ?string, tokens: array<int, array{at: int, end: int, minutes: int, date: ?string}>, text: string}
+     *
+     * A token's `date` is the last date heading before it: "2026-11-22", or "--11-22" when the page
+     * gives no year ("Sunday 22 November") — WordCampNormalizer::slotDate() places that within the
+     * event's own dates. Never a guessed year.
      */
     public static function parse(string $html): array
     {
         $text = self::text($html);
+        $dates = self::dateMarkers($text);
 
         preg_match_all(self::TIME, $text, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
 
-        $tokens = [];
-        $zones = [];
+        $raw = [];
         foreach ($matches as $m) {
             $hour = (int) $m[1][0];
             $minute = (int) $m[2][0];
@@ -65,7 +69,26 @@ class SchedulePageProbe
             if ($meridiem === '' && $zone === '' && ! str_contains($m[0][0], ':')) {
                 continue;
             }
+            $raw[] = [$hour, $minute, $meridiem, $zone, $m[0][1], strlen($m[0][0])];
+        }
+
+        // How the page writes its clock. A 24-hour page ("15:30") or one that prints am/pm is read
+        // as written. Only a page with neither — "9:00 … 1:30 … 4:00" — is a 12-hour clock without
+        // am/pm, where 1:00–7:59 is the afternoon.
+        $twentyFourHour = false;
+        $printsMeridiem = false;
+        foreach ($raw as [$hour, , $meridiem]) {
+            $printsMeridiem = $printsMeridiem || $meridiem !== '';
+            $twentyFourHour = $twentyFourHour || ($meridiem === '' && ($hour >= 13 || $hour === 0));
+        }
+        $bareAfternoon = ! $twentyFourHour && ! $printsMeridiem;
+
+        $tokens = [];
+        $zones = [];
+        foreach ($raw as [$hour, $minute, $meridiem, $zone, $pos, $length]) {
             if ($meridiem === 'p' && $hour < 12) {
+                $hour += 12;
+            } elseif ($meridiem === '' && $bareAfternoon && $hour >= 1 && $hour <= 7) {
                 $hour += 12;
             }
             if ($meridiem === 'a' && $hour === 12) {
@@ -79,7 +102,15 @@ class SchedulePageProbe
                 $zones[$zone] = ($zones[$zone] ?? 0) + 1;
             }
 
-            $tokens[] = ['at' => $m[0][1], 'end' => $m[0][1] + strlen($m[0][0]), 'minutes' => $hour * 60 + $minute];
+            $date = null;
+            foreach ($dates as $marker) {
+                if ($marker['pos'] > $pos) {
+                    break;
+                }
+                $date = $marker['date'];
+            }
+
+            $tokens[] = ['at' => $pos, 'end' => $pos + $length, 'minutes' => $hour * 60 + $minute, 'date' => $date];
         }
 
         arsort($zones);
@@ -89,6 +120,48 @@ class SchedulePageProbe
             'tokens' => $tokens,
             'text' => $text,
         ];
+    }
+
+    private const MONTHS = 'January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sept|Sep|Oct|Nov|Dec';
+
+    /**
+     * Every date heading in the page text, in order: "22 November", "Nov 22, 2026", "2026-11-22".
+     * Whole numbers only — "October 2026" is a month, not 20 October.
+     *
+     * @return array<int, array{pos: int, date: string}>
+     */
+    private static function dateMarkers(string $text): array
+    {
+        $m = self::MONTHS;
+        $pattern = '/(?<![\p{L}\d])(?:(\d{1,2})(?:st|nd|rd|th)?\s+('.$m.')\.?(?:,?\s+(\d{4}))?|('.$m.')\.?\s+(\d{1,2})(?!\d)(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?|(\d{4})-(\d{2})-(\d{2}))(?![\p{L}\d])/iu';
+        preg_match_all($pattern, $text, $found, PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL);
+
+        $markers = [];
+        foreach ($found as $f) {
+            if (($f[7][0] ?? null) !== null) {
+                [$year, $month, $day] = [(int) $f[7][0], (int) $f[8][0], (int) $f[9][0]];
+            } else {
+                $day = (int) (($f[1][0] ?? null) ?? ($f[5][0] ?? 0));
+                $month = self::monthNumber((string) (($f[2][0] ?? null) ?? ($f[4][0] ?? '')));
+                $yearText = ($f[3][0] ?? null) ?? ($f[6][0] ?? null);
+                $year = $yearText !== null ? (int) $yearText : null;
+            }
+
+            if ($month === null || ! checkdate($month, $day, $year ?? 2000)) {
+                continue;
+            }
+
+            $markers[] = ['pos' => $f[0][1], 'date' => $year !== null ? sprintf('%04d-%02d-%02d', $year, $month, $day) : sprintf('--%02d-%02d', $month, $day)];
+        }
+
+        return $markers;
+    }
+
+    private static function monthNumber(string $name): ?int
+    {
+        $index = array_search(strtolower(substr($name, 0, 3)), ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'], true);
+
+        return $index === false ? null : $index + 1;
     }
 
     /**
@@ -125,6 +198,44 @@ class SchedulePageProbe
         }
 
         return array_map(fn ($list) => array_values(array_unique($list)), $found);
+    }
+
+    /**
+     * Times and matching dates shown just before each title.
+     *
+     * @param  array{tokens: array, text: string}  $page
+     * @param  array<int, string>  $titles
+     * @return array<string, array<int, array{minutes: int, date: ?string}>>
+     */
+    public static function slotsFor(array $page, array $titles): array
+    {
+        $text = $page['text'] ?? '';
+        $found = [];
+
+        foreach ($titles as $title) {
+            $needle = self::normalizeTitle($title);
+            if (mb_strlen($needle) < 4) {
+                continue;
+            }
+
+            $pattern = '/'.str_replace(' ', '\\s+', preg_quote($needle, '/')).'/iu';
+            if (! preg_match_all($pattern, $text, $hits, PREG_OFFSET_CAPTURE)) {
+                continue;
+            }
+
+            foreach ($hits[0] as [, $pos]) {
+                $before = array_filter($page['tokens'] ?? [], fn ($t) => $t['end'] <= $pos && $pos - $t['end'] <= self::NEAR);
+                if ($before !== []) {
+                    $last = end($before);
+                    $found[$needle][] = [
+                        'minutes' => (int) $last['minutes'],
+                        'date' => $last['date'] ?? null,
+                    ];
+                }
+            }
+        }
+
+        return $found;
     }
 
     public static function normalizeTitle(string $title): string

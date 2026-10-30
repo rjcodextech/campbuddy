@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\PersonName;
 use App\Support\SafeUrl;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -115,7 +116,10 @@ class AttendeeRosterScraper
                 $links[] = ['type' => $type, 'url' => $href];
             });
 
-            $entries[] = ['name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links, 'microsponsor' => $microsponsor];
+            // 'name' is what people see and search (no invisible characters); the stored hash still
+            // comes from the name as the site wrote it ('raw_name'), so a suppressed entry stays suppressed.
+            $clean = PersonName::clean($name);
+            $entries[] = ['name' => $clean !== '' ? $clean : $name, 'raw_name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links, 'microsponsor' => $microsponsor];
         });
     }
 
