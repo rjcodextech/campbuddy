@@ -127,6 +127,8 @@ function askCard(root, slug) {
   card.querySelector('[data-live-no]').addEventListener('click', () => {
     store.set(`campbuddy-live-ask:${slug}`, 'no');
     card.remove();
+    // What that turns off, with the way back on (notification-choices.js).
+    document.dispatchEvent(new CustomEvent('campbuddy:notifications-off'));
   });
   card.querySelector('[data-live-yes]').addEventListener('click', async () => {
     store.set(`campbuddy-live-ask:${slug}`, 'asked');
@@ -144,6 +146,7 @@ function askCard(root, slug) {
       // Blocked or not possible here: nothing more to ask.
     }
     card.remove();
+    if (Notification.permission === 'denied') document.dispatchEvent(new CustomEvent('campbuddy:notifications-off'));
   });
   const anchor = document.getElementById('start-here') ?? root.querySelector('.home-section');
   if (anchor) anchor.before(card);

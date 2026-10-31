@@ -114,3 +114,39 @@
     flex-wrap: wrap;
     gap: v.$space-2;
 }
+
+// "Notifications are off" (notification-choices.js): what a no turns off, in a short list.
+.live-ask__list {
+    margin: 0 0 v.$space-3;
+    padding-left: 1.25em;
+    font-size: v.$font-size-sm;
+
+    li + li {
+        margin-top: 2px;
+    }
+}
+
+// "Your choices" (partials/notification-choices.blade.php): one row per choice, its answer on the right.
+.choices-card__list {
+    margin: v.$space-2 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: v.$font-size-sm;
+
+    li {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 2px v.$space-3;
+        padding: v.$space-2 0;
+        border-top: 1px solid var(--line);
+    }
+
+    li[hidden] {
+        display: none;
+    }
+
+    strong {
+        font-weight: v.$font-weight-bold;
+    }
+}

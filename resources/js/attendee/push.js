@@ -4,7 +4,7 @@
 
 import { apiMutate } from './api.js';
 import { track } from './analytics.js';
-import { kvGet, kvSet, setBookmark } from './db.js';
+import { kvGet, kvSet, setBookmark, updateBookmark } from './db.js';
 import { createOutbox, isPermanentFailure } from './outbox.js';
 import { isIos, isNativeApp, isStandalone } from './platform.js';
 import { render } from './template.js';
@@ -83,6 +83,7 @@ async function offerReminderNow(eventSlug, eventId, sessionId) {
     if (!wantsReminder) {
       await kvSet('notificationState', { ...state, declined: true });
       track('reminder_offer', { result: 'declined' });
+      turnedDown();
       return false;
     }
   }
@@ -92,6 +93,7 @@ async function offerReminderNow(eventSlug, eventId, sessionId) {
   if (permission === 'denied') {
     await kvSet('notificationState', { ...state, permanentlyDenied: true });
     track('reminder_offer', { result: 'permission_denied' });
+    turnedDown();
     return false;
   }
 
@@ -159,8 +161,8 @@ export async function syncReminder(eventSlug, eventId, sessionId) {
     reminder_enabled: true,
   });
 
-  // Remembered locally, so un-saving the session knows to cancel it.
-  await setBookmark(eventId, sessionId, true);
+  // Remembered locally, so un-saving the session knows to cancel it (its title and times kept).
+  if (!(await updateBookmark(eventId, sessionId, { reminderEnabled: true }))) await setBookmark(eventId, sessionId, true);
   await kvSet('notificationState', { ...((await kvGet('notificationState')) ?? {}), enabled: true });
 }
 
@@ -194,7 +196,12 @@ export async function cancelReminder(eventSlug, bookmark) {
   }
 }
 
-function showIosInstallPrompt() {
+/** A no to notifications: notification-choices.js says what that turns off, with the way back on. */
+function turnedDown() {
+  document.dispatchEvent(new CustomEvent('campbuddy:notifications-off'));
+}
+
+export function showIosInstallPrompt() {
   const dialog = render('tpl-reminder-ios-dialog');
   dialog.querySelector('[data-action="close"]').addEventListener('click', () => {
     dialog.close();

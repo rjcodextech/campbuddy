@@ -1038,6 +1038,7 @@ private fun InfoList(slug: String) {
                     }
                 }
                 item { DataControls(slug) }
+                item { NotificationChoicesCard(slug) }
             }
         }
     }

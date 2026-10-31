@@ -8,7 +8,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import club.campbuddy.shared.domain.Reminder
@@ -46,6 +48,16 @@ class AndroidReminders(private val context: Context, private val ask: (Cancellab
             alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, r.atEpochMs, intent(r.id, r))
         }
         prefs.edit().putStringSet("ids", reminders.map { it.id.toString() }.toSet()).apply()
+    }
+
+    /** CampBuddy's notification settings (Android 8+), else its App info page, where notifications are allowed again. */
+    override fun openSettings() {
+        val intent = if (Build.VERSION.SDK_INT >= 26) {
+            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        } else {
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+        }
+        runCatching { context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
     }
 
     private fun intent(id: Int, reminder: Reminder?): PendingIntent {

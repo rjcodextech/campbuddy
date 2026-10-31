@@ -202,6 +202,7 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
         if (offline) item { OfflineNote() }
+        item { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone, home = true) }
         item { LiveAskCard(event.slug, event.firstDay, event.lastDay, zone) }
 
         val sections = words.config.enabledSections().filter { visible(it, phase, profile.firstWordCamp, saved.isNotEmpty()) }

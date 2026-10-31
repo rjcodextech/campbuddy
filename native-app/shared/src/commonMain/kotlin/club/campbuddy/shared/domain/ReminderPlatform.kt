@@ -14,6 +14,9 @@ interface ReminderPlatform {
 
     /** Replaces every pending reminder with [reminders] (cancel what is no longer wanted). */
     fun replaceAll(reminders: List<Reminder>)
+
+    /** Opens the phone's notification settings for CampBuddy: the only way back once the phone said no. */
+    fun openSettings() = Unit
 }
 
 /** For previews and tests. */

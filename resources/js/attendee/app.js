@@ -134,6 +134,9 @@ async function init() {
   // Live announcements from the organizers: the banner, "this device has the event open", and the ask to allow notifications (live-updates.js).
   import('./live-updates.js').then(({ initLiveUpdates }) => initLiveUpdates(root)).catch(() => {});
 
+  // Notifications turned down: what that turns off and the way back on; the "Your choices" card (notification-choices.js).
+  import('./notification-choices.js').then(({ initNotificationChoices }) => initNotificationChoices(root)).catch(() => {});
+
   // On the event's days: "N things left in your plan" (plan-reminder.js).
   import('./plan-reminder.js').then(({ initPlanReminder }) => initPlanReminder()).catch(() => {});
 

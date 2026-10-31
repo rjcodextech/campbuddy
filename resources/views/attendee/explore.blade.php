@@ -145,6 +145,9 @@
             <div id="data-controls" style="margin-top:20px">
                 @include('attendee.partials.data-controls')
             </div>
+            <div id="your-choices" style="margin-top:20px">
+                @include('attendee.partials.notification-choices')
+            </div>
         </div>
     </main>
 

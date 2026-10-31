@@ -142,6 +142,9 @@
         <div id="data-controls" style="margin-top:24px">
             @include('attendee.partials.data-controls')
         </div>
+        <div id="your-choices" style="margin-top:24px">
+            @include('attendee.partials.notification-choices')
+        </div>
     </main>
 
     @include('attendee.templates.camp-card')

@@ -159,9 +159,10 @@ internal fun LiveAskCard(slug: String, firstDay: String?, lastDay: String?, zone
                     scope.launch {
                         val granted = env.deps.reminders.requestPermission()
                         env.user.saveNotifications(if (granted) NotificationState(enabled = true) else NotificationState(denied = true))
+                        if (!granted) TurnedDown.now()
                     }
                 }, Modifier.weight(1f), kind = BtnKind.Primary, icon = "bell")
-                OrgButton("Not now", { env.deps.store.put("live:ask:$slug", "no"); dismissed = true }, Modifier.weight(1f))
+                OrgButton("Not now", { env.deps.store.put("live:ask:$slug", "no"); dismissed = true; TurnedDown.now() }, Modifier.weight(1f))
             }
         }
     }

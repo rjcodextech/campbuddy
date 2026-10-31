@@ -23,6 +23,13 @@ mock.module(`${DIR}db.js`, {
       bookmarks = bookmarks.filter((b) => !(b.eventId === eventId && b.sessionId === sessionId));
       bookmarks.push({ eventId, sessionId, reminderEnabled });
     },
+    // A saved talk's reminder is switched on in place, its title and times kept (push.js syncReminder).
+    updateBookmark: async (eventId, sessionId, changes) => {
+      const row = bookmarks.find((b) => b.eventId === eventId && b.sessionId === sessionId);
+      if (!row) return null;
+      Object.assign(row, changes);
+      return row;
+    },
   },
 });
 mock.module(`${DIR}api.js`, {

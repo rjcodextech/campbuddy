@@ -5,6 +5,9 @@ import club.campbuddy.shared.domain.ReminderPlatform
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import platform.Foundation.NSDate
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
+import platform.UIKit.UIApplicationOpenSettingsURLString
 import platform.Foundation.timeIntervalSince1970
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
@@ -50,5 +53,11 @@ class IosReminders : ReminderPlatform {
             val trigger = UNTimeIntervalNotificationTrigger.triggerWithTimeInterval(seconds, repeats = false)
             center.addNotificationRequest(UNNotificationRequest.requestWithIdentifier("reminder-${reminder.id}", content, trigger), withCompletionHandler = null)
         }
+    }
+
+    /** CampBuddy's page in the Settings app, where notifications are allowed again. */
+    override fun openSettings() {
+        val url = NSURL.URLWithString(UIApplicationOpenSettingsURLString) ?: return
+        UIApplication.sharedApplication.openURL(url, options = emptyMap<Any?, Any>(), completionHandler = null)
     }
 }

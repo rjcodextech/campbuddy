@@ -139,9 +139,10 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                         scope.launch {
                             val granted = env.deps.reminders.requestPermission()
                             user.saveNotifications(if (granted) NotificationState(enabled = true) else NotificationState(denied = true))
+                            if (!granted) TurnedDown.now()
                         }
                     },
-                    "No thanks", { askFor = false; user.saveNotifications(NotificationState(declined = true)) },
+                    "No thanks", { askFor = false; user.saveNotifications(NotificationState(declined = true)); TurnedDown.now() },
                 )
             },
         ) { Text("Want CampBuddy to remind you a few minutes before the sessions you save start?", style = MaterialTheme.typography.bodyLarge) }
@@ -154,6 +155,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(words("tabs.my_day"), style = MaterialTheme.typography.headlineSmall) }
         if (offline) item { OfflineNote() }
+        item(key = "notifications-off") { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone) }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Segment("Full schedule", selected = !mine) { mine = false }
@@ -265,6 +267,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
             people.forEach { m -> item(key = "person-${m.rosterId}") { PersonPlanCard(event.slug, m, hidden = planFilter == "hidden") } }
         }
         item(key = "data-controls") { DataControls(event.slug) }
+        item(key = "your-choices") { NotificationChoicesCard(event.slug) }
     }
 }
 
