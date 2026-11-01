@@ -199,6 +199,48 @@ class SocialMediaTest extends TestCase
         $this->assertCount(1, SocialKit::sponsors($this->event));
     }
 
+    public function test_everyone_the_site_lists_gets_a_card_even_when_not_on_the_attendee_list(): void
+    {
+        $gravatar = fn (string $c) => 'https://secure.gravatar.com/avatar/'.str_repeat($c, 32).'?s=96&d=mm&r=g';
+        $asha = AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Asha Rao', 'links' => [], 'gravatar_url' => $gravatar('a'), 'content_hash' => 'a', 'is_suppressed' => false]);
+        $wrong = AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Ravi K', 'links' => [], 'gravatar_url' => $gravatar('e'), 'content_hash' => 'e', 'is_suppressed' => false]);
+        AttendeeRoster::create(['event_id' => $this->event->id, 'name' => 'Gone Person', 'links' => [], 'gravatar_url' => $gravatar('d'), 'content_hash' => 'd', 'is_suppressed' => true]);
+        \App\Models\RosterMark::create(['event_id' => $this->event->id, 'person_key' => 'g:'.str_repeat('e', 32), 'role' => 'organizer', 'action' => 'remove', 'set_by' => 'admin']);
+
+        EventData::put($this->event->id, 'organizers', [
+            ['id' => 1, 'name' => 'Asha Rao', 'gravatar_url' => $gravatar('a'), 'avatar_url' => $gravatar('a')],
+            ['id' => 2, 'name' => 'Troy Chaplin', 'gravatar_url' => $gravatar('b'), 'avatar_url' => 'https://rajasthan.wordcamp.org/2026/files/troy.jpg'],
+            ['id' => 3, 'name' => 'Gone Person', 'gravatar_url' => $gravatar('d')],
+            // Matched automatically, then taken off by hand: that list entry isn't them.
+            ['id' => 4, 'name' => 'Ravi Kumar', 'gravatar_url' => $gravatar('e')],
+        ]);
+        EventData::put($this->event->id, 'speakers', [
+            ['id' => 7, 'name' => 'Troy Chaplin', 'gravatar_url' => $gravatar('b'), 'avatar_url' => $gravatar('b')],
+            ['id' => 8, 'name' => 'Robbie Adair', 'gravatar_url' => $gravatar('c'), 'avatar_url' => $gravatar('c')],
+        ]);
+        EventData::put($this->event->id, 'sessions', [['id' => 50, 'title' => 'Beyond Launch', 'speaker_ids' => [8]]]);
+        EventData::put($this->event->id, 'volunteers', [['id' => 9, 'name' => 'Joel Lobo']]);
+
+        $people = collect(SocialKit::people($this->event))->keyBy('name');
+
+        $this->assertSame(['Asha Rao', 'Joel Lobo', 'Ravi Kumar', 'Robbie Adair', 'Troy Chaplin'], $people->keys()->all(), 'in name order; nobody who left the list');
+        $this->assertSame($asha->id, $people['Asha Rao']['id']);
+        $this->assertSame(['organizer', 'speaker'], $people['Troy Chaplin']['roles'], 'one person on two of the site lists: one card');
+        $this->assertSame(-2, $people['Troy Chaplin']['id'], 'never a list entry id');
+        $this->assertSame('https://rajasthan.wordcamp.org/2026/files/troy.jpg', $people['Troy Chaplin']['photo'], "the site's photo of them");
+        $this->assertSame('Beyond Launch', $people['Robbie Adair']['talk']);
+        $this->assertStringContainsString('s=600', $people['Robbie Adair']['photo']);
+        $this->assertStringContainsString('Robbie Adair is speaking at WordCamp Rajasthan 2026', $people['Robbie Adair']['caption']);
+        $this->assertStringContainsString('utm_content=people-speaker', $people['Robbie Adair']['link']);
+        $this->assertSame(['volunteer'], $people['Joel Lobo']['roles']);
+        $this->assertNull($people['Joel Lobo']['photo'], 'no photo: initials');
+        $this->assertSame(['organizer'], $people['Ravi Kumar']['roles']);
+        $this->assertNotSame($wrong->id, $people['Ravi Kumar']['id'], 'not put back on the entry it was taken off');
+
+        $this->actingAs(User::factory()->create());
+        $this->get(route('admin.events.social', $this->event))->assertOk()->assertSee('Organizers (3)')->assertSee('Speakers (2)')->assertSee('Volunteers (1)');
+    }
+
     public function test_the_page_renders_and_colours_are_checked(): void
     {
         $this->actingAs(User::factory()->create());

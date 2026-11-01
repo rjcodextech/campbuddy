@@ -28,4 +28,27 @@ class PersonName
     {
         return mb_strtolower(self::clean($name));
     }
+
+    /** Titles some sites put before a name ("Md. Kamrul Islam" on one list, "Kamrul Islam" on another). */
+    private const TITLES = ['md', 'mr', 'mrs', 'ms', 'dr'];
+
+    /**
+     * The same person spelled a little differently on two lists: accents off
+     * ("Stéphane" = "Stephane"), punctuation off, and a middle initial or a
+     * title dropped ("Priyanka P Sida" = "Priyanka Sida", "Md. Mahmudul Hasan"
+     * = "Mahmudul Hasan") while two words stay. Only Latin and Greek accents go:
+     * the vowel signs of Hindi and other scripts are part of the name.
+     */
+    public static function loose(string $name): string
+    {
+        $name = mb_strtolower(self::clean(html_entity_decode($name, ENT_QUOTES | ENT_HTML5)));
+        if (class_exists(\Normalizer::class) && ($parts = \Normalizer::normalize($name, \Normalizer::FORM_D)) !== false) {
+            $name = \Normalizer::normalize((string) preg_replace('/[\x{0300}-\x{036F}]/u', '', $parts), \Normalizer::FORM_C) ?: $name;
+        }
+
+        $words = preg_split('/[^\p{L}\p{M}\p{N}]+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $kept = array_values(array_filter($words, fn ($w) => mb_strlen($w) > 1 && ! in_array($w, self::TITLES, true)));
+
+        return implode(' ', count($kept) >= 2 ? $kept : $words);
+    }
 }

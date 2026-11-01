@@ -528,7 +528,9 @@ class SocialKit
     /**
      * People for the bulk cards: everyone with a role on the list, or with a
      * Camp Card they chose to show there — name, photo, roles, a speaker's
-     * first talk, and a caption.
+     * first talk, and a caption. The site's organizers, speakers and
+     * volunteers who aren't on the attendee list get a card too, with the
+     * site's photo of them (siteOnly).
      *
      * @return list<array<string, mixed>>
      */
@@ -551,6 +553,8 @@ class SocialKit
         // tickets) are told apart by their Gravatar, else their name, and
         // their roles are put together.
         $seen = [];
+        // List entry id => their card, for the site's people below.
+        $cardOf = [];
         foreach ($entries as $entry) {
             $personRoles = $roles[$entry->id]['roles'] ?? [];
             $card = $cards[$entry->id] ?? null;
@@ -560,6 +564,7 @@ class SocialKit
             $key = $entry->gravatar_url ? (string) preg_replace('/\?.*$/', '', $entry->gravatar_url) : mb_strtolower(trim($entry->name));
             if (isset($seen[$key])) {
                 $i = $seen[$key];
+                $cardOf[$entry->id] = $i;
                 $people[$i]['roles'] = array_values(array_unique([...$people[$i]['roles'], ...$personRoles]));
                 $people[$i]['role_labels'] = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $people[$i]['roles']);
                 $people[$i]['talk'] ??= $roles[$entry->id]['talks'][0] ?? null;
@@ -568,6 +573,7 @@ class SocialKit
                 continue;
             }
             $seen[$key] = count($people);
+            $cardOf[$entry->id] = count($people);
 
             $labels = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $personRoles);
             $talk = $roles[$entry->id]['talks'][0] ?? null;
@@ -587,12 +593,93 @@ class SocialKit
             ];
         }
 
+        $people = self::siteOnly($event, $people, $cardOf);
+
         // Their captions once their roles are all in (one person, two tickets: both roles).
         // `caption` is the LinkedIn one, for what takes a single caption (the native app).
         foreach ($people as $i => $person) {
             $people[$i]['captions'] = SocialCaptions::make(self::personParts($event, $person) + ['link' => $person['link']], $tags);
             $people[$i]['caption'] = $people[$i]['captions']['linkedin'];
         }
+
+        return $people;
+    }
+
+    /** The roles the site's own lists give (organizers, speakers, volunteers pages). */
+    private const SITE_ROLES = ['organizer', 'speaker', 'volunteer'];
+
+    /**
+     * The site's organizers, speakers and volunteers who aren't on the
+     * attendee list (RosterRoles::unlisted: no ticket yet, or their name is on
+     * it twice) — a card each, with the site's photo and a speaker's first
+     * talk, so the studio has everyone the site lists. One person on two of
+     * the site's lists is one card; so is someone whose card is already here
+     * for another of those roles under the same name. Never added to the card
+     * of an entry whose automatic match was taken off by hand. Ids are the
+     * site's post ids, negative: never a list entry's id.
+     *
+     * @param  list<array<string, mixed>>  $people
+     * @param  array<int, int>  $cardOf  list entry id => index in $people
+     * @return list<array<string, mixed>>
+     */
+    private static function siteOnly(Event $event, array $people, array $cardOf): array
+    {
+        $unlisted = RosterRoles::unlisted($event);
+        if ($unlisted === []) {
+            return $people;
+        }
+
+        // Cards that already carry a role from the site's lists, by loose name.
+        $byName = [];
+        foreach ($people as $i => $person) {
+            if (array_intersect(self::SITE_ROLES, $person['roles']) !== []) {
+                $byName[PersonName::loose((string) $person['name'])] ??= $i;
+            }
+        }
+        $byHash = [];
+
+        foreach ($unlisted as $one) {
+            $person = $one['person'];
+            $role = $one['role'];
+            $name = trim((string) $person['name']);
+            $loose = PersonName::loose($name);
+            $hash = RosterRoles::avatarHash($person['gravatar_url'] ?? null);
+            $taken = array_map(fn ($id) => $cardOf[$id] ?? -1, $one['ids']);
+
+            $i = ($hash !== null ? ($byHash[$hash] ?? null) : null) ?? $byName[$loose] ?? null;
+            if ($i !== null && ! in_array($i, $taken, true)) {
+                $mine = array_values(array_filter(RosterRoles::ROLES, fn ($r) => $r === $role || in_array($r, $people[$i]['roles'], true)));
+                $people[$i]['roles'] = $mine;
+                $people[$i]['role_labels'] = array_map(fn ($r) => RosterRoles::LABELS[$r] ?? $r, $mine);
+                $people[$i]['link'] = self::link($event, 'people-'.str_replace('_', '-', $mine[0]));
+                $people[$i]['talk'] ??= $one['talks'][0] ?? null;
+                $people[$i]['photo'] ??= self::bigPhoto($person['avatar_url'] ?? $person['gravatar_url'] ?? null);
+
+                continue;
+            }
+
+            $id = (int) ($person['id'] ?? 0);
+            $i = count($people);
+            $people[] = [
+                'id' => $id > 0 ? -$id : -(crc32($role.':'.$name) & 0x7FFFFFFF),
+                'name' => $name,
+                // The site's photo of them (else their Gravatar there); none: initials.
+                'photo' => self::bigPhoto($person['avatar_url'] ?? $person['gravatar_url'] ?? null),
+                'roles' => [$role],
+                'role_labels' => [RosterRoles::LABELS[$role]],
+                'talk' => $one['talks'][0] ?? null,
+                'card' => null,
+                'link' => self::link($event, 'people-'.$role),
+            ];
+            $byName[$loose] ??= $i;
+            if ($hash !== null) {
+                $byHash[$hash] = $i;
+            }
+        }
+
+        // In name order, as the list itself is.
+        $collator = class_exists(\Collator::class) ? new \Collator('root') : null;
+        usort($people, fn ($a, $b) => $collator ? $collator->compare((string) $a['name'], (string) $b['name']) : strcasecmp((string) $a['name'], (string) $b['name']));
 
         return $people;
     }

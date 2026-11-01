@@ -103,6 +103,66 @@ class RosterRolesTest extends TestCase
         $this->assertArrayNotHasKey($plain->id, $roles);
     }
 
+    public function test_a_name_spelled_a_little_differently_matches_when_it_is_one_person_on_the_list(): void
+    {
+        $event = $this->event();
+        $stephane = $this->entry($event, 'Stephane Boisvert', 'aaa111aaa111aaa111aaa111aaa111aa');
+        $priyanka = $this->entry($event, 'Priyanka Sida');
+        $mahmud = $this->entry($event, 'Md. Mahmudul Hasan');
+        $ticketA = $this->entry($event, 'Mayank Kumar', 'ccc333ccc333ccc333ccc333ccc333cc');
+        $ticketB = AttendeeRoster::create([
+            'event_id' => $event->id, 'name' => 'Mayank Kumar', 'links' => [], 'content_hash' => 'second-ticket', 'is_suppressed' => false,
+            'gravatar_url' => 'https://secure.gravatar.com/avatar/ccc333ccc333ccc333ccc333ccc333cc?s=96&d=mm&r=g',
+        ]);
+        $arunA = $this->entry($event, 'Arun R Shenoy', 'ddd444ddd444ddd444ddd444ddd444dd');
+        $arunB = $this->entry($event, 'Arun S. Shenoy', 'eee555eee555eee555eee555eee555ee');
+
+        $other = 'https://secure.gravatar.com/avatar/fff666fff666fff666fff666fff666ff?s=96';
+        EventData::put($event->id, 'organizers', [['id' => 1, 'name' => 'Mahmudul Hasan', 'gravatar_url' => $other]]);
+        EventData::put($event->id, 'speakers', [
+            ['id' => 7, 'name' => 'Stéphane Boisvert', 'gravatar_url' => $other],
+            ['id' => 8, 'name' => 'Priyanka P Sida'],
+            ['id' => 9, 'name' => 'Mayank Kumar', 'gravatar_url' => $other],
+            ['id' => 10, 'name' => 'Arun Shenoy', 'gravatar_url' => $other],
+        ]);
+
+        $roles = RosterRoles::forEvent($event);
+
+        $this->assertSame(['speaker'], $roles[$stephane->id]['roles'], 'accents off');
+        $this->assertSame(['speaker'], $roles[$priyanka->id]['roles'], 'a middle initial dropped');
+        $this->assertSame(['organizer'], $roles[$mahmud->id]['roles'], 'a title dropped');
+        $this->assertSame(['speaker'], $roles[$ticketA->id]['roles'], 'two tickets with one Gravatar are one person');
+        $this->assertSame(['speaker'], $roles[$ticketB->id]['roles']);
+        $this->assertArrayNotHasKey($arunA->id, $roles, 'two people the name could be: never guessed');
+        $this->assertArrayNotHasKey($arunB->id, $roles);
+        $this->assertSame(['Arun Shenoy'], array_map(fn ($u) => $u['person']['name'], RosterRoles::unlisted($event)));
+    }
+
+    public function test_site_people_not_on_the_list_are_kept_apart_except_who_left_the_list(): void
+    {
+        $event = $this->event();
+        $this->entry($event, 'Asha Rao', 'aaa111aaa111aaa111aaa111aaa111aa');
+        $left = $this->entry($event, 'Left Person', 'bbb222bbb222bbb222bbb222bbb222bb');
+        $left->suppress();
+
+        EventData::put($event->id, 'organizers', [
+            ['id' => 1, 'name' => 'Asha Rao', 'gravatar_url' => 'https://secure.gravatar.com/avatar/aaa111aaa111aaa111aaa111aaa111aa?s=96'],
+            ['id' => 2, 'name' => 'Troy Chaplin', 'gravatar_url' => 'https://secure.gravatar.com/avatar/ccc333ccc333ccc333ccc333ccc333cc?s=96'],
+            ['id' => 3, 'name' => 'Left Person', 'gravatar_url' => 'https://secure.gravatar.com/avatar/ddd444ddd444ddd444ddd444ddd444dd?s=96'],
+        ]);
+        EventData::put($event->id, 'speakers', [['id' => 7, 'name' => 'Robbie Adair']]);
+        EventData::put($event->id, 'sessions', [['id' => 50, 'title' => 'Beyond Launch', 'speaker_ids' => [7]]]);
+        EventData::put($event->id, 'volunteers', [['id' => 9, 'name' => 'Joel Lobo']]);
+
+        $unlisted = collect(RosterRoles::unlisted($event))->map(fn ($u) => [$u['role'], $u['person']['name'], $u['talks']])->all();
+
+        $this->assertSame([
+            ['organizer', 'Troy Chaplin', []],
+            ['speaker', 'Robbie Adair', ['Beyond Launch']],
+            ['volunteer', 'Joel Lobo', []],
+        ], $unlisted, 'the one on the list is not here, nor the one who asked to be taken off it (by name)');
+    }
+
     public function test_the_roster_api_sends_roles_and_talks(): void
     {
         $event = $this->event();

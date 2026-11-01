@@ -71,6 +71,18 @@ class OrganizerAppSocialTest extends TestCase
         $this->getJson($this->url($this->theirs), $this->asManager())->assertNotFound();
     }
 
+    public function test_an_organizer_the_site_lists_but_not_the_attendee_list_comes_with_a_number_id(): void
+    {
+        \App\Support\EventData::put($this->mine->id, 'organizers', [['id' => 12, 'name' => 'Troy Chaplin', 'avatar_url' => 'https://secure.gravatar.com/avatar/'.str_repeat('b', 32).'?s=96']]);
+
+        $people = $this->getJson($this->url($this->mine), $this->asManager())->assertOk()->json('data.people');
+
+        $this->assertSame([['id' => -12, 'name' => 'Troy Chaplin', 'role_keys' => ['organizer'], 'roles' => ['Organizer']]], array_map(
+            fn ($p) => ['id' => $p['id'], 'name' => $p['name'], 'role_keys' => $p['role_keys'], 'roles' => $p['roles']],
+            $people
+        ), 'the app reads id as a number (Long)');
+    }
+
     public function test_colours_and_webhook_are_saved_and_logged_for_a_manager(): void
     {
         $headers = $this->asManager();

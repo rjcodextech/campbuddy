@@ -6,6 +6,7 @@ use App\Models\AttendeeRoster;
 use App\Models\Event;
 use App\Models\FetchLog;
 use App\Support\EventData;
+use App\Support\PersonName;
 use App\Support\RosterRoles;
 use App\Support\SafeUrl;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -144,13 +145,15 @@ class FillMissingPhotosJob implements ShouldQueue
     }
 
     /**
-     * The site's speakers and organizers: name key and Gravatar hash => their photo, Gravatar and username.
+     * The site's speakers and organizers: name key, loose name (PersonName::loose) and Gravatar hash
+     * => their photo, Gravatar and username.
      *
-     * @return array{byName: array<string, array>, byHash: array<string, array>}
+     * @return array{byName: array<string, array>, byLoose: array<string, array>, byHash: array<string, array>}
      */
     private function sitePeople(): array
     {
         $byName = [];
+        $byLoose = [];
         $byHash = [];
         foreach ([...(EventData::get($this->event->id, 'organizers') ?? []), ...(EventData::get($this->event->id, 'speakers') ?? [])] as $p) {
             $person = [
@@ -162,20 +165,24 @@ class FillMissingPhotosJob implements ShouldQueue
             if ($key !== '') {
                 // The same name twice on the site can't tell two people apart: neither is used by name.
                 $byName[$key] = isset($byName[$key]) ? false : $person;
+                $loose = PersonName::loose((string) $p['name']);
+                $byLoose[$loose] = isset($byLoose[$loose]) ? false : $person;
             }
             if ($hash = RosterRoles::avatarHash($person['gravatar'])) {
                 $byHash[$hash] = $person;
             }
         }
 
-        return ['byName' => array_filter($byName), 'byHash' => $byHash];
+        return ['byName' => array_filter($byName), 'byLoose' => array_filter($byLoose), 'byHash' => $byHash];
     }
 
     private function match(AttendeeRoster $entry, array $site): ?array
     {
         $hash = RosterRoles::avatarHash($entry->gravatar_url);
 
-        return ($hash ? ($site['byHash'][$hash] ?? null) : null) ?? ($site['byName'][RosterRoles::nameKey($entry->name)] ?? null);
+        return ($hash ? ($site['byHash'][$hash] ?? null) : null)
+            ?? ($site['byName'][RosterRoles::nameKey($entry->name)] ?? null)
+            ?? ($site['byLoose'][PersonName::loose($entry->name)] ?? null);
     }
 
     /** Their WordPress.org username: from the profile link on the attendee list, else from the site. */

@@ -92,8 +92,12 @@ class PeoplePhotosAndTablesTest extends TestCase
 
     public function test_the_photo_job_finds_site_photos_real_gravatars_and_wordpress_org_pictures(): void
     {
-        EventData::put($this->event->id, 'speakers', [['id' => 1, 'name' => 'Asha Rao', 'avatar_url' => 'https://test.wordcamp.org/files/asha.jpg', 'gravatar_url' => null]]);
+        EventData::put($this->event->id, 'speakers', [
+            ['id' => 1, 'name' => 'Asha Rao', 'avatar_url' => 'https://test.wordcamp.org/files/asha.jpg', 'gravatar_url' => null],
+            ['id' => 2, 'name' => 'Stéphane P. Boisvert', 'avatar_url' => 'https://test.wordcamp.org/files/stephane.jpg', 'gravatar_url' => null],
+        ]);
         $speaker = $this->entry('Asha Rao', self::NONE);
+        $spelled = $this->entry('Stephane Boisvert', self::NONE);
         $withGravatar = $this->entry('Ravi Kumar', self::REAL);
         $withProfile = $this->entry('Neha Singh', self::NONE, [['type' => 'website', 'url' => 'https://profiles.wordpress.org/neha/']]);
         $nothing = $this->entry('No Photo', self::NONE);
@@ -108,6 +112,7 @@ class PeoplePhotosAndTablesTest extends TestCase
         (new FillMissingPhotosJob($this->event))->handle();
 
         $this->assertSame(['https://test.wordcamp.org/files/asha.jpg', 'site'], [$speaker->fresh()->photo_url, $speaker->fresh()->photo_source]);
+        $this->assertSame(['https://test.wordcamp.org/files/stephane.jpg', 'site'], [$spelled->fresh()->photo_url, $spelled->fresh()->photo_source], 'the same name without its accent and initial');
         $this->assertSame('gravatar', $withGravatar->fresh()->photo_source);
         $this->assertStringContainsString(self::REAL, $withGravatar->fresh()->photo_url);
         $this->assertSame('wporg', $withProfile->fresh()->photo_source);
