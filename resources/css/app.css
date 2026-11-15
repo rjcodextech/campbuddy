@@ -323,12 +323,14 @@ h3,
 /*
 | The Social media studio (partials/social-media.blade.php, social-studio.js): a full-screen
 | dialog with the list on the left, the big preview in the middle and the edits on the right.
+| Optimized for desktop three-pane layout and smooth mobile-responsive single-column flow.
 */
 .cb-studio {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     max-width: none;
     max-height: none;
     /* !important: the page's space-y-* would otherwise push the dialog down. */
@@ -337,6 +339,20 @@ h3,
     border: 0;
     background: var(--color-paper);
     color: var(--color-ink);
+    overscroll-behavior: contain;
+}
+
+.cb-studio-header {
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+.scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
 }
 
 .cb-studio::backdrop {

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\Api\RosterController as RosterApi;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class AttendeeRoster extends Model
 {
@@ -62,7 +64,14 @@ class AttendeeRoster extends Model
      */
     public function suppress(): void
     {
-        $this->update(['is_suppressed' => true]);
-        DiscoveryProfile::where('attendee_roster_id', $this->id)->update(['attendee_roster_id' => null]);
+        DB::transaction(function () {
+            $this->update(['is_suppressed' => true]);
+            DiscoveryProfile::where('attendee_roster_id', $this->id)->update(['attendee_roster_id' => null]);
+            SharedCampCard::where('attendee_roster_id', $this->id)->delete();
+        });
+
+        if ($this->event) {
+            RosterApi::forget($this->event);
+        }
     }
 }

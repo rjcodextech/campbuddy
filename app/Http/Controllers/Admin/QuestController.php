@@ -41,6 +41,8 @@ class QuestController extends Controller
 
     public function update(StoreQuestRequest $request, Event $event, Quest $quest): RedirectResponse
     {
+        $this->ownedBy($event, $quest);
+
         $quest->update($request->validated());
 
         return redirect()->route('admin.events.quests.index', $event)->with('status', 'Quest updated.');
@@ -48,10 +50,20 @@ class QuestController extends Controller
 
     public function destroy(Event $event, Quest $quest): RedirectResponse
     {
+        $this->ownedBy($event, $quest);
         Gate::authorize('delete', $quest);
 
         $quest->delete();
 
         return redirect()->route('admin.events.quests.index', $event)->with('status', 'Quest removed.');
+    }
+
+    /**
+     * A quest is changed through its own event only: another event's quest, or
+     * one of the shared cross-event cards (event_id null), is "not found" here.
+     */
+    private function ownedBy(Event $event, Quest $quest): void
+    {
+        abort_unless($quest->event_id === $event->id, 404);
     }
 }

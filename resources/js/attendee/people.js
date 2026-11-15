@@ -408,7 +408,8 @@ function rosterRow(a, eventId) {
  * whichever screen the attendee acts from.
  */
 export async function renderDiscoveryCard(el, eventSlug, eventId, discoveryKey, options = {}) {
-  const mine = await kvGet(discoveryKey);
+  // Storage blocked: offer to join, as on a new phone.
+  const mine = await kvGet(discoveryKey).catch(() => null);
 
   if (!mine) {
     showJoinPrompt(el, eventSlug, eventId, discoveryKey, options);
@@ -636,6 +637,7 @@ function mountRosterPicker(el, eventSlug, getPicked, onPick, myRosterId) {
 
     selectedWrap.querySelector('[data-picked-name]').textContent = picked.name ?? '';
     const avatar = selectedWrap.querySelector('[data-picked-avatar]');
+    avatar.onerror = () => { avatar.onerror = null; avatar.src = '/media/illustrations/avatar.svg'; };
     avatar.src = picked.photo_url || picked.gravatar_url || '/media/illustrations/avatar.svg';
   };
 
@@ -1085,6 +1087,7 @@ function personRow(profile, buttonLabel, onClick) {
   avatar.height = 40;
   avatar.loading = 'lazy';
   avatar.dataset.fallback = '/media/illustrations/avatar.svg';
+  avatar.onerror = () => { avatar.onerror = null; avatar.src = '/media/illustrations/avatar.svg'; };
   avatar.src = person.avatarUrl ?? '/media/illustrations/avatar.svg';
 
   const text = document.createElement('div');

@@ -236,6 +236,11 @@ class ChatWindowTest extends TestCase
     private function mutualAtTwoDayEvent(): array
     {
         $zone = 'Asia/Kolkata';
+        // Travel into the event window so profiles and waves are always created within the retention period.
+        if (now()->year !== 2026 || now()->month !== 10) {
+            $this->travelTo(CarbonImmutable::parse('2026-10-10 09:00', $zone));
+        }
+
         $event = $this->event(['starts_on' => '2026-10-10', 'ends_on' => '2026-10-11', 'timezone' => $zone], [
             $this->at(1, '2026-10-10 10:00', $zone),
             $this->at(2, '2026-10-10 17:00', $zone),

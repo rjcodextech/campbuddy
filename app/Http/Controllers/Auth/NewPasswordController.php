@@ -52,9 +52,12 @@ class NewPasswordController extends Controller
             }
         );
 
-        // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
-        // redirect them back to where they came from with their error message.
+        // An address with no account gets the same answer as a wrong or used link,
+        // so this form can't be used to find out which addresses are admins.
+        if ($status === Password::INVALID_USER) {
+            $status = Password::INVALID_TOKEN;
+        }
+
         return $status == Password::PASSWORD_RESET
                     ? redirect()->route('login')->with('status', __($status))
                     : back()->withInput($request->only('email'))

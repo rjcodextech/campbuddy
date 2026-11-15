@@ -11,9 +11,15 @@
 
 import { track } from './analytics.js';
 import { getDeviceId } from './device.js';
+import { retryAfterMs } from './polling.js';
 
 const RETRIES_ON_BUSY = 2;
 const MAX_WAIT_MS = 6000;
+// A read the server hasn't answered in this long fails like no connection, so the
+// screen falls back to its saved copy instead of spinning (venue wifi that
+// swallows requests). Writes have no such limit: giving up on one that did
+// arrive and trying again could make it twice.
+const READ_TIMEOUT_MS = 15000;
 
 // Only the first path segment is reported ("discovery", not
 // "discovery/<id>") — the rest can carry IDs that must stay out of analytics.
@@ -76,8 +82,8 @@ export async function fetchWithRetry(url, options = {}) {
     }
     if (res.status !== 429 || attempt >= RETRIES_ON_BUSY) return res;
 
-    const retryAfter = Number(res.headers.get('Retry-After'));
-    const base = Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500 * (attempt + 1);
+    // Seconds or an HTTP date, as the standard allows.
+    const base = retryAfterMs(res.headers.get('Retry-After')) || 1500 * (attempt + 1);
     // A little randomness, so a room full of phones doesn't retry in step.
     await new Promise((resolve) => setTimeout(resolve, Math.min(MAX_WAIT_MS, base) + Math.random() * 700));
   }
@@ -109,7 +115,20 @@ export async function apiGet(eventSlug, path, ownerToken = null) {
   // 'no-cache': always ask the server (an unchanged list costs an empty 304).
   // Without it the browser honours the lists' stale-while-revalidate and shows
   // a copy up to a minute old first — someone who just joined wouldn't appear.
-  const res = await fetchWithRetry(`/api/v1/events/${eventSlug}${path}`, { headers, cache: 'no-cache' });
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = setTimeout(() => controller?.abort(), READ_TIMEOUT_MS);
+  let res;
+  try {
+    res = await fetchWithRetry(`/api/v1/events/${eventSlug}${path}`, { headers, cache: 'no-cache', signal: controller?.signal });
+  } catch (error) {
+    if (controller?.signal.aborted) {
+      reportFailure(path, 'GET', 0);
+      throw Object.assign(new Error(`GET ${path}: no answer in time`), { status: 0, userMessage: null, transient: true });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     reportFailure(path, 'GET', res.status);
@@ -120,7 +139,16 @@ export async function apiGet(eventSlug, path, ownerToken = null) {
     throw error;
   }
 
-  return apiJson(res, path, 'GET');
+  try {
+    return await apiJson(res, path, 'GET');
+  } catch (error) {
+    // Cut off half-way (a dropped connection mid-answer): like no connection, never a crash.
+    if (error instanceof SyntaxError) {
+      reportFailure(path, 'GET', 0);
+      throw Object.assign(new Error(`GET ${path}: the answer was cut off`), { status: 0, userMessage: null, transient: true });
+    }
+    throw error;
+  }
 }
 
 export async function apiMutate(eventSlug, path, method, body, ownerToken) {

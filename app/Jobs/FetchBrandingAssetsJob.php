@@ -51,26 +51,40 @@ class FetchBrandingAssetsJob implements ShouldQueue
     {
         $fetcher = new BrandingAssetFetcher($this->event->source_site_url);
         $found = [];
+        $failedToDownload = [];
 
         try {
-            if ($this->wants('logo_path') && ($logoUrl = $fetcher->findLogoUrl())) {
-                if ($this->downloadTo($logoUrl, 'logo')) {
-                    $found[] = 'logo';
+            if ($this->wants('logo_path')) {
+                $logoUrl = $fetcher->findLogoUrl();
+                if ($logoUrl) {
+                    if ($this->downloadTo($logoUrl, 'logo')) {
+                        $found[] = 'logo';
+                    } else {
+                        $failedToDownload[] = 'logo';
+                    }
                 }
             }
 
-            if ($this->wants('favicon_path') && ($faviconUrl = $fetcher->findFaviconUrl())) {
-                if ($this->downloadTo($faviconUrl, 'favicon')) {
-                    $found[] = 'favicon';
+            if ($this->wants('favicon_path')) {
+                $faviconUrl = $fetcher->findFaviconUrl();
+                if ($faviconUrl) {
+                    if ($this->downloadTo($faviconUrl, 'favicon')) {
+                        $found[] = 'favicon';
+                    } else {
+                        $failedToDownload[] = 'favicon';
+                    }
                 }
             }
 
-            $this->log(
-                'ok',
-                $found === []
-                    ? 'Nothing found automatically — admin upload is needed.'
-                    : 'Fetched: '.implode(', ', $found)
-            );
+            $status = $failedToDownload !== [] ? 'partial' : 'ok';
+            $message = match (true) {
+                $found !== [] && $failedToDownload !== [] => 'Fetched: '.implode(', ', $found).' (download failed for: '.implode(', ', $failedToDownload).', will retry)',
+                $found !== [] => 'Fetched: '.implode(', ', $found),
+                $failedToDownload !== [] => 'Discovered '.implode(', ', $failedToDownload).' but download failed (will retry on next backfill)',
+                default => 'Nothing found automatically — admin upload is needed.',
+            };
+
+            $this->log($status, $message);
         } catch (Throwable $e) {
             $this->log('error', mb_substr($e->getMessage(), 0, 500));
 

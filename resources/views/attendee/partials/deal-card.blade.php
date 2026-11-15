@@ -12,6 +12,8 @@
 @php
     $name = $offer->displayName();
     $cta = $offer->cta_label ?: 'Get the deal';
+    // Web addresses only, whatever was saved: a javascript: link here would run in the app.
+    $dealUrl = \App\Support\SafeUrl::web($offer->url) ?? '#';
 @endphp
 
 {{-- data-promo-*: what explore.js reports as a GA4 promotion (view / select), with its place in the list. --}}
@@ -20,7 +22,7 @@
     <div class="deal-card__head">
         <span class="deal-card__logo" aria-hidden="true">
             @if ($offer->mediaAsset)
-                <img src="{{ $offer->mediaAsset->url() }}" alt="" loading="lazy">
+                <img src="{{ $offer->mediaAsset->url() }}" alt="" loading="lazy" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
             @elseif ($offer->icon)
                 <span class="deal-card__emoji">{{ $offer->icon }}</span>
             @else
@@ -74,7 +76,7 @@
         @if ($offer->capture_leads)
             <button type="button" class="btn btn--primary btn--full deal-card__cta"
                     data-lead-offer-id="{{ $offer->id }}"
-                    data-lead-offer-url="{{ $offer->url }}"
+                    data-lead-offer-url="{{ $dealUrl }}"
                     data-lead-offer-title="{{ $name }}"
                     data-lead-new-tab="{{ $offer->opens_in_app ? '0' : '1' }}"
                     data-lead-form="{{ json_encode($offer->leadForm()) }}"
@@ -82,11 +84,11 @@
             <span class="deal-card__note"><x-attendee.line-icon name="clipboard" /> Short form first</span>
         @elseif ($offer->opens_in_app)
             <button type="button" class="btn btn--primary btn--full deal-card__cta"
-                    data-inapp-url="{{ $offer->url }}"
+                    data-inapp-url="{{ $dealUrl }}"
                     data-inapp-title="{{ $name }}"
                     data-target="in_app_cta">{{ $cta }} →</button>
         @else
-            <a href="{{ $offer->url }}" target="_blank" rel="noopener sponsored" class="btn btn--primary btn--full deal-card__cta"
+            <a href="{{ $dealUrl }}" target="_blank" rel="noopener sponsored" class="btn btn--primary btn--full deal-card__cta"
                data-deal-link data-deal-title="{{ $name }}"
                data-target="external_cta">{{ $cta }} <x-attendee.line-icon name="external" /></a>
         @endif

@@ -1,10 +1,12 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import { initImageFallbacks } from './attendee/image-fallback';
 
 window.Alpine = Alpine;
 
 Alpine.start();
+initImageFallbacks();
 
 // Inside the Android / iOS app only: phone fit, organizer alerts and the lock on the panel.
 if (/^\/(admin|manager)(\/|$)/.test(location.pathname) && /CampBuddyApp\//.test(navigator.userAgent)) {

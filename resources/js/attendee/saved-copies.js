@@ -10,9 +10,15 @@
 /** The service worker's cache; copies made by page code go in the same one, so the worker finds them. */
 export const PAGES_CACHE = 'campbuddy-v3';
 
-/** Only a plain, complete, non-redirected 200 is worth keeping — the same test the service worker applies. */
+/** Only a plain, complete, non-redirected 200 the server didn't mark no-store is worth keeping — the same test the service worker applies. */
 export function isCacheable(response) {
-  return Boolean(response) && response.status === 200 && response.type === 'basic' && !response.redirected;
+  return (
+    Boolean(response) &&
+    response.status === 200 &&
+    response.type === 'basic' &&
+    !response.redirected &&
+    !/no-store/i.test(response.headers?.get?.('Cache-Control') ?? '')
+  );
 }
 
 /**

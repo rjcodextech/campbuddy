@@ -26,6 +26,8 @@ import { inEventWindow, nextDelay, retryAfterMs } from './polling.js';
 import { refreshCopies } from './saved-copies.js';
 
 const MIN_GAP_MS = 45 * 1000;
+// A check the server hasn't answered in this long counts as failed (and backs off).
+const CHECK_TIMEOUT_MS = 20 * 1000;
 const IDLE_MS = 30 * 1000;
 const SCROLL_KEY = 'campbuddy:restore-scroll';
 
@@ -35,6 +37,8 @@ let pendingReload = false;
 // When the next regular check is due, and how many asks in a row have failed.
 let nextCheckAt = 0;
 let failures = 0;
+// One question at a time: a slow server is never asked again before it has answered.
+let checking = false;
 
 /** The event's dates and zone as the page states them (see layouts/attendee.blade.php). */
 function eventFacts() {
@@ -88,12 +92,24 @@ function showPill(slug) {
   document.body.appendChild(pill);
 }
 
-async function check(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
+async function check(slug, options = {}) {
+  if (checking) return;
+  checking = true;
+  try {
+    await checkNow(slug, options);
+  } finally {
+    checking = false;
+  }
+}
+
+async function checkNow(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
   if (!navigator.onLine || document.visibilityState !== 'visible') return;
   if (Date.now() - lastCheck < minGap) return;
   lastCheck = Date.now();
 
   let latest;
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = setTimeout(() => controller?.abort(), CHECK_TIMEOUT_MS);
   try {
     // No cache-busting query string: the server answers with an ETag (an empty
     // 304 when nothing has changed) and a CDN may hold the answer for a few
@@ -102,6 +118,7 @@ async function check(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
     const response = await fetch(`/api/v1/events/${encodeURIComponent(slug)}/data-version`, {
       cache: 'no-cache',
       headers: apiHeaders(),
+      signal: controller?.signal,
     });
 
     if (!response.ok) {
@@ -111,18 +128,22 @@ async function check(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
       return;
     }
 
-    latest = (await response.json()).version;
+    latest = (await response.json())?.version;
   } catch (err) {
-    // Offline or flaky wifi — back off, and try again later.
+    // Offline, flaky wifi, a server that never answered, or an answer that
+    // isn't ours (a wifi sign-in page) — back off, and try again later.
     failures++;
     scheduleNext();
     return;
+  } finally {
+    clearTimeout(timer);
   }
 
   failures = 0;
   scheduleNext();
 
-  if (!latest || latest === pageVersion()) return;
+  // Only a real fingerprint counts: an empty or odd answer must not reload the page.
+  if ((typeof latest !== 'string' && typeof latest !== 'number') || latest === '' || String(latest) === pageVersion()) return;
 
   // Coming back to the app is the natural moment: nothing is in progress yet.
   if (returning && !document.querySelector('dialog[open]')) {

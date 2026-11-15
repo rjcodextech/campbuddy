@@ -37,10 +37,8 @@ const QUALITY = { social: { scale: 2, dpi: 300 }, print: { scale: 6, dpi: 600 } 
 // The scale being drawn at: artwork is prepared at this many times its card size, so print stays sharp.
 let RES = 1;
 const DEFAULT_FONT = FONT_TEXT;
-const DEFAULT_SERIF = '"Playfair Display", Georgia, "Times New Roman", serif';
 // Text and headline fonts: CampBuddy's (Poppins, Baloo 2 headlines), or the WordCamp site's own (useSiteFonts()).
 let FONT = DEFAULT_FONT;
-let SERIF = DEFAULT_SERIF;
 let HEAD = null;
 
 // The WordCamp site's artwork (setSiteArt()): every ticked piece, by kind…
@@ -1776,7 +1774,7 @@ export async function drawEventPost(canvas, size, styleName, content, kit, color
     return;
   }
   const L = layoutFor(design, g, pal);
-  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), brandLockup()]);
+  const [logo, brand] = await Promise.all([loadRemote(kit, kit.event.logo || kit.event.mark), brandLockup()]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -2083,7 +2081,16 @@ function daylightMeasure(ctx, content, g, kit, w, top, bottom, picture = false) 
   const marks = headlineMarks(content.headline);
   const m = measureHero(ctx, { ...content, headline: marks.plain }, g, kit, w, top, bottom, picture);
   const kSize = g.tall ? 32 : (g.square ? 24 : 26); // never under 24px on a card
-  const parts = m.parts.filter((p) => p.kind !== 'bar');
+  // Under a list, the list is the support: no line of its own (8 Nov 2026, creative brief §1).
+  const listed = ['features', 'list', 'tables'].includes(content.body?.type);
+  // Three text levels at most (creative brief §1): the line, the month and "days to go" join the kicker's
+  // small level (within 15% of it), under the headline and the hero number.
+  const small = Math.round(kSize * 1.15);
+  const parts = m.parts.filter((p) => p.kind !== 'bar' && !(listed && p.kind === 'line')).map((p) => {
+    if (p.kind === 'month') return { ...p, size: small };
+    if (p.kind === 'line') return { ...p, fit: fitText(ctx, p.fit.lines.join(' '), w, small, 24, 2, 600) };
+    return p;
+  });
   if (content.kicker) parts.unshift({ kind: 'kicker', size: kSize, gap: g.square ? 16 : 24 });
   const heightOf = (p) => (p.kind === 'kicker' ? p.size : m.heightOf(p));
   const textH = parts.reduce((sum, p) => sum + heightOf(p) + p.gap, 0);
@@ -2171,18 +2178,28 @@ function paintQrCard(ctx, g, c, pal, kit, qrContent, cta) {
   drawQr(ctx, qrLink(kit.event.qr, qrContent), qx, y + pad, qr, pal.ink, c.white);
   const tx = x + (g.square ? 28 : 36);
   const tw = qx - 28 - tx;
-  const ctaFit = fitText(ctx, cta, tw, g.tall ? 44 : (g.square ? 30 : 34), 24, 2, 700, FONT);
   const small = g.tall ? 28 : 24;
-  const stackH = ctaFit.lines.length * ctaFit.size * 1.12 + 12 + small * 1.3;
-  let ty = y + (h - stackH) / 2;
+  // The event: on one line when it fits at 24 px or more; else the short name; else name, then dates, on two
+  // lines (it shrank to 22 px for a long name like Thiruvananthapuram).
+  ctx.font = `700 ${small}px ${FONT}`;
+  const fits = (t) => ctx.measureText(t).width <= tw;
+  const join = (...parts) => parts.filter(Boolean).join(' · ');
+  const event = [join(kit.event.name, kit.event.dates), join(kit.short, kit.event.dates)].find(fits)
+    ?? [kit.event.name, kit.event.dates].filter(Boolean);
+  const eventLines = Array.isArray(event) ? event : [event];
+  let ctaFit = fitText(ctx, cta, tw, g.tall ? 44 : (g.square ? 30 : 34), 24, 2, 700, FONT);
+  const stack = () => ctaFit.lines.length * ctaFit.size * 1.12 + 12 + eventLines.length * small * 1.25;
+  if (stack() > h - 24) ctaFit = fitText(ctx, cta, tw, 28, 24, 1, 700, FONT);
+  let ty = y + (h - stack()) / 2;
   ctx.font = `700 ${ctaFit.size}px ${FONT}`;
   ctx.fillStyle = c.ink;
   ctaFit.lines.forEach((l, i) => ctx.fillText(l, tx, ty + ctaFit.size * (0.9 + i * 1.12)));
   ty += ctaFit.lines.length * ctaFit.size * 1.12 + 12;
-  const event = [kit.event.name, kit.event.dates].filter(Boolean).join(' · ');
-  fitOneLine(ctx, event, tw, small, 700, FONT);
   ctx.fillStyle = c.ink;
-  ctx.fillText(event, tx, ty + small);
+  eventLines.forEach((l, i) => {
+    fitOneLine(ctx, l, tw, small, 700, FONT, 24);
+    ctx.fillText(l, tx, ty + small + i * small * 1.25);
+  });
 }
 
 /**
@@ -2439,7 +2456,7 @@ async function paintDaylightPeople(ctx, box, people, c, pal, g, kit) {
 async function drawDaylightPost(ctx, W, H, content, kit, pal, page, side = 0) {
   const g = { ...daylightGrid(W, H, side), effects: { ...EFFECTS_ON, ...(content.effects ?? {}) } };
   const c = daylightColors(daylightBase(content, pal), pal);
-  const [logo, brand] = await Promise.all([loadImage(kit.event.logo || kit.event.mark), brandLockup()]);
+  const [logo, brand] = await Promise.all([loadRemote(kit, kit.event.logo || kit.event.mark), brandLockup()]);
   useArt(content.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
@@ -2447,8 +2464,8 @@ async function drawDaylightPost(ctx, W, H, content, kit, pal, page, side = 0) {
   paintDaylightGround(ctx, side ? { ...g, W: W + side } : g, c);
 
   const people = content.body.type === 'photos'
-    ? content.body.people.map((p) => ({ name: p.name, photo: p.photo, role: p.role ?? 'Speaker' }))
-    : (content.body.type === 'session' ? content.body.speakers.map((name, i) => ({ name, photo: content.body.photos?.[i] ?? null, role: 'Speaker' })) : null);
+    ? content.body.people.map((p) => ({ name: p.name, photo: p.photo, role: p.role ?? null }))
+    : (content.body.type === 'session' ? content.body.speakers.map((name, i) => ({ name, photo: content.body.photos?.[i] ?? null, role: null })) : null);
   const placePhoto = !people && ART.photo && PHOTO_POSTS.includes(content.key);
   if (placePhoto) {
     // The place's photo under a strong colour veil and a soft blur: the headline stays clearly readable.
@@ -2473,10 +2490,12 @@ async function drawDaylightPost(ctx, W, H, content, kit, pal, page, side = 0) {
     paintWaves(ctx, g, c, g.cardTop + g.cardH * 0.3);
     await paintDaylightPeople(ctx, box, people, c, pal, g, kit);
   } else {
-    const bH = bodyHeight(content.body, H, m.room);
+    // Three points at most: one idea, a few reasons (the caption keeps the rest).
+    const body = content.body.type === 'features' ? { ...content.body, items: content.body.items.slice(0, 3) } : content.body;
+    const bH = bodyHeight(body, H, m.room);
     const withBody = bH > 0 && m.room >= 100;
     if (withBody) {
-      await paintBody(ctx, content.body, g.x, y + m.gap, g.w, bH, pal, kit, H, c.ink);
+      await paintBody(ctx, body, g.x, y + m.gap, g.w, bH, pal, kit, H, c.ink);
       y += m.gap + bH;
     }
     // The site's artwork, faint, only in the room left between the words and the foot.
@@ -2497,23 +2516,20 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors, side = 0)
   const g = { ...daylightGrid(W, H, side), effects: { ...EFFECTS_ON, ...(person.effects ?? {}) } };
   const rc = roleColor(person, colors);
   const c = daylightColors('paper', { ...pal, secondary: rc });
-  const [photo, brand, logo] = await Promise.all([loadRemote(kit, person.photo), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, brand, logo] = await Promise.all([loadRemote(kit, person.photo), brandLockup(), loadRemote(kit, kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
   paintDaylightGround(ctx, side ? { ...g, W: W + side } : g, c);
   paintDaylightHeader(ctx, g, c, pal, logo, { index: 1, total: 1 });
   const { roles, talk } = personLines(person);
-  // The role chip, top right, in the role's tone.
-  if (person.role_labels?.[0]) {
-    const h = g.square ? 48 : 56;
-    pill(ctx, person.role_labels[0].toUpperCase(), g.x + g.w, g.headerTop + (g.logo.h - h) / 2, { bg: rc, fg: textOn(rc, pal.ink, c.white), size: 24, height: h, pad: 24, align: 'right' });
-  }
   const kSize = g.tall ? 32 : (g.square ? 24 : 26); // never under 24px on a card
   const nameSize = g.tall ? 104 : (g.square ? 60 : 80);
   const lineSize = g.tall ? 38 : (g.square ? 26 : 30);
-  const lineFit = talk ? fitText(ctx, talk, g.w, lineSize, 22, 2, 500, FONT) : null;
-  const textH = kSize + 22 + nameSize * 1.1 + (roles ? lineSize * 1.5 : 0) + (lineFit ? lineFit.lines.length * lineFit.size * 1.25 + 10 : 0);
+  const lineFit = talk ? fitText(ctx, talk, g.w, lineSize, 24, 3, 500, FONT) : null;
+  // The roles line only when they have more than the one the kicker names.
+  const moreRoles = (person.role_labels?.length ?? 0) > 1 ? roles : '';
+  const textH = kSize + 22 + nameSize * 1.1 + (moreRoles ? lineSize * 1.5 : 0) + (lineFit ? lineFit.lines.length * lineFit.size * 1.25 + 10 : 0);
   const ring = g.square ? 8 : 10;
   const room = g.bottom - g.top - textH - 40;
   const r = Math.max(H < 700 ? 48 : 70, Math.min(g.w * (g.square ? 0.22 : 0.3), room / 2 - ring));
@@ -2525,11 +2541,11 @@ async function drawDaylightPerson(ctx, W, H, person, kit, pal, colors, side = 0)
   const marks = headlineMarks(`*${String(person.name ?? '').trim().split(/\s+/)[0] ?? ''}* ${String(person.name ?? '').trim().split(/\s+/).slice(1).join(' ')}`.trim());
   const ns = fitOneLine(ctx, marks.plain, g.w, nameSize, 800, HEAD ?? FONT_DISPLAY, 24);
   y += paintHeadline(ctx, { lines: [marks.plain], size: ns }, marks.hl, g.x, y, g.w, c, HEAD ?? FONT_DISPLAY, 'center', 1.1);
-  if (roles) {
+  if (moreRoles) {
     ctx.textAlign = 'center';
-    const rs = fitOneLine(ctx, roles, g.w, lineSize, 600, FONT, 18);
+    const rs = fitOneLine(ctx, moreRoles, g.w, lineSize, 600, FONT, 24);
     ctx.fillStyle = c.ink;
-    ctx.fillText(roles, W / 2, y + rs * 1.1);
+    ctx.fillText(moreRoles, W / 2, y + rs * 1.1);
     ctx.textAlign = 'left';
     y += lineSize * 1.5;
   }
@@ -2613,7 +2629,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     await drawDaylightPerson(ctx, W, H, person, kit, paletteOf(colors), colors, side);
     return;
   }
-  const [photo, mark, brand, eventLogo] = await Promise.all([loadRemote(kit, person.photo), loadImage(kit.event.mark), brandLockup(), loadImage(kit.event.logo || kit.event.mark)]);
+  const [photo, mark, brand, eventLogo] = await Promise.all([loadRemote(kit, person.photo), loadRemote(kit, kit.event.mark), brandLockup(), loadRemote(kit, kit.event.logo || kit.event.mark)]);
   useArt(person.artIndex ?? 0);
   // The WordCamp's logo, on every people card.
   const LW = H < 1100 ? 150 : 180;
@@ -2668,9 +2684,10 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     ctx.fillStyle = pal.ink;
     ctx.textAlign = 'center';
     // One line, or two (a long name on a small photo) rather than a font under 26px.
-    let n = fitText(ctx, person.name, inner, 56, 28, 1, 700, SERIF);
-    if (n.size < 28) n = fitText(ctx, person.name, inner, 34, 26, 2, 700, SERIF);
-    ctx.font = `italic 700 ${n.size}px ${SERIF}`;
+    // The name in the display face (Baloo 2, or the site's heading font), never a serif (brand §4).
+    let n = fitText(ctx, person.name, inner, 56, 28, 1, 800, HEAD ?? FONT_DISPLAY);
+    if (n.size < 28) n = fitText(ctx, person.name, inner, 34, 26, 2, 800, HEAD ?? FONT_DISPLAY);
+    ctx.font = `800 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     n.lines.forEach((line, i) => ctx.fillText(line, 0, ph / 2 - 66 - (n.lines.length - 1 - i) * n.size * 1.05));
     ctx.font = `700 24px ${FONT}`;
     ctx.fillStyle = rc;
@@ -2776,7 +2793,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     }
     // The art only where there is no photo: drawn over a face it looked like a sticker on the person.
     if (!tone) paintArtBackground(ctx, { x: 0, y: bandTop * 0.64, w: W, h: bandTop * 0.36, on: dark }, pal);
-    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    const logo = await loadRemote(kit, kit.event.logo || kit.event.mark);
     if (logo) logoTile(ctx, logo, W - SAFE - (square ? 150 : 180), SAFE - 22, square ? 150 : 180, square ? 84 : 100, pal, 18);
     ctx.fillStyle = rc;
     ctx.fillRect(0, bandTop, W, bandH);
@@ -2799,7 +2816,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // colour, on the light colour with the site's artwork behind.
     ctx.fillStyle = pal.paper;
     ctx.fillRect(0, 0, W, H);
-    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    const logo = await loadRemote(kit, kit.event.logo || kit.event.mark);
     const n = fitText(ctx, person.name, W - 2 * SAFE, tall ? 104 : (square ? 56 : 76), 30, 1, 800, HEAD ?? FONT_DISPLAY);
     const nameH = n.lines.length * n.size * 1.04;
     const small = tall ? 34 : (square ? 24 : 28);
@@ -2869,7 +2886,7 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     // the block faintly.
     // Landscape: the photo over a band with the name and role; the QR and the rest go in the side panel.
     const ph = g.side ? H - (H < 700 ? 150 : 180) : Math.round(H * 0.75);
-    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    const logo = await loadRemote(kit, kit.event.logo || kit.event.mark);
     if (photo) drawCover(ctx, photo, 0, 0, W, ph, 0.25);
     else {
       ctx.fillStyle = pal.soft; ctx.fillRect(0, 0, W, ph);
@@ -2984,8 +3001,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     topLogo(photoLeft ? SAFE + 30 : W - SAFE - 30 - LW);
     let y = SAFE + 40 + 2 * r + (tall ? 200 : (square ? 70 : 110));
     ctx.fillStyle = pal.ink;
-    const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 1, 700, SERIF);
-    ctx.font = `700 ${n.size}px ${SERIF}`;
+    const n = fitText(ctx, person.name, W - 2 * SAFE - 60, tall ? 140 : (square ? 76 : 100), 40, 1, 800, HEAD ?? FONT_DISPLAY);
+    ctx.font = `800 ${n.size}px ${HEAD ?? FONT_DISPLAY}`;
     n.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += n.size * 1.02; });
     ctx.fillStyle = rc; ctx.fillRect(SAFE + 30, y + 4, 120, 8);
     y += 58;
@@ -2993,8 +3010,8 @@ export async function drawPersonCard(canvas, size, design, person, kit, colors, 
     if (roles) { ctx.fillText(ellipsize(ctx, roles, W - 2 * SAFE - 60), SAFE + 30, y); y += 52; }
     const room = fTop - 30 - y;
     if (talk && room > 40) {
-      const t = fitText(ctx, talk, W - 2 * SAFE - 60, tall ? 44 : 32, 24, Math.max(1, Math.min(4, Math.floor(room / 42))), 500, SERIF);
-      ctx.font = `italic 500 ${t.size}px ${SERIF}`;
+      const t = fitText(ctx, talk, W - 2 * SAFE - 60, tall ? 44 : 32, 24, Math.max(1, Math.min(4, Math.floor(room / 42))), 500, FONT);
+      ctx.font = `500 ${t.size}px ${FONT}`;
       t.lines.forEach((l) => { ctx.fillText(l, SAFE + 30, y); y += t.size * 1.3; });
     }
     // The site's artwork in the corner left under the words.
@@ -3194,7 +3211,6 @@ async function loadSiteFonts(kit) {
 
 function useSiteFonts(fonts, on) {
   FONT = on && fonts.body ? fonts.body : DEFAULT_FONT;
-  SERIF = on && fonts.heading ? fonts.heading : DEFAULT_SERIF;
   HEAD = on && fonts.heading ? fonts.heading : null;
 }
 
@@ -3530,7 +3546,7 @@ export function initSocialKit() {
     if (img.complete && img.naturalWidth === 0 && img.getAttribute('src')) next();
   });
   const fromLogo = async (announce = true) => {
-    const logo = await loadImage(kit.event.logo || kit.event.mark);
+    const logo = await loadRemote(kit, kit.event.logo || kit.event.mark);
     let palette = null;
     if (logo) {
       const c = document.createElement('canvas');
@@ -3601,7 +3617,7 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
       li.className = 'shrink-0';
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'flex w-48 flex-col rounded-lg px-3 py-2 text-left hover:bg-paper-soft aria-[current=true]:bg-maroon/10 lg:w-full';
+      b.className = 'flex w-44 sm:w-48 shrink-0 flex-col rounded-lg px-3 py-2 text-left hover:bg-paper-soft aria-[current=true]:bg-maroon/10 lg:w-full';
       b.setAttribute('aria-current', String(idOf(person) === selected));
       const name = document.createElement('span');
       name.className = 'truncate text-sm font-semibold text-ink';
@@ -3642,9 +3658,9 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
       if (text !== undefined) n.textContent = text;
       return n;
     };
-    const box = el('div', 'grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]');
-    const canvas = el('canvas', 'block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg');
-    const side = el('div', 'min-h-0 space-y-4 overflow-y-auto border-l border-line bg-white p-4');
+    const box = el('div', 'flex flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]');
+    const canvas = el('canvas', 'block max-h-[45vh] sm:max-h-[55vh] lg:max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg');
+    const side = el('div', 'space-y-4 border-t border-line bg-white p-4 lg:min-h-0 lg:space-y-4 lg:overflow-y-auto lg:border-t-0 lg:border-l');
     // Their captions, one per network (social-captions.js); only the ones edited here are kept.
     const captions = captionBox({ defaults: person.captions ?? person.caption, edited: saved.captions, onEdit: () => keep(), rows: 6 });
     const own = el('input', 'cb-check');
@@ -3727,7 +3743,7 @@ function setUpPeople(kit, colors, size, design, quality, kitReady) {
       fxRow,
       actions,
     );
-    const left = el('div', 'flex min-h-0 items-center justify-center bg-paper-soft p-4');
+    const left = el('div', 'flex flex-col items-center justify-center bg-paper-soft p-3 sm:p-4 lg:min-h-0');
     left.append(canvas);
     box.append(left, side);
     draw();
@@ -3803,7 +3819,7 @@ export const socialContext = { kit: null, colors: null, style: null, posts: [], 
 
 export const reelTools = {
   brandLockup, loadImage, loadRemote, drawContain, drawQr, roundRect, fitText, wrap, initials, paletteOf, recolour, duotone, artInfo, waveMark, globe, readableOn,
-  proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha,
+  proxied, logoTile, isLightImage, roleColor, trimmed, personCta, mix, textOn, seeded, alpha, readable,
   fonts: () => ({ text: FONT, head: HEAD ?? FONT_DISPLAY }),
   siteArt: () => SITE_ART,
   features: FEATURES,

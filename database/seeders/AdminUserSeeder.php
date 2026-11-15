@@ -29,7 +29,8 @@ class AdminUserSeeder extends Seeder
         User::create([
             'name' => 'CampBuddy Admin',
             'email' => $email,
-            'password' => 'Hello@123', // bcrypt($password),
+            // The one printed below (hashed by the model's cast) — never a fixed default.
+            'password' => $password,
             'email_verified_at' => now(),
         ]);
 

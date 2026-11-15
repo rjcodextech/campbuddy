@@ -14,7 +14,7 @@
                 </button>
             </div>
             <div style="display:flex;align-items:center;gap:10px;margin:6px 0 12px">
-                <img data-slot="avatar" src="" alt="" width="36" height="36" style="border-radius:50%;object-fit:cover">
+                <img data-slot="avatar" src="/media/illustrations/avatar.svg" alt="" width="36" height="36" style="border-radius:50%;object-fit:cover" data-fallback="/media/illustrations/avatar.svg">
                 <strong data-slot="name"></strong>
             </div>
 

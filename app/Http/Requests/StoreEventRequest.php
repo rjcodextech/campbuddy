@@ -29,7 +29,7 @@ class StoreEventRequest extends FormRequest
             // Blank = read it from the WordCamp site. Otherwise an IANA name
             // ("Asia/Kolkata") or a fixed offset ("+05:30").
             'timezone' => ['nullable', 'string', 'max:64', function (string $attribute, mixed $value, \Closure $fail) {
-                if (\App\Support\EventTime::normalize((string) $value) === null) {
+                if (! is_string($value) || \App\Support\EventTime::normalize($value) === null) {
                     $fail('Use a time zone like Asia/Kolkata or Europe/Berlin, or an offset like +05:30.');
                 }
             }],

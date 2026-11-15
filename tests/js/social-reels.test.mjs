@@ -180,24 +180,26 @@ test('each reel keeps its own tempo, still on a steady beat', () => {
   assert.ok(_internals.PROGRESSIONS.every((p) => p.length === 4));
 });
 
-test('Pulse template is default for unpicked reels, built on Daylight with wave cut and creative features', () => {
+test('neighbouring reels take different templates of the five; Pulse stays a pick, without ghosts or a cross-fade', () => {
   const { REEL_TEMPLATES, v2TemplateOf, topicIconFor } = _internals;
   assert.ok(REEL_TEMPLATES.pulse, 'Pulse template exists');
   assert.equal(REEL_TEMPLATES.pulse.label, 'Pulse');
   assert.equal(REEL_TEMPLATES.pulse.cut, 'wave', 'Pulse uses wave cut transition');
-  assert.deepEqual(REEL_TEMPLATES.pulse.features, {
-    karaoke: true,
-    markerWave: true,
-    countUp: true,
-    ghostReveal: true,
-    loopEnd: true,
-  });
+  // 8 Nov 2026: no 22% "ghost" rows and faces, no end card cross-fading into the hook (words over words),
+  // no topic icon behind the words (creative brief §1, §3).
+  assert.deepEqual(REEL_TEMPLATES.pulse.features, { karaoke: true, markerWave: true, countUp: true, ghostReveal: false, loopEnd: false });
+  assert.equal(REEL_TEMPLATES.pulse.effects.motif, false);
 
-  // Default is Pulse when nothing chosen in studio
-  assert.equal(v2TemplateOf({ variant: 0 }, 123), 'pulse');
-  assert.equal(v2TemplateOf({ variant: 1 }, 456), 'pulse');
-  assert.equal(v2TemplateOf({ template: null }, 0), 'pulse');
-  assert.equal(v2TemplateOf({}, 0), 'pulse');
+  // Nothing chosen in the studio: each reel its own of the brand's five (§9), never the same as its neighbour.
+  const five = ['daylight', 'stage', 'poster', 'photo', 'minimal'];
+  for (const seed of [0, 123, 456]) {
+    const picks = Array.from({ length: 12 }, (_, variant) => v2TemplateOf({ variant }, seed));
+    assert.ok(picks.every((t) => five.includes(t)), picks.join());
+    picks.slice(1).forEach((t, i) => assert.notEqual(t, picks[i], `reels ${i + 1} and ${i + 2}`));
+    assert.equal(new Set(picks.slice(0, 5)).size, 5, 'five reels in a row, five templates');
+  }
+  assert.equal(v2TemplateOf({ variant: 3 }, 7), v2TemplateOf({ variant: 3, template: null }, 7), 'the same reel, the same pick');
+  assert.equal(v2TemplateOf({ template: 'pulse' }, 0), 'pulse', 'Pulse is still a pick');
 
   // Explicit studio pick is respected
   assert.equal(v2TemplateOf({ template: 'stage' }, 0), 'stage');

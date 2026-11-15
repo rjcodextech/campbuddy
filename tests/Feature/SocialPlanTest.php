@@ -26,6 +26,11 @@ class SocialPlanTest extends TestCase
     {
         parent::setUp();
 
+        // Freeze the clock: SocialPlan measures a late start from the event's created_at, so an
+        // event stamped with the real date would turn into a "late start" once that date passes
+        // the planned days (this test began failing on 31 Oct 2026 for exactly that reason).
+        $this->travelTo(CarbonImmutable::parse('2026-10-01 10:00', 'Asia/Kolkata'));
+
         $this->event = Event::create([
             'slug' => 'wordcamp-delhi-2026', 'display_name' => 'WordCamp Delhi 2026', 'short_name' => '#wcdelhi',
             'source_site_url' => 'https://delhi.wordcamp.org/2026', 'status' => 'active', 'is_visible' => true,

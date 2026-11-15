@@ -48,16 +48,22 @@ const FLAGS_TIMEOUT_MS = 3000;
 // pages the moment the event's data changes).
 const SWR_FRESH_MS = 5 * 60 * 1000;
 
-// Attendee-list photos come from Gravatar, another origin, which everything
-// above leaves alone. They are public, tiny (about 2 KB each) and change rarely,
-// so a copy is kept and shown when there is no connection. Its own cache; never
-// deleted (a copy is only replaced, after a week, by a fresh one); at most
-// AVATAR_MAX are kept so a phone can't fill up. If anything about it fails the
-// photo simply loads (or doesn't) exactly as it would without this worker.
-const AVATAR_HOSTS = ['secure.gravatar.com'];
+// Attendee-list photos and logos come from Gravatar, WordCamp, WordPress.org
+// and WordPress CDN hosts. They are public, tiny and change rarely, so a copy is kept
+// and shown when there is no connection. Automatically deleted 30 days after caching.
+const AVATAR_HOSTS = ['secure.gravatar.com', 'gravatar.com', 'profiles.wordpress.org', 'wordpress.org', 'w.org', 'wp.com', 'i0.wp.com', 'i1.wp.com', 'i2.wp.com'];
 const AVATAR_CACHE = 'campbuddy-avatars';
 const AVATAR_MAX = 3000;
 const AVATAR_REFRESH_MS = 7 * 24 * 60 * 60 * 1000;
+const AVATAR_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000; // Automatically delete 30 days after caching
+
+function isAvatarOrLogoHost(host) {
+  if (!host) return false;
+  const h = host.toLowerCase();
+  if (AVATAR_HOSTS.includes(h)) return true;
+  if (h.endsWith('.wordcamp.org') || h.endsWith('.wordpress.org') || h.endsWith('.wordpress.com') || h.endsWith('.wp.com')) return true;
+  return false;
+}
 
 // With a cached copy to fall back on, don't make someone on flaky conference
 // wifi wait for a stalled request — give the network this long, then serve it.
@@ -115,6 +121,20 @@ async function removeSavedAdminPages() {
         if (isPrivatePath(path) || neverSaved(request)) await cache.delete(request);
       }
     }
+
+    // Automatically delete cached avatars & logos older than 30 days
+    try {
+      const avatarCache = await caches.open(AVATAR_CACHE);
+      for (const request of await avatarCache.keys()) {
+        const cached = await avatarCache.match(request);
+        if (cached) {
+          const age = ageOf(cached);
+          if (Number.isFinite(age) && age > AVATAR_EXPIRY_MS) {
+            await avatarCache.delete(request);
+          }
+        }
+      }
+    } catch (err) {}
   } catch (err) {
     // Storage unavailable — nothing to tidy.
   }
@@ -124,7 +144,7 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  if (request.method === 'GET' && request.destination === 'image' && AVATAR_HOSTS.includes(url.host)) {
+  if (request.method === 'GET' && request.destination === 'image' && isAvatarOrLogoHost(url.host)) {
     event.respondWith(avatarFirst(request, event));
     return;
   }
@@ -142,7 +162,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  const isBuildAsset = url.pathname.startsWith('/build/');
+  // Only the hashed files: /build/manifest.json keeps its name across deploys, so
+  // a saved copy of it would point offline saving at last week's files for ever.
+  const isBuildAsset = url.pathname.startsWith('/build/assets/');
 
   if (isBuildAsset) {
     event.respondWith(cacheFirst(request));
@@ -172,10 +194,15 @@ async function avatarFirst(request, event) {
   if (cached) {
     const age = ageOf(cached);
 
-    // Old enough to be worth refreshing: show this one now, replace it in the background.
-    if (Number.isFinite(age) && age > AVATAR_REFRESH_MS) event.waitUntil(saveAvatar(cache, request.url, true));
+    // Over 30 days old: automatically delete expired cache and fetch fresh
+    if (Number.isFinite(age) && age > AVATAR_EXPIRY_MS) {
+      event.waitUntil(cache.delete(request.url));
+    } else {
+      // Old enough to be worth refreshing: show this one now, replace it in the background.
+      if (Number.isFinite(age) && age > AVATAR_REFRESH_MS) event.waitUntil(saveAvatar(cache, request.url, true));
 
-    return cached;
+      return cached;
+    }
   }
 
   try {
@@ -479,8 +506,15 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   // Resolved against this origin so a relative url in the payload still
-  // matches an already-open tab, whose url is always absolute.
-  const target = new URL(event.notification.data?.url ?? '/', self.location.origin).href;
+  // matches an already-open tab, whose url is always absolute. Only our own
+  // pages open from a reminder; anything else opens the start page.
+  let target = new URL('/', self.location.origin).href;
+  try {
+    const wanted = new URL(event.notification.data?.url ?? '/', self.location.origin);
+    if (wanted.origin === self.location.origin) target = wanted.href;
+  } catch (err) {
+    // An address that can't be read: the start page.
+  }
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((clients) => {

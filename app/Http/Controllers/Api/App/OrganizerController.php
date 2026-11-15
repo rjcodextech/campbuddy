@@ -286,8 +286,9 @@ class OrganizerController extends Controller
     public function attendees(Request $request, int $id): JsonResponse
     {
         $event = $this->event($request, $id);
-        $q = $request->string('q')->trim()->toString();
-        $role = $request->string('role')->toString();
+        // Text only: ?q[]=… / ?role[]=… were cast to strings, which is a 500.
+        $q = is_string($q = $request->query('q')) ? trim($q) : '';
+        $role = is_string($role = $request->query('role')) ? $role : '';
         // Suppressed entries are the admin's to see (and restore); a manager never gets them.
         $status = $request->attributes->get('app_role') === 'admin' && in_array($request->query('status'), ['suppressed', 'all'], true) ? $request->query('status') : 'listed';
         $both = RosterRoles::withAutomatic($event);

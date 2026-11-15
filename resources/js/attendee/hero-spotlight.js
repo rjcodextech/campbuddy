@@ -2,6 +2,9 @@
 // Shuffles real WordCamp sessions, speakers, organizers, and sponsors
 // from active database events, respecting the visitor's selected country.
 
+import { spriteIcon } from './line-icon.js';
+import { webUrl } from './safe-url.js';
+
 export function initHeroSpotlight() {
   const card = document.getElementById('hero-spotlight-card');
   const dataScript = document.getElementById('hero-spotlights-data');
@@ -82,8 +85,9 @@ export function initHeroSpotlight() {
   }
 
   function applyData(item) {
-    if (headerLogoEl && item.event_logo) {
-      headerLogoEl.src = item.event_logo;
+    const logo = webUrl(item.event_logo);
+    if (headerLogoEl && logo) {
+      headerLogoEl.src = logo;
     }
     if (headerNameEl && item.event_name) {
       headerNameEl.textContent = item.event_name;
@@ -107,25 +111,28 @@ export function initHeroSpotlight() {
       liveDotEl.style.display = item.is_over ? 'none' : 'inline-block';
     }
     if (actionEl) {
-      actionEl.textContent = item.type === 'album' ? 'View Photo Album' : 'Explore this WordCamp';
+      actionEl.textContent = item.type === 'album' ? 'See the photo album' : 'Explore this WordCamp';
     }
 
     if (avatarEl) {
-      if (item.icon) {
-        avatarEl.innerHTML = `<svg class="line-icon line-icon--${item.icon}" aria-hidden="true" focusable="false"><use href="#li-${item.icon}"></use></svg>`;
+      // An icon name is a sprite id ("camera", "map-pin"), nothing else.
+      if (typeof item.icon === 'string' && /^[a-z0-9-]{1,40}$/.test(item.icon)) {
+        avatarEl.replaceChildren(spriteIcon(item.icon));
       } else {
-        const initials = (item.title || item.event_name || 'CB')
+        const initials = String(item.title || item.event_name || 'CB')
           .split(' ')
           .filter(Boolean)
           .slice(0, 2)
           .map((w) => w[0].toUpperCase())
           .join('');
-        avatarEl.textContent = initials || '★';
+        if (initials) avatarEl.textContent = initials;
+        else avatarEl.replaceChildren(spriteIcon('sparkles'));
       }
     }
-    if (linkEl && item.url) {
-      linkEl.href = item.url;
-      linkEl.setAttribute('aria-label', `${item.type === 'album' ? 'View Photo Album' : 'Explore'} ${item.event_name}`);
+    const href = webUrl(item.url);
+    if (linkEl && href) {
+      linkEl.href = href;
+      linkEl.setAttribute('aria-label', `${item.type === 'album' ? 'See the photo album of' : 'Explore'} ${item.event_name || 'this WordCamp'}`);
     }
 
     card.classList.remove('is-refreshing');

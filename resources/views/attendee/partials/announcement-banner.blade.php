@@ -36,8 +36,9 @@
             if ($action['type'] === 'event' && ! empty($action['slug'])) {
                 $actionUrl = route('event.home', $action['slug']);
                 $actionLabel = $isHindi ? 'इवेंट खोलें →' : 'View WordCamp →';
-            } elseif ($action['type'] === 'url' && ! empty($action['url'])) {
-                $actionUrl = $action['url'];
+            } elseif ($action['type'] === 'url' && \App\Support\SafeUrl::web($action['url'] ?? null)) {
+                // Web addresses only: a javascript: link here would run in every attendee's app.
+                $actionUrl = \App\Support\SafeUrl::web($action['url']);
                 $actionLabel = $isHindi ? 'लिंक खोलें →' : 'Open Link →';
                 $actionIsExternal = true;
             }
@@ -48,8 +49,9 @@
         <div class="announcement-banner announcement-banner--{{ $style }}" data-banner-key="{{ $bannerId }}" role="status" aria-label="Announcement">
             <script>
                 (function() {
-                    var k = @json($bannerId);
-                    if (k && localStorage.getItem('campbuddy_dismissed_banner') === k) {
+                    var k = @json($bannerId), dismissed = null;
+                    try { dismissed = localStorage.getItem('campbuddy_dismissed_banner'); } catch (err) { /* storage blocked: show it */ }
+                    if (k && dismissed === k) {
                         var el = document.currentScript.closest('.announcement-banner');
                         if (el) el.style.display = 'none';
                     }

@@ -46,7 +46,8 @@ export async function renderQuest(root) {
   const checklistSection = document.getElementById('checklist-section');
   const checklistList = document.getElementById('quest-list');
 
-  let completed = new Set((await getQuestProgress(eventId)).map((q) => q.questId));
+  // Storage blocked or broken: the list still shows, nothing ticked yet.
+  let completed = new Set((await getQuestProgress(eventId).catch(() => [])).map((q) => q?.questId));
 
   async function toggle(id) {
     const isDone = completed.has(id);

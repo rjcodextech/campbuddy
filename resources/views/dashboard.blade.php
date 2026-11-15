@@ -76,7 +76,7 @@
                         <div class="flex min-w-0 items-start gap-4">
                             <span class="cb-logo-in flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1.5 shadow-xs">
                                 @if ($next->logoUrl())
-                                    <img src="{{ $next->logoUrl() }}" alt="" class="h-full w-full object-contain">
+                                    <img src="{{ $next->logoUrl() }}" alt="" class="h-full w-full object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
                                 @else
                                     <x-icon name="calendar" class="h-7 w-7 text-maroon-text" />
                                 @endif

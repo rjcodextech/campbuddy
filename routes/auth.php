@@ -36,7 +36,9 @@ Route::middleware('guest')->group(function () {
         ->name('password.store');
 });
 
-Route::middleware('auth')->group(function () {
+// auth.session here too, so changing the password (PUT password) keeps this session's own
+// record of it up to date and only the *other* sessions are signed out (see routes/web.php).
+Route::middleware(['auth', 'auth.session'])->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

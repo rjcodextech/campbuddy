@@ -10,6 +10,7 @@ use App\Models\EventManager;
 use App\Models\EventManagerChange;
 use App\Support\EventListing;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -52,14 +53,18 @@ class EventManagerController extends Controller
     {
         $data = $request->validated();
 
-        $manager = EventManager::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'password' => $data['password'],
-            'is_active' => $request->boolean('is_active', true),
-        ]);
-        $manager->events()->sync($data['events']);
+        $manager = DB::transaction(function () use ($data, $request) {
+            $created = EventManager::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'password' => $data['password'],
+                'is_active' => $request->boolean('is_active', true),
+            ]);
+            $created->events()->sync($data['events']);
+
+            return $created;
+        });
 
         return redirect()
             ->route('admin.event-managers.edit', $manager)
@@ -82,22 +87,24 @@ class EventManagerController extends Controller
     {
         $data = $request->validated();
 
-        $eventManager->fill([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'],
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        DB::transaction(function () use ($data, $request, $eventManager) {
+            $eventManager->fill([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'is_active' => $request->boolean('is_active'),
+            ]);
 
-        if (filled($data['password'] ?? null)) {
-            $eventManager->password = $data['password'];
-            // A "remember me" cookie from before the change stops working; the
-            // session check (EnsureEventManager) signs out the open sessions.
-            $eventManager->setRememberToken(Str::random(60));
-        }
+            if (filled($data['password'] ?? null)) {
+                $eventManager->password = $data['password'];
+                // A "remember me" cookie from before the change stops working; the
+                // session check (EnsureEventManager) signs out the open sessions.
+                $eventManager->setRememberToken(Str::random(60));
+            }
 
-        $eventManager->save();
-        $eventManager->events()->sync($data['events'] ?? []);
+            $eventManager->save();
+            $eventManager->events()->sync($data['events'] ?? []);
+        });
 
         return redirect()
             ->route('admin.event-managers.edit', $eventManager)

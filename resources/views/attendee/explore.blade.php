@@ -54,7 +54,9 @@
                     <span class="section-head__desc">From the event's own Attendees page</span>
                 </div>
                 <input type="search" id="roster-search" class="search-input" placeholder="Search attendees…">
-                <div id="people-roster" class="card">Loading…</div>
+                <div id="people-roster" class="card" aria-live="polite" aria-busy="true">
+                    <div class="discovery-skeleton" aria-hidden="true" style="height:72px;margin:0"></div>
+                </div>
             </div>
         </div>
 
@@ -79,7 +81,7 @@
                                         data-track-target="sponsor_chip"
                                         title="{{ $sponsor['name'] }} (opens website)">
                                     @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.style.display='none'; if (!this.dataset.failed) { this.dataset.failed='1'; this.insertAdjacentText('afterend', this.alt); }">
                                     @else
                                         {{ $sponsor['name'] }}
                                     @endif
@@ -93,7 +95,7 @@
                                       data-track-target="sponsor_chip"
                                       title="{{ $sponsor['name'] }}">
                                     @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy">
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.style.display='none'; if (!this.dataset.failed) { this.dataset.failed='1'; this.insertAdjacentText('afterend', this.alt); }">
                                     @else
                                         {{ $sponsor['name'] }}
                                     @endif
@@ -103,14 +105,20 @@
                     </div>
                 </div>
             @empty
-                <p class="footer-note" style="text-align:left">No sponsors listed yet.</p>
+                <div class="empty-state">
+                    <p class="empty-state__title">No sponsors listed yet</p>
+                    <p class="empty-state__text">Sponsors help keep tickets accessible. When they are announced by the organizers, they'll appear here.</p>
+                </div>
             @endforelse
         </div>
 
         <div data-explore-panel="deals" hidden>
             <p class="panel-intro">Special offers for this WordCamp's attendees, from its sponsors and friends of the community.</p>
             @if ($offers->isEmpty())
-                <p class="footer-note" style="text-align:left">No deals right now. Check back during the event.</p>
+                <div class="empty-state">
+                    <p class="empty-state__title">No deals right now</p>
+                    <p class="empty-state__text">Sponsor deals and discounts will be posted here as the event approaches. Check back during the event.</p>
+                </div>
             @else
                 <div class="deal-list">
                     @foreach ($offers as $offer)
@@ -123,7 +131,10 @@
         <div data-explore-panel="free-steals" hidden>
             <p class="panel-intro">Deals help you save on paid things. Free Steals are good WordPress plugins and tools that are already free, picked by the CampBuddy team, from big companies and from people in the community.</p>
             @if ($steals->isEmpty())
-                <p class="footer-note" style="text-align:left">Nothing here yet. Check back soon.</p>
+                <div class="empty-state">
+                    <p class="empty-state__title">Nothing here yet</p>
+                    <p class="empty-state__text">Curated free community tools and plugins will show up here. Check back soon, or suggest your favourite tool below!</p>
+                </div>
             @else
                 <div class="deal-list">
                     @foreach ($steals as $steal)

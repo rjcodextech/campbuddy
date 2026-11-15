@@ -74,7 +74,7 @@ Route::withoutMiddleware([
     Route::get('/llms.txt', [SeoController::class, 'llms'])->name('llms');
     // "Add to calendar" on iPhone: echoes a calendar file built on the device
     // back with the headers Safari needs (CalendarFileController). Stateless.
-    Route::post('/calendar.ics', CalendarFileController::class)->middleware('throttle:30,1')->name('calendar.file');
+    Route::post('/calendar.ics', CalendarFileController::class)->middleware('throttle:calendar-file')->name('calendar.file');
     Route::get('/indexnow-{key}.txt', [SeoController::class, 'indexNowKey'])->where('key', '[A-Za-z0-9-]{8,128}')->name('indexnow.key');
 
     // WordCamp 101 for first-timers, before any event is picked. Each event
@@ -127,7 +127,7 @@ Route::withoutMiddleware([
 // "you've been removed" message.
 Route::middleware('event.public')->group(function () {
     // The takedown path — public, no login, throttled against abuse.
-    Route::middleware('throttle:20,1')->group(function () {
+    Route::middleware('throttle:roster-removal')->group(function () {
         Route::get('/event/{event:slug}/roster-removal', [RosterRemovalController::class, 'show'])->middleware('cache.headers:no_store;private')->name('event.roster-removal.show');
         Route::get('/event/{event:slug}/roster-removal/search', [RosterRemovalController::class, 'search'])->middleware('cache.headers:no_store;private')->name('event.roster-removal.search');
         Route::post('/event/{event:slug}/roster-removal/{entry}', [RosterRemovalController::class, 'remove'])->name('event.roster-removal.remove');
@@ -137,11 +137,11 @@ Route::middleware('event.public')->group(function () {
 // Sponsor deal submission: unlisted portal for sponsors to submit attendee offers.
 // Not linked in public navigation. Protected with rate limiting, honeypots, and timing tokens.
 // no-store: the form's security code expires, and the page is never kept offline (public/sw.js).
-Route::middleware(['throttle:30,1', 'cache.headers:no_store;private'])->group(function () {
+Route::middleware(['throttle:sponsor-deals', 'cache.headers:no_store;private'])->group(function () {
     Route::get('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'create'])->name('sponsor-deals.create');
     Route::get('/sponsor-deals/events/{event}/sponsors', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'sponsors'])->name('sponsor-deals.sponsors');
     Route::get('/sponsor-deals/success', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'success'])->name('sponsor-deals.success');
-    Route::post('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'store'])->middleware('throttle:5,10')->name('sponsor-deals.store');
+    Route::post('/sponsor-deals/submit', [\App\Http\Controllers\SponsorDealSubmissionController::class, 'store'])->middleware('throttle:sponsor-deals-submit')->name('sponsor-deals.store');
 });
 
 /*
@@ -153,9 +153,13 @@ Route::middleware(['throttle:30,1', 'cache.headers:no_store;private'])->group(fu
 | dashboard, profile.*, ...) so the framework's own redirect targets
 | (e.g. the Authenticate middleware's route('login')) resolve correctly
 | without extra config — only the URI prefix changes.
+|
+| auth.session (AuthenticateSession): a password change or reset signs out
+| every other open session of that admin, as EnsureEventManager does for
+| managers; the session that made the change stays signed in.
 */
 Route::prefix('admin')->group(function () {
-    Route::middleware(['auth', 'verified'])->group(function () {
+    Route::middleware(['auth', 'auth.session', 'verified'])->group(function () {
         Route::get('/', DashboardController::class)->name('dashboard');
         // The store app: this admin's phone for alerts (reports on a profile).
         Route::post('app-push', [AppPushController::class, 'store'])->name('admin.app-push.store');

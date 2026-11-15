@@ -19,7 +19,10 @@ class EventController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $events = AppEventApi::listed($request->query('country'), $request->query('include') !== 'live')
+        // ?country[]=… is not a country: no filter rather than a crash.
+        $country = $request->query('country');
+
+        $events = AppEventApi::listed(is_string($country) ? $country : null, $request->query('include') !== 'live')
             ->map(fn (Event $e) => AppEventApi::card($e))->all();
 
         return $this->json($request, ['data' => $events]);

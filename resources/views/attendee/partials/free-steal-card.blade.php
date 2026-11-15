@@ -9,6 +9,7 @@
     WordPress.org refuse to be framed.
 --}}
 @php($sheet = 'steal-sheet-'.$steal->id)
+@php($stealUrl = \App\Support\SafeUrl::web($steal->url) ?? '#')
 
 {{-- data-steal-*: what explore.js reports as a GA4 item-list item (view / select), with its place in the list. --}}
 <article class="steal-row" aria-label="{{ $steal->name }}"
@@ -56,7 +57,7 @@
             <p class="deal-card__desc">{{ $steal->description }}</p>
             <p class="steal-sheet__category">{{ $steal->category }}</p>
 
-            <a href="{{ $steal->url }}" target="_blank" rel="noopener" class="btn btn--primary btn--full deal-card__cta"
+            <a href="{{ $stealUrl }}" target="_blank" rel="noopener" class="btn btn--primary btn--full deal-card__cta"
                data-track="free_steal_open" data-track-offer-title="{{ $steal->name }}" data-track-link-domain="{{ $steal->linkHost() }}" data-track-target="sheet_cta">{{ $steal->ctaLabel() }} <x-attendee.line-icon name="external" /></a>
             <p class="steal-sheet__host">Opens {{ $steal->linkHost() }} in a new tab</p>
         </div>

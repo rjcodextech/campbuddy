@@ -8,6 +8,7 @@ import { CONTRIB_TEAMS, CONTRIB_QUESTION_TAGS } from './contrib-teams.js';
 import { kvGet, kvSet, setQuestComplete } from './db.js';
 import { lineIcon } from './line-icon.js';
 import { contributePrefill, onboardingWithContributorDay } from './profile-sync.js';
+import { webUrl } from './safe-url.js';
 import { fill, render } from './template.js';
 
 export async function renderContribute(root) {
@@ -126,7 +127,8 @@ export function whereText(tables) {
     .join(' | ');
 }
 
-function renderLeadCard(lead) {
+/** One table lead's card. Their links and photo come from organizers and scraped pages: web addresses only. */
+export function renderLeadCard(lead) {
   const el = render('tpl-contribute-lead-card', {
     name: lead.name,
     designation: lead.designation || null,
@@ -137,8 +139,9 @@ function renderLeadCard(lead) {
   const avatarImg = el.querySelector('[data-slot="avatar"]');
   const initialEl = el.querySelector('[data-slot="initial"]');
 
-  if (lead.avatar) {
-    avatarImg.src = lead.avatar;
+  const avatar = webUrl(lead.avatar);
+  if (avatar) {
+    avatarImg.src = avatar;
     avatarImg.onerror = () => {
       avatarImg.remove();
       if (initialEl) initialEl.style.display = 'flex';
@@ -152,23 +155,25 @@ function renderLeadCard(lead) {
   const linksBox = el.querySelector('[data-slot="links"]');
   if (linksBox) {
     const linkItems = [];
-    if (lead.url) {
+    const profileUrl = webUrl(lead.url);
+    if (profileUrl) {
       const a = document.createElement('a');
       a.className = 'contrib-lead-link';
-      a.href = lead.url;
+      a.href = profileUrl;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.textContent = 'Speaker Profile';
+      a.textContent = 'Speaker profile';
       linkItems.push(a);
     }
-    (lead.links || []).forEach((l) => {
-      if (!l.url) return;
+    (Array.isArray(lead.links) ? lead.links : []).forEach((l) => {
+      const href = webUrl(l?.url);
+      if (!href) return;
       const a = document.createElement('a');
       a.className = 'contrib-lead-link';
-      a.href = l.url;
+      a.href = href;
       a.target = '_blank';
       a.rel = 'noopener';
-      const label = l.type ? l.type.charAt(0).toUpperCase() + l.type.slice(1) : 'Link';
+      const label = typeof l.type === 'string' && l.type ? l.type.charAt(0).toUpperCase() + l.type.slice(1) : 'Link';
       a.textContent = label;
       linkItems.push(a);
     });

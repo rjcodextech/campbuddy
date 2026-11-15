@@ -52,8 +52,12 @@ class DoctorCommand extends Command
         //    the usual reason a fresh deploy still behaves like the old one.
         //    (Event data isn't lost: it's kept in the database, EventData.)
         $this->components->info('1/7 Clearing caches and optimisations');
-        $this->callSilently('optimize:clear');
-        $this->components->twoColumnDetail('Application cache, config, routes, views, events, compiled', '<fg=green>cleared</>');
+        $this->callSilently('view:clear');
+        $this->callSilently('route:clear');
+        $this->callSilently('config:clear');
+        $this->callSilently('cache:clear');
+        $this->callSilently('event:clear');
+        $this->components->twoColumnDetail('Application cache, config, routes, views, events', '<fg=green>cleared</>');
 
         // 2. Logs.
         $this->components->info('2/7 Logs');
@@ -97,7 +101,8 @@ class DoctorCommand extends Command
                 $this->components->twoColumnDetail('Config, routes, views, events', '<fg=green>cached</>');
             } catch (Throwable $e) {
                 // Not caching is slower, never broken.
-                $this->callSilently('optimize:clear');
+                $this->callSilently('config:clear');
+                $this->callSilently('route:clear');
                 $this->components->warn('Couldn\'t cache ('.$e->getMessage().') — running uncached, which is fine.');
             }
         }

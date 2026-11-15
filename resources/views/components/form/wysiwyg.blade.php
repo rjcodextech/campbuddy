@@ -271,7 +271,7 @@
              class="wysiwyg-content legal px-6 py-5 overflow-y-auto focus:outline-hidden text-ink selection:bg-peach"
              style="min-height: {{ $minHeight }}; max-height: 720px;"
              role="textbox"
-             aria-multiline="true">{!! $current !!}</div>
+             aria-multiline="true">{!! \App\Support\SafeHtml::clean($current) !!}</div>{{-- old() is raw input after a failed save: never printed unsanitized --}}
 
         {{-- Raw HTML Code Editor Canvas (Monospace, syntax feel) --}}
         <textarea id="{{ $id }}-code"

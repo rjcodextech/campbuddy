@@ -43,7 +43,7 @@
                         <td>
                             <div class="flex items-center gap-3">
                                 @if ($entry->photo())
-                                    <img src="{{ $entry->photo() }}" alt="" class="h-8 w-8 rounded-full bg-paper-soft object-cover">
+                                    <img src="{{ $entry->photo() }}" alt="" class="h-8 w-8 rounded-full bg-paper-soft object-cover" loading="lazy" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';">
                                 @else
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-paper-soft text-xs font-semibold text-muted" aria-hidden="true">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($entry->name, 0, 1)) }}</span>
                                 @endif

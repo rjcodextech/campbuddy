@@ -349,6 +349,7 @@ dialog {
         line-height: 1.2;
 
         button {
+            position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -360,15 +361,21 @@ dialog {
             color: var(--muted);
             cursor: pointer;
             font-size: 14px;
-            font-weight: bold;
             line-height: 1;
             border-radius: 50%;
             transition: color 0.15s, background-color 0.15s;
 
+            // The visible ✕ stays small; the finger gets 44 × 44 (WCAG 2.5.8, brand §7).
+            &::after {
+                content: '';
+                position: absolute;
+                inset: -14px;
+            }
+
             &:hover,
             &:focus-visible {
                 color: var(--ink);
-                background: rgba(0, 0, 0, 0.08);
+                background: var(--line);
             }
         }
     }

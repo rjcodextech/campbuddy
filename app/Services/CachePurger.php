@@ -125,7 +125,21 @@ class CachePurger
     private function clearServerCaches(): bool
     {
         try {
-            return Artisan::call('optimize:clear', ['--except' => 'compiled']) === 0;
+            // Run granular clear commands rather than optimize:clear, so compiled
+            // service provider manifests in bootstrap/cache are never deleted.
+            $commands = [
+                'view:clear',
+                'route:clear',
+                'config:clear',
+                'cache:clear',
+                'event:clear',
+            ];
+
+            foreach ($commands as $cmd) {
+                Artisan::call($cmd);
+            }
+
+            return true;
         } catch (Throwable $e) {
             report($e);
 

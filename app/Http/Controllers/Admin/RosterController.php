@@ -10,11 +10,11 @@ use App\Models\Event;
 use App\Models\SharedCampCard;
 use App\Support\RosterMarks;
 use App\Support\RosterRoles;
-use Illuminate\Validation\Rule;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -60,6 +60,7 @@ class RosterController extends Controller
     public function suppress(Event $event, AttendeeRoster $entry): RedirectResponse
     {
         Gate::authorize('update', $event);
+        abort_unless($entry->event_id === $event->id, 404);
 
         $entry->suppress();
 
@@ -108,8 +109,10 @@ class RosterController extends Controller
     public function unsuppress(Event $event, AttendeeRoster $entry): RedirectResponse
     {
         Gate::authorize('update', $event);
+        abort_unless($entry->event_id === $event->id, 404);
 
         $entry->update(['is_suppressed' => false]);
+        RosterApi::forget($event);
 
         return redirect()->route('admin.events.roster.index', $event)->with('status', "{$entry->name} restored to the public roster.");
     }

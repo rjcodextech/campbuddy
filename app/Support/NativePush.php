@@ -191,7 +191,7 @@ class NativePush
     {
         $path = config('services.fcm.credentials_path');
 
-        if (! $path || ! is_readable($path)) {
+        if (! $path || ! FileSafety::isReadable($path)) {
             return null;
         }
 

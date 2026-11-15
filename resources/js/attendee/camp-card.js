@@ -80,8 +80,10 @@ export async function renderCampCard() {
 
   preloadExporter();
 
-  const card = await kvGet('campCard');
-  const visibleFields = new Set(card?.visibleFields ?? []);
+  // Storage blocked, or a copy saved in another shape: start from an empty form.
+  const saved = await kvGet('campCard').catch(() => null);
+  const card = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : null;
+  const visibleFields = new Set(Array.isArray(card?.visibleFields) ? card.visibleFields : []);
 
   if (card) {
     Object.entries(card).forEach(([key, value]) => {

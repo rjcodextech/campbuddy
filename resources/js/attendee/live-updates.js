@@ -17,6 +17,7 @@
 import { apiGet, apiMutate } from './api.js';
 import { getDeviceId } from './device.js';
 import { isStandalone } from './platform.js';
+import { el } from './el.js';
 import { lineIcon } from './line-icon.js';
 
 const SEEN_EVERY_MS = 6 * 60 * 60 * 1000;
@@ -121,9 +122,14 @@ function askCard(root, slug) {
 
   const card = document.createElement('div');
   card.className = 'live-ask';
-  card.innerHTML = '<p class="live-ask__title">Get live updates from the organizers</p>'
-    + '<p class="live-ask__desc">"Opening remarks are starting", "Lunch is served", a session about to begin: a notification on this phone, even with CampBuddy closed.</p>'
-    + '<div class="live-ask__actions"><button type="button" class="btn btn--primary btn--compact" data-live-yes>Turn on</button><button type="button" class="btn btn--secondary btn--compact" data-live-no>Not now</button></div>';
+  card.append(
+    el('p', { class: 'live-ask__title' }, 'Get live updates from the organizers'),
+    el('p', { class: 'live-ask__desc' }, '“Opening remarks are starting”, “Lunch is served”, a session about to begin: a notification on this phone, even with CampBuddy closed.'),
+    el('div', { class: 'live-ask__actions' },
+      el('button', { type: 'button', class: 'btn btn--primary btn--compact', 'data-live-yes': true }, 'Turn on'),
+      el('button', { type: 'button', class: 'btn btn--secondary btn--compact', 'data-live-no': true }, 'Not now'),
+    ),
+  );
   card.querySelector('[data-live-no]').addEventListener('click', () => {
     store.set(`campbuddy-live-ask:${slug}`, 'no');
     card.remove();
@@ -138,7 +144,7 @@ function askCard(root, slug) {
         const { registerSubscription } = await import('./push.js');
         await registerSubscription(slug);
         markSeen(slug, { allowed: true, force: true }).catch(() => {});
-        card.innerHTML = '<p class="live-ask__title">You will get the organizers\' updates.</p>';
+        card.replaceChildren(el('p', { class: 'live-ask__title' }, "You will get the organizers' updates."));
         setTimeout(() => card.remove(), 4000);
         return;
       }

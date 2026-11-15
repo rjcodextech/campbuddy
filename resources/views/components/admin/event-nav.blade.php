@@ -10,8 +10,14 @@
 @props(['event', 'current'])
 
 @php
-    // The three lists an event owns in one query, its deal leads in another.
-    $event->loadCount(['quests', 'offers', 'attendeeRoster']);
+    // The three lists an event owns in one query, only if not already loaded.
+    $countsToLoad = [];
+    if (! isset($event->quests_count)) $countsToLoad[] = 'quests';
+    if (! isset($event->offers_count)) $countsToLoad[] = 'offers';
+    if (! isset($event->attendee_roster_count)) $countsToLoad[] = 'attendeeRoster';
+    if (! empty($countsToLoad)) {
+        $event->loadCount($countsToLoad);
+    }
     $reportCount = \App\Models\DiscoveryReport::where('event_id', $event->id)->where('status', 'open')->distinct('discovery_id')->count('discovery_id');
     $leadCount = \App\Models\OfferLead::where('event_id', $event->id)->count();
 
@@ -39,7 +45,7 @@
     <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4 sm:px-5">
         <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-paper-soft text-base font-semibold text-maroon-text" aria-hidden="true">
             @if ($event->markUrl())
-                <img src="{{ $event->markUrl() }}" alt="" class="max-h-10 max-w-10 object-contain">
+                <img src="{{ $event->markUrl() }}" alt="" class="max-h-10 max-w-10 object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
             @else
                 {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($event->display_name, 0, 1)) }}
             @endif

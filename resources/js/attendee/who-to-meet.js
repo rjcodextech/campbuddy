@@ -2,6 +2,8 @@
 // Allows picking from curated suggestions, typing custom entries,
 // adding multiple entries, and serializes back to comma-separated text.
 
+import { spriteIcon } from './line-icon.js';
+
 export const WHO_SUGGESTIONS = [
   'Plugin Developers',
   'Agency Owners',
@@ -64,7 +66,8 @@ export function initWhoToMeetInput(root, {
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.innerHTML = '&times;';
+        removeBtn.className = 'who-tag-chip__remove';
+        removeBtn.append(spriteIcon('x'));
         removeBtn.setAttribute('aria-label', `Remove ${tag}`);
         removeBtn.addEventListener('click', (e) => {
           e.stopPropagation();

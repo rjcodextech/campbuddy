@@ -21,11 +21,17 @@ export function createOutbox({ kvGet, kvSet, now = Date.now }) {
     try {
       const saved = await kvGet(OUTBOX_KEY(slug));
 
-      return Array.isArray(saved) ? saved : [];
+      // An older or broken copy: keep only entries that are wishes at all.
+      return Array.isArray(saved) ? saved.filter((item) => item && typeof item === 'object' && !Array.isArray(item)) : [];
     } catch {
       return [];
     }
   };
+
+  // One wish, told apart from a later wish about the same session.
+  const idOf = (item) => `${item.kind}|${item.sessionId}|${item.at}`;
+  // A send already under way for an event: a second call joins it instead of sending everything twice.
+  const flushing = new Map();
 
   const save = async (slug, items) => {
     try {
@@ -36,6 +42,41 @@ export function createOutbox({ kvGet, kvSet, now = Date.now }) {
       return false;
     }
   };
+
+  async function flushOnce(slug, send) {
+    const items = await load(slug);
+    const gone = new Set();
+    const retry = new Map();
+    let sent = 0;
+    let dropped = 0;
+
+    for (const item of items) {
+      try {
+        if ((await send(item)) === 'drop') dropped++;
+        else sent++;
+        gone.add(idOf(item));
+      } catch (error) {
+        const attempts = (item.attempts ?? 0) + 1;
+
+        if (error?.permanent || attempts >= MAX_ATTEMPTS) {
+          dropped++;
+          gone.add(idOf(item));
+        } else {
+          retry.set(idOf(item), { ...item, attempts });
+        }
+      }
+    }
+
+    if (sent + dropped === 0 && retry.size === 0) return { sent, dropped, remaining: 0 };
+
+    // Written over what is saved NOW, not what was read at the start: a wish
+    // queued (or taken back) while the sends were under way stays as it is.
+    const current = await load(slug);
+    const remaining = current.filter((item) => !gone.has(idOf(item))).map((item) => retry.get(idOf(item)) ?? item);
+    await save(slug, remaining);
+
+    return { sent, dropped, remaining: remaining.length };
+  }
 
   return {
     /** Queues `{ kind, sessionId }`. The latest wish about a session replaces any earlier one (on then off = nothing to send but the off). */
@@ -65,28 +106,12 @@ export function createOutbox({ kvGet, kvSet, now = Date.now }) {
      *
      * @returns {Promise<{ sent: number, dropped: number, remaining: number }>}
      */
-    async flush(slug, send) {
-      const items = await load(slug);
-      const remaining = [];
-      let sent = 0;
-      let dropped = 0;
-
-      for (const item of items) {
-        try {
-          if ((await send(item)) === 'drop') dropped++;
-          else sent++;
-        } catch (error) {
-          const attempts = (item.attempts ?? 0) + 1;
-
-          if (error?.permanent || attempts >= MAX_ATTEMPTS) dropped++;
-          else remaining.push({ ...item, attempts });
-        }
+    flush(slug, send) {
+      if (!flushing.has(slug)) {
+        flushing.set(slug, flushOnce(slug, send).finally(() => flushing.delete(slug)));
       }
 
-      // Rewritten whenever anything changed (an item went, or another try was counted).
-      if (sent + dropped > 0 || remaining.length > 0) await save(slug, remaining);
-
-      return { sent, dropped, remaining: remaining.length };
+      return flushing.get(slug);
     },
   };
 }

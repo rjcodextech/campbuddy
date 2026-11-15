@@ -22,6 +22,7 @@ import { setSectionTitle } from './page-title.js';
 import { cancelReminder, offerReminder } from './push.js';
 import { syncIosReminderHint } from './ios-reminder-hint.js';
 import { render, renderFragment } from './template.js';
+import { webUrl } from './safe-url.js';
 import { iconText } from './line-icon.js';
 import { showToast } from './toast.js';
 
@@ -34,7 +35,8 @@ export async function renderMyDay(root) {
   const eventSlug = root.dataset.eventSlug;
   const speakersById = new Map(speakers.map((s) => [s.id, s]));
 
-  let bookmarks = await getBookmarks(eventId);
+  // Storage blocked or broken: the schedule still shows, with nothing saved yet.
+  let bookmarks = await getBookmarks(eventId).catch(() => []);
   let bookmarkedIds = new Set(bookmarks.map((b) => b.sessionId));
   let meetings = await safeMeetings(eventId);
   let expandedSessionId = null;
@@ -509,6 +511,7 @@ function hiddenPersonCard(m) {
   avatar.height = 44;
   avatar.loading = 'lazy';
   avatar.dataset.fallback = '/media/illustrations/avatar.svg';
+  avatar.onerror = () => { avatar.onerror = null; avatar.src = '/media/illustrations/avatar.svg'; };
   avatar.src = /^https?:\/\//i.test(m.avatarUrl ?? '') ? m.avatarUrl : '/media/illustrations/avatar.svg';
 
   const body = document.createElement('div');
@@ -718,21 +721,24 @@ function sessionItem(session, speakersById, bookmarkedIds, overlapWarning, expan
 // The inline replacement for the old session-detail dialog — same
 // content (time, speakers + bios, slides/video links, save toggle),
 // just rendered under the session instead of over the whole screen.
-function sessionDetail(session, speakersById, isSaved) {
+export function sessionDetail(session, speakersById, isSaved) {
   const speakerList = (session.speaker_ids ?? []).map((id) => speakersById.get(id)).filter(Boolean);
   const time = session.starts_at
     ? formatDayTime(new Date(session.starts_at).getTime())
     : 'Time TBA';
 
   const topics = (session.category_names ?? []).join(' · ');
+  // Slides and recordings come from the WordCamp site: web addresses only.
+  const slides = webUrl(session.slides_url);
+  const video = webUrl(session.video_url);
 
   return renderFragment('tpl-schedule-detail', {
     time: topics ? `${time} · ${topics}` : time,
     description: session.description || false,
     speakers: speakerList.map(speakerBlock),
-    links: Boolean(session.slides_url || session.video_url),
-    slides: session.slides_url ? { attrs: { href: session.slides_url, ...linkTracking(session, 'slides') } } : null,
-    video: session.video_url ? { attrs: { href: session.video_url, ...linkTracking(session, 'video') } } : null,
+    links: Boolean(slides || video),
+    slides: slides ? { attrs: { href: slides, ...linkTracking(session, 'slides') } } : null,
+    video: video ? { attrs: { href: video, ...linkTracking(session, 'video') } } : null,
     save: {
       text: isSaved ? 'Remove from My Day' : 'Save to My Day',
       class: { 'btn--outline': isSaved, 'btn--primary': !isSaved },
@@ -747,10 +753,11 @@ function linkTracking(session, linkType) {
 
 function speakerBlock(sp) {
   const initial = (sp.name ?? '?').trim().charAt(0).toUpperCase() || '?';
+  const avatar = webUrl(sp.avatar_url);
 
   return render('tpl-schedule-speaker', {
-    'avatar-img': sp.avatar_url ? { attrs: { src: sp.avatar_url } } : null,
-    'avatar-initial': sp.avatar_url ? null : initial,
+    'avatar-img': avatar ? { attrs: { src: avatar } } : null,
+    'avatar-initial': avatar ? null : initial,
     name: sp.name ?? '',
     bio: sp.bio_text || null,
   });

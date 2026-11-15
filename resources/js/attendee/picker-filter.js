@@ -137,6 +137,15 @@ export function statusText({ shown, total }, countryName) {
     : `Showing ${shown} of ${total} ${plural(total)}${where}`;
 }
 
+/** The page's localStorage, or null where even reaching it throws (site data blocked). */
+function pageStorage() {
+  try {
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function readStorage(storage) {
   try {
     return storage?.getItem(STORAGE_KEY) ?? null;
@@ -170,7 +179,7 @@ function regionName(code, names) {
 export function initPickerFilter({
   doc = globalThis.document,
   win = globalThis.window,
-  storage = globalThis.localStorage,
+  storage = pageStorage(),
   timeZone,
 } = {}) {
   const list = doc.querySelector('[data-picker-list]');

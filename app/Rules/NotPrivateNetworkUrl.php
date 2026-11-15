@@ -15,7 +15,8 @@ class NotPrivateNetworkUrl implements ValidationRule
 {
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $host = parse_url((string) $value, PHP_URL_HOST);
+        // A list or object sent in its place is refused, not cast (that was a 500).
+        $host = is_string($value) ? parse_url($value, PHP_URL_HOST) : null;
 
         if (! $host) {
             $fail("The {$attribute} must be a valid URL.");
@@ -43,6 +44,18 @@ class NotPrivateNetworkUrl implements ValidationRule
         }
 
         $ip = filter_var($host, FILTER_VALIDATE_IP) ? $host : gethostbyname($host);
+
+        // If it resolved to the exact hostname string, DNS lookup did not produce an IP (offline/test sandbox).
+        if ($ip === $host && ! filter_var($host, FILTER_VALIDATE_IP)) {
+            $lowerHost = strtolower($host);
+            foreach (['.local', '.internal', '.lan', '.corp', '.home', '.test', '.example', '.invalid'] as $privateTld) {
+                if (str_ends_with($lowerHost, $privateTld)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         // Handle IPv4-mapped IPv6 (e.g. ::ffff:127.0.0.1)
         if (str_starts_with(strtolower($ip), '::ffff:')) {

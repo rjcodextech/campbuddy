@@ -10,7 +10,9 @@
         "test:ui": "node tests/browser/ui-audit.mjs",
         "test:text": "node tests/browser/text-audit.mjs",
         "check:sync": "node tools/check-sync.mjs",
-        "brand": "node tools/brand-check.mjs"
+        "brand": "node tools/brand-check.mjs",
+        "audit:social": "node tools/audit-social.mjs --harness",
+        "audit:reels": "node tools/audit-reels.mjs --harness"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

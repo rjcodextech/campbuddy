@@ -69,7 +69,7 @@ class OrganizerManageController extends Controller
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'timezone' => ['nullable', 'string', 'max:64', function (string $attribute, mixed $value, Closure $fail) {
-                if (EventTime::normalize((string) $value) === null) {
+                if (! is_string($value) || EventTime::normalize($value) === null) {
                     $fail('Use a time zone like Asia/Kolkata or Europe/Berlin, or an offset like +05:30.');
                 }
             }],

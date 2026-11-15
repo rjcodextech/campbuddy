@@ -86,7 +86,7 @@
 
             <main id="main-content" tabindex="-1" class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-hidden sm:px-6 lg:px-8">
                 @if (session('status'))
-                    <x-alert type="success" class="mb-6">{{ session('status') }}</x-alert>
+                    <x-alert type="success" :dismissible="true" class="mb-6">{{ session('status') }}</x-alert>
                 @endif
 
                 @if (session('warning'))

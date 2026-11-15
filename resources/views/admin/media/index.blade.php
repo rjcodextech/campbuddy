@@ -44,7 +44,7 @@
                         @endphp
                         <li class="overflow-hidden rounded-lg border border-line bg-white">
                             <div class="flex aspect-square items-center justify-center bg-paper-soft p-2">
-                                <img src="{{ $asset->url() }}" alt="{{ $asset->filename }}" loading="lazy" class="max-h-full max-w-full object-contain">
+                                <img src="{{ $asset->url() }}" alt="{{ $asset->filename }}" loading="lazy" class="max-h-full max-w-full object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
                             </div>
                             <div class="border-t border-line px-2.5 py-2">
                                 <p class="truncate text-xs font-medium" title="{{ $asset->filename }}">{{ $asset->filename }}</p>

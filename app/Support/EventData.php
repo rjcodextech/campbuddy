@@ -183,6 +183,17 @@ class EventData
         return $value === null ? null : count($value);
     }
 
+    /** Clear all cached feeds and stamps for an event (e.g. after retention window). */
+    public static function forget(int $eventId): void
+    {
+        foreach (self::KINDS as $kind) {
+            Cache::forget(self::key($eventId, $kind));
+        }
+        Cache::forget("event:{$eventId}:fetched-at");
+        Cache::forget("event:{$eventId}:schedule-page");
+        DataVersion::forget($eventId);
+    }
+
     private static function key(int $eventId, string $kind): string
     {
         return "event:{$eventId}:{$kind}";

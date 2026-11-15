@@ -10,11 +10,32 @@ const DB_VERSION = 2;
 /** @type {Promise<IDBDatabase>|null} */
 let dbPromise = null;
 
+// How long to wait for another open tab of an older version to let go of the
+// database before carrying on without it (the screens still draw; saving waits
+// for the next try).
+const BLOCKED_WAIT_MS = 3000;
+
 function openDb() {
   if (dbPromise) return dbPromise;
 
-  dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+  const opening = new Promise((resolve, reject) => {
+    let settled = false;
+    let blockedTimer = null;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(blockedTimer);
+      fn(value);
+    };
+
+    let request;
+    try {
+      // Storage switched off (blocked site data, some private modes): no IndexedDB, or open() throws.
+      request = indexedDB.open(DB_NAME, DB_VERSION);
+    } catch (error) {
+      finish(reject, error);
+      return;
+    }
 
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -48,11 +69,41 @@ function openDb() {
       }
     };
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+
+      // We stopped waiting (blocked too long): let this late connection go; the next call opens afresh.
+      if (settled) {
+        db.close();
+        return;
+      }
+
+      // A newer version of the app opened in another tab needs the database:
+      // let go at once, or that tab would wait for this one to be closed.
+      db.onversionchange = () => {
+        db.close();
+        if (dbPromise === opening) dbPromise = null;
+      };
+      // The browser closed it (site data cleared): the next call opens it again.
+      db.onclose = () => {
+        if (dbPromise === opening) dbPromise = null;
+      };
+      finish(resolve, db);
+    };
+    request.onerror = () => finish(reject, request.error);
+    // An older tab still holds the database and doesn't let go: don't wait for ever.
+    request.onblocked = () => {
+      blockedTimer = setTimeout(() => finish(reject, Object.assign(new Error('The database is held by another tab.'), { name: 'BlockedError' })), BLOCKED_WAIT_MS);
+    };
   });
 
-  return dbPromise;
+  dbPromise = opening;
+  // A failed open is not remembered: the next call tries again.
+  opening.catch(() => {
+    if (dbPromise === opening) dbPromise = null;
+  });
+
+  return opening;
 }
 
 /**
@@ -66,19 +117,35 @@ function promisify(request) {
   });
 }
 
-async function withStore(storeName, mode, fn) {
+async function withStore(storeName, mode, fn, retried = false) {
   const db = await openDb();
-  const tx = db.transaction(storeName, mode);
-  const store = tx.objectStore(storeName);
-  const result = await fn(store);
-  await promisify2(tx);
+  let tx;
+
+  try {
+    tx = db.transaction(storeName, mode);
+  } catch (error) {
+    // The connection was closed under us (site data cleared, a newer tab took over): open again, once.
+    if (!retried && error?.name === 'InvalidStateError') {
+      dbPromise = null;
+      return withStore(storeName, mode, fn, true);
+    }
+    throw error;
+  }
+
+  // Listening before any request runs, so an abort at any point is heard.
+  const done = transactionDone(tx);
+  done.catch(() => {});
+  const result = await fn(tx.objectStore(storeName));
+  await done;
   return result;
 }
 
-function promisify2(tx) {
+/** Settles when the transaction is over: committed, failed, or aborted (a full disk aborts at commit, firing only `abort`). */
+function transactionDone(tx) {
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error ?? Object.assign(new Error('The save was cancelled.'), { name: 'AbortError' }));
   });
 }
 
@@ -251,8 +318,9 @@ export async function clearAll() {
   const db = await openDb();
   const storeNames = Array.from(db.objectStoreNames);
   const tx = db.transaction(storeNames, 'readwrite');
+  const done = transactionDone(tx);
   storeNames.forEach((name) => tx.objectStore(name).clear());
-  return promisify2(tx);
+  return done;
 }
 
 /**

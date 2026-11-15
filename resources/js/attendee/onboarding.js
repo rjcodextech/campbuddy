@@ -50,7 +50,7 @@ export async function renderOnboardingSection() {
   const section = document.getElementById('onboarding-welcome');
   if (!section) return;
 
-  const existing = await kvGet('onboarding');
+  const existing = await kvGet('onboarding').catch(() => null);
   if (existing && existing.completedAt) {
     section.hidden = true;
     return;

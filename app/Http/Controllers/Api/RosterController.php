@@ -39,9 +39,9 @@ class RosterController extends Controller
     {
         $page = max(1, min(self::MAX_PAGE, (int) $request->query('page', 1)));
 
-        return ConditionalJson::cached($request, "event:{$event->id}:roster:page:{$page}", self::TTL_SECONDS, 30, function () use ($event) {
+        return ConditionalJson::cached($request, "event:{$event->id}:roster:page:{$page}", self::TTL_SECONDS, 30, function () use ($event, $page) {
             try {
-                return $this->page($event, withOpenToMeet: true, withCards: true);
+                return $this->page($event, $page, withOpenToMeet: true, withCards: true);
             } catch (QueryException $e) {
                 // A table or column isn't there yet (a deploy that hasn't run
                 // `php artisan migrate`). The attendee list must still load —
@@ -50,9 +50,9 @@ class RosterController extends Controller
                 report($e);
 
                 try {
-                    return $this->page($event, withOpenToMeet: true, withCards: false);
+                    return $this->page($event, $page, withOpenToMeet: true, withCards: false);
                 } catch (QueryException) {
-                    return $this->page($event, withOpenToMeet: false, withCards: false);
+                    return $this->page($event, $page, withOpenToMeet: false, withCards: false);
                 }
             }
         });
@@ -71,7 +71,7 @@ class RosterController extends Controller
         }
     }
 
-    private function page(Event $event, bool $withOpenToMeet, bool $withCards): LengthAwarePaginator
+    private function page(Event $event, int $page, bool $withOpenToMeet, bool $withCards): LengthAwarePaginator
     {
         $roles = $this->roles($event);
 
@@ -83,7 +83,9 @@ class RosterController extends Controller
             // "Show my Camp Card on the attendee list": the owner's own choice (SharedCampCard).
             ->when($withCards, fn ($q) => $q->with(['sharedCampCard' => fn ($q) => $q->alive($event)]))
             ->orderBy('name')
-            ->paginate(200)
+            // The same page number the cache key uses: left to read ?page itself, the paginator
+            // took "02" or "2x" as page 1, and that copy was then served as page 2 to everyone.
+            ->paginate(200, ['*'], 'page', $page)
             ->through(fn ($entry) => [
                 // The id is what "that's me" in the discovery form sends back.
                 'id' => $entry->id,

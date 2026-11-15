@@ -31,7 +31,7 @@
 
 <template id="tpl-roster-row">
     <div class="roster-row">
-        <img class="roster-row__avatar" alt="" width="44" height="44" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
+        <img class="roster-row__avatar" alt="" width="44" height="44" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar-img">
         <span class="roster-row__avatar roster-row__avatar--initial" data-slot="avatar-initial"></span>
         <div class="roster-row__body">
             {{-- A button: it opens the person's sheet (person-card.js). --}}
@@ -53,7 +53,7 @@
             <span class="steal-sheet__grab" aria-hidden="true"></span>
 
             <div class="steal-sheet__head">
-                <img class="roster-row__avatar person-sheet__avatar" alt="" width="60" height="60" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+                <img class="roster-row__avatar person-sheet__avatar" alt="" width="60" height="60" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar">
                 <div class="person-sheet__who">
                     <span class="deal-card__name" id="person-sheet-name" data-slot="name"></span>
                     <span class="roster-row__roles" data-slot="roles"></span>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AppRelease;
 use App\Support\AppReleases;
+use App\Support\FileSafety;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,9 +20,10 @@ class AppUpdateController extends Controller
     /** GET /api/v1/app/update?package=club.campbuddy.app&code=15 */
     public function show(Request $request): JsonResponse
     {
-        $package = (string) $request->query('package', config('mobile_app.app_id'));
-        $package = in_array($package, AppReleases::allowedPackages(), true) ? $package : (string) config('mobile_app.app_id');
-        $code = max(0, (int) $request->query('code', 0));
+        // Read as text only: ?package[]=… was cast to a string, which is a 500.
+        $package = $request->query('package');
+        $package = is_string($package) && in_array($package, AppReleases::allowedPackages(), true) ? $package : (string) config('mobile_app.app_id');
+        $code = is_string($code = $request->query('code')) ? max(0, (int) $code) : 0;
 
         return response()->json(AppReleases::forApi($package, $code))->header('Cache-Control', 'no-cache, private');
     }
@@ -36,7 +38,7 @@ class AppUpdateController extends Controller
         $path = AppReleases::path($release);
         abort_unless(is_file($path), 404);
 
-        return response()->download($path, $release->fileName(), [
+        return response()->download(FileSafety::file($path), $release->fileName(), [
             'Content-Type' => 'application/vnd.android.package-archive',
             'Cache-Control' => 'public, max-age=31536000, immutable',
             'X-Content-Type-Options' => 'nosniff',

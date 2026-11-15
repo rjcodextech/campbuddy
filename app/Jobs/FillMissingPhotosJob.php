@@ -49,9 +49,10 @@ class FillMissingPhotosJob implements ShouldQueue
 
     public const RECHECK_DAYS = 7;
 
-    public const RECHECK_NONE_DAYS = 3;
+    /** Retry people without a photo daily so new avatars or temporary network drops recover fast. */
+    public const RECHECK_NONE_DAYS = 1;
 
-    public function __construct(public readonly Event $event) {}
+    public function __construct(public readonly Event $event, public readonly bool $retryMissing = false) {}
 
     public function handle(): void
     {
@@ -64,22 +65,33 @@ class FillMissingPhotosJob implements ShouldQueue
 
     private function run(): void
     {
-        $entries = AttendeeRoster::where('event_id', $this->event->id)
-            ->where('is_suppressed', false)
-            ->where(fn ($q) => $q->whereNull('photo_checked_at')
+        $query = AttendeeRoster::where('event_id', $this->event->id)
+            ->where('is_suppressed', false);
+
+        if ($this->retryMissing) {
+            $entries = $query->where(fn ($q) => $q->whereNull('photo_url')->orWhereIn('photo_source', ['none', 'failed']))
+                ->orderByRaw('photo_checked_at IS NOT NULL')
+                ->orderBy('photo_checked_at')
+                ->limit(self::PER_RUN)
+                ->get();
+        } else {
+            $entries = $query->where(fn ($q) => $q->whereNull('photo_checked_at')
+                ->orWhere('photo_source', 'failed')
+                ->orWhere(fn ($q) => $q->whereNull('photo_url')->where('photo_checked_at', '<', now()->subDays(self::RECHECK_NONE_DAYS)))
                 ->orWhere(fn ($q) => $q->where('photo_source', 'none')->where('photo_checked_at', '<', now()->subDays(self::RECHECK_NONE_DAYS)))
                 ->orWhere('photo_checked_at', '<', now()->subDays(self::RECHECK_DAYS)))
-            ->orderByRaw('photo_checked_at IS NOT NULL')
-            ->orderBy('photo_checked_at')
-            ->limit(self::PER_RUN)
-            ->get();
+                ->orderByRaw('photo_checked_at IS NOT NULL')
+                ->orderBy('photo_checked_at')
+                ->limit(self::PER_RUN)
+                ->get();
+        }
 
         if ($entries->isEmpty()) {
             return;
         }
 
         $site = $this->sitePeople();
-        $found = ['site' => 0, 'gravatar' => 0, 'wporg' => 0, 'none' => 0];
+        $found = ['site' => 0, 'gravatar' => 0, 'wporg' => 0, 'none' => 0, 'failed' => 0];
         $results = [];
         $needGravatar = [];
 
@@ -94,13 +106,16 @@ class FillMissingPhotosJob implements ShouldQueue
         }
 
         // 2–3. A real Gravatar: theirs, else the one the site has for them.
-        $real = $this->realGravatars(array_merge(...array_values($needGravatar ?: [[]])));
+        [$real, $failedHashes] = $this->realGravatars(array_merge(...array_values($needGravatar ?: [[]])));
         foreach ($needGravatar as $id => $urls) {
             foreach ($urls as $url) {
                 $hash = RosterRoles::avatarHash($url);
                 if ($hash && ($real[$hash] ?? false)) {
                     $results[$id] = [self::gravatar($hash), 'gravatar'];
                     break;
+                }
+                if ($hash && in_array($hash, $failedHashes, true)) {
+                    $results[$id] = [null, 'failed'];
                 }
             }
         }
@@ -117,16 +132,42 @@ class FillMissingPhotosJob implements ShouldQueue
             }
             $profiles++;
             $hash = $this->profileGravatar($user);
-            if ($hash !== null && ($real[$hash] ?? $this->realGravatars([self::gravatar($hash)])[$hash] ?? false)) {
-                $results[$entry->id] = [self::gravatar($hash), 'wporg'];
+            if ($hash !== null) {
+                $gravatarUrl = self::gravatar($hash);
+                $isReal = $real[$hash] ?? false;
+                if (! isset($real[$hash])) {
+                    [$singleReal] = $this->realGravatars([$gravatarUrl]);
+                    $isReal = $singleReal[$hash] ?? false;
+                }
+                if ($isReal) {
+                    $results[$entry->id] = [$gravatarUrl, 'wporg'];
+                }
             }
         }
 
         $now = now();
+        $urlsToWarm = [];
         foreach ($entries as $entry) {
             [$url, $source] = $results[$entry->id] ?? [null, 'none'];
+            if (! isset($found[$source])) {
+                $found[$source] = 0;
+            }
             $found[$source]++;
-            $entry->forceFill(['photo_url' => $url, 'photo_source' => $source, 'photo_checked_at' => $now])->saveQuietly();
+            // Failed requests leave photo_checked_at null so they can be retried immediately on the next pass
+            $checkedAt = ($source === 'failed') ? null : $now;
+            $entry->forceFill(['photo_url' => $url, 'photo_source' => $source, 'photo_checked_at' => $checkedAt])->saveQuietly();
+            if ($url) {
+                $urlsToWarm[] = $url;
+            }
+        }
+
+        // Pre-cache/warm the found images locally in social-cache
+        if ($urlsToWarm !== []) {
+            try {
+                \App\Support\SocialImageProxy::warm($urlsToWarm);
+            } catch (Throwable) {
+                // Background warming is best-effort
+            }
         }
 
         if ($found['site'] + $found['gravatar'] + $found['wporg'] > 0) {
@@ -139,7 +180,7 @@ class FillMissingPhotosJob implements ShouldQueue
             'source' => 'photos',
             'job_type' => 'photos',
             'status' => 'ok',
-            'message' => sprintf('%d people checked: %d site photos, %d Gravatars, %d WordPress.org pictures, %d without a photo', $entries->count(), $found['site'], $found['gravatar'], $found['wporg'], $found['none']),
+            'message' => sprintf('%d people checked: %d site photos, %d Gravatars, %d WordPress.org pictures, %d without a photo, %d failed to fetch (will retry)', $entries->count(), $found['site'], $found['gravatar'], $found['wporg'], $found['none'], $found['failed']),
             'fetched_at' => $now,
         ]);
     }
@@ -212,14 +253,16 @@ class FillMissingPhotosJob implements ShouldQueue
 
     /**
      * Which of these Gravatars are real pictures: asked with d=404, ten at a time.
+     * Returns [$real, $failedHashes] so network drops can be retried rather than marked absent.
      *
      * @param  list<string>  $urls
-     * @return array<string, bool> hash => real
+     * @return array{0: array<string, bool>, 1: list<string>} [hash => real, failed hashes]
      */
     private function realGravatars(array $urls): array
     {
         $hashes = array_values(array_unique(array_filter(array_map(fn ($u) => RosterRoles::avatarHash($u), $urls))));
         $real = [];
+        $failed = [];
 
         foreach (array_chunk($hashes, 10) as $chunk) {
             try {
@@ -229,14 +272,21 @@ class FillMissingPhotosJob implements ShouldQueue
                 ));
                 foreach ($chunk as $hash) {
                     $r = $responses[$hash] ?? null;
-                    $real[$hash] = $r instanceof \Illuminate\Http\Client\Response && $r->successful();
+                    if ($r instanceof \Illuminate\Http\Client\Response) {
+                        $real[$hash] = $r->successful();
+                    } else {
+                        $failed[] = $hash;
+                    }
                 }
             } catch (Throwable $e) {
                 Log::info('Gravatar check failed', ['event_id' => $this->event->id, 'error' => $e->getMessage()]);
+                foreach ($chunk as $hash) {
+                    $failed[] = $hash;
+                }
             }
         }
 
-        return $real;
+        return [$real, array_values(array_unique($failed))];
     }
 
     /** A Gravatar at the size the cards use, with no silhouette fallback (initials show instead). */

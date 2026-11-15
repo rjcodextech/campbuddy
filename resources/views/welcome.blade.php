@@ -97,7 +97,7 @@
                         {{-- Stage Top Navigation Bar --}}
                         <div class="hero-stage__header">
                             <div class="hero-stage__brand" id="hero-stage-event-brand">
-                                <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="32" height="32" class="hero-stage__event-logo">
+                                <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="32" height="32" class="hero-stage__event-logo" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
                                 <div class="hero-stage__brand-text">
                                     <div class="hero-stage__brand-eyebrow">
                                         <span class="live-dot live-dot--green live-dot--pulse" id="hero-stage-live-dot" aria-hidden="true" @if($firstSpotlight['is_over'] ?? false) style="display:none" @endif></span>
@@ -139,7 +139,7 @@
 
                             <div class="hero-stage__card-footer">
                                 <a href="{{ $firstSpotlight['url'] ?? '#find-your-camp' }}" class="hero-stage__view-btn" id="hero-spotlight-link">
-                                    <span id="hero-spotlight-action">{{ ($firstSpotlight['type'] ?? '') === 'album' ? 'View Photo Album' : 'Explore this WordCamp' }}</span>
+                                    <span id="hero-spotlight-action">{{ ($firstSpotlight['type'] ?? '') === 'album' ? 'See the photo album' : 'Explore this WordCamp' }}</span>
                                     <span class="hero-stage__arrow" aria-hidden="true">&rarr;</span>
                                 </a>
                             </div>

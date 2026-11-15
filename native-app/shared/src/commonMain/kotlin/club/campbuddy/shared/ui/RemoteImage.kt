@@ -10,8 +10,26 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 
 /** The website's own address for a path like /storage/branding/27/logo.png (the API lives at <site>/api/v1). */
-internal fun absoluteUrl(apiBase: String, url: String): String =
-    if (url.startsWith("http://") || url.startsWith("https://")) url else apiBase.substringBefore("/api/") + (if (url.startsWith("/")) url else "/$url")
+internal fun absoluteUrl(apiBase: String, url: String): String {
+    val trimmed = url.trim()
+    if (trimmed.startsWith("data:") || trimmed.startsWith("content:") || trimmed.startsWith("file:")) {
+        return trimmed
+    }
+    val full = when {
+        trimmed.startsWith("//") -> "https:$trimmed"
+        trimmed.startsWith("http://") || trimmed.startsWith("https://") -> trimmed
+        else -> apiBase.substringBefore("/api/").trimEnd('/') + (if (trimmed.startsWith("/")) trimmed else "/$trimmed")
+    }
+    return if (full.startsWith("http://") &&
+        !full.startsWith("http://localhost") &&
+        !full.startsWith("http://127.0.0.1") &&
+        !full.startsWith("http://10.0.2.2")
+    ) {
+        "https://" + full.substring(7)
+    } else {
+        full
+    }
+}
 
 /**
  * A picture from the website (an event logo, a sponsor, a speaker). While it loads, or when there is none or it

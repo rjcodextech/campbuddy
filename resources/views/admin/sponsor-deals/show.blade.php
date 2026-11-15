@@ -215,7 +215,7 @@
                             <div class="flex items-center gap-3">
                                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white border border-line shadow-2xs overflow-hidden">
                                     @if ($submission->logo_url)
-                                        <img src="{{ $submission->logo_url }}" alt="" class="h-full w-full object-contain p-1" />
+                                        <img src="{{ $submission->logo_url }}" alt="" class="h-full w-full object-contain p-1" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';" />
                                     @else
                                         <span class="text-xl">{{ $submission->icon ?: '🏷' }}</span>
                                     @endif

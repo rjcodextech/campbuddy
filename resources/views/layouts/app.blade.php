@@ -234,7 +234,7 @@
 
                 <main id="main-content" tabindex="-1" class="cb-enter cb-enter-late mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-hidden sm:px-6 lg:px-8">
                     @if ($flash)
-                        <x-alert type="success" class="mb-6">{{ $flashMessages[$flash] ?? $flash }}</x-alert>
+                        <x-alert type="success" :dismissible="true" class="mb-6">{{ $flashMessages[$flash] ?? $flash }}</x-alert>
                     @endif
 
                     {{-- A manual action that didn't fully work (a refresh, a fetch)

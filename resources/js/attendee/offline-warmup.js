@@ -107,7 +107,7 @@ async function pool(items, size, deadline, worker) {
 export async function warmOfflineCache({
   doc = globalThis.document,
   nav = globalThis.navigator,
-  storage = globalThis.localStorage,
+  storage = pageStorage(),
   cachesImpl = globalThis.caches,
   fetchImpl = globalThis.fetch,
   origin = globalThis.location?.origin,
@@ -209,6 +209,15 @@ export async function warmOfflineCache({
     return { status: complete ? 'warmed' : 'partial', ...counts };
   } catch {
     return { status: 'skipped', reason: 'error' };
+  }
+}
+
+/** The page's localStorage, or null where even reaching it throws (site data blocked). */
+function pageStorage() {
+  try {
+    return globalThis.localStorage ?? null;
+  } catch {
+    return null;
   }
 }
 

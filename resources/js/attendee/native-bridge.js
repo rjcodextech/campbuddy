@@ -341,21 +341,22 @@ function showUpdateScreen(storeUrl) {
   screen.id = 'app-update-screen';
   screen.setAttribute('role', 'alertdialog');
   screen.setAttribute('aria-modal', 'true');
-  screen.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#fcf1db;color:#2a1a14;font:16px system-ui,sans-serif';
+  screen.style.cssText = 'position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:var(--paper,#FAFAFD);color:var(--ink,#0F172A);font:16px Poppins,system-ui,sans-serif';
 
   const heading = document.createElement('h1');
   heading.textContent = 'Please update CampBuddy';
-  heading.style.cssText = 'margin:0;font-size:1.4rem';
+  heading.style.cssText = "margin:0;font-size:1.5rem;font-family:'Baloo 2',Poppins,system-ui,sans-serif";
   const text = document.createElement('p');
   text.textContent = 'This version is too old to open. A quick update and you are back.';
   text.style.cssText = 'margin:0;max-width:26rem';
   screen.append(heading, text);
 
-  if (storeUrl) {
+  // A store page only: a web address or the stores' own app links, never script.
+  if (typeof storeUrl === 'string' && /^(https?|market|itms-apps):\/\/[^\s<>"'`]+$/i.test(storeUrl.trim())) {
     const button = document.createElement('a');
-    button.href = storeUrl;
+    button.href = storeUrl.trim();
     button.textContent = 'Update';
-    button.style.cssText = 'min-height:48px;min-width:160px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:#60121c;color:#fff;font-weight:600;text-decoration:none';
+    button.style.cssText = 'min-height:48px;min-width:160px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:var(--gradient-button,linear-gradient(135deg,#D33417 0%,#C2410C 100%));color:#fff;font-weight:600;text-decoration:none';
     screen.append(button);
   }
 

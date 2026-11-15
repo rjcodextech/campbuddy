@@ -859,17 +859,17 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <x-button variant="secondary" size="sm" :href="route('admin.mobile.releases.download', $release)">Download</x-button>
                             @if ($release->status !== \App\Models\AppRelease::LIVE)
-                                <form method="POST" action="{{ route('admin.mobile.releases.publish', $release) }}" onsubmit="return confirm('Send version {{ $release->version_name }} to every phone with the APK app?')">
+                                <form method="POST" action="{{ route('admin.mobile.releases.publish', $release) }}" onsubmit="return confirm(@js('Send version '.$release->version_name.' to every phone with the APK app?'))">
                                     @csrf
                                     <x-button size="sm">Publish</x-button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.mobile.releases.destroy', $release) }}" onsubmit="return confirm('Delete version {{ $release->version_name }}?')">
+                                <form method="POST" action="{{ route('admin.mobile.releases.destroy', $release) }}" onsubmit="return confirm(@js('Delete version '.$release->version_name.'?'))">
                                     @csrf
                                     @method('DELETE')
                                     <x-button variant="danger-outline" size="sm">Delete</x-button>
                                 </form>
                             @else
-                                <form method="POST" action="{{ route('admin.mobile.releases.withdraw', $release) }}" onsubmit="return confirm('Stop offering version {{ $release->version_name }}?')">
+                                <form method="POST" action="{{ route('admin.mobile.releases.withdraw', $release) }}" onsubmit="return confirm(@js('Stop offering version '.$release->version_name.'?'))">
                                     @csrf
                                     <x-button variant="secondary" size="sm">Withdraw</x-button>
                                 </form>

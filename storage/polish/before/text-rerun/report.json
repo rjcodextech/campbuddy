@@ -1,0 +1,230 @@
+[
+  {
+    "name": "camp-card",
+    "url": "/event/wordcamp-rajasthan-2026/camp-card",
+    "width": 320,
+    "status": 200,
+    "title": "Camp Card | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 320,
+    "height": 4260,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 7.68857px / lh 1.25",
+      "details#cc-edit-details.cc-editor > form#camp-card-form.cc-form > button#cc-save.btn.btn--primary \"Save Camp Card\" 14.4px / lh 1.25",
+      "div.card > div > button#dc-export.btn.btn--outline \"Save as PDF\" 13px / lh 1.25",
+      "div.card > div > button#dc-clear.btn.btn--outline \"Clear my data\" 13px / lh 1.25"
+    ],
+    "tiny": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 7.68857px",
+      "div.camp-card.camp-card--ticket > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 8.09323px",
+      "div.camp-card__body > p.camp-card__role > span \"WordPress Engineer\" 10.5212px",
+      "div.camp-card__body > div.camp-card__tags > span.camp-card__tag \"Gutenberg\" 9.71187px",
+      "nav.bottom-nav > a.bottom-nav__item > span.bottom-nav__label \"Home\" 11px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [
+      "\"Guide\" in header.topbar.topbar--public > div.topbar__inner > nav.topbar__nav gaps L224 R3 T11 B12",
+      "\"Camp Card\" in div.app-frame.app-frame--with-nav > nav.bottom-nav gaps L253 R2 T39 B9"
+    ],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "camp-card",
+    "url": "/event/wordcamp-rajasthan-2026/camp-card",
+    "width": 390,
+    "status": 200,
+    "title": "Camp Card | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 390,
+    "height": 4025,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 9.55047px / lh 1.25",
+      "details#cc-edit-details.cc-editor > form#camp-card-form.cc-form > button#cc-save.btn.btn--primary \"Save Camp Card\" 14.4px / lh 1.25",
+      "div.card > div > button#dc-export.btn.btn--outline \"Save as PDF\" 13px / lh 1.25",
+      "div.card > div > button#dc-clear.btn.btn--outline \"Clear my data\" 13px / lh 1.25"
+    ],
+    "tiny": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 9.55047px",
+      "div.camp-card.camp-card--ticket > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 10.0531px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "camp-card",
+    "url": "/event/wordcamp-rajasthan-2026/camp-card",
+    "width": 768,
+    "status": 200,
+    "title": "Camp Card | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 768,
+    "height": 3486,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 10.07px / lh 1.25",
+      "details#cc-edit-details.cc-editor > form#camp-card-form.cc-form > button#cc-save.btn.btn--primary \"Save Camp Card\" 14.4px / lh 1.25",
+      "div.card > div > button#dc-export.btn.btn--outline \"Save as PDF\" 13px / lh 1.25",
+      "div.card > div > button#dc-clear.btn.btn--outline \"Clear my data\" 13px / lh 1.25"
+    ],
+    "tiny": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 10.07px",
+      "div.camp-card.camp-card--ticket > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 10.6px",
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 11.13px",
+      "div.camp-card.camp-card--classic > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 11.66px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "camp-card",
+    "url": "/event/wordcamp-rajasthan-2026/camp-card",
+    "width": 1440,
+    "status": 200,
+    "title": "Camp Card | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 3423,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 10.07px / lh 1.25",
+      "details#cc-edit-details.cc-editor > form#camp-card-form.cc-form > button#cc-save.btn.btn--primary \"Save Camp Card\" 14.4px / lh 1.25",
+      "div.card > div > button#dc-export.btn.btn--outline \"Save as PDF\" 13px / lh 1.25",
+      "div.card > div > button#dc-clear.btn.btn--outline \"Clear my data\" 13px / lh 1.25"
+    ],
+    "tiny": [
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 10.07px",
+      "div.camp-card.camp-card--ticket > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 10.6px",
+      "div.camp-card__body > div.camp-card__event > span.camp-card__event-name \"WordCamp Rajasthan 2026\" 11.13px",
+      "div.camp-card.camp-card--classic > div.camp-card__body > p.camp-card__hello \"Hi, I'm\" 11.66px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "guide",
+    "url": "/event/wordcamp-rajasthan-2026/guide",
+    "width": 320,
+    "status": 200,
+    "title": "Guide | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 320,
+    "height": 16527,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [],
+    "tiny": [
+      "nav.bottom-nav > a.bottom-nav__item > span.bottom-nav__label \"Home\" 11px"
+    ],
+    "overlap": [
+      "\"New to #WCRajasthan?\" (div.guide-doc-content > section.hero-creative > h1#guide-title.hero-creative__title) ON \"Start here.\" (section.hero-creative > h1#guide-title.hero-creative__title > span.hero-creative__highlight)"
+    ],
+    "textOnImage": [],
+    "edge": [
+      "\"Camp Card\" in div.app-frame.app-frame--with-nav > nav.bottom-nav gaps L253 R2 T36 B12"
+    ],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "guide",
+    "url": "/event/wordcamp-rajasthan-2026/guide",
+    "width": 390,
+    "status": 200,
+    "title": "Guide | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 390,
+    "height": 14433,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [],
+    "tiny": [],
+    "overlap": [
+      "\"New to #WCRajasthan?\" (div.guide-doc-content > section.hero-creative > h1#guide-title.hero-creative__title) ON \"Start here.\" (section.hero-creative > h1#guide-title.hero-creative__title > span.hero-creative__highlight)"
+    ],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "guide",
+    "url": "/event/wordcamp-rajasthan-2026/guide",
+    "width": 768,
+    "status": 200,
+    "title": "Guide | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 768,
+    "height": 10649,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "guide",
+    "url": "/event/wordcamp-rajasthan-2026/guide",
+    "width": 1440,
+    "status": 200,
+    "title": "Guide | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 11025,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [],
+    "tiny": [],
+    "overlap": [
+      "\"New to #WCRajasthan?\" (div.guide-doc-content > section.hero-creative > h1#guide-title.hero-creative__title) ON \"Start here.\" (section.hero-creative > h1#guide-title.hero-creative__title > span.hero-creative__highlight)"
+    ],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  }
+]

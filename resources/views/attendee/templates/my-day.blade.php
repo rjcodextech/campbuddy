@@ -89,7 +89,7 @@
 <template id="tpl-schedule-speaker">
     <div class="schedule-item-detail__speaker-block">
         <div class="schedule-item-detail__speaker">
-            <img class="schedule-item-detail__speaker-avatar" alt="" width="36" height="36" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar-img">
+            <img class="schedule-item-detail__speaker-avatar" alt="" width="36" height="36" loading="lazy" decoding="async" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar-img">
             <span class="schedule-item-detail__speaker-avatar schedule-item-detail__speaker-avatar--initial" data-slot="avatar-initial"></span>
             <p class="schedule-item-detail__speaker-name" data-slot="name"></p>
         </div>
@@ -148,7 +148,7 @@
 
 <template id="tpl-plan-person">
     <article class="plan-person" data-slot="card">
-        <img class="plan-person__avatar" alt="" width="44" height="44" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+        <img class="plan-person__avatar" alt="" width="44" height="44" loading="lazy" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar">
         <div class="plan-person__body">
             <p class="plan-person__name"><span data-slot="name"></span> <span class="plan-person__state" data-slot="state"></span></p>
             <p class="plan-person__when" data-slot="when"></p>

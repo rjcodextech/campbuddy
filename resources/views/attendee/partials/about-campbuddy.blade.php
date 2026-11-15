@@ -182,7 +182,7 @@
                             </div>
                             <h3 class="usp-card__title">6. 100% Offline &amp; Instant PWA &mdash; Built for Crowded Venues</h3>
                             <p class="usp-card__desc">
-                                Conference Wi-Fi routinely stutters or drops under heavy auditorium load. CampBuddy requires no account and no login: open the link once and add it to your home screen. Your entire multi-track schedule, first-timer guide, and digital Camp Card function seamlessly completely offline with local storage.
+                                Conference Wi-Fi routinely stutters or drops under heavy auditorium load. CampBuddy requires no account and no login: open the link once and add it to your home screen. Your whole schedule, the first-timer guide and your Camp Card keep working offline, saved on your phone.
                             </p>
                             <div class="usp-card__chips">
                                 <span class="usp-chip"><x-attendee.line-icon name="lock" /> No Login / No Password</span>

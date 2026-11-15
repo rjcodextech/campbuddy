@@ -254,55 +254,62 @@
     <dialog class="cb-studio" data-studio aria-labelledby="studio-title">
         <div class="flex h-full flex-col">
             {{-- The studio's bar: which event, the three tabs, the settings every image shares, close. --}}
-            <header class="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-white px-4 py-2">
-                <div class="flex min-w-0 items-center gap-2">
-                    @if ($event->markUrl())
-                        <img src="{{ $event->markUrl() }}" alt="" class="h-8 w-8 rounded-md object-contain">
-                    @endif
-                    <h2 id="studio-title" class="truncate font-display text-lg font-bold">Studio <span class="font-sans text-sm font-medium text-muted">· {{ $event->display_name }}</span></h2>
-                </div>
-                <nav class="flex gap-1 rounded-full bg-paper-soft p-1" role="tablist" aria-label="Studio">
-                    @foreach (['posts' => 'Posts', 'people' => 'People cards', 'reels' => 'Reels'] as $key => $label)
-                        <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="rounded-full px-4 py-1.5 text-sm font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon-text aria-selected:shadow-xs">{{ $label }}</button>
-                    @endforeach
-                </nav>
-                <div class="ml-auto flex flex-wrap items-center gap-2">
-                    <label class="sr-only" for="studio-size">Size</label>
-                    <select id="studio-size" class="cb-input w-auto py-1.5 text-sm" data-social-size>
-                        <option value="1080x1350">Instagram feed · 1080 × 1350</option>
-                        <option value="1080x1080">Instagram / LinkedIn square · 1080 × 1080</option>
-                        <option value="1080x1920">Story / reel cover · 1080 × 1920</option>
-                        <option value="1600x900">X post · 1600 × 900</option>
-                        <option value="1200x627">LinkedIn / blog link · 1200 × 627</option>
-                    </select>
-                    <div class="flex gap-1" role="group" aria-label="Quality">
-                        <button type="button" class="cb-btn cb-btn-sm cb-btn-primary" data-social-quality="social" aria-pressed="true" title="Twice the platform size, PNG, 300 DPI: sharp on every phone">HD</button>
-                        <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary" data-social-quality="print" aria-pressed="false" title="6× size, 600 DPI">Print</button>
+            <header class="cb-studio-header border-b border-line bg-white px-3 py-2 sm:px-4">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex min-w-0 items-center gap-2">
+                            @if ($event->markUrl())
+                                <img src="{{ $event->markUrl() }}" alt="" class="h-7 w-7 shrink-0 rounded-md object-contain sm:h-8 sm:w-8" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
+                            @endif
+                            <h2 id="studio-title" class="truncate font-display text-base font-bold sm:text-lg">Studio <span class="hidden font-sans text-xs font-medium text-muted sm:inline sm:text-sm">· {{ $event->display_name }}</span></h2>
+                        </div>
+                        <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm shrink-0 sm:hidden" data-studio-close aria-label="Close the studio">✕</button>
                     </div>
-                    <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-studio-close aria-label="Close the studio">✕ Close</button>
+                    <div class="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap sm:gap-3">
+                        <nav class="flex gap-1 overflow-x-auto rounded-full bg-paper-soft p-1 scrollbar-none" role="tablist" aria-label="Studio">
+                            @foreach (['posts' => 'Posts', 'people' => 'People cards', 'reels' => 'Reels'] as $key => $label)
+                                <button type="button" role="tab" data-studio-tab="{{ $key }}" aria-selected="false" class="whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold text-muted aria-selected:bg-white aria-selected:text-maroon-text aria-selected:shadow-xs sm:px-4 sm:py-1.5 sm:text-sm">{{ $label }}</button>
+                            @endforeach
+                        </nav>
+                        <div class="flex items-center gap-2">
+                            <label class="sr-only" for="studio-size">Size</label>
+                            <select id="studio-size" class="cb-input w-auto max-w-[140px] py-1 text-xs sm:max-w-none sm:py-1.5 sm:text-sm" data-social-size>
+                                <option value="1080x1350">Instagram feed · 1080 × 1350</option>
+                                <option value="1080x1080">Instagram / LinkedIn square · 1080 × 1080</option>
+                                <option value="1080x1920">Story / reel cover · 1080 × 1920</option>
+                                <option value="1600x900">X post · 1600 × 900</option>
+                                <option value="1200x627">LinkedIn / blog link · 1200 × 627</option>
+                            </select>
+                            <div class="flex gap-1" role="group" aria-label="Quality">
+                                <button type="button" class="cb-btn cb-btn-sm cb-btn-primary px-2 sm:px-3" data-social-quality="social" aria-pressed="true" title="Twice the platform size, PNG, 300 DPI: sharp on every phone">HD</button>
+                                <button type="button" class="cb-btn cb-btn-sm cb-btn-secondary px-2 sm:px-3" data-social-quality="print" aria-pressed="false" title="6× size, 600 DPI">Print</button>
+                            </div>
+                            <button type="button" class="hidden cb-btn cb-btn-secondary cb-btn-sm sm:inline-flex" data-studio-close aria-label="Close the studio">✕ Close</button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
             {{-- Posts --}}
-            <div class="min-h-0 flex-1" data-studio-panel="posts" hidden>
-                <div class="grid h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
-                    <aside class="flex min-h-0 flex-col border-b border-line bg-white lg:border-b-0 lg:border-r">
-                        <div class="space-y-2 border-b border-line p-3">
-                            <span class="cb-label" id="social-style-label">Design</span>
-                            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-style-label">
+            <div class="min-h-0 flex-1 overflow-y-auto lg:overflow-hidden" data-studio-panel="posts" hidden>
+                <div class="flex flex-col min-h-full lg:grid lg:h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
+                    <aside class="flex shrink-0 flex-col border-b border-line bg-white lg:min-h-0 lg:border-b-0 lg:border-r">
+                        <div class="space-y-1.5 border-b border-line p-2.5 sm:p-3">
+                            <span class="cb-label text-xs" id="social-style-label">Design</span>
+                            <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:flex-wrap" role="group" aria-labelledby="social-style-label">
                                 @foreach (['daylight' => 'Daylight', 'classic' => 'Classic', 'poster' => 'Poster', 'frame' => 'Frame', 'ticket' => 'Ticket', 'magazine' => 'Magazine', 'split' => 'Split', 'minimal' => 'Minimal'] as $key => $label)
-                                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-social-style="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                                    <button type="button" class="cb-btn cb-btn-sm whitespace-nowrap {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-social-style="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
                                 @endforeach
                             </div>
                         </div>
-                        <div class="border-b border-line p-3">
+                        <div class="border-b border-line p-2 sm:p-3">
                             <x-button type="button" size="sm" icon="download" class="w-full" data-posts-zip>Download all posts (ZIP)</x-button>
                         </div>
-                        <ol class="flex min-h-0 flex-1 gap-2 overflow-auto p-2 lg:flex-col" aria-label="Posts, in the order to share them">
+                        <ol class="flex gap-2 overflow-x-auto p-2 scrollbar-none lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-y-auto" aria-label="Posts, in the order to share them">
                             @foreach ($kit['posts'] as $post)
                                 <li class="shrink-0">
-                                    <button type="button" data-studio-item="{{ $post['key'] }}" aria-current="false" class="flex w-56 items-center gap-3 rounded-lg p-2 text-left hover:bg-paper-soft aria-current:bg-maroon/10 lg:w-full">
-                                        <canvas class="h-16 w-[3.2rem] shrink-0 rounded border border-line bg-paper-soft" width="104" height="130" data-studio-thumb="{{ $post['key'] }}"></canvas>
+                                    <button type="button" data-studio-item="{{ $post['key'] }}" aria-current="false" class="flex w-48 sm:w-56 shrink-0 items-center gap-2.5 rounded-lg p-1.5 sm:p-2 text-left hover:bg-paper-soft aria-current:bg-maroon/10 lg:w-full">
+                                        <canvas class="h-14 w-[2.8rem] sm:h-16 sm:w-[3.2rem] shrink-0 rounded border border-line bg-paper-soft" width="104" height="130" data-studio-thumb="{{ $post['key'] }}"></canvas>
                                         <span class="min-w-0">
                                             <span class="block truncate text-sm font-semibold text-ink">{{ $loop->iteration }}. {{ $post['label'] }}</span>
                                             @if ($post['when'] ?? null)
@@ -315,11 +322,11 @@
                         </ol>
                     </aside>
 
-                    <div class="min-h-0">
+                    <div class="min-h-0 flex-1">
                         @foreach ($kit['posts'] as $post)
-                            <div class="grid h-full min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]" data-social-post="{{ $post['key'] }}" hidden>
-                                <div class="flex min-h-0 flex-col items-center justify-center gap-3 bg-paper-soft p-4">
-                                    <canvas class="block max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg" width="1080" height="1350" data-preview data-drawing></canvas>
+                            <div class="flex flex-col lg:grid lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_24rem]" data-social-post="{{ $post['key'] }}" hidden>
+                                <div class="flex flex-col items-center justify-center gap-3 bg-paper-soft p-3 sm:p-4 lg:min-h-0">
+                                    <canvas class="block max-h-[45vh] sm:max-h-[55vh] lg:max-h-[calc(100dvh-11rem)] w-auto max-w-full rounded-xl border border-line bg-white shadow-lg" width="1080" height="1350" data-preview data-drawing></canvas>
                                     <div class="hidden items-center justify-center gap-2 text-sm [&:not(.hidden)]:flex" data-pager>
                                         <button type="button" class="cb-btn cb-btn-secondary cb-btn-sm" data-prev aria-label="Previous card">‹</button>
                                         <span data-page-label class="tabular-nums text-muted"></span>
@@ -327,7 +334,7 @@
                                     </div>
                                 </div>
 
-                                <div class="min-h-0 space-y-5 overflow-y-auto border-l border-line bg-white p-4">
+                                <div class="space-y-4 border-t border-line bg-white p-4 lg:min-h-0 lg:space-y-5 lg:overflow-y-auto lg:border-t-0 lg:border-l">
                                     <div>
                                         <p class="font-display text-lg font-bold">{{ $post['label'] }}</p>
                                         @if ($post['when'] ?? null)
@@ -430,38 +437,44 @@
             </div>
 
             {{-- People cards --}}
-            <div class="min-h-0 flex-1" data-studio-panel="people" data-social-people hidden>
-                <div class="grid h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
-                    <aside class="flex min-h-0 flex-col border-b border-line bg-white lg:border-b-0 lg:border-r">
-                        <div class="space-y-2 border-b border-line p-3">
-                            <span class="cb-label" id="social-people-design-label">Design</span>
-                            <div class="flex flex-wrap gap-1" role="group" aria-labelledby="social-people-design-label">
+            <div class="min-h-0 flex-1 overflow-y-auto lg:overflow-hidden" data-studio-panel="people" data-social-people hidden>
+                <div class="flex flex-col min-h-full lg:grid lg:h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
+                    <aside class="flex shrink-0 flex-col border-b border-line bg-white lg:min-h-0 lg:border-b-0 lg:border-r">
+                        <div class="space-y-2 border-b border-line p-2.5 sm:p-3">
+                            <span class="cb-label text-xs" id="social-people-design-label">Design</span>
+                            <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:flex-wrap" role="group" aria-labelledby="social-people-design-label">
                                 @foreach (['daylight' => 'Daylight', 'classic' => 'Classic', 'polaroid' => 'Polaroid', 'badge' => 'Badge', 'split' => 'Split', 'minimal' => 'Minimal', 'spotlight' => 'Spotlight', 'arch' => 'Arch'] as $key => $label)
-                                    <button type="button" class="cb-btn cb-btn-sm {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-people-design="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                                    <button type="button" class="cb-btn cb-btn-sm whitespace-nowrap {{ $loop->first ? 'cb-btn-primary' : 'cb-btn-secondary' }}" data-people-design="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
                                 @endforeach
                             </div>
-                            <label class="sr-only" for="people-role">Who</label>
-                            <select id="people-role" class="cb-input py-1.5 text-sm" data-people-role>
-                                <option value="">Everyone ({{ $peopleCount }})</option>
-                                @foreach (\App\Support\RosterRoles::LABELS as $role => $label)
-                                    @php($n = collect($kit['people'])->filter(fn ($p) => in_array($role, $p['roles'], true))->count())
-                                    @if ($n > 0)
-                                        <option value="{{ $role }}">{{ $label }}s ({{ $n }})</option>
-                                    @endif
-                                @endforeach
-                                @php($withCard = collect($kit['people'])->filter(fn ($p) => $p['card'])->count())
-                                @if ($withCard > 0)
-                                    <option value="card">Shared a Camp Card ({{ $withCard }})</option>
-                                @endif
-                            </select>
-                            <label class="sr-only" for="people-search">Find a person</label>
-                            <input id="people-search" type="search" placeholder="Find a person…" class="cb-input py-1.5 text-sm" data-people-search>
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                                <div>
+                                    <label class="sr-only" for="people-role">Who</label>
+                                    <select id="people-role" class="cb-input py-1.5 text-xs sm:text-sm" data-people-role>
+                                        <option value="">Everyone ({{ $peopleCount }})</option>
+                                        @foreach (\App\Support\RosterRoles::LABELS as $role => $label)
+                                            @php($n = collect($kit['people'])->filter(fn ($p) => in_array($role, $p['roles'], true))->count())
+                                            @if ($n > 0)
+                                                <option value="{{ $role }}">{{ $label }}s ({{ $n }})</option>
+                                            @endif
+                                        @endforeach
+                                        @php($withCard = collect($kit['people'])->filter(fn ($p) => $p['card'])->count())
+                                        @if ($withCard > 0)
+                                            <option value="card">Shared a Camp Card ({{ $withCard }})</option>
+                                        @endif
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="sr-only" for="people-search">Find a person</label>
+                                    <input id="people-search" type="search" placeholder="Find a person…" class="cb-input py-1.5 text-xs sm:text-sm" data-people-search>
+                                </div>
+                            </div>
                             <x-button type="button" size="sm" icon="download" class="w-full" data-people-zip>Download these (ZIP)</x-button>
                             <p class="text-xs text-muted" data-people-status aria-live="polite"></p>
                         </div>
-                        <ol class="flex min-h-0 flex-1 gap-1 overflow-auto p-2 lg:flex-col" data-people-rail aria-label="People"></ol>
+                        <ol class="flex gap-1 overflow-x-auto p-2 scrollbar-none lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-y-auto" data-people-rail aria-label="People"></ol>
                     </aside>
-                    <div class="min-h-0" data-people-grid>
+                    <div class="min-h-0 flex-1" data-people-grid>
                         @if ($kit['people'] === [])
                             <p class="p-8 text-center text-sm text-muted">Nobody yet. Mark speakers, organizers, volunteers… on the attendee list first.</p>
                         @endif
@@ -470,13 +483,13 @@
             </div>
 
             {{-- Reels (resources/js/social-reels.js) --}}
-            <div class="min-h-0 flex-1" data-studio-panel="reels" data-social-reels hidden>
-                <div class="grid h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
-                    <aside class="flex min-h-0 flex-col border-b border-line bg-white lg:border-b-0 lg:border-r">
-                        <div class="space-y-2 border-b border-line p-3 text-sm">
+            <div class="min-h-0 flex-1 overflow-y-auto lg:overflow-hidden" data-studio-panel="reels" data-social-reels hidden>
+                <div class="flex flex-col min-h-full lg:grid lg:h-full lg:grid-cols-[15rem_minmax(0,1fr)]">
+                    <aside class="flex shrink-0 flex-col border-b border-line bg-white lg:min-h-0 lg:border-b-0 lg:border-r">
+                        <div class="space-y-2 border-b border-line p-2.5 sm:p-3 text-sm">
                             <label class="flex flex-col gap-1">
                                 <span class="cb-label">Music</span>
-                                <select class="cb-input py-1.5 text-sm" data-reel-music>
+                                <select class="cb-input py-1.5 text-xs sm:text-sm" data-reel-music>
                                     <option value="auto">CampBuddy's music (own per reel)</option>
                                     <option value="file">My own track</option>
                                     @if (($studioTracks ?? []) !== [])
@@ -493,7 +506,7 @@
                             @if (($studioTracks ?? []) !== [])
                                 <label class="flex flex-col gap-1 hidden" data-reel-track-row>
                                     <span class="cb-label">Track</span>
-                                    <select class="cb-input py-1.5 text-sm" data-reel-track>
+                                    <select class="cb-input py-1.5 text-xs sm:text-sm" data-reel-track>
                                         @foreach (['reel' => 'Reel cuts (about 30 s)', 'loop' => 'Loops (repeat smoothly)', 'full' => 'Full tracks (5 min)'] as $kind => $group)
                                             @php($inGroup = array_filter($studioTracks, fn ($t) => $t['kind'] === $kind))
                                             @if ($inGroup !== [])
@@ -517,9 +530,9 @@
                             </div>
                             <p class="text-xs text-muted" data-reel-status aria-live="polite"></p>
                         </div>
-                        <ol class="flex min-h-0 flex-1 gap-1 overflow-auto p-2 lg:flex-col" data-reel-rail aria-label="Reels"></ol>
+                        <ol class="flex gap-1 overflow-x-auto p-2 scrollbar-none lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-y-auto" data-reel-rail aria-label="Reels"></ol>
                     </aside>
-                    <ul class="min-h-0" data-reel-list></ul>
+                    <ul class="min-h-0 flex-1" data-reel-list></ul>
                 </div>
             </div>
         </div>

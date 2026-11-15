@@ -18,7 +18,7 @@ use Throwable;
  */
 class SocialImageProxy
 {
-    public const HOSTS = ['wordcamp.org', 'wordpress.com', 'wp.com', 'gravatar.com'];
+    public const HOSTS = ['wordcamp.org', 'wordpress.org', 'wordpress.com', 'wp.com', 'gravatar.com', 'w.org'];
 
     private const MAX_BYTES = 4 * 1024 * 1024;
 
@@ -33,6 +33,22 @@ class SocialImageProxy
             if ($host === $allowed || str_ends_with($host, '.'.$allowed)) {
                 return true;
             }
+        }
+
+        try {
+            $eventHosts = Event::whereNotNull('source_site_url')
+                ->pluck('source_site_url')
+                ->map(fn ($u) => strtolower((string) parse_url((string) $u, PHP_URL_HOST)))
+                ->filter()
+                ->unique();
+
+            foreach ($eventHosts as $eventHost) {
+                if ($host === $eventHost || str_ends_with($host, '.'.$eventHost)) {
+                    return true;
+                }
+            }
+        } catch (Throwable) {
+            // DB not reachable during early boot
         }
 
         return false;
@@ -81,14 +97,75 @@ class SocialImageProxy
             }
         }
 
+        // Automatic 30-day post-event cache purge: delete branding storage and application cache
+        // for events whose retention window (30 days after event end) has passed.
+        $publicDisk = Storage::disk('public');
+        Event::query()->get()->filter(fn (Event $event) => EventTime::isOver($event) && ! EventTime::retained($event))->each(function (Event $event) use ($publicDisk, $dryRun, &$files, &$bytes) {
+            $dir = "branding/{$event->id}";
+            if ($publicDisk->directoryExists($dir) || $publicDisk->exists($dir)) {
+                foreach ($publicDisk->allFiles($dir) as $f) {
+                    try {
+                        $bytes += $publicDisk->size($f);
+                    } catch (Throwable) {}
+                    $files++;
+                }
+                if (! $dryRun) {
+                    $publicDisk->deleteDirectory($dir);
+                }
+            }
+            if (! $dryRun) {
+                EventData::forget($event->id);
+            }
+        });
+
         return ['files' => $files, 'bytes' => $bytes, 'kept' => $kept];
     }
 
     /**
-     * Every address the Social media pages of listed events can ask this proxy
+     * Pre-warms/caches image URLs locally with retry on network error.
+     *
+     * @param string|list<string> $urls
+     * @return int count of successfully cached images
+     */
+    public static function warm(string|array $urls): int
+    {
+        $urls = is_array($urls) ? $urls : [$urls];
+        $disk = Storage::disk('local');
+        $saved = 0;
+
+        foreach (array_unique(array_filter($urls)) as $url) {
+            if (! self::allowed($url)) {
+                continue;
+            }
+            $path = 'social-cache/'.sha1($url);
+            if ($disk->exists($path)) {
+                $saved++;
+                continue;
+            }
+            try {
+                $response = Http::timeout(10)->retry(2, 200)->get($url);
+                if (! $response->successful()) {
+                    continue;
+                }
+                $type = (string) $response->header('Content-Type');
+                if (! str_starts_with($type, 'image/') || strlen($response->body()) > self::MAX_BYTES) {
+                    continue;
+                }
+                $disk->put($path, $response->body());
+                $disk->put($path.'.type', $type);
+                $saved++;
+            } catch (Throwable) {
+                // Keep moving, will retry on next run
+            }
+        }
+
+        return $saved;
+    }
+
+    /**
+     * Every address the Social media pages of retained events can ask this proxy
      * for: sponsor logos, speakers' and sessions' photos, and the site's
-     * artwork (in use or not) and font files. Read from what is stored; it
-     * fetches nothing.
+     * artwork (in use or not) and font files. Retained = within 30 days of event end.
      *
      * @return list<string>
      */
@@ -103,7 +180,7 @@ class SocialImageProxy
             }
         };
         Event::whereIn('status', ['approved', 'active'])->get()
-            ->filter(fn (Event $event) => EventTime::listed($event))
+            ->filter(fn (Event $event) => EventTime::retained($event))
             ->each(function (Event $event) use ($collect) {
                 try {
                     $collect([SocialKit::sponsors($event), SocialKit::speakers($event), SocialKit::schedule($event), $event->site_theme]);
@@ -134,7 +211,7 @@ class SocialImageProxy
                 // The site's own font files (its headings and text), served as fonts whatever the host labels them.
                 $type = strtolower($ext[1]) === 'woff2' ? 'font/woff2' : 'font/woff';
             }
-            abort_unless($response->successful() && ($font || (str_starts_with($type, 'image/') && ! str_contains($type, 'svg'))) && strlen($response->body()) <= self::MAX_BYTES, 404);
+            abort_unless($response->successful() && ($font || str_starts_with($type, 'image/')) && strlen($response->body()) <= self::MAX_BYTES, 404);
             $disk->put($path, $response->body());
             $disk->put($path.'.type', $type);
         }

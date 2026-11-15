@@ -1,0 +1,1040 @@
+[
+  {
+    "name": "picker",
+    "url": "/",
+    "status": 200,
+    "title": "CampBuddy | Your WordCamp companion",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "50% | 16px | 400 | 36px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 9,
+        "e": [
+          "a.social-icon-btn \"CampBuddy Website\"",
+          "a.social-icon-btn \"CampBuddy YouTube\"",
+          "a.social-icon-btn \"CampBuddy Instagram\""
+        ]
+      },
+      {
+        "look": "50% | 16px | 400 | 10px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 8,
+        "e": [
+          "button.usp-slider__dot \"Slide 2: Multi-Track Schedule\"",
+          "button.usp-slider__dot \"Slide 3: Attendee Discovery\"",
+          "button.usp-slider__dot \"Slide 4: Digital Camp Card\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "button.btn.btn--outline \"Not now\"",
+          "button.btn.btn--primary \"Let's go\"",
+          "a.btn.btn--primary \"Read Full Story →\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "50% | 16px | 400 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "button#usp-slider-prev.usp-slider__arrow.usp-slider__arrow--prev \"Previous superpower\"",
+          "button#usp-slider-next.usp-slider__arrow.usp-slider__arrow--next \"Next superpower\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 700 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.topbar__text-btn.topbar__text-btn--active \"WordCamps\""
+        ]
+      },
+      {
+        "look": "999px | 15.36px | 700 | 45.1875px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.btn.btn--primary.btn--hero-cta \"Choose your WordCamp ↓\""
+        ]
+      },
+      {
+        "look": "999px | 14.72px | 700 | 44.3906px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.btn.btn--outline.btn--hero-guide \"First WordCamp? →\""
+        ]
+      },
+      {
+        "look": "999px | 12px | 700 | 36px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#hero-shuffle-btn.hero-stage__shuffle-btn \"Shuffle\""
+        ]
+      },
+      {
+        "look": "6px | 12.8px | 700 | 34px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a#hero-spotlight-link.hero-stage__view-btn \"Explore this WordCamp →\""
+        ]
+      },
+      {
+        "look": "999px | 13.6px | 700 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.picker-filter__toggle \"Show all\""
+        ]
+      },
+      {
+        "look": "0px | 13.44px | 600 | 46px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.event-card__export \"Save your WordCamp Data\""
+        ]
+      },
+      {
+        "look": "999px | 16px | 400 | 10px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.usp-slider__dot.is-active \"Slide 1: First-Timer Guide\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "999px | 14.72px | 44px | 1px | rgb(255, 77, 45)",
+        "count": 1,
+        "e": [
+          "select#picker-country \"All countries (13) Bulgaria (1) Canada (\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 59,
+      "inlineSvg": 15
+    },
+    "errors": []
+  },
+  {
+    "name": "guide-public",
+    "url": "/guide",
+    "status": 200,
+    "title": "First WordCamp? A Beginner's Guide to WordCamp | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [
+      "a \"What works offline\" 122x19"
+    ],
+    "buttonLooks": [
+      {
+        "look": "50% | 16px | 400 | 36px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 9,
+        "e": [
+          "a.social-icon-btn \"CampBuddy Website\"",
+          "a.social-icon-btn \"CampBuddy YouTube\"",
+          "a.social-icon-btn \"CampBuddy Instagram\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 4,
+        "e": [
+          "a.btn.btn--primary \"Read WordCamp 101 ↓\"",
+          "a.btn.btn--outline \"Select WordCamp →\"",
+          "a.btn.btn--primary.btn--full \"Choose your WordCamp →\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 700 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.topbar__text-btn.topbar__text-btn--active \"Guide\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 58,
+      "inlineSvg": 13
+    },
+    "errors": []
+  },
+  {
+    "name": "home",
+    "url": "/event/wordcamp-rajasthan-2026",
+    "status": 200,
+    "title": "WordCamp Rajasthan 2026 — Schedule, People & First-Timer Guide | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 20px | 400 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#start-here-dismiss.start-here__dismiss \"Hide this guide card\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 4,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "my-day",
+    "url": "/event/wordcamp-rajasthan-2026/my-day",
+    "status": 200,
+    "title": "My Day | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "0px | 20px | 400 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 37,
+        "e": [
+          "button.schedule-item__star \"Save to My Day\"",
+          "button.schedule-item__star \"Save to My Day\"",
+          "button.schedule-item__star \"Save to My Day\""
+        ]
+      },
+      {
+        "look": "0px | 16px | 400 | 65.5938px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 18,
+        "e": [
+          "button.schedule-item__title \"Registration Open and Networking Time\"",
+          "button.schedule-item__title \"Contributing to WordPress: What You Give\"",
+          "button.schedule-item__title \"Beyond Code: 10 Ways Anyone Can Contribu\""
+        ]
+      },
+      {
+        "look": "0px | 16px | 400 | 44.7969px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 13,
+        "e": [
+          "button.schedule-item__title \"History Walk\"",
+          "button.schedule-item__title \"Opening Remarks\"",
+          "button.schedule-item__title \"Contributor Day Starts\""
+        ]
+      },
+      {
+        "look": "0px | 16px | 400 | 86.3906px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.schedule-item__title \"Beyond Posts & Pages: Managing External \"",
+          "button.schedule-item__title \"Beyond Freelancing: Building a Sustainab\"",
+          "button.schedule-item__title \"What Six Years of WordPress Support Taug\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 14px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "button.chip.chip--selected \"All days\"",
+          "button.chip \"Sat, Oct 3\"",
+          "button.chip \"Sun, Oct 4\""
+        ]
+      },
+      {
+        "look": "999px | 13px | 600 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "button.btn.btn--compact \"Full schedule\"",
+          "button.btn.btn--compact.btn--outline \"My schedule\""
+        ]
+      },
+      {
+        "look": "0px | 16px | 400 | 107.188px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.schedule-item__title \"Panel Discussion – AI & The New Era of M\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 46px | 1px | rgb(226, 232, 240)",
+        "count": 1,
+        "e": [
+          "input#session-search.search-input \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 37,
+      "inlineSvg": 41
+    },
+    "errors": []
+  },
+  {
+    "name": "quest",
+    "url": "/event/wordcamp-rajasthan-2026/quest",
+    "status": 200,
+    "title": "Quest | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 13px | 600 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 14,
+        "e": [
+          "button.btn.btn--compact.btn--primary \"Mark done\"",
+          "button.btn.btn--compact.btn--primary \"Mark done\"",
+          "button.btn.btn--compact.btn--primary \"Mark done\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 9,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "contribute",
+    "url": "/event/wordcamp-rajasthan-2026/contribute",
+    "status": 200,
+    "title": "Contribute | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 14px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 13,
+        "e": [
+          "button.chip \"Yes\"",
+          "button.chip.chip--selected \"Not sure yet\"",
+          "button.chip \"Not this time\""
+        ]
+      },
+      {
+        "look": "20px | 16px | 400 | 146.375px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.action-card.action-card--wide \"Testing Tries out new features before re\"",
+          "button.action-card.action-card--wide \"Support Answers real user questions on t\"",
+          "button.action-card.action-card--wide \"Polyglots Translates WordPress so it's u\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "20px | 16px | 400 | 104px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "button.action-card.action-card--wide \"Documentation Writes and maintains the g\"",
+          "button.action-card.action-card--wide \"Training Builds the lesson plans and wor\"",
+          "button.action-card.action-card--wide \"Accessibility Makes sure WordPress is us\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#contrib-see-teams.btn.btn--primary.btn--full \"See my matches\""
+        ]
+      },
+      {
+        "look": "20px | 16px | 400 | 184.75px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.action-card.action-card--wide \"Core Works on the WordPress software its\""
+        ]
+      },
+      {
+        "look": "20px | 16px | 400 | 167.375px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.action-card.action-card--wide \"Photography Contributes free photos to t\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 33,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "explore-people",
+    "url": "/event/wordcamp-rajasthan-2026/explore",
+    "status": 200,
+    "title": "Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 13px | 700 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 150,
+        "e": [
+          "button.meet-btn \"+ Meet\"",
+          "button.meet-btn \"+ Meet\"",
+          "button.meet-btn \"+ Meet\""
+        ]
+      },
+      {
+        "look": "0px | 14px | 700 | 21px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 146,
+        "e": [
+          "button.roster-row__name \"Aaditya Goyal\"",
+          "button.roster-row__name \"Aashish Pahwa\"",
+          "button.roster-row__name \"Abheesh Dokras\""
+        ]
+      },
+      {
+        "look": "999px | 14px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 6,
+        "e": [
+          "button.chip.chip--selected \"All 205\"",
+          "button.chip \"Organizers 12\"",
+          "button.chip \"Speakers 25\""
+        ]
+      },
+      {
+        "look": "999px | 12px | 600 | 67px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.btn.btn--compact \"People\"",
+          "button.btn.btn--compact.btn--outline \"Sponsors\"",
+          "button.btn.btn--compact.btn--outline \"Deals\""
+        ]
+      },
+      {
+        "look": "0px | 14px | 700 | 42px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 4,
+        "e": [
+          "button.roster-row__name \"Bhupendra Singh Shekhawat\"",
+          "button.roster-row__name \"Hemant Kumar Chhapoliya\"",
+          "button.roster-row__name \"Mohammad Shoeb Ansari\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 46px | 1px | rgb(226, 232, 240)",
+        "count": 1,
+        "e": [
+          "input#roster-search.search-input \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 5,
+      "inlineSvg": 150
+    },
+    "errors": []
+  },
+  {
+    "name": "explore-sponsors",
+    "url": "/event/wordcamp-rajasthan-2026/explore?tab=sponsors",
+    "status": 200,
+    "title": "Sponsors | Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "10px | 14px | 700 | 53.9844px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 12,
+        "e": [
+          "button.sponsor-chip.sponsor-chip--interactive \"\"",
+          "button.sponsor-chip.sponsor-chip--interactive \"\"",
+          "button.sponsor-chip.sponsor-chip--interactive \"\""
+        ]
+      },
+      {
+        "look": "999px | 12px | 600 | 67px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.btn.btn--compact.btn--outline \"People\"",
+          "button.btn.btn--compact \"Sponsors\"",
+          "button.btn.btn--compact.btn--outline \"Deals\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "10px | 14px | 700 | 50.6094px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "button.sponsor-chip.sponsor-chip--interactive \"\"",
+          "button.sponsor-chip.sponsor-chip--interactive \"\""
+        ]
+      },
+      {
+        "look": "10px | 14px | 700 | 54px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "button.sponsor-chip.sponsor-chip--interactive \"\"",
+          "button.sponsor-chip.sponsor-chip--interactive \"\""
+        ]
+      },
+      {
+        "look": "10px | 14px | 700 | 49.6094px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.sponsor-chip.sponsor-chip--interactive \"\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 5,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "explore-deals",
+    "url": "/event/wordcamp-rajasthan-2026/explore?tab=deals",
+    "status": 200,
+    "title": "Deals | Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 12px | 600 | 67px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.btn.btn--compact.btn--outline \"People\"",
+          "button.btn.btn--compact.btn--outline \"Sponsors\"",
+          "button.btn.btn--compact \"Deals\""
+        ]
+      },
+      {
+        "look": "999px | 14px | 700 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 4,
+        "e": [
+          "button.deal-card__toggle \"Details\"",
+          "button.deal-card__toggle \"Details\"",
+          "button.deal-card__toggle \"Details\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 4,
+        "e": [
+          "button.btn.btn--primary.btn--full \"Claim the plan →\"",
+          "a.btn.btn--primary.btn--full \"Claim 20% off\"",
+          "a.btn.btn--primary.btn--full \"See the offer\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 13,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "explore-free-steals",
+    "url": "/event/wordcamp-rajasthan-2026/explore?tab=free-steals",
+    "status": 200,
+    "title": "Free Steals | Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "14px | 16px | 400 | 74px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 9,
+        "e": [
+          "button.steal-row__open \"AcrossAI Pro by Deepak Gupta Featured\"",
+          "button.steal-row__open \"The Off Switch by Abhishek Deshpande Fea\"",
+          "button.steal-row__open \"WordPress Skills by Gaurav Tiwari / Gati\""
+        ]
+      },
+      {
+        "look": "999px | 12px | 600 | 67px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.btn.btn--compact.btn--outline \"People\"",
+          "button.btn.btn--compact.btn--outline \"Sponsors\"",
+          "button.btn.btn--compact.btn--outline \"Deals\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "14px | 16px | 400 | 80.7812px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "button.steal-row__open \"Thank You Page for WooCommerce by Nitin \"",
+          "button.steal-row__open \"Visual Blueprint Builder by Lubus Featur\"",
+          "button.steal-row__open \"Multidots Passkey Login by Multidots Fea\""
+        ]
+      },
+      {
+        "look": "999px | 13px | 600 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.btn.btn--outline.btn--compact \"Suggest a Free Steal\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 18,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "explore-info",
+    "url": "/event/wordcamp-rajasthan-2026/explore?tab=info",
+    "status": 200,
+    "title": "Info | Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 12px | 600 | 67px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 5,
+        "e": [
+          "button.btn.btn--compact.btn--outline \"People\"",
+          "button.btn.btn--compact.btn--outline \"Sponsors\"",
+          "button.btn.btn--compact.btn--outline \"Deals\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 13px | 600 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.btn.btn--outline.btn--compact \"Open in Maps\"",
+          "button#dc-export.btn.btn--outline.btn--compact \"Save as PDF\"",
+          "button#dc-clear.btn.btn--outline.btn--danger \"Clear my data\""
+        ]
+      },
+      {
+        "look": "0px | 14px | 400 | 21px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#dc-export-json.link-button \"Download the raw data (JSON)\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 22,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "camp-card",
+    "url": "/event/wordcamp-rajasthan-2026/camp-card",
+    "status": 200,
+    "title": "Camp Card | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 14px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 33,
+        "e": [
+          "button.btn.btn--outline \"Share\"",
+          "button.btn.btn--outline \"Download\"",
+          "button.btn.btn--outline \"Share\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 13px | 600 | 40px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "button#dc-export.btn.btn--outline.btn--compact \"Save as PDF\"",
+          "button#dc-clear.btn.btn--outline.btn--danger \"Clear my data\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 48px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#cc-save.btn.btn--primary.btn--full \"Save Camp Card\""
+        ]
+      },
+      {
+        "look": "0px | 14px | 400 | 21px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button#dc-export-json.link-button \"Download the raw data (JSON)\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 46px | 1px | rgb(226, 232, 240)",
+        "count": 8,
+        "e": [
+          "input#cc-name \"\"",
+          "input#cc-role \"\"",
+          "input#cc-company \"\""
+        ]
+      },
+      {
+        "look": "10px | 16px | 44px | 0px | rgb(15, 23, 42)",
+        "count": 1,
+        "e": [
+          "input#interests-text.cc-tags__input \"\""
+        ]
+      },
+      {
+        "look": "0px 10px 10px 0px | 16px | 46px | 1px | rgb(226, 232, 240)",
+        "count": 1,
+        "e": [
+          "input#cc-twitter \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 15,
+      "inlineSvg": 5
+    },
+    "errors": []
+  },
+  {
+    "name": "guide",
+    "url": "/event/wordcamp-rajasthan-2026/guide",
+    "status": 200,
+    "title": "Guide | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [
+      "a \"What works offline\" 122x19"
+    ],
+    "buttonLooks": [
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 2,
+        "e": [
+          "a.btn.btn--primary \"Read WordCamp 101 ↓\"",
+          "a.btn.btn--outline \"Select WordCamp →\""
+        ]
+      },
+      {
+        "look": "999px | 12.48px | 700 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.topbar__text-btn.topbar__text-btn--active \"Guide\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 65,
+      "inlineSvg": 4
+    },
+    "errors": []
+  },
+  {
+    "name": "roster-removal",
+    "url": "/event/wordcamp-rajasthan-2026/roster-removal",
+    "status": 200,
+    "title": "Remove me from the attendee list | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 12.48px | 600 | 32px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 3,
+        "e": [
+          "a.topbar__text-btn \"WordCamps\"",
+          "a.topbar__text-btn \"About\"",
+          "a.topbar__text-btn \"Guide\""
+        ]
+      },
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "button.btn.btn--primary.btn--full \"Find my listing\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 46px | 1px | rgb(226, 232, 240)",
+        "count": 1,
+        "e": [
+          "input#removal-name \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 0,
+      "inlineSvg": 3
+    },
+    "errors": []
+  },
+  {
+    "name": "memories",
+    "url": "/event/wordcamp-rajasthan-2026/memories",
+    "status": 200,
+    "title": "Memories | WordCamp Rajasthan 2026 | CampBuddy",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "999px | 14.4px | 600 | 44px | Poppins, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "count": 1,
+        "e": [
+          "a.btn.btn--outline.btn--full \"Back to WordCamp Rajasthan 2026\""
+        ]
+      }
+    ],
+    "inputLooks": [],
+    "iconKinds": {
+      "lineSprite": 2,
+      "inlineSvg": 0
+    },
+    "errors": []
+  },
+  {
+    "name": "admin-login",
+    "url": "/admin/login",
+    "status": 200,
+    "title": "Sign in | CampBuddy Admin",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "0px 10px 10px 0px | 16px | 400 | 44px | Poppins, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "count": 1,
+        "e": [
+          "button.absolute.inset-y-0.right-0 \"Show password\""
+        ]
+      },
+      {
+        "look": "3.35544e+07px | 14px | 600 | 44px | Poppins, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "count": 1,
+        "e": [
+          "button.cb-btn.cb-btn-primary.w-full \"Sign in\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 44px | 1px | rgb(226, 232, 240)",
+        "count": 2,
+        "e": [
+          "input#email.cb-input \"\"",
+          "input#password.cb-input.pr-11 \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 0,
+      "inlineSvg": 1
+    },
+    "errors": []
+  },
+  {
+    "name": "manager-login",
+    "url": "/manager/login",
+    "status": 200,
+    "title": "Event manager sign in | CampBuddy Event manager",
+    "width": 390,
+    "scrollWidth": 390,
+    "overflow": [],
+    "emoji": [],
+    "smallTargets": [],
+    "buttonLooks": [
+      {
+        "look": "0px 10px 10px 0px | 16px | 400 | 44px | Poppins, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "count": 1,
+        "e": [
+          "button.absolute.inset-y-0.right-0 \"Show password\""
+        ]
+      },
+      {
+        "look": "3.35544e+07px | 14px | 600 | 44px | Poppins, ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"",
+        "count": 1,
+        "e": [
+          "button.cb-btn.cb-btn-primary.w-full \"Sign in\""
+        ]
+      }
+    ],
+    "inputLooks": [
+      {
+        "look": "10px | 16px | 44px | 1px | rgb(226, 232, 240)",
+        "count": 2,
+        "e": [
+          "input#email.cb-input \"\"",
+          "input#password.cb-input.pr-11 \"\""
+        ]
+      }
+    ],
+    "iconKinds": {
+      "lineSprite": 0,
+      "inlineSvg": 1
+    },
+    "errors": []
+  }
+]

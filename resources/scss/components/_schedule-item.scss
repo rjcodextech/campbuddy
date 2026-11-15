@@ -306,7 +306,11 @@
         border-radius: 50%;
         background: var(--brand-primary);
         box-shadow: 0 0 0 0 rgba(255, 77, 45, 0.6);
-        animation: live-dot-pulse 1.8s infinite;
+
+        // Infinite motion only for people who haven't asked for less (brand §5).
+        @media (prefers-reduced-motion: no-preference) {
+            animation: live-dot-pulse 1.8s infinite;
+        }
     }
 }
 
@@ -324,10 +328,14 @@
 
 // Already over: still listed (slides and video links live here), but quieter.
 .schedule-item--past {
+    // Quieter, but still 4.5:1: a shade, never opacity over the ground.
     .schedule-item__time,
-    .schedule-item__title,
     .schedule-item__speakers {
-        opacity: 0.6;
+        color: var(--subtle);
+    }
+
+    .schedule-item__title {
+        color: var(--muted);
     }
 }
 

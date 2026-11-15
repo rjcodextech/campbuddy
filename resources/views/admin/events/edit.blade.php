@@ -184,7 +184,7 @@
                     <figure class="text-center">
                         <div class="flex h-20 w-20 items-center justify-center rounded-lg border border-line bg-paper-soft">
                             @if ($event->logoUrl())
-                                <img src="{{ $event->logoUrl() }}" alt="Current logo" class="max-h-16 max-w-16 object-contain">
+                                <img src="{{ $event->logoUrl() }}" alt="Current logo" class="max-h-16 max-w-16 object-contain" data-fallback="/media/logo-wordmark-sm.png" onerror="this.onerror=null; this.src='/media/logo-wordmark-sm.png';">
                             @else
                                 <span class="text-xs text-muted">No logo</span>
                             @endif
@@ -195,7 +195,7 @@
                     <figure class="text-center">
                         <div class="flex h-20 w-20 items-center justify-center rounded-lg border border-line bg-paper-soft">
                             @if ($event->faviconUrl())
-                                <img src="{{ $event->faviconUrl() }}" alt="Current favicon" class="max-h-10 max-w-10 object-contain">
+                                <img src="{{ $event->faviconUrl() }}" alt="Current favicon" class="max-h-10 max-w-10 object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
                             @else
                                 <span class="text-xs text-muted">None</span>
                             @endif

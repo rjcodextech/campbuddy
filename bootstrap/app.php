@@ -34,7 +34,14 @@ return Application::configure(basePath: dirname(__DIR__))
             '2405:8100::/32', '2a06:98c0::/29', '2c0f:f248::/32',
             '127.0.0.1', '::1',
         ];
-        $middleware->trustProxies(at: env('APP_ENV') === 'production' ? $trustedProxies : '*');
+        // Only the visitor's address and the scheme come from the proxy. Cloudflare passes a
+        // client's own X-Forwarded-Host / -Port / -Prefix through untouched, and trusting them
+        // let any request rewrite every generated link (assets included) to a host of its
+        // choosing — links that were then cached and served to the next visitor.
+        $middleware->trustProxies(
+            at: env('APP_ENV') === 'production' ? $trustedProxies : '*',
+            headers: \Illuminate\Http\Request::HEADER_X_FORWARDED_FOR | \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO,
+        );
 
         // Every response — pages, the API, the admin panel, /up.
         $middleware->append(SecurityHeaders::class);
@@ -44,5 +51,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(RedirectWwwToApex::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // The API always answers errors in JSON, whatever the client's Accept header says.
+        // Otherwise a validation error became a redirect that needs a session the API
+        // doesn't start (a 500), and a 404 or 429 an HTML page the apps can't read.
+        $exceptions->shouldRenderJsonWhen(
+            fn (\Illuminate\Http\Request $request) => $request->is('api/*') || $request->expectsJson()
+        );
     })->create();

@@ -1,0 +1,337 @@
+[
+  {
+    "name": "home",
+    "url": "/event/wordcamp-rajasthan-2026",
+    "width": 320,
+    "status": 500,
+    "title": "CampBuddy",
+    "scrollWidth": 320,
+    "height": 2632,
+    "clipped": [],
+    "ellipsis": [
+      "div.flex.flex-col > div.flex.flex-col > div.truncate.font-mono \"vendor\\laravel\\framework\\src\\Illuminate\\Database\\C\"",
+      "div.bg-white.dark:bg-[#1a1a1a] > div.flex.items-center > div.flex-1.text-sm \"http://campbuddy.test/event/wordcamp-rajasthan-202\"",
+      "div.text-xs.min-w-0 > div > pre.shiki.shiki-themes \"Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\\"",
+      "div.flex.h-11 > div.flex.flex-1 > div.truncate.font-mono \"app\\Http\\Middleware\\RedirectWwwToApex.php:24\"",
+      "div.flex.h-11 > div.flex.flex-1 > div.truncate.font-mono \"app\\Http\\Middleware\\SecurityHeaders.php:32\"",
+      "div.text-xs.min-w-0 > div > pre.shiki.shiki-themes \"Illuminate\\Foundation\\Application->handleRequest(o\"",
+      "div.flex.h-11 > div.flex.flex-1 > div.truncate.font-mono \"public\\index.php:20\"",
+      "div.flex.flex-col > div.flex.max-w-full > div.truncate.text-neutral-900 \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWeb\"",
+      "div.flex.flex-col > div.flex.max-w-full > div.truncate.text-neutral-900 \"text/html,application/xhtml+xml,application/xml;q=\"",
+      "div.flex.flex-col > div.flex.max-w-full > div.truncate.text-neutral-900 \"App\\Http\\Controllers\\EventPageController@home\""
+    ],
+    "tight": [
+      "div.flex.flex-col > div.flex.items-start > div.inline-flex.w-fit \"UNHANDLED\" 12px / lh 1.00"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [
+      "\"Copy as Markdown\" in section.w-full.max-w-7xl > div.flex.items-center > button.text-sm.rounded-md gaps L47 R29 T-4 B-3",
+      "\"http://campbuddy.test/event/wordcamp-rajasthan-202\" in section.w-full.max-w-7xl > div.flex.flex-col > div.bg-white.dark:bg-[#1a1a1a] gaps L129 R-169 T10 B11",
+      "\"app\\Http\\Middleware\\RedirectWwwToApex.php\" in div.flex.flex-col > div.group.rounded-lg > div.flex.h-11 gaps L-74 R66 T15 B15",
+      "\"app\\Http\\Middleware\\SecurityHeaders.php\" in div.flex.flex-col > div.group.rounded-lg > div.flex.h-11 gaps L-61 R66 T15 B15",
+      "\"Illuminate\\Foundation\\Application->\" in div.flex.flex-col > div.group.rounded-lg > div.flex.h-11 gaps L40 R-9 T15 B15",
+      "\"\"wordcamp-rajasthan-2026\"\" in section.w-full.max-w-7xl > div.flex.flex-col > div.bg-white.dark:bg-white/[2%] gaps L121 R-28 T42 B43"
+    ],
+    "cramped": [],
+    "contrast": [
+      "div.flex.items-center > div.flex.items-center > div.font-medium.text-sm \"Internal Server Error\" 1.00:1 (needs 4.5)",
+      "div.flex.flex-col > div.flex.flex-col > h1.text-3xl.font-semibold \"Illuminate\\Database\\QueryException\" 1.00:1 (needs 3)",
+      "div.flex.flex-col > div.flex.items-center > h3.text-base.font-semibold \"Exception trace\" 1.00:1 (needs 4.5)",
+      "code > span.line > span \"Illuminate\\Pipeline\\Pipeline->\" 1.48:1 (needs 4.5)",
+      "code > span.line.inline-block > span \"public\" 2.95:1 (needs 4.5)",
+      "code > span.line.inline-block > span \"handle\" 1.41:1 (needs 4.5)",
+      "code > span.line.inline-block > span \"if\" 2.78:1 (needs 4.5)",
+      "code > span.line.inline-block > span.mr-6.text-neutral-500! \"24\" 1.00:1 (needs 4.5)",
+      "code > span.line.inline-block > span \"// 308 keeps a POST a POST; a page view gets the u\" 3.33:1 (needs 4.5)",
+      "section.w-full.max-w-7xl > div.flex.flex-col > h2.text-lg.font-semibold \"Headers\" 1.00:1 (needs 4.5)",
+      "div.flex.max-w-full > div.truncate.text-neutral-900 > span \"campbuddy.test\" 1.00:1 (needs 4.5)",
+      "code > span.line > span \"\"wordcamp-rajasthan-2026\"\" 2.64:1 (needs 4.5)"
+    ],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "home",
+    "url": "/event/wordcamp-rajasthan-2026",
+    "width": 390,
+    "status": 200,
+    "title": "WordCamp Rajasthan 2026 — Schedule, People & First-Timer Guide | CampBuddy",
+    "scrollWidth": 390,
+    "height": 1972,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "home",
+    "url": "/event/wordcamp-rajasthan-2026",
+    "width": 1440,
+    "status": 200,
+    "title": "WordCamp Rajasthan 2026 — Schedule, People & First-Timer Guide | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 1686,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.card.discovery-prompt > div > button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\" 14.4px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "my-day",
+    "url": "/event/wordcamp-rajasthan-2026/my-day",
+    "width": 320,
+    "status": 200,
+    "title": "My Day | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 320,
+    "height": 5740,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div.tab-strip > button.btn.btn--compact \"Full schedule\" 13px / lh 1.25"
+    ],
+    "tiny": [
+      "nav.bottom-nav > a.bottom-nav__item > span.bottom-nav__label \"Home\" 11px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [
+      "\"Guide\" in header.topbar.topbar--public > div.topbar__inner > nav.topbar__nav gaps L224 R3 T11 B12",
+      "\"Camp Card\" in div.app-frame.app-frame--with-nav > nav.bottom-nav gaps L253 R2 T36 B12"
+    ],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "my-day",
+    "url": "/event/wordcamp-rajasthan-2026/my-day",
+    "width": 390,
+    "status": 200,
+    "title": "My Day | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 390,
+    "height": 5272,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div.tab-strip > button.btn.btn--compact \"Full schedule\" 13px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "my-day",
+    "url": "/event/wordcamp-rajasthan-2026/my-day",
+    "width": 1440,
+    "status": 200,
+    "title": "My Day | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 3737,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div.tab-strip > button.btn.btn--compact \"Full schedule\" 13px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "contribute",
+    "url": "/event/wordcamp-rajasthan-2026/contribute",
+    "width": 320,
+    "status": 200,
+    "title": "Contribute | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 320,
+    "height": 7820,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div#contrib-questions.card > button#contrib-see-teams.btn.btn--primary \"See my matches\" 14.4px / lh 1.25"
+    ],
+    "tiny": [
+      "nav.bottom-nav > a.bottom-nav__item > span.bottom-nav__label \"Home\" 11px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [
+      "\"Guide\" in header.topbar.topbar--public > div.topbar__inner > nav.topbar__nav gaps L224 R3 T11 B12",
+      "\"Camp Card\" in div.app-frame.app-frame--with-nav > nav.bottom-nav gaps L253 R2 T36 B12"
+    ],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "contribute",
+    "url": "/event/wordcamp-rajasthan-2026/contribute",
+    "width": 390,
+    "status": 200,
+    "title": "Contribute | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 390,
+    "height": 6312,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div#contrib-questions.card > button#contrib-see-teams.btn.btn--primary \"See my matches\" 14.4px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "contribute",
+    "url": "/event/wordcamp-rajasthan-2026/contribute",
+    "width": 1440,
+    "status": 200,
+    "title": "Contribute | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 4202,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "main#main-content > div#contrib-questions.card > button#contrib-see-teams.btn.btn--primary \"See my matches\" 14.4px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "explore-people",
+    "url": "/event/wordcamp-rajasthan-2026/explore",
+    "width": 320,
+    "status": 200,
+    "title": "Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 320,
+    "height": 24756,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.tab-strip.tab-strip--icons > button.btn.btn--compact > span \"Free Steals\" 12px / lh 1.25",
+      "div.card.discovery-prompt > div > button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\" 14.4px / lh 1.25"
+    ],
+    "tiny": [
+      "nav.bottom-nav > a.bottom-nav__item > span.bottom-nav__label \"Home\" 11px"
+    ],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [
+      "\"Guide\" in header.topbar.topbar--public > div.topbar__inner > nav.topbar__nav gaps L224 R3 T11 B12",
+      "\"Sponsors\" in main#main-content > div.tab-strip.tab-strip--icons > button.btn.btn--compact gaps L3 R3 T35 B16",
+      "\"Camp Card\" in div.app-frame.app-frame--with-nav > nav.bottom-nav gaps L253 R2 T36 B12"
+    ],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "explore-people",
+    "url": "/event/wordcamp-rajasthan-2026/explore",
+    "width": 390,
+    "status": 200,
+    "title": "Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 390,
+    "height": 17981,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.tab-strip.tab-strip--icons > button.btn.btn--compact > span \"Free Steals\" 12px / lh 1.25",
+      "div.card.discovery-prompt > div > button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\" 14.4px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  },
+  {
+    "name": "explore-people",
+    "url": "/event/wordcamp-rajasthan-2026/explore",
+    "width": 1440,
+    "status": 200,
+    "title": "Explore | WordCamp Rajasthan 2026 | CampBuddy",
+    "scrollWidth": 1425,
+    "height": 17621,
+    "clipped": [],
+    "ellipsis": [],
+    "tight": [
+      "div.card.discovery-prompt > div > button#join-discovery-btn.btn.btn--primary \"Join attendee discovery\" 14.4px / lh 1.25"
+    ],
+    "tiny": [],
+    "overlap": [],
+    "textOnImage": [],
+    "edge": [],
+    "cramped": [],
+    "contrast": [],
+    "images": [],
+    "overflow": [],
+    "fonts": [],
+    "errors": []
+  }
+]

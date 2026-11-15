@@ -64,7 +64,7 @@ class EventMemories
         $data = $request->validate([
             'photo_album_url' => ['nullable', 'string', 'max:500', 'url:https'],
             'wordpress_tv_url' => ['nullable', 'string', 'max:500', 'url:https', function ($attribute, $value, $fail) {
-                $host = strtolower((string) parse_url((string) $value, PHP_URL_HOST));
+                $host = is_string($value) ? strtolower((string) parse_url($value, PHP_URL_HOST)) : '';
                 if ($host !== 'wordpress.tv' && ! str_ends_with($host, '.wordpress.tv')) {
                     $fail('This must be a wordpress.tv link.');
                 }

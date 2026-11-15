@@ -36,19 +36,38 @@ class StoreDiscoveryRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $wporg = trim((string) $this->input('wporg_username', ''));
+        // A list or an object where text belongs is left as sent, so the `string` rules
+        // refuse it with a 422 (casting it to a string here was a 500).
+        $merge = [];
 
-        if (preg_match('#^(?:https?://)?profiles\.wordpress\.org/([^/?\#]+)#i', $wporg, $m)) {
-            $wporg = $m[1];
+        if (! is_array($wporg = $this->input('wporg_username'))) {
+            $wporg = trim((string) $wporg);
+
+            if (preg_match('#^(?:https?://)?profiles\.wordpress\.org/([^/?\#]+)#i', $wporg, $m)) {
+                $wporg = $m[1];
+            }
+
+            $merge['wporg_username'] = $wporg === '' ? null : mb_strtolower(ltrim(rawurldecode($wporg), '@'));
         }
 
-        $this->merge([
-            'wporg_username' => $wporg === '' ? null : mb_strtolower(ltrim(rawurldecode($wporg), '@')),
-            // Collapse whitespace and drop control characters: this is shown to other people.
-            'display_name' => $this->filled('display_name')
+        // Collapse whitespace and drop control characters: this is shown to other people.
+        if (! is_array($this->input('display_name'))) {
+            $merge['display_name'] = $this->filled('display_name')
                 ? trim(preg_replace('/\s+/u', ' ', preg_replace('/[\p{C}]/u', '', (string) $this->input('display_name'))))
-                : null,
-        ]);
+                : null;
+        }
+
+        // Also shown to other people, on the match card: no control characters, no
+        // direction overrides or invisible spaces (they can make the text read as something
+        // else). Joiners stay — emoji sequences and Indic scripts need them.
+        foreach (['profession', 'who_to_meet'] as $key) {
+            if (is_string($value = $this->input($key))) {
+                $value = preg_replace('/[\x{200B}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{2069}\x{FEFF}]/u', '', $value) ?? $value;
+                $merge[$key] = trim(preg_replace('/\s+/u', ' ', preg_replace('/\p{Cc}/u', ' ', $value) ?? $value) ?? $value);
+            }
+        }
+
+        $this->merge($merge);
     }
 
     /**

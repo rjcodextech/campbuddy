@@ -14,10 +14,10 @@
     <span class="camp-card__notch camp-card__notch--right" aria-hidden="true"></span>
     <div class="camp-card__body">
         <div class="camp-card__event">
-            <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png">
+            <img src="{{ $event->faviconUrl() ?? '/media/icons/icon-192.png' }}" alt="" class="camp-card__event-mark" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
             <span class="camp-card__event-name">{{ $event->display_name }}</span>
         </div>
-        <img src="{{ $event->logoUrl() ?? '/media/logo-wordmark.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full" data-fallback="/media/logo-wordmark.png">
+        <img src="{{ $event->logoUrl() ?? '/media/logo-wordmark.png' }}" alt="{{ $event->display_name }}" class="camp-card__event-mark-full" data-fallback="/media/logo-wordmark.png" onerror="this.onerror=null; this.src='/media/logo-wordmark.png';">
         <p class="camp-card__hello">Hi, I'm</p>
         <p class="camp-card__name"></p>
         <p class="camp-card__role"></p>
@@ -29,7 +29,7 @@
             <canvas></canvas>
         </div>
         <p class="camp-card__scan"></p>
-        <img src="/media/logo-wordmark.png" alt="CampBuddy" class="camp-card__brand-mark">
+        <img src="/media/logo-wordmark.png" alt="CampBuddy" class="camp-card__brand-mark" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
     </div>
     @if ($source ?? false)
         {{-- Only on a card made for someone else from public data (person-card.js). --}}

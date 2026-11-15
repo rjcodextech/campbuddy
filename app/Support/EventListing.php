@@ -49,7 +49,8 @@ class EventListing
         $pick = fn (string $key, array $allowed): ?string => in_array($request->query($key), $allowed, true) ? $request->query($key) : null;
 
         return [
-            'q' => mb_substr(trim((string) $request->query('q', '')), 0, 100),
+            // ?q[]=… is no search (casting the list to a string was a 500).
+            'q' => is_string($q = $request->query('q')) ? mb_substr(trim($q), 0, 100) : '',
             'status' => $pick('status', self::STATUSES),
             'visibility' => $pick('visibility', ['visible', 'hidden']),
             'when' => $pick('when', array_keys(self::WHEN)),

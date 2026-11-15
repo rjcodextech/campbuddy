@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\FileSafety;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -189,7 +190,7 @@ class GaSetupCommand extends Command
     {
         $path = (string) ($this->option('credentials') ?: config('analytics.credentials'));
 
-        if ($path === '' || ! is_readable($path)) {
+        if ($path === '' || ! FileSafety::isReadable($path)) {
             throw new RuntimeException('set GA_CREDENTIALS_PATH (or --credentials) to a readable service account JSON key.');
         }
 

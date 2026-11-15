@@ -11,6 +11,7 @@ use App\Support\EventData;
 use App\Support\PersonalDataErasure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -72,39 +73,41 @@ class SponsorDealSubmissionController extends Controller
 
         $publish = $request->boolean('publish', false);
 
-        $mediaAssetId = null;
-        if ($submission->logo_path && Storage::disk('public')->exists($submission->logo_path)) {
-            $mediaAsset = MediaAsset::create([
-                'disk' => 'public',
-                'path' => $submission->logo_path,
-                'filename' => basename($submission->logo_path),
-                'mime_type' => 'image/png',
-                'size' => Storage::disk('public')->size($submission->logo_path),
-                'uploaded_by' => auth()->id(),
+        DB::transaction(function () use ($event, $submission, $publish) {
+            $mediaAssetId = null;
+            if ($submission->logo_path && Storage::disk('public')->exists($submission->logo_path)) {
+                $mediaAsset = MediaAsset::create([
+                    'disk' => 'public',
+                    'path' => $submission->logo_path,
+                    'filename' => basename($submission->logo_path),
+                    'mime_type' => 'image/png',
+                    'size' => Storage::disk('public')->size($submission->logo_path),
+                    'uploaded_by' => auth()->id(),
+                ]);
+                $mediaAssetId = $mediaAsset->id;
+            }
+
+            $offer = $event->offers()->create([
+                'brand' => $submission->displayBrand(),
+                'website' => $submission->website,
+                'title' => $submission->title,
+                'highlight' => $submission->highlight,
+                'description' => $submission->description,
+                'terms' => $submission->terms,
+                'coupon_code' => $submission->coupon_code,
+                'url' => $submission->url,
+                'cta_label' => $submission->cta_label ?: 'Get the deal',
+                'icon' => $submission->icon ?: '🏷',
+                'media_asset_id' => $mediaAssetId,
+                'is_active' => $publish,
+                'sort_order' => ($event->offers()->max('sort_order') ?? 0) + 10,
             ]);
-            $mediaAssetId = $mediaAsset->id;
-        }
 
-        $offer = $event->offers()->create([
-            'brand' => $submission->displayBrand(),
-            'website' => $submission->website,
-            'title' => $submission->title,
-            'highlight' => $submission->highlight,
-            'description' => $submission->description,
-            'terms' => $submission->terms,
-            'coupon_code' => $submission->coupon_code,
-            'url' => $submission->url,
-            'cta_label' => $submission->cta_label ?: 'Get the deal',
-            'icon' => $submission->icon ?: '🏷',
-            'media_asset_id' => $mediaAssetId,
-            'is_active' => $publish,
-            'sort_order' => ($event->offers()->max('sort_order') ?? 0) + 10,
-        ]);
-
-        $submission->update([
-            'status' => 'approved',
-            'approved_offer_id' => $offer->id,
-        ]);
+            $submission->update([
+                'status' => 'approved',
+                'approved_offer_id' => $offer->id,
+            ]);
+        });
 
         DataVersion::forget($event->id);
 

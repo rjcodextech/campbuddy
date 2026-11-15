@@ -34,7 +34,7 @@
 
             <div class="identity-panel" data-identity-panel="roster">
                 <div data-roster-selected hidden class="roster-picked">
-                    <img class="roster-row__avatar" alt="" width="40" height="40" data-fallback="/media/illustrations/avatar.svg" data-picked-avatar>
+                    <img class="roster-row__avatar" alt="" width="40" height="40" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-picked-avatar>
                     <span class="roster-picked__name" data-picked-name></span>
                     <button type="button" class="btn btn--compact btn--outline" data-picked-change>Change</button>
                 </div>
@@ -97,7 +97,7 @@
 
 <template id="tpl-roster-picker-row">
     <button type="button" class="roster-picker__row" role="option" data-slot="row">
-        <img class="roster-row__avatar" alt="" width="32" height="32" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+        <img class="roster-row__avatar" alt="" width="32" height="32" loading="lazy" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar">
         <span class="roster-picker__name" data-slot="name"></span>
         <span class="roster-picker__note" data-slot="note">Already linked</span>
     </button>
@@ -113,7 +113,7 @@
 
 <template id="tpl-discovery-status">
     <div class="card discovery-status">
-        <img class="discovery-status__avatar" alt="" width="44" height="44" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+        <img class="discovery-status__avatar" alt="" width="44" height="44" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar">
         <div class="discovery-status__body">
             <p style="font-weight:700;margin:0">You're discoverable<span data-slot="as-part"> as <span data-slot="name"></span></span></p>
             <p class="footer-note" style="text-align:left;margin:2px 0 0" data-slot="tags"></p>
@@ -163,7 +163,7 @@
     <article class="person-card" data-slot="card">
         <p class="person-card__waved-you" data-slot="waved-you"><x-attendee.line-icon name="hand" /> Wants to meet you. Wave back to swap names</p>
         <div class="person-card__head">
-            <img class="person-card__avatar" alt="" width="52" height="52" loading="lazy" data-fallback="/media/illustrations/avatar.svg" data-slot="avatar">
+            <img class="person-card__avatar" alt="" width="52" height="52" loading="lazy" data-fallback="/media/illustrations/avatar.svg" onerror="this.onerror=null; this.src='/media/illustrations/avatar.svg';" data-slot="avatar">
             <div class="person-card__who">
                 <p class="person-card__name" data-slot="name"></p>
                 <p class="person-card__verified" data-slot="verified">✓ On this WordCamp's attendee list</p>

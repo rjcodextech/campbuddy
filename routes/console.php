@@ -74,10 +74,10 @@ Schedule::call(function () {
 // still without a logo or favicon — only the missing one, never overwriting
 // what an admin uploaded.
 // A real photo for everyone on the attendee list (FillMissingPhotosJob), after
-// the night's roster scrape; only events still running, like every fetch.
+// the night's roster scrape; retries any missing or failed photos daily.
 Schedule::call(function () {
     Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
-        FillMissingPhotosJob::dispatch($event)->delay(now()->addSeconds($index * 20));
+        FillMissingPhotosJob::dispatch($event, retryMissing: true)->delay(now()->addSeconds($index * 20));
     });
 })->dailyAt('00:40')->name('fill-missing-photos');
 
@@ -136,18 +136,16 @@ Schedule::call(fn () => FetchLogRetention::prune())
     ->dailyAt('03:20')
     ->name('prune-fetch-log')
     ->withoutOverlapping(30);
-// The Social media page's copies of logos, artwork and fonts: only those no
-// listed event uses any more go (older than a day); copies in use always stay.
-// 00:15, after the midnight roster run.
+// The Social media copies of logos, artwork and fonts: unused copies go, and
+// automatically deletes event branding and cache for events finished 30+ days ago.
 Schedule::call(fn () => Artisan::call('campbuddy:clear-social-cache'))
     ->dailyAt('00:15')
     ->name('clear-social-cache')
     ->withoutOverlapping(30);
 // The posts due today (SocialPlan), pushed every morning to the organizers who
-// turned on post reminders; hourly, and the command only sends in the venue's
-// morning (9–11), once per post and day.
+// turned on post reminders; hourly at :15 to avoid colliding with :05 thank-you pushes.
 Schedule::call(fn () => Artisan::call('campbuddy:post-reminders'))
-    ->hourlyAt(5)
+    ->hourlyAt(15)
     ->name('post-reminders')
     ->withoutOverlapping(10);
 // Tell search engines about new and changed pages (IndexNow) once a day. Run
@@ -167,9 +165,9 @@ Schedule::call(fn () => Artisan::call('campbuddy:erase-expired-data'))
     ->withoutOverlapping(30);
 
 // "Move my CampBuddy to this device" requests (DeviceTransfer) live minutes at
-// most; this deletes every one whose time is up, sealed data included.
+// most; this cleans up expired ones every 15 minutes instead of hammering the DB every 5.
 Schedule::call(fn () => DeviceTransfer::prune())
-    ->everyFiveMinutes()
+    ->everyFifteenMinutes()
     ->name('prune-device-transfers');
 
 /*

@@ -31,7 +31,9 @@ class SvgGuard
         }
 
         // Block dangerous elements, protocols, event handlers, and XXE constructs across both raw and decoded forms
-        $dangerousPattern = '/<\s*(script|foreignObject|iframe|object|embed|animate|set)\b|\son[a-z0-9_-]+\s*=|javascript\s*:|vbscript\s*:|data\s*:\s*text\/html|<!(?:DOCTYPE|ENTITY)/i';
+        // Element names may carry a namespace prefix (<h:script> with xmlns:h = XHTML runs too), and an
+        // xml-stylesheet processing instruction can pull in XSLT that writes script.
+        $dangerousPattern = '/<\s*(?:[a-z0-9_.-]+:)?(script|foreignObject|iframe|object|embed|animate|set)\b|\son[a-z0-9_-]+\s*=|javascript\s*:|vbscript\s*:|data\s*:\s*text\/html|<!(?:DOCTYPE|ENTITY)|<\?xml-stylesheet/i';
 
         if (preg_match($dangerousPattern, $clean) || preg_match($dangerousPattern, $decoded)) {
             return false;

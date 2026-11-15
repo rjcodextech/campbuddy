@@ -170,7 +170,8 @@ class OrganizerAdminController extends Controller
         if (! Schema::hasTable('event_managers')) {
             return response()->json(['data' => []]);
         }
-        $q = mb_substr(trim((string) $request->query('q', '')), 0, 100);
+        // Text only: ?q[]=… was cast to a string, which is a 500.
+        $q = is_string($q = $request->query('q')) ? mb_substr(trim($q), 0, 100) : '';
 
         return response()->json(['data' => EventManager::with(['events' => fn ($e) => $e->select('events.id', 'events.display_name')->orderBy('events.display_name')])
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w->where('name', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%")))
@@ -228,7 +229,7 @@ class OrganizerAdminController extends Controller
         if (! Schema::hasTable('event_manager_changes')) {
             return response()->json(['data' => [], 'managers' => [], 'events' => [], 'meta' => ['page' => 1, 'last_page' => 1, 'total' => 0, 'per_page' => 30]]);
         }
-        $id = fn (string $key): ?int => ctype_digit((string) $request->query($key)) && (int) $request->query($key) > 0 ? (int) $request->query($key) : null;
+        $id = fn (string $key): ?int => is_string($request->query($key)) && ctype_digit($request->query($key)) && (int) $request->query($key) > 0 ? (int) $request->query($key) : null;
 
         $changes = EventManagerChange::with('event:id,display_name')
             ->when($id('manager'), fn ($q, int $m) => $q->where('event_manager_id', $m))
@@ -267,7 +268,7 @@ class OrganizerAdminController extends Controller
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'timezone' => ['nullable', 'string', 'max:64', function (string $attribute, mixed $value, Closure $fail) {
-                if (EventTime::normalize((string) $value) === null) {
+                if (! is_string($value) || EventTime::normalize($value) === null) {
                     $fail('Use a time zone like Asia/Kolkata or Europe/Berlin, or an offset like +05:30.');
                 }
             }],

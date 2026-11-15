@@ -11,6 +11,7 @@ import { apiMutate } from './api.js';
 import { linkDomain, track } from './analytics.js';
 import { openInAppBrowser } from './in-app-browser.js';
 import { render } from './template.js';
+import { webUrl } from './safe-url.js';
 import { DEFAULT_FORM, TEXT_FIELDS, leadBody, readForm } from './deal-form.js';
 
 export function initDealLeadCapture(eventSlug) {
@@ -25,7 +26,7 @@ function openLeadForm(eventSlug, { leadOfferId, leadOfferUrl, leadOfferTitle, le
   const dialog = render('tpl-deal-lead-dialog', {
     title: leadOfferTitle,
     intro: form.intro || undefined,
-    'done-link': { attrs: { href: leadOfferUrl } },
+    'done-link': { attrs: { href: webUrl(leadOfferUrl) } },
   });
   const formEl = dialog.querySelector('[data-lead-form]');
   const picked = new Set();

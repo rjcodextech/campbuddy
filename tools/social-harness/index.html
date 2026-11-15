@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Social harness</title>
+<!-- The brand fonts exactly as the site ships them (Baloo 2, Poppins; Latin, Latin Extended, Devanagari). -->
+<link rel="stylesheet" href="/resources/css/fonts.css">
+<script type="importmap">
+{ "imports": {
+  "qrcode-generator": "/node_modules/qrcode-generator/dist/qrcode.mjs",
+  "mp4-muxer": "/node_modules/mp4-muxer/build/mp4-muxer.mjs",
+  "html2canvas": "/node_modules/html2canvas/dist/html2canvas.esm.js"
+} }
+</script>
+<style>
+  body { margin: 0; font: 16px Poppins, sans-serif; background: #e9edf2; color: #0f172a; }
+  p { margin: 16px; }
+</style>
+</head>
+<body>
+<p>CampBuddy social harness: the posts, people cards and reels of made-up sample events, drawn with the real
+modules for <code>tools/audit-social.mjs --harness</code> and <code>tools/audit-reels.mjs --harness</code>.
+Everything is on <code>window.__h</code>.</p>
+<script type="module" src="/harness/harness.js"></script>
+</body>
+</html>

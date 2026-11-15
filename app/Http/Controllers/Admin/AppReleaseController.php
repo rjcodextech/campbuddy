@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AppRelease;
 use App\Support\AppReleases;
+use App\Support\FileSafety;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -88,7 +89,7 @@ class AppReleaseController extends Controller
         Gate::authorize('viewAny', \App\Models\Event::class);
         abort_unless(is_file(AppReleases::path($release)), 404);
 
-        return response()->download(AppReleases::path($release), $release->fileName(), ['Content-Type' => 'application/vnd.android.package-archive']);
+        return response()->download(FileSafety::file(AppReleases::path($release)), $release->fileName(), ['Content-Type' => 'application/vnd.android.package-archive']);
     }
 
     private function back(string $status): RedirectResponse

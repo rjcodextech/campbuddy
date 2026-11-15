@@ -30,7 +30,9 @@ export function initStudio() {
     document.dispatchEvent(new CustomEvent('studio:close'));
   });
 
-  dialog.querySelector('[data-studio-close]')?.addEventListener('click', () => dialog.close());
+  dialog.querySelectorAll('[data-studio-close]').forEach((btn) => {
+    btn.addEventListener('click', () => dialog.close());
+  });
   tabs.forEach((b) => b.addEventListener('click', () => show(b.dataset.studioTab)));
   // Arrow keys move between the tabs, like any tab list.
   dialog.querySelector('[role="tablist"]')?.addEventListener('keydown', (e) => {
@@ -47,7 +49,7 @@ export function initStudio() {
   const pick = (key) => {
     items.forEach((b) => b.setAttribute('aria-current', String(b.dataset.studioItem === key)));
     posts.forEach((p) => { p.hidden = p.dataset.socialPost !== key; });
-    items.find((b) => b.dataset.studioItem === key)?.scrollIntoView({ block: 'nearest' });
+    items.find((b) => b.dataset.studioItem === key)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   };
   items.forEach((b) => b.addEventListener('click', () => pick(b.dataset.studioItem)));
   if (items[0]) pick(items[0].dataset.studioItem);

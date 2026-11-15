@@ -54,11 +54,18 @@
 // the element in :hover until the next tap elsewhere, so a plain :hover
 // rule leaves a tapped pill/button stuck in its hover colours on iOS and
 // Android.
+//
+// Every hover has its keyboard twin (brand guidelines §7): the same change on
+// :focus-visible, so someone tabbing through sees what a mouse user sees.
 @mixin hover {
     @media (hover: hover) {
         &:hover {
             @content;
         }
+    }
+
+    &:focus-visible {
+        @content;
     }
 }
 

@@ -47,7 +47,7 @@ class AppServiceProvider extends ServiceProvider
         // for private addresses when saved (NotPrivateNetworkUrl), but a
         // public site answering with a redirect to 127.0.0.1 or a cloud
         // metadata address would otherwise walk straight past that check.
-        Http::globalOptions([
+        $httpOptions = [
             'headers' => [
                 'User-Agent' => 'CampBuddy/2.0 (+'.rtrim((string) config('app.url'), '/').'; WordCamp attendee companion)',
             ],
@@ -60,7 +60,16 @@ class AppServiceProvider extends ServiceProvider
                     }
                 },
             ],
-        ]);
+        ];
+
+        if (class_exists(\Composer\CaBundle\CaBundle::class)) {
+            $caPath = \Composer\CaBundle\CaBundle::getSystemCaRootBundlePath();
+            if (is_file($caPath)) {
+                $httpOptions['verify'] = $caPath;
+            }
+        }
+
+        Http::globalOptions($httpOptions);
 
         // Named on purpose: each limiter keeps its own counters. Counted per
         // phone (ApiClient::key) so a venue's shared wifi or a mobile network's
@@ -70,7 +79,46 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api-writes', fn (Request $request) => $this->apiLimits($request, 'writes', 'w'));
         // Saving a morning's sessions is a quick burst: twice the write allowance.
         RateLimiter::for('api-bookmarks', fn (Request $request) => $this->apiLimits($request, 'writes', 'b', 2));
+
+        // Every other limit is named too. A plain `throttle:N,M` keeps ONE counter per
+        // address (or per signed-in id) shared by every plain throttle on the site: calendar
+        // files used up the organizer sign-in, page views used up the sponsor form's submit,
+        // and a re-fetch counted twice against the organizer's saves.
+        foreach (self::ADDRESS_LIMITS as $name => [$attempts, $minutes]) {
+            RateLimiter::for($name, fn (Request $request) => Limit::perMinutes($minutes, $attempts)->by($request->ip()));
+        }
+
+        // The native app's organizer side. Laravel runs throttles before the route's
+        // bearer-token check (AppOrganizerAuth), so these count per sign-in token — never
+        // per address, which the organizers share with every attendee on the venue wifi.
+        // A request without a token (always refused) counts against its address only.
+        foreach (self::ORGANIZER_LIMITS as $name => $perMinute) {
+            RateLimiter::for($name, fn (Request $request) => Limit::perMinute($perMinute)->by(
+                $request->bearerToken() ? 't:'.hash('sha256', $request->bearerToken()) : 'ip:'.$request->ip()
+            ));
+        }
     }
+
+    /** Public forms, per address: name => [attempts, minutes]. */
+    private const ADDRESS_LIMITS = [
+        'calendar-file' => [30, 1],
+        'roster-removal' => [20, 1],
+        'sponsor-deals' => [30, 1],
+        'sponsor-deals-submit' => [5, 10],
+        'app-login' => [20, 1],
+    ];
+
+    /** The organizer app, per sign-in token: name => per minute. */
+    private const ORGANIZER_LIMITS = [
+        'app-writes' => 60,
+        'app-broadcast' => 10,
+        'app-fetch' => 10,
+        'app-site' => 10,
+        'app-publish' => 20,
+        'app-export' => 20,
+        'app-analytics' => 30,
+        'app-discover' => 5,
+    ];
 
     /**
      * @return array<int, Limit>

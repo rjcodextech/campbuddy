@@ -869,7 +869,10 @@
     border-radius: v.$radius-full;
     border: 1px solid rgba(16, 185, 129, 0.25);
     flex-shrink: 0;
-    animation: live-badge-wave 2.2s infinite ease-in-out;
+
+    @media (prefers-reduced-motion: no-preference) {
+        animation: live-badge-wave 2.2s infinite ease-in-out;
+    }
 }
 
 .live-dot {
@@ -882,7 +885,10 @@
 
     &--pulse {
         position: relative;
-        animation: live-radar-wave 1.8s infinite ease-in-out;
+
+        @media (prefers-reduced-motion: no-preference) {
+            animation: live-radar-wave 1.8s infinite ease-in-out;
+        }
     }
 }
 

@@ -12,6 +12,7 @@ import { track } from './analytics.js';
 import { apiGet } from './api.js';
 import { getMeetings, kvGet, kvSet, saveMeeting } from './db.js';
 import { showToast } from './toast.js';
+import { el } from './el.js';
 
 export const BRING_KEY = (eventId) => `bring:${eventId}`;
 export const CARRY_KEY = (eventId) => `discoveryCarry:${eventId}`;
@@ -118,11 +119,15 @@ function render(slot, { eventId, eventSlug, eventName, source }) {
   slot.replaceChildren();
   const card = document.createElement('div');
   card.className = 'card bring-data';
-  card.innerHTML = '<p class="u-eyebrow bring-data__eyebrow">Welcome back</p><p class="bring-data__title"></p><p class="bring-data__text"></p>'
-    + '<div class="bring-data__actions"><button type="button" class="btn btn--primary" data-bring-yes>Bring it here</button>'
-    + '<button type="button" class="btn btn--outline" data-bring-no>Not now</button></div>';
-  card.querySelector('.bring-data__title').textContent = `Bring ${what} from ${event.name}?`;
-  card.querySelector('.bring-data__text').textContent = `Your interests fill in when you join Meet people at ${eventName}, and anyone you met there who is coming here too goes straight into your People to meet. It all stays on this phone.`;
+  card.append(
+    el('p', { class: 'u-eyebrow bring-data__eyebrow' }, 'Welcome back'),
+    el('p', { class: 'bring-data__title' }, `Bring ${what} from ${event.name}?`),
+    el('p', { class: 'bring-data__text' }, `Your interests fill in when you join Meet people at ${eventName}, and anyone you met there who is coming here too goes straight into your People to meet. It all stays on this phone.`),
+    el('div', { class: 'bring-data__actions' },
+      el('button', { type: 'button', class: 'btn btn--primary', 'data-bring-yes': true }, 'Bring it here'),
+      el('button', { type: 'button', class: 'btn btn--outline', 'data-bring-no': true }, 'Not now'),
+    ),
+  );
   slot.append(card);
   slot.hidden = false;
   track('bring_data_view');
@@ -176,8 +181,10 @@ function showDone(slot, { fields, added, eventName, eventSlug }) {
   slot.replaceChildren();
   const card = document.createElement('div');
   card.className = 'card bring-data bring-data--done';
-  card.innerHTML = '<p class="bring-data__title">Brought across</p><p class="bring-data__text"></p><a class="btn btn--primary">Meet people here</a>';
-  card.querySelector('.bring-data__text').textContent = lines.join(' ');
-  card.querySelector('a').href = `/event/${encodeURIComponent(eventSlug)}/explore`;
+  card.append(
+    el('p', { class: 'bring-data__title' }, 'Brought across'),
+    el('p', { class: 'bring-data__text' }, lines.join(' ')),
+    el('a', { class: 'btn btn--primary', href: `/event/${encodeURIComponent(eventSlug)}/explore` }, 'Meet people here'),
+  );
   slot.append(card);
 }

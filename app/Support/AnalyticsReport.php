@@ -50,7 +50,7 @@ class AnalyticsReport
         }
 
         $path = self::credentialsPath();
-        if ($path === null || ! is_readable($path)) {
+        if ($path === null || ! FileSafety::isReadable($path)) {
             return 'GA_CREDENTIALS_PATH is not set, or the service account key file is not on this server.';
         }
 
