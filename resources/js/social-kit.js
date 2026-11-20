@@ -305,7 +305,9 @@ const failed = new Map();
 function fetchImage(url) {
   return new Promise((resolve) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    if (!url.startsWith('data:') && !url.startsWith('blob:')) {
+      img.crossOrigin = 'anonymous';
+    }
     let timer = 0;
     const done = (ok) => {
       clearTimeout(timer);
@@ -315,10 +317,17 @@ function fetchImage(url) {
     };
     timer = setTimeout(() => { done(false); img.src = ''; }, IMAGE_WAIT);
     img.onload = () => {
-      Promise.resolve(img.decode?.()).catch(() => {}).then(() => done(img.naturalWidth > 0 || /\.svg(?:[?#]|$)/i.test(url)));
+      Promise.resolve(img.decode?.()).catch(() => {}).then(() => {
+        let isSvg = false;
+        try { isSvg = /\.svg(?:[?&#]|$)/i.test(decodeURIComponent(url)); } catch { isSvg = /\.svg(?:[?#]|$)/i.test(url); }
+        done(img.naturalWidth > 0 || img.width > 0 || isSvg);
+      });
     };
     img.onerror = () => done(false);
     img.src = url;
+    if (img.complete && (img.naturalWidth > 0 || img.width > 0)) {
+      done(true);
+    }
   });
 }
 
@@ -367,7 +376,6 @@ function loadImage(url) {
  */
 function loadRemote(kit, url) {
   if (!url) return Promise.resolve(null);
-  if (url.includes('d=404')) return loadImage(url);
   return remembered(`remote:${url}`, () => firstImage(remoteSources(url, (u) => proxied(kit, u))));
 }
 
@@ -1644,7 +1652,7 @@ async function paintBody(ctx, body, x, y, w, h, pal, kit, H, ink) {
 
 function proxied(kit, url) {
   if (!url) return null;
-  if (!kit.imageUrl || /gravatar\.com\//.test(url) || url.startsWith('/')) return url;
+  if (!kit?.imageUrl || url.startsWith('/') || url.startsWith('data:') || url.startsWith('blob:')) return url;
   return `${kit.imageUrl}?u=${encodeURIComponent(url)}`;
 }
 
@@ -3088,7 +3096,7 @@ function reveal(canvas, next) {
     ctx.drawImage(next, 0, 0);
     ctx.globalAlpha = 1;
   };
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+  if (!canvas.isConnected || canvas.offsetParent === null || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
     frame(1);
     return;
   }
@@ -3483,6 +3491,31 @@ export function initSocialKit() {
   people = setUpPeople(kit, colors, size, design, quality, kitReady);
   redrawAll = () => { posts.forEach((r) => r()); people?.redraw(); };
   sizeEl?.addEventListener('change', redrawAll);
+
+  // When switching studio tabs or picking a post, ensure the active canvas renders freshly:
+  document.addEventListener('studio:post', (e) => {
+    const idx = kit.posts.findIndex((p) => p.key === e.detail);
+    if (idx >= 0 && posts[idx]) posts[idx]();
+  });
+
+  const redrawActivePost = () => {
+    const dialog = document.querySelector('[data-studio]');
+    const currentPost = dialog?.querySelector('[data-social-post]:not([hidden])')?.dataset.socialPost;
+    if (currentPost) {
+      const idx = kit.posts.findIndex((p) => p.key === currentPost);
+      if (idx >= 0 && posts[idx]) posts[idx]();
+    }
+  };
+
+  document.addEventListener('studio:tab', (e) => {
+    if (e.detail === 'people') people?.redraw();
+    else if (e.detail === 'posts') redrawActivePost();
+  });
+
+  document.addEventListener('studio:open', (e) => {
+    if (e.detail === 'people') people?.redraw();
+    else if (e.detail === 'posts') redrawActivePost();
+  });
 
   const status = document.querySelector('[data-colors-status]');
   const contrastEl = document.querySelector('[data-contrast]');

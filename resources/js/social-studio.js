@@ -22,6 +22,7 @@ export function initStudio() {
     if (!dialog.open) dialog.showModal();
     document.documentElement.classList.add('cb-studio-open');
     show(tab);
+    document.dispatchEvent(new CustomEvent('studio:open', { detail: tab }));
   };
 
   dialog.addEventListener('close', () => {
@@ -50,6 +51,7 @@ export function initStudio() {
     items.forEach((b) => b.setAttribute('aria-current', String(b.dataset.studioItem === key)));
     posts.forEach((p) => { p.hidden = p.dataset.socialPost !== key; });
     items.find((b) => b.dataset.studioItem === key)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    document.dispatchEvent(new CustomEvent('studio:post', { detail: key }));
   };
   items.forEach((b) => b.addEventListener('click', () => pick(b.dataset.studioItem)));
   if (items[0]) pick(items[0].dataset.studioItem);

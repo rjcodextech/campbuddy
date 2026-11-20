@@ -35,6 +35,14 @@ class SocialImageProxy
             }
         }
 
+        $appHost = strtolower((string) parse_url(config('app.url', ''), PHP_URL_HOST));
+        if ($appHost && ($host === $appHost || str_ends_with($host, '.'.$appHost))) {
+            return true;
+        }
+        if (app()->environment('local', 'testing') && in_array($host, ['localhost', '127.0.0.1'], true)) {
+            return true;
+        }
+
         try {
             $eventHosts = Event::whereNotNull('source_site_url')
                 ->pluck('source_site_url')
@@ -220,6 +228,8 @@ class SocialImageProxy
             'Content-Type' => $disk->get($path.'.type') ?: 'image/png',
             'Cache-Control' => 'private, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, OPTIONS',
         ]);
     }
 }

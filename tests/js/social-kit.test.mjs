@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { crc32, zipStore } from '../../resources/js/zip-store.js';
 
 globalThis.document = { getElementById: () => null, querySelector: () => null, querySelectorAll: () => [] };
-const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, remoteSources, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, spotlightCaptions, textOn, todayCaption, todayCaptions, unphoton } = await import('../../resources/js/social-kit.js');
+const { contrastRatio, daysToGo, personCta, photonUrl, eventLook, mix, paletteFromSite, readable, paginate, paletteFromPixels, personHeadline, postContent, qrLink, reelTools, remoteSources, roleColor, sessionsOfDay, shareLinks, slugify, spotlightCaption, spotlightCaptions, textOn, todayCaption, todayCaptions, unphoton } = await import('../../resources/js/social-kit.js');
 
 test('crc32 matches the standard check value', () => {
   assert.equal(crc32(new TextEncoder().encode('123456789')), 0xcbf43926);
@@ -217,6 +217,8 @@ test('a remote picture is tried from CampBuddy’s copy, the CDN, then (for a CD
   // A Gravatar or a picture on CampBuddy itself has nowhere else to come from.
   const face = 'https://secure.gravatar.com/avatar/abc?s=600&d=404';
   assert.deepEqual(remoteSources(face, (u) => (/gravatar\.com\//.test(u) ? u : proxy(u))), [face]);
+  // When the proxy handles Gravatar, the server proxy is tried first:
+  assert.deepEqual(remoteSources(face, (u) => reelTools.proxied({ imageUrl: '/admin/events/1/social/image' }, u)), [proxy(face), face]);
   assert.deepEqual(remoteSources('/storage/people/1.jpg', (u) => (u.startsWith('/') ? u : proxy(u))), ['/storage/people/1.jpg']);
   assert.deepEqual(remoteSources(null, proxy), []);
 });

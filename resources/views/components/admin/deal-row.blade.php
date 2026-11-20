@@ -13,7 +13,7 @@
 <div @class(['flex flex-wrap gap-4 px-5 py-4 sm:px-6 xl:flex-nowrap', 'bg-paper/60' => $muted])>
     <span class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white" aria-hidden="true">
         @if ($offer->mediaAsset)
-            <img src="{{ $offer->mediaAsset->url() }}" alt="" class="max-h-11 max-w-11 object-contain">
+            <img src="{{ $offer->mediaAsset->url() }}" alt="" class="max-h-11 max-w-11 object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
         @elseif ($offer->icon)
             <span class="text-2xl">{{ $offer->icon }}</span>
         @else
