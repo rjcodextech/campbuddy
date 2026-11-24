@@ -48,6 +48,7 @@ class Brand(theme: ThemeConfig) {
     val muted = color(theme.muted, 0xFF475569)
     val danger = color(theme.danger, 0xFFEF4444)
     val success = color(theme.success, 0xFF10B981)
+    val navy = Color(0xFF1E293B)
     val radius = theme.radius.coerceIn(0, 28)
 
     /**

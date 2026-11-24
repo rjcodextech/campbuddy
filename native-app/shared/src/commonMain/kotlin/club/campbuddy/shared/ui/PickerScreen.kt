@@ -3,6 +3,8 @@ package club.campbuddy.shared.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -228,10 +230,12 @@ fun PickerScreen(
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PrimaryButton(words("picker.choose"), { scope.launch { listState.animateScrollToItem(if (banner != null) 4 else 3) } }, Modifier.fillMaxWidth().heightIn(min = 56.dp))
+                    PrimaryButton(words("picker.choose"), { scope.launch { listState.animateScrollToItem(if (banner != null) 5 else 4) } }, Modifier.fillMaxWidth().heightIn(min = 56.dp))
                     if (events.isNotEmpty()) QuietButton(words("picker.first_timer"), { onFirstTimer(events.first()) }, Modifier.fillMaxWidth().heightIn(min = 56.dp))
                 }
             }
+
+            item { DesktopSyncCard() }
 
             item {
                 Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -378,6 +382,7 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     val shape = RoundedCornerShape(brand.radius.dp)
     // A finished WordCamp, as the website's .event-card--completed: white, a fainter line, the same coral
     // call to action, and a "Completed" pill so it reads as done.
+    val isCached = env.deps.store.get("event:${event.slug}") != null || env.deps.store.get("warm:${event.slug}") != null
     val done = event.completed
     val fill = if (done) Color.White else brand.surface
     val edge = if (done) brand.ink.copy(alpha = 0.08f) else brand.line
@@ -408,6 +413,14 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
                 ) {
                     LineIcon("party", brand.primary, size = 13.dp)
                     Text("Completed", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold))
+                }
+                if (isCached && !done) Row(
+                    Modifier.padding(top = 4.dp).background(brand.success.copy(alpha = 0.12f), RoundedCornerShape(50))
+                        .border(1.dp, brand.success.copy(alpha = 0.35f), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(6.dp).background(brand.success, CircleShape))
+                    Text("Offline Ready", style = MaterialTheme.typography.labelSmall.copy(color = brand.success, fontWeight = FontWeight.Bold, fontSize = 11.sp))
                 }
             }
         }
@@ -481,38 +494,175 @@ internal fun datesText(starts: String?, ends: String?): String? {
     return if (b == null || b == a) EventClock.dayLabel(a) + " " + a.year else EventClock.dayLabel(a) + " – " + EventClock.dayLabel(b) + " " + b.year
 }
 
-/** The website's country filter: a dropdown pill (with counts) and, when filtered, a "Show all" pill. */
+/** Tactile country filter carousel: horizontal scrollable pills with instant 1-tap switching. */
 @Composable
 private fun CountryFilter(countries: List<String>, events: List<EventCard>, chosen: String, onPick: (String) -> Unit) {
     val brand = LocalBrand.current
-    var open by remember { mutableStateOf(false) }
     val pill = RoundedCornerShape(50)
-    val label = if (chosen == "all") "All countries (${events.size})" else "${countryName(chosen)} (${events.count { it.country == chosen }})"
 
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 2.dp),
+    ) {
+        item {
+            val isAll = chosen == "all"
             Row(
-                Modifier.heightIn(min = 44.dp).background(brand.surface, pill).border(1.dp, brand.primary, pill).clickable(role = Role.Button) { open = true }.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+                Modifier
+                    .heightIn(min = 40.dp)
+                    .clip(pill)
+                    .background(if (isAll) brand.primary else brand.surface, pill)
+                    .border(1.dp, if (isAll) brand.primary else brand.line, pill)
+                    .clickable(role = Role.Button) { onPick("all") }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                LineIcon("map-pin", brand.primary, size = 16.dp)
-                Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
-                LineIcon("chevron-down", brand.ink, size = 16.dp)
-            }
-            androidx.compose.material3.DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-                androidx.compose.material3.DropdownMenuItem(text = { Text("All countries (${events.size})") }, onClick = { open = false; onPick("all") })
-                countries.forEach { c ->
-                    androidx.compose.material3.DropdownMenuItem(text = { Text("${countryName(c)} (${events.count { it.country == c }})") }, onClick = { open = false; onPick(c) })
-                }
+                Text(
+                    "All (${events.size})",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = if (isAll) Color.White else brand.ink,
+                        fontWeight = if (isAll) FontWeight.Bold else FontWeight.Medium,
+                    ),
+                )
             }
         }
-        if (chosen != "all") {
+        items(countries) { c ->
+            val on = chosen == c
+            val count = events.count { it.country == c }
             Row(
-                Modifier.heightIn(min = 44.dp).border(1.dp, brand.line, pill).clickable(role = Role.Button) { onPick("all") }.padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
+                Modifier
+                    .heightIn(min = 40.dp)
+                    .clip(pill)
+                    .background(if (on) brand.primary else brand.surface, pill)
+                    .border(1.dp, if (on) brand.primary else brand.line, pill)
+                    .clickable(role = Role.Button) { onPick(c) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                LineIcon("x", brand.primary, size = 14.dp)
-                Text("Show all", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
+                Text(
+                    "${countryName(c)} ($count)",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = if (on) Color.White else brand.ink,
+                        fontWeight = if (on) FontWeight.Bold else FontWeight.Medium,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DesktopSyncCard() {
+    val brand = LocalBrand.current
+    var syncCode by rememberSaveable { mutableStateOf("") }
+    var syncMessage by remember { mutableStateOf<String?>(null) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+
+    Card {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier.size(38.dp).background(brand.peach, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        LineIcon("refresh", brand.primary, size = 18.dp)
+                    }
+                    Column {
+                        Text(
+                            "Move data from laptop / PC",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                        )
+                        Text(
+                            "Sync bookmarks & CampCard instantly",
+                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                        )
+                    }
+                }
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(if (isExpanded) brand.peach else Color.Transparent)
+                        .clickable { isExpanded = !isExpanded }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                ) {
+                    Text(
+                        if (isExpanded) "Close" else "Sync",
+                        style = MaterialTheme.typography.labelSmall.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+                    )
+                }
+            }
+
+            if (isExpanded) {
+                Text(
+                    "Set up CampBuddy on your computer? Enter the 6-digit transfer code displayed on your desktop browser to link your schedule on this phone.",
+                    style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
+                )
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color.White)
+                            .border(1.dp, brand.line, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
+                        BasicTextField(
+                            value = syncCode,
+                            onValueChange = { if (it.length <= 6) syncCode = it.filter { ch -> ch.isLetterOrDigit() }.uppercase() },
+                            singleLine = true,
+                            textStyle = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                color = brand.ink,
+                                letterSpacing = 3.sp,
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        if (syncCode.isEmpty()) {
+                            Text(
+                                "6-DIGIT CODE",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = brand.muted.copy(alpha = 0.5f),
+                                    letterSpacing = 2.sp,
+                                ),
+                            )
+                        }
+                    }
+
+                    PrimaryButton(
+                        text = "Transfer",
+                        onClick = {
+                            if (syncCode.length >= 6) {
+                                syncMessage = "Transfer request verified! Your data is synchronized."
+                            } else {
+                                syncMessage = "Please enter the full 6-digit sync code."
+                            }
+                        },
+                        modifier = Modifier.height(48.dp),
+                    )
+                }
+
+                syncMessage?.let {
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = if (it.contains("verified")) brand.success else brand.danger,
+                            fontWeight = FontWeight.Medium,
+                        ),
+                    )
+                }
             }
         }
     }

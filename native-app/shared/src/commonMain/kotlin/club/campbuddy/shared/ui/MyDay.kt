@@ -1,6 +1,9 @@
 package club.campbuddy.shared.ui
 
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
@@ -152,9 +155,40 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     val days = sessions.mapNotNull { s -> EventClock.startOf(s)?.let { EventClock.day(it, zone) } }.distinct().sorted()
     val now = Clock.System.now()
 
+    val allOverlaps = remember(savedSessions) {
+        savedSessions.flatMap { s ->
+            user.overlapping(event.slug, s).map { b -> minOf(s.id, b.sessionId) to maxOf(s.id, b.sessionId) }
+        }.distinct()
+    }
+    val conflictCount = allOverlaps.size
+    val totalMinutesPlanned = savedSessions.sumOf { s ->
+        val start = EventClock.startOf(s)
+        val end = EventClock.endOf(s)
+        if (start != null && end != null && end > start) ((end.epochSeconds - start.epochSeconds) / 60).toInt() else 30
+    }
+    val hoursText = if (totalMinutesPlanned >= 60) "${totalMinutesPlanned / 60}h ${totalMinutesPlanned % 60}m" else "${totalMinutesPlanned}m"
+
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(words("tabs.my_day"), style = MaterialTheme.typography.headlineSmall) }
         if (offline) item { OfflineNote() }
+        item(key = "schedule-health") {
+            ScheduleHealthBanner(
+                savedCount = savedSessions.size,
+                hoursText = hoursText,
+                conflictCount = conflictCount,
+                alertsEnabled = user.notifications.enabled,
+                onToggleAlerts = { askFor = true },
+            )
+        }
+        if (conflictCount > 0) {
+            item(key = "schedule-conflicts") {
+                ConflictWarningCard(
+                    conflictPairs = allOverlaps,
+                    sessions = sessions,
+                    onRemove = { s -> user.toggle(event.slug, s) },
+                )
+            }
+        }
         item(key = "notifications-off") { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone) }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -421,4 +455,162 @@ private fun dayChip(date: kotlinx.datetime.LocalDate): String {
     val month = date.month.name.take(3).lowercase().replaceFirstChar { it.uppercase() }
 
     return "$weekday, $month ${date.dayOfMonth}"
+}
+
+@Composable
+private fun ScheduleHealthBanner(
+    savedCount: Int,
+    hoursText: String,
+    conflictCount: Int,
+    alertsEnabled: Boolean,
+    onToggleAlerts: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(20.dp)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .shadow(2.dp, shape, clip = false)
+            .clip(shape)
+            .background(brand.surface, shape)
+            .border(1.dp, brand.line, shape)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(38.dp).background(brand.peach, CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LineIcon("calendar", brand.primary, size = 20.dp)
+                }
+                Column {
+                    Text(
+                        "Schedule Health",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    )
+                    Text(
+                        "$savedCount bookmarked · $hoursText planned",
+                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                    )
+                }
+            }
+
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(if (conflictCount == 0) brand.success.copy(alpha = 0.12f) else brand.danger.copy(alpha = 0.12f))
+                    .border(1.dp, if (conflictCount == 0) brand.success.copy(alpha = 0.35f) else brand.danger.copy(alpha = 0.35f), RoundedCornerShape(50))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    if (conflictCount == 0) "✓ 0 Conflicts" else "⚠️ $conflictCount Conflicts",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = if (conflictCount == 0) brand.success else brand.danger,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+        }
+
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .background(brand.peach.copy(alpha = 0.45f))
+                .clickable(role = Role.Button, onClick = onToggleAlerts)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                LineIcon("bell", brand.primary, size = 16.dp)
+                Text(
+                    if (alertsEnabled) "10-minute prior alerts active" else "Alerts off · Tap to enable reminders",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = brand.ink,
+                        fontWeight = FontWeight.SemiBold,
+                    ),
+                )
+            }
+            Text(
+                if (alertsEnabled) "Change" else "Turn on",
+                style = MaterialTheme.typography.labelSmall.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConflictWarningCard(
+    conflictPairs: List<Pair<Long, Long>>,
+    sessions: List<Session>,
+    onRemove: (Session) -> Unit,
+) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(14.dp)
+    val sessionMap = remember(sessions) { sessions.associateBy { it.id } }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(brand.danger.copy(alpha = 0.08f), shape)
+            .border(1.dp, brand.danger.copy(alpha = 0.3f), shape)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            LineIcon("shield-alert", brand.danger, size = 20.dp)
+            Text(
+                "Overlapping Talk Conflicts Detected",
+                style = MaterialTheme.typography.titleMedium.copy(color = brand.danger, fontWeight = FontWeight.Bold),
+            )
+        }
+        Text(
+            "You have bookmarked simultaneous sessions in different rooms. Remove one or choose your primary talk:",
+            style = MaterialTheme.typography.bodySmall.copy(color = brand.ink),
+        )
+
+        conflictPairs.take(3).forEach { (idA, idB) ->
+            val sA = sessionMap[idA]
+            val sB = sessionMap[idB]
+            if (sA != null && sB != null) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f).padding(end = 6.dp)) {
+                        Text(
+                            "${sA.title} vs ${sB.title}",
+                            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            "${sA.trackNames.firstOrNull() ?: "Room A"} / ${sB.trackNames.firstOrNull() ?: "Room B"}",
+                            style = MaterialTheme.typography.labelSmall.copy(color = brand.muted),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    Text(
+                        "Remove one",
+                        style = MaterialTheme.typography.labelSmall.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+                        modifier = Modifier.clickable { onRemove(sB) }.padding(4.dp),
+                    )
+                }
+            }
+        }
+    }
 }

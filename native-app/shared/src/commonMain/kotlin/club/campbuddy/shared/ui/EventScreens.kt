@@ -3,6 +3,11 @@ package club.campbuddy.shared.ui
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.draw.shadow
+import kotlinx.datetime.toLocalDateTime
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -114,12 +119,20 @@ fun EventScreen(
     val tabs = words.config.enabledTabs()
     var selected by rememberSaveable(slug) { mutableStateOf(startTab?.takeIf { t -> tabs.any { it.key == t } } ?: tabs.firstOrNull()?.key ?: "home") }
     var guide by rememberSaveable(slug) { mutableStateOf(startInGuide) }
+    var helpOpen by remember { mutableStateOf(false) }
+    var legalSlug by remember { mutableStateOf<String?>(null) }
 
     if (guide) {
         GuideScreen(slug, onBack = { guide = false }, onTab = { guide = false; selected = it })
         return
     }
-    PlatformBackHandler(enabled = true, onBack = onBack)
+    PlatformBackHandler(enabled = true) {
+        if (selected != "home") {
+            selected = "home"
+        } else {
+            onBack()
+        }
+    }
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
         TopBar(onGuide = { guide = true }, onSwitch = onBack, onStaff = onStaff)
@@ -159,7 +172,15 @@ fun EventScreen(
                         EventClock.phase(list, e.value.firstDay, e.value.lastDay, zone, kotlinx.datetime.Clock.System.now()) == Phase.After
                     ) AfterEventChoice(slug, e.value.name, lastDay, zone) { askedNow = true }
                     when (selected) {
-                        "home" -> HomeTab(e.value, list, offline, onBack, onTab = { selected = it }, onGuide = { guide = true })
+                        "home" -> LiveEventDashboard(
+                            event = e.value,
+                            sessions = list,
+                            offline = offline,
+                            onBack = onBack,
+                            onTab = { selected = it },
+                            onGuide = { guide = true },
+                            onLegal = { legalSlug = it },
+                        )
                         "my-day" -> MyDayTab(e.value, list, offline)
                         "quest" -> QuestTab(slug) { selected = it }
                         "contribute" -> ContributeTab(slug)
@@ -172,7 +193,29 @@ fun EventScreen(
             }
         }
 
-        BottomBar(tabs, selected) { selected = it }
+        if (selected == "home") {
+            StickyHelpBar(onHelp = { helpOpen = true })
+        } else {
+            BottomBar(tabs, selected) { selected = it }
+        }
+    }
+
+    if (helpOpen) {
+        HelpSheet(
+            event = (event as? LoadState.Ready)?.value,
+            onClose = { helpOpen = false },
+            onLegal = {
+                helpOpen = false
+                legalSlug = it
+            },
+        )
+    }
+
+    legalSlug?.let { lSlug ->
+        LegalSheet(
+            slug = lSlug,
+            onClose = { legalSlug = null },
+        )
     }
 }
 
@@ -190,9 +233,18 @@ private fun rememberNow(): Instant {
 }
 
 @Composable
-private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolean, onBack: () -> Unit, onTab: (String) -> Unit, onGuide: () -> Unit) {
+private fun LiveEventDashboard(
+    event: EventDetail,
+    sessions: List<Session>,
+    offline: Boolean,
+    onBack: () -> Unit,
+    onTab: (String) -> Unit,
+    onGuide: () -> Unit,
+    onLegal: (String) -> Unit,
+) {
     val env = LocalEnv.current
     val words = LocalWords.current
+    val brand = LocalBrand.current
     val zone = EventClock.zone(event.timezone)
     val now = rememberNow()
     val phase = EventClock.phase(sessions, event.firstDay, event.lastDay, zone, now)
@@ -200,25 +252,738 @@ private fun HomeTab(event: EventDetail, sessions: List<Session>, offline: Boolea
     val saved = env.user.bookmarks(event.slug)
     val startHereShown = startHereVisible(env.deps.store, event.slug, profile.firstWordCamp)
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
+    val rosterLoader = rememberLoader("roster:${event.slug}") { env.repository.roster(event.slug) }
+    val roster = (rosterLoader.state.value as? LoadState.Ready)?.value.orEmpty()
+
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
         if (offline) item { OfflineNote() }
         item { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone, home = true) }
         item { LiveAskCard(event.slug, event.firstDay, event.lastDay, zone) }
 
-        val sections = words.config.enabledSections().filter { visible(it, phase, profile.firstWordCamp, saved.isNotEmpty()) }
-        items(sections.size) { index ->
-            val section = sections[index]
-            when (section.type) {
-                "hero" -> HeroCard(event, phase, zone, now, sessions)
-                "memories" -> MemoriesCard(event.slug, withHeading = true)
-                "starting_soon" -> StartingSoon(sessions, saved.map { it.sessionId }.toSet(), now, zone)
-                "happening_now" -> HappeningNow(section, phase, sessions, now, zone, event, startHereShown, onTab, onGuide)
-                "up_next" -> UpNext(section, sessions, now, zone, event.slug, saved.map { it.sessionId }.toSet(), onSchedule = { onTab("my-day") })
-                "start_here" -> StartHere(section.title?.let(words::invoke) ?: "New to WordCamp? Start here", event.slug, onGuide)
-                "suggested_action" -> SuggestedAction(section.title?.let(words::invoke) ?: "One thing to try", event.slug, saved.size, onTab)
-                "people_cta" -> PeoplePrompt(event.slug) { onTab("explore") }
-                "progress" -> Progress(section, event.slug, saved.size)
-                else -> Unit // blocks the app does not draw yet are skipped, never an error
+        // Screen 1 Hero Card: Tactile Card with Navy background (#1E293B to #0F172A), 30s clock, next talk
+        item {
+            TactileHeroCard(
+                event = event,
+                phase = phase,
+                zone = zone,
+                now = now,
+                sessions = sessions,
+                offline = offline,
+                onViewSchedule = { onTab("my-day") },
+            )
+        }
+
+        // Screen 1 People & Matches Strip: Pinned contacts and interest wave triggers
+        item {
+            PeopleStrip(
+                roster = roster,
+                onExplore = { onTab("explore") },
+            )
+        }
+
+        // Screen 1 2x3 Tactile Hubs ActionGrid
+        item {
+            ActionGrid(
+                savedCount = saved.size,
+                sessionCount = sessions.size,
+                onTab = onTab,
+            )
+        }
+
+        // 101 Guide Card if eligible
+        if (startHereShown) {
+            item {
+                StartHere(
+                    title = "New to WordCamp? Start here",
+                    slug = event.slug,
+                    onGuide = onGuide,
+                )
+            }
+        }
+
+        // Memories card if post-event
+        if (phase == Phase.After) {
+            item { MemoriesCard(event.slug, withHeading = true) }
+        }
+
+        // Screen 1 Scrollable Legal & Compliance Footer
+        item {
+            LegalFooter(onLegal = onLegal)
+        }
+    }
+}
+
+@Composable
+private fun TactileHeroCard(
+    event: EventDetail,
+    phase: Phase,
+    zone: TimeZone,
+    now: Instant,
+    sessions: List<Session>,
+    offline: Boolean,
+    onViewSchedule: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    val cardShape = RoundedCornerShape(20.dp)
+    val timeText = runCatching {
+        val dt = now.toLocalDateTime(zone)
+        val h = dt.hour.toString().padStart(2, '0')
+        val m = dt.minute.toString().padStart(2, '0')
+        "$h:$m"
+    }.getOrDefault("10:00")
+
+    val nextSession = sessions
+        .filter { s ->
+            val start = EventClock.startOf(s)
+            start != null && start > now
+        }
+        .minByOrNull { EventClock.startOf(it)!!.epochSeconds }
+        ?: sessions.firstOrNull { s ->
+            val start = EventClock.startOf(s)
+            val end = EventClock.endOf(s)
+            start != null && end != null && start <= now && now < end
+        }
+
+    val statusPill = if (offline) "● Offline Ready" else statusPillText(event, phase, zone, now, sessions)
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .shadow(6.dp, cardShape, clip = false)
+            .clip(cardShape)
+            .background(Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))))
+            .border(1.dp, Color(0xFF334155), cardShape)
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        // Top row: Clock & Event Logo badge
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column {
+                Text(
+                    text = timeText,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 32.sp,
+                        lineHeight = 36.sp,
+                    ),
+                )
+                Text(
+                    text = heroDates(event.startsOn, event.endsOn) ?: "WordCamp",
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Medium,
+                    ),
+                )
+            }
+
+            Box(
+                Modifier
+                    .size(48.dp)
+                    .background(Color(0xFF334155), CircleShape)
+                    .border(1.dp, Color(0xFF475569), CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                RemoteImage(event.logo, Modifier.size(36.dp).clip(CircleShape)) {
+                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp))
+                }
+            }
+        }
+
+        // Middle: Event title & status badge
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = event.name,
+                style = MaterialTheme.typography.titleLarge.copy(
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 19.sp,
+                    lineHeight = 24.sp,
+                ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+
+            Row(
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(if (offline) Color(0xFF064E3B) else Color(0xFF334155))
+                    .border(1.dp, if (offline) brand.success else Color(0xFF475569), RoundedCornerShape(50))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(8.dp).background(if (offline) brand.success else Color(0xFF38BDF8), CircleShape))
+                Text(
+                    statusPill,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                    ),
+                )
+            }
+        }
+
+        // Bottom sub-card: Next session / Active talk countdown
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(14.dp))
+                .background(Color(0xFF1E293B).copy(alpha = 0.9f))
+                .border(1.dp, Color(0xFF334155), RoundedCornerShape(14.dp))
+                .padding(12.dp),
+        ) {
+            if (nextSession != null) {
+                val start = EventClock.startOf(nextSession)
+                val diffSec = (start?.epochSeconds ?: 0) - now.epochSeconds
+                val timingText = when {
+                    diffSec in 1..3600 -> "Starts in ${diffSec / 60}m"
+                    diffSec > 3600 -> "Starts in ${diffSec / 3600}h ${(diffSec % 3600) / 60}m"
+                    diffSec <= 0 -> "Happening now"
+                    else -> ""
+                }
+                val trackName = nextSession.trackNames.firstOrNull() ?: "Main Stage"
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f).padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = "NEXT UP · $timingText",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = Color(0xFFFBBF24), // High contrast Gold WCAG AA
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                letterSpacing = 0.5.sp,
+                            ),
+                        )
+                        Text(
+                            text = nextSession.title,
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        Text(
+                            text = trackName,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = Color(0xFF94A3B8),
+                                fontSize = 12.sp,
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(Color(0xFFD97706)) // Ochre CTA
+                            .clickable(role = Role.Button, onClick = onViewSchedule)
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            "VIEW",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 12.sp,
+                            ),
+                        )
+                    }
+                }
+            } else {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            "SCHEDULE OVERVIEW",
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                color = Color(0xFFFBBF24),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                            ),
+                        )
+                        Text(
+                            "${sessions.size} sessions scheduled across all tracks",
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFE2E8F0)),
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(Color(0xFF334155))
+                            .clickable(role = Role.Button, onClick = onViewSchedule)
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            "VIEW",
+                            style = MaterialTheme.typography.labelMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PeopleStrip(
+    roster: List<club.campbuddy.shared.model.RosterEntry>,
+    onExplore: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "My People & Matches",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            )
+            Text(
+                "All peers →",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = brand.primaryText,
+                    fontWeight = FontWeight.Bold,
+                ),
+                modifier = Modifier.clickable(role = Role.Button, onClick = onExplore),
+            )
+        }
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(horizontal = 2.dp),
+        ) {
+            // Find Matches / Wave Circle
+            item {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onExplore),
+                ) {
+                    Box(
+                        Modifier
+                            .size(54.dp)
+                            .background(brand.peach, CircleShape)
+                            .border(1.5.dp, brand.accent, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        LineIcon("plus", brand.primary, size = 22.dp)
+                    }
+                    Text(
+                        "Wave",
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, fontWeight = FontWeight.SemiBold),
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+
+            items(roster.take(8), key = { it.id }) { person ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable(role = Role.Button, onClick = onExplore),
+                ) {
+                    Box(Modifier.size(54.dp)) {
+                        Box(
+                            Modifier
+                                .size(54.dp)
+                                .clip(CircleShape)
+                                .background(brand.peach)
+                                .border(1.5.dp, brand.line, CircleShape),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            RemoteImage(person.avatarUrl, Modifier.size(54.dp).clip(CircleShape)) {
+                                Image(painterResource(Res.drawable.art_avatar), contentDescription = null, modifier = Modifier.size(54.dp))
+                            }
+                        }
+                        Box(
+                            Modifier
+                                .size(13.dp)
+                                .background(brand.success, CircleShape)
+                                .border(2.dp, Color.White, CircleShape)
+                                .align(Alignment.BottomEnd),
+                        )
+                    }
+                    Text(
+                        person.name.split(" ").firstOrNull() ?: person.name,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        ),
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionGrid(
+    savedCount: Int,
+    sessionCount: Int,
+    onTab: (String) -> Unit,
+) {
+    val brand = LocalBrand.current
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            "Event Hubs",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            // Row 1: My Day & Schedule
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "My Day",
+                    subtitle = "$savedCount saved sessions",
+                    icon = "calendar",
+                    accent = brand.primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("my-day") },
+                )
+                ActionTile(
+                    title = "Schedule",
+                    subtitle = "$sessionCount talks & tracks",
+                    icon = "presentation",
+                    accent = brand.accent,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("my-day") },
+                )
+            }
+
+            // Row 2: CampCard & Attendees
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "My CampCard",
+                    subtitle = "QR badge & networking",
+                    icon = "qr-code",
+                    accent = brand.primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("camp-card") },
+                )
+                ActionTile(
+                    title = "Attendees",
+                    subtitle = "Directory & speaker roles",
+                    icon = "users",
+                    accent = brand.accent,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("explore") },
+                )
+            }
+
+            // Row 3: Quests & Sponsors/Swag
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "Quests",
+                    subtitle = "Contributor day roadmap",
+                    icon = "target",
+                    accent = brand.accent,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("quest") },
+                )
+                ActionTile(
+                    title = "Sponsors & Swag",
+                    subtitle = "Steals, deals & booths",
+                    icon = "gift",
+                    accent = brand.primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onTab("explore") },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionTile(
+    title: String,
+    subtitle: String,
+    icon: String,
+    accent: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(20.dp)
+
+    Column(
+        modifier = modifier
+            .heightIn(min = 104.dp)
+            .shadow(2.dp, shape, clip = false)
+            .clip(shape)
+            .background(brand.surface, shape)
+            .border(1.dp, brand.line, shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                Modifier
+                    .size(38.dp)
+                    .background(brand.peach, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                LineIcon(icon, accent, size = 20.dp)
+            }
+            LineIcon("chevron-right", brand.muted.copy(alpha = 0.5f), size = 16.dp)
+        }
+
+        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    lineHeight = 19.sp,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = brand.muted,
+                    fontSize = 11.sp,
+                    lineHeight = 15.sp,
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LegalFooter(onLegal: (String) -> Unit) {
+    val brand = LocalBrand.current
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(top = 20.dp, bottom = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Privacy Policy",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = brand.muted,
+                    textDecoration = TextDecoration.Underline,
+                ),
+                modifier = Modifier.clickable(role = Role.Button) { onLegal("privacy") },
+            )
+            Text("•", style = MaterialTheme.typography.bodySmall.copy(color = brand.line))
+            Text(
+                "Terms of Use",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = brand.muted,
+                    textDecoration = TextDecoration.Underline,
+                ),
+                modifier = Modifier.clickable(role = Role.Button) { onLegal("terms") },
+            )
+            Text("•", style = MaterialTheme.typography.bodySmall.copy(color = brand.line))
+            Text(
+                "DPDP Act 2023",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = brand.muted,
+                    textDecoration = TextDecoration.Underline,
+                ),
+                modifier = Modifier.clickable(role = Role.Button) { onLegal("privacy") },
+            )
+        }
+        Text(
+            "CampBuddy · Local-first Community Companion",
+            style = MaterialTheme.typography.labelSmall.copy(
+                color = brand.muted.copy(alpha = 0.7f),
+                fontSize = 11.sp,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun StickyHelpBar(onHelp: () -> Unit) {
+    val brand = LocalBrand.current
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(brand.surface)
+            .navigationBarsPadding()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .clip(RoundedCornerShape(50))
+                .background(brand.danger)
+                .clickable(role = Role.Button, onClickLabel = "Need Help / SOS", onClick = onHelp)
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                LineIcon("life-buoy", Color.White, size = 20.dp)
+                Column {
+                    Text(
+                        "Need Help at WordCamp?",
+                        style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                    )
+                    Text(
+                        "Helpdesk · Incident Support · Organizers",
+                        style = MaterialTheme.typography.labelSmall.copy(color = Color.White.copy(alpha = 0.85f), fontSize = 10.sp),
+                    )
+                }
+            }
+            Box(
+                Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(Color.White.copy(alpha = 0.25f))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    "HELP",
+                    style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.ExtraBold),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HelpSheet(
+    event: EventDetail?,
+    onClose: () -> Unit,
+    onLegal: (String) -> Unit,
+) {
+    val brand = LocalBrand.current
+    val env = LocalEnv.current
+
+    Sheet(
+        title = "Attendee Support & Incident Desk",
+        onClose = onClose,
+        actions = {
+            SheetActions(
+                primary = "Got it",
+                onPrimary = onClose,
+            )
+        },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            // Venue Helpdesk Card
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(brand.peach.copy(alpha = 0.5f))
+                    .border(1.dp, brand.primary.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
+                    LineIcon("life-buoy", brand.primary, size = 24.dp)
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(
+                            "Venue Registration & Info Desk",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                        )
+                        Text(
+                            "Located near the main entrance lobby. Visit the desk for physical badge assistance, track room directions, or lost-and-found items.",
+                            style = MaterialTheme.typography.bodyMedium.copy(color = brand.ink),
+                        )
+                    }
+                }
+            }
+
+            // Code of Conduct & Safety
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(brand.surface)
+                    .border(1.dp, brand.line, RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        LineIcon("shield", brand.danger, size = 20.dp)
+                        Text(
+                            "Code of Conduct & Safety",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                        )
+                    }
+                    Text(
+                        "WordCamp is dedicated to providing a harassment-free experience for everyone. If you experience or witness an incident, report it immediately to any organizer or volunteer wearing a staff badge.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                    )
+                    PrimaryButton(
+                        text = "Read Platform Terms & Safety Code",
+                        onClick = { onLegal("terms") },
+                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    )
+                }
+            }
+
+            // Data Rights & Grievance
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(brand.surface)
+                    .border(1.dp, brand.line, RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        LineIcon("shield-check", brand.success, size = 20.dp)
+                        Text(
+                            "DPDP Act 2023 & Data Rights",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                        )
+                    }
+                    Text(
+                        "You have full rights to inspect, export, or permanently erase your data stored on this device or in discovery.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                    )
+                    QuietButton(
+                        text = "Open Privacy Notice & Data Controls",
+                        onClick = { onLegal("privacy") },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -648,11 +1413,12 @@ private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit, onStaff: (() -> Un
             if (isStaff) {
                 Box(
                     modifier = Modifier
+                        .heightIn(min = 48.dp)
                         .clip(RoundedCornerShape(50))
                         .background(if (isAdmin) brand.primary.copy(alpha = 0.12f) else brand.accent.copy(alpha = 0.22f))
                         .border(1.dp, if (isAdmin) brand.primary.copy(alpha = 0.40f) else brand.accent.copy(alpha = 0.50f), RoundedCornerShape(50))
                         .clickable(role = Role.Button, onClickLabel = "Staff Hub", onClick = onStaff)
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -674,9 +1440,9 @@ private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit, onStaff: (() -> Un
 @Composable
 private fun RoundTool(icon: String, label: String, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    // 32dp to look like the website's, with the touch area kept to 44dp around it.
-    Box(Modifier.size(44.dp).clickable(role = Role.Button, onClickLabel = label, onClick = onClick), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(32.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.ink, size = 16.dp) }
+    // 48dp minimum accessible touch target bounding box (WCAG AA requirement)
+    Box(Modifier.size(48.dp).clickable(role = Role.Button, onClickLabel = label, onClick = onClick), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(34.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.ink, size = 18.dp) }
     }
 }
 

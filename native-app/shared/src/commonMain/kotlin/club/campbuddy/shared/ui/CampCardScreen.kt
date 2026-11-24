@@ -20,6 +20,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -191,6 +194,13 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { Text(words("tabs.camp_card"), style = MaterialTheme.typography.headlineSmall) }
         item {
+            ClaimProfileBanner(
+                share = share,
+                onClaim = { picking = true },
+                onUnlink = { turnOff() },
+            )
+        }
+        item {
             Text(
                 if (live) "Swipe through the layouts. Your card stays on this phone until you choose to share it." else "This is a preview. Fill in the form below to make it yours.",
                 style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
@@ -215,6 +225,9 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
                     }
                 }
             }
+        }
+        item {
+            ActiveSocialBadges(card = shown)
         }
         note?.let { n -> item { Text(n, style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.SemiBold)) } }
 
@@ -487,5 +500,127 @@ private fun SharePicker(state: LoadState<List<RosterEntry>>, onPick: (RosterEntr
             )
         }
         LinkButton("Cancel", onCancel)
+    }
+}
+
+@Composable
+private fun ClaimProfileBanner(
+    share: MyShare?,
+    onClaim: () -> Unit,
+    onUnlink: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    val shape = RoundedCornerShape(20.dp)
+
+    if (share == null) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .shadow(2.dp, shape, clip = false)
+                .clip(shape)
+                .background(brand.peach.copy(alpha = 0.5f), shape)
+                .border(1.5.dp, brand.primary.copy(alpha = 0.35f), shape)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        Modifier.size(38.dp).background(brand.primary, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        LineIcon("user-check", Color.White, size = 20.dp)
+                    }
+                    Column {
+                        Text(
+                            "Claim Your Attendee Profile",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                        )
+                        Text(
+                            "Link your name on the attendee list",
+                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                        )
+                    }
+                }
+            }
+
+            Text(
+                "Link your ticket registration from the WordCamp Attendee List to attach this CampCard to your public entry and enable peer discovery waves.",
+                style = MaterialTheme.typography.bodySmall.copy(color = brand.ink),
+            )
+
+            PrimaryButton(
+                text = "Claim My Profile →",
+                onClick = onClaim,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp),
+            )
+        }
+    } else {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(brand.surface, shape)
+                .border(1.dp, brand.success.copy(alpha = 0.5f), shape)
+                .padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.size(34.dp).background(brand.success.copy(alpha = 0.15f), CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LineIcon("shield-check", brand.success, size = 18.dp)
+                }
+                Column {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Verified Attendee", style = MaterialTheme.typography.labelSmall.copy(color = brand.success, fontWeight = FontWeight.Bold))
+                        Text("•", style = MaterialTheme.typography.labelSmall.copy(color = brand.muted))
+                        Text(share.attendeeName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                    }
+                    Text("Linked to Attendee List", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+                }
+            }
+            Text(
+                "Unlink",
+                style = MaterialTheme.typography.labelSmall.copy(color = brand.danger, fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.clickable(role = Role.Button, onClick = onUnlink).padding(4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveSocialBadges(card: CampCard) {
+    val brand = LocalBrand.current
+    val links = listOfNotNull(
+        if (card.linkedin.isNotBlank()) "LinkedIn" else null,
+        if (card.wordpressOrg.isNotBlank()) "WordPress.org" else null,
+        if (card.twitter.isNotBlank()) "Twitter / X" else null,
+        if (card.website.isNotBlank()) "Website" else null,
+    )
+    if (links.isEmpty()) return
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("ACTIVE SOCIAL CHANNELS IN QR", style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 1.sp, color = brand.muted))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            links.forEach { label ->
+                Row(
+                    Modifier
+                        .background(brand.peach, RoundedCornerShape(50))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(6.dp).background(brand.primary, CircleShape))
+                    Text(label, style = MaterialTheme.typography.labelSmall.copy(color = brand.ink, fontWeight = FontWeight.Bold))
+                }
+            }
+        }
     }
 }

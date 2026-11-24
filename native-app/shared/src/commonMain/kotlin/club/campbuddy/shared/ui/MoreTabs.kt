@@ -629,7 +629,7 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
 @Composable
 fun ExploreTab(slug: String, start: String? = null) {
     val words = LocalWords.current
-    var section by rememberSaveable(slug) { mutableStateOf(start?.takeIf { it in setOf("people", "sponsors", "deals", "steals", "info") } ?: "people") }
+    var section by rememberSaveable(slug) { mutableStateOf(start?.takeIf { it in setOf("people", "sponsors", "deals", "steals", "quests", "info") } ?: "people") }
 
     Column(Modifier.fillMaxSize()) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -639,8 +639,9 @@ fun ExploreTab(slug: String, start: String? = null) {
                 listOf(
                     Triple("people", "People", "users"),
                     Triple("sponsors", "Sponsors", "heart"),
-                    Triple("deals", "Deals", "tag"),
-                    Triple("steals", "Free Steals", "sparkles"),
+                    Triple("deals", "Deals", "gift"),
+                    Triple("steals", "Steals", "sparkles"),
+                    Triple("quests", "Quests", "target"),
                     Triple("info", "Info", "ticket"),
                 ).forEach { (key, label, icon) ->
                     ExploreTile(label, icon, selected = section == key, modifier = Modifier.padding(horizontal = 3.dp)) { section = key }
@@ -652,6 +653,7 @@ fun ExploreTab(slug: String, start: String? = null) {
                 "people" -> PeopleList(slug)
                 "sponsors" -> SponsorList(slug)
                 "deals" -> DealList(slug)
+                "quests" -> QuestTab(slug)
                 "info" -> InfoList(slug)
                 else -> StealList(slug)
             }
@@ -703,9 +705,9 @@ private fun PeopleList(slug: String) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         SearchField(query, "Search attendees…") { query = it }
                         if (roles.isNotEmpty()) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                ChoicePill("All ${s.value.size}", role == "") { role = "" }
-                                roles.forEach { r ->
+                            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(horizontal = 2.dp)) {
+                                item { ChoicePill("All ${s.value.size}", role == "") { role = "" } }
+                                items(roles) { r ->
                                     ChoicePill((ROLE_FILTER_LABELS[r] ?: r) + " " + s.value.count { r in it.roles }, role == r) { role = r }
                                 }
                             }
