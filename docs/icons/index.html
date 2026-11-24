@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampBuddy Unified Icon Suite (76 Icons)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1E293B;
+      --ink: #0F172A;
+      --coral: #FF4D2D;
+      --ochre: #D97706;
+      --peach: #FFF7ED;
+      --surface: #FAFAFD;
+      --border: #E2E8F0;
+      --muted: #64748B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--peach);
+      color: var(--ink);
+      padding: 40px 24px;
+      line-height: 1.5;
+    }
+    .header {
+      max-width: 1200px;
+      margin: 0 auto 32px auto;
+      text-align: center;
+    }
+    .header h1 {
+      font-family: 'Baloo 2', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .search-bar {
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 50px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-bar input:focus {
+      border-color: var(--coral);
+    }
+    .stats {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .icon-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 16px;
+    }
+    .icon-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .icon-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+      border-color: var(--coral);
+    }
+    .preview-box {
+      width: 54px;
+      height: 54px;
+      background: var(--peach);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      color: var(--navy);
+    }
+    .preview-box svg {
+      width: 28px;
+      height: 28px;
+    }
+    .name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      text-align: center;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+    .actions {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+    .btn {
+      flex: 1;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-svg {
+      background: #F1F5F9;
+      color: var(--navy);
+    }
+    .btn-svg:hover {
+      background: #E2E8F0;
+    }
+    .btn-png {
+      background: var(--coral);
+      color: #fff;
+    }
+    .btn-png:hover {
+      background: #E03E1F;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>CampBuddy Icon Suite</h1>
+    <p>Complete set of 76 unified line icons for Web, Admin Panel, and Mobile APK.</p>
+    <div class="search-bar">
+      <input type="text" id="search" placeholder="Search 76 icons by name (e.g. qr-code, crown, calendar)..." oninput="filterIcons()">
+      <div class="stats"><span id="count">76</span> icons visible</div>
+    </div>
+  </div>
+
+  <div class="icon-grid" id="grid">
+    
+  <div class="icon-card" data-name="accessibility">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/>
+</svg>
+</div>
+    <div class="name">accessibility</div>
+    <div class="actions">
+      <a href="svg/accessibility.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/accessibility.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="arrow-right">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 12h14M13 6l6 6-6 6"/>
+</svg>
+</div>
+    <div class="name">arrow-right</div>
+    <div class="actions">
+      <a href="svg/arrow-right.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/arrow-right.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="award">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/>
+</svg>
+</div>
+    <div class="name">award</div>
+    <div class="actions">
+      <a href="svg/award.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/award.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="battery">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2M6 11v2M10 11v2"/>
+</svg>
+</div>
+    <div class="name">battery</div>
+    <div class="actions">
+      <a href="svg/battery.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/battery.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="bell">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+</svg>
+</div>
+    <div class="name">bell</div>
+    <div class="actions">
+      <a href="svg/bell.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/bell.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="book-open">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+</svg>
+</div>
+    <div class="name">book-open</div>
+    <div class="actions">
+      <a href="svg/book-open.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/book-open.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="briefcase">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+</svg>
+</div>
+    <div class="name">briefcase</div>
+    <div class="actions">
+      <a href="svg/briefcase.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/briefcase.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="calendar">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+</svg>
+</div>
+    <div class="name">calendar</div>
+    <div class="actions">
+      <a href="svg/calendar.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/calendar.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="camera">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/>
+</svg>
+</div>
+    <div class="name">camera</div>
+    <div class="actions">
+      <a href="svg/camera.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/camera.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="check">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 6 9 17l-5-5"/>
+</svg>
+</div>
+    <div class="name">check</div>
+    <div class="actions">
+      <a href="svg/check.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/check.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="chevron-down">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m6 9 6 6 6-6"/>
+</svg>
+</div>
+    <div class="name">chevron-down</div>
+    <div class="actions">
+      <a href="svg/chevron-down.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/chevron-down.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="chevron-left">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m15 18-6-6 6-6"/>
+</svg>
+</div>
+    <div class="name">chevron-left</div>
+    <div class="actions">
+      <a href="svg/chevron-left.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/chevron-left.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="chevron-right">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m9 18 6-6-6-6"/>
+</svg>
+</div>
+    <div class="name">chevron-right</div>
+    <div class="actions">
+      <a href="svg/chevron-right.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/chevron-right.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="clipboard">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6M9 16h6"/>
+</svg>
+</div>
+    <div class="name">clipboard</div>
+    <div class="actions">
+      <a href="svg/clipboard.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/clipboard.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="clock">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+</svg>
+</div>
+    <div class="name">clock</div>
+    <div class="actions">
+      <a href="svg/clock.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/clock.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="coffee">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M6 2v2M10 2v2M14 2v2"/>
+</svg>
+</div>
+    <div class="name">coffee</div>
+    <div class="actions">
+      <a href="svg/coffee.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/coffee.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="columns">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/>
+</svg>
+</div>
+    <div class="name">columns</div>
+    <div class="actions">
+      <a href="svg/columns.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/columns.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="compass">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/>
+</svg>
+</div>
+    <div class="name">compass</div>
+    <div class="actions">
+      <a href="svg/compass.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/compass.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="crown">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7z"/><path d="M5 20h14"/>
+</svg>
+</div>
+    <div class="name">crown</div>
+    <div class="actions">
+      <a href="svg/crown.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/crown.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="download">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>
+</svg>
+</div>
+    <div class="name">download</div>
+    <div class="actions">
+      <a href="svg/download.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/download.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="external">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 17 17 7M8 7h9v9"/>
+</svg>
+</div>
+    <div class="name">external</div>
+    <div class="actions">
+      <a href="svg/external.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/external.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="file-text">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>
+</svg>
+</div>
+    <div class="name">file-text</div>
+    <div class="actions">
+      <a href="svg/file-text.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/file-text.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="filter">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 6h16M7 12h10M10 18h4"/>
+</svg>
+</div>
+    <div class="name">filter</div>
+    <div class="actions">
+      <a href="svg/filter.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/filter.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="flask">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 2v7.31L4.5 19a2 2 0 0 0 1.75 3h11.5a2 2 0 0 0 1.75-3L14 9.31V2"/><path d="M8.5 2h7M7 16h10"/>
+</svg>
+</div>
+    <div class="name">flask</div>
+    <div class="actions">
+      <a href="svg/flask.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/flask.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="gift">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 4.8 0 0 1 12 8a4.8 4.8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/>
+</svg>
+</div>
+    <div class="name">gift</div>
+    <div class="actions">
+      <a href="svg/gift.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/gift.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="globe">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
+</svg>
+</div>
+    <div class="name">globe</div>
+    <div class="actions">
+      <a href="svg/globe.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/globe.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="graduation-cap">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/><path d="M22 10v6"/>
+</svg>
+</div>
+    <div class="name">graduation-cap</div>
+    <div class="actions">
+      <a href="svg/graduation-cap.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/graduation-cap.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="hand">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+</svg>
+</div>
+    <div class="name">hand</div>
+    <div class="actions">
+      <a href="svg/hand.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/hand.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="heart">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z"/>
+</svg>
+</div>
+    <div class="name">heart</div>
+    <div class="actions">
+      <a href="svg/heart.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/heart.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="help-circle">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/>
+</svg>
+</div>
+    <div class="name">help-circle</div>
+    <div class="actions">
+      <a href="svg/help-circle.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/help-circle.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="id-card">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M15 8h2M15 12h2M7 16h6"/>
+</svg>
+</div>
+    <div class="name">id-card</div>
+    <div class="actions">
+      <a href="svg/id-card.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/id-card.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="laptop">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 20h20"/>
+</svg>
+</div>
+    <div class="name">laptop</div>
+    <div class="actions">
+      <a href="svg/laptop.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/laptop.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="layout-dashboard">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>
+</svg>
+</div>
+    <div class="name">layout-dashboard</div>
+    <div class="actions">
+      <a href="svg/layout-dashboard.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/layout-dashboard.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="life-buoy">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/>
+</svg>
+</div>
+    <div class="name">life-buoy</div>
+    <div class="actions">
+      <a href="svg/life-buoy.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/life-buoy.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="lightbulb">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 18h6M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+</svg>
+</div>
+    <div class="name">lightbulb</div>
+    <div class="actions">
+      <a href="svg/lightbulb.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/lightbulb.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="link">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+</svg>
+</div>
+    <div class="name">link</div>
+    <div class="actions">
+      <a href="svg/link.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/link.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="lock">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+</svg>
+</div>
+    <div class="name">lock</div>
+    <div class="actions">
+      <a href="svg/lock.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/lock.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="log-out">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>
+</svg>
+</div>
+    <div class="name">log-out</div>
+    <div class="actions">
+      <a href="svg/log-out.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/log-out.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="map">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>
+</svg>
+</div>
+    <div class="name">map</div>
+    <div class="actions">
+      <a href="svg/map.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/map.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="map-pin">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>
+</svg>
+</div>
+    <div class="name">map-pin</div>
+    <div class="actions">
+      <a href="svg/map-pin.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/map-pin.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="megaphone">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+</svg>
+</div>
+    <div class="name">megaphone</div>
+    <div class="actions">
+      <a href="svg/megaphone.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/megaphone.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="message-circle">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/>
+</svg>
+</div>
+    <div class="name">message-circle</div>
+    <div class="actions">
+      <a href="svg/message-circle.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/message-circle.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="mic">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/>
+</svg>
+</div>
+    <div class="name">mic</div>
+    <div class="actions">
+      <a href="svg/mic.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/mic.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="moon">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/>
+</svg>
+</div>
+    <div class="name">moon</div>
+    <div class="actions">
+      <a href="svg/moon.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/moon.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="party">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01M22 8h.01M15 2h.01M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2z"/>
+</svg>
+</div>
+    <div class="name">party</div>
+    <div class="actions">
+      <a href="svg/party.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/party.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="pause">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+</svg>
+</div>
+    <div class="name">pause</div>
+    <div class="actions">
+      <a href="svg/pause.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/pause.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="pen-tool">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.59 7.59"/><circle cx="11" cy="11" r="2"/>
+</svg>
+</div>
+    <div class="name">pen-tool</div>
+    <div class="actions">
+      <a href="svg/pen-tool.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/pen-tool.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="pencil">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m17 3 4 4L7.5 20.5 2 22l1.5-5.5z"/>
+</svg>
+</div>
+    <div class="name">pencil</div>
+    <div class="actions">
+      <a href="svg/pencil.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/pencil.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="play">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 4v16l13-8z"/>
+</svg>
+</div>
+    <div class="name">play</div>
+    <div class="actions">
+      <a href="svg/play.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/play.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="plus">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 5v14M5 12h14"/>
+</svg>
+</div>
+    <div class="name">plus</div>
+    <div class="actions">
+      <a href="svg/plus.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/plus.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="presentation">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="m7 21 5-5 5 5"/>
+</svg>
+</div>
+    <div class="name">presentation</div>
+    <div class="actions">
+      <a href="svg/presentation.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/presentation.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="qr-code">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14v3M14 17h3M14 14h.01M20 17v.01M17 20v.01M20 20v.01"/>
+</svg>
+</div>
+    <div class="name">qr-code</div>
+    <div class="actions">
+      <a href="svg/qr-code.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/qr-code.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="refresh">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5"/>
+</svg>
+</div>
+    <div class="name">refresh</div>
+    <div class="actions">
+      <a href="svg/refresh.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/refresh.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="scan">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+</svg>
+</div>
+    <div class="name">scan</div>
+    <div class="actions">
+      <a href="svg/scan.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/scan.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="search">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="11" cy="11" r="7"/><path d="m21 21-5-5"/>
+</svg>
+</div>
+    <div class="name">search</div>
+    <div class="actions">
+      <a href="svg/search.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/search.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="settings">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+</svg>
+</div>
+    <div class="name">settings</div>
+    <div class="actions">
+      <a href="svg/settings.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/settings.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="share">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="m16 6-4-4-4 4"/><path d="M12 2v13"/>
+</svg>
+</div>
+    <div class="name">share</div>
+    <div class="actions">
+      <a href="svg/share.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/share.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="shield">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+</svg>
+</div>
+    <div class="name">shield</div>
+    <div class="actions">
+      <a href="svg/shield.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/shield.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="shield-alert">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4M12 16h.01"/>
+</svg>
+</div>
+    <div class="name">shield-alert</div>
+    <div class="actions">
+      <a href="svg/shield-alert.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/shield-alert.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="shield-check">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>
+</svg>
+</div>
+    <div class="name">shield-check</div>
+    <div class="actions">
+      <a href="svg/shield-check.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/shield-check.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="siren">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 18v-6a5 5 0 1 1 10 0v6"/><path d="M5 21a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2z"/><path d="M21 12h1M18.5 4.5 18 5M2 12h1M12 2v1M4.93 4.93l.71.71"/>
+</svg>
+</div>
+    <div class="name">siren</div>
+    <div class="actions">
+      <a href="svg/siren.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/siren.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="sparkles">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/><path d="M19 3v4M17 5h4"/>
+</svg>
+</div>
+    <div class="name">sparkles</div>
+    <div class="actions">
+      <a href="svg/sparkles.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/sparkles.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="sprout">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/>
+</svg>
+</div>
+    <div class="name">sprout</div>
+    <div class="actions">
+      <a href="svg/sprout.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/sprout.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="star">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>
+</svg>
+</div>
+    <div class="name">star</div>
+    <div class="actions">
+      <a href="svg/star.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/star.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="tag">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1"/>
+</svg>
+</div>
+    <div class="name">tag</div>
+    <div class="actions">
+      <a href="svg/tag.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/tag.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="target">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+</svg>
+</div>
+    <div class="name">target</div>
+    <div class="actions">
+      <a href="svg/target.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/target.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="ticket">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 9a3 3 0 0 0 0 6v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3a3 3 0 0 0 0-6V6a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1z"/><path d="M13 5v2M13 11v2M13 17v2"/>
+</svg>
+</div>
+    <div class="name">ticket</div>
+    <div class="actions">
+      <a href="svg/ticket.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/ticket.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="trash">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/>
+</svg>
+</div>
+    <div class="name">trash</div>
+    <div class="actions">
+      <a href="svg/trash.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/trash.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="user-check">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/>
+</svg>
+</div>
+    <div class="name">user-check</div>
+    <div class="actions">
+      <a href="svg/user-check.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/user-check.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="user-plus">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/>
+</svg>
+</div>
+    <div class="name">user-plus</div>
+    <div class="actions">
+      <a href="svg/user-plus.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/user-plus.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="users">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+</svg>
+</div>
+    <div class="name">users</div>
+    <div class="actions">
+      <a href="svg/users.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/users.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="utensils">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>
+</svg>
+</div>
+    <div class="name">utensils</div>
+    <div class="actions">
+      <a href="svg/utensils.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/utensils.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="wifi">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><path d="M12 20h.01"/>
+</svg>
+</div>
+    <div class="name">wifi</div>
+    <div class="actions">
+      <a href="svg/wifi.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/wifi.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="wrench">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+</svg>
+</div>
+    <div class="name">wrench</div>
+    <div class="actions">
+      <a href="svg/wrench.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/wrench.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="x">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M18 6 6 18M6 6l12 12"/>
+</svg>
+</div>
+    <div class="name">x</div>
+    <div class="actions">
+      <a href="svg/x.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/x.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+
+  <div class="icon-card" data-name="zap">
+    <div class="preview-box"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#1E293B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M13 2 3 14h9l-1 8 10-12h-9z"/>
+</svg>
+</div>
+    <div class="name">zap</div>
+    <div class="actions">
+      <a href="svg/zap.svg" download class="btn btn-svg">SVG</a>
+      <a href="png/zap.png" download class="btn btn-png">PNG</a>
+    </div>
+  </div>
+  </div>
+
+  <script>
+    function filterIcons() {
+      const q = document.getElementById('search').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.icon-card');
+      let visible = 0;
+      cards.forEach(c => {
+        const name = c.dataset.name;
+        if (!q || name.includes(q)) {
+          c.style.display = 'flex';
+          visible++;
+        } else {
+          c.style.display = 'none';
+        }
+      });
+      document.getElementById('count').textContent = visible;
+    }
+  </script>
+</body>
+</html>
