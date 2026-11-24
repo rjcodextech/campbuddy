@@ -50,10 +50,12 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 
 --------------------------------------------------------------------------------
 
-## Open Questions
+## Open Questions & Decisions
 
-*   **Question 1**: Should the 6-digit desktop-to-mobile transfer link provide direct optical QR import on desktop screens as a universal offline fallback for mobile camera scanning when conference internet is completely severed?
-*   **Question 2**: For past events, should post-event memories remain open indefinitely for slide downloads, or automatically archive to read-only static HTML after 90 days?
+*   **Question 1: Optical Device-to-Device Streaming Fallback**: Should the 6-digit desktop-to-mobile transfer link support an animated/chunked optical QR fallback when venue Wi-Fi is completely severed?
+    - **Decision**: **Rejected (Out of Scope)**. Device transfer (F-02) is an initial setup convenience between an attendee's own laptop and phone prior to conference sessions. Optical QR exchanges are reserved for peer CampCards (F-07/F-08). Speculative chunked visual data streaming across screens introduces disproportionate complexity (YAGNI).
+*   **Question 2: Static HTML Archival Exporter**: For past events, should an automated routine archive event pages into read-only static HTML after 90 days?
+    - **Decision**: **Rejected (Standard Controller Caching Retained)**. The Laravel backend serves past events effortlessly via `EventMemoriesPageController` with negligible database load. Standard HTTP caching headers (`Cache-Control: public, max-age=...`) combined with ServiceWorker CacheStorage already guarantee offline longevity without maintaining a separate static site generation pipeline.
 
 --------------------------------------------------------------------------------
 
@@ -103,7 +105,7 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 |  - Routing: 327 Registered Routes (Admin, Event Public, API, Well-Known)              |
 +----------+------------------------+-------------------------+-------------------------+
            |                        |                         |                         |
-   [HTTP / SSR HTML]        [HTTPS / CacheStorage]    [REST JSON API]           [Admin SSE / HTTP]
+   [HTTP / SSR HTML]        [HTTPS / CacheStorage]    [REST JSON API]           [Admin HTTP Polling / ETags]
            |                        |                         |                         |
            v                        v                         v                         v
 +--------------------+   +--------------------+   +--------------------+   +--------------------+
@@ -165,7 +167,7 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 | **F-12** | Contributor Day Quests & Roadmaps | Web, PWA, APK | W09, P08, A09 | Full Offline | Contributor table roadmaps (Core, Docs, Polyglots, Accessibility) with interactive quest checklists and XP progression tracked in IndexedDB `questProgress` and `KeyValueStore`. |
 | **F-13** | Venue Navigation & Accessible Map | Web, PWA, APK | W10, P09, A10 | Full Offline | Indoor venue map featuring wheelchair-accessible paths, quiet rooms, and registration markers. Rendered via vector SVG in `guide.blade.php` and `Guide.kt`. |
 | **F-14** | Emergency SOS & Code of Conduct | Web, PWA, APK | W10, P09, A10 | Dial-out / Cache | 1-tap confidential incident report dispatcher and direct phone dialer connecting attendees to designated event safety marshals. |
-| **F-15** | Post-Event Archival Slides & Memories | Web, PWA, APK | W11, P02 | Cached | Archival repository hosting speaker slide download links, community photo galleries, and personal event recap summaries via `EventMemoriesPageController`. |
+| **F-15** | Post-Event Archival Slides & Memories | Web, PWA, APK | W11 | Cached | Archival repository hosting speaker slide download links, community photo galleries, and personal event recap summaries via `EventMemoriesPageController`. |
 | **F-16** | DPDPA 2023 & GDPR Privacy Self-Service | Web, PWA, APK | W07, A10 | Online Sync | Automated privacy self-service enabling attendees to request public roster removal or local data erasure via `RosterRemovalController` and scheduled data pruning. |
 | **F-17** | Desktop Operations Control Center | Admin | AP01 | Online Session | Administrative dashboard tracking active attendee counts, room check-in rates, background queue status, and broadcast announcement bars. |
 | **F-18** | Live Room Delay Broadcaster | Admin | AP02 | Online Session | Delay adjustment console allowing event leads to delay tracks (+5m, +10m, +15m). Delays are saved in `schedule_delays` and dynamically applied via `ScheduleDelay::apply`. |
@@ -175,7 +177,7 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 | **F-22** | Contributor Table Configuration | Admin | AP06 | Online Session | Table management console configuring Contributor Day teams (Core, Polyglots, Docs), table leads, GitHub onboarding links, and quest XP via `ContributorTableController`. |
 | **F-23** | Mobile App Config & Releases | Admin | AP07 | Online Session | Dynamic remote configuration editor for native Android APK: manages navigation tabs, theme colors, feature flags, and hosts chunked APK binary uploads via `MobileAppController`. |
 | **F-24** | Attendee Moderation & Incident Reports | Admin | AP08 | Online Session | Safety marshal console reviewing attendee Code of Conduct incident flags and profile reports with status toggles (Assigned, In Progress, Resolved) via `ReportsController`. |
-| **F-25** | Social Media Studio & Reel Kit | Admin | AP01, AP06 | Online Session | Automated social asset generator producing brand-compliant graphic cards, countdown stories, and video teasers for upcoming talks via `SocialController`. |
+| **F-25** | Social Media Studio & Reel Kit | Admin | AP01 | Online Session | Automated social asset generator producing brand-compliant graphic cards, countdown stories, and video teasers for upcoming talks via `SocialController` (accessed via dashboard tile). |
 | **F-26** | Automated WordCamp Ingestion Crons | Backend Core | AP01, AP04 | Scheduled Daemon | Dual-tier background ingestion engine running daily syncs for upcoming events and hourly delta syncs during active event days with DOM fallback scraping via `ScheduledTasks`. |
 
 --------------------------------------------------------------------------------
@@ -237,7 +239,7 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 ---
 
 ### Platform Tier 4: Admin & Staff Panel
-*Layout: `1280×800 Desktop` & `390×844 Mobile` · Technology: Laravel Breeze Session Auth, Tailwind CSS, SSE / Polling*
+*Layout: `1280×800 Desktop` & `390×844 Mobile` · Technology: Laravel Breeze Session Auth, Tailwind CSS, HTTP / Polling with ETags*
 
 | Screen ID | Screen Name | Route / Destination | Template / Implementation | Description | Key UI Elements | Offline Behavior |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -302,8 +304,8 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 3. Confirm Mobile App Config (`/admin/mobile-app`) saves JSON configs and serves APK updates.
 
 ### Phase 5: Verification & Multi-Page FigCraft Artifact Compilation
-1. Run JavaScript test suite: `npm run test:js` (verify all 431 unit and integration tests pass).
-2. Run PHP test suite: `php artisan test` (verify all 1,181 backend tests pass).
+1. Run JavaScript test suite: `npm run test:js` (verify passing status across all unit and integration tests).
+2. Run PHP test suite: `php artisan test` (verify complete passing status across backend test suite).
 3. Execute FigCraft CLI builder: `node tools/build_figcraft_multipage.mjs` compiling [docs/designs/campbuddy_all_screens.figcraft](file:///e:/Sites/InHouse/campbuddy/V2/docs/designs/campbuddy_all_screens.figcraft).
 4. Run `figcraft-cli info docs/designs/campbuddy_all_screens.figcraft` to confirm all 4 pages and 38 screens validate successfully.
 
