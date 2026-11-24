@@ -118,8 +118,8 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 ### 2. Full Codebase Review: Subsystem Breakdown
 
 #### A. Backend Ingestion & Media Pipeline
-*   [app/Services/WordCamp/WordCampRestClient.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Services/WordCamp/WordCampRestClient.php): Fetches official WordCamp REST feeds for posts, sessions, speakers, sponsors, and tracks. Contains resilient DOM-scraping fallback routines (`fetchSponsorLogosFromPage()`, `fetchSpeakersFromPage()`) when upstream REST feeds omit media images. Verified feeds: WordCamp Delhi (17/17 sponsor logos), Athens (30/30 sponsor logos), Bandung, and Nairobi.
-*   [app/Services/WordCamp/WordCampNormalizer.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Services/WordCamp/WordCampNormalizer.php): Cleans names, extracts track halls, resolves high-resolution logo links, and normalizes disparate upstream schemas into standardized internal structures.
+*   [app/Services/WordCampRestClient.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Services/WordCampRestClient.php): Fetches official WordCamp REST feeds for posts, sessions, speakers, sponsors, and tracks. Contains resilient DOM-scraping fallback routines (`fetchSponsorLogosFromPage()`, `fetchSpeakersFromPage()`) using `Symfony\Component\DomCrawler\Crawler` when upstream REST feeds omit media images. Verified feeds: WordCamp Delhi (17/17 sponsor logos), Athens (30/30 sponsor logos), Bandung, and Nairobi.
+*   [app/Services/WordCampNormalizer.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Services/WordCampNormalizer.php): Cleans names, extracts track halls, resolves high-resolution logo links, and normalizes disparate upstream schemas into standardized internal structures.
 *   [app/Support/ScheduledTasks.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Support/ScheduledTasks.php): Central schedule registry defining 20 automated cron routines, including `event-day-hourly-refresh` (hourly sync during live event days), `ingest-sessions-speakers-sponsors` (daily sync), `fill-missing-photos`, `backfill-event-branding`, and `erase-expired-personal-data` (DPDPA 2023 retention compliance).
 *   [app/Http/Controllers/PublicStorageController.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Http/Controllers/PublicStorageController.php): Serves cached branding assets, speaker photos, and sponsor logos stored locally via Laravel queue jobs (`FetchBrandingAssetsJob`, `FillMissingPhotosJob`), eliminating mixed-content issues and external CDN rate-limits.
 *   [app/Support/ScheduleDelay.php](file:///e:/Sites/InHouse/campbuddy/V2/app/Support/ScheduleDelay.php): Reconciles live organizer delays with hourly scraper syncs. Delays are stored as delta records on the event model (`schedule_delays`) and applied dynamically at read-time via `ScheduleDelay::apply`. Base session `starts_at` times in the database remain untouched, preventing compounded schedule drift when upstream WordCamp feeds refresh.
@@ -281,34 +281,40 @@ CampBuddy solves these problems through an offline-first architecture, local Cac
 
 --------------------------------------------------------------------------------
 
-## Detailed Implementation Plan
+## Implementation Verification & Deployment Readiness Plan
 
 ### Phase 1: Ingestion Engine & Media Pipeline Verification
-1. Verify `WordCampRestClient.php` and `WordCampScraper.php` DOM fallback parsers against live feeds (Delhi, Athens, Bandung, Nairobi).
-2. Execute `ScheduledTasks::WHAT['fill-missing-photos']` and `ScheduledTasks::WHAT['backfill-event-branding']` to confirm local storage proxying via `PublicStorageController`.
-3. Validate that `ScheduleDelay::apply` preserves database baseline `starts_at` times during hourly scraper refresh runs.
+1. Run scraper unit test suite: `php artisan test --filter=WordCampRestClientTest` to verify DOM fallback parsing against WordCamp feeds (Delhi, Athens, Bandung, Nairobi).
+2. Dispatch media backfill jobs: `php artisan tinker --execute="App\Jobs\FillMissingPhotosJob::dispatchSync(App\Models\Event::firstOrFail());"` and `php artisan tinker --execute="App\Jobs\FetchBrandingAssetsJob::dispatchSync(App\Models\Event::firstOrFail());"` (or trigger `php artisan schedule:run`) to verify that assets are persisted to `Storage::disk('public')` and accessible via `PublicStorageController`.
+3. Run delay unit test suite: `php artisan test --filter=ScheduleDelayTest` asserting that scraper runs store unmodified upstream baseline `starts_at` timestamps in `event_feeds`, while `ScheduleDelay::apply` projects delays dynamically at read-time without mutating the database baseline.
 
 ### Phase 2: Client Data Layer & Service Worker Hardening
-1. Validate `public/sw.js` cache partitioning (`campbuddy-v3`, `campbuddy-avatars`) and ensure authentication paths (`/admin`, `/login`) are never cached.
-2. Confirm IndexedDB object stores (`kv`, `bookmarks`, `questProgress`, `metHistory`, `meetings`) initialize cleanly in `resources/js/attendee/db.js`.
-3. Verify Kotlin Multiplatform `Repository.kt` and `KeyValueStore` serialization for Android and iOS targets.
+1. Run automated browser offline test suite: `npm run test:browser` (`tests/browser/offline.e2e.mjs`) to verify Service Worker cache partitioning (`campbuddy-v3`, `campbuddy-avatars`) and assert that `/admin` and `/login` routes bypass caching via network-only requests.
+2. Verify that `resources/js/attendee/db.js` initializes IndexedDB stores (`kv`, `bookmarks`, `questProgress`, `metHistory`, `meetings`) on upgrade without schema migration errors.
+3. Run Kotlin Multiplatform shared unit tests: `cd native-app && ./gradlew.bat testDebugUnitTest` to validate `Repository.kt` and `KeyValueStore` serialization across multiplatform targets.
 
 ### Phase 3: Screen & Multi-Platform UI Synchronization
-1. Synchronize all 11 Website Frontend Blade views ([resources/views/attendee/](file:///e:/Sites/InHouse/campbuddy/V2/resources/views/attendee/)) with touch-optimized 2×3 action grids and live ticking countdown timers.
-2. Ensure PWA standalone views (P01–P09) match mobile layout specifications and offline readiness indicators.
-3. Validate Native Android APK composables ([club.campbuddy.shared.ui](file:///e:/Sites/InHouse/campbuddy/V2/native-app/shared/src/commonMain/kotlin/club/campbuddy/shared/ui/)) matching screen catalog specifications A01–A10.
+1. Synchronize Website Frontend Blade views ([resources/views/welcome.blade.php](file:///e:/Sites/InHouse/campbuddy/V2/resources/views/welcome.blade.php) and [resources/views/attendee/](file:///e:/Sites/InHouse/campbuddy/V2/resources/views/attendee/)) against catalog specifications W01–W11, ensuring Screen W03 incorporates the touch-optimized 2×3 action grid and 30-second live countdown timer.
+2. Run mobile UI audit suite: `npm run test:ui` (`tests/browser/ui-audit.mjs`) across all 17 attendee/mobile views (390×844) to verify zero layout overflow, compliant touch tap targets (>=44px), and proper offline readiness indicator states (P01–P09).
+3. Compile and verify Native Android APK composables ([club.campbuddy.shared.ui](file:///e:/Sites/InHouse/campbuddy/V2/native-app/shared/src/commonMain/kotlin/club/campbuddy/shared/ui/)) via `cd native-app && ./gradlew.bat :androidApp:assembleDebug` to confirm clean compilation for screens A01–A10.
 
 ### Phase 4: Admin Panel Delay & Broadcast Verification
-1. Validate Live Room Delay Broadcaster (`/admin/events/{event}/delay`) cascading delays across Hall A/B/C.
-2. Test Push Announcement Dispatcher (`/admin/events/{event}/notifications`) message dispatch.
-3. Confirm Mobile App Config (`/admin/mobile-app`) saves JSON configs and serves APK updates.
+1. Test Live Room Delay Broadcaster (`/admin/events/{event}/delay`) by submitting incremental delay values (+5m, +10m, +15m) and asserting database persistence in `schedule_delays` and downstream session cascades.
+2. Test Push Announcement Dispatcher by submitting POST requests to `/admin/events/{event}/broadcasts` (`BroadcastController::store`) and asserting enqueued Web Push and app notification jobs.
+3. Verify Mobile App Config endpoint (`/admin/mobile-app`) by persisting dynamic UI configurations, validating JSON response schema, and asserting chunked APK release routes.
 
-### Phase 5: Verification & Multi-Page FigCraft Artifact Compilation
-1. Run JavaScript test suite: `npm run test:js` (verify passing status across all unit and integration tests).
-2. Run PHP test suite: `php artisan test` (verify complete passing status across backend test suite).
-3. Execute FigCraft CLI builder: `node tools/build_figcraft_multipage.mjs` compiling [docs/designs/campbuddy_all_screens.figcraft](file:///e:/Sites/InHouse/campbuddy/V2/docs/designs/campbuddy_all_screens.figcraft).
-4. Run `figcraft-cli info docs/designs/campbuddy_all_screens.figcraft` to confirm all 4 pages and 38 screens validate successfully.
+### Phase 5: Full Regression Testing & FigCraft Compilation
+1. Run JavaScript test suite: `npm run test:js`.
+2. Run PHP test suite: `php artisan test`.
+3. Execute FigCraft CLI builder script to generate intermediate command stream: `node tools/build_figcraft_multipage.mjs`.
+4. Compile FigCraft binary artifact: `figcraft-cli run scratch/figcraft_multipage_script.json --out docs/designs/campbuddy_all_screens.figcraft`.
+5. Validate compiled artifact structure and screen count: `figcraft-cli info docs/designs/campbuddy_all_screens.figcraft` (confirm 4 pages and 38 screens).
 
---------------------------------------------------------------------------------
-
-*Drafted with EGM*
+### Rollout Milestones & Rollback Protocol
+*   **Milestone 1 (Local Verification)**: Execute Phases 1–5 locally with zero failing test assertions and clean FigCraft compilation.
+*   **Milestone 2 (Staging Rehearsal)**: Ingest live WordCamp feeds on staging environment; verify offline PWA installation on physical mobile devices and simulated 30–60s delay broadcasts.
+*   **Milestone 3 (Production Canary)**: Deploy with feature flags enabled; monitor background scheduler logs via `ScheduledTasks`.
+*   **Rollback Procedures**:
+    - *Service Worker Cache Corruption*: Bump cache version in `public/sw.js` (from `campbuddy-v3` to `campbuddy-v4`) or flip `swrPages: false` in `/sw-flags.json` to invalidate client caches immediately.
+    - *Schedule Delay Over-Correction*: Clear active delay records instantly via `ScheduleDelay::clear($event)` without affecting baseline event schedules.
+    - *Database Ingestion Failure*: Restore database from point-in-time snapshot captured prior to hourly cron execution.
