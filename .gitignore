@@ -36,4 +36,5 @@ Thumbs.db
 /storage/phone_*.png
 /storage/phone_current.png
 /sdcard/window_dump.xml
+scratch/
 
