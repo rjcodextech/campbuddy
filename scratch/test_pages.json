@@ -1,0 +1,10 @@
+[
+  { "command": "page.rename", "params": { "name": "Web UI" } },
+  { "command": "frame.create", "params": { "name": "Web Test Frame", "x": 40, "y": 40, "width": 1280, "height": 800 } },
+  { "command": "page.add", "params": { "name": "PWA" } },
+  { "command": "frame.create", "params": { "name": "PWA Test Frame", "x": 40, "y": 40, "width": 390, "height": 844 } },
+  { "command": "page.add", "params": { "name": "APK" } },
+  { "command": "frame.create", "params": { "name": "APK Test Frame", "x": 40, "y": 40, "width": 390, "height": 844 } },
+  { "command": "page.add", "params": { "name": "AdminPanel" } },
+  { "command": "frame.create", "params": { "name": "Admin Test Frame", "x": 40, "y": 40, "width": 1280, "height": 800 } }
+]
