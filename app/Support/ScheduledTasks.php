@@ -19,6 +19,7 @@ class ScheduledTasks
     /** schedule name => what it does, in a line. */
     public const WHAT = [
         'ingest-sessions-speakers-sponsors' => 'Fetches the schedule, speakers and sponsors of every live event from its site (for a week after it ends).',
+        'event-day-hourly-refresh' => 'Refreshes sessions, speakers, sponsors and roster every hour for events currently running today.',
         'ingest-event-info' => 'Fetches each live event\'s information (venue, links, contact); what an admin typed is never overwritten.',
         'ingest-attendee-roster' => 'Reads each live event\'s public Attendees page: new people in, people who left out.',
         'fill-missing-photos' => 'Finds and caches photos for everyone on a live event\'s attendee list (retrying unfetched photos daily).',

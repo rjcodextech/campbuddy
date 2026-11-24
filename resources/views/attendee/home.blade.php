@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="tactile-hero__logo-badge" title="{{ $event->display_name }}">
-                    <img src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}"
+                    <img class="home-hero__logo" src="{{ $event->logoUrl() ?? $event->faviconUrl() ?? '/media/icons/icon-192.png' }}"
                          alt="{{ $event->display_name }}" width="36" height="36"
                          loading="eager" fetchpriority="high" decoding="async"
                          data-fallback="/media/icons/icon-192.png"

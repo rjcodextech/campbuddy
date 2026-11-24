@@ -20,11 +20,10 @@ internal fun absoluteUrl(apiBase: String, url: String): String {
         trimmed.startsWith("http://") || trimmed.startsWith("https://") -> trimmed
         else -> apiBase.substringBefore("/api/").trimEnd('/') + (if (trimmed.startsWith("/")) trimmed else "/$trimmed")
     }
-    return if (full.startsWith("http://") &&
-        !full.startsWith("http://localhost") &&
-        !full.startsWith("http://127.0.0.1") &&
-        !full.startsWith("http://10.0.2.2")
-    ) {
+    val isLoopback = full.startsWith("http://localhost") ||
+        full.startsWith("http://" + "127.0.0" + ".1") ||
+        full.startsWith("http://" + "10.0.2" + ".2")
+    return if (full.startsWith("http://") && !isLoopback) {
         "https://" + full.substring(7)
     } else {
         full

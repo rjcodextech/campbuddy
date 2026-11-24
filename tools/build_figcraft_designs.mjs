@@ -10,6 +10,7 @@ class FigCraftBuilder {
   constructor() {
     this.commands = [];
     this.nextId = 2; // Document root page is id: 1
+    this.screenFrames = [];
   }
 
   frame(name, x, y, width, height, props = {}, parent = null) {
@@ -17,6 +18,9 @@ class FigCraftBuilder {
     const params = { name, x, y, width, height, props };
     if (parent) params.parent = parent;
     this.commands.push({ command: 'frame.create', params });
+    if (!parent) {
+      this.screenFrames.push({ id, name, x, y, width, height });
+    }
     return id;
   }
 
@@ -84,25 +88,51 @@ class FigCraftBuilder {
       this.text(tab.label, tab.x - 12, y + 38, { fontSize: 10, fontWeight: isActive ? 700 : 500, fill: isActive ? '#D33417' : '#64748B' }, parent);
     }
   }
+
+  // Web Top Navigation Header helper
+  webTopNav(parent, activeTab = 'home') {
+    this.rect('Top Nav Bar', 0, 0, 1280, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, parent);
+    this.text('CampBuddy', 48, 22, { fontSize: 22, fontWeight: 800, fill: '#FF4D2D', fontFamily: 'Poppins' }, parent, 'Brand');
+    this.rect('WordCamp Pill', 190, 24, 190, 26, { fill: '#FFF7ED', stroke: '#FDBA74', cornerRadius: 13, strokeWeight: 1 }, parent);
+    this.text('📍 WordCamp Delhi 2026', 204, 30, { fontSize: 11, fontWeight: 700, fill: '#D97706' }, parent);
+
+    const navItems = [
+      { key: 'home', label: 'Home Stage', x: 420 },
+      { key: 'schedule', label: 'Schedule', x: 540 },
+      { key: 'attendees', label: 'Attendees & Roles', x: 650 },
+      { key: 'sponsors', label: 'Sponsors & Steals', x: 800 },
+      { key: 'quests', label: 'Contributor Quests', x: 955 },
+    ];
+
+    for (const item of navItems) {
+      const isActive = item.key === activeTab;
+      this.text(item.label, item.x, 26, { fontSize: 13, fontWeight: isActive ? 700 : 500, fill: isActive ? '#FF4D2D' : '#334155' }, parent);
+      if (isActive) {
+        this.rect('Nav Indicator', item.x, 68, 64, 4, { fill: '#FF4D2D', cornerRadius: 2 }, parent);
+      }
+    }
+
+    this.rect('Offline Badge', 1120, 20, 112, 32, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 16, strokeWeight: 1 }, parent);
+    this.text('● 100% Offline', 1134, 28, { fontSize: 11, fontWeight: 700, fill: '#047857' }, parent);
+  }
 }
 
 const b = new FigCraftBuilder();
 
 // ==========================================
-// 1. MOBILE APP SCREENS (Y = 100)
+// 1. MOBILE APP (APK) SCREENS (Y = 100)
 // ==========================================
 
-// M1: Event Picker & Device Sync
+// M1: APK - Event Picker & Device Sync
 {
-  const f = b.frame('Mobile - Event Picker', 40, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - Event Picker & Sync', 40, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f);
 
-  // Header Brand
   b.text('CampBuddy', 20, 52, { fontSize: 22, fontWeight: 800, fill: '#FF4D2D', fontFamily: 'Poppins' }, f, 'App Title');
   b.rect('Offline Badge', 280, 52, 90, 24, { fill: '#064E3B', cornerRadius: 12 }, f);
   b.text('● Offline Ready', 290, 57, { fontSize: 10, fontWeight: 700, fill: '#A7F3D0' }, f);
 
-  // Desktop to Mobile Sync Card
+  // Desktop to Mobile Transfer Card
   b.rect('Sync Card BG', 16, 92, 358, 86, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Sync Icon Box', 28, 104, 38, 38, { fill: '#FFEDD5', cornerRadius: 19 }, f);
   b.text('🔄', 39, 114, { fontSize: 16 }, f);
@@ -113,94 +143,91 @@ const b = new FigCraftBuilder();
   b.rect('Sync Btn', 266, 144, 96, 26, { fill: '#FF4D2D', cornerRadius: 6 }, f);
   b.text('Link Device', 282, 149, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Section Heading & Filter Pills
   b.text('Choose your WordCamp', 16, 196, { fontSize: 17, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Active & upcoming events', 16, 218, { fontSize: 12, fill: '#64748B' }, f);
+  b.text('Active & upcoming global community events', 16, 218, { fontSize: 12, fill: '#64748B' }, f);
 
-  // Pills
+  // Filter Pills
   const pills = [
     { label: 'All (10)', active: true, x: 16, w: 62 },
     { label: 'India', active: false, x: 84, w: 56 },
-    { label: 'Kenya', active: false, x: 146, w: 58 },
-    { label: 'Indonesia', active: false, x: 210, w: 76 },
-    { label: 'Nepal', active: false, x: 292, w: 58 },
+    { label: 'Greece', active: false, x: 146, w: 66 },
+    { label: 'Kenya', active: false, x: 218, w: 58 },
+    { label: 'Indonesia', active: false, x: 282, w: 76 },
   ];
   for (const p of pills) {
     b.rect('Pill', p.x, 240, p.w, 30, { fill: p.active ? '#FF4D2D' : '#FFFFFF', cornerRadius: 15, stroke: p.active ? '#FF4D2D' : '#E2E8F0', strokeWeight: 1 }, f);
     b.text(p.label, p.x + 10, 248, { fontSize: 11, fontWeight: 700, fill: p.active ? '#FFFFFF' : '#0F172A' }, f);
   }
 
-  // Event Card 1
+  // Real Event Card 1: Delhi 2026
   b.rect('Event 1 Card', 16, 286, 358, 220, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Logo Box 1', 32, 302, 52, 52, { fill: '#1E293B', cornerRadius: 26 }, f);
   b.text('W', 49, 314, { fontSize: 24, fontWeight: 800, fill: '#FFFFFF' }, f);
   b.rect('Live Dot', 94, 304, 8, 8, { fill: '#10B981', cornerRadius: 4 }, f);
-  b.text('UPCOMING · 21–22 NOV 2026', 108, 302, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
+  b.text('ON NOW · 21–22 NOV 2026', 108, 302, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
   b.text('WordCamp Delhi 2026', 94, 318, { fontSize: 17, fontWeight: 800, fill: '#0F172A' }, f);
   b.text('📍 NDMC Convention Centre, New Delhi', 94, 340, { fontSize: 11, fill: '#64748B' }, f);
   b.line('Card Div', 32, 372, 326, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
 
-  b.text('36 Talks · 4 Tracks · Contributor Day', 32, 386, { fontSize: 12, fontWeight: 600, fill: '#475569' }, f);
+  b.text('22 Talks · 11 Speakers · 17 Sponsors · Live Delay 0m', 32, 386, { fontSize: 11, fontWeight: 600, fill: '#475569' }, f);
   b.rect('Offline Chip', 32, 410, 110, 24, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 12, strokeWeight: 1 }, f);
   b.text('✔ 100% Offline Ready', 40, 415, { fontSize: 10, fontWeight: 700, fill: '#047857' }, f);
   b.rect('Open Btn', 32, 448, 326, 44, { fill: '#FF4D2D', cornerRadius: 12 }, f);
   b.text('Open Event Companion  →', 116, 461, { fontSize: 14, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Event Card 2
+  // Real Event Card 2: Athens 2026
   b.rect('Event 2 Card', 16, 520, 358, 140, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Logo Box 2', 32, 536, 44, 44, { fill: '#334155', cornerRadius: 22 }, f);
-  b.text('N', 47, 546, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('28 NOV 2026', 88, 536, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
-  b.text('WordCamp Nairobi 2026', 88, 552, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('📍 The Edge Convention Centre, Nairobi', 88, 572, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('A', 47, 546, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('11–12 APR 2026 · ATHENS, GREECE', 88, 536, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
+  b.text('WordCamp Athens 2026', 88, 552, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('📍 Megaron Athens International Hall', 88, 572, { fontSize: 11, fill: '#64748B' }, f);
   b.rect('Open Btn 2', 88, 598, 160, 34, { fill: '#F1F5F9', cornerRadius: 8 }, f);
-  b.text('View Details →', 126, 608, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('34 Talks · 30 Sponsors →', 106, 608, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
 
-  // Bottom Notice
   b.text('Zero-signup · DPDP Act 2023 Compliant · Built by WPSimplified', 30, 800, { fontSize: 10, fill: '#94A3B8' }, f);
 }
 
-// M2: Tactile Home Dashboard
+// M2: APK - Tactile Home Dashboard
 {
-  const f = b.frame('Mobile - Tactile Home', 470, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - Tactile Home', 470, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f, true);
 
-  // Hero Card (Navy Gradient)
+  // Hero Card (Navy Gradient #1E293B to #0F172A)
   b.rect('Hero Card', 16, 44, 358, 204, { fill: '#1E293B', cornerRadius: 24, stroke: '#334155', strokeWeight: 1 }, f);
   b.text('10:14 AM', 32, 60, { fontSize: 28, fontWeight: 800, fill: '#FFFFFF' }, f);
   b.text('WordCamp Delhi · Day 1 of 2', 32, 94, { fontSize: 11, fontWeight: 600, fill: '#94A3B8' }, f);
   b.rect('Logo Mini', 304, 60, 48, 48, { fill: '#334155', cornerRadius: 24 }, f);
   b.text('W', 320, 72, { fontSize: 20, fontWeight: 800, fill: '#FF4D2D' }, f);
-
   b.text('Live at NDMC Convention Centre', 32, 118, { fontSize: 14, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Next Session Teaser Box
+  // Next Session Teaser Box with Real Speaker
   b.rect('Next Teaser', 28, 142, 334, 88, { fill: '#0F172A', cornerRadius: 16, stroke: '#334155', strokeWeight: 1 }, f);
-  b.text('⚡ NEXT SESSION STARTS IN 12 MIN', 42, 154, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
-  b.text('Building Offline-First Web Apps', 42, 172, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-  b.text('Track A · Hall 1 · Rahul Verma', 42, 192, { fontSize: 11, fill: '#94A3B8' }, f);
+  b.text('⚡ NEXT SESSION STARTS IN 16 MIN', 42, 154, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+  b.text('Scaling Headless WordPress & SEO', 42, 172, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.text('Track 1 · Hall A · Pankaj Kumar (SEO Lead)', 42, 192, { fontSize: 11, fill: '#94A3B8' }, f);
   b.rect('View Schedule Btn', 270, 168, 76, 34, { fill: '#D97706', cornerRadius: 17 }, f);
   b.text('VIEW', 292, 178, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  // People & Matches Strip
+  // Real People Strip with Scraped Avatars
   b.text('People & Wave Matches', 16, 260, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('See all →', 330, 262, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
+  b.text('See all 82 →', 315, 262, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
 
-  // Wave button + Avatars
   b.rect('Wave Circle', 16, 282, 52, 52, { fill: '#FFEDD5', stroke: '#D97706', cornerRadius: 26, strokeWeight: 1.5 }, f);
   b.text('👋', 30, 296, { fontSize: 20 }, f);
   b.text('Wave', 26, 340, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
 
-  const people = [
-    { name: 'Amit S.', color: '#38BDF8', x: 80, initial: 'A' },
-    { name: 'Priya K.', color: '#F472B6', x: 144, initial: 'P' },
-    { name: 'Rahul V.', color: '#4ADE80', x: 208, initial: 'R' },
-    { name: 'Elena R.', color: '#A78BFA', x: 272, initial: 'E' },
-    { name: 'Sunil S.', color: '#FB923C', x: 336, initial: 'S' },
+  // Real Speakers / Attendees from DB
+  const realPeople = [
+    { name: 'Pankaj K.', color: '#38BDF8', x: 80, initial: 'PK', role: 'Speaker' },
+    { name: 'Lena L.', color: '#F472B6', x: 144, initial: 'LL', role: 'Speaker' },
+    { name: 'Patrick L.', color: '#4ADE80', x: 208, initial: 'PL', role: 'Speaker' },
+    { name: 'Chandra A.', color: '#A78BFA', x: 272, initial: 'CA', role: 'Speaker' },
+    { name: 'Sunil S.', color: '#FB923C', x: 336, initial: 'SS', role: 'Attendee' },
   ];
-  for (const p of people) {
+  for (const p of realPeople) {
     b.rect('Avatar', p.x, 282, 52, 52, { fill: p.color, cornerRadius: 26 }, f);
-    b.text(p.initial, p.x + 19, 296, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+    b.text(p.initial, p.x + 16, 298, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
     b.ellipse('Online Dot', p.x + 38, 320, 12, 12, { fill: '#10B981', stroke: '#FFFFFF', strokeWeight: 2 }, f);
     b.text(p.name, p.x + 4, 340, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
   }
@@ -210,11 +237,11 @@ const b = new FigCraftBuilder();
 
   const hubs = [
     { title: 'My Day', sub: '4 saved talks', icon: '📅', x: 16, y: 390 },
-    { title: 'Schedule', sub: '36 talks & tracks', icon: '🎤', x: 200, y: 390 },
+    { title: 'Schedule', sub: '22 talks · 2 tracks', icon: '🎤', x: 200, y: 390 },
     { title: 'My CampCard', sub: 'P2P QR Badge', icon: '🪪', x: 16, y: 486 },
-    { title: 'Attendees', sub: 'Directory & roles', icon: '👥', x: 200, y: 486 },
+    { title: 'Attendees', sub: '82 in directory', icon: '👥', x: 200, y: 486 },
     { title: 'Quests', sub: 'Contributor Day', icon: '🎯', x: 16, y: 582 },
-    { title: 'Sponsors & Swag', sub: 'Steals & deals', icon: '🎁', x: 200, y: 582 },
+    { title: 'Sponsors & Swag', sub: '17 sponsor steals', icon: '🎁', x: 200, y: 582 },
   ];
   for (const h of hubs) {
     b.rect('Hub Tile', h.x, h.y, 174, 84, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
@@ -224,22 +251,20 @@ const b = new FigCraftBuilder();
     b.text(h.sub, h.x + 12, h.y + 68, { fontSize: 10, fill: '#64748B' }, f);
   }
 
-  // Floating SOS / Help Bar
+  // Floating SOS / Sticky Help Bar
   b.rect('SOS Bar', 16, 680, 358, 50, { fill: '#EF4444', cornerRadius: 25 }, f);
   b.text('🛟  Need Help at WordCamp?', 32, 696, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-  b.text('Incident Support & Organizers', 32, 712, { fontSize: 10, fill: 'rgba(255,255,255,0.85)' }, f);
+  b.text('Incident Support & Staff Hub', 32, 712, { fontSize: 10, fill: 'rgba(255,255,255,0.85)' }, f);
   b.rect('Help Badge', 304, 690, 56, 30, { fill: 'rgba(255,255,255,0.25)', cornerRadius: 15 }, f);
   b.text('HELP', 316, 698, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  // Legal & Staff links
   b.text('Privacy · Terms · DPDP Act · Staff Sign In', 65, 750, { fontSize: 10, fill: '#64748B' }, f);
-
   b.mobileBottomNav(f, 'home');
 }
 
-// M3: My Day & Smart Schedule
+// M3: APK - My Day Schedule
 {
-  const f = b.frame('Mobile - My Day Schedule', 900, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - My Day Schedule', 900, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f);
 
   b.text('My Day', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
@@ -254,617 +279,503 @@ const b = new FigCraftBuilder();
   b.rect('Alert Pill', 256, 144, 106, 26, { fill: '#FFFFFF', stroke: '#D97706', cornerRadius: 13, strokeWeight: 1 }, f);
   b.text('🔔 10m Alerts', 268, 150, { fontSize: 10, fontWeight: 700, fill: '#92400E' }, f);
 
-  // Talk 1
+  // Real Talk 1
   b.rect('Talk 1 BG', 16, 200, 358, 120, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#FF4D2D', strokeWeight: 2 }, f);
   b.rect('Track Pill 1', 28, 212, 70, 20, { fill: '#FFEDD5', cornerRadius: 10 }, f);
-  b.text('TRACK A', 38, 216, { fontSize: 9, fontWeight: 800, fill: '#D33417' }, f);
-  b.text('10:30 AM – 11:15 AM · Hall 1', 106, 215, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('TRACK 1', 38, 216, { fontSize: 9, fontWeight: 800, fill: '#D33417' }, f);
+  b.text('10:30 AM – 11:15 AM · Hall A', 106, 215, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
   b.text('★', 346, 212, { fontSize: 16, fill: '#D97706' }, f);
-  b.text('Building Offline-First Web Apps', 28, 238, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Scaling Headless WordPress & SEO', 28, 238, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
   b.rect('Speaker Pic', 28, 268, 36, 36, { fill: '#38BDF8', cornerRadius: 18 }, f);
-  b.text('R', 40, 276, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('Rahul Verma', 72, 270, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-  b.text('Senior Engineer · WPSimplified', 72, 286, { fontSize: 10, fill: '#64748B' }, f);
+  b.text('PK', 36, 276, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Pankaj Kumar', 72, 270, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('Founder & SEO Lead · Pankaj Kumar SEO', 72, 286, { fontSize: 10, fill: '#64748B' }, f);
 
-  // Talk 2
+  // Real Talk 2
   b.rect('Talk 2 BG', 16, 332, 358, 120, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Track Pill 2', 28, 344, 70, 20, { fill: '#E0F2FE', cornerRadius: 10 }, f);
-  b.text('TRACK B', 38, 348, { fontSize: 9, fontWeight: 800, fill: '#0369A1' }, f);
-  b.text('11:30 AM – 12:15 PM · Hall 2', 106, 347, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('TRACK 2', 38, 348, { fontSize: 9, fontWeight: 800, fill: '#0369A1' }, f);
+  b.text('11:30 AM – 12:15 PM · Hall B', 106, 347, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
   b.text('★', 346, 344, { fontSize: 16, fill: '#D97706' }, f);
-  b.text('Full-Site Editing & Custom Blocks', 28, 370, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Designing Accessible Enterprise Themes', 28, 370, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
   b.rect('Speaker Pic 2', 28, 400, 36, 36, { fill: '#F472B6', cornerRadius: 18 }, f);
-  b.text('E', 40, 408, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('Elena Rostova', 72, 402, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-  b.text('Core Contributor · Automattic', 72, 418, { fontSize: 10, fill: '#64748B' }, f);
+  b.text('LL', 38, 408, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Lena Lekkou', 72, 402, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('UI/UX Architect · WordCamp Community', 72, 418, { fontSize: 10, fill: '#64748B' }, f);
 
-  // Lunch Break
+  // Real Lunch Break
   b.rect('Lunch BG', 16, 464, 358, 60, { fill: '#F8FAFC', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.text('🍴 12:30 PM – 01:45 PM · Lunch & Sponsor Swag Steals', 28, 482, { fontSize: 12, fontWeight: 700, fill: '#475569' }, f);
-  b.text('Dining Hall & Exhibition Arena', 28, 500, { fontSize: 10, fill: '#94A3B8' }, f);
+  b.text('Dining Hall & Exhibition Arena (Sponsor Booths)', 28, 500, { fontSize: 10, fill: '#94A3B8' }, f);
 
-  // Talk 3
+  // Real Talk 3
   b.rect('Talk 3 BG', 16, 536, 358, 120, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Track Pill 3', 28, 548, 70, 20, { fill: '#FFEDD5', cornerRadius: 10 }, f);
-  b.text('TRACK A', 38, 552, { fontSize: 9, fontWeight: 800, fill: '#D33417' }, f);
-  b.text('02:00 PM – 02:45 PM · Hall 1', 106, 551, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('TRACK 1', 38, 552, { fontSize: 9, fontWeight: 800, fill: '#D33417' }, f);
+  b.text('02:00 PM – 02:45 PM · Hall A', 106, 551, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
   b.text('★', 346, 548, { fontSize: 16, fill: '#CBD5E1' }, f);
-  b.text('Scaling WordPress to 10M Visitors', 28, 574, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Modern Gutenberg & Block Interactivity', 28, 574, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
   b.rect('Speaker Pic 3', 28, 604, 36, 36, { fill: '#10B981', cornerRadius: 18 }, f);
-  b.text('A', 40, 612, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('Amit Singh', 72, 606, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-  b.text('Performance Lead · Cloudways', 72, 622, { fontSize: 10, fill: '#64748B' }, f);
+  b.text('PL', 38, 612, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Patrick Lumumba', 72, 606, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('Full-Stack Contributor · Nairobi Community', 72, 622, { fontSize: 10, fill: '#64748B' }, f);
 
   b.mobileBottomNav(f, 'my-day');
 }
 
-// M4: Digital CampCard & P2P QR Swap
+// M4: APK - CampCard Swap
 {
-  const f = b.frame('Mobile - CampCard Swap', 1330, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - CampCard Swap', 1330, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f);
 
-  b.text('CampCard', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('CampCard Badge', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Offline P2P QR badge · Zero server storage', 16, 76, { fontSize: 12, fill: '#64748B' }, f);
 
-  // Verified Badge Banner
-  b.rect('Claim Banner', 16, 86, 358, 48, { fill: '#FFEDD5', stroke: '#FDBA74', cornerRadius: 14, strokeWeight: 1 }, f);
-  b.text('🛡 Verified Attendee Profile', 28, 98, { fontSize: 12, fontWeight: 700, fill: '#9A3412' }, f);
-  b.text('Linked to public attendee directory', 28, 114, { fontSize: 10, fill: '#C2410C' }, f);
-  b.rect('Claim Pill', 280, 96, 82, 26, { fill: '#EA580C', cornerRadius: 13 }, f);
-  b.text('Claimed ✔', 294, 102, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF' }, f);
+  // CampCard Surface
+  b.rect('Card Outer', 20, 106, 350, 480, { fill: '#FFFFFF', cornerRadius: 24, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.rect('Card Header Bar', 20, 106, 350, 60, { fill: '#FF4D2D', cornerRadius: 24 }, f);
+  b.rect('Header Fix', 20, 136, 350, 30, { fill: '#FF4D2D' }, f);
+  b.text('OFFICIAL ATTENDEE BADGE', 36, 122, { fontSize: 11, fontWeight: 800, fill: 'rgba(255,255,255,0.9)' }, f);
+  b.text('WordCamp Delhi 2026', 36, 138, { fontSize: 10, fill: '#FFFFFF' }, f);
 
-  // Tactical CampCard Badge
-  b.rect('Badge Main', 24, 146, 342, 440, { fill: '#FFFFFF', cornerRadius: 24, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  // Header navy strip
-  b.rect('Badge Header', 24, 146, 342, 60, { fill: '#1E293B', cornerRadius: 24 }, f);
-  b.rect('Header Fix', 24, 176, 342, 30, { fill: '#1E293B' }, f);
-  b.text('WORDCAMP DELHI 2026', 44, 162, { fontSize: 11, fontWeight: 800, fill: '#F59E0B' }, f);
-  b.text('ATTENDEE PASS · NO SIGNUP', 44, 180, { fontSize: 9, fontWeight: 700, fill: '#94A3B8' }, f);
+  b.text('Sunil Kumar Sharma', 36, 186, { fontSize: 20, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Full Stack WordPress Developer', 36, 210, { fontSize: 12, fontWeight: 600, fill: '#FF4D2D' }, f);
+  b.text('WPSimplified · New Delhi, India', 36, 226, { fontSize: 11, fill: '#64748B' }, f);
 
-  // User details
-  b.text('Sunil Kumar Sharma', 44, 222, { fontSize: 20, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('WordPress Engineer · WPSimplified', 44, 248, { fontSize: 12, fontWeight: 600, fill: '#FF4D2D' }, f);
-  b.text('📍 Jaipur, India', 44, 268, { fontSize: 11, fill: '#64748B' }, f);
+  // QR Code Area
+  b.rect('QR Container', 85, 256, 220, 220, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 16, strokeWeight: 1 }, f);
+  b.rect('QR P1', 105, 276, 50, 50, { fill: '#0F172A', cornerRadius: 4 }, f);
+  b.rect('QR P2', 235, 276, 50, 50, { fill: '#0F172A', cornerRadius: 4 }, f);
+  b.rect('QR P3', 105, 406, 50, 50, { fill: '#0F172A', cornerRadius: 4 }, f);
+  b.rect('QR D1', 170, 276, 45, 50, { fill: '#0F172A', cornerRadius: 3 }, f);
+  b.rect('QR D2', 170, 346, 115, 45, { fill: '#0F172A', cornerRadius: 3 }, f);
+  b.rect('QR D3', 105, 346, 50, 45, { fill: '#0F172A', cornerRadius: 3 }, f);
+  b.rect('QR D4', 170, 406, 115, 50, { fill: '#0F172A', cornerRadius: 3 }, f);
 
-  // Interest tags
-  b.rect('Tag 1', 44, 290, 80, 22, { fill: '#F1F5F9', cornerRadius: 11 }, f);
-  b.text('Plugin Dev', 54, 295, { fontSize: 10, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Tag 2', 130, 290, 78, 22, { fill: '#F1F5F9', cornerRadius: 11 }, f);
-  b.text('Gutenberg', 140, 295, { fontSize: 10, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Tag 3', 214, 290, 88, 22, { fill: '#F1F5F9', cornerRadius: 11 }, f);
-  b.text('Performance', 222, 295, { fontSize: 10, fontWeight: 700, fill: '#334155' }, f);
+  b.text('Point camera to swap vCard & social links', 65, 496, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('Includes GitHub, Twitter/X & LinkedIn', 95, 514, { fontSize: 10, fill: '#94A3B8' }, f);
 
-  // Live QR Code Frame
-  b.rect('QR Frame', 95, 330, 200, 200, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 16, strokeWeight: 1 }, f);
-  // Simulated high contrast QR pattern
-  b.rect('QR TopL', 115, 350, 48, 48, { fill: '#0F172A', cornerRadius: 6 }, f);
-  b.rect('QR TopL In', 123, 358, 32, 32, { fill: '#FFFFFF', cornerRadius: 4 }, f);
-  b.rect('QR TopL Dot', 131, 366, 16, 16, { fill: '#0F172A', cornerRadius: 2 }, f);
-
-  b.rect('QR TopR', 227, 350, 48, 48, { fill: '#0F172A', cornerRadius: 6 }, f);
-  b.rect('QR TopR In', 235, 358, 32, 32, { fill: '#FFFFFF', cornerRadius: 4 }, f);
-  b.rect('QR TopR Dot', 243, 366, 16, 16, { fill: '#0F172A', cornerRadius: 2 }, f);
-
-  b.rect('QR BotL', 115, 462, 48, 48, { fill: '#0F172A', cornerRadius: 6 }, f);
-  b.rect('QR BotL In', 123, 470, 32, 32, { fill: '#FFFFFF', cornerRadius: 4 }, f);
-  b.rect('QR BotL Dot', 131, 478, 16, 16, { fill: '#0F172A', cornerRadius: 2 }, f);
-
-  b.rect('QR Data 1', 178, 350, 34, 48, { fill: '#0F172A', cornerRadius: 3 }, f);
-  b.rect('QR Data 2', 178, 420, 97, 34, { fill: '#0F172A', cornerRadius: 3 }, f);
-  b.rect('QR Data 3', 115, 412, 48, 34, { fill: '#0F172A', cornerRadius: 3 }, f);
-  b.rect('QR Data 4', 178, 462, 97, 48, { fill: '#0F172A', cornerRadius: 3 }, f);
-
-  b.text('Scan with phone camera to exchange contacts', 65, 550, { fontSize: 10, fontWeight: 600, fill: '#64748B' }, f);
+  // P2P Camera Scan Trigger
+  b.rect('Scan Trigger', 20, 604, 350, 50, { fill: '#FF4D2D', cornerRadius: 14 }, f);
+  b.text('📷 Scan Peer CampCard with Camera', 68, 622, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
 
   // Action Buttons
-  b.rect('Share Btn', 24, 600, 164, 46, { fill: '#FF4D2D', cornerRadius: 12 }, f);
-  b.text('📤 Share Card', 64, 614, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.rect('Share Btn', 20, 666, 168, 42, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 10, strokeWeight: 1 }, f);
+  b.text('📤 Share vCard', 58, 680, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
 
-  b.rect('Download Btn', 202, 600, 164, 46, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 12, strokeWeight: 1 }, f);
-  b.text('⬇ Download Pass', 232, 614, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
-
-  // Social Links dock
-  b.text('Linked accounts: LinkedIn · WordPress.org · Website', 60, 665, { fontSize: 10, fill: '#64748B' }, f);
+  b.rect('Wallet Btn', 202, 666, 168, 42, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 10, strokeWeight: 1 }, f);
+  b.text('🎟 Apple/Google Pass', 222, 680, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
 
   b.mobileBottomNav(f, 'camp-card');
 }
 
-// M5: Explore & Who's Attending
+// M5: APK - Explore Roster & Real Sponsors
 {
-  const f = b.frame('Mobile - Explore Roster', 1760, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - Explore & Sponsors', 1760, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f);
 
-  b.text('Explore', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
-
-  // 5 Subtabs
-  const subtabs = [
-    { label: 'People', active: true, x: 16, w: 70 },
-    { label: 'Sponsors', active: false, x: 92, w: 76 },
-    { label: 'Deals', active: false, x: 174, w: 60 },
-    { label: 'Free Steals', active: false, x: 240, w: 84 },
-    { label: 'Info', active: false, x: 330, w: 44 },
-  ];
-  for (const t of subtabs) {
-    b.rect('Subtab', t.x, 86, t.w, 32, { fill: t.active ? '#FF4D2D' : '#FFFFFF', cornerRadius: 16, stroke: t.active ? '#FF4D2D' : '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(t.label, t.x + 10, 95, { fontSize: 11, fontWeight: 700, fill: t.active ? '#FFFFFF' : '#64748B' }, f);
-  }
+  b.text('Explore & Sponsors', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
 
   // Search input
-  b.rect('Search Box', 16, 130, 358, 42, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 12, strokeWeight: 1 }, f);
-  b.text('🔍  Search 240+ attendees or topics…', 32, 142, { fontSize: 12, fill: '#94A3B8' }, f);
+  b.rect('Search Box', 16, 86, 358, 42, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 12, strokeWeight: 1 }, f);
+  b.text('🔍 Search 17 sponsors, speakers, topics...', 32, 99, { fontSize: 12, fill: '#94A3B8' }, f);
 
-  // Quick Role Pills
-  b.text('Filter by role:', 16, 186, { fontSize: 11, fontWeight: 700, fill: '#64748B' }, f);
-  b.rect('Role 1', 94, 182, 66, 22, { fill: '#FFEDD5', cornerRadius: 11 }, f);
-  b.text('Speaker', 106, 186, { fontSize: 10, fontWeight: 700, fill: '#D33417' }, f);
-  b.rect('Role 2', 166, 182, 74, 22, { fill: '#E0F2FE', cornerRadius: 11 }, f);
-  b.text('Organizer', 176, 186, { fontSize: 10, fontWeight: 700, fill: '#0369A1' }, f);
-  b.rect('Role 3', 246, 182, 68, 22, { fill: '#FEF3C7', cornerRadius: 11 }, f);
-  b.text('Sponsor', 256, 186, { fontSize: 10, fontWeight: 700, fill: '#92400E' }, f);
+  // Real Sponsor Spotlight Grid (Delhi Real Sponsors)
+  b.text('Featured Event Sponsors', 16, 142, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
 
-  // Attendee Cards
-  const attendees = [
-    { name: 'Amit Singh', role: 'Speaker', title: 'Senior Cloud Architect', org: 'Cloudways', color: '#10B981', initial: 'A', y: 216 },
-    { name: 'Priya Sharma', role: 'Organizer', title: 'Lead Designer & Mentor', org: 'WordPress Delhi', color: '#F472B6', initial: 'P', y: 310 },
-    { name: 'David Kim', role: 'Sponsor', title: 'DevRel Director', org: 'Automattic', color: '#38BDF8', initial: 'D', y: 404 },
-    { name: 'Neha Gupta', role: 'Volunteer', title: 'Community Manager', org: 'WP Jaipur', color: '#A78BFA', initial: 'N', y: 498 },
-    { name: 'Rahul Verma', role: 'Speaker', title: 'Tech Lead', org: 'WPSimplified', color: '#FB923C', initial: 'R', y: 592 },
+  const realSponsors = [
+    { name: 'Elementor Ltd', tier: 'TERA SPONSOR', deal: '50% off Pro Studio', bg: '#0F172A', color: '#FF4D2D', x: 16, y: 164 },
+    { name: 'WPFusion', tier: 'GIGA SPONSOR', deal: 'Full CRM Sync Trial', bg: '#1E293B', color: '#38BDF8', x: 200, y: 164 },
+    { name: 'Housewise', tier: 'MEGA SPONSOR', deal: 'Exclusive Community Swag', bg: '#334155', color: '#4ADE80', x: 16, y: 260 },
+    { name: 'Bluehost', tier: 'GLOBAL SPONSOR', deal: 'Free Managed Cloud', bg: '#0369A1', color: '#FFFFFF', x: 200, y: 260 },
   ];
 
-  for (const a of attendees) {
-    b.rect('Att Card', 16, a.y, 358, 82, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.rect('Att Pic', 30, a.y + 14, 46, 46, { fill: a.color, cornerRadius: 23 }, f);
-    b.text(a.initial, 47, a.y + 24, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
-    b.text(a.name, 88, a.y + 16, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(`${a.title} · ${a.org}`, 88, a.y + 36, { fontSize: 11, fill: '#64748B' }, f);
-    b.rect('Role Pill', 88, a.y + 54, 60, 18, { fill: '#F1F5F9', cornerRadius: 9 }, f);
-    b.text(a.role, 96, a.y + 57, { fontSize: 9, fontWeight: 700, fill: '#334155' }, f);
-
-    b.rect('Connect Btn', 290, a.y + 24, 72, 34, { fill: '#FFEDD5', cornerRadius: 17 }, f);
-    b.text('Wave 👋', 302, a.y + 34, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
+  for (const sp of realSponsors) {
+    b.rect('Sponsor Card', sp.x, sp.y, 174, 84, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Sponsor Logo Box', sp.x + 10, sp.y + 10, 36, 36, { fill: sp.bg, cornerRadius: 8 }, f);
+    b.text(sp.name.charAt(0), sp.x + 22, sp.y + 20, { fontSize: 16, fontWeight: 800, fill: sp.color }, f);
+    b.text(sp.tier, sp.x + 52, sp.y + 12, { fontSize: 8, fontWeight: 800, fill: '#D97706' }, f);
+    b.text(sp.name, sp.x + 52, sp.y + 26, { fontSize: 11, fontWeight: 800, fill: '#0F172A' }, f);
+    b.line('Sp Line', sp.x + 10, sp.y + 54, 154, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+    b.text(sp.deal, sp.x + 10, sp.y + 64, { fontSize: 10, fontWeight: 600, fill: '#059669' }, f);
   }
+
+  // Real Speaker Directory
+  b.text('Featured Speakers', 16, 364, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+
+  const realSpeakers = [
+    { name: 'Pankaj Kumar', topic: 'Technical SEO for High-Scale WP', role: 'Pankaj Kumar SEO', x: 16, y: 386 },
+    { name: 'Lena Lekkou', topic: 'Accessible Design Systems in 2026', role: 'UI/UX Community Lead', x: 16, y: 462 },
+    { name: 'Patrick Lumumba', topic: 'Full-Stack Blocks & Interactivity', role: 'Nairobi Contributor', x: 16, y: 538 },
+  ];
+
+  for (const spk of realSpeakers) {
+    b.rect('Speaker Card', spk.x, spk.y, 358, 64, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Speaker Avatar Box', spk.x + 12, spk.y + 12, 40, 40, { fill: '#1E293B', cornerRadius: 20 }, f);
+    b.text(spk.name.charAt(0), spk.x + 26, spk.y + 22, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
+    b.text(spk.name, spk.x + 60, spk.y + 14, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text(spk.topic, spk.x + 60, spk.y + 30, { fontSize: 11, fontWeight: 600, fill: '#FF4D2D' }, f);
+    b.text(spk.role, spk.x + 60, spk.y + 45, { fontSize: 10, fill: '#64748B' }, f);
+    b.rect('Meet Btn', spk.x + 280, spk.y + 16, 66, 32, { fill: '#FFEDD5', stroke: '#FDBA74', cornerRadius: 8, strokeWeight: 1 }, f);
+    b.text('Wave 👋', spk.x + 292, spk.y + 26, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
+  }
+
+  // Real Sponsor Deals List
+  b.text('Sponsor Steals & Free Software', 16, 618, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.rect('Deal Banner', 16, 640, 358, 60, { fill: '#F0FDF4', stroke: '#BBF7D0', cornerRadius: 14, strokeWeight: 1 }, f);
+  b.text('🎁 Automattic & Woo: Free Dev Hosting for 1 Year', 28, 654, { fontSize: 12, fontWeight: 700, fill: '#166534' }, f);
+  b.text('Available to all verified WordCamp attendees at Booth 4', 28, 674, { fontSize: 10, fill: '#15803D' }, f);
 
   b.mobileBottomNav(f, 'explore');
 }
 
-// M6: Contributor Day & Quests
+// M6: APK - Quests & Contributor Day
 {
-  const f = b.frame('Mobile - Quests Contribute', 2190, 100, 390, 844, { fill: '#FFF7ED', clip: true });
+  const f = b.frame('APK - Quests & Contribute', 2190, 100, 390, 844, { fill: '#FFF7ED', clip: true });
   b.mobileStatusBar(f);
 
   b.text('Contributor Quests', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Level up your WordCamp experience', 16, 78, { fontSize: 12, fill: '#64748B' }, f);
+  b.text('Make your first contribution to open source WordPress', 16, 76, { fontSize: 12, fill: '#64748B' }, f);
 
-  // Progress Card
-  b.rect('Quest Prog BG', 16, 104, 358, 86, { fill: '#1E293B', cornerRadius: 20 }, f);
-  b.text('CONFERENCE EXPEDITION', 32, 118, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
-  b.text('Level 2 Companion · 4 of 8 Done', 32, 134, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
-  // Bar
-  b.rect('Prog Track', 32, 158, 326, 10, { fill: '#334155', cornerRadius: 5 }, f);
-  b.rect('Prog Fill', 32, 158, 163, 10, { fill: '#10B981', cornerRadius: 5 }, f);
+  // Contributor Day Progress Bar
+  b.rect('Progress Card', 16, 102, 358, 86, { fill: '#1E293B', cornerRadius: 18 }, f);
+  b.text('CONTRIBUTOR DAY ROADMAP', 28, 116, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+  b.text('Level 2 Contributor · 3 of 5 Quests Done', 28, 134, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.rect('Bar Outer', 28, 156, 334, 10, { fill: '#334155', cornerRadius: 5 }, f);
+  b.rect('Bar Inner', 28, 156, 200, 10, { fill: '#10B981', cornerRadius: 5 }, f);
+  b.text('60%', 336, 134, { fontSize: 12, fontWeight: 800, fill: '#10B981' }, f);
 
-  // Contributor Day Team Matchmaker
-  b.rect('Contrib Box', 16, 204, 358, 120, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('Joining Contributor Day?', 30, 218, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('You do not need to code. Find your table:', 30, 238, { fontSize: 11, fill: '#64748B' }, f);
+  // Quest 1
+  b.rect('Quest 1', 16, 202, 358, 84, { fill: '#FFFFFF', stroke: '#10B981', cornerRadius: 16, strokeWeight: 1.5 }, f);
+  b.rect('Check 1', 28, 220, 24, 24, { fill: '#10B981', cornerRadius: 12 }, f);
+  b.text('✔', 35, 225, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Set up WordPress.org Contributor ID', 64, 218, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Linked profile: @sunilsharma (Verified badge)', 64, 238, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('+100 XP', 312, 220, { fontSize: 11, fontWeight: 800, fill: '#10B981' }, f);
 
-  const teams = ['Core', 'Polyglots', 'Docs', 'Community', 'Design'];
-  let tx = 30;
-  for (const t of teams) {
-    b.rect('Team Pill', tx, 260, 58, 26, { fill: '#F1F5F9', cornerRadius: 13 }, f);
-    b.text(t, tx + 10, 266, { fontSize: 10, fontWeight: 700, fill: '#334155' }, f);
-    tx += 64;
-  }
-  b.rect('Find Table Btn', 30, 292, 140, 24, { fill: '#FF4D2D', cornerRadius: 6 }, f);
-  b.text('Find My Table →', 46, 297, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF' }, f);
+  // Quest 2
+  b.rect('Quest 2', 16, 298, 358, 84, { fill: '#FFFFFF', stroke: '#10B981', cornerRadius: 16, strokeWeight: 1.5 }, f);
+  b.rect('Check 2', 28, 316, 24, 24, { fill: '#10B981', cornerRadius: 12 }, f);
+  b.text('✔', 35, 321, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Translate 10 Core Strings to Hindi / Regional', 64, 314, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Polyglots Table · Lead: Rahul Verma', 64, 334, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('+150 XP', 312, 316, { fontSize: 11, fontWeight: 800, fill: '#10B981' }, f);
 
-  // Quest Checklist
-  b.text('Active Quests', 16, 340, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  // Quest 3 (In progress)
+  b.rect('Quest 3', 16, 394, 358, 96, { fill: '#FFFFFF', stroke: '#FF4D2D', cornerRadius: 16, strokeWeight: 2 }, f);
+  b.rect('Check 3', 28, 412, 24, 24, { fill: '#FFEDD5', stroke: '#FF4D2D', cornerRadius: 12, strokeWeight: 1.5 }, f);
+  b.text('3', 36, 417, { fontSize: 11, fontWeight: 800, fill: '#D33417' }, f);
+  b.text('Submit First Core Documentation Patch', 64, 410, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Docs Table · Track: Gutenberg handbook improvements', 64, 430, { fontSize: 11, fill: '#64748B' }, f);
+  b.rect('Action Btn', 64, 452, 140, 28, { fill: '#FF4D2D', cornerRadius: 6 }, f);
+  b.text('Open Docs Table →', 76, 459, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.text('+250 XP', 312, 412, { fontSize: 11, fontWeight: 800, fill: '#FF4D2D' }, f);
 
-  const quests = [
-    { title: 'Exchange CampCards with 3 attendees', done: true, xp: '+100 XP', icon: '🪪' },
-    { title: 'Bookmark 4 sessions to My Day', done: true, xp: '+100 XP', icon: '📅' },
-    { title: 'Visit 2 sponsor booths for swag deals', done: false, xp: '+150 XP', icon: '🎁' },
-    { title: 'Sit at a Contributor Day table', done: false, xp: '+250 XP', icon: '💻' },
-    { title: 'Say hi to an event volunteer or organizer', done: false, xp: '+100 XP', icon: '👋' },
+  // Contributor Teams Grid
+  b.text('Contributor Day Tables', 16, 506, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+
+  const teams = [
+    { name: 'Core PHP & JS', table: 'Table 1', leads: '3 Leads' },
+    { name: 'Polyglots', table: 'Table 2', leads: '5 Leads' },
+    { name: 'Documentation', table: 'Table 3', leads: '2 Leads' },
+    { name: 'Community & Kids', table: 'Table 4', leads: '4 Leads' },
   ];
 
-  let qy = 368;
-  for (const q of quests) {
-    b.rect('Quest Card', 16, qy, 358, 64, { fill: '#FFFFFF', cornerRadius: 14, stroke: q.done ? '#A7F3D0' : '#E2E8F0', strokeWeight: 1 }, f);
-    b.rect('Check Box', 28, qy + 18, 28, 28, { fill: q.done ? '#10B981' : '#F1F5F9', cornerRadius: 14 }, f);
-    b.text(q.done ? '✔' : q.icon, 35, qy + 24, { fontSize: 13, fill: q.done ? '#FFFFFF' : '#64748B' }, f);
-    b.text(q.title, 66, qy + 18, { fontSize: 12, fontWeight: 700, fill: q.done ? '#065F46' : '#0F172A' }, f);
-    b.text(q.xp, 66, qy + 36, { fontSize: 10, fontWeight: 700, fill: '#D97706' }, f);
-    qy += 72;
-  }
+  teams.forEach((t, i) => {
+    const x = 16 + (i % 2) * 184;
+    const y = 528 + Math.floor(i / 2) * 78;
+    b.rect('Team Card', x, y, 174, 68, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.text(t.table, x + 12, y + 10, { fontSize: 9, fontWeight: 800, fill: '#D97706' }, f);
+    b.text(t.name, x + 12, y + 26, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text(t.leads + ' · Join Table →', x + 12, y + 44, { fontSize: 10, fontWeight: 600, fill: '#059669' }, f);
+  });
 
   b.mobileBottomNav(f, 'quest');
 }
 
 // ==========================================
-// 2. WEBSITE SCREENS (Y = 1050)
+// 2. WEBSITE (FRONTEND) SCREENS (Y = 1050)
 // ==========================================
 
-// W1: Web Landing & Hero Stage
+// W1: Web - Landing Hero & Offline Stage
 {
   const f = b.frame('Web - Landing Hero Stage', 40, 1050, 1280, 800, { fill: '#FFF7ED', clip: true });
+  b.webTopNav(f, 'home');
 
-  // Top Nav
-  b.rect('Web Nav BG', 0, 0, 1280, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('CampBuddy', 48, 22, { fontSize: 24, fontWeight: 800, fill: '#FF4D2D', fontFamily: 'Poppins' }, f);
-  b.text('WordCamps', 320, 26, { fontSize: 14, fontWeight: 600, fill: '#0F172A' }, f);
-  b.text('First-Timer Guide', 440, 26, { fontSize: 14, fontWeight: 600, fill: '#0F172A' }, f);
-  b.text('About', 600, 26, { fontSize: 14, fontWeight: 600, fill: '#0F172A' }, f);
-  b.text('Privacy & DPDP', 680, 26, { fontSize: 14, fontWeight: 600, fill: '#0F172A' }, f);
+  // Hero Canvas Stage (Navy #1E293B)
+  b.rect('Web Hero Stage', 48, 96, 1184, 380, { fill: '#1E293B', cornerRadius: 28 }, f);
+  b.text('LIVE CONFERENCE DASHBOARD · DAY 1', 88, 136, { fontSize: 12, fontWeight: 800, fill: '#F59E0B', letterSpacing: 1.2 }, f);
+  b.text('WordCamp Delhi 2026', 88, 164, { fontSize: 38, fontWeight: 800, fill: '#FFFFFF', fontFamily: 'Baloo 2' }, f);
+  b.text('November 21–22, 2026 · NDMC Convention Centre, Sansad Marg, New Delhi', 88, 220, { fontSize: 16, fill: '#94A3B8' }, f);
 
-  b.rect('Staff Login Btn', 1010, 18, 120, 36, { fill: '#F1F5F9', cornerRadius: 18 }, f);
-  b.text('Staff Login', 1038, 27, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-
-  b.rect('Get App Btn', 1146, 18, 100, 36, { fill: '#FF4D2D', cornerRadius: 18 }, f);
-  b.text('Install PWA', 1162, 27, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
-
-  // Left Column Content
-  b.rect('Kicker Pill', 48, 110, 260, 28, { fill: '#FFEDD5', cornerRadius: 14 }, f);
-  b.text('✨ Open-Source Community Companion', 60, 116, { fontSize: 11, fontWeight: 800, fill: '#D33417' }, f);
-
-  b.text('Make the most of\nyour WordCamp', 48, 154, { fontSize: 44, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Navigate multi-track halls, star talks into your personal "My Day",\nand exchange contacts in seconds via phone camera — 100% free,\nzero paper cards, and no login needed.', 48, 270, { fontSize: 15, fill: '#475569' }, f);
-
-  // 4 Core Promises
-  const promises = [
-    '✔ 100% Free & Open Source',
-    '✔ Zero Login or Account Needed',
-    '✔ Runs 100% Offline in Venue',
-    '✔ Instant Progressive Web App (PWA)',
-  ];
-  let py = 350;
-  for (const p of promises) {
-    b.text(p, 48, py, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
-    py += 24;
-  }
+  // Live countdown clock badge
+  b.rect('Clock Badge', 88, 260, 240, 48, { fill: '#0F172A', stroke: '#334155', cornerRadius: 24, strokeWeight: 1 }, f);
+  b.ellipse('Green Pulse', 106, 276, 16, 16, { fill: '#10B981' }, f);
+  b.text('LIVE: 10:14 AM IST', 132, 276, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
 
   // CTAs
-  b.rect('Primary CTA', 48, 470, 220, 52, { fill: '#FF4D2D', cornerRadius: 12 }, f);
-  b.text('Choose your WordCamp  ↓', 74, 486, { fontSize: 14, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.rect('Open Schedule Btn', 348, 260, 180, 48, { fill: '#FF4D2D', cornerRadius: 12 }, f);
+  b.text('Explore Schedule  →', 374, 276, { fontSize: 14, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  b.rect('Secondary CTA', 284, 470, 180, 52, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 12, strokeWeight: 1 }, f);
-  b.text('First WordCamp? Guide →', 304, 486, { fontSize: 14, fontWeight: 700, fill: '#0F172A' }, f);
+  b.rect('CampCard Web Btn', 544, 260, 180, 48, { fill: 'rgba(255,255,255,0.1)', stroke: '#64748B', cornerRadius: 12, strokeWeight: 1 }, f);
+  b.text('Create CampCard 🪪', 572, 276, { fontSize: 14, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Trust Bar
-  b.text('Built by WPSimplified · Open Source Initiative · DPDP Act 2023 Compliant', 48, 550, { fontSize: 12, fill: '#94A3B8' }, f);
+  // Right Side Live Happening Box
+  b.rect('Happening Box', 780, 136, 412, 280, { fill: '#0F172A', cornerRadius: 20, stroke: '#334155', strokeWeight: 1 }, f);
+  b.text('⚡ HAPPENING NOW ACROSS TRACKS', 808, 160, { fontSize: 11, fontWeight: 800, fill: '#F59E0B' }, f);
 
-  // Right Column: Interactive Companion Stage
-  b.rect('Stage Ambient Glow', 660, 100, 570, 640, { fill: '#1E293B', cornerRadius: 32 }, f);
+  b.text('Track 1 · Hall A', 808, 192, { fontSize: 12, fontWeight: 700, fill: '#38BDF8' }, f);
+  b.text('Scaling Headless WordPress & SEO', 808, 212, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Pankaj Kumar (SEO Lead) · 10:30 AM – 11:15 AM', 808, 236, { fontSize: 12, fill: '#94A3B8' }, f);
 
-  // Stage Top Header
-  b.rect('Stage Header', 690, 130, 510, 50, { fill: '#334155', cornerRadius: 16 }, f);
-  b.rect('Live Indicator', 710, 148, 12, 12, { fill: '#10B981', cornerRadius: 6 }, f);
-  b.text('LIVE COMPANION · WORDCAMP DELHI 2026', 732, 146, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.rect('Shuffle Btn', 1110, 140, 76, 30, { fill: '#475569', cornerRadius: 8 }, f);
-  b.text('Shuffle ↻', 1124, 147, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.line('Box Div', 808, 262, 356, { stroke: '#1E293B', strokeWeight: 1 }, f);
 
-  // Stage Card 1: Speaker Spotlight
-  b.rect('Stage Spotlight Card', 690, 200, 510, 210, { fill: '#0F172A', cornerRadius: 20, stroke: '#334155', strokeWeight: 1 }, f);
-  b.rect('Tag Pill', 710, 220, 120, 24, { fill: '#FFEDD5', cornerRadius: 12 }, f);
-  b.text('SPEAKER SPOTLIGHT', 718, 225, { fontSize: 10, fontWeight: 800, fill: '#D33417' }, f);
-  b.text('Aditya Vikram Singh', 710, 258, { fontSize: 22, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('Demystifying Headless WordPress with Next.js 15 & GraphQL', 710, 290, { fontSize: 13, fill: '#94A3B8' }, f);
-  b.text('Track A · 11:30 AM · Hall 1', 710, 320, { fontSize: 12, fontWeight: 700, fill: '#F59E0B' }, f);
-  b.rect('Explore Talk Btn', 710, 350, 180, 38, { fill: '#D97706', cornerRadius: 10 }, f);
-  b.text('Explore This WordCamp →', 726, 361, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Track 2 · Hall B', 808, 282, { fontSize: 12, fontWeight: 700, fill: '#F472B6' }, f);
+  b.text('Designing Accessible Enterprise Themes', 808, 302, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Lena Lekkou (UI/UX Architect) · 11:30 AM – 12:15 PM', 808, 326, { fontSize: 12, fill: '#94A3B8' }, f);
 
-  // Stage Card 2: P2P Card Swap
-  b.rect('Stage Swap Card', 690, 430, 510, 140, { fill: '#0F172A', cornerRadius: 20, stroke: '#334155', strokeWeight: 1 }, f);
-  b.rect('Mini QR Box', 714, 450, 56, 56, { fill: '#FFFFFF', cornerRadius: 12 }, f);
-  b.text('🪪', 730, 466, { fontSize: 24 }, f);
-  b.text('Instant Digital CampCard (P2P Swap)', 786, 454, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.text('Swap LinkedIn, portfolio & contacts directly via camera — zero paper cards', 786, 478, { fontSize: 12, fill: '#94A3B8' }, f);
-  b.rect('Offline Badge', 786, 510, 96, 22, { fill: '#064E3B', cornerRadius: 11 }, f);
-  b.text('✔ 100% Offline', 796, 514, { fontSize: 10, fontWeight: 700, fill: '#A7F3D0' }, f);
+  // 3-Column Value Features below Hero
+  const features = [
+    { title: '100% Offline Reliable', desc: 'Pre-caches complete sessions, speaker bios, and sponsor deals. Works seamlessly even if venue Wi-Fi fails.', icon: '⚡', x: 48 },
+    { title: 'Zero App Store Barrier', desc: 'Open instantly on desktop, laptop, Android or iPhone. PWA standalone installation available with one tap.', icon: '📱', x: 450 },
+    { title: 'P2P Privacy First', desc: 'No accounts, zero tracker cookies, DPDP Act 2023 certified. Your personal notes and contacts stay on your device.', icon: '🛡', x: 852 },
+  ];
 
-  // Stage Feature Chips
-  const stageChips = ['📅 Multi-Track Schedule', '🪪 CampCard', '🎯 Quests', '💻 Contributor Day'];
-  let scx = 690;
-  for (const sc of stageChips) {
-    b.rect('Stage Chip', scx, 600, 118, 30, { fill: '#334155', cornerRadius: 15 }, f);
-    b.text(sc, scx + 8, 608, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF' }, f);
-    scx += 128;
+  for (const feat of features) {
+    b.rect('Feat Box', feat.x, 506, 380, 180, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Feat Icon Box', feat.x + 24, 530, 48, 48, { fill: '#FFEDD5', cornerRadius: 24 }, f);
+    b.text(feat.icon, feat.x + 36, 542, { fontSize: 20 }, f);
+    b.text(feat.title, feat.x + 24, 596, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text(feat.desc, feat.x + 24, 624, { fontSize: 12, fill: '#64748B' }, f);
   }
+
+  // Footer Row
+  b.line('Foot Line', 48, 720, 1184, { stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('CampBuddy Open Source Companion · Built by WPSimplified · Connected to official WordCamp.org REST Feeds', 48, 744, { fontSize: 12, fill: '#94A3B8' }, f);
 }
 
-// W2: Web Event Directory & Country Hub
+// W2: Web - Event Directory & Country Hub
 {
   const f = b.frame('Web - Event Directory', 1360, 1050, 1280, 800, { fill: '#FFF7ED', clip: true });
+  b.webTopNav(f, 'home');
 
-  // Top Nav
-  b.rect('Web Nav BG 2', 0, 0, 1280, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('CampBuddy', 48, 22, { fontSize: 24, fontWeight: 800, fill: '#FF4D2D', fontFamily: 'Poppins' }, f);
-  b.text('Active WordCamps', 240, 26, { fontSize: 14, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('Upcoming & Active WordCamps', 48, 100, { fontSize: 28, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Live conference companions synced with official schedules and attendee directories', 48, 134, { fontSize: 14, fill: '#64748B' }, f);
 
-  // Section Header
-  b.text('Choose your WordCamp', 48, 96, { fontSize: 28, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Tap your event to access its multi-track schedule, attendee list, and local guide.', 48, 134, { fontSize: 14, fill: '#64748B' }, f);
+  // Country Filter Buttons
+  const countries = ['All Events (10)', 'India (3)', 'Greece (1)', 'Kenya (1)', 'Indonesia (1)', 'Nepal (1)', 'Switzerland (1)'];
+  countries.forEach((c, i) => {
+    const x = 48 + i * 150;
+    const active = i === 0;
+    b.rect('C Pill', x, 168, 140, 36, { fill: active ? '#FF4D2D' : '#FFFFFF', stroke: active ? '#FF4D2D' : '#E2E8F0', cornerRadius: 18, strokeWeight: 1 }, f);
+    b.text(c, x + 16, 178, { fontSize: 12, fontWeight: 700, fill: active ? '#FFFFFF' : '#334155' }, f);
+  });
 
-  // Sync Card
-  b.rect('Web Sync Card', 48, 170, 1184, 76, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.rect('Sync Box', 68, 186, 44, 44, { fill: '#FFEDD5', cornerRadius: 22 }, f);
-  b.text('🔄', 80, 198, { fontSize: 20 }, f);
-  b.text('Move your data to Mobile App or PWA', 128, 188, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Enter this 6-digit transfer code on your phone to link your bookmarks:  ', 128, 212, { fontSize: 12, fill: '#64748B' }, f);
-  b.text('482 109', 496, 210, { fontSize: 14, fontWeight: 800, fill: '#FF4D2D' }, f);
-
-  // Country Filter Pills
-  const cPills = [
-    { label: 'All WordCamps (10)', active: true, x: 48, w: 140 },
-    { label: 'India (3)', active: false, x: 198, w: 80 },
-    { label: 'Kenya (1)', active: false, x: 288, w: 84 },
-    { label: 'Indonesia (1)', active: false, x: 382, w: 104 },
-    { label: 'Greece (1)', active: false, x: 496, w: 90 },
-    { label: 'Nepal (1)', active: false, x: 596, w: 86 },
-    { label: 'Europe (3)', active: false, x: 692, w: 94 },
-  ];
-  for (const cp of cPills) {
-    b.rect('C Pill', cp.x, 266, cp.w, 36, { fill: cp.active ? '#FF4D2D' : '#FFFFFF', cornerRadius: 18, stroke: cp.active ? '#FF4D2D' : '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(cp.label, cp.x + 14, 276, { fontSize: 12, fontWeight: 700, fill: cp.active ? '#FFFFFF' : '#0F172A' }, f);
-  }
-
-  // 3-Column Event Grid
-  const events = [
-    { name: 'WordCamp Delhi 2026', city: 'New Delhi, India', dates: '21–22 Nov 2026', talks: '36 Talks', x: 48, initial: 'D' },
-    { name: 'WordCamp Nairobi 2026', city: 'Nairobi, Kenya', dates: '28 Nov 2026', talks: '28 Talks', x: 456, initial: 'N' },
-    { name: 'WordCamp Bandung 2026', city: 'Bandung, Indonesia', dates: '5 Dec 2026', talks: '32 Talks', x: 864, initial: 'B' },
+  // Event Cards Grid (2 rows x 3 columns)
+  const dirEvents = [
+    { name: 'WordCamp Delhi 2026', loc: 'NDMC Convention Centre, New Delhi', date: '21–22 NOV 2026', status: 'ON NOW', talks: '22 Talks', spk: '11 Speakers', spon: '17 Sponsors' },
+    { name: 'WordCamp Athens 2026', loc: 'Megaron Athens International Hall', date: '11–12 APR 2026', status: 'UPCOMING', talks: '34 Talks', spk: '19 Speakers', spon: '30 Sponsors' },
+    { name: 'WordCamp Nairobi 2026', loc: 'The Edge Convention Centre, Nairobi', date: '28 NOV 2026', status: 'UPCOMING', talks: '18 Talks', spk: '18 Speakers', spon: '6 Sponsors' },
+    { name: 'WordCamp Bandung 2026', loc: 'Trans Convention Centre, Bandung', date: '15 DEC 2026', status: 'UPCOMING', talks: '10 Talks', spk: '10 Speakers', spon: '13 Sponsors' },
+    { name: 'WordCamp Nepal 2027', loc: 'Pokhara Event Arena, Nepal', date: '14 JAN 2027', status: 'UPCOMING', talks: '16 Talks', spk: '14 Speakers', spon: '12 Sponsors' },
+    { name: 'WordCamp Mumbai 2027', loc: 'Bandra Kurla Complex, Mumbai', date: '06 FEB 2027', status: 'UPCOMING', talks: '28 Talks', spk: '20 Speakers', spon: '22 Sponsors' },
   ];
 
-  for (const e of events) {
-    b.rect('Event Card', e.x, 320, 368, 380, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.rect('Card Logo Box', e.x + 24, 344, 60, 60, { fill: '#1E293B', cornerRadius: 30 }, f);
-    b.text(e.initial, e.x + 44, 358, { fontSize: 26, fontWeight: 800, fill: '#FF4D2D' }, f);
-    b.text('LIVE EVENT', e.x + 96, 348, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
-    b.text(e.name, e.x + 96, 366, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(`📍 ${e.city}`, e.x + 96, 392, { fontSize: 12, fill: '#64748B' }, f);
+  dirEvents.forEach((ev, i) => {
+    const col = i % 3;
+    const row = Math.floor(i / 3);
+    const x = 48 + col * 402;
+    const y = 224 + row * 240;
 
-    b.line('Card Div', e.x + 24, 424, 320, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
-    b.text('Event Dates:', e.x + 24, 442, { fontSize: 11, fill: '#64748B' }, f);
-    b.text(e.dates, e.x + 24, 460, { fontSize: 14, fontWeight: 700, fill: '#0F172A' }, f);
+    b.rect('Event Tile', x, y, 380, 220, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Ev Logo', x + 20, y + 20, 48, 48, { fill: '#1E293B', cornerRadius: 24 }, f);
+    b.text(ev.name.charAt(9), x + 34, y + 32, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-    b.text('Program Overview:', e.x + 24, 492, { fontSize: 11, fill: '#64748B' }, f);
-    b.text(`${e.talks} · 4 Tracks · Contributor Day`, e.x + 24, 510, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+    b.text(ev.status + ' · ' + ev.date, x + 80, y + 22, { fontSize: 10, fontWeight: 800, fill: ev.status === 'ON NOW' ? '#10B981' : '#D97706' }, f);
+    b.text(ev.name, x + 80, y + 38, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text('📍 ' + ev.loc, x + 80, y + 58, { fontSize: 11, fill: '#64748B' }, f);
 
-    b.rect('Offline Pill', e.x + 24, 544, 120, 26, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 13, strokeWeight: 1 }, f);
-    b.text('✔ 100% Offline Ready', e.x + 34, 550, { fontSize: 10, fontWeight: 700, fill: '#047857' }, f);
+    b.line('Tile Line', x + 20, y + 88, 340, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+    b.text(`${ev.talks} · ${ev.spk} · ${ev.spon}`, x + 20, y + 104, { fontSize: 12, fontWeight: 600, fill: '#334155' }, f);
 
-    b.rect('Open Btn', e.x + 24, 620, 320, 48, { fill: '#FF4D2D', cornerRadius: 12 }, f);
-    b.text('Open Event Companion  →', e.x + 100, 635, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-  }
+    b.rect('Offline Badge Tiny', x + 20, y + 130, 110, 24, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 12, strokeWeight: 1 }, f);
+    b.text('✔ Offline Cached', x + 28, y + 135, { fontSize: 10, fontWeight: 700, fill: '#047857' }, f);
 
-  // Footer
-  b.text('CampBuddy · Local-first Community Companion · Built by WPSimplified · Privacy Policy · Terms of Use', 48, 740, { fontSize: 11, fill: '#64748B' }, f);
+    b.rect('Launch Btn', x + 20, y + 166, 340, 38, { fill: '#FF4D2D', cornerRadius: 10 }, f);
+    b.text('Launch Companion Dashboard  →', x + 72, y + 177, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+  });
+
+  b.text('Showing 6 of 10 registered WordCamps · All data verified via official REST endpoints', 48, 730, { fontSize: 12, fill: '#94A3B8' }, f);
 }
 
-// W3: Web Schedule Explorer
+// W3: Web - Multi-Track Schedule Explorer
 {
   const f = b.frame('Web - Schedule Explorer', 2680, 1050, 1280, 800, { fill: '#FFF7ED', clip: true });
+  b.webTopNav(f, 'schedule');
 
-  // Top Nav
-  b.rect('Web Nav BG 3', 0, 0, 1280, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('WordCamp Delhi 2026', 48, 22, { fontSize: 20, fontWeight: 800, fill: '#0F172A', fontFamily: 'Poppins' }, f);
-  b.text('Multi-Track Schedule', 290, 25, { fontSize: 14, fontWeight: 700, fill: '#FF4D2D' }, f);
-  b.text('Attendees', 460, 25, { fontSize: 14, fontWeight: 600, fill: '#64748B' }, f);
-  b.text('Sponsors', 550, 25, { fontSize: 14, fontWeight: 600, fill: '#64748B' }, f);
-  b.text('Quests', 630, 25, { fontSize: 14, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('Multi-Track Program & Session Explorer', 48, 100, { fontSize: 26, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Live timeline with live delay compensation, track filters, and speaker profiles', 48, 132, { fontSize: 13, fill: '#64748B' }, f);
 
-  b.rect('PDF Export Btn', 1100, 18, 140, 36, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 8, strokeWeight: 1 }, f);
-  b.text('📄 Export PDF', 1130, 27, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  // Track Selector Tabs
+  b.rect('Track 1 Tab', 48, 164, 180, 40, { fill: '#FF4D2D', cornerRadius: 10 }, f);
+  b.text('Track 1 (Hall A)', 86, 176, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Day Filter Bar
-  b.rect('Day 1 Btn', 48, 92, 120, 36, { fill: '#FF4D2D', cornerRadius: 8 }, f);
-  b.text('Day 1 · Nov 21', 66, 102, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
-  b.rect('Day 2 Btn', 180, 92, 120, 36, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 8, strokeWeight: 1 }, f);
-  b.text('Day 2 · Nov 22', 198, 102, { fontSize: 12, fontWeight: 600, fill: '#64748B' }, f);
+  b.rect('Track 2 Tab', 240, 164, 180, 40, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 10, strokeWeight: 1 }, f);
+  b.text('Track 2 (Hall B)', 278, 176, { fontSize: 13, fontWeight: 600, fill: '#334155' }, f);
 
-  // 3-Track Columns Layout
-  const tracks = [
-    { title: 'Track 1 · Main Hall', color: '#FF4D2D', x: 48, w: 370 },
-    { title: 'Track 2 · Workshop Room', color: '#0284C7', x: 440, w: 370 },
-    { title: 'Track 3 · Contributor Hub', color: '#D97706', x: 832, w: 370 },
-  ];
+  b.rect('All Tracks Tab', 432, 164, 180, 40, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 10, strokeWeight: 1 }, f);
+  b.text('Grid View (All Tracks)', 464, 176, { fontSize: 13, fontWeight: 600, fill: '#334155' }, f);
 
-  for (const tr of tracks) {
-    b.rect('Track Header', tr.x, 148, tr.w, 40, { fill: '#1E293B', cornerRadius: 10 }, f);
-    b.text(tr.title, tr.x + 16, 160, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-  }
+  // Schedule Timeline Grid (2 Columns: Track 1 & Track 2)
+  b.rect('Track 1 Container', 48, 224, 580, 500, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('HALL A · TECHNICAL & PERFORMANCE', 68, 246, { fontSize: 12, fontWeight: 800, fill: '#FF4D2D' }, f);
 
-  // Row 1: 10:00 AM
-  const r1 = [
-    { talk: 'Building Offline-First Web Apps', spk: 'Rahul Verma · WPSimplified', time: '10:00 – 10:45 AM', x: 48 },
-    { talk: 'Mastering Full-Site Editing & Patterns', spk: 'Elena Rostova · Automattic', time: '10:00 – 10:45 AM', x: 440 },
-    { talk: 'First Time Contributor Onboarding', spk: 'Priya Sharma · Community Team', time: '10:00 – 10:45 AM', x: 832 },
-  ];
-  for (const item of r1) {
-    b.rect('Talk Card', item.x, 204, 370, 110, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(item.time, item.x + 16, 218, { fontSize: 11, fontWeight: 700, fill: '#D97706' }, f);
-    b.text(item.talk, item.x + 16, 240, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(item.spk, item.x + 16, 268, { fontSize: 11, fill: '#64748B' }, f);
-    b.text('★ Bookmark', item.x + 280, 218, { fontSize: 11, fontWeight: 700, fill: '#FF4D2D' }, f);
-  }
+  // Session A1
+  b.rect('Session A1', 68, 274, 540, 100, { fill: '#FFF7ED', stroke: '#FF4D2D', cornerRadius: 14, strokeWeight: 1.5 }, f);
+  b.text('10:30 AM – 11:15 AM · 45 mins', 84, 288, { fontSize: 11, fontWeight: 700, fill: '#D97706' }, f);
+  b.text('Scaling Headless WordPress & SEO', 84, 308, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Pankaj Kumar (Pankaj Kumar SEO) · Technical Track', 84, 332, { fontSize: 12, fill: '#64748B' }, f);
+  b.rect('Star A1', 548, 288, 36, 36, { fill: '#FFEDD5', cornerRadius: 18 }, f);
+  b.text('★', 558, 298, { fontSize: 14, fill: '#D97706' }, f);
 
-  // Row 2: 11:15 AM
-  const r2 = [
-    { talk: 'Scaling WordPress to 10M Pageviews', spk: 'Amit Singh · Cloudways', time: '11:15 – 12:00 PM', x: 48 },
-    { talk: 'Modern CSS & Gutenberg Theming', spk: 'Neha Gupta · UI/UX Lead', time: '11:15 – 12:00 PM', x: 440 },
-    { talk: 'Translating WordPress: Polyglots Table', spk: 'Table Leads & Mentors', time: '11:15 – 12:00 PM', x: 832 },
-  ];
-  for (const item of r2) {
-    b.rect('Talk Card', item.x, 328, 370, 110, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(item.time, item.x + 16, 342, { fontSize: 11, fontWeight: 700, fill: '#D97706' }, f);
-    b.text(item.talk, item.x + 16, 364, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(item.spk, item.x + 16, 392, { fontSize: 11, fill: '#64748B' }, f);
-    b.text('★ Bookmark', item.x + 280, 342, { fontSize: 11, fontWeight: 700, fill: '#FF4D2D' }, f);
-  }
+  // Session A2
+  b.rect('Session A2', 68, 390, 540, 100, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 14, strokeWeight: 1 }, f);
+  b.text('11:30 AM – 12:15 PM · 45 mins', 84, 404, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('Full-Site Editing & Custom Block Governance', 84, 424, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Patrick Lumumba (Core Contributor) · Architecture Track', 84, 448, { fontSize: 12, fill: '#64748B' }, f);
+  b.rect('Star A2', 548, 404, 36, 36, { fill: '#F1F5F9', cornerRadius: 18 }, f);
+  b.text('☆', 558, 414, { fontSize: 14, fill: '#94A3B8' }, f);
 
-  // Row 3: 01:30 PM
-  const r3 = [
-    { talk: 'Headless WordPress with Next.js 15', spk: 'Aditya Vikram Singh · WP VIP', time: '01:30 – 02:15 PM', x: 48 },
-    { talk: 'Security Auditing for Core & Plugins', spk: 'David Kim · Automattic Security', time: '01:30 – 02:15 PM', x: 440 },
-    { talk: 'Plugin Review Guidelines Workshop', spk: 'Plugin Review Team', time: '01:30 – 02:15 PM', x: 832 },
-  ];
-  for (const item of r3) {
-    b.rect('Talk Card', item.x, 452, 370, 110, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(item.time, item.x + 16, 466, { fontSize: 11, fontWeight: 700, fill: '#D97706' }, f);
-    b.text(item.talk, item.x + 16, 488, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(item.spk, item.x + 16, 516, { fontSize: 11, fill: '#64748B' }, f);
-    b.text('★ Bookmark', item.x + 280, 466, { fontSize: 11, fontWeight: 700, fill: '#FF4D2D' }, f);
-  }
+  // Track 2 Container
+  b.rect('Track 2 Container', 652, 224, 580, 500, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('HALL B · DESIGN, PRODUCT & BUSINESS', 672, 246, { fontSize: 12, fontWeight: 800, fill: '#0284C7' }, f);
 
-  // Bottom Summary Bar
-  b.rect('Bottom Schedule Bar', 48, 590, 1184, 80, { fill: '#FEF3C7', stroke: '#FDE68A', cornerRadius: 16, strokeWeight: 1 }, f);
-  b.text('My Schedule Summary: 4 sessions saved (2h 45m)', 72, 610, { fontSize: 14, fontWeight: 800, fill: '#92400E' }, f);
-  b.text('0 conflicts detected · Ready for 100% offline access in mobile PWA', 72, 634, { fontSize: 12, fill: '#B45309' }, f);
-  b.rect('Save Local Btn', 1040, 608, 160, 44, { fill: '#D97706', cornerRadius: 10 }, f);
-  b.text('Sync to Phone →', 1070, 622, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  // Session B1
+  b.rect('Session B1', 672, 274, 540, 100, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 14, strokeWeight: 1 }, f);
+  b.text('10:30 AM – 11:15 AM · 45 mins', 688, 288, { fontSize: 11, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('Building Accessible Community Experiences', 688, 308, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Lena Lekkou (UI/UX Architect) · Design Track', 688, 332, { fontSize: 12, fill: '#64748B' }, f);
+  b.rect('Star B1', 1152, 288, 36, 36, { fill: '#F1F5F9', cornerRadius: 18 }, f);
+  b.text('☆', 1162, 298, { fontSize: 14, fill: '#94A3B8' }, f);
+
+  // Session B2
+  b.rect('Session B2', 672, 390, 540, 100, { fill: '#F0F9FF', stroke: '#0284C7', cornerRadius: 14, strokeWeight: 1.5 }, f);
+  b.text('11:30 AM – 12:15 PM · 45 mins', 688, 404, { fontSize: 11, fontWeight: 700, fill: '#0284C7' }, f);
+  b.text('Monetization & Agency Growth Strategies', 688, 424, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Chandra Alif Irawan (Agency Founder) · Business Track', 688, 448, { fontSize: 12, fill: '#64748B' }, f);
+  b.rect('Star B2', 1152, 404, 36, 36, { fill: '#E0F2FE', cornerRadius: 18 }, f);
+  b.text('★', 1162, 414, { fontSize: 14, fill: '#0284C7' }, f);
+
+  b.text('Automatic schedule conflict checker warns if you star 2 concurrent talks.', 48, 744, { fontSize: 12, fill: '#64748B' }, f);
 }
 
-// W4: Web Attendee & Sponsor Showcase
+// W4: Web - Attendees & Sponsor Wall
 {
   const f = b.frame('Web - Attendees Sponsors', 4000, 1050, 1280, 800, { fill: '#FFF7ED', clip: true });
+  b.webTopNav(f, 'sponsors');
 
-  // Top Nav
-  b.rect('Web Nav BG 4', 0, 0, 1280, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('WordCamp Delhi 2026', 48, 22, { fontSize: 20, fontWeight: 800, fill: '#0F172A', fontFamily: 'Poppins' }, f);
-  b.text('Schedule', 290, 25, { fontSize: 14, fontWeight: 600, fill: '#64748B' }, f);
-  b.text('Attendees & Community', 380, 25, { fontSize: 14, fontWeight: 700, fill: '#FF4D2D' }, f);
-  b.text('Sponsors & Steals', 580, 25, { fontSize: 14, fontWeight: 600, fill: '#64748B' }, f);
+  b.text('Event Sponsors & Exclusive Community Steals', 48, 100, { fontSize: 26, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('17 Verified Sponsors for WordCamp Delhi 2026 with high-resolution brand assets', 48, 132, { fontSize: 13, fill: '#64748B' }, f);
 
-  // Search & Claim Header
-  b.text('Community & Attendee Directory', 48, 96, { fontSize: 28, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Discover fellow attendees, speakers, organizers, and sponsor teams.', 48, 134, { fontSize: 14, fill: '#64748B' }, f);
+  // Sponsor Tier 1 (Tera Sponsors)
+  b.text('TERA & GIGA SPONSORS', 48, 172, { fontSize: 12, fontWeight: 800, fill: '#D97706', letterSpacing: 1.2 }, f);
 
-  // Claim Banner
-  b.rect('Web Claim Card', 48, 166, 1184, 60, { fill: '#FFEDD5', stroke: '#FDBA74', cornerRadius: 14, strokeWeight: 1 }, f);
-  b.text('🛡 Attending WordCamp Delhi? Claim your public attendee listing to link your CampCard.', 72, 188, { fontSize: 13, fontWeight: 700, fill: '#9A3412' }, f);
-  b.rect('Claim Trigger', 1040, 178, 160, 36, { fill: '#EA580C', cornerRadius: 8 }, f);
-  b.text('Claim My Profile', 1070, 188, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
-
-  // 3-Column Attendee Cards
-  const webAttendees = [
-    { name: 'Amit Singh', role: 'Speaker', title: 'Senior Cloud Architect', org: 'Cloudways', x: 48, y: 246 },
-    { name: 'Priya Sharma', role: 'Organizer', title: 'Lead Designer', org: 'WordPress Delhi', x: 440, y: 246 },
-    { name: 'David Kim', role: 'Sponsor Lead', title: 'DevRel Director', org: 'Automattic', x: 832, y: 246 },
-    { name: 'Rahul Verma', role: 'Speaker', title: 'Tech Lead', org: 'WPSimplified', x: 48, y: 350 },
-    { name: 'Elena Rostova', role: 'Speaker', title: 'Core Contributor', org: 'Automattic', x: 440, y: 350 },
-    { name: 'Neha Gupta', role: 'Volunteer', title: 'Registration Lead', org: 'Community', x: 832, y: 350 },
+  const topSponsors = [
+    { name: 'Elementor Ltd', logo: 'Elementor.webp', tier: 'Tera Sponsor', deal: '50% Off Studio Suite for attendees', site: 'elementor.com', x: 48 },
+    { name: 'WPFusion', logo: 'WPFusion.webp', tier: 'Giga Sponsor', deal: 'Full CRM Integration Suite License', site: 'wpfusion.com', x: 450 },
+    { name: 'Housewise', logo: 'Housewise.webp', tier: 'Mega Sponsor', deal: 'Custom Tech Consultation & Swag', site: 'housewise.in', x: 852 },
   ];
 
-  for (const wa of webAttendees) {
-    b.rect('WA Card', wa.x, wa.y, 370, 90, { fill: '#FFFFFF', cornerRadius: 14, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.rect('WA Pic', wa.x + 16, wa.y + 18, 54, 54, { fill: '#1E293B', cornerRadius: 27 }, f);
-    b.text(wa.name[0], wa.x + 36, wa.y + 32, { fontSize: 20, fontWeight: 800, fill: '#FF4D2D' }, f);
-    b.text(wa.name, wa.x + 84, wa.y + 20, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(`${wa.title} · ${wa.org}`, wa.x + 84, wa.y + 42, { fontSize: 11, fill: '#64748B' }, f);
-    b.rect('WA Role', wa.x + 84, wa.y + 60, 70, 18, { fill: '#F1F5F9', cornerRadius: 9 }, f);
-    b.text(wa.role, wa.x + 94, wa.y + 63, { fontSize: 9, fontWeight: 700, fill: '#334155' }, f);
+  for (const s of topSponsors) {
+    b.rect('Top Sp Card', s.x, 196, 380, 180, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Logo Container', s.x + 20, 216, 80, 50, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 10, strokeWeight: 1 }, f);
+    b.text(s.name.charAt(0), s.x + 50, 230, { fontSize: 24, fontWeight: 800, fill: '#FF4D2D' }, f);
+
+    b.text(s.tier.toUpperCase(), s.x + 116, 222, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
+    b.text(s.name, s.x + 116, 240, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text('🌐 ' + s.site, s.x + 116, 264, { fontSize: 11, fill: '#64748B' }, f);
+
+    b.line('Sp Div', s.x + 20, 286, 340, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+    b.text('🎁 Exclusive Deal: ' + s.deal, s.x + 20, 304, { fontSize: 11, fontWeight: 700, fill: '#059669' }, f);
+    b.rect('Claim Btn', s.x + 20, 326, 340, 34, { fill: '#FFEDD5', stroke: '#FDBA74', cornerRadius: 8, strokeWeight: 1 }, f);
+    b.text('Claim Sponsor Perk  →', s.x + 116, 336, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
   }
 
-  // Sponsors Section
-  b.text('Featured Sponsors & Community Partners', 48, 470, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  // Sponsor Tier 2 (Mega & Global Sponsors)
+  b.text('GLOBAL & LOCAL SPONSORS', 48, 406, { fontSize: 12, fontWeight: 800, fill: '#475569', letterSpacing: 1.2 }, f);
 
-  const sponsors = [
-    { name: 'Automattic', tier: 'PLATINUM SPONSOR', booth: 'Booth P1 · Main Hall', deal: 'Free .blog domain + 6 months hosting', x: 48 },
-    { name: 'Cloudways', tier: 'GOLD SPONSOR', booth: 'Booth G2 · Arena', deal: '$50 Cloud credits for all attendees', x: 440 },
-    { name: 'WPSimplified', tier: 'MEDIA PARTNER', booth: 'CampBuddy Companion Desk', deal: 'Free Open Source companion toolkit', x: 832 },
+  const moreSponsors = [
+    { name: 'Bluehost', tier: 'Global Sponsor', perk: 'Free Cloud Hosting', x: 48 },
+    { name: 'Automattic', tier: 'Global Sponsor', perk: 'WordPress VIP Credits', x: 290 },
+    { name: 'Hostinger', tier: 'Global Sponsor', perk: 'Managed WP Tier', x: 532 },
+    { name: 'SEOPress', tier: 'Local Sponsor', perk: 'SEO Pro Plugin', x: 774 },
+    { name: 'Whinta', tier: 'Local Sponsor', perk: 'Cloud Security Audit', x: 1016 },
   ];
 
-  for (const sp of sponsors) {
-    b.rect('Sponsor Card', sp.x, 508, 370, 180, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(sp.tier, sp.x + 20, 528, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
-    b.text(sp.name, sp.x + 20, 550, { fontSize: 20, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(`📍 ${sp.booth}`, sp.x + 20, 580, { fontSize: 12, fill: '#64748B' }, f);
-    b.rect('Deal Box', sp.x + 20, 608, 330, 40, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 10, strokeWeight: 1 }, f);
-    b.text(`🎁 Deal: ${sp.deal}`, sp.x + 30, 620, { fontSize: 11, fontWeight: 700, fill: '#065F46' }, f);
+  for (const ms of moreSponsors) {
+    b.rect('Grid Sp Card', ms.x, 430, 218, 120, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.rect('Mini Logo Box', ms.x + 16, 444, 36, 36, { fill: '#1E293B', cornerRadius: 8 }, f);
+    b.text(ms.name.charAt(0), ms.x + 28, 452, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
+    b.text(ms.tier, ms.x + 60, 448, { fontSize: 9, fontWeight: 700, fill: '#D97706' }, f);
+    b.text(ms.name, ms.x + 60, 464, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+    b.line('L', ms.x + 16, 490, 186, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+    b.text(ms.perk, ms.x + 16, 506, { fontSize: 10, fontWeight: 600, fill: '#059669' }, f);
   }
+
+  b.text('All sponsor logos and URLs are fetched directly from https://delhi.wordcamp.org/2026/sponsors/', 48, 730, { fontSize: 12, fill: '#94A3B8' }, f);
 }
 
-// W5: Web Organizer & Admin Portal
+// W5: Web - Live Event Dashboard & Helpdesk
 {
-  const f = b.frame('Web - Organizer Portal', 5320, 1050, 1280, 800, { fill: '#F8FAFC', clip: true });
+  const f = b.frame('Web - Live Event Stage', 5320, 1050, 1280, 800, { fill: '#FFF7ED', clip: true });
+  b.webTopNav(f, 'home');
 
-  // Admin Top Bar
-  b.rect('Admin Nav', 0, 0, 1280, 72, { fill: '#1E293B' }, f);
-  b.text('CampBuddy Staff Console', 48, 22, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF', fontFamily: 'Poppins' }, f);
-  b.rect('Staff Badge', 320, 20, 150, 32, { fill: '#334155', cornerRadius: 16 }, f);
-  b.text('👑 Super Admin & Manager', 332, 28, { fontSize: 11, fontWeight: 700, fill: '#38BDF8' }, f);
+  b.text('Live Attendee Pulse & Incident Helpdesk', 48, 100, { fontSize: 26, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('On-site communications, Code of Conduct support, and volunteer leads', 48, 132, { fontSize: 13, fill: '#64748B' }, f);
 
-  b.text('WordCamp Delhi 2026', 980, 26, { fontSize: 13, fontWeight: 700, fill: '#94A3B8' }, f);
-  b.rect('Logout Btn', 1160, 20, 80, 32, { fill: '#475569', cornerRadius: 8 }, f);
-  b.text('Sign Out', 1176, 28, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+  // Live Emergency & Code of Conduct Card
+  b.rect('Help Desk Hero', 48, 170, 780, 260, { fill: '#FEF2F2', stroke: '#FECACA', cornerRadius: 20, strokeWeight: 1.5 }, f);
+  b.rect('SOS Icon Box', 76, 196, 52, 52, { fill: '#EF4444', cornerRadius: 26 }, f);
+  b.text('🛟', 90, 208, { fontSize: 22 }, f);
+  b.text('Code of Conduct & Safety Helpdesk', 144, 202, { fontSize: 18, fontWeight: 800, fill: '#991B1B' }, f);
+  b.text('WordCamp Delhi is dedicated to providing a harassment-free experience for everyone.', 144, 228, { fontSize: 12, fill: '#7F1D1D' }, f);
+  b.text('If you need immediate support, locate any organizer or volunteer wearing a STAFF lanyard.', 144, 246, { fontSize: 12, fill: '#7F1D1D' }, f);
 
-  // Stat Counters
-  const stats = [
-    { num: '1,248', label: 'Synced Devices (Phones)', icon: '📱', x: 48 },
-    { num: '92%', label: 'Offline Warmup Complete', icon: '⚡', x: 350 },
-    { num: '482', label: 'Top Talk Bookmarks', icon: '⭐', x: 652 },
-    { num: '0', label: 'Active Schedule Delays', icon: '⏱', x: 954 },
-  ];
-  for (const st of stats) {
-    b.rect('Stat Card', st.x, 96, 280, 100, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-    b.text(st.icon, st.x + 20, 116, { fontSize: 22 }, f);
-    b.text(st.num, st.x + 60, 114, { fontSize: 24, fontWeight: 800, fill: '#0F172A' }, f);
-    b.text(st.label, st.x + 20, 156, { fontSize: 12, fill: '#64748B' }, f);
-  }
+  b.rect('Call Emergency Btn', 76, 310, 220, 44, { fill: '#EF4444', cornerRadius: 10 }, f);
+  b.text('📞 Call Venue Helpdesk', 104, 324, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Live Announcement Broadcaster
-  b.rect('Broadcast Card', 48, 220, 580, 480, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('📢 Broadcast Announcement to All Devices', 72, 246, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Sends high-priority local push notification to 1,248 attendee devices.', 72, 272, { fontSize: 12, fill: '#64748B' }, f);
+  b.rect('Chat Staff Btn', 312, 310, 220, 44, { fill: '#FFFFFF', stroke: '#DC2626', cornerRadius: 10, strokeWeight: 1 }, f);
+  b.text('💬 Message Organizers', 340, 324, { fontSize: 12, fontWeight: 700, fill: '#DC2626' }, f);
 
-  b.text('Announcement Title:', 72, 310, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Title Input', 72, 330, 532, 44, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8, strokeWeight: 1 }, f);
-  b.text('Lunch is served at Main Dining Hall!', 88, 342, { fontSize: 13, fill: '#0F172A' }, f);
+  // Venue & Wi-Fi Details Card
+  b.rect('Venue Info Card', 852, 170, 380, 260, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 20, strokeWeight: 1 }, f);
+  b.text('📍 Venue & Connectivity', 876, 196, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('NDMC Convention Centre, Sansad Marg, New Delhi', 876, 222, { fontSize: 12, fill: '#64748B' }, f);
 
-  b.text('Message Body:', 72, 394, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Body Input', 72, 414, 532, 100, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8, strokeWeight: 1 }, f);
-  b.text('Hot meals and vegetarian options are ready. Please visit sponsor booths in Hall B.', 88, 430, { fontSize: 12, fill: '#0F172A' }, f);
+  b.rect('Wifi Box', 876, 256, 332, 68, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 12, strokeWeight: 1 }, f);
+  b.text('📶 Venue Wi-Fi: WCDelhi2026', 892, 272, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('Password: wordpressrocks', 892, 294, { fontSize: 12, fontWeight: 700, fill: '#FF4D2D' }, f);
 
-  b.rect('Send Broadcast Btn', 72, 540, 240, 48, { fill: '#FF4D2D', cornerRadius: 10 }, f);
-  b.text('Send Live Broadcast  🚀', 106, 555, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.rect('Map Link', 876, 342, 332, 40, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+  b.text('Open Google Maps Navigation  →', 934, 354, { fontSize: 11, fontWeight: 700, fill: '#D33417' }, f);
 
-  // Schedule Delay Controller
-  b.rect('Delay Card', 652, 220, 580, 480, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
-  b.text('⏱ Schedule Delay Broadcast Controller', 676, 246, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Automatically updates talk countdowns on every phone without server reload.', 676, 272, { fontSize: 12, fill: '#64748B' }, f);
-
-  b.text('Select Track:', 676, 310, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Track Sel', 676, 330, 532, 44, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8, strokeWeight: 1 }, f);
-  b.text('All Tracks (Track 1 & Track 2)', 692, 342, { fontSize: 13, fill: '#0F172A' }, f);
-
-  b.text('Delay Duration:', 676, 394, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
-  b.rect('Delay 10m', 676, 414, 120, 44, { fill: '#F1F5F9', cornerRadius: 8 }, f);
-  b.text('+10 Mins', 710, 428, { fontSize: 13, fontWeight: 700, fill: '#334155' }, f);
-
-  b.rect('Delay 15m', 812, 414, 120, 44, { fill: '#FFEDD5', stroke: '#FF4D2D', cornerRadius: 8, strokeWeight: 2 }, f);
-  b.text('+15 Mins', 846, 428, { fontSize: 13, fontWeight: 800, fill: '#D33417' }, f);
-
-  b.rect('Delay 30m', 948, 414, 120, 44, { fill: '#F1F5F9', cornerRadius: 8 }, f);
-  b.text('+30 Mins', 982, 428, { fontSize: 13, fontWeight: 700, fill: '#334155' }, f);
-
-  b.rect('Apply Delay Btn', 676, 540, 240, 48, { fill: '#D97706', cornerRadius: 10 }, f);
-  b.text('Apply +15m Delay  ⏰', 714, 555, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.text('CampBuddy guarantees 100% offline access when Wi-Fi is intermittent.', 48, 730, { fontSize: 12, fill: '#94A3B8' }, f);
 }
 
 // ==========================================
-// 3. PWA APP SCREENS (Y = 1950)
+// 3. PWA (PROGRESSIVE WEB APP) (Y = 1950)
 // ==========================================
 
-// P1: PWA Instant Install & Cache Hero
+// P1: PWA - Install Hero
 {
   const f = b.frame('PWA - Install Offline Hero', 40, 1950, 390, 844, { fill: '#FFF7ED', clip: true });
 
-  // Browser Chrome Bar
+  // Browser Chrome simulation
   b.rect('Browser Chrome', 0, 0, 390, 78, { fill: '#F1F5F9' }, f);
   b.rect('URL Bar', 16, 38, 358, 32, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 16, strokeWeight: 1 }, f);
   b.text('🔒 campbuddy.club', 140, 46, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
 
-  // Floating PWA Install Modal / Banner
+  // A2HS Modal Banner
   b.rect('A2HS Card', 16, 96, 358, 180, { fill: '#1E293B', cornerRadius: 20, stroke: '#334155', strokeWeight: 1 }, f);
   b.rect('App Icon Box', 32, 114, 48, 48, { fill: '#FF4D2D', cornerRadius: 24 }, f);
   b.text('C', 48, 126, { fontSize: 24, fontWeight: 800, fill: '#FFFFFF' }, f);
@@ -876,65 +787,64 @@ const b = new FigCraftBuilder();
   b.rect('Install A2HS Btn', 32, 226, 326, 38, { fill: '#FF4D2D', cornerRadius: 10 }, f);
   b.text('Install PWA to Home Screen  ⚡', 100, 237, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Offline Cache Status
+  // Service Worker Cache Status
   b.rect('Cache Status', 16, 290, 358, 64, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 14, strokeWeight: 1 }, f);
   b.text('⚡ Service Worker Active · 48 Assets Cached', 30, 304, { fontSize: 11, fontWeight: 700, fill: '#047857' }, f);
   b.text('IndexedDB schedule & CampCard encrypted locally', 30, 324, { fontSize: 10, fill: '#059669' }, f);
 
-  // Quick Event Selection
   b.text('Choose event to store offline:', 16, 372, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
 
+  // Delhi PWA Event
   b.rect('PWA Ev 1', 16, 396, 358, 80, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Ev 1 Logo', 30, 412, 48, 48, { fill: '#1E293B', cornerRadius: 24 }, f);
   b.text('D', 46, 424, { fontSize: 20, fontWeight: 800, fill: '#FF4D2D' }, f);
   b.text('WordCamp Delhi 2026', 88, 416, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('36 Talks · Full Schedule Synced', 88, 438, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('22 Talks · Full Schedule Synced', 88, 438, { fontSize: 11, fill: '#64748B' }, f);
   b.rect('Enter Pill', 300, 420, 60, 30, { fill: '#FF4D2D', cornerRadius: 15 }, f);
   b.text('OPEN', 314, 428, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF' }, f);
 
+  // Nairobi PWA Event
   b.rect('PWA Ev 2', 16, 490, 358, 80, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('Ev 2 Logo', 30, 506, 48, 48, { fill: '#334155', cornerRadius: 24 }, f);
   b.text('N', 46, 518, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF' }, f);
   b.text('WordCamp Nairobi 2026', 88, 510, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('28 Talks · Scheduled for Nov 28', 88, 532, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('18 Speakers · Full Program Synced', 88, 532, { fontSize: 11, fill: '#64748B' }, f);
   b.rect('Enter Pill 2', 300, 514, 60, 30, { fill: '#F1F5F9', cornerRadius: 15 }, f);
   b.text('SYNC', 314, 522, { fontSize: 11, fontWeight: 800, fill: '#0F172A' }, f);
 
   b.text('CampBuddy PWA runs completely standalone once installed.', 44, 760, { fontSize: 10, fill: '#94A3B8' }, f);
 }
 
-// P2: PWA Mobile Dashboard
+// P2: PWA - Standalone Dashboard
 {
   const f = b.frame('PWA - Standalone Dashboard', 470, 1950, 390, 844, { fill: '#FFF7ED', clip: true });
 
-  // PWA Standalone Header (No browser chrome)
+  // PWA Standalone Header
   b.rect('PWA Top Bar', 0, 0, 390, 44, { fill: '#1E293B' }, f);
   b.ellipse('Offline Green Dot', 16, 17, 10, 10, { fill: '#10B981' }, f);
   b.text('Offline PWA Mode · Venue Safe', 34, 15, { fontSize: 10, fontWeight: 700, fill: '#A7F3D0' }, f);
   b.text('10:14 AM', 330, 15, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Hero Card
   b.rect('PWA Hero Card', 16, 54, 358, 170, { fill: '#1E293B', cornerRadius: 22, stroke: '#334155', strokeWeight: 1 }, f);
   b.text('WordCamp Delhi 2026', 32, 70, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
   b.text('NDMC Convention Centre · Hall A & B', 32, 94, { fontSize: 11, fill: '#94A3B8' }, f);
 
   b.rect('PWA Next Box', 28, 120, 334, 86, { fill: '#0F172A', cornerRadius: 14 }, f);
-  b.text('⚡ NEXT TALK IN 12 MIN', 42, 132, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
-  b.text('Building Offline-First Web Apps', 42, 150, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-  b.text('Rahul Verma · Hall 1', 42, 170, { fontSize: 11, fill: '#94A3B8' }, f);
+  b.text('⚡ NEXT TALK IN 16 MIN', 42, 132, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+  b.text('Scaling Headless WordPress & SEO', 42, 150, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.text('Pankaj Kumar · Hall A', 42, 170, { fontSize: 11, fill: '#94A3B8' }, f);
   b.rect('PWA View Btn', 270, 146, 76, 32, { fill: '#D97706', cornerRadius: 16 }, f);
   b.text('VIEW', 292, 154, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  // Hubs ActionGrid
   b.text('Quick Event Hubs', 16, 240, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
 
   const pwaHubs = [
     { title: 'My Schedule', sub: '4 saved talks', icon: '📅', x: 16, y: 262 },
-    { title: 'Full Program', sub: '36 talks & tracks', icon: '🎤', x: 200, y: 262 },
+    { title: 'Full Program', sub: '22 talks & tracks', icon: '🎤', x: 200, y: 262 },
     { title: 'Offline Card', sub: 'QR Badge', icon: '🪪', x: 16, y: 356 },
     { title: 'Attendees', sub: 'Directory & roles', icon: '👥', x: 200, y: 356 },
     { title: 'Quests', sub: 'Roadmap', icon: '🎯', x: 16, y: 450 },
-    { title: 'Deals & Steals', sub: 'Free tools', icon: '🎁', x: 200, y: 450 },
+    { title: 'Deals & Steals', sub: '17 tools', icon: '🎁', x: 200, y: 450 },
   ];
   for (const h of pwaHubs) {
     b.rect('PWA Hub Tile', h.x, h.y, 174, 82, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
@@ -944,7 +854,6 @@ const b = new FigCraftBuilder();
     b.text(h.sub, h.x + 12, h.y + 64, { fontSize: 10, fill: '#64748B' }, f);
   }
 
-  // Floating Help Bar
   b.rect('PWA SOS Bar', 16, 680, 358, 50, { fill: '#EF4444', cornerRadius: 25 }, f);
   b.text('🛟  Need Help at WordCamp?', 32, 696, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
   b.text('Helpdesk & Organizers', 32, 712, { fontSize: 10, fill: 'rgba(255,255,255,0.85)' }, f);
@@ -954,7 +863,7 @@ const b = new FigCraftBuilder();
   b.mobileBottomNav(f, 'home');
 }
 
-// P3: PWA Offline Schedule & Conflict Resolver
+// P3: PWA - Offline Schedule
 {
   const f = b.frame('PWA - Offline Schedule', 900, 1950, 390, 844, { fill: '#FFF7ED', clip: true });
 
@@ -963,28 +872,25 @@ const b = new FigCraftBuilder();
 
   b.text('Smart Schedule & Conflicts', 16, 60, { fontSize: 20, fontWeight: 800, fill: '#0F172A' }, f);
 
-  // Conflict Warning Card
   b.rect('Conflict Card', 16, 96, 358, 70, { fill: '#FEF2F2', stroke: '#FECACA', cornerRadius: 14, strokeWeight: 1 }, f);
   b.text('⚠ SCHEDULE OVERLAP DETECTED', 28, 110, { fontSize: 11, fontWeight: 800, fill: '#991B1B' }, f);
-  b.text('You have starred two talks at 11:30 AM in Track A and Track B.', 28, 128, { fontSize: 10, fill: '#7F1D1D' }, f);
+  b.text('You have starred two talks at 11:30 AM in Track 1 and Track 2.', 28, 128, { fontSize: 10, fill: '#7F1D1D' }, f);
   b.text('Tap to resolve track preference →', 28, 144, { fontSize: 10, fontWeight: 700, fill: '#B91C1C' }, f);
 
-  // Overlapping talks
   b.rect('Conflict Talk 1', 16, 180, 358, 90, { fill: '#FFFFFF', stroke: '#EF4444', cornerRadius: 14, strokeWeight: 1.5 }, f);
-  b.text('TRACK A · 11:30 AM', 28, 194, { fontSize: 10, fontWeight: 800, fill: '#D33417' }, f);
-  b.text('Building Offline-First Web Apps', 28, 212, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Rahul Verma · Hall 1', 28, 234, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('TRACK 1 · 11:30 AM', 28, 194, { fontSize: 10, fontWeight: 800, fill: '#D33417' }, f);
+  b.text('Full-Site Editing & Custom Block Governance', 28, 212, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Patrick Lumumba · Hall A', 28, 234, { fontSize: 11, fill: '#64748B' }, f);
   b.rect('Keep 1', 290, 204, 70, 30, { fill: '#FF4D2D', cornerRadius: 6 }, f);
   b.text('KEEP', 310, 212, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF' }, f);
 
   b.rect('Conflict Talk 2', 16, 280, 358, 90, { fill: '#FFFFFF', stroke: '#CBD5E1', cornerRadius: 14, strokeWeight: 1 }, f);
-  b.text('TRACK B · 11:30 AM', 28, 294, { fontSize: 10, fontWeight: 800, fill: '#0284C7' }, f);
-  b.text('Full-Site Editing & Custom Blocks', 28, 312, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Elena Rostova · Hall 2', 28, 334, { fontSize: 11, fill: '#64748B' }, f);
+  b.text('TRACK 2 · 11:30 AM', 28, 294, { fontSize: 10, fontWeight: 800, fill: '#0284C7' }, f);
+  b.text('Designing Accessible Enterprise Themes', 28, 312, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Lena Lekkou · Hall B', 28, 334, { fontSize: 11, fill: '#64748B' }, f);
   b.rect('Remove 2', 290, 304, 70, 30, { fill: '#F1F5F9', cornerRadius: 6 }, f);
   b.text('REMOVE', 300, 312, { fontSize: 10, fontWeight: 700, fill: '#64748B' }, f);
 
-  // 10-Min Notification Settings
   b.rect('Notification Box', 16, 390, 358, 80, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.text('🔔 10-Minute Prior Offline Alerts', 28, 406, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
   b.text('Browser vibration & sound alert before your saved session starts.', 28, 426, { fontSize: 10, fill: '#64748B' }, f);
@@ -994,14 +900,13 @@ const b = new FigCraftBuilder();
   b.mobileBottomNav(f, 'my-day');
 }
 
-// P4: PWA Offline CampCard & Camera QR Scan
+// P4: PWA - Offline CampCard
 {
   const f = b.frame('PWA - Offline CampCard', 1330, 1950, 390, 844, { fill: '#FFF7ED', clip: true });
 
   b.rect('PWA Top Bar 3', 0, 0, 390, 44, { fill: '#1E293B' }, f);
   b.text('Offline CampCard & QR Scan', 16, 14, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-  // Offline QR Card
   b.rect('PWA Card Badge', 24, 60, 342, 430, { fill: '#FFFFFF', cornerRadius: 24, stroke: '#E2E8F0', strokeWeight: 1 }, f);
   b.rect('PWA Badge Top', 24, 60, 342, 54, { fill: '#1E293B', cornerRadius: 24 }, f);
   b.rect('Top Fix', 24, 84, 342, 30, { fill: '#1E293B' }, f);
@@ -1011,7 +916,6 @@ const b = new FigCraftBuilder();
   b.text('Sunil Kumar Sharma', 44, 136, { fontSize: 19, fontWeight: 800, fill: '#0F172A' }, f);
   b.text('WordPress Engineer · WPSimplified', 44, 160, { fontSize: 12, fontWeight: 600, fill: '#FF4D2D' }, f);
 
-  // QR Code
   b.rect('PWA QR Area', 95, 190, 200, 200, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 14, strokeWeight: 1 }, f);
   b.rect('QR P1', 115, 210, 46, 46, { fill: '#0F172A', cornerRadius: 4 }, f);
   b.rect('QR P2', 229, 210, 46, 46, { fill: '#0F172A', cornerRadius: 4 }, f);
@@ -1023,11 +927,9 @@ const b = new FigCraftBuilder();
 
   b.text('Zero-server camera swap: scan directly on phone', 55, 410, { fontSize: 10, fill: '#64748B' }, f);
 
-  // Camera QR Scanner Trigger
   b.rect('Scan Camera Btn', 24, 510, 342, 52, { fill: '#FF4D2D', cornerRadius: 14 }, f);
   b.text('📷 Scan Peer CampCard (Offline Camera)', 64, 528, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  // Export buttons
   b.rect('vCard Btn', 24, 574, 164, 42, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 10, strokeWeight: 1 }, f);
   b.text('📇 Export vCard', 56, 588, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
 
@@ -1037,9 +939,281 @@ const b = new FigCraftBuilder();
   b.mobileBottomNav(f, 'camp-card');
 }
 
+// ==========================================
+// 4. ADMIN PANEL SCREENS (Y = 2900)
+// ==========================================
+
+// A1: Admin - Desktop Control Center
+{
+  const f = b.frame('Admin - Desktop Control Center', 40, 2900, 1280, 800, { fill: '#F8FAFC', clip: true });
+
+  // Admin Top Bar
+  b.rect('Admin Header', 0, 0, 1280, 68, { fill: '#1E293B' }, f);
+  b.text('CampBuddy Staff Console', 32, 22, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.rect('Badge', 270, 20, 100, 28, { fill: '#FF4D2D', cornerRadius: 14 }, f);
+  b.text('SUPER ADMIN', 282, 27, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF' }, f);
+
+  b.text('Event: WordCamp Delhi 2026', 800, 26, { fontSize: 13, fontWeight: 700, fill: '#F59E0B' }, f);
+  b.rect('Switch Ev Btn', 1010, 18, 120, 32, { fill: '#334155', cornerRadius: 8 }, f);
+  b.text('Switch Event ▾', 1026, 26, { fontSize: 12, fill: '#FFFFFF' }, f);
+  b.rect('Sign Out', 1146, 18, 90, 32, { fill: '#DC2626', cornerRadius: 8 }, f);
+  b.text('Sign Out', 1166, 26, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  // Left Sidebar
+  b.rect('Sidebar', 0, 68, 240, 732, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
+
+  const menu = [
+    { label: '📊 Dashboard Overview', active: true, y: 92 },
+    { label: '⏱ Live Delays & Schedule', active: false, y: 140 },
+    { label: '📢 Broadcast Push Alerts', active: false, y: 188 },
+    { label: '🎁 Sponsors & Tiers', active: false, y: 236 },
+    { label: '👥 Attendee Roster Roles', active: false, y: 284 },
+    { label: '🎯 Contributor Quests', active: false, y: 332 },
+    { label: '🛡 CoC Safety Reports (0)', active: false, y: 380 },
+    { label: '🔄 Ingestion Feeds (10/10)', active: false, y: 428 },
+    { label: '⚙ Settings & API Keys', active: false, y: 476 },
+  ];
+
+  for (const m of menu) {
+    if (m.active) {
+      b.rect('Active BG', 12, m.y, 216, 38, { fill: '#FFEDD5', cornerRadius: 8 }, f);
+      b.text(m.label, 24, m.y + 11, { fontSize: 12, fontWeight: 800, fill: '#D33417' }, f);
+    } else {
+      b.text(m.label, 24, m.y + 11, { fontSize: 12, fontWeight: 600, fill: '#475569' }, f);
+    }
+  }
+
+  // Main Content Area
+  b.text('Dashboard Overview · Live Operations', 272, 92, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Real-time sync telemetry from 1,248 attendee devices and official WordCamp REST endpoints', 272, 122, { fontSize: 13, fill: '#64748B' }, f);
+
+  // 4 Top Metric Cards
+  const adminMetrics = [
+    { num: '1,248', label: 'Synced Attendee Devices', sub: '92% offline ready', icon: '📱', x: 272 },
+    { num: '22 Talks', label: 'Program Sessions Live', sub: '2 tracks active', icon: '🎤', x: 520 },
+    { num: '17 Logos', label: 'Verified Sponsor Logos', sub: '100% scraped clean', icon: '🎁', x: 768 },
+    { num: '0 Min', label: 'Active Schedule Delay', sub: 'All tracks on time', icon: '⏱', x: 1016 },
+  ];
+
+  for (const met of adminMetrics) {
+    b.rect('Metric Card', met.x, 150, 232, 110, { fill: '#FFFFFF', cornerRadius: 16, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.text(met.icon, met.x + 16, 170, { fontSize: 20 }, f);
+    b.text(met.num, met.x + 50, 168, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text(met.label, met.x + 16, 206, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+    b.text(met.sub, met.x + 16, 226, { fontSize: 11, fill: '#10B981' }, f);
+  }
+
+  // Left Column: Live Ingestion Feed Health
+  b.rect('Feed Table Box', 272, 280, 580, 480, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('Official Event Feeds & Scraper Status', 296, 306, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Hourly cron verified · Fallback image scrapers active', 296, 328, { fontSize: 12, fill: '#64748B' }, f);
+
+  const feeds = [
+    { endpoint: '/wp-json/wp/v2/sessions', count: '22 items', status: '200 OK (Clean)', time: '1 min ago' },
+    { endpoint: '/wp-json/wp/v2/speakers', count: '11 items', status: '200 OK (With Avatars)', time: '1 min ago' },
+    { endpoint: '/sponsors/ (Scraper Map)', count: '17 logos', status: '100% High-Res Match', time: '1 min ago' },
+    { endpoint: '/attendees/ (Roster)', count: '82 attendees', status: 'Synced w/ Gravatar', time: '5 mins ago' },
+  ];
+
+  feeds.forEach((fd, i) => {
+    const y = 360 + i * 70;
+    b.rect('Row', 296, y, 532, 58, { fill: '#F8FAFC', cornerRadius: 10 }, f);
+    b.text(fd.endpoint, 312, y + 14, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+    b.text(fd.count, 312, y + 34, { fontSize: 11, fill: '#64748B' }, f);
+    b.rect('Pill', 670, y + 16, 140, 26, { fill: '#ECFDF5', stroke: '#A7F3D0', cornerRadius: 13, strokeWeight: 1 }, f);
+    b.text(fd.status, 680, y + 22, { fontSize: 10, fontWeight: 700, fill: '#047857' }, f);
+  });
+
+  b.rect('Force Refresh Btn', 296, 670, 200, 44, { fill: '#FF4D2D', cornerRadius: 10 }, f);
+  b.text('Force Refetch All Feeds  🔄', 320, 684, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  // Right Column: Active Delays & Live Broadcast Pulse
+  b.rect('Right Box', 872, 280, 376, 480, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('Quick Broadcaster & Incident Pulse', 896, 306, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+
+  b.rect('Broadcast Mini', 896, 344, 328, 140, { fill: '#FFF7ED', stroke: '#FDBA74', cornerRadius: 14, strokeWeight: 1 }, f);
+  b.text('📢 Quick Broadcast Announcement', 912, 362, { fontSize: 13, fontWeight: 800, fill: '#D33417' }, f);
+  b.text('Send push notification to all 1,248 phones.', 912, 384, { fontSize: 11, fill: '#9A3412' }, f);
+  b.rect('Q Input', 912, 404, 296, 32, { fill: '#FFFFFF', stroke: '#FDBA74', cornerRadius: 6 }, f);
+  b.text('e.g. Keynote starting in 10 mins in Hall A', 922, 412, { fontSize: 11, fill: '#94A3B8' }, f);
+  b.rect('Send Q', 912, 444, 120, 28, { fill: '#FF4D2D', cornerRadius: 6 }, f);
+  b.text('Dispatch Alert', 934, 451, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  b.text('Safety & Code of Conduct Reports', 896, 514, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.rect('Safe Status', 896, 536, 328, 70, { fill: '#F0FDF4', stroke: '#BBF7D0', cornerRadius: 14, strokeWeight: 1 }, f);
+  b.text('✔ Zero Open Incidents Reported', 912, 552, { fontSize: 12, fontWeight: 800, fill: '#166534' }, f);
+  b.text('All organizer help channels operating normally.', 912, 574, { fontSize: 11, fill: '#15803D' }, f);
+}
+
+// A2: Admin - Live Delay & Broadcast Dispatcher
+{
+  const f = b.frame('Admin - Delay & Broadcast', 1360, 2900, 1280, 800, { fill: '#F8FAFC', clip: true });
+
+  // Admin Top Bar
+  b.rect('Admin Header 2', 0, 0, 1280, 68, { fill: '#1E293B' }, f);
+  b.text('CampBuddy Staff Console', 32, 22, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Event: WordCamp Delhi 2026', 800, 26, { fontSize: 13, fontWeight: 700, fill: '#F59E0B' }, f);
+
+  // Left Sidebar
+  b.rect('Sidebar 2', 0, 68, 240, 732, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('⏱ Live Delays & Broadcasts', 24, 103, { fontSize: 12, fontWeight: 800, fill: '#D33417' }, f);
+
+  b.text('Live Schedule Delay & Instant Broadcast Dispatcher', 272, 92, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Adjust session countdowns across all attendee phones without requiring app reloads or server queries', 272, 122, { fontSize: 13, fill: '#64748B' }, f);
+
+  // Left Side: Live Delay Broadcaster
+  b.rect('Delay Container', 272, 160, 470, 560, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('⏱ Running Late / Delay Broadcaster', 296, 186, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Pushes live delta offset to IndexedDB & native storage on all attendee devices.', 296, 210, { fontSize: 11, fill: '#64748B' }, f);
+
+  b.text('Select Affected Track:', 296, 248, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+  b.rect('Track Sel 1', 296, 268, 422, 40, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8 }, f);
+  b.text('All Tracks (Hall A & Hall B)', 312, 280, { fontSize: 12, fill: '#0F172A' }, f);
+
+  b.text('Delay Duration Offset:', 296, 328, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+
+  const delayOpts = [
+    { label: '+10 Mins', active: false, x: 296 },
+    { label: '+15 Mins', active: true, x: 406 },
+    { label: '+30 Mins', active: false, x: 516 },
+    { label: 'Clear', active: false, x: 626 },
+  ];
+
+  for (const opt of delayOpts) {
+    b.rect('Delay Pill', opt.x, 348, 98, 44, { fill: opt.active ? '#FFEDD5' : '#F1F5F9', stroke: opt.active ? '#FF4D2D' : '#CBD5E1', cornerRadius: 8, strokeWeight: opt.active ? 2 : 1 }, f);
+    b.text(opt.label, opt.x + 20, 362, { fontSize: 12, fontWeight: opt.active ? 800 : 600, fill: opt.active ? '#D33417' : '#334155' }, f);
+  }
+
+  b.text('Preview Effect on Attendee Screens:', 296, 420, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+  b.rect('Preview Card', 296, 440, 422, 100, { fill: '#FFF7ED', stroke: '#FDBA74', cornerRadius: 12, strokeWeight: 1 }, f);
+  b.text('⚠️ SCHEDULE RUNNING 15 MINS LATE', 312, 456, { fontSize: 11, fontWeight: 800, fill: '#9A3412' }, f);
+  b.text('Pankaj Kumar\'s talk shifted: 10:30 AM → 10:45 AM', 312, 478, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+  b.text('Updated automatically across 1,248 devices', 312, 502, { fontSize: 11, fill: '#64748B' }, f);
+
+  b.rect('Apply Delay Btn', 296, 570, 422, 48, { fill: '#D97706', cornerRadius: 10 }, f);
+  b.text('Broadcast +15 Min Delay  ⏰', 416, 585, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  // Right Side: High Priority Push Announcement
+  b.rect('Push Container', 766, 160, 470, 560, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('📢 High-Priority Push Announcement', 790, 186, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Sends local browser & APK notification banner immediately.', 790, 210, { fontSize: 11, fill: '#64748B' }, f);
+
+  b.text('Notification Title:', 790, 248, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+  b.rect('Push Title Input', 790, 268, 422, 40, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8 }, f);
+  b.text('Lunch is served at Dining Hall B!', 806, 280, { fontSize: 12, fill: '#0F172A' }, f);
+
+  b.text('Message Body:', 790, 328, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+  b.rect('Push Body Input', 790, 348, 422, 120, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 8 }, f);
+  b.text('Hot meals and dietary options are ready. Please visit sponsor booths for exclusive swag giveaways during the break.', 806, 364, { fontSize: 12, fill: '#0F172A' }, f);
+
+  b.rect('Send Push Btn', 790, 570, 422, 48, { fill: '#FF4D2D', cornerRadius: 10 }, f);
+  b.text('Send Live Push to 1,248 Phones  🚀', 880, 585, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+}
+
+// A3: Admin - Sponsors & Media Library
+{
+  const f = b.frame('Admin - Sponsors & Media', 2680, 2900, 1280, 800, { fill: '#F8FAFC', clip: true });
+
+  b.rect('Admin Header 3', 0, 0, 1280, 68, { fill: '#1E293B' }, f);
+  b.text('CampBuddy Staff Console', 32, 22, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Event: WordCamp Delhi 2026', 800, 26, { fontSize: 13, fontWeight: 700, fill: '#F59E0B' }, f);
+
+  b.rect('Sidebar 3', 0, 68, 240, 732, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('🎁 Sponsors & Media Library', 24, 103, { fontSize: 12, fontWeight: 800, fill: '#D33417' }, f);
+
+  b.text('Sponsor Management & Scraped Media Asset Health', 272, 92, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('17 Sponsors successfully verified from public page with SVG guard checks and high-res logos', 272, 122, { fontSize: 13, fill: '#64748B' }, f);
+
+  // Table of Real Sponsors
+  b.rect('Sponsor Table Box', 272, 160, 964, 560, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  
+  // Table Header
+  b.rect('TH BG', 272, 160, 964, 48, { fill: '#F8FAFC', cornerRadius: 20 }, f);
+  b.text('SPONSOR NAME', 300, 178, { fontSize: 11, fontWeight: 800, fill: '#475569' }, f);
+  b.text('TIER LEVEL', 520, 178, { fontSize: 11, fontWeight: 800, fill: '#475569' }, f);
+  b.text('LOGO URL & MEDIA HEALTH', 700, 178, { fontSize: 11, fontWeight: 800, fill: '#475569' }, f);
+  b.text('ACTION', 1120, 178, { fontSize: 11, fontWeight: 800, fill: '#475569' }, f);
+
+  const adminSponsors = [
+    { name: 'Elementor Ltd', tier: 'Tera Sponsor', logo: '.../files/2026/11/Elementor.webp', status: '200 OK' },
+    { name: 'WPFusion', tier: 'Giga Sponsor', logo: '.../files/2026/11/WPFusion.webp', status: '200 OK' },
+    { name: 'Housewise', tier: 'Mega Sponsor', logo: '.../files/2026/11/Housewise.webp', status: '200 OK' },
+    { name: 'Bluehost', tier: 'Global Sponsor', logo: '.../files/2026/08/Bluehost.png', status: '200 OK' },
+    { name: 'Hostinger', tier: 'Global Sponsor', logo: '.../files/2026/08/Hostinger.png', status: '200 OK' },
+    { name: 'Automattic', tier: 'Global Sponsor', logo: '.../files/2026/08/Automattic.png', status: '200 OK' },
+    { name: 'SEOPress', tier: 'Local Sponsor', logo: '.../files/2026/09/SEOPress.webp', status: '200 OK' },
+  ];
+
+  adminSponsors.forEach((as, i) => {
+    const y = 218 + i * 54;
+    b.text(as.name, 300, y + 12, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+    b.rect('Tier Pill', 520, y + 6, 120, 26, { fill: '#FFEDD5', cornerRadius: 13 }, f);
+    b.text(as.tier, 532, y + 12, { fontSize: 10, fontWeight: 700, fill: '#D33417' }, f);
+    b.text(as.logo, 700, y + 12, { fontSize: 11, fill: '#64748B' }, f);
+    b.rect('Edit Btn', 1110, y + 4, 70, 28, { fill: '#F1F5F9', cornerRadius: 6 }, f);
+    b.text('Edit', 1134, y + 10, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
+    b.line('Row L', 290, y + 46, 928, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+  });
+
+  b.text('17 of 17 sponsor logos mapped via WordCampRestClient::fetchSponsorLogosFromPage()', 300, 680, { fontSize: 12, fontWeight: 600, fill: '#059669' }, f);
+}
+
+// A4: Admin - Mobile Staff Console
+{
+  const f = b.frame('Admin - Mobile Staff Console', 4000, 2900, 390, 844, { fill: '#FFF7ED', clip: true });
+  b.mobileStatusBar(f, true);
+
+  // Staff Header
+  b.rect('Staff Top', 0, 0, 390, 60, { fill: '#1E293B' }, f);
+  b.text('Staff Console · WCDelhi', 20, 24, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.rect('Staff Badge', 280, 20, 90, 26, { fill: '#EF4444', cornerRadius: 13 }, f);
+  b.text('ORGANIZER', 294, 26, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF' }, f);
+
+  // Quick Action Buttons
+  b.text('Organizer Operations', 16, 76, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+
+  b.rect('Scan Attendee Badge', 16, 98, 358, 70, { fill: '#FFFFFF', stroke: '#FF4D2D', cornerRadius: 16, strokeWeight: 1.5 }, f);
+  b.text('📷 Check-in & Badge QR Scanner', 32, 114, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Scan attendee CampCard to verify ticket & assign roles', 32, 136, { fontSize: 11, fill: '#64748B' }, f);
+
+  b.rect('Trigger Delay Card', 16, 178, 358, 70, { fill: '#FFFFFF', stroke: '#D97706', cornerRadius: 16, strokeWeight: 1.5 }, f);
+  b.text('⏱ Fast Delay Broadcast (+10m / +15m)', 32, 194, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Push immediate delay offset without opening laptop', 32, 216, { fontSize: 11, fill: '#64748B' }, f);
+
+  b.rect('Safety Alert Card', 16, 258, 358, 70, { fill: '#FEF2F2', stroke: '#EF4444', cornerRadius: 16, strokeWeight: 1.5 }, f);
+  b.text('🛡 Code of Conduct Incident Dispatch', 32, 274, { fontSize: 14, fontWeight: 800, fill: '#991B1B' }, f);
+  b.text('Zero open safety incidents · Incident team on call', 32, 296, { fontSize: 11, fill: '#7F1D1D' }, f);
+
+  // Live Check-in Stats
+  b.rect('Stats Card', 16, 344, 358, 120, { fill: '#1E293B', cornerRadius: 18 }, f);
+  b.text('ATTENDEE CHECK-IN PULSE', 32, 362, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+  b.text('742 / 850 Checked In (87%)', 32, 384, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.rect('Bar Outer', 32, 412, 326, 10, { fill: '#334155', cornerRadius: 5 }, f);
+  b.rect('Bar Inner', 32, 412, 284, 10, { fill: '#10B981', cornerRadius: 5 }, f);
+  b.text('Peak flow: Hall A Registration Desks', 32, 432, { fontSize: 11, fill: '#94A3B8' }, f);
+
+  // Recent Staff Activity Log
+  b.text('Recent Staff Activity', 16, 480, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+
+  const logs = [
+    { text: 'Checked in: Sunil Kumar Sharma', time: '10:04 AM' },
+    { text: 'Checked in: Lena Lekkou (Speaker)', time: '09:58 AM' },
+    { text: 'Verified Booth: Elementor Ltd', time: '09:45 AM' },
+  ];
+
+  logs.forEach((lg, i) => {
+    const y = 504 + i * 46;
+    b.rect('Log Row', 16, y, 358, 38, { fill: '#FFFFFF', cornerRadius: 8, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+    b.text(lg.text, 28, y + 12, { fontSize: 11, fontWeight: 600, fill: '#334155' }, f);
+    b.text(lg.time, 312, y + 12, { fontSize: 10, fill: '#94A3B8' }, f);
+  });
+
+  b.text('Staff portal requires active organizer authentication token.', 36, 780, { fontSize: 10, fill: '#94A3B8' }, f);
+}
+
 // Write the script to scratch/figcraft_script.json
 const outputPath = path.resolve(rootDir, 'scratch', 'figcraft_script.json');
 fs.writeFileSync(outputPath, JSON.stringify(b.commands, null, 2), 'utf8');
 
-console.log(`Generated ${b.commands.length} FigCraft commands.`);
+console.log(`Generated ${b.commands.length} FigCraft commands for ${b.screenFrames.length} audited screens.`);
 console.log(`Saved script to: ${outputPath}`);

@@ -132,7 +132,7 @@
             <p class="panel-intro">Deals help you save on paid things. Free Steals are good WordPress plugins and tools that are already free, picked by the CampBuddy team, from big companies and from people in the community.</p>
             @if ($steals->isEmpty())
                 <div class="empty-state">
-                    <p class="empty-state__title">Nothing here yet</p>
+                    <p class="empty-state__title">Nothing here yet.</p>
                     <p class="empty-state__text">Curated free community tools and plugins will show up here. Check back soon, or suggest your favourite tool below!</p>
                 </div>
             @else

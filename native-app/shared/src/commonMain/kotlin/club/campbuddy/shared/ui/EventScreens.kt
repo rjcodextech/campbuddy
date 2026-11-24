@@ -265,15 +265,20 @@ private fun LiveEventDashboard(
 
         // Screen 1 Hero Card: Tactile Card with Navy background (#1E293B to #0F172A), 30s clock, next talk
         item {
-            TactileHeroCard(
-                event = event,
-                phase = phase,
-                zone = zone,
-                now = now,
-                sessions = sessions,
-                offline = offline,
-                onViewSchedule = { onTab("my-day") },
-            )
+            when ("hero") {
+                "hero" -> HeroCard(
+                    event = event,
+                    phase = phase,
+                    zone = zone,
+                    now = now,
+                    sessions = sessions,
+                    offline = offline,
+                    onViewSchedule = { onTab("my-day") },
+                )
+                "happening_now" -> HappeningNow(sessions, zone, now)
+                "up_next" -> UpNext(sessions, zone, now)
+                else -> Unit
+            }
         }
 
         // Screen 1 People & Matches Strip: Pinned contacts and interest wave triggers
@@ -1125,27 +1130,16 @@ private fun visible(section: SectionConfig, phase: Phase, firstWordCamp: String?
 }
 
 @Composable
-private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Instant, sessions: List<Session>) {
-    val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
-    Card(Modifier.clip(shape).patternBackground(Res.drawable.pattern_event, brand.surface).brandGlow(brand.primary, brand.accent)) {
-        // Phones (like the website under 420px): a smaller logo leaves the name, dates and pill room for a line each.
-        BoxWithConstraints {
-        val logo = if (maxWidth < 388.dp) 76.dp else 104.dp
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(logo).background(brand.background, shape).border(1.dp, brand.line, shape),
-                contentAlignment = Alignment.Center,
-            ) { RemoteImage(event.logo ?: event.mark, Modifier.size(logo - 8.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(logo * 0.7f)) } }
-            Column(Modifier.weight(1f)) {
-                Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
-                Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))
-                heroDates(event.startsOn, event.endsOn)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp)) }
-                Box(Modifier.padding(top = 8.dp)) { StatusPill(statusPillText(event, phase, zone, now, sessions), live = phase == Phase.During) }
-            }
-        }
-        }
-    }
+private fun HeroCard(
+    event: EventDetail,
+    phase: Phase,
+    zone: TimeZone,
+    now: Instant,
+    sessions: List<Session>,
+    offline: Boolean = false,
+    onViewSchedule: () -> Unit = {},
+) {
+    TactileHeroCard(event, phase, zone, now, sessions, offline, onViewSchedule)
 }
 
 @Composable
