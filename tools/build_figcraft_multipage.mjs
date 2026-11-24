@@ -140,7 +140,7 @@ b.setPage('Web UI');
   b.rect('Hero Stage', 48, 96, 1184, 380, { fill: '#1E293B', cornerRadius: 28 }, f);
   b.text('LIVE CONFERENCE DASHBOARD · DAY 1', 88, 136, { fontSize: 12, fontWeight: 800, fill: '#F59E0B', letterSpacing: 1.2 }, f);
   b.text('WordCamp Delhi 2026', 88, 164, { fontSize: 38, fontWeight: 800, fill: '#FFFFFF', fontFamily: 'Baloo 2' }, f);
-  b.text('November 21–22, 2026 · NDMC Convention Centre, Sansad Marg, New Delhi', 88, 220, { fontSize: 16, fill: '#94A3B8' }, f);
+  b.text('December 12–13, 2026 · NDMC Convention Centre, Sansad Marg, New Delhi', 88, 220, { fontSize: 16, fill: '#94A3B8' }, f);
 
   b.rect('Clock Badge', 88, 260, 240, 48, { fill: '#0F172A', stroke: '#334155', cornerRadius: 24, strokeWeight: 1 }, f);
   b.ellipse('Green Pulse', 106, 276, 16, 16, { fill: '#10B981' }, f);
@@ -194,7 +194,7 @@ b.setPage('Web UI');
   });
 
   const dirEvents = [
-    { name: 'WordCamp Delhi 2026', loc: 'NDMC Convention Centre, New Delhi', date: '21–22 NOV 2026', status: 'ON NOW', talks: '22 Talks', spk: '11 Speakers', spon: '17 Sponsors' },
+    { name: 'WordCamp Delhi 2026', loc: 'NDMC Convention Centre, New Delhi', date: '12–13 DEC 2026', status: 'ON NOW', talks: '22 Talks', spk: '11 Speakers', spon: '17 Sponsors' },
     { name: 'WordCamp Athens 2026', loc: 'Megaron Athens International Hall', date: '11–12 APR 2026', status: 'UPCOMING', talks: '34 Talks', spk: '19 Speakers', spon: '30 Sponsors' },
     { name: 'WordCamp Nairobi 2026', loc: 'The Edge Convention Centre, Nairobi', date: '28 NOV 2026', status: 'UPCOMING', talks: '18 Talks', spk: '18 Speakers', spon: '6 Sponsors' },
     { name: 'WordCamp Bandung 2026', loc: 'Trans Convention Centre, Bandung', date: '15 DEC 2026', status: 'UPCOMING', talks: '10 Talks', spk: '10 Speakers', spon: '13 Sponsors' },
@@ -870,7 +870,7 @@ b.setPage('APK');
   b.text('Link Device', 270, 149, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
 
   b.rect('Delhi Event Card', 16, 200, 358, 180, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#FF4D2D', strokeWeight: 2 }, f);
-  b.text('ON NOW · 21–22 NOV 2026', 32, 218, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
+  b.text('ON NOW · 12–13 DEC 2026', 32, 218, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
   b.text('WordCamp Delhi 2026', 32, 236, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
   b.text('📍 NDMC Convention Centre, New Delhi', 32, 260, { fontSize: 12, fill: '#64748B' }, f);
   b.text('22 Talks · 11 Speakers · 17 Sponsors · Live Delay 0m', 32, 286, { fontSize: 11, fontWeight: 600, fill: '#334155' }, f);
@@ -961,7 +961,7 @@ b.setPage('APK');
   b.text('My Day', 16, 52, { fontSize: 22, fontWeight: 800, fill: '#0F172A' }, f);
 
   b.rect('Day Tab', 16, 86, 170, 36, { fill: '#FF4D2D', cornerRadius: 18 }, f);
-  b.text('Day 1 · Nov 21', 54, 96, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+  b.text('Day 1 · Dec 12', 54, 96, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
 
   b.rect('Timeline 1', 16, 136, 358, 110, { fill: '#FFFFFF', cornerRadius: 18, stroke: '#FF4D2D', strokeWeight: 2 }, f);
   b.text('10:30 AM · Hall A · Track 1', 28, 150, { fontSize: 10, fontWeight: 800, fill: '#D33417' }, f);
@@ -1272,38 +1272,131 @@ b.setPage('AdminPanel');
   });
 }
 
-// AP07: Mobile Staff Check-In & Scanner
+// AP07: Mobile App Dynamic Config & Releases
 {
-  const f = b.frame('AP07 - Staff Mobile Check-In', 40, 1900, 390, 844, { fill: '#FFF7ED', clip: true });
-  b.rect('Top', 0, 0, 390, 60, { fill: '#1E293B' }, f);
-  b.text('Staff Check-In Console', 20, 24, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.rect('Badge', 280, 20, 90, 26, { fill: '#EF4444', cornerRadius: 13 }, f);
-  b.text('ORGANIZER', 294, 26, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF' }, f);
+  const f = b.frame('AP07 - Mobile App Config & Releases', 40, 1900, 1280, 800, { fill: '#F8FAFC', clip: true });
+  b.rect('H', 0, 0, 1280, 68, { fill: '#1E293B' }, f);
+  b.text('CampBuddy Staff Console · Mobile App Remote Config & Releases (/admin/mobile-app)', 32, 22, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  b.rect('Scan Badge Card', 16, 80, 358, 80, { fill: '#FFFFFF', stroke: '#FF4D2D', cornerRadius: 16, strokeWeight: 2 }, f);
-  b.text('📷 Check-in & Badge QR Scanner', 32, 98, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Scan attendee CampCard to mark attended & give badge', 32, 122, { fontSize: 11, fill: '#64748B' }, f);
+  // Left card: App Navigation Tabs & Layout
+  b.rect('Nav Box', 48, 100, 570, 660, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('Mobile Navigation & UI Config', 80, 136, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Configure active tabs, theme palette, and client runtime switches for APK & PWA', 80, 162, { fontSize: 12, fill: '#64748B' }, f);
 
-  b.rect('Stats', 16, 180, 358, 100, { fill: '#1E293B', cornerRadius: 18 }, f);
-  b.text('CHECK-IN PROGRESS', 32, 198, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
-  b.text('742 / 850 Checked In (87%)', 32, 220, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
-  b.rect('Outer', 32, 248, 326, 10, { fill: '#334155', cornerRadius: 5 }, f);
-  b.rect('Inner', 32, 248, 284, 10, { fill: '#10B981', cornerRadius: 5 }, f);
+  const tabs = [
+    { num: '1', name: 'Home Hub', desc: 'Live Session Hero, 30s Countdown, ActionGrid', status: 'ACTIVE' },
+    { num: '2', name: 'My Day', desc: 'Smart Itinerary, Conflict Resolution, ICS Export', status: 'ACTIVE' },
+    { num: '3', name: 'Explore Directory', desc: 'Attendees, Speakers, 17 Sponsors, Live Search', status: 'ACTIVE' },
+    { num: '4', name: 'Quests & Badges', desc: 'Contributor Day Roadmaps, XP Rewards', status: 'ACTIVE' },
+    { num: '5', name: 'CampCard Studio', desc: 'P2P Offline QR Badge, 900 DPI Canvas', status: 'ACTIVE' },
+  ];
+  tabs.forEach((t, i) => {
+    const y = 200 + i * 65;
+    b.rect('Tab Row', 80, y, 506, 52, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 10, strokeWeight: 1 }, f);
+    b.rect('Handle', 94, y + 14, 24, 24, { fill: '#E2E8F0', cornerRadius: 6 }, f);
+    b.text(t.num, 102, y + 18, { fontSize: 12, fontWeight: 800, fill: '#475569' }, f);
+    b.text(t.name, 130, y + 12, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+    b.text(t.desc, 130, y + 30, { fontSize: 10, fill: '#64748B' }, f);
+    b.rect('Tag', 510, y + 14, 62, 24, { fill: '#DCFCE7', cornerRadius: 12 }, f);
+    b.text(t.status, 522, y + 20, { fontSize: 9, fontWeight: 800, fill: '#15803D' }, f);
+  });
+
+  b.text('BRAND PALETTE & ACCENT', 80, 545, { fontSize: 11, fontWeight: 800, fill: '#64748B' }, f);
+  b.rect('Color 1', 80, 570, 70, 36, { fill: '#FF4D2D', cornerRadius: 8 }, f);
+  b.text('Coral (Primary)', 80, 615, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
+  b.rect('Color 2', 170, 570, 70, 36, { fill: '#0F172A', cornerRadius: 8 }, f);
+  b.text('Slate (Dark)', 170, 615, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
+  b.rect('Color 3', 260, 570, 70, 36, { fill: '#F59E0B', cornerRadius: 8 }, f);
+  b.text('Amber (Pulse)', 260, 615, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
+  b.rect('Color 4', 350, 570, 70, 36, { fill: '#10B981', cornerRadius: 8 }, f);
+  b.text('Emerald (Offline)', 350, 615, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
+
+  b.rect('Save Config', 80, 660, 506, 44, { fill: '#FF4D2D', cornerRadius: 10 }, f);
+  b.text('Publish Dynamic Config to Apps', 230, 674, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  // Right card: APK Releases & Distribution
+  b.rect('APK Box', 650, 100, 582, 660, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('APK Binary Distribution & Releases (/app/android)', 682, 136, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
+  b.text('Host and serve official Android APK builds outside app stores', 682, 162, { fontSize: 12, fill: '#64748B' }, f);
+
+  b.rect('Current Version Card', 682, 196, 518, 120, { fill: '#1E293B', cornerRadius: 16 }, f);
+  b.text('ACTIVE PRODUCTION RELEASE', 706, 218, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+  b.text('CampBuddy APK v2.4.0 (Build 42)', 706, 240, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
+  b.text('Target SDK 34 · Compose Multiplatform · SharedPreferences KeyValueStore · 18.4 MB', 706, 268, { fontSize: 11, fill: '#94A3B8' }, f);
+  b.text('Download link: https://campbuddy.in/app/android · 840 Downloads', 706, 288, { fontSize: 11, fill: '#38BDF8' }, f);
+
+  b.rect('Upload Box', 682, 336, 518, 160, { fill: '#F8FAFC', stroke: '#CBD5E1', cornerRadius: 14, dashes: [4, 4], strokeWeight: 1.5 }, f);
+  b.text('📦 Drag & drop new .apk release file here', 800, 390, { fontSize: 14, fontWeight: 700, fill: '#334155' }, f);
+  b.text('Supports chunked multi-part upload for large builds over flaky connections', 740, 415, { fontSize: 11, fill: '#64748B' }, f);
+  b.rect('Browse Btn', 870, 440, 140, 32, { fill: '#0F172A', cornerRadius: 8 }, f);
+  b.text('Select APK File', 898, 448, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+
+  b.text('CLIENT FEATURE SWITCHES', 682, 520, { fontSize: 11, fontWeight: 800, fill: '#64748B' }, f);
+  const switches = [
+    { title: 'Offline Stale-While-Revalidate Caching', state: 'ON' },
+    { title: '10-Minute Prior Push & Local Talk Alerts', state: 'ON' },
+    { title: 'Dynamic Schedule Delay Cascade Overlay', state: 'ON' },
+  ];
+  switches.forEach((sw, i) => {
+    const y = 548 + i * 46;
+    b.rect('Switch Row', 682, y, 518, 38, { fill: '#F1F5F9', cornerRadius: 8 }, f);
+    b.text(sw.title, 702, y + 12, { fontSize: 12, fontWeight: 600, fill: '#0F172A' }, f);
+    b.rect('Pill', 1130, y + 8, 50, 22, { fill: '#10B981', cornerRadius: 11 }, f);
+    b.text(sw.state, 1146, y + 13, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF' }, f);
+  });
 }
 
-// AP08: Mobile Incident Dispatch
+// AP08: Attendee Moderation & Incident Reports
 {
-  const f = b.frame('AP08 - Mobile Incident Dispatch', 470, 1900, 390, 844, { fill: '#FFF7ED', clip: true });
-  b.rect('Top', 0, 0, 390, 60, { fill: '#1E293B' }, f);
-  b.text('Safety Incident Queue', 20, 24, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
+  const f = b.frame('AP08 - Attendee Moderation & Reports', 1360, 1900, 1280, 800, { fill: '#F8FAFC', clip: true });
+  b.rect('H', 0, 0, 1280, 68, { fill: '#1E293B' }, f);
+  b.text('CampBuddy Staff Console · Safety & Moderation Reports (/admin/events/delhi-2026/reports)', 32, 22, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-  b.rect('Safe Card', 16, 80, 358, 120, { fill: '#F0FDF4', stroke: '#BBF7D0', cornerRadius: 18, strokeWeight: 1 }, f);
-  b.text('✔ ZERO ACTIVE INCIDENTS', 32, 104, { fontSize: 13, fontWeight: 800, fill: '#166534' }, f);
-  b.text('No unresolved Code of Conduct reports. Volunteer safety leads on duty: Hall A & Hall B registration foyers.', 32, 128, { fontSize: 11, fill: '#15803D', lineHeight: 16 }, f);
+  // Top metric chips
+  const repStats = [
+    { label: 'TOTAL REPORTS', val: '3 Received', color: '#0F172A', x: 48 },
+    { label: 'ACTIVE / UNDER REVIEW', val: '1 Pending', color: '#D97706', x: 350 },
+    { label: 'RESOLVED SAFELY', val: '2 Closed', color: '#10B981', x: 652 },
+    { label: 'SAFETY MARSHALS', val: '4 On Duty', color: '#0284C7', x: 954 },
+  ];
+  repStats.forEach((rs) => {
+    b.rect('Stat Box', rs.x, 90, 278, 80, { fill: '#FFFFFF', stroke: '#E2E8F0', cornerRadius: 14, strokeWeight: 1 }, f);
+    b.text(rs.label, rs.x + 20, 108, { fontSize: 10, fontWeight: 800, fill: '#64748B' }, f);
+    b.text(rs.val, rs.x + 20, 130, { fontSize: 18, fontWeight: 800, fill: rs.color }, f);
+  });
 
-  b.rect('Fast Delay Card', 16, 220, 358, 80, { fill: '#FFFFFF', stroke: '#D97706', cornerRadius: 16, strokeWeight: 1.5 }, f);
-  b.text('⏱ Fast Delay Trigger (+10m / +15m)', 32, 238, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-  b.text('Push schedule offset directly from your phone', 32, 262, { fontSize: 11, fill: '#64748B' }, f);
+  // Table of reports
+  b.rect('Rep Table', 48, 190, 1184, 460, { fill: '#FFFFFF', cornerRadius: 20, stroke: '#E2E8F0', strokeWeight: 1 }, f);
+  b.text('Reported Incidents & Profile Flags', 80, 222, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
+
+  const reportItems = [
+    { id: '#104', type: 'Profile Link Flag', subject: 'Attendee @spambot_in', details: 'Promotional affiliate link placed in CampCard website bio', status: 'UNDER REVIEW', statColor: '#FEF3C7', textColor: '#D97706', actions: ['Dismiss', 'Hide Bio', 'Ban Profile'] },
+    { id: '#103', type: 'Hall A Seating Notice', subject: 'Track 1 Main Hall', details: 'Wheelchair ramp clearway temporarily blocked by extra chairs', status: 'RESOLVED', statColor: '#DCFCE7', textColor: '#15803D', actions: ['View Log'] },
+    { id: '#102', type: 'Lost Attendee Badge', subject: 'Priya Sharma (Attendee)', details: 'Attendee lost physical lanyard badge; verified photo ID and re-printed', status: 'RESOLVED', statColor: '#DCFCE7', textColor: '#15803D', actions: ['View Log'] },
+  ];
+  reportItems.forEach((ri, i) => {
+    const y = 265 + i * 90;
+    b.rect('Row', 80, y, 1120, 76, { fill: '#F8FAFC', stroke: '#E2E8F0', cornerRadius: 12, strokeWeight: 1 }, f);
+    b.text(ri.id + ' · ' + ri.type, 100, y + 14, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+    b.text('Target: ' + ri.subject, 320, y + 14, { fontSize: 12, fontWeight: 700, fill: '#334155' }, f);
+    b.text(ri.details, 100, y + 42, { fontSize: 11, fill: '#64748B' }, f);
+
+    b.rect('Status Pill', 780, y + 12, 110, 24, { fill: ri.statColor, cornerRadius: 12 }, f);
+    b.text(ri.status, 796, y + 17, { fontSize: 10, fontWeight: 800, fill: ri.textColor }, f);
+
+    let btnX = 910;
+    ri.actions.forEach((act) => {
+      b.rect('Action Btn', btnX, y + 10, 60, 28, { fill: act === 'Ban Profile' ? '#FEE2E2' : '#F1F5F9', cornerRadius: 6 }, f);
+      b.text(act, btnX + 8, y + 17, { fontSize: 10, fontWeight: 700, fill: act === 'Ban Profile' ? '#DC2626' : '#334155' }, f);
+      btnX += 66;
+    });
+  });
+
+  // Emergency safety contacts
+  b.rect('Safety Card', 48, 670, 1184, 90, { fill: '#FEF2F2', stroke: '#FCA5A5', cornerRadius: 16, strokeWeight: 1 }, f);
+  b.text('🚨 VENUE EMERGENCY DISPATCH PROTOCOL', 76, 690, { fontSize: 11, fontWeight: 800, fill: '#DC2626' }, f);
+  b.text('Designated WordCamp Delhi Safety Marshals: Rahul Verma (+91 98100 12345) & NDMC Centre Security Desk (Room 102)', 76, 712, { fontSize: 12, fontWeight: 600, fill: '#991B1B' }, f);
+  b.text('All incidents are encrypted and logged in accordance with DPDPA 2023 & WordPress Community Code of Conduct.', 76, 732, { fontSize: 11, fill: '#B91C1C' }, f);
 }
 
 // Write the script to scratch/figcraft_multipage_script.json

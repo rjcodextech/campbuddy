@@ -246,7 +246,7 @@
   {
     "command": "text.create",
     "params": {
-      "text": "November 21–22, 2026 · NDMC Convention Centre, Sansad Marg, New Delhi",
+      "text": "December 12–13, 2026 · NDMC Convention Centre, Sansad Marg, New Delhi",
       "x": 88,
       "y": 220,
       "props": {
@@ -1187,7 +1187,7 @@
   {
     "command": "text.create",
     "params": {
-      "text": "ON NOW · 21–22 NOV 2026",
+      "text": "ON NOW · 12–13 DEC 2026",
       "x": 128,
       "y": 246,
       "props": {
@@ -13363,7 +13363,7 @@
   {
     "command": "text.create",
     "params": {
-      "text": "ON NOW · 21–22 NOV 2026",
+      "text": "ON NOW · 12–13 DEC 2026",
       "x": 32,
       "y": 218,
       "props": {
@@ -14828,7 +14828,7 @@
   {
     "command": "text.create",
     "params": {
-      "text": "Day 1 · Nov 21",
+      "text": "Day 1 · Dec 12",
       "x": 54,
       "y": 96,
       "props": {
@@ -19833,13 +19833,13 @@
   {
     "command": "frame.create",
     "params": {
-      "name": "AP07 - Staff Mobile Check-In",
+      "name": "AP07 - Mobile App Config & Releases",
       "x": 40,
       "y": 1900,
-      "width": 390,
-      "height": 844,
+      "width": 1280,
+      "height": 800,
       "props": {
-        "fill": "#FFF7ED",
+        "fill": "#F8FAFC",
         "clip": true
       }
     }
@@ -19847,11 +19847,11 @@
   {
     "command": "shape.rectangle",
     "params": {
-      "name": "Top",
+      "name": "H",
       "x": 0,
       "y": 0,
-      "width": 390,
-      "height": 60,
+      "width": 1280,
+      "height": 68,
       "props": {
         "fill": "#1E293B"
       },
@@ -19861,125 +19861,9 @@
   {
     "command": "text.create",
     "params": {
-      "text": "Staff Check-In Console",
-      "x": 20,
-      "y": 24,
-      "props": {
-        "fontSize": 15,
-        "fontWeight": 800,
-        "fill": "#FFFFFF"
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "shape.rectangle",
-    "params": {
-      "name": "Badge",
-      "x": 280,
-      "y": 20,
-      "width": 90,
-      "height": 26,
-      "props": {
-        "fill": "#EF4444",
-        "cornerRadius": 13
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "ORGANIZER",
-      "x": 294,
-      "y": 26,
-      "props": {
-        "fontSize": 10,
-        "fontWeight": 800,
-        "fill": "#FFFFFF"
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "shape.rectangle",
-    "params": {
-      "name": "Scan Badge Card",
-      "x": 16,
-      "y": 80,
-      "width": 358,
-      "height": 80,
-      "props": {
-        "fill": "#FFFFFF",
-        "stroke": "#FF4D2D",
-        "cornerRadius": 16,
-        "strokeWeight": 2
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "📷 Check-in & Badge QR Scanner",
+      "text": "CampBuddy Staff Console · Mobile App Remote Config & Releases (/admin/mobile-app)",
       "x": 32,
-      "y": 98,
-      "props": {
-        "fontSize": 14,
-        "fontWeight": 800,
-        "fill": "#0F172A"
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "Scan attendee CampCard to mark attended & give badge",
-      "x": 32,
-      "y": 122,
-      "props": {
-        "fontSize": 11,
-        "fill": "#64748B"
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "shape.rectangle",
-    "params": {
-      "name": "Stats",
-      "x": 16,
-      "y": 180,
-      "width": 358,
-      "height": 100,
-      "props": {
-        "fill": "#1E293B",
-        "cornerRadius": 18
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "CHECK-IN PROGRESS",
-      "x": 32,
-      "y": 198,
-      "props": {
-        "fontSize": 10,
-        "fontWeight": 800,
-        "fill": "#F59E0B"
-      },
-      "parent": 1373
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "742 / 850 Checked In (87%)",
-      "x": 32,
-      "y": 220,
+      "y": 22,
       "props": {
         "fontSize": 18,
         "fontWeight": 800,
@@ -19991,14 +19875,43 @@
   {
     "command": "shape.rectangle",
     "params": {
-      "name": "Outer",
-      "x": 32,
-      "y": 248,
-      "width": 326,
-      "height": 10,
+      "name": "Nav Box",
+      "x": 48,
+      "y": 100,
+      "width": 570,
+      "height": 660,
       "props": {
-        "fill": "#334155",
-        "cornerRadius": 5
+        "fill": "#FFFFFF",
+        "cornerRadius": 20,
+        "stroke": "#E2E8F0",
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Mobile Navigation & UI Config",
+      "x": 80,
+      "y": 136,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Configure active tabs, theme palette, and client runtime switches for APK & PWA",
+      "x": 80,
+      "y": 162,
+      "props": {
+        "fontSize": 12,
+        "fill": "#64748B"
       },
       "parent": 1373
     }
@@ -20006,14 +19919,1046 @@
   {
     "command": "shape.rectangle",
     "params": {
-      "name": "Inner",
-      "x": 32,
-      "y": 248,
-      "width": 284,
-      "height": 10,
+      "name": "Tab Row",
+      "x": 80,
+      "y": 200,
+      "width": 506,
+      "height": 52,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 10,
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Handle",
+      "x": 94,
+      "y": 214,
+      "width": 24,
+      "height": 24,
+      "props": {
+        "fill": "#E2E8F0",
+        "cornerRadius": 6
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "1",
+      "x": 102,
+      "y": 218,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 800,
+        "fill": "#475569"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Home Hub",
+      "x": 130,
+      "y": 212,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Live Session Hero, 30s Countdown, ActionGrid",
+      "x": 130,
+      "y": 230,
+      "props": {
+        "fontSize": 10,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tag",
+      "x": 510,
+      "y": 214,
+      "width": 62,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE",
+      "x": 522,
+      "y": 220,
+      "props": {
+        "fontSize": 9,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tab Row",
+      "x": 80,
+      "y": 265,
+      "width": 506,
+      "height": 52,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 10,
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Handle",
+      "x": 94,
+      "y": 279,
+      "width": 24,
+      "height": 24,
+      "props": {
+        "fill": "#E2E8F0",
+        "cornerRadius": 6
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "2",
+      "x": 102,
+      "y": 283,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 800,
+        "fill": "#475569"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "My Day",
+      "x": 130,
+      "y": 277,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Smart Itinerary, Conflict Resolution, ICS Export",
+      "x": 130,
+      "y": 295,
+      "props": {
+        "fontSize": 10,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tag",
+      "x": 510,
+      "y": 279,
+      "width": 62,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE",
+      "x": 522,
+      "y": 285,
+      "props": {
+        "fontSize": 9,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tab Row",
+      "x": 80,
+      "y": 330,
+      "width": 506,
+      "height": 52,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 10,
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Handle",
+      "x": 94,
+      "y": 344,
+      "width": 24,
+      "height": 24,
+      "props": {
+        "fill": "#E2E8F0",
+        "cornerRadius": 6
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "3",
+      "x": 102,
+      "y": 348,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 800,
+        "fill": "#475569"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Explore Directory",
+      "x": 130,
+      "y": 342,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Attendees, Speakers, 17 Sponsors, Live Search",
+      "x": 130,
+      "y": 360,
+      "props": {
+        "fontSize": 10,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tag",
+      "x": 510,
+      "y": 344,
+      "width": 62,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE",
+      "x": 522,
+      "y": 350,
+      "props": {
+        "fontSize": 9,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tab Row",
+      "x": 80,
+      "y": 395,
+      "width": 506,
+      "height": 52,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 10,
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Handle",
+      "x": 94,
+      "y": 409,
+      "width": 24,
+      "height": 24,
+      "props": {
+        "fill": "#E2E8F0",
+        "cornerRadius": 6
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "4",
+      "x": 102,
+      "y": 413,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 800,
+        "fill": "#475569"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Quests & Badges",
+      "x": 130,
+      "y": 407,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Contributor Day Roadmaps, XP Rewards",
+      "x": 130,
+      "y": 425,
+      "props": {
+        "fontSize": 10,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tag",
+      "x": 510,
+      "y": 409,
+      "width": 62,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE",
+      "x": 522,
+      "y": 415,
+      "props": {
+        "fontSize": 9,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tab Row",
+      "x": 80,
+      "y": 460,
+      "width": 506,
+      "height": 52,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 10,
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Handle",
+      "x": 94,
+      "y": 474,
+      "width": 24,
+      "height": 24,
+      "props": {
+        "fill": "#E2E8F0",
+        "cornerRadius": 6
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "5",
+      "x": 102,
+      "y": 478,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 800,
+        "fill": "#475569"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "CampCard Studio",
+      "x": 130,
+      "y": 472,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "P2P Offline QR Badge, 900 DPI Canvas",
+      "x": 130,
+      "y": 490,
+      "props": {
+        "fontSize": 10,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Tag",
+      "x": 510,
+      "y": 474,
+      "width": 62,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE",
+      "x": 522,
+      "y": 480,
+      "props": {
+        "fontSize": 9,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "BRAND PALETTE & ACCENT",
+      "x": 80,
+      "y": 545,
+      "props": {
+        "fontSize": 11,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Color 1",
+      "x": 80,
+      "y": 570,
+      "width": 70,
+      "height": 36,
+      "props": {
+        "fill": "#FF4D2D",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Coral (Primary)",
+      "x": 80,
+      "y": 615,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Color 2",
+      "x": 170,
+      "y": 570,
+      "width": 70,
+      "height": 36,
+      "props": {
+        "fill": "#0F172A",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Slate (Dark)",
+      "x": 170,
+      "y": 615,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Color 3",
+      "x": 260,
+      "y": 570,
+      "width": 70,
+      "height": 36,
+      "props": {
+        "fill": "#F59E0B",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Amber (Pulse)",
+      "x": 260,
+      "y": 615,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Color 4",
+      "x": 350,
+      "y": 570,
+      "width": 70,
+      "height": 36,
       "props": {
         "fill": "#10B981",
-        "cornerRadius": 5
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Emerald (Offline)",
+      "x": 350,
+      "y": 615,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Save Config",
+      "x": 80,
+      "y": 660,
+      "width": 506,
+      "height": 44,
+      "props": {
+        "fill": "#FF4D2D",
+        "cornerRadius": 10
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Publish Dynamic Config to Apps",
+      "x": 230,
+      "y": 674,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#FFFFFF"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "APK Box",
+      "x": 650,
+      "y": 100,
+      "width": 582,
+      "height": 660,
+      "props": {
+        "fill": "#FFFFFF",
+        "cornerRadius": 20,
+        "stroke": "#E2E8F0",
+        "strokeWeight": 1
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "APK Binary Distribution & Releases (/app/android)",
+      "x": 682,
+      "y": 136,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Host and serve official Android APK builds outside app stores",
+      "x": 682,
+      "y": 162,
+      "props": {
+        "fontSize": 12,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Current Version Card",
+      "x": 682,
+      "y": 196,
+      "width": 518,
+      "height": 120,
+      "props": {
+        "fill": "#1E293B",
+        "cornerRadius": 16
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ACTIVE PRODUCTION RELEASE",
+      "x": 706,
+      "y": 218,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#F59E0B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "CampBuddy APK v2.4.0 (Build 42)",
+      "x": 706,
+      "y": 240,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#FFFFFF"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Target SDK 34 · Compose Multiplatform · SharedPreferences KeyValueStore · 18.4 MB",
+      "x": 706,
+      "y": 268,
+      "props": {
+        "fontSize": 11,
+        "fill": "#94A3B8"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Download link: https://campbuddy.in/app/android · 840 Downloads",
+      "x": 706,
+      "y": 288,
+      "props": {
+        "fontSize": 11,
+        "fill": "#38BDF8"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Upload Box",
+      "x": 682,
+      "y": 336,
+      "width": 518,
+      "height": 160,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#CBD5E1",
+        "cornerRadius": 14,
+        "dashes": [
+          4,
+          4
+        ],
+        "strokeWeight": 1.5
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "📦 Drag & drop new .apk release file here",
+      "x": 800,
+      "y": 390,
+      "props": {
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Supports chunked multi-part upload for large builds over flaky connections",
+      "x": 740,
+      "y": 415,
+      "props": {
+        "fontSize": 11,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Browse Btn",
+      "x": 870,
+      "y": 440,
+      "width": 140,
+      "height": 32,
+      "props": {
+        "fill": "#0F172A",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Select APK File",
+      "x": 898,
+      "y": 448,
+      "props": {
+        "fontSize": 11,
+        "fontWeight": 700,
+        "fill": "#FFFFFF"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "CLIENT FEATURE SWITCHES",
+      "x": 682,
+      "y": 520,
+      "props": {
+        "fontSize": 11,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Switch Row",
+      "x": 682,
+      "y": 548,
+      "width": 518,
+      "height": 38,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Offline Stale-While-Revalidate Caching",
+      "x": 702,
+      "y": 560,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Pill",
+      "x": 1130,
+      "y": 556,
+      "width": 50,
+      "height": 22,
+      "props": {
+        "fill": "#10B981",
+        "cornerRadius": 11
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ON",
+      "x": 1146,
+      "y": 561,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#FFFFFF"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Switch Row",
+      "x": 682,
+      "y": 594,
+      "width": 518,
+      "height": 38,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "10-Minute Prior Push & Local Talk Alerts",
+      "x": 702,
+      "y": 606,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Pill",
+      "x": 1130,
+      "y": 602,
+      "width": 50,
+      "height": 22,
+      "props": {
+        "fill": "#10B981",
+        "cornerRadius": 11
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ON",
+      "x": 1146,
+      "y": 607,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#FFFFFF"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Switch Row",
+      "x": 682,
+      "y": 640,
+      "width": 518,
+      "height": 38,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 8
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Dynamic Schedule Delay Cascade Overlay",
+      "x": 702,
+      "y": 652,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 600,
+        "fill": "#0F172A"
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Pill",
+      "x": 1130,
+      "y": 648,
+      "width": 50,
+      "height": 22,
+      "props": {
+        "fill": "#10B981",
+        "cornerRadius": 11
+      },
+      "parent": 1373
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "ON",
+      "x": 1146,
+      "y": 653,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#FFFFFF"
       },
       "parent": 1373
     }
@@ -20021,13 +20966,13 @@
   {
     "command": "frame.create",
     "params": {
-      "name": "AP08 - Mobile Incident Dispatch",
-      "x": 470,
+      "name": "AP08 - Attendee Moderation & Reports",
+      "x": 1360,
       "y": 1900,
-      "width": 390,
-      "height": 844,
+      "width": 1280,
+      "height": 800,
       "props": {
-        "fill": "#FFF7ED",
+        "fill": "#F8FAFC",
         "clip": true
       }
     }
@@ -20035,118 +20980,704 @@
   {
     "command": "shape.rectangle",
     "params": {
-      "name": "Top",
+      "name": "H",
       "x": 0,
       "y": 0,
-      "width": 390,
-      "height": 60,
+      "width": 1280,
+      "height": 68,
       "props": {
         "fill": "#1E293B"
       },
-      "parent": 1386
+      "parent": 1451
     }
   },
   {
     "command": "text.create",
     "params": {
-      "text": "Safety Incident Queue",
-      "x": 20,
-      "y": 24,
+      "text": "CampBuddy Staff Console · Safety & Moderation Reports (/admin/events/delhi-2026/reports)",
+      "x": 32,
+      "y": 22,
       "props": {
-        "fontSize": 15,
+        "fontSize": 18,
         "fontWeight": 800,
         "fill": "#FFFFFF"
       },
-      "parent": 1386
+      "parent": 1451
     }
   },
   {
     "command": "shape.rectangle",
     "params": {
-      "name": "Safe Card",
-      "x": 16,
-      "y": 80,
-      "width": 358,
-      "height": 120,
-      "props": {
-        "fill": "#F0FDF4",
-        "stroke": "#BBF7D0",
-        "cornerRadius": 18,
-        "strokeWeight": 1
-      },
-      "parent": 1386
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "✔ ZERO ACTIVE INCIDENTS",
-      "x": 32,
-      "y": 104,
-      "props": {
-        "fontSize": 13,
-        "fontWeight": 800,
-        "fill": "#166534"
-      },
-      "parent": 1386
-    }
-  },
-  {
-    "command": "text.create",
-    "params": {
-      "text": "No unresolved Code of Conduct reports. Volunteer safety leads on duty: Hall A & Hall B registration foyers.",
-      "x": 32,
-      "y": 128,
-      "props": {
-        "fontSize": 11,
-        "fill": "#15803D",
-        "lineHeight": 16
-      },
-      "parent": 1386
-    }
-  },
-  {
-    "command": "shape.rectangle",
-    "params": {
-      "name": "Fast Delay Card",
-      "x": 16,
-      "y": 220,
-      "width": 358,
+      "name": "Stat Box",
+      "x": 48,
+      "y": 90,
+      "width": 278,
       "height": 80,
       "props": {
         "fill": "#FFFFFF",
-        "stroke": "#D97706",
-        "cornerRadius": 16,
-        "strokeWeight": 1.5
+        "stroke": "#E2E8F0",
+        "cornerRadius": 14,
+        "strokeWeight": 1
       },
-      "parent": 1386
+      "parent": 1451
     }
   },
   {
     "command": "text.create",
     "params": {
-      "text": "⏱ Fast Delay Trigger (+10m / +15m)",
-      "x": 32,
-      "y": 238,
+      "text": "TOTAL REPORTS",
+      "x": 68,
+      "y": 108,
       "props": {
-        "fontSize": 14,
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "3 Received",
+      "x": 68,
+      "y": 130,
+      "props": {
+        "fontSize": 18,
         "fontWeight": 800,
         "fill": "#0F172A"
       },
-      "parent": 1386
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Stat Box",
+      "x": 350,
+      "y": 90,
+      "width": 278,
+      "height": 80,
+      "props": {
+        "fill": "#FFFFFF",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 14,
+        "strokeWeight": 1
+      },
+      "parent": 1451
     }
   },
   {
     "command": "text.create",
     "params": {
-      "text": "Push schedule offset directly from your phone",
-      "x": 32,
-      "y": 262,
+      "text": "ACTIVE / UNDER REVIEW",
+      "x": 370,
+      "y": 108,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "1 Pending",
+      "x": 370,
+      "y": 130,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#D97706"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Stat Box",
+      "x": 652,
+      "y": 90,
+      "width": 278,
+      "height": 80,
+      "props": {
+        "fill": "#FFFFFF",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 14,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "RESOLVED SAFELY",
+      "x": 672,
+      "y": 108,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "2 Closed",
+      "x": 672,
+      "y": 130,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#10B981"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Stat Box",
+      "x": 954,
+      "y": 90,
+      "width": 278,
+      "height": 80,
+      "props": {
+        "fill": "#FFFFFF",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 14,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "SAFETY MARSHALS",
+      "x": 974,
+      "y": 108,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "4 On Duty",
+      "x": 974,
+      "y": 130,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#0284C7"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Rep Table",
+      "x": 48,
+      "y": 190,
+      "width": 1184,
+      "height": 460,
+      "props": {
+        "fill": "#FFFFFF",
+        "cornerRadius": 20,
+        "stroke": "#E2E8F0",
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Reported Incidents & Profile Flags",
+      "x": 80,
+      "y": 222,
+      "props": {
+        "fontSize": 18,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Row",
+      "x": 80,
+      "y": 265,
+      "width": 1120,
+      "height": 76,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 12,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "#104 · Profile Link Flag",
+      "x": 100,
+      "y": 279,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Target: Attendee @spambot_in",
+      "x": 320,
+      "y": 279,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Promotional affiliate link placed in CampCard website bio",
+      "x": 100,
+      "y": 307,
       "props": {
         "fontSize": 11,
         "fill": "#64748B"
       },
-      "parent": 1386
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Status Pill",
+      "x": 780,
+      "y": 277,
+      "width": 110,
+      "height": 24,
+      "props": {
+        "fill": "#FEF3C7",
+        "cornerRadius": 12
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "UNDER REVIEW",
+      "x": 796,
+      "y": 282,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#D97706"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Action Btn",
+      "x": 910,
+      "y": 275,
+      "width": 60,
+      "height": 28,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 6
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Dismiss",
+      "x": 918,
+      "y": 282,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Action Btn",
+      "x": 976,
+      "y": 275,
+      "width": 60,
+      "height": 28,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 6
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Hide Bio",
+      "x": 984,
+      "y": 282,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Action Btn",
+      "x": 1042,
+      "y": 275,
+      "width": 60,
+      "height": 28,
+      "props": {
+        "fill": "#FEE2E2",
+        "cornerRadius": 6
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Ban Profile",
+      "x": 1050,
+      "y": 282,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 700,
+        "fill": "#DC2626"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Row",
+      "x": 80,
+      "y": 355,
+      "width": 1120,
+      "height": 76,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 12,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "#103 · Hall A Seating Notice",
+      "x": 100,
+      "y": 369,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Target: Track 1 Main Hall",
+      "x": 320,
+      "y": 369,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Wheelchair ramp clearway temporarily blocked by extra chairs",
+      "x": 100,
+      "y": 397,
+      "props": {
+        "fontSize": 11,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Status Pill",
+      "x": 780,
+      "y": 367,
+      "width": 110,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "RESOLVED",
+      "x": 796,
+      "y": 372,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Action Btn",
+      "x": 910,
+      "y": 365,
+      "width": 60,
+      "height": 28,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 6
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "View Log",
+      "x": 918,
+      "y": 372,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Row",
+      "x": 80,
+      "y": 445,
+      "width": 1120,
+      "height": 76,
+      "props": {
+        "fill": "#F8FAFC",
+        "stroke": "#E2E8F0",
+        "cornerRadius": 12,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "#102 · Lost Attendee Badge",
+      "x": 100,
+      "y": 459,
+      "props": {
+        "fontSize": 13,
+        "fontWeight": 800,
+        "fill": "#0F172A"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Target: Priya Sharma (Attendee)",
+      "x": 320,
+      "y": 459,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Attendee lost physical lanyard badge; verified photo ID and re-printed",
+      "x": 100,
+      "y": 487,
+      "props": {
+        "fontSize": 11,
+        "fill": "#64748B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Status Pill",
+      "x": 780,
+      "y": 457,
+      "width": 110,
+      "height": 24,
+      "props": {
+        "fill": "#DCFCE7",
+        "cornerRadius": 12
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "RESOLVED",
+      "x": 796,
+      "y": 462,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 800,
+        "fill": "#15803D"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Action Btn",
+      "x": 910,
+      "y": 455,
+      "width": 60,
+      "height": 28,
+      "props": {
+        "fill": "#F1F5F9",
+        "cornerRadius": 6
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "View Log",
+      "x": 918,
+      "y": 462,
+      "props": {
+        "fontSize": 10,
+        "fontWeight": 700,
+        "fill": "#334155"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Safety Card",
+      "x": 48,
+      "y": 670,
+      "width": 1184,
+      "height": 90,
+      "props": {
+        "fill": "#FEF2F2",
+        "stroke": "#FCA5A5",
+        "cornerRadius": 16,
+        "strokeWeight": 1
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "🚨 VENUE EMERGENCY DISPATCH PROTOCOL",
+      "x": 76,
+      "y": 690,
+      "props": {
+        "fontSize": 11,
+        "fontWeight": 800,
+        "fill": "#DC2626"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Designated WordCamp Delhi Safety Marshals: Rahul Verma (+91 98100 12345) & NDMC Centre Security Desk (Room 102)",
+      "x": 76,
+      "y": 712,
+      "props": {
+        "fontSize": 12,
+        "fontWeight": 600,
+        "fill": "#991B1B"
+      },
+      "parent": 1451
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "All incidents are encrypted and logged in accordance with DPDPA 2023 & WordPress Community Code of Conduct.",
+      "x": 76,
+      "y": 732,
+      "props": {
+        "fontSize": 11,
+        "fill": "#B91C1C"
+      },
+      "parent": 1451
     }
   }
 ]

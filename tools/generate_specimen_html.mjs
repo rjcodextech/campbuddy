@@ -260,7 +260,7 @@ const screens = {
       res: '390×844 Native Android Compose Frame',
       points: [
         'Warm brand palette: Coral #FF4D2D on Soft Paper #FFF7ED',
-        'Local SQLite database bootstrap with room pre-population',
+        'Local KeyValueStore cache bootstrap with room pre-population',
         'Optional notification permission request for 10m talk alerts'
       ]
     },
@@ -449,26 +449,26 @@ const screens = {
     },
     {
       id: 'AP07',
-      title: 'Staff Mobile Check-In',
-      flow: 'Step 7: Fast-flow gate scanning console for volunteer staff at registration desk',
-      file: 'designs/admin/AP07 - Staff Mobile Check-In.png',
-      res: '390×844 Mobile Staff Console',
+      title: 'Mobile App Config & Releases',
+      flow: 'Step 7: Dynamic mobile app remote configuration & APK release distribution (/admin/mobile-app)',
+      file: 'designs/admin/AP07 - Mobile App Config & Releases.png',
+      res: '1280×800 Desktop Admin Console',
       points: [
-        'Camera barcode scanner with sub-second attendee lookup',
-        'Large tactile status: Green checkmark with attendee name and t-shirt size',
-        'Offline check-in queue caching check-ins until Wi-Fi reconnects'
+        'Visual tab ordering & feature flag switches (Offline cache, 10m talk alerts)',
+        'Brand theme color configuration (#FF4D2D Coral, #0F172A Slate)',
+        'Chunked APK binary upload & release channel distribution (/app/android)'
       ]
     },
     {
       id: 'AP08',
-      title: 'Mobile Incident Dispatch',
-      flow: 'Step 8: Rapid incident response console for roaming safety marshals',
-      file: 'designs/admin/AP08 - Mobile Incident Dispatch.png',
-      res: '390×844 Mobile Staff Console',
+      title: 'Attendee Moderation & Reports',
+      flow: 'Step 8: Safety incident queue and attendee profile moderation console (/admin/events/delhi-2026/reports)',
+      file: 'designs/admin/AP08 - Attendee Moderation & Reports.png',
+      res: '1280×800 Desktop Admin Console',
       points: [
-        'Push notifications for incoming attendee safety reports',
-        'GPS/Room locator pinning incident location within India Habitat Centre',
-        'Status toggles: Assigned, In Progress, Resolved, Escalated to Lead'
+        'Real-time incident queue tracking Code of Conduct reports & profile flags',
+        'One-click moderation actions: Dismiss, Hide Profile URL, Ban Account',
+        'Safety marshal on-duty status & direct venue emergency hotline dispatch'
       ]
     }
   ]
