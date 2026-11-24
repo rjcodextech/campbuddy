@@ -16,7 +16,7 @@
     <div class="flex items-start gap-3 p-4 sm:p-5">
         <span class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-base font-semibold text-maroon-text" aria-hidden="true">
             @if ($event->markUrl())
-                <img src="{{ $event->markUrl() }}" alt="" class="max-h-10 max-w-10 object-contain" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
+                <img src="{{ $event->markUrl() }}" alt="" class="max-h-10 max-w-10 object-contain" loading="eager" fetchpriority="high" decoding="async" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
             @else
                 {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($event->display_name, 0, 1)) }}
             @endif

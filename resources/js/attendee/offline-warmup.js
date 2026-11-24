@@ -194,7 +194,17 @@ export async function warmOfflineCache({
       }
     });
 
-    await pool([...media].slice(0, MAX_MEDIA), CONCURRENCY, deadline, async (path) => {
+    // Prioritize essential branding assets and app icons first in the media cache queue.
+    media.add('/media/icons/icon-192.png');
+    media.add('/media/icons/icon-512.png');
+    const prioritizedMedia = Array.from(new Set([
+      '/media/icons/icon-192.png',
+      '/media/icons/icon-512.png',
+      ...[...media].filter((m) => m.includes('/branding/') || m.includes('logo') || m.includes('favicon')),
+      ...[...media],
+    ]));
+
+    await pool(prioritizedMedia.slice(0, MAX_MEDIA), CONCURRENCY, deadline, async (path) => {
       if (await cache.match(abs(path))) return;
 
       if (await replaceCopy(cache, abs(path), { fetchImpl })) counts.media++;

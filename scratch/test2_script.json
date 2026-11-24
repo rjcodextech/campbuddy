@@ -1,0 +1,46 @@
+[
+  {
+    "command": "frame.create",
+    "params": {
+      "name": "Mobile - Home",
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844,
+      "props": {
+        "fill": "#FFF7ED",
+        "clip": true
+      }
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Hero Card",
+      "x": 16,
+      "y": 60,
+      "width": 358,
+      "height": 180,
+      "parent": 2,
+      "props": {
+        "fill": "#1E293B",
+        "cornerRadius": 20
+      }
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "WordCamp Delhi 2026",
+      "x": 32,
+      "y": 80,
+      "parent": 2,
+      "props": {
+        "fontSize": 18,
+        "fontFamily": "Poppins",
+        "fill": "#FFFFFF",
+        "fontWeight": 700
+      }
+    }
+  }
+]

@@ -45,6 +45,7 @@
 @use 'components/legal';
 @use 'components/effects';
 @use 'components/brand-page';
+@use 'components/tactile-dashboard';
 
 // Last, so its wide-screen overrides win over the base component rules.
 @use 'layout/wide-screens';

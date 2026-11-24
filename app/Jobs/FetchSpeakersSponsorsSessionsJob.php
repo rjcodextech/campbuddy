@@ -110,8 +110,19 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
         $counts['sessions'] = $this->store('sessions', $sessions, $problems, $changes);
 
         $lists = [
-            'speakers' => fn () => $normalizer->normalizeSpeakers($client->fetchSpeakers()),
-            'sponsors' => fn () => $normalizer->normalizeSponsors($client->fetchSponsors(), $tierNames),
+            'speakers' => function () use ($client, $normalizer) {
+                $raw = $client->fetchSpeakers();
+                if (empty($raw)) {
+                    $raw = $client->fetchSpeakersFromPage();
+                }
+
+                return $normalizer->normalizeSpeakers($raw);
+            },
+            'sponsors' => function () use ($client, $normalizer, $tierNames) {
+                $pageLogoMap = $client->fetchSponsorLogosFromPage();
+
+                return $normalizer->normalizeSponsors($client->fetchSponsors(), $tierNames, $pageLogoMap);
+            },
             'organizers' => fn () => $normalizer->normalizeOrganizers($client->fetchOrganizers()),
         ];
 

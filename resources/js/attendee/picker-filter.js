@@ -219,6 +219,7 @@ export function initPickerFilter({
 
   let choice = filterable ? initialChoice({ saved: readStorage(storage), detected, counts }) : ALL;
   let shown = FIRST;
+  const pillsContainer = doc.querySelector('[data-picker-pills]');
 
   if (filterable && select && bar) {
     const sorted = codes.sort((a, b) => name(a).localeCompare(name(b)));
@@ -233,6 +234,31 @@ export function initPickerFilter({
       option(ALL, `All countries (${cards.length})`),
       ...sorted.map((code) => option(code, `${name(code)} (${counts[code]})`)),
     );
+
+    if (pillsContainer) {
+      const makePill = (value, label) => {
+        const btn = doc.createElement('button');
+        btn.type = 'button';
+        btn.className = 'country-filter-pills__pill';
+        if (btn.dataset) btn.dataset.countryCode = value;
+        btn.textContent = label;
+        if (typeof btn.addEventListener === 'function') {
+          btn.addEventListener('click', () => {
+            choose(value);
+            track('picker_filter', { target: value });
+          });
+        }
+        return btn;
+      };
+
+      if (typeof pillsContainer.replaceChildren === 'function') {
+        pillsContainer.replaceChildren(
+          makePill(ALL, `All (${cards.length})`),
+          ...sorted.map((code) => makePill(code, `${name(code)} (${counts[code]})`)),
+        );
+      }
+    }
+
     bar.hidden = false;
   }
 
@@ -244,6 +270,11 @@ export function initPickerFilter({
     });
 
     if (select) select.value = choice;
+    if (pillsContainer && typeof pillsContainer.querySelectorAll === 'function') {
+      pillsContainer.querySelectorAll('[data-country-code]').forEach((pill) => {
+        pill.classList?.toggle?.('is-active', pill.dataset?.countryCode === choice);
+      });
+    }
     bar?.classList?.toggle('is-filtered', choice !== ALL);
     if (status) status.textContent = statusText(view, choice === ALL ? null : name(choice));
 
@@ -298,6 +329,60 @@ export function initPickerFilter({
   win?.addEventListener?.('storage', (event) => {
     if (event.key === STORAGE_KEY && filterable) choose(event.newValue || ALL, { save: false });
   });
+
+  // Unhide offline badges for events cached in localStorage
+  cards.forEach((card) => {
+    if (!card || typeof card.querySelector !== 'function') return;
+    const slug = card.dataset?.trackEventSlug || (typeof card.getAttribute === 'function' ? card.getAttribute('href')?.split('/').pop() : null);
+    if (slug) {
+      try {
+        const isWarm = globalThis.localStorage?.getItem(`campbuddy:warm:${slug}`) !== null;
+        if (isWarm) {
+          const badge = card.querySelector('[data-offline-badge]');
+          if (badge) badge.hidden = false;
+        }
+      } catch {}
+    }
+  });
+
+  // Desktop to Mobile transfer sync card
+  const syncToggle = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-toggle') : null;
+  const syncBtn = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-btn') : null;
+  const syncBody = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-body') : null;
+  const syncInput = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-input') : null;
+  const syncApply = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-apply') : null;
+  const syncMsg = typeof doc.getElementById === 'function' ? doc.getElementById('desktop-sync-msg') : null;
+
+  if (syncToggle && syncBody) {
+    const toggleSync = () => {
+      const isHidden = syncBody.hidden;
+      syncBody.hidden = !isHidden;
+      if (syncBtn) syncBtn.textContent = isHidden ? 'Close' : 'Sync';
+      syncToggle.setAttribute?.('aria-expanded', isHidden ? 'true' : 'false');
+      if (isHidden && syncInput) syncInput.focus?.();
+    };
+
+    syncToggle.addEventListener?.('click', toggleSync);
+    syncBtn?.addEventListener?.('click', (e) => {
+      e.stopPropagation?.();
+      toggleSync();
+    });
+
+    syncApply?.addEventListener?.('click', () => {
+      const code = (syncInput?.value || '').replace(/\s+/g, '');
+      if (!/^\d{6}$/.test(code)) {
+        if (syncMsg) {
+          syncMsg.hidden = false;
+          syncMsg.textContent = 'Please enter a valid 6-digit sync code.';
+        }
+        return;
+      }
+      if (syncMsg) {
+        syncMsg.hidden = false;
+        syncMsg.textContent = `Connecting code ${code}...`;
+      }
+    });
+  }
 
   render();
 

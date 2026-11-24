@@ -12,6 +12,7 @@ import { momentMatches } from './moments.js';
 import { renderDiscoveryCard } from './people.js';
 import { render } from './template.js';
 import { iconText } from './line-icon.js';
+import { webUrl } from './safe-url.js';
 
 
 // Onboarding's "What are you into?" answers → words that suggest a session
@@ -77,6 +78,13 @@ export async function renderHome(root) {
   renderStartingSoonBanner(ctx);
   renderSuggestedAction(quests, completedQuestIds);
   renderProgress(quests, completedQuestIds, bookmarks.length);
+
+  // Tactile Dashboard synchronizations
+  initLiveClock(data.timezone);
+  renderTactileHero(ctx);
+  renderPeopleStrip(eventSlug, eventId, ctx.urls?.explore);
+  renderActionGrid(bookmarks.length);
+  initHelpModal();
 
   const discoveryEl = document.getElementById('people-discovery-home');
   if (discoveryEl) {
@@ -390,4 +398,178 @@ function renderProgress(quests, completedQuestIds, bookmarkCount) {
   track?.setAttribute('aria-valuenow', String(pct));
   summary.textContent = `${done}/${total} quests · ${bookmarkCount} saved session${bookmarkCount === 1 ? '' : 's'}`;
 }
+
+// --- Tactile Hero & Live 30s Clock ---
+
+let clockInterval = null;
+
+function formatClockTime(nowMs, timezone) {
+  try {
+    const opts = { hour: '2-digit', minute: '2-digit', hour12: false };
+    if (timezone) opts.timeZone = timezone;
+    return new Intl.DateTimeFormat('default', opts).format(new Date(nowMs));
+  } catch {
+    const d = new Date(nowMs);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  }
+}
+
+function initLiveClock(timezone) {
+  const timeEl = document.getElementById('tactile-hero-time');
+  if (!timeEl) return;
+
+  function update() {
+    timeEl.textContent = formatClockTime(Date.now(), timezone);
+  }
+
+  update();
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(update, 30000);
+}
+
+function renderTactileHero(ctx) {
+  const statusPill = document.getElementById('tactile-hero-status-pill');
+  const statusText = document.getElementById('tactile-hero-status-text');
+  const metaEl = document.getElementById('tactile-next-meta');
+  const titleEl = document.getElementById('tactile-next-title');
+  const trackEl = document.getElementById('tactile-next-track');
+  const viewBtn = document.getElementById('tactile-hero-view-btn');
+
+  // Status pill: offline or phase text
+  if (statusText && statusPill) {
+    if (!navigator.onLine) {
+      statusPill.classList.add('tactile-hero__status-pill--offline');
+      statusText.textContent = '● Offline Ready';
+    } else {
+      const p = eventPhase(ctx);
+      const text = {
+        before: () => countdownText(p),
+        during: () => (p.days > 1 ? `Day ${p.day} of ${p.days} · happening now` : 'Happening today'),
+        after: () => 'WordCamp finished',
+      }[p.phase]();
+      statusText.textContent = text;
+    }
+  }
+
+  // Next session / Active talk
+  const { sessions, nowMs } = ctx;
+  const upcoming = sessions.filter((s) => s.startMs > nowMs);
+  const current = sessions.filter((s) => s.startMs <= nowMs && nowMs < Math.max(s.endMs, s.startMs + 30 * 60000));
+  const next = upcoming[0] ?? current[0];
+
+  if (next && titleEl) {
+    const diffSec = Math.round((next.startMs - nowMs) / 1000);
+    const timing = diffSec <= 0
+      ? 'HAPPENING NOW'
+      : diffSec < 3600
+        ? `STARTS IN ${Math.max(1, Math.round(diffSec / 60))}M`
+        : `STARTS IN ${Math.floor(diffSec / 3600)}H ${Math.round((diffSec % 3600) / 60)}M`;
+
+    if (metaEl) metaEl.textContent = `NEXT UP · ${timing}`;
+    titleEl.textContent = next.title;
+    if (trackEl) {
+      trackEl.textContent = next.track_names?.[0] ? `Track: ${next.track_names[0]}` : 'Main Stage';
+    }
+  } else if (titleEl) {
+    if (metaEl) metaEl.textContent = 'SCHEDULE OVERVIEW';
+    titleEl.textContent = `${sessions.length} sessions scheduled across all tracks`;
+    if (trackEl) trackEl.textContent = 'Main Stage & Track Rooms';
+  }
+
+  if (viewBtn && ctx.urls?.myDay) {
+    viewBtn.href = ctx.urls.myDay;
+  }
+}
+
+// --- People & Matches Horizontal Strip ---
+
+async function renderPeopleStrip(eventSlug, eventId, exploreUrl) {
+  const container = document.getElementById('people-strip-dynamic');
+  if (!container) return;
+
+  try {
+    const peers = (await kvGet(`discoveryPeers:${eventId}`)) || (await kvGet(`peers:${eventId}`)) || [];
+    const list = Array.isArray(peers) ? peers.slice(0, 8) : [];
+
+    if (list.length === 0) return;
+
+    container.replaceChildren();
+    for (const person of list) {
+      const a = document.createElement('a');
+      a.className = 'people-strip__item';
+      a.href = webUrl(exploreUrl) ? `${exploreUrl}#people` : '#';
+      a.dataset.track = 'home_link_click';
+      a.dataset.trackTarget = 'peer_avatar';
+
+      const wrap = document.createElement('div');
+      wrap.className = 'people-strip__avatar-wrap';
+
+      const img = document.createElement('img');
+      img.className = 'people-strip__avatar';
+      img.alt = person.name || 'Attendee';
+      img.src = person.avatarUrl || '/media/illustrations/avatar.svg';
+      img.loading = 'lazy';
+      img.onerror = () => { img.src = '/media/illustrations/avatar.svg'; };
+
+      const dot = document.createElement('span');
+      dot.className = 'people-strip__dot';
+      dot.setAttribute('aria-hidden', 'true');
+
+      wrap.appendChild(img);
+      wrap.appendChild(dot);
+
+      const name = document.createElement('span');
+      name.className = 'people-strip__name';
+      name.textContent = (person.name || 'Friend').split(' ')[0];
+
+      a.appendChild(wrap);
+      a.appendChild(name);
+      container.appendChild(a);
+    }
+  } catch {
+    // Graceful fallback
+  }
+}
+
+// --- ActionGrid Counts ---
+
+function renderActionGrid(savedCount) {
+  const countEl = document.getElementById('hub-saved-count');
+  if (countEl) {
+    countEl.textContent = String(savedCount);
+  }
+}
+
+// --- Sticky Help Bar & SOS Sheet ---
+
+function initHelpModal() {
+  const btn = document.getElementById('sticky-help-btn');
+  const modal = document.getElementById('help-modal');
+  const close = document.getElementById('help-modal-close');
+  if (!btn || !modal) return;
+
+  function open() {
+    modal.hidden = false;
+    requestAnimationFrame(() => {
+      modal.classList.add('is-open');
+    });
+  }
+
+  function dismiss() {
+    modal.classList.remove('is-open');
+    setTimeout(() => {
+      modal.hidden = true;
+    }, 250);
+  }
+
+  btn.addEventListener('click', open);
+  close?.addEventListener('click', dismiss);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) dismiss();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) dismiss();
+  });
+}
+
 

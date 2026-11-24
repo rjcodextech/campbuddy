@@ -1,0 +1,88 @@
+[
+  {
+    "command": "frame.create",
+    "params": {
+      "name": "Frame 1",
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844,
+      "props": {
+        "fill": "#FFF7ED",
+        "clip": true
+      }
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Box 1",
+      "x": 16,
+      "y": 60,
+      "width": 358,
+      "height": 100,
+      "parent": 2,
+      "props": {
+        "fill": "#FF4D2D",
+        "cornerRadius": 16
+      }
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Frame 1 Text",
+      "x": 32,
+      "y": 80,
+      "parent": 2,
+      "props": {
+        "fontSize": 16,
+        "fill": "#FFFFFF",
+        "fontWeight": 600
+      }
+    }
+  },
+  {
+    "command": "frame.create",
+    "params": {
+      "name": "Frame 2",
+      "x": 440,
+      "y": 0,
+      "width": 390,
+      "height": 844,
+      "props": {
+        "fill": "#1E293B",
+        "clip": true
+      }
+    }
+  },
+  {
+    "command": "shape.rectangle",
+    "params": {
+      "name": "Box 2",
+      "x": 16,
+      "y": 60,
+      "width": 358,
+      "height": 100,
+      "parent": 5,
+      "props": {
+        "fill": "#D97706",
+        "cornerRadius": 16
+      }
+    }
+  },
+  {
+    "command": "text.create",
+    "params": {
+      "text": "Frame 2 Text",
+      "x": 32,
+      "y": 80,
+      "parent": 5,
+      "props": {
+        "fontSize": 16,
+        "fill": "#FFFFFF",
+        "fontWeight": 600
+      }
+    }
+  }
+]

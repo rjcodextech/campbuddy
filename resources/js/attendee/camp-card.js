@@ -20,6 +20,7 @@ import { initCardShare } from './card-share.js';
 import { isNativeApp } from './platform.js';
 import { render } from './template.js';
 import { showToast } from './toast.js';
+import { webUrl } from './safe-url.js';
 
 const LINK_FIELDS = ['linkedin', 'website', 'wordpressOrg', 'twitter'];
 const LAYOUTS = ['ticket', 'classic', 'minimal', 'bold', 'split', 'badge', 'pass'];
@@ -120,6 +121,7 @@ export async function renderCampCard() {
   setupLinkFields(form);
   setupRequiredFields(form);
   renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
+  renderSocialBadges(card);
 
   // "Show my Camp Card on the attendee list" (card-share.js) — works from what is saved.
   const app = document.getElementById('app');
@@ -133,6 +135,10 @@ export async function renderCampCard() {
       return { card: tidy, qrField: qrFieldOf(tidy) };
     },
   }).catch(() => null);
+
+  sharing.then((share) => {
+    updateClaimBanner(Boolean(share?.isShared));
+  });
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -172,6 +178,7 @@ export async function renderCampCard() {
     // Camp Card content is local-only (CC5) — only "it was saved" is reported.
     track('camp_card_save');
     renderAllPreviews(data);
+    renderSocialBadges(data);
     document.getElementById('cc-edit-details').open = false;
     showToast('Camp Card saved.');
     sharing.then((share) => share?.onCardSaved());
@@ -672,3 +679,49 @@ function repaintPreviews() {
     if (card) paintCard(card, shown.content, shown.qr);
   });
 }
+
+function renderSocialBadges(c) {
+  const dock = document.getElementById('cc-social-badges');
+  if (!dock) return;
+
+  const badges = [];
+  if (c?.linkedin) badges.push({ label: 'LinkedIn', url: resolveLink('linkedin', c.linkedin) });
+  if (c?.website) badges.push({ label: 'Website', url: resolveLink('website', c.website) });
+  if (c?.wordpressOrg) badges.push({ label: 'WordPress.org', url: resolveLink('wordpressOrg', c.wordpressOrg) });
+  if (c?.twitter) badges.push({ label: `@${c.twitter.replace(/^@/, '')}`, url: resolveLink('twitter', c.twitter) });
+
+  if (badges.length === 0) {
+    dock.hidden = true;
+    return;
+  }
+
+  dock.hidden = false;
+  dock.replaceChildren(
+    ...badges.map((b) => {
+      const a = document.createElement('a');
+      a.className = 'social-badges-dock__badge';
+      a.href = webUrl(b.url) ? b.url : '#';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = b.label;
+      return a;
+    })
+  );
+}
+
+function updateClaimBanner(isShared) {
+  const title = document.getElementById('profile-claim-title');
+  const desc = document.getElementById('profile-claim-desc');
+  const btn = document.getElementById('profile-claim-btn');
+
+  if (isShared) {
+    if (title) title.textContent = 'Linked Attendee Profile';
+    if (desc) desc.textContent = 'Your CampCard is visible on the attendee list.';
+    if (btn) btn.textContent = 'Linked ✓';
+  } else {
+    if (title) title.textContent = 'Verified Attendee Profile';
+    if (desc) desc.textContent = 'Claim your name on the public roster to link your CampCard.';
+    if (btn) btn.textContent = 'Claim Profile';
+  }
+}
+

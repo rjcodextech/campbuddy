@@ -6,6 +6,17 @@
             <h1 class="section-head__title">Camp Card</h1>
         </div>
 
+        {{-- Verified Attendee Claim Profile Banner --}}
+        <div class="profile-claim-banner" id="profile-claim-banner">
+            <div class="profile-claim-banner__left">
+                <x-attendee.line-icon name="shield-check" />
+                <div>
+                    <h3 class="profile-claim-banner__title" id="profile-claim-title">Verified Attendee Profile</h3>
+                    <p class="profile-claim-banner__desc" id="profile-claim-desc">Link your CampCard to your public attendee listing.</p>
+                </div>
+            </div>
+            <a href="#cc-share" class="profile-claim-banner__btn" id="profile-claim-btn">Claim Profile</a>
+        </div>
 
         <div class="camp-card-scroll" id="camp-card-scroll">
             @foreach (['ticket' => 'Ticket', 'classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
@@ -22,6 +33,9 @@
                 </div>
             @endforeach
         </div>
+
+        {{-- Active Social Badges Dock --}}
+        <div class="social-badges-dock" id="cc-social-badges"></div>
 
         {{-- Under the cards, not above them: it appears once camp-card.js has looked for a saved card,
              and above the cards it pushed the whole gallery down as it came in (layout shift). --}}

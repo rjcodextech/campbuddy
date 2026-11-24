@@ -76,6 +76,14 @@ class FetchBrandingAssetsJob implements ShouldQueue
                 }
             }
 
+            if ($found !== []) {
+                try {
+                    \App\Support\SiteTheme::refresh($this->event);
+                } catch (Throwable) {
+                    // Site theme is progressive enhancement
+                }
+            }
+
             $status = $failedToDownload !== [] ? 'partial' : 'ok';
             $message = match (true) {
                 $found !== [] && $failedToDownload !== [] => 'Fetched: '.implode(', ', $found).' (download failed for: '.implode(', ', $failedToDownload).', will retry)',

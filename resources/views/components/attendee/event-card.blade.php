@@ -18,6 +18,7 @@
     'isCompleted' => false,
     'country' => null,
     'memoryLinks' => [],
+    'priority' => false,
 ])
 
 @php
@@ -35,7 +36,7 @@
             <div class="event-card__main">
                 @if ($mediaUrl)
                     <div class="event-card__media event-card__media--{{ $mediaShape }}">
-                        <img src="{{ $mediaUrl }}" alt="" loading="lazy"@if ($mediaFallback) data-fallback="{{ $mediaFallback }}"@endif>
+                        <img src="{{ $mediaUrl }}" alt="" @if($priority) loading="eager" fetchpriority="high" @else loading="lazy" @endif decoding="async"@if ($mediaFallback) data-fallback="{{ $mediaFallback }}" onerror="this.onerror=null; this.src='{{ $mediaFallback }}';"@endif>
                         @if ($category && $mediaShape === 'banner')
                             <span class="event-card__category">{{ $category }}</span>
                         @endif
@@ -48,6 +49,8 @@
                     @endif
 
                     <h3 class="event-card__title">{{ $title }}</h3>
+
+                    <span class="event-card__offline-pill" data-offline-badge hidden>Offline Ready</span>
 
                     @if ($subtitle)
                         <p class="event-card__subtitle">{{ $subtitle }}</p>
@@ -101,7 +104,7 @@
         <div class="event-card__main">
             @if ($mediaUrl)
                 <div class="event-card__media event-card__media--{{ $mediaShape }}">
-                    <img src="{{ $mediaUrl }}" alt="" loading="lazy"@if ($mediaFallback) data-fallback="{{ $mediaFallback }}"@endif>
+                    <img src="{{ $mediaUrl }}" alt="" @if($priority) loading="eager" fetchpriority="high" @else loading="lazy" @endif decoding="async"@if ($mediaFallback) data-fallback="{{ $mediaFallback }}" onerror="this.onerror=null; this.src='{{ $mediaFallback }}';"@endif>
                     @if ($category && $mediaShape === 'banner')
                         <span class="event-card__category">{{ $category }}</span>
                     @endif
@@ -114,6 +117,8 @@
                 @endif
 
                 <h3 class="event-card__title">{{ $title }}</h3>
+
+                <span class="event-card__offline-pill" data-offline-badge hidden>Offline Ready</span>
 
                 @if ($subtitle)
                     <p class="event-card__subtitle">{{ $subtitle }}</p>

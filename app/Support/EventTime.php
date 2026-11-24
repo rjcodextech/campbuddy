@@ -128,6 +128,16 @@ class EventTime
         return $last !== null && $last < self::today($event, $now);
     }
 
+    /** Whether today is one of the event's days at the venue (between firstDay and lastDay inclusive). */
+    public static function isEventDay(Event $event, ?\DateTimeInterface $now = null): bool
+    {
+        $today = self::today($event, $now);
+        $first = self::firstDay($event);
+        $last = self::lastDay($event);
+
+        return $first !== null && $last !== null && $today >= $first && $today <= $last;
+    }
+
     /**
      * The moment nothing of the event needs to be kept any more: the end of its
      * last day plus RETENTION_DAYS. While the venue's zone is unknown it is

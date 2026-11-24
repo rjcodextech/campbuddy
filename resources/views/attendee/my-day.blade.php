@@ -8,6 +8,43 @@
 
         @include('attendee.partials.delay-banner')
 
+        {{-- Schedule Health Banner --}}
+        <div class="schedule-health" id="schedule-health-banner">
+            <div class="schedule-health__row">
+                <div class="schedule-health__metrics">
+                    <span class="schedule-health__metric-item">
+                        <x-attendee.line-icon name="calendar" />
+                        <span id="sh-saved-count">0 saved</span>
+                    </span>
+                    <span>&middot;</span>
+                    <span class="schedule-health__metric-item">
+                        <x-attendee.line-icon name="clock" />
+                        <span id="sh-hours">0m planned</span>
+                    </span>
+                    <span>&middot;</span>
+                    <span class="schedule-health__metric-item" id="sh-conflict-metric">
+                        <span id="sh-conflicts" style="color:var(--color-brand-text, #d33417)">0 conflicts</span>
+                    </span>
+                </div>
+
+                <button type="button" class="schedule-health__toggle" id="sh-alerts-toggle" data-track="schedule_alerts_toggle">
+                    <x-attendee.line-icon name="bell" />
+                    <span id="sh-alerts-text">10m Prior Alerts</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Conflict Warning Card --}}
+        <div class="conflict-card" id="schedule-conflict-card" hidden>
+            <x-attendee.line-icon name="alert-triangle" />
+            <div class="conflict-card__body">
+                <h3 class="conflict-card__title">Overlapping Bookmarked Sessions</h3>
+                <p class="conflict-card__desc" id="sh-conflict-desc">
+                    You have saved sessions running at the same time. Switch to "My schedule" to compare tracks or resolve overlaps.
+                </p>
+            </div>
+        </div>
+
         {{-- MD1: two distinct views, not a blended filtered list. --}}
         <div role="tablist" aria-label="Schedule view" class="tab-strip">
             <button type="button" class="btn btn--compact" data-view-tab="full" role="tab" aria-selected="true">Full schedule</button>

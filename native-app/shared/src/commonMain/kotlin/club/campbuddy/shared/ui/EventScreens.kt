@@ -195,9 +195,8 @@ fun EventScreen(
 
         if (selected == "home") {
             StickyHelpBar(onHelp = { helpOpen = true })
-        } else {
-            BottomBar(tabs, selected) { selected = it }
         }
+        BottomBar(tabs, selected) { selected = it }
     }
 
     if (helpOpen) {
@@ -392,7 +391,7 @@ private fun TactileHeroCard(
                     .border(1.dp, Color(0xFF475569), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                RemoteImage(event.logo, Modifier.size(36.dp).clip(CircleShape)) {
+                RemoteImage(event.logo ?: event.mark, Modifier.size(36.dp).clip(CircleShape)) {
                     Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp))
                 }
             }
@@ -842,8 +841,7 @@ private fun StickyHelpBar(onHelp: () -> Unit) {
         Modifier
             .fillMaxWidth()
             .background(brand.surface)
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         Row(
             Modifier
@@ -1138,7 +1136,7 @@ private fun HeroCard(event: EventDetail, phase: Phase, zone: TimeZone, now: Inst
             Box(
                 Modifier.size(logo).background(brand.background, shape).border(1.dp, brand.line, shape),
                 contentAlignment = Alignment.Center,
-            ) { RemoteImage(event.logo, Modifier.size(logo - 8.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(logo * 0.7f)) } }
+            ) { RemoteImage(event.logo ?: event.mark, Modifier.size(logo - 8.dp)) { Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(logo * 0.7f)) } }
             Column(Modifier.weight(1f)) {
                 Text((event.shortName ?: "WordCamp").uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp), modifier = Modifier.padding(bottom = 4.dp))
                 Text(event.name, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp, lineHeight = 23.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.4).sp))

@@ -1,0 +1,1122 @@
+// Tactile Card-First Dashboard Design System — Synchronized with APK
+// (Baloo 2 headings, Poppins UI copy, Navy #1E293B, Coral #FF4D2D, Ochre #D97706, Paper Soft #FFF7ED)
+
+@use '../abstracts/variables' as *;
+
+// 1. Tactile Hero Card
+.tactile-hero {
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid #334155;
+    border-radius: $radius-card;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.35);
+    padding: 18px;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+
+    &__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__clock-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__time {
+        font-family: $font-display;
+        font-size: 2rem;
+        line-height: 1.15;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #ffffff;
+    }
+
+    &__dates {
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #94a3b8;
+    }
+
+    &__logo-badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #334155;
+        border: 1px solid #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+
+        img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 1.1875rem;
+        line-height: 1.3;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        text-wrap: balance;
+    }
+
+    &__status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #334155;
+        border: 1px solid #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 1.2;
+
+        &--offline {
+            background: #064e3b;
+            border-color: #059669;
+            color: #a7f3d0;
+        }
+    }
+
+    &__status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #38bdf8;
+        flex-shrink: 0;
+
+        .tactile-hero__status-pill--offline & {
+            background: #10b981;
+        }
+    }
+
+    &__next {
+        background: rgba(30, 41, 59, 0.9);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    &__next-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__next-meta {
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: #fbbf24; // High contrast Ochre/Gold WCAG AA
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__next-title {
+        font-family: $font-sans;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__next-track {
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__view-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 60px;
+        min-height: 38px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: #d97706;
+        color: #ffffff;
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+        transition: background 0.15s ease, transform 0.1s ease;
+
+        &:hover, &:focus-visible {
+            background: #b45309;
+            transform: scale(1.02);
+            color: #ffffff;
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            min-height: 48px;
+        }
+    }
+}
+
+// 2. People & Matches Horizontal Strip
+.people-strip {
+    margin: 18px 0;
+
+    &__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+    }
+
+    &__link {
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: $color-brand-text;
+        text-decoration: none;
+
+        &:hover, &:focus-visible {
+            text-decoration: underline;
+        }
+    }
+
+    &__row {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        overflow-x: auto;
+        padding: 2px 2px 8px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+        min-width: 60px;
+        max-width: 68px;
+        flex-shrink: 0;
+
+        &:hover .people-strip__avatar,
+        &:focus-visible .people-strip__avatar {
+            border-color: $color-maroon;
+        }
+    }
+
+    &__wave-btn {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: $color-peach;
+        border: 1.5px solid $color-gold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-maroon;
+        transition: transform 0.15s ease;
+
+        &:hover, &:focus-visible {
+            transform: scale(1.05);
+        }
+
+        svg {
+            width: 22px;
+            height: 22px;
+        }
+    }
+
+    &__avatar-wrap {
+        position: relative;
+        width: 54px;
+        height: 54px;
+    }
+
+    &__avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: $color-peach;
+        border: 1.5px solid $color-line;
+        object-fit: cover;
+        display: block;
+        transition: border-color 0.15s ease;
+    }
+
+    &__dot {
+        position: absolute;
+        bottom: 1px;
+        right: 1px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: $color-success;
+        border: 2px solid #ffffff;
+    }
+
+    &__name {
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        color: $color-ink;
+        text-align: center;
+        max-width: 68px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+// 3. 2x3 Event Hubs ActionGrid
+.action-grid {
+    margin: 18px 0;
+
+    &__head {
+        margin-bottom: 10px;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+    }
+
+    &__cells {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+
+        @media (min-width: 640px) {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        @media (max-width: 340px) {
+            grid-template-columns: 1fr;
+        }
+    }
+}
+
+.action-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 104px;
+    padding: 14px;
+    border-radius: $radius-card;
+    background: $color-paper;
+    border: 1px solid $color-line;
+    box-shadow: $shadow-card;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+
+    &:hover, &:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+        border-color: rgba(255, 77, 45, 0.35);
+        color: inherit;
+    }
+
+    &__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    &__icon-box {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: $color-peach;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-maroon;
+        flex-shrink: 0;
+
+        &--gold {
+            color: $color-gold;
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__chevron {
+        color: $color-subtle;
+        opacity: 0.6;
+        width: 16px;
+        height: 16px;
+    }
+
+    &__body {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 0.9375rem;
+        line-height: 1.25;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__subtitle {
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        line-height: 1.35;
+        color: $color-muted;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+// 4. Legal & Compliance Footer
+.legal-footer {
+    margin: 28px 0 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 76px;
+
+    @media (min-width: 768px) {
+        padding-bottom: 24px;
+    }
+
+    &__links {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    &__staff {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        color: $color-subtle;
+        margin-top: 2px;
+    }
+
+    &__link {
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        color: $color-muted;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        cursor: pointer;
+
+        &:hover, &:focus-visible {
+            color: $color-brand-text;
+        }
+    }
+
+    &__sep {
+        color: $color-line;
+        font-size: 0.8125rem;
+    }
+
+    &__tagline {
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        color: rgba(71, 85, 105, 0.75);
+        margin: 0;
+    }
+}
+
+// 5. Sticky Floating Help Bar
+.sticky-help-bar {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-space, 64px) + 8px);
+    left: 0;
+    right: 0;
+    z-index: 35;
+    padding: 6px 16px 8px;
+    background: transparent;
+    pointer-events: none;
+    max-width: 640px;
+    margin: 0 auto;
+
+    @media (min-width: 768px) {
+        left: auto;
+        right: 24px;
+        bottom: 24px;
+        max-width: 360px;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__btn {
+        pointer-events: auto;
+        width: 100%;
+        min-height: 48px;
+        height: 52px;
+        border-radius: 999px;
+        background: $color-danger;
+        color: #ffffff;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4);
+        transition: background 0.15s ease, transform 0.15s ease;
+
+        &:hover, &:focus-visible {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+    }
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-align: left;
+
+        svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 0.875rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #ffffff;
+    }
+
+    &__subtitle {
+        font-family: $font-sans;
+        font-size: 0.625rem;
+        line-height: 1.2;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    &__badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.25);
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        color: #ffffff;
+    }
+}
+
+// 6. Help & Incident Support Modal
+.help-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+
+    &.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    &__sheet {
+        width: 100%;
+        max-width: 580px;
+        background: $color-paper;
+        border-radius: $radius-sheet $radius-sheet 0 0;
+        padding: 20px 20px 32px;
+        box-shadow: $shadow-raised;
+        max-height: 85vh;
+        overflow-y: auto;
+        transform: translateY(100%);
+        transition: transform 0.25s $ease-out;
+
+        .help-modal.is-open & {
+            transform: translateY(0);
+        }
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid $color-line;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+    }
+
+    &__close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: transparent;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-muted;
+        cursor: pointer;
+
+        &:hover, &:focus-visible {
+            background: $color-peach;
+            color: $color-ink;
+        }
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    &__card {
+        border-radius: 14px;
+        padding: 14px;
+        border: 1px solid $color-line;
+        background: #ffffff;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        &--peach {
+            background: rgba(255, 237, 213, 0.5);
+            border-color: rgba(255, 77, 45, 0.25);
+        }
+    }
+
+    &__card-title {
+        font-family: $font-sans;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        svg {
+            width: 18px;
+            height: 18px;
+            color: $color-maroon;
+        }
+    }
+
+    &__card-desc {
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        line-height: 1.45;
+        color: $color-muted;
+        margin: 0;
+    }
+}
+
+// 7. WordCamp Switcher: Country Filter & Desktop Sync Card
+.country-filter-pills {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 6px 2px 12px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    &__pill {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: $color-paper;
+        border: 1px solid $color-line;
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: $color-ink;
+        cursor: pointer;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+
+        &:hover, &:focus-visible {
+            border-color: $color-maroon;
+            color: $color-maroon;
+        }
+
+        &.is-active {
+            background: $color-maroon;
+            border-color: $color-maroon;
+            color: #ffffff;
+            font-weight: 700;
+        }
+    }
+}
+
+.desktop-sync-card {
+    border-radius: $radius-card;
+    background: $color-paper;
+    border: 1px solid $color-line;
+    padding: 16px;
+    margin: 16px 0;
+    box-shadow: $shadow-card;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+    }
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    &__icon-box {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: $color-peach;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-maroon;
+        flex-shrink: 0;
+
+        svg {
+            width: 18px;
+            height: 18px;
+        }
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+    }
+
+    &__subtitle {
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        color: $color-muted;
+        margin: 0;
+    }
+
+    &__toggle-btn {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: $color-maroon;
+        background: $color-peach;
+        border: none;
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:hover, &:focus-visible {
+            background: rgba(255, 77, 45, 0.2);
+        }
+    }
+
+    &__body {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid $color-line;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__desc {
+        font-family: $font-sans;
+        font-size: 0.8125rem;
+        color: $color-muted;
+        line-height: 1.45;
+        margin: 0;
+    }
+
+    &__input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    &__input {
+        flex: 1;
+        min-height: 44px;
+        border-radius: 10px;
+        border: 1px solid $color-line;
+        padding: 8px 12px;
+        font-family: $font-mono;
+        font-size: 1.125rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        font-weight: 700;
+        text-align: center;
+        background: #ffffff;
+        color: $color-ink;
+
+        &:focus {
+            outline: none;
+            border-color: $color-maroon;
+            box-shadow: 0 0 0 3px rgba(255, 77, 45, 0.2);
+        }
+    }
+
+    &__apply-btn {
+        min-height: 44px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        background: $color-maroon;
+        color: #ffffff;
+        border: none;
+        font-family: $font-sans;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:hover, &:focus-visible {
+            background: $color-maroon-dark;
+        }
+    }
+
+    &__msg {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: $color-maroon;
+        margin: 0;
+    }
+}
+
+// 8. Offline Ready Badges on Event Cards
+.event-card__offline-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #047857;
+
+    &::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+}
+
+// 9. Schedule Health Banner & Conflict Warning
+.schedule-health {
+    border-radius: $radius-card;
+    background: $color-paper-soft;
+    border: 1px solid rgba(217, 119, 6, 0.25);
+    padding: 14px 16px;
+    margin: 12px 0;
+    box-shadow: $shadow-card;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &__row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    &__metrics {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: $color-ink;
+    }
+
+    &__metric-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        svg {
+            width: 16px;
+            height: 16px;
+            color: $color-gold;
+        }
+    }
+
+    &__toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid $color-line;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: $color-ink;
+        cursor: pointer;
+
+        &.is-active {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #047857;
+        }
+    }
+}
+
+.conflict-card {
+    border-radius: $radius-card;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 14px 16px;
+    margin: 12px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        color: $color-danger;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    &__body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #991b1b;
+        margin: 0;
+    }
+
+    &__desc {
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: #7f1d1d;
+        margin: 0;
+    }
+}
+
+// 10. Claim Profile Banner & Social Badges Dock
+.profile-claim-banner {
+    border-radius: $radius-card;
+    background: $color-peach;
+    border: 1.5px solid rgba(255, 77, 45, 0.3);
+    padding: 14px 16px;
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        svg {
+            width: 20px;
+            height: 20px;
+            color: $color-maroon;
+            flex-shrink: 0;
+        }
+    }
+
+    &__title {
+        font-family: $font-sans;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: $color-ink;
+        margin: 0;
+    }
+
+    &__desc {
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        color: $color-muted;
+        margin: 0;
+    }
+
+    &__btn {
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: $color-maroon;
+        color: #ffffff;
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        &:hover, &:focus-visible {
+            background: $color-maroon-dark;
+        }
+    }
+}
+
+.social-badges-dock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+
+    &__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: $color-paper;
+        border: 1px solid $color-line;
+        font-family: $font-sans;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: $color-ink;
+        text-decoration: none;
+
+        svg {
+            width: 14px;
+            height: 14px;
+            color: $color-maroon;
+        }
+
+        &:hover, &:focus-visible {
+            border-color: $color-maroon;
+            color: $color-maroon;
+        }
+    }
+}

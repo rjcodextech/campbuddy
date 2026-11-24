@@ -396,7 +396,7 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
     ) {
         Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(64.dp).background(Color.White, CircleShape).border(1.dp, brand.line, CircleShape), contentAlignment = Alignment.Center) {
-                RemoteImage(event.logo, Modifier.size(52.dp).clip(CircleShape)) {
+                RemoteImage(event.mark ?: event.logo, Modifier.size(52.dp).clip(CircleShape)) {
                     Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(46.dp))
                 }
             }

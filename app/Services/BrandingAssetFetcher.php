@@ -40,21 +40,51 @@ class BrandingAssetFetcher
 
         $crawler = new Crawler($html);
 
-        // WordPress core's standard class for a theme's custom logo.
-        $logo = $crawler->filter('img.custom-logo');
+        // WordPress core's standard class for a theme's custom logo and modern FSE block theme site logos.
+        $logo = $crawler->filter('img.custom-logo, .wp-block-site-logo img, .custom-logo-link img, a[rel="home"] img');
 
         if ($logo->count() > 0) {
-            return $this->resolveUrl($logo->first()->attr('src'));
+            $src = $this->extractImgSrc($logo->first());
+            if ($src) {
+                return $this->resolveUrl($src);
+            }
         }
 
-        // Fallback: any image inside the page header whose class/alt
-        // mentions "logo" — organizer themes vary.
-        $headerImg = $crawler->filter('header img, .site-logo img, .site-branding img')->reduce(
+        // Fallback: any image inside the page header whose class, alt, id, or src mentions "logo" — organizer themes vary.
+        $headerImg = $crawler->filter('header img, .site-logo img, .site-branding img, #header img')->reduce(
             fn (Crawler $node) => str_contains(strtolower($node->attr('class') ?? ''), 'logo')
                 || str_contains(strtolower($node->attr('alt') ?? ''), 'logo')
+                || str_contains(strtolower($node->attr('id') ?? ''), 'logo')
+                || str_contains(strtolower($node->attr('src') ?? ''), 'logo')
         );
 
-        return $headerImg->count() > 0 ? $this->resolveUrl($headerImg->first()->attr('src')) : null;
+        if ($headerImg->count() > 0) {
+            $src = $this->extractImgSrc($headerImg->first());
+            if ($src) {
+                return $this->resolveUrl($src);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extracts the real image URL from an img node, bypassing lazy-loading placeholders.
+     */
+    private function extractImgSrc(Crawler $node): ?string
+    {
+        $candidate = $node->attr('data-orig-file')
+            ?? $node->attr('data-full-url')
+            ?? $node->attr('data-large-file')
+            ?? $node->attr('data-src')
+            ?? $node->attr('data-lazy-src')
+            ?? $node->attr('src');
+
+        if ($candidate && str_starts_with($candidate, 'data:')) {
+            $candidate = $node->attr('data-src') ?? $node->attr('data-lazy-src');
+        }
+
+        return $candidate ?: $node->attr('src');
     }
 
     /**
@@ -88,7 +118,7 @@ class BrandingAssetFetcher
         }
 
         $crawler = new Crawler($html);
-        $icon = $crawler->filter('link[rel="icon"], link[rel="shortcut icon"]');
+        $icon = $crawler->filter('link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel="icon"], link[rel="shortcut icon"]');
 
         return $icon->count() > 0 ? $this->resolveUrl($icon->first()->attr('href')) : null;
     }

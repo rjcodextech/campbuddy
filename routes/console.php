@@ -46,10 +46,25 @@ Artisan::command('inspire', function () {
 | it stays listed as "Completed" for three months.
 */
 Schedule::call(function () {
-    Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
+    Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchSpeakersSponsorsSessionsJob::dispatch($event)->delay(now()->addSeconds($index * 5));
     });
-})->everyFifteenMinutes()->name('ingest-sessions-speakers-sponsors');
+})->dailyAt('02:00')->name('ingest-sessions-speakers-sponsors');
+
+// On the event day(s), event-related ingestion runs on every hour for live schedule & roster accuracy.
+Schedule::call(function () {
+    Event::where('status', 'active')
+        ->get()
+        ->filter(fn (Event $event) => EventTime::isEventDay($event))
+        ->values()
+        ->each(function (Event $event, int $index) {
+            FetchSpeakersSponsorsSessionsJob::dispatch($event)->delay(now()->addSeconds($index * 5));
+            FetchEventInfoJob::dispatch($event)->delay(now()->addSeconds($index * 10));
+            if ($event->attendeeRoster()->exists()) {
+                ParseAttendeeRosterJob::dispatch($event)->delay(now()->addSeconds($index * 15));
+            }
+        });
+})->hourly()->name('event-day-hourly-refresh');
 
 // Event Information (venue, links, contact…) changes rarely — venue and
 // pages get filled in as organizers finish them — so once a day is plenty,

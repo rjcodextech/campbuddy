@@ -100,21 +100,45 @@ class WordCampNormalizer
     /**
      * @param  array<int, array<string, mixed>>  $sponsors
      * @param  array<int, string>  $tierNames
+     * @param  array<string, string>  $pageLogoMap
      * @return array<int, array<string, mixed>>
      */
-    public function normalizeSponsors(array $sponsors, array $tierNames): array
+    public function normalizeSponsors(array $sponsors, array $tierNames, array $pageLogoMap = []): array
     {
-        return array_map(function (array $sponsor) use ($tierNames) {
+        return array_map(function (array $sponsor) use ($tierNames, $pageLogoMap) {
             $tierIds = $this->ids($sponsor['sponsor_level'] ?? []);
             $contentHtml = $this->rendered($sponsor['content'] ?? null);
+            $slug = strtolower((string) ($sponsor['slug'] ?? ''));
+            $name = $this->decodeTitle($this->rendered($sponsor['title'] ?? null));
+            $cleanName = strtolower(trim($name));
+
+            $pageLogo = ($slug !== '' && isset($pageLogoMap[$slug])) ? SafeUrl::web($pageLogoMap[$slug]) : null;
+            if (! $pageLogo && $slug !== '') {
+                $alphanumericSlug = preg_replace('/[^a-z0-9]/', '', $slug);
+                if (isset($pageLogoMap[$alphanumericSlug])) {
+                    $pageLogo = SafeUrl::web($pageLogoMap[$alphanumericSlug]);
+                }
+            }
+            if (! $pageLogo && $cleanName !== '') {
+                if (isset($pageLogoMap[$cleanName])) {
+                    $pageLogo = SafeUrl::web($pageLogoMap[$cleanName]);
+                } else {
+                    $alphanumericName = preg_replace('/[^a-z0-9]/', '', $cleanName);
+                    if (isset($pageLogoMap[$alphanumericName])) {
+                        $pageLogo = SafeUrl::web($pageLogoMap[$alphanumericName]);
+                    }
+                }
+            }
 
             return [
                 'id' => $sponsor['id'],
-                'name' => $this->decodeTitle($this->rendered($sponsor['title'] ?? null)),
+                'name' => $name,
                 'description_html' => $contentHtml,
                 'website' => $this->httpUrl($sponsor['meta']['_wcpt_sponsor_website'] ?? null),
                 // Shown as an <img> in CampBuddy's pages: web addresses only.
-                'logo_url' => SafeUrl::web($this->client->extractFirstImage($contentHtml)) ?? $this->featuredImage($sponsor),
+                'logo_url' => SafeUrl::web($this->client->extractFirstImage($contentHtml))
+                    ?? $this->featuredImage($sponsor)
+                    ?? $pageLogo,
                 'tier_ids' => $tierIds,
                 'tier_names' => $this->names($tierIds, $tierNames),
                 'link' => $this->httpUrl($sponsor['link'] ?? null),
@@ -141,6 +165,8 @@ class WordCampNormalizer
         return ($prefer === 'medium' ? SafeUrl::web($sizes['medium']['source_url'] ?? null) : null)
             ?? SafeUrl::web($sizes['medium_large']['source_url'] ?? null)
             ?? SafeUrl::web($sizes['large']['source_url'] ?? null)
+            ?? SafeUrl::web($sizes['full']['source_url'] ?? null)
+            ?? SafeUrl::web($sizes['thumbnail']['source_url'] ?? null)
             ?? SafeUrl::web($media['source_url'] ?? null);
     }
 

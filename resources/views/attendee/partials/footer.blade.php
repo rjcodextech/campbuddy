@@ -1,7 +1,7 @@
 <footer class="site-footer">
     <div class="site-footer__inner">
-        {{-- Shown by native-bridge.js, in the store app only: event staff sign in to the panel there. --}}
-        <p class="footer-note landing-footer" data-app-only hidden>Event staff: <a href="{{ route('manager.login') }}">Event manager sign in</a> &middot; <a href="{{ route('login') }}">Admin sign in</a></p>
+        {{-- Event staff sign in: manager & admin --}}
+        <p class="footer-note landing-footer">Event staff: <a href="{{ route('manager.login') }}">Event manager sign in</a> &middot; <a href="{{ route('login') }}">Admin sign in</a></p>
 
         {{-- 1. Community & Social Channels --}}
         <div class="footer-social-wrap">

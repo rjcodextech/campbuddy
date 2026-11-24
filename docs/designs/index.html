@@ -1,0 +1,433 @@
+<!-- Copy of FigCraft Design Specimen in Repo -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampBuddy · FigCraft Design System & Screen Specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-primary: #FF4D2D;
+    --color-accent: #D97706;
+    --color-navy: #1E293B;
+    --color-paper: #FFF7ED;
+    --color-surface: #FFFFFF;
+    --color-ink: #0F172A;
+    --color-muted: #64748B;
+    --color-border: #E2E8F0;
+    --color-success: #10B981;
+    --color-danger: #EF4444;
+    --font-heading: 'Baloo 2', sans-serif;
+    --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0F172A;
+    color: #F8FAFC;
+    font-family: var(--font-body);
+    line-height: 1.5;
+    padding: 24px 20px 80px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  
+  .specimen-header {
+    background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+    border: 1px solid #334155;
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 77, 45, 0.15);
+    border: 1px solid rgba(255, 77, 45, 0.35);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #FF4D2D;
+    margin-bottom: 8px;
+  }
+  .specimen-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.2;
+  }
+  .specimen-desc {
+    color: #94A3B8;
+    font-size: 0.9375rem;
+    margin-top: 6px;
+    max-width: 650px;
+  }
+  .action-pills {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    background: #334155;
+    color: #FFFFFF;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid #475569;
+    transition: all 0.2s ease;
+  }
+  .action-btn:hover { background: #475569; transform: translateY(-1px); }
+  .action-btn--primary {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+  .action-btn--primary:hover { background: #E03E1F; }
+
+  .nav-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 12px;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 10px 20px;
+    border-radius: 12px;
+    color: #94A3B8;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-tab:hover { color: #FFFFFF; background: #1E293B; }
+  .nav-tab.active {
+    color: #FFFFFF;
+    background: var(--color-primary);
+  }
+  .tab-badge {
+    background: rgba(0,0,0,0.25);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .section-intro {
+    background: #1E293B;
+    border-left: 4px solid var(--color-primary);
+    padding: 16px 20px;
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 24px;
+  }
+  .section-intro h3 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    color: #FFFFFF;
+  }
+  .section-intro p {
+    color: #94A3B8;
+    font-size: 0.875rem;
+    margin-top: 4px;
+  }
+
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 28px;
+  }
+  .web-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .screen-card {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  .screen-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 77, 45, 0.4);
+  }
+  .screen-header {
+    padding: 14px 18px;
+    background: #0F172A;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .screen-name {
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+  .screen-pill {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #334155;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #CBD5E1;
+  }
+  .screen-view {
+    padding: 16px;
+    background: #020617;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .screen-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    display: block;
+  }
+  .screen-info {
+    padding: 16px 18px;
+    background: #1E293B;
+    border-top: 1px solid #334155;
+  }
+  .info-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin-bottom: 6px;
+  }
+  .info-list {
+    list-style: none;
+    font-size: 0.8125rem;
+    color: #CBD5E1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .info-list li {
+    position: relative;
+    padding-left: 14px;
+  }
+  .info-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+  }
+
+  .overview-wrap {
+    background: #020617;
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid #334155;
+    text-align: center;
+  }
+  .overview-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header class="specimen-header">
+    <div>
+      <div class="brand-badge">⚡ FIGCRAFT DESIGN SPECIMEN · COMPLETE 15 SCREENS</div>
+      <h1 class="specimen-title">CampBuddy Multi-Platform Design System</h1>
+      <p class="specimen-desc">
+        Designed strictly for <strong>minimal required content and focused user value</strong> to eliminate drop-off and maximize in-event utility. Covers Mobile App, Website, and PWA.
+      </p>
+    </div>
+    <div class="action-pills">
+      <a class="action-btn action-btn--primary" href="campbuddy_all_screens.figcraft" target="_blank">
+        🎨 FigCraft Source (.figcraft)
+      </a>
+      <a class="action-btn" href="campbuddy_all_screens.pdf" target="_blank">
+        📄 View PDF Book
+      </a>
+      <a class="action-btn" href="campbuddy_all_screens.penpot" target="_blank">
+        📦 Penpot Archive
+      </a>
+    </div>
+  </header>
+
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-target="panel-mobile" role="tab">
+      📱 1. Mobile App (Native APK) <span class="tab-badge">6 Screens</span>
+    </button>
+    <button class="nav-tab" data-target="panel-web" role="tab">
+      🌐 2. Website (Desktop & Tablet) <span class="tab-badge">5 Screens</span>
+    </button>
+    <button class="nav-tab" data-target="panel-pwa" role="tab">
+      📲 3. PWA (Mobile Browser) <span class="tab-badge">4 Screens</span>
+    </button>
+    <button class="nav-tab" data-target="panel-canvas" role="tab">
+      🖼 Master Canvas Overview <span class="tab-badge">6560×2694</span>
+    </button>
+  </nav>
+
+  <section id="panel-mobile" class="tab-panel active">
+    <div class="section-intro">
+      <h3>1. Mobile App (Native Compose Multiplatform APK) · 390 × 844 px</h3>
+      <p>Optimized for rapid one-hand navigation inside noisy conference halls. Features 100% offline-first reliability, instant tactile touch targets (>=48px), and zero account sign-up.</p>
+    </div>
+    <div class="mobile-grid">
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M1 · Event Picker & Sync</span><span class="screen-pill">Entry Screen</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - Event Picker.png" alt="Mobile Event Picker"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Country filter pills (India, Kenya, Indonesia, Nepal)</li><li>Laptop-to-Mobile 6-digit sync transfer code card</li><li>100% Offline-ready event cards with 1-tap open</li><li>DPDP Act 2023 compliance trust footer</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M2 · Tactile Home Dashboard</span><span class="screen-pill">Main Hub</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - Tactile Home.png" alt="Mobile Tactile Home"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Navy #1E293B tactile hero card with live 30s clock</li><li>Next session teaser: "Starts in 12 min in Track A"</li><li>People strip with quick wave interaction and online dots</li><li>2x3 Event Hubs: My Day, Schedule, CampCard, Attendees, Quests, Sponsors</li><li>Floating SOS Help Bar docked right above bottom navigation</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M3 · My Day & Smart Schedule</span><span class="screen-pill">Schedule</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - My Day Schedule.png" alt="Mobile My Day Schedule"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Schedule Health: "4 saved · 2h 45m · 0 conflicts"</li><li>10-minute prior sound/vibration alerts toggle</li><li>Day 1 / Day 2 multi-track switcher</li><li>Bookmarked talks with speaker photos and track badges</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M4 · Digital CampCard & P2P Swap</span><span class="screen-pill">Networking</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - CampCard Swap.png" alt="Mobile CampCard Swap"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Verified Attendee profile claim badge</li><li>High-contrast tactile pass card with interest tags</li><li>Client-side QR code: swap LinkedIn, website, and portfolio</li><li>1-tap "Share Card" & "Download Pass" actions</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M5 · Explore & Attendee Roster</span><span class="screen-pill">Directory</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - Explore Roster.png" alt="Mobile Explore Roster"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>5 subtabs: People, Sponsors, Deals, Free Steals, Info</li><li>Search 240+ attendees with role filter pills</li><li>Speaker, Organizer, Sponsor, and Volunteer badges</li><li>Quick "Wave 👋" button to initiate peer connection</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">M6 · Contributor Day & Quests</span><span class="screen-pill">Gamification</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Mobile - Quests Contribute.png" alt="Mobile Quests Contribute"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Gamification progress bar: "Level 2 · 4 of 8 Quests completed"</li><li>Contributor Day table matchmaker (Core, Docs, Polyglots)</li><li>Checklist with XP rewards and visual tick marks</li><li>Clear guidance for first-time non-coding contributors</li></ul></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="panel-web" class="tab-panel">
+    <div class="section-intro">
+      <h3>2. Website Platform (Desktop & Tablet Web Experience) · 1280 × 800 px</h3>
+      <p>Designed for discoverability, pre-event preparation, laptop-to-mobile schedule transfer, and staff organizer administration.</p>
+    </div>
+    <div class="web-grid">
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">W1 · Landing Page & Interactive Companion Stage</span><span class="screen-pill">Public Web</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Web - Landing Hero Stage.png" alt="Web Landing Hero Stage"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Headline: "Make the most of your WordCamp" with 4 core promises</li><li>Interactive Live Companion Stage previewing speaker spotlights and P2P swap</li><li>Zero-login trust bar (Built by WPSimplified, DPDP Act 2023 compliant)</li><li>Staff Login and Install PWA quick-action buttons in top navbar</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">W2 · Event Directory & Country Hub</span><span class="screen-pill">Event Picker</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Web - Event Directory.png" alt="Web Event Directory"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Desktop-to-Mobile sync generator: 6-digit code for instant phone transfer</li><li>Tactile country pills (India, Kenya, Indonesia, Greece, Nepal, Europe)</li><li>3-column event grid showing local branding, dates, venue, and talk counts</li><li>"100% Offline Ready" badge on all active events</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">W3 · Multi-Track Schedule Explorer</span><span class="screen-pill">Schedule</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Web - Schedule Explorer.png" alt="Web Schedule Explorer"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Side-by-side 3-track timeline grid (Track 1, Track 2, Contributor Hub)</li><li>Talk bookmarking with local browser storage persistence</li><li>1-click "Export PDF" printable schedule button</li><li>Conflict detection summary bar with mobile transfer action</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">W4 · Community Directory & Sponsor Showcase</span><span class="screen-pill">Community</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Web - Attendees Sponsors.png" alt="Web Attendees Sponsors"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Verified Attendee Profile Claim banner for ticket holders</li><li>3-column attendee cards with role badges and company tags</li><li>Tiered sponsor showcases (Platinum, Gold, Media Partner)</li><li>Exclusive attendee deals, free plugin steals, and booth directions</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">W5 · Organizer & Admin Portal</span><span class="screen-pill">Staff Console</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/Web - Organizer Portal.png" alt="Web Organizer Portal"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Live event stat counters: synced devices, offline warmup %, bookmarks</li><li>Instant push announcement broadcaster to 1,200+ attendee devices</li><li>Schedule delay broadcast controller (+10m, +15m, +30m across tracks)</li><li>Clean sign-in for Event Managers and Super Admins</li></ul></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="panel-pwa" class="tab-panel">
+    <div class="section-intro">
+      <h3>3. Progressive Web App (Mobile Browser / PWA) · 390 × 844 px</h3>
+      <p>Zero-signup, zero app store friction. Installs directly from any mobile browser and runs 100% offline via Service Workers and IndexedDB.</p>
+    </div>
+    <div class="mobile-grid">
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">P1 · PWA Install & Offline Cache Hero</span><span class="screen-pill">Install Flow</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/PWA - Install Offline Hero.png" alt="PWA Install Hero"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Browser URL bar (campbuddy.club) with tactile A2HS install prompt</li><li>Clear value: "Zero app store download · Runs 100% offline"</li><li>Service Worker active status with local cache confirmation</li><li>1-tap event selection for offline caching</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">P2 · Standalone PWA Dashboard</span><span class="screen-pill">PWA Home</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/PWA - Standalone Dashboard.png" alt="PWA Standalone Dashboard"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Full-screen standalone display without browser chrome</li><li>Offline status indicator dot: "Offline Mode Active (Venue Safe)"</li><li>Navy tactile hero card with live next-talk countdown</li><li>2x3 Event Hubs ActionGrid with floating SOS emergency bar</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">P3 · Offline Schedule & Conflict Resolver</span><span class="screen-pill">PWA Schedule</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/PWA - Offline Schedule.png" alt="PWA Offline Schedule"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Schedule conflict alert banner (Track 1 & Track 2 overlap)</li><li>1-tap "Keep / Remove" conflict resolver</li><li>Browser vibration and sound 10m reminder alert toggle</li><li>Full schedule read directly from IndexedDB with zero lag</li></ul></div>
+      </article>
+      <article class="screen-card">
+        <div class="screen-header"><span class="screen-name">P4 · Offline CampCard & Camera QR Scan</span><span class="screen-pill">PWA Networking</span></div>
+        <div class="screen-view"><img class="screen-img" src="screens/PWA - Offline CampCard.png" alt="PWA Offline CampCard"></div>
+        <div class="screen-info"><div class="info-title">Core Focused Elements</div><ul class="info-list"><li>Full client-side QR generation on HTML canvas (zero Wi-Fi required)</li><li>"Scan Peer CampCard" button activating offline phone camera</li><li>vCard contact export and Apple/Google Wallet pass integration</li><li>Instant contact exchange with zero server dependency</li></ul></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="panel-canvas" class="tab-panel">
+    <div class="section-intro">
+      <h3>Master Design Canvas Overview · 6560 × 2694 px</h3>
+      <p>All 15 screens organized by platform on a single FigCraft canvas, following exact Baloo 2 + Poppins brand guidelines and palette.</p>
+    </div>
+    <div class="overview-wrap">
+      <img class="overview-img" src="campbuddy_canvas_overview.png" alt="Master Canvas Overview">
+    </div>
+  </section>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.nav-tab');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+
+      tab.classList.add('active');
+      const target = document.getElementById(tab.dataset.target);
+      if (target) target.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

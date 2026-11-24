@@ -69,12 +69,166 @@ class WordCampRestClient
         return $this->fetchCollection('speakers', ['_embed' => 'wp:featuredmedia']);
     }
 
+    /**
+     * Fallback for WordCamps that use custom block themes and don't publish
+     * standard wcb_speaker REST posts (e.g. Nairobi). Scrapes public /speakers/ page.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function fetchSpeakersFromPage(): array
+    {
+        try {
+            $response = Http::timeout(self::TIMEOUT_SECONDS)
+                ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: false)
+                ->get("{$this->baseUrl}/speakers/");
+
+            if (! $response->successful()) {
+                return [];
+            }
+
+            $html = $response->body();
+            if (trim($html) === '') {
+                return [];
+            }
+
+            $crawler = new Crawler($html);
+            $speakers = [];
+            $seenNames = [];
+
+            $cardSelectors = [
+                'div[class*="spk-card"]',
+                '.speaker-card',
+                '.wp-block-columns .wp-block-column',
+            ];
+
+            foreach ($cardSelectors as $selector) {
+                $nodes = $crawler->filter($selector);
+                if ($nodes->count() > 0) {
+                    $nodes->each(function (Crawler $node) use (&$speakers, &$seenNames) {
+                        $nameNode = $node->filter('h2, h3, h4, [class*="name"]')->first();
+                        if ($nameNode->count() === 0) {
+                            return;
+                        }
+                        $name = trim($nameNode->text(''));
+                        if ($name === '' || isset($seenNames[$name])) {
+                            return;
+                        }
+                        $seenNames[$name] = true;
+
+                        $titleNode = $node->filter('p, [class*="title"], [class*="role"]')->first();
+                        $title = $titleNode->count() > 0 ? trim($titleNode->text('')) : '';
+
+                        $imgNode = $node->filter('img')->first();
+                        $img = $imgNode->count() > 0
+                            ? ($imgNode->attr('data-orig-file') ?? $imgNode->attr('src'))
+                            : null;
+
+                        $id = abs(crc32($name)) % 1000000 + 800000;
+                        $speakers[] = [
+                            'id' => $id,
+                            'title' => ['rendered' => $name],
+                            'content' => ['rendered' => $title !== '' ? "<p>{$title}</p>" : ''],
+                            'link' => "{$this->baseUrl}/speakers/",
+                            '_embedded' => [
+                                'wp:featuredmedia' => $img ? [
+                                    [
+                                        'source_url' => $img,
+                                        'media_details' => [
+                                            'sizes' => [
+                                                'medium' => ['source_url' => $img],
+                                            ],
+                                        ],
+                                    ],
+                                ] : [],
+                            ],
+                        ];
+                    });
+
+                    if (! empty($speakers)) {
+                        break;
+                    }
+                }
+            }
+
+            return $speakers;
+        } catch (\Throwable) {
+            return [];
+        }
+    }
+
     /** @return array<int, array<string, mixed>> */
     public function fetchSponsors(): array
     {
         // Most WordCamp sites keep the sponsor's logo as the post's featured
         // image, not in its text: ask for it with the post.
         return $this->fetchCollection('sponsors', ['_embed' => 'wp:featuredmedia']);
+    }
+
+    /**
+     * Scrapes the event's public sponsors page (/sponsors/) to map sponsor
+     * slugs and names to their displayed logo images. Essential fallback when
+     * WordPress REST API media endpoints are unauthenticated or un-embedded.
+     *
+     * @return array<string, string> slug/normalized-name => image url
+     */
+    public function fetchSponsorLogosFromPage(): array
+    {
+        try {
+            $response = Http::timeout(self::TIMEOUT_SECONDS)
+                ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: false)
+                ->get("{$this->baseUrl}/sponsors/");
+
+            if (! $response->successful()) {
+                return [];
+            }
+
+            $html = $response->body();
+            if (trim($html) === '') {
+                return [];
+            }
+
+            $crawler = new Crawler($html);
+            $map = [];
+
+            $crawler->filter('img')->each(function (Crawler $node) use (&$map) {
+                $src = $node->attr('data-orig-file')
+                    ?? $node->attr('data-full-url')
+                    ?? $node->attr('data-large-file')
+                    ?? $node->attr('data-src')
+                    ?? $node->attr('src');
+
+                if (! $src || str_starts_with($src, 'data:')) {
+                    return;
+                }
+
+                // Ignore site logos and generic icons
+                if (preg_match('/(?:cropped-|site-logo|header-logo|favicon|avatar)/i', $src)) {
+                    return;
+                }
+
+                $parentLink = $node->closest('a');
+                $href = $parentLink ? $parentLink->attr('href') : null;
+                $alt = trim((string) $node->attr('alt'));
+
+                if ($href && preg_match('#/sponsor/([^/]+)/?#i', $href, $m)) {
+                    $slug = strtolower($m[1]);
+                    $map[$slug] = $src;
+                    $map[preg_replace('/[^a-z0-9]/', '', $slug)] = $src;
+                }
+
+                if ($alt !== '') {
+                    $clean = strtolower(trim((string) preg_replace('/\s+logo$/i', '', $alt)));
+                    if ($clean !== '') {
+                        $map[$clean] = $src;
+                        $map[preg_replace('/[^a-z0-9]/', '', $clean)] = $src;
+                    }
+                }
+            });
+
+            return $map;
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     /** @return array<int, array<string, mixed>> */
@@ -158,7 +312,25 @@ class WordCampRestClient
         $crawler = new Crawler($html);
         $images = $crawler->filter('img');
 
-        return $images->count() > 0 ? $images->first()->attr('src') : null;
+        if ($images->count() === 0) {
+            return null;
+        }
+
+        foreach ($images as $img) {
+            $crawlerImg = new Crawler($img);
+            $candidate = $crawlerImg->attr('data-orig-file')
+                ?? $crawlerImg->attr('data-full-url')
+                ?? $crawlerImg->attr('data-large-file')
+                ?? $crawlerImg->attr('data-src')
+                ?? $crawlerImg->attr('data-lazy-src')
+                ?? $crawlerImg->attr('src');
+
+            if ($candidate && ! str_starts_with($candidate, 'data:')) {
+                return $candidate;
+            }
+        }
+
+        return $images->first()->attr('src');
     }
 
     /**
@@ -179,15 +351,24 @@ class WordCampRestClient
         $totalPages = 1;
 
         do {
-            $response = Http::timeout(self::TIMEOUT_SECONDS)
-                ->acceptJson()
-                ->retry(3, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
-                ->get("{$this->baseUrl}/wp-json/wp/v2/{$endpoint}", [
-                    'per_page' => 100,
-                    'page' => $page,
-                    ...$query,
-                ])
-                ->throw();
+            try {
+                $response = Http::timeout(self::TIMEOUT_SECONDS)
+                    ->acceptJson()
+                    ->retry(3, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
+                    ->get("{$this->baseUrl}/wp-json/wp/v2/{$endpoint}", [
+                        'per_page' => 100,
+                        'page' => $page,
+                        ...$query,
+                    ])
+                    ->throw();
+            } catch (RequestException $e) {
+                // If the endpoint is not registered on the WordPress site yet (404), return empty list on page 1.
+                if ($e->response->status() === 404 && $page === 1) {
+                    return [];
+                }
+
+                throw $e;
+            }
 
             $batch = $response->json();
 

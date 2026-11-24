@@ -179,6 +179,33 @@
                     <span class="section-head__desc">Tap your event to see its multi-track schedule, attendees, and guide</span>
                 </div>
 
+                {{-- Move data from laptop / PC sync card --}}
+                <div class="desktop-sync-card" id="desktop-sync-card">
+                    <div class="desktop-sync-card__header" id="desktop-sync-toggle" role="button" tabindex="0" aria-expanded="false">
+                        <div class="desktop-sync-card__left">
+                            <div class="desktop-sync-card__icon-box">
+                                <x-attendee.line-icon name="refresh" />
+                            </div>
+                            <div>
+                                <h3 class="desktop-sync-card__title">Move data from laptop / PC</h3>
+                                <p class="desktop-sync-card__subtitle">Sync bookmarks &amp; CampCard instantly</p>
+                            </div>
+                        </div>
+                        <button type="button" class="desktop-sync-card__toggle-btn" id="desktop-sync-btn">Sync</button>
+                    </div>
+
+                    <div class="desktop-sync-card__body" id="desktop-sync-body" hidden>
+                        <p class="desktop-sync-card__desc">
+                            Set up CampBuddy on your computer? Enter the 6-digit transfer code displayed on your desktop browser to link your schedule on this phone.
+                        </p>
+                        <div class="desktop-sync-card__input-row">
+                            <input type="text" id="desktop-sync-input" class="desktop-sync-card__input" placeholder="123 456" maxlength="7" autocomplete="off" enterkeyhint="go" aria-label="6-digit sync code">
+                            <button type="button" class="desktop-sync-card__apply-btn" id="desktop-sync-apply">Apply</button>
+                        </div>
+                        <p class="desktop-sync-card__msg" id="desktop-sync-msg" hidden></p>
+                    </div>
+                </div>
+
                 @if (($events ?? collect())->isEmpty())
                     <div class="card" style="text-align:center">
                         <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_intro">first-timer guide</a> is a good place to start.</p>
@@ -187,6 +214,9 @@
                     {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
                     script runs, so without it every event simply shows, as before. --}}
                     <div class="picker-filter" data-picker-filter hidden>
+                        {{-- Tactile horizontal scrollable country filter pills --}}
+                        <div class="country-filter-pills" data-picker-pills></div>
+
                         <div class="picker-filter__row">
                             <label class="u-visually-hidden" for="picker-country">Country</label>
                             <span class="picker-filter__select">
@@ -199,7 +229,7 @@
                     </div>
 
                     <div class="card-grid" data-picker-list>
-                        @foreach ($events as $event)
+                        @foreach ($events as $index => $event)
                             @php($isCompleted = isset($completed[$event->id]))
                             <x-attendee.event-card
                                 :event="$event"
@@ -207,6 +237,7 @@
                                 :country="$eventCountries[$event->id] ?? ''"
                                 :date="$event->starts_on ? \App\Support\SocialKit::dates($event) : null"
                                 :memory-links="$isCompleted ? \App\Support\EventMemories::links($event) : []"
+                                :priority="$index < 4"
                             />
                         @endforeach
                     </div>

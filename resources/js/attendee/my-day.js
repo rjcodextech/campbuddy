@@ -109,6 +109,61 @@ export async function renderMyDay(root) {
     return a.startMs < bEnd && b.startMs < aEnd;
   }
 
+  function updateScheduleHealth() {
+    const savedCountEl = document.getElementById('sh-saved-count');
+    const hoursEl = document.getElementById('sh-hours');
+    const conflictsEl = document.getElementById('sh-conflicts');
+    const conflictCard = document.getElementById('schedule-conflict-card');
+    const conflictDesc = document.getElementById('sh-conflict-desc');
+
+    if (!savedCountEl) return;
+
+    const savedCount = bookmarks.length;
+    savedCountEl.textContent = `${savedCount} saved`;
+
+    const savedSessions = bookmarks.map((b) => sessionsById.get(b.sessionId)).filter(Boolean);
+    const totalMinutes = savedSessions.reduce((sum, s) => {
+      const dur = s.duration_seconds ? Math.round(s.duration_seconds / 60) : 30;
+      return sum + dur;
+    }, 0);
+
+    const hoursText = totalMinutes >= 60
+      ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m planned`
+      : `${totalMinutes}m planned`;
+    if (hoursEl) hoursEl.textContent = hoursText;
+
+    let conflictCount = 0;
+    const conflictNames = [];
+    for (let i = 0; i < savedSessions.length; i++) {
+      for (let j = i + 1; j < savedSessions.length; j++) {
+        if (rangesOverlap(savedSessions[i], savedSessions[j])) {
+          conflictCount++;
+          conflictNames.push(`"${savedSessions[i].title}" & "${savedSessions[j].title}"`);
+        }
+      }
+    }
+
+    if (conflictsEl) {
+      conflictsEl.textContent = `${conflictCount} conflict${conflictCount === 1 ? '' : 's'}`;
+    }
+
+    if (conflictCard) {
+      if (conflictCount > 0) {
+        conflictCard.hidden = false;
+        if (conflictDesc && conflictNames.length > 0) {
+          conflictDesc.textContent = `Overlapping talks: ${conflictNames.slice(0, 2).join(', ')}${conflictNames.length > 2 ? ' and more' : ''}. Compare them in My schedule.`;
+        }
+      } else {
+        conflictCard.hidden = true;
+      }
+    }
+  }
+
+  const alertsToggle = document.getElementById('sh-alerts-toggle');
+  alertsToggle?.addEventListener('click', () => {
+    offerReminder(eventSlug, eventId, bookmarks[0]?.sessionId || 1);
+  });
+
   async function toggleBookmark(session, starButton) {
     if (bookmarkedIds.has(session.id)) {
       bookmarkedIds.delete(session.id);
@@ -177,6 +232,7 @@ export async function renderMyDay(root) {
     planFilter = effectiveFilter(planFilter, counts);
 
     renderPlanSummary(plan, counts);
+    updateScheduleHealth();
     renderPeople(plan);
     syncIosReminderHint(document.getElementById('plan-sessions-heading'), bookmarkedIds.size);
 
@@ -454,6 +510,8 @@ export async function renderMyDay(root) {
   if (location.hash === '#mine') {
     document.querySelector('[data-view-tab="mine"]')?.click();
   }
+
+  updateScheduleHealth();
 }
 
 function sessionMeta(s) {

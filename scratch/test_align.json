@@ -1,0 +1,1 @@
+[{"command":"frame.create","params":{"name":"Test","x":0,"y":0,"width":200,"height":200,"props":{"fill":"#FFFFFF"}}},{"command":"text.create","params":{"text":"Centered","x":20,"y":50,"parent":2,"props":{"fontSize":14,"fill":"#000000","textAlign":"center"}}}]

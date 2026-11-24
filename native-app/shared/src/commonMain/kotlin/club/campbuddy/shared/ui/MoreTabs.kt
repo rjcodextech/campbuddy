@@ -988,7 +988,7 @@ private fun InfoList(slug: String) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(48.dp).background(Color.White, Radii.input).border(1.dp, brand.line, Radii.input).padding(4.dp), contentAlignment = Alignment.Center) {
-                        RemoteImage(e.logo, Modifier.size(40.dp)) { Image(painterResource(Res.drawable.app_icon), null, Modifier.size(36.dp)) }
+                        RemoteImage(e.logo ?: e.mark, Modifier.size(40.dp)) { Image(painterResource(Res.drawable.app_icon), null, Modifier.size(36.dp)) }
                     }
                     Column {
                         Text(e.name, style = MaterialTheme.typography.titleMedium)
