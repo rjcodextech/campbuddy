@@ -6,9 +6,8 @@
             <div class="badge">Contribute</div>
             <h1 class="u-page-title">Where could you help?</h1>
             <p class="footer-note" style="text-align:left">
-                You don't need to code. Writers, designers, translators and people who are just curious all have a table.
-                Answer a few quick questions to find your team.
-                <strong>Students:</strong> your contributions show on your WordPress.org profile, which you can put on your CV.
+                No code needed &mdash; writers, designers, organizers, and students all have a table.
+                <strong>Students:</strong> contributions appear on your WordPress.org profile for your CV.
             </p>
         </section>
 
@@ -16,7 +15,7 @@
         here (contribute.js; saved back to the onboarding answers on this device). --}}
         <div id="contrib-day" class="card" style="margin-bottom:14px">
             <p class="form-group__title" id="contrib-day-label">Going to Contributor Day?</p>
-            <p class="form-group__desc" aria-live="polite" data-contrib-day-note>It's a hands-on day improving WordPress. You don't need to code, and every table welcomes beginners.</p>
+            <p class="form-group__desc" aria-live="polite" data-contrib-day-note>Every Contributor Day table welcomes beginners.</p>
             <div class="chip-group" role="group" aria-labelledby="contrib-day-label" style="margin-bottom:0">
                 <button type="button" class="chip" aria-pressed="false" data-contrib-day="yes">Yes</button>
                 <button type="button" class="chip" aria-pressed="false" data-contrib-day="">Not sure yet</button>
@@ -26,7 +25,7 @@
 
         <div id="contrib-questions" class="card">
             <p class="form-group__title" id="contrib-tags-label">What kind of work do you enjoy?</p>
-            <p class="form-group__desc">Pick as many as you like, or skip straight to the matches.</p>
+            <p class="form-group__desc">Pick your interests or skip straight to matching tables.</p>
             <div class="chip-group" id="contrib-tags" role="group" aria-labelledby="contrib-tags-label"></div>
             <button type="button" class="btn btn--primary btn--full" id="contrib-see-teams">See my matches</button>
         </div>

@@ -110,7 +110,7 @@
             </h1>
 
             <p class="hero-creative__lead">
-                How the day runs, the words people throw around, what to bring, and how to start talking to people you don't know yet in the hallway track.
+                How the day flows, key WordCamp terms, packing basics, and hallway tips.
             </p>
 
             <div class="hero-creative__pills">
@@ -194,22 +194,22 @@
             <div class="superpower-col">
                 <div class="superpower-icon"><x-attendee.line-icon name="calendar" /></div>
                 <strong>1. Never Miss a Talk</strong>
-                <span>Track multiple halls live with real-time "Now &amp; Next" and 1-tap bookmarks in "My Day".</span>
+                <span>Track halls live and star talks into My Day.</span>
             </div>
             <div class="superpower-col">
                 <div class="superpower-icon"><x-attendee.line-icon name="qr-code" /></div>
                 <strong>2. Swap Camp Cards in 2s</strong>
-                <span>Exchange LinkedIn and website via your phone camera. No paper cards, zero sign-up required.</span>
+                <span>Share LinkedIn and links via QR &mdash; no paper cards.</span>
             </div>
             <div class="superpower-col">
                 <div class="superpower-icon"><x-attendee.line-icon name="wrench" /></div>
                 <strong>3. Find Contributor Tables</strong>
-                <span>A 30-second skill quiz points you to the exact table (Core, Docs, Design, Polyglots) for your skills.</span>
+                <span>Quick skill quiz matches you to the right Contributor table.</span>
             </div>
             <div class="superpower-col">
                 <div class="superpower-icon"><x-attendee.line-icon name="lock" /></div>
                 <strong>4. 100% Offline &amp; Private</strong>
-                <span>Zero login, no passwords. Your own things are saved on your phone; website statistics only if you allow them (DPDP Act 2023). <a href="#offline">What works offline</a></span>
+                <span>Zero login; data stays on-device (DPDP Act 2023). <a href="#offline">Offline info</a></span>
             </div>
         </div>
     </div>
@@ -217,20 +217,19 @@
 
 <section id="guide-what" class="guide-section" data-track-section-view="what" aria-labelledby="guide-what-heading">
     <div class="section-head">
-        <span class="u-eyebrow"><x-attendee.line-icon name="compass" /> Conference Orientation</span>
+        <span class="u-eyebrow"><x-attendee.line-icon name="compass" /> Overview</span>
         <h2 id="guide-what-heading" class="guide-section__title">What is a WordCamp?</h2>
-        <span class="section-head__desc">The global community conference that anyone can attend</span>
+        <span class="section-head__desc">A local, volunteer-run conference for everyone using WordPress.</span>
     </div>
     <div class="card guide-prose guide-what-card">
         <div class="guide-what-body">
-            <p>A <strong>WordCamp</strong> is a conference about WordPress, the free software that runs a large part of the web. Each one is organized by <strong>local volunteers</strong> from the WordPress community, and there are WordCamps in cities all over the world.</p>
-            <p>It's for <strong>everyone who uses WordPress</strong> or is curious about it: bloggers, small-business owners, designers, developers, marketers, students and writers. You don't need to be an expert, and nobody will quiz you.</p>
-            <p><strong>Sponsors</strong> pay for much of it, so tickets stay cheap. Speakers and organizers are volunteers, not paid staff, which is a big part of why people are so easy to talk to.</p>
+            <p>A <strong>WordCamp</strong> is an affordable local conference around WordPress, organized entirely by <strong>community volunteers</strong> &mdash; no experience level required.</p>
+            <p><strong>Sponsors</strong> subsidize tickets so students, writers, designers, developers, and business owners can all learn and connect in the hallway track.</p>
         </div>
         <div class="guide-what-highlights">
-            <div class="highlight-chip"><x-attendee.line-icon name="heart" /> 100% Volunteer-Organized</div>
-            <div class="highlight-chip"><x-attendee.line-icon name="ticket" /> Heavily Subsidized Tickets</div>
-            <div class="highlight-chip"><x-attendee.line-icon name="users" /> Open to All Experience Levels</div>
+            <div class="highlight-chip"><x-attendee.line-icon name="heart" /> Volunteer-Organized</div>
+            <div class="highlight-chip"><x-attendee.line-icon name="ticket" /> Subsidized Tickets</div>
+            <div class="highlight-chip"><x-attendee.line-icon name="users" /> All Skill Levels</div>
         </div>
     </div>
 </section>

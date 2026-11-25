@@ -8,7 +8,7 @@
         <div class="section-head">
             <span class="u-eyebrow"><x-attendee.line-icon name="sparkles" /> Essential WordCamp Companion</span>
             <h2 id="usp-heading" class="section-head__title">How CampBuddy helps you at WordCamp</h2>
-            <span class="section-head__desc">Nine focused superpowers engineered to eliminate conference confusion, hallway hesitation, and paper card clutter &mdash; 100% free, zero login, and completely offline-ready.</span>
+            <span class="section-head__desc">Nine focused tools built for WordCamp day &mdash; free, zero login, offline-ready.</span>
         </div>
 
         <div class="usp-slider" id="usp-slider-root">
@@ -30,14 +30,14 @@
                                 </span>
                                 <span class="usp-card__num">01 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">1. First WordCamp? &mdash; Never Feel Lost in the Crowd</h3>
+                            <h3 class="usp-card__title">1. First-Timer Guide</h3>
                             <p class="usp-card__desc">
-                                Stepping into a massive tech conference can feel overwhelming. Our 5-minute newcomer primer breaks down how the day unfolds, explains community jargon (Contributor Day, Hallway Track, Wapuu), and equips you with 15-second natural icebreaker scripts so you can start conversations with confidence.
+                                Quick event overview, community glossary, and simple icebreakers so day one feels easy.
                             </p>
                             <div class="usp-card__chips">
-                                <span class="usp-chip"><x-attendee.line-icon name="help-circle" /> Jargon Dictionary (Wapuu, BoF)</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="help-circle" /> Jargon Dictionary</span>
                                 <span class="usp-chip"><x-attendee.line-icon name="graduation-cap" /> College Fresher Tips</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="coffee" /> Hallway Networking Icebreakers</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="coffee" /> Hallway Icebreakers</span>
                             </div>
                         </div>
                     </div>
@@ -60,14 +60,14 @@
                                 </span>
                                 <span class="usp-card__num">02 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">2. Schedule &amp; &ldquo;My Day&rdquo; &mdash; Curate Your Personal Timetable</h3>
+                            <h3 class="usp-card__title">2. Schedule &amp; My Day</h3>
                             <p class="usp-card__desc">
-                                With parallel tracks across multiple auditoriums, it is easy to lose track of key sessions. In CampBuddy, star the talks that matter to you with a single tap to build your custom schedule. Get smart reminders 10 minutes before sessions start, with automatic timetable shifts whenever organizers adjust timing.
+                                Star talks across parallel rooms, see what is live now, and get 10-minute alerts.
                             </p>
                             <div class="usp-card__chips">
                                 <span class="usp-chip"><x-attendee.line-icon name="star" /> 1-Tap Star Bookmarks</span>
                                 <span class="usp-chip"><x-attendee.line-icon name="clock" /> 10-Min Hall Reminders</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="calendar" /> Phone Calendar Sync</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="calendar" /> Calendar Sync</span>
                             </div>
                         </div>
                     </div>
@@ -90,14 +90,14 @@
                                 </span>
                                 <span class="usp-card__num">03 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">3. Attendee Discovery &mdash; Connect with Zero Spam</h3>
+                            <h3 class="usp-card__title">3. Attendee Discovery</h3>
                             <p class="usp-card__desc">
-                                In a venue of 2,000+ attendees, finding peers who share your niche or passion can be daunting. CampBuddy lets you filter by shared interests, skills, or roles. Send a lightweight private wave to someone you want to meet: contact details are only revealed when both parties mutually wave &mdash; zero spam, zero sign-up.
+                                Filter peers by shared interests and send mutual private waves with zero spam.
                             </p>
                             <div class="usp-card__chips">
                                 <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> Mutual Private Wave</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="users" /> Interest Matchmaking</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="lock" /> 100% Spam-Free Privacy</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="users" /> Interest Matching</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="lock" /> Privacy-First</span>
                             </div>
                         </div>
                     </div>
@@ -120,14 +120,14 @@
                                 </span>
                                 <span class="usp-card__num">04 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">4. Digital Camp Card &mdash; Instant Paperless Networking</h3>
+                            <h3 class="usp-card__title">4. Digital Camp Card</h3>
                             <p class="usp-card__desc">
-                                Forget carrying paper business cards or clumsily typing social handles into phones. Your Camp Card is an instant digital conference badge: set your name, title, and social links. Other attendees simply scan your QR code with their default camera app to open your profile directly &mdash; no app download or sign-up needed on their end.
+                                Share your QR badge from any phone camera with seven custom theme styles.
                             </p>
                             <div class="usp-card__chips">
                                 <span class="usp-chip"><x-attendee.line-icon name="camera" /> Native Camera Scan</span>
                                 <span class="usp-chip"><x-attendee.line-icon name="link" /> Direct Profile Link</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> 7 Curated Card Themes</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> 7 Card Themes</span>
                             </div>
                         </div>
                     </div>
@@ -150,14 +150,14 @@
                                 </span>
                                 <span class="usp-card__num">05 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">5. Contributor Day &mdash; Meaningful Contributions Without Coding</h3>
+                            <h3 class="usp-card__title">5. Contributor Day</h3>
                             <p class="usp-card__desc">
-                                WordCamp Contributor Day is for everyone &mdash; not just backend developers. Writers, designers, translators, documenters, and curious first-timers have dedicated team tables. Answer two quick questions to find your ideal team, understand where to sit, and get proven scripts for introducing yourself to table leads.
+                                Find the right Contributor table in two quick taps &mdash; no coding required.
                             </p>
                             <div class="usp-card__chips">
-                                <span class="usp-chip"><x-attendee.line-icon name="compass" /> 2-Question Team Matcher</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="users" /> Find the Right Table</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="sprout" /> 100% Non-Tech Friendly</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="compass" /> Team Matcher</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="users" /> Table Locations</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="sprout" /> Beginner Friendly</span>
                             </div>
                         </div>
                     </div>
@@ -176,18 +176,18 @@
                             <div class="usp-card__badge-row">
                                 <span class="usp-card__category">
                                     <x-attendee.line-icon name="zap" />
-                                    <span>100% Offline Reliability</span>
+                                    <span>Offline Reliability</span>
                                 </span>
                                 <span class="usp-card__num">06 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">6. 100% Offline &amp; Instant PWA &mdash; Built for Crowded Venues</h3>
+                            <h3 class="usp-card__title">6. 100% Offline &amp; PWA</h3>
                             <p class="usp-card__desc">
-                                Conference Wi-Fi routinely stutters or drops under heavy auditorium load. CampBuddy requires no account and no login: open the link once and add it to your home screen. Your whole schedule, the first-timer guide and your Camp Card keep working offline, saved on your phone.
+                                Open once online so your schedule, guide, and Camp Card work without Wi-Fi.
                             </p>
                             <div class="usp-card__chips">
-                                <span class="usp-chip"><x-attendee.line-icon name="lock" /> No Login / No Password</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="zap" /> Zero Wi-Fi Dependency</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="download" /> Instant Home Screen App</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="lock" /> No Login Needed</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="zap" /> Works Offline</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="download" /> Installable PWA</span>
                             </div>
                         </div>
                     </div>
@@ -206,18 +206,18 @@
                             <div class="usp-card__badge-row">
                                 <span class="usp-card__category">
                                     <x-attendee.line-icon name="download" />
-                                    <span>Event Memories Journal</span>
+                                    <span>Event Memories</span>
                                 </span>
                                 <span class="usp-card__num">07 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">7. Post-Event Memories &mdash; Your WordCamp Keepsake</h3>
+                            <h3 class="usp-card__title">7. Post-Event Memories</h3>
                             <p class="usp-card__desc">
-                                Don't let the knowledge and connections fade once the event closes. Access official photo albums and generate a beautiful 'Save My Day' PDF keepsake compiling your attended sessions, speakers heard, new peer contacts, and personal notes. Take your verified badge to your next WordCamp.
+                                Export attended talks, contacts, and notes as a single keepsake PDF after camp.
                             </p>
                             <div class="usp-card__chips">
                                 <span class="usp-chip"><x-attendee.line-icon name="download" /> 1-Click PDF Summary</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="camera" /> Official Photo Albums</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="play" /> WordPress.tv Session Links</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="camera" /> Official Photos</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="play" /> WordPress.tv Links</span>
                             </div>
                         </div>
                     </div>
@@ -236,18 +236,18 @@
                             <div class="usp-card__badge-row">
                                 <span class="usp-card__category">
                                     <x-attendee.line-icon name="heart" />
-                                    <span>Community Organizers Tool</span>
+                                    <span>For Organizers</span>
                                 </span>
                                 <span class="usp-card__num">08 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">8. For Organizers &mdash; Zero Setup Conference Companion</h3>
+                            <h3 class="usp-card__title">8. Zero-Setup Event Sync</h3>
                             <p class="usp-card__desc">
-                                Organizing teams are already stretched thin; building and maintaining custom event apps shouldn't add to the burden. CampBuddy automatically syncs schedules, speakers, and event details directly from WordCamp Central every 15 minutes, styled with your official branding &mdash; completely free for any WordCamp community.
+                                Automatically syncs schedules, speakers, and branding from WordCamp Central &mdash; free forever.
                             </p>
                             <div class="usp-card__chips">
-                                <span class="usp-chip"><x-attendee.line-icon name="compass" /> WordCamp Central Auto-Sync</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="clock" /> 15-Min Live Freshness</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> Zero Setup Cost</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="compass" /> WordCamp Central Sync</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="clock" /> Auto Updates</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> Zero Setup</span>
                             </div>
                         </div>
                     </div>
@@ -266,18 +266,18 @@
                             <div class="usp-card__badge-row">
                                 <span class="usp-card__category">
                                     <x-attendee.line-icon name="clock" />
-                                    <span>Real-Time Schedule Delay</span>
+                                    <span>Live Delay Updates</span>
                                 </span>
                                 <span class="usp-card__num">09 / 09</span>
                             </div>
-                            <h3 class="usp-card__title">9. Running Late Alerts &mdash; Instant Timetable Shift</h3>
+                            <h3 class="usp-card__title">9. Running Late Alerts</h3>
                             <p class="usp-card__desc">
-                                When keynote sessions or hallway breaks run overtime, organizers can shift the entire conference timetable by 10, 15, or 20 minutes in a single tap. Every attendee's personal schedule and upcoming notifications automatically adjust on their phones, along with urgent broadcast updates like 'Lunch is now served'.
+                                Shift session times and send urgent notices to attendees' phones in one tap.
                             </p>
                             <div class="usp-card__chips">
-                                <span class="usp-chip"><x-attendee.line-icon name="clock" /> 1-Tap Timetable Shift</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="zap" /> Auto Reminder Adjustment</span>
-                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> Instant Live Broadcasts</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="clock" /> 1-Tap Time Shift</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="zap" /> Live Reminders</span>
+                                <span class="usp-chip"><x-attendee.line-icon name="sparkles" /> Push Notices</span>
                             </div>
                         </div>
                     </div>
@@ -324,11 +324,11 @@
                 CampBuddy &times; <a href="https://wpsimplified.in" target="_blank" rel="noopener">WPSimplified</a>
             </h3>
             <p class="about-wps-banner__desc">
-                Built and maintained by WPSimplified as a free, open-source gift for the global WordPress community. Zero sign-up, zero ads, and 100% offline-ready for every WordCamp worldwide.
+                Free, open-source WordCamp companion by WPSimplified &mdash; zero login, offline-ready.
             </p>
             <div class="about-wps-banner__actions">
                 <a href="{{ route('about') }}" class="btn btn--primary">
-                    <span>Read Full Story</span>
+                    <span>About CampBuddy</span>
                     <span aria-hidden="true">&rarr;</span>
                 </a>
             </div>
@@ -338,9 +338,9 @@
     {{-- Section: Quick Questions FAQ --}}
     <section class="about-faq" aria-labelledby="about-faq-heading">
         <div class="section-head">
-            <span class="u-eyebrow"><x-attendee.line-icon name="help-circle" /> Common Inquiries</span>
+            <span class="u-eyebrow"><x-attendee.line-icon name="help-circle" /> FAQ</span>
             <h2 id="about-faq-heading" class="section-head__title">Quick questions</h2>
-            <span class="section-head__desc">Everything you need to know about privacy, offline reliability, and schedule syncing</span>
+            <span class="section-head__desc">Privacy, offline mode, and schedule syncing basics.</span>
         </div>
         <div class="guide-accordion">
             @foreach (\App\Support\FirstTimerGuide::quickQuestions() as ['q' => $q, 'a' => $a])

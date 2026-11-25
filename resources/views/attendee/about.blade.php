@@ -74,13 +74,13 @@
                         </h1>
 
                         <p class="hero-creative__lead">
-                            CampBuddy is the privacy-first mobile companion and event engine for WordCamps worldwide. Built by WPSimplified as a 100% free community gift &mdash; zero login, zero paper cards, and runs entirely offline.
+                            Privacy-first WordCamp companion by WPSimplified &mdash; free, zero login, offline-ready.
                         </p>
 
                         <div class="hero-creative__pills">
                             <span class="hero-pill"><x-attendee.line-icon name="lock" /> Zero sign-up (DPDPA 2023)</span>
                             <span class="hero-pill"><x-attendee.line-icon name="wifi" /> 100% Offline-Ready</span>
-                            <span class="hero-pill"><x-attendee.line-icon name="zap" /> Instant PWA (No app store)</span>
+                            <span class="hero-pill"><x-attendee.line-icon name="zap" /> Instant PWA</span>
                             <span class="hero-pill"><x-attendee.line-icon name="heart" /> 100% Free Forever</span>
                         </div>
 
@@ -107,7 +107,7 @@
                 <div class="section-head">
                     <span class="u-eyebrow"><x-attendee.line-icon name="sparkles" /> Attendee Experience</span>
                     <h2 id="features-heading" class="section-head__title">Everything you need on WordCamp day</h2>
-                    <span class="section-head__desc">Four focused capabilities designed to eliminate conference confusion, paper business cards, and hallway hesitation.</span>
+                    <span class="section-head__desc">Four core tools for schedules, hallway connections, and Contributor Day.</span>
                 </div>
 
                 <div class="about-bento">
@@ -119,12 +119,12 @@
                         </span>
                         <h3 class="about-bento-card__title">Smart Schedule &amp; "My Day"</h3>
                         <p class="about-bento-card__text">
-                            Navigate parallel halls with ease. Star talks to build your personal timetable, see what is "Live Now" across rooms, and receive quiet 10-minute hall alerts so you never miss a keynote.
+                            Star talks across parallel halls, see what is live now, and get 10-minute alerts.
                         </p>
                         <div class="about-bento-card__chips">
                             <span class="about-chip"><x-attendee.line-icon name="clock" /> Live Now Ribbon</span>
                             <span class="about-chip"><x-attendee.line-icon name="star" /> 1-Tap My Day</span>
-                            <span class="about-chip"><x-attendee.line-icon name="siren" /> 10-Min Hall Alert</span>
+                            <span class="about-chip"><x-attendee.line-icon name="siren" /> 10-Min Alert</span>
                         </div>
                     </div>
 
@@ -136,7 +136,7 @@
                         </span>
                         <h3 class="about-bento-card__title">Digital Camp Card &amp; QR Swap</h3>
                         <p class="about-bento-card__text">
-                            Your digital conference badge. Other attendees simply scan your QR with their normal phone camera to open your LinkedIn or website in seconds &mdash; zero paper cards and no login required.
+                            Share your QR badge from any phone camera &mdash; no paper cards or accounts needed.
                         </p>
                         <div class="about-bento-card__chips">
                             <span class="about-chip"><x-attendee.line-icon name="camera" /> Phone Camera Scan</span>
@@ -153,12 +153,12 @@
                         </span>
                         <h3 class="about-bento-card__title">Discovery &amp; Hallway Quests</h3>
                         <p class="about-bento-card__text">
-                            Find attendees by shared interests (Core, design, plugins), send private mutual waves, and complete friendly hallway networking quests that make breaking the ice natural and fun.
+                            Match by shared WordPress interests, send mutual waves, and check off camp quests.
                         </p>
                         <div class="about-bento-card__chips">
-                            <span class="about-chip"><x-attendee.line-icon name="lock" /> 100% Spam-Free</span>
+                            <span class="about-chip"><x-attendee.line-icon name="lock" /> Spam-Free</span>
                             <span class="about-chip"><x-attendee.line-icon name="users" /> Mutual Waves</span>
-                            <span class="about-chip"><x-attendee.line-icon name="ticket" /> WordCamp Quests</span>
+                            <span class="about-chip"><x-attendee.line-icon name="ticket" /> Quests</span>
                         </div>
                     </div>
 
@@ -170,12 +170,12 @@
                         </span>
                         <h3 class="about-bento-card__title">Contributor Day in 3 Taps</h3>
                         <p class="about-bento-card__text">
-                            First time at Contributor Day? Answer 3 quick questions about what you enjoy to find the exact team table (Docs, Polyglots, Core, Design) waiting for you with ready icebreaker scripts.
+                            Answer three quick prompts to find your matching Contributor table and table leads.
                         </p>
                         <div class="about-bento-card__chips">
-                            <span class="about-chip"><x-attendee.line-icon name="wrench" /> 3-Question Wizard</span>
-                            <span class="about-chip"><x-attendee.line-icon name="graduation-cap" /> College Fresher Tips</span>
-                            <span class="about-chip"><x-attendee.line-icon name="coffee" /> Table Icebreakers</span>
+                            <span class="about-chip"><x-attendee.line-icon name="wrench" /> Quick Matcher</span>
+                            <span class="about-chip"><x-attendee.line-icon name="graduation-cap" /> Fresher Tips</span>
+                            <span class="about-chip"><x-attendee.line-icon name="coffee" /> Table Intro</span>
                         </div>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                 <div class="section-head">
                     <span class="u-eyebrow"><x-attendee.line-icon name="megaphone" /> Organizer &amp; Media Suite</span>
                     <h2 id="organizer-heading" class="section-head__title">Operational calm for volunteer teams</h2>
-                    <span class="section-head__desc">Tools built to handle real-world conference disruptions, schedule delays, and automated social media coverage.</span>
+                    <span class="section-head__desc">Real-time delay tools, push alerts, and automated social graphics.</span>
                 </div>
 
                 <div class="about-grid-3">
@@ -196,7 +196,7 @@
                         </div>
                         <h3 class="about-card__title">Live Delay Broadcaster</h3>
                         <p class="about-card__text">
-                            Keynote ran 20 minutes late? Shift timetable tracks with a single slider in the organizer dashboard. Every attendee's phone updates instantly without mic shouting or confusion.
+                            Shift hall schedules in one tap when keynotes run long so every attendee stays synced.
                         </p>
                         <span class="about-card__stat">
                             <x-attendee.line-icon name="zap" /> Instant Timetable Shift
@@ -209,10 +209,10 @@
                         </div>
                         <h3 class="about-card__title">Lockscreen Web Push</h3>
                         <p class="about-card__text">
-                            Broadcast urgent notices, room swaps, lunch calls, or lost items directly to attendees' phone lockscreens via Web Push &mdash; even when their browser tab is completely closed.
+                            Send room changes, lunch calls, or urgent updates directly to attendee devices.
                         </p>
                         <span class="about-card__stat">
-                            <x-attendee.line-icon name="siren" /> Mic-Free Broadcasts
+                            <x-attendee.line-icon name="siren" /> Instant Alerts
                         </span>
                     </div>
 
@@ -222,10 +222,10 @@
                         </div>
                         <h3 class="about-card__title">Automated Social Reels</h3>
                         <p class="about-card__text">
-                            Generate production-ready 1080&times;1920 vertical video spotlights, speaker cards, and timetables for Instagram and LinkedIn with zero manual video editing required.
+                            Export 1080&times;1920 speaker spotlights and schedule cards automatically.
                         </p>
                         <span class="about-card__stat">
-                            <x-attendee.line-icon name="sparkles" /> Viral Event Marketing
+                            <x-attendee.line-icon name="sparkles" /> Event Media Kit
                         </span>
                     </div>
                 </div>
@@ -235,8 +235,8 @@
             <section id="core-promises" class="guide-section" aria-labelledby="promises-heading">
                 <div class="section-head">
                     <span class="u-eyebrow"><x-attendee.line-icon name="heart" /> Core Philosophy</span>
-                    <h2 id="promises-heading" class="section-head__title">Why CampBuddy is fundamentally different</h2>
-                    <span class="section-head__desc">Built from the ground up to respect attendee privacy, survive crowded venue Wi-Fi, and give back to the WordPress community.</span>
+                    <h2 id="promises-heading" class="section-head__title">Built differently for conferences</h2>
+                    <span class="section-head__desc">Privacy-first architecture built to hold up on crowded venue Wi-Fi.</span>
                 </div>
 
                 <div class="about-grid-3">
@@ -246,10 +246,10 @@
                         </div>
                         <h3 class="about-card__title">Zero Sign-Up &amp; DPDPA 2023</h3>
                         <p class="about-card__text">
-                            No passwords, no magic links, and no email harvesting. Fully compliant with India's DPDPA 2023. All your starred sessions, Camp Card, and notes stay strictly on your phone in IndexedDB.
+                            No passwords or email collection. Bookmarks, Camp Card, and notes stay locally on your phone.
                         </p>
                         <span class="about-card__stat">
-                            <x-attendee.line-icon name="lock" /> 100% On-Device Data
+                            <x-attendee.line-icon name="lock" /> On-Device Storage
                         </span>
                     </div>
 
@@ -259,8 +259,8 @@
                         </div>
                         <h3 class="about-card__title">Works 100% Offline</h3>
                         <p class="about-card__text">
-                            Instant Progressive Web App cached locally on first load. Per-device rate limits ensure 1,500+ attendees sharing venue Wi-Fi NAT gateways never experience connection lockouts.
-                            <a href="{{ route('guide') }}#offline">What works offline, and what needs internet</a>
+                            Cached as a PWA after one load so venue Wi-Fi drops never block your day.
+                            <a href="{{ route('guide') }}#offline">Offline details</a>
                         </p>
                         <span class="about-card__stat">
                             <x-attendee.line-icon name="wifi" /> Service Worker Cached
@@ -273,10 +273,10 @@
                         </div>
                         <h3 class="about-card__title">Free Community Gift</h3>
                         <p class="about-card__text">
-                            Conceived, built, and supported by WPSimplified as an ongoing open-source contribution to the global WordPress community. Free forever for every WordCamp worldwide.
+                            Built by WPSimplified as an open-source contribution &mdash; free forever for every WordCamp.
                         </p>
                         <span class="about-card__stat">
-                            <x-attendee.line-icon name="heart" /> Zero Ads &middot; Zero Paywalls
+                            <x-attendee.line-icon name="heart" /> Zero Ads &middot; Free
                         </span>
                     </div>
                 </div>
@@ -287,7 +287,7 @@
                 <div class="section-head">
                     <span class="u-eyebrow"><x-attendee.line-icon name="help-circle" /> Common Inquiries</span>
                     <h2 id="about-faq-heading" class="section-head__title">Frequently asked questions</h2>
-                    <span class="section-head__desc">Clear answers to common questions about privacy, offline reliability, and event listing.</span>
+                    <span class="section-head__desc">Quick answers on privacy, offline reliability, and listings.</span>
                 </div>
 
                 <div class="guide-accordion">

@@ -51,7 +51,7 @@
                 <div id="people-discovery"><div class="card discovery-skeleton" aria-hidden="true"></div></div>
                 <div class="section-head" style="margin-top:24px">
                     <h2 class="section-head__title">Who's attending</h2>
-                    <span class="section-head__desc">From the event's own Attendees page</span>
+                    <span class="section-head__desc">Event attendee directory</span>
                 </div>
                 <input type="search" id="roster-search" class="search-input" placeholder="Search attendees…">
                 <div id="people-roster" class="card" aria-live="polite" aria-busy="true">
@@ -61,7 +61,7 @@
         </div>
 
         <div data-explore-panel="sponsors" hidden>
-            <p class="panel-intro">Sponsors help keep tickets cheap. Stop by their booths and say hi. You don't have to buy anything, and many have swag, demos or open jobs.</p>
+            <p class="panel-intro">Sponsors keep WordCamp tickets accessible. Visit their booths to say hi.</p>
             @forelse ($sponsorsByTier as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>
@@ -122,11 +122,11 @@
         </div>
 
         <div data-explore-panel="deals" hidden>
-            <p class="panel-intro">Special offers for this WordCamp's attendees, from its sponsors and friends of the community.</p>
+            <p class="panel-intro">Attendee discounts and perks from WordCamp sponsors.</p>
             @if ($offers->isEmpty())
                 <div class="empty-state">
                     <p class="empty-state__title">No deals right now</p>
-                    <p class="empty-state__text">Sponsor deals and discounts will be posted here as the event approaches. Check back during the event.</p>
+                    <p class="empty-state__text">Sponsor deals will appear here once posted.</p>
                 </div>
             @else
                 <div class="deal-list">
@@ -138,11 +138,11 @@
         </div>
 
         <div data-explore-panel="free-steals" hidden>
-            <p class="panel-intro">Deals help you save on paid things. Free Steals are good WordPress plugins and tools that are already free, picked by the CampBuddy team, from big companies and from people in the community.</p>
+            <p class="panel-intro">Curated free WordPress tools and plugins.</p>
             @if ($steals->isEmpty())
                 <div class="empty-state">
                     <p class="empty-state__title">Nothing here yet.</p>
-                    <p class="empty-state__text">Curated free community tools and plugins will show up here. Check back soon, or suggest your favourite tool below!</p>
+                    <p class="empty-state__text">Curated free tools will show here soon.</p>
                 </div>
             @else
                 <div class="deal-list">
@@ -153,8 +153,8 @@
             @endif
 
             <div class="free-steal-suggest">
-                <p class="free-steal-suggest__title">Built a free tool, or know a good one?</p>
-                <p class="free-steal-suggest__text">Tell us. The team looks at every suggestion before anything is added.</p>
+                <p class="free-steal-suggest__title">Know a great free tool?</p>
+                <p class="free-steal-suggest__text">Submit it for team review.</p>
                 <button type="button" class="btn btn--outline btn--compact" data-suggest-steal data-track="free_steal_suggest_open" data-track-target="suggest_button">Suggest a Free Steal</button>
             </div>
         </div>

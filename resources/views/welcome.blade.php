@@ -48,7 +48,7 @@
                         Make the most of your <span class="landing-hero__highlight">WordCamp</span>
                     </h1>
                     <p class="landing-hero__lead">
-                        Navigate multi-track halls, star talks into your personal "My Day", and exchange contacts in seconds via phone camera &mdash; zero paper cards and no login needed.
+                        Offline-ready WordCamp schedule, people matcher, and QR badge &mdash; zero login needed.
                     </p>
                     <ul class="landing-hero__promises" aria-label="Key promises">
                         <li>100% Free &amp; Open Source</li>
@@ -65,13 +65,6 @@
                             <span>First WordCamp?</span>
                             <span aria-hidden="true">&rarr;</span>
                         </a>
-                    </div>
-                    <div class="hero-trust-bar">
-                        <span><x-attendee.line-icon name="shield" /> Built by WPSimplified</span>
-                        <span class="hero-trust-bar__sep">&middot;</span>
-                        <span><x-attendee.line-icon name="heart" /> Open Source Initiative</span>
-                        <span class="hero-trust-bar__sep">&middot;</span>
-                        <span><x-attendee.line-icon name="lock" /> DPDP Act 2023 Compliant</span>
                     </div>
                 </div>
 
@@ -175,9 +168,9 @@
             hero. Personalising is optional and follows it. --}}
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
                 <div class="section-head">
-                    <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> Active &amp; Upcoming Events</span>
+                    <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> Events</span>
                     <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
-                    <span class="section-head__desc">Tap your event to see its multi-track schedule, attendees, and guide</span>
+                    <span class="section-head__desc">Pick an event to view schedules, attendees, and venue info.</span>
                 </div>
 
                 {{-- Move data from laptop / PC sync card --}}
@@ -188,8 +181,8 @@
                                 <x-attendee.line-icon name="refresh" />
                             </div>
                             <div>
-                                <h3 class="desktop-sync-card__title">Move data from laptop / PC</h3>
-                                <p class="desktop-sync-card__subtitle">Sync bookmarks &amp; CampCard instantly</p>
+                                <h3 class="desktop-sync-card__title">Sync from laptop / PC</h3>
+                                <p class="desktop-sync-card__subtitle">Enter a 6-digit code to sync this device</p>
                             </div>
                         </div>
                         <button type="button" class="desktop-sync-card__toggle-btn" id="desktop-sync-btn">Sync</button>
@@ -197,7 +190,7 @@
 
                     <div class="desktop-sync-card__body" id="desktop-sync-body" hidden>
                         <p class="desktop-sync-card__desc">
-                            Set up CampBuddy on your computer? Enter the 6-digit transfer code displayed on your desktop browser to link your schedule on this phone.
+                            Enter the 6-digit code shown on your computer to transfer bookmarks and Camp Card.
                         </p>
                         <div class="desktop-sync-card__input-row">
                             <input type="text" id="desktop-sync-input" class="desktop-sync-card__input" placeholder="123 456" maxlength="7" autocomplete="off" enterkeyhint="go" aria-label="6-digit sync code">

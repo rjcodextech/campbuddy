@@ -65,7 +65,7 @@
 
             <p class="cc-editor__privacy">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-                Saved on this device only. Nothing you type here is sent to CampBuddy, unless you turn on "Show my Camp Card on the attendee list" below.
+                Stored locally on this device. Shared only when you enable the attendee-list toggle below.
             </p>
 
             {{-- novalidate: the required fields are checked and highlighted by camp-card.js
@@ -73,7 +73,6 @@
             <form id="camp-card-form" class="cc-form" novalidate>
                 <fieldset class="form-group">
                     <legend class="form-group__title">About you</legend>
-                    <p class="form-group__desc">This is what shows on your card.</p>
 
                     @include('attendee.partials.form-field', ['id' => 'cc-name', 'name' => 'name', 'label' => 'Name', 'required' => true, 'placeholder' => 'e.g. Sunil Kumar Sharma', 'autocomplete' => 'name', 'maxlength' => 60, 'hint' => 'Shown large at the top of your card.'])
                     @include('attendee.partials.form-field', ['id' => 'cc-role', 'name' => 'role', 'label' => 'Role or title', 'placeholder' => 'e.g. WordPress Engineer', 'autocomplete' => 'organization-title', 'maxlength' => 60])
@@ -83,7 +82,6 @@
 
                 <fieldset class="form-group">
                     <legend class="form-group__title">Your interests</legend>
-                    <p class="form-group__desc">So people know what to talk to you about.</p>
 
                     <div class="form-field">
                         <label class="form-field__label" for="interests-text">WordPress interests</label>
@@ -153,7 +151,7 @@
             <div class="cc-share__head">
                 <div class="cc-share__text">
                     <h2 class="cc-share__title" id="cc-share-title">Show my Camp Card on the attendee list</h2>
-                    <p class="cc-share__desc">People who tap your name in Explore → People see your card and can save it. Only what is on your card is shared: the fields you chose under "Show on my card" and the link your QR opens. Turn it off any time.</p>
+                    <p class="cc-share__desc">Shares only your visible card fields and QR link with event attendees. Toggle off anytime.</p>
                 </div>
                 <label class="cc-share__switch">
                     <input type="checkbox" id="cc-share-toggle" role="switch">
