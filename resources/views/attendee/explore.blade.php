@@ -40,8 +40,8 @@
 
         {{-- Five equal cells, an icon over a short label, so all five fit a phone (.tab-strip--icons). --}}
         <div role="tablist" aria-label="Explore section" class="tab-strip tab-strip--icons">
-            @foreach ([['people', 'users', 'People'], ['sponsors', 'heart', 'Sponsors'], ['deals', 'tag', 'Deals'], ['free-steals', 'sparkles', 'Free Steals'], ['info', 'ticket', 'Info']] as [$tab, $icon, $label])
-                <button type="button" @class(['btn btn--compact', 'btn--outline' => ! $loop->first]) data-explore-tab="{{ $tab }}" role="tab" aria-selected="{{ $loop->first ? 'true' : 'false' }}"><x-attendee.line-icon :name="$icon" /><span>{{ $label }}</span></button>
+            @foreach ([['people', 'users', 'People'], ['sponsors', 'heart', 'Sponsors'], ['deals', 'tag', 'Deals'], ['free-steals', 'sparkles', 'Steals'], ['info', 'ticket', 'Info']] as [$tab, $icon, $label])
+                <button type="button" @class(['btn btn--compact', 'btn--outline' => ! $loop->first]) data-explore-tab="{{ $tab }}" role="tab" title="{{ $tab === 'free-steals' ? 'Free Steals' : $label }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}"><x-attendee.line-icon :name="$icon" /><span>{{ $label }}</span></button>
             @endforeach
         </div>
 
@@ -65,10 +65,12 @@
             @forelse ($sponsorsByTier as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>
-                    <div class="sponsor-group__row">
+                    <div @class(['sponsor-group__row', 'sponsor-group__row--single' => $tierSponsors->count() === 1])>
                         @foreach ($tierSponsors as $sponsor)
                             @php
                                 $sponsorUrl = $webUrl($sponsor['website'] ?? $sponsor['link'] ?? null);
+                                $sponsorDomain = $sponsorUrl ? preg_replace('/^www\./', '', (string) parse_url($sponsorUrl, PHP_URL_HOST)) : null;
+                                $sponsorInitial = mb_strtoupper(mb_substr(trim((string) ($sponsor['name'] ?? 'S')), 0, 1));
                             @endphp
                             @if ($sponsorUrl)
                                 <button type="button" class="sponsor-chip {{ $tierClass($tier) }} sponsor-chip--interactive"
@@ -81,9 +83,14 @@
                                         data-track-target="sponsor_chip"
                                         title="{{ $sponsor['name'] }} (opens website)">
                                     @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.style.display='none'; if (!this.dataset.failed) { this.dataset.failed='1'; this.insertAdjacentText('afterend', this.alt); }">
-                                    @else
-                                        {{ $sponsor['name'] }}
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.hidden=true;">
+                                    @endif
+                                    <span class="sponsor-chip__head">
+                                        <span class="sponsor-chip__monogram" aria-hidden="true">{{ $sponsorInitial }}</span>
+                                        <span class="sponsor-chip__name">{{ $sponsor['name'] }}</span>
+                                    </span>
+                                    @if ($sponsorDomain)
+                                        <span class="sponsor-chip__domain">{{ $sponsorDomain }}</span>
                                     @endif
                                 </button>
                             @else
@@ -95,10 +102,12 @@
                                       data-track-target="sponsor_chip"
                                       title="{{ $sponsor['name'] }}">
                                     @if (! empty($sponsor['logo_url']))
-                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.style.display='none'; if (!this.dataset.failed) { this.dataset.failed='1'; this.insertAdjacentText('afterend', this.alt); }">
-                                    @else
-                                        {{ $sponsor['name'] }}
+                                        <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.hidden=true;">
                                     @endif
+                                    <span class="sponsor-chip__head">
+                                        <span class="sponsor-chip__monogram" aria-hidden="true">{{ $sponsorInitial }}</span>
+                                        <span class="sponsor-chip__name">{{ $sponsor['name'] }}</span>
+                                    </span>
                                 </span>
                             @endif
                         @endforeach

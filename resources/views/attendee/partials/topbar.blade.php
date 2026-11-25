@@ -5,16 +5,16 @@
     $onGuide = request()->routeIs('guide*') || request()->routeIs('event.guide');
     $guideUrl = $event ? route('event.guide', $event) : route('guide');
 @endphp
-<header class="topbar topbar--public">
+<header class="topbar topbar--public {{ $event ? 'topbar--event' : '' }}">
     <div class="topbar__inner">
         <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
             <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
         </a>
 
         <nav class="topbar__nav" aria-label="Main Navigation">
-            <a href="{{ route('home') }}" 
-               class="topbar__text-btn {{ $onHome ? 'topbar__text-btn--active' : '' }}" 
-               data-track="{{ $event ? 'switch_event_click' : 'home_link_click' }}" 
+            <a href="{{ route('home') }}"
+               class="topbar__text-btn {{ $onHome ? 'topbar__text-btn--active' : '' }}"
+               data-track="{{ $event ? 'switch_event_click' : 'home_link_click' }}"
                data-track-target="wordcamps"
                @if($onHome) aria-current="page" @endif>
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -23,9 +23,9 @@
                 </svg>
                 <span>WordCamps</span>
             </a>
-            <a href="{{ route('about') }}" 
-               class="topbar__text-btn {{ $onAbout ? 'topbar__text-btn--active' : '' }}" 
-               data-track="about_open" 
+            <a href="{{ route('about') }}"
+               class="topbar__text-btn {{ $onAbout ? 'topbar__text-btn--active' : '' }}"
+               data-track="about_open"
                data-track-surface="topbar"
                @if($onAbout) aria-current="page" @endif>
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -34,9 +34,9 @@
                 </svg>
                 <span>About</span>
             </a>
-            <a href="{{ $guideUrl }}" 
-               class="topbar__text-btn {{ $onGuide ? 'topbar__text-btn--active' : '' }}" 
-               data-track="guide_open" 
+            <a href="{{ $guideUrl }}"
+               class="topbar__text-btn {{ $onGuide ? 'topbar__text-btn--active' : '' }}"
+               data-track="guide_open"
                data-track-surface="topbar"
                @if($onGuide) aria-current="page" @endif>
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -48,6 +48,15 @@
         </nav>
 
         <div class="topbar__actions">
+            @if ($event)
+                <a href="{{ $guideUrl }}" class="topbar__circle-btn" aria-label="First-Timer Guide" title="First-Timer Guide" data-track="guide_open" data-track-surface="topbar_icon">
+                    <x-attendee.line-icon name="circle-help" />
+                </a>
+                <a href="{{ route('home') }}" class="topbar__circle-btn" aria-label="Switch WordCamp" title="Switch WordCamp" data-track="switch_event_click" data-track-target="topbar_icon">
+                    <x-attendee.line-icon name="refresh" />
+                </a>
+            @endif
+
             <button type="button" id="open-on-phone-btn" class="topbar__text-btn topbar__text-btn--ghost" hidden title="Open on phone">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <rect x="7" y="2" width="10" height="20" rx="2" />

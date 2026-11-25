@@ -19,17 +19,15 @@
     // The iPhone home indicator sits in this inset, below the tappable
     // area — and in landscape the notch/rounded corners sit at the sides.
     padding: 0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-    background: rgba(250, 250, 253, 0.92);
+    background: rgba(250, 250, 253, 0.96);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border-top: 1px solid rgba(15, 23, 42, 0.08);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 -4px 16px -4px rgba(15, 23, 42, 0.04);
 
-    // A little air between "Camp Card" and the screen edge where there is room
-    // (at 320px every pixel goes to the six labels).
-    @media (min-width: 360px) and (max-width: #{v.$bp-desktop - 1px}) {
-        padding-right: max(4px, env(safe-area-inset-right, 0px));
-        padding-left: max(4px, env(safe-area-inset-left, 0px));
+    @media (min-width: 340px) and (max-width: #{v.$bp-desktop - 1px}) {
+        padding-right: max(8px, env(safe-area-inset-right, 0px));
+        padding-left: max(8px, env(safe-area-inset-left, 0px));
     }
 }
 
@@ -40,16 +38,10 @@
     align-items: center;
     justify-content: center;
     gap: v.$space-1;
-    // Columns share the bar evenly, but never squeeze a label below its own
-    // width (flex's min-width: auto): "Camp Card" and "Contribute" take the
-    // few pixels they need from the short labels instead of wrapping.
     flex: 1 1 0;
     padding: 0 2px;
     color: var(--muted);
-    // 11px at phone width (the smallest size that still reads well on a
-    // tab bar), up to 12px where there is room. All six labels at 11px
-    // need ~295px, so they sit on one line from 320px phones upward.
-    font-size: clamp(0.6875rem, 3.1vw, 0.75rem);
+    font-size: clamp(0.625rem, 2.75vw, 0.72rem);
     font-weight: v.$font-weight-medium;
     transition: transform 0.1s ease, color 0.15s ease;
 
@@ -73,7 +65,7 @@
 // The current tab reads at a glance: its icon sits on a soft pill.
 .bottom-nav__item--active .bottom-nav__icon {
     box-sizing: content-box;
-    padding: 3px 14px;
+    padding: 3px 11px;
     border-radius: v.$radius-full;
     background: var(--peach);
     opacity: 1;

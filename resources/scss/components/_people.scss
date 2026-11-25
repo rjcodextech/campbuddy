@@ -225,7 +225,26 @@
 }
 
 .roster-role-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
     margin: v.$space-3 0;
+    padding-bottom: 4px;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+
+    .chip {
+        flex-shrink: 0;
+        white-space: nowrap;
+        min-height: 36px;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
 }
 
 // The name is a button that opens the person's sheet (person-card.js); it

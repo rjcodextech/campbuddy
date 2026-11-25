@@ -3,8 +3,9 @@
 
 @use '../abstracts/variables' as *;
 
-// 1. Tactile Hero Card
-.tactile-hero {
+// 1. Tactile Hero Card (overrides legacy .home-hero white fade & surface completely)
+.tactile-hero,
+.tactile-hero.home-hero {
     background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
     border: 1px solid #334155;
     border-radius: $radius-card;
@@ -13,10 +14,45 @@
     color: #ffffff;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
     gap: 14px;
     margin-bottom: 16px;
     position: relative;
+    isolation: isolate;
     overflow: hidden;
+
+    &.home-hero--art::before {
+        content: none;
+        display: none;
+        background: none;
+    }
+
+    &.home-hero--art::after {
+        opacity: 0.08;
+        z-index: -1;
+        background-position: right bottom;
+        background-size: auto 85%;
+    }
+
+    .home-hero__logo {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        object-fit: contain;
+    }
+
+    &__eyebrow {
+        font-family: $font-sans;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 2px;
+    }
 
     &__top {
         display: flex;
@@ -327,7 +363,7 @@
     }
 }
 
-// 3. 2x3 Event Hubs ActionGrid
+// 3. 2x3 Quick Actions (sleek horizontal 72px APK tiles)
 .action-grid {
     margin: 18px 0;
 
@@ -346,11 +382,11 @@
     &__cells {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 10px;
 
         @media (min-width: 640px) {
             grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
+            gap: 12px;
         }
 
         @media (max-width: 340px) {
@@ -361,12 +397,13 @@
 
 .action-tile {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 104px;
-    padding: 14px;
-    border-radius: $radius-card;
-    background: $color-paper;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: 70px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: #ffffff;
     border: 1px solid $color-line;
     box-shadow: $shadow-card;
     text-decoration: none;
@@ -375,16 +412,10 @@
     cursor: pointer;
 
     &:hover, &:focus-visible {
-        transform: translateY(-2px);
+        transform: translateY(-1px);
         box-shadow: $shadow-md;
         border-color: rgba(255, 77, 45, 0.35);
         color: inherit;
-    }
-
-    &__top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
 
     &__icon-box {
@@ -403,20 +434,14 @@
         }
 
         svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
         }
     }
 
-    &__chevron {
-        color: $color-subtle;
-        opacity: 0.6;
-        width: 16px;
-        height: 16px;
-    }
-
     &__body {
-        margin-top: 10px;
+        min-width: 0;
+        flex: 1;
         display: flex;
         flex-direction: column;
         gap: 2px;
@@ -424,8 +449,8 @@
 
     &__title {
         font-family: $font-sans;
-        font-size: 0.9375rem;
-        line-height: 1.25;
+        font-size: 0.875rem;
+        line-height: 1.2;
         font-weight: 700;
         color: $color-ink;
         margin: 0;
@@ -437,7 +462,7 @@
     &__subtitle {
         font-family: $font-sans;
         font-size: 0.6875rem;
-        line-height: 1.35;
+        line-height: 1.25;
         color: $color-muted;
         margin: 0;
         white-space: nowrap;
@@ -446,17 +471,25 @@
     }
 }
 
-// 4. Legal & Compliance Footer
+.home-progress-card {
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: $radius-card;
+    background: #ffffff;
+    border: 1px solid $color-line;
+}
+
+// 4. Legal & Compliance Footer (clear of docked Safety bar on mobile/tablet)
 .legal-footer {
-    margin: 28px 0 24px;
+    margin: 24px 0 20px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding-bottom: 76px;
+    padding-bottom: 84px;
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
         padding-bottom: 24px;
     }
 
@@ -506,47 +539,45 @@
     }
 }
 
-// 5. Sticky Floating Help Bar
+// 5. Docked Safety & Help Desk Bar (matches APK StickyHelpBar cleanly above BottomBar)
 .sticky-help-bar {
     position: fixed;
-    bottom: calc(var(--bottom-nav-space, 64px) + 8px);
+    bottom: var(--bottom-nav-space, 64px);
     left: 0;
     right: 0;
-    z-index: 35;
-    padding: 6px 16px 8px;
-    background: transparent;
-    pointer-events: none;
-    max-width: 640px;
-    margin: 0 auto;
+    z-index: 19;
+    padding: 8px 16px;
+    background: $color-paper;
+    border-top: 1px solid $color-line;
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
         left: auto;
         right: 24px;
         bottom: 24px;
-        max-width: 360px;
-        margin: 0;
+        width: 340px;
         padding: 0;
+        background: transparent;
+        border-top: none;
     }
 
     &__btn {
-        pointer-events: auto;
         width: 100%;
-        min-height: 48px;
-        height: 52px;
-        border-radius: 999px;
-        background: $color-danger;
-        color: #ffffff;
-        border: none;
+        min-height: 46px;
+        border-radius: 14px;
+        background: #fff5f5;
+        color: $color-ink;
+        border: 1px solid #fecaca;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 0 16px;
+        gap: 10px;
+        padding: 8px 12px;
         cursor: pointer;
-        box-shadow: 0 4px 18px rgba(239, 68, 68, 0.4);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
         transition: background 0.15s ease, transform 0.15s ease;
 
         &:hover, &:focus-visible {
-            background: #dc2626;
+            background: #fee2e2;
             transform: translateY(-1px);
         }
     }
@@ -556,39 +587,67 @@
         align-items: center;
         gap: 10px;
         text-align: left;
+        min-width: 0;
 
         svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
+            color: $color-danger;
             flex-shrink: 0;
         }
     }
 
     &__title {
         font-family: $font-sans;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         font-weight: 700;
         line-height: 1.2;
-        color: #ffffff;
+        color: #dc2626;
     }
 
     &__subtitle {
         font-family: $font-sans;
-        font-size: 0.625rem;
+        font-size: 0.6875rem;
         line-height: 1.2;
-        color: rgba(255, 255, 255, 0.85);
+        color: $color-muted;
     }
 
     &__badge {
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.25);
+        background: $color-danger;
         font-family: $font-sans;
-        font-size: 0.6875rem;
-        font-weight: 800;
-        letter-spacing: 0.05em;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #ffffff;
+        flex-shrink: 0;
+    }
+}
+
+.help-modal__card--danger {
+    background: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+
+    .help-modal__card-title,
+    .help-modal__card-title svg,
+    .help-modal__card-desc {
         color: #ffffff;
     }
+}
+
+.help-modal__cta-white {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 6px;
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #dc2626;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
 }
 
 // 6. Help & Incident Support Modal

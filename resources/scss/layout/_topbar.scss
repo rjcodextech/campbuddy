@@ -345,4 +345,56 @@
             order: 2;
         }
     }
+
+    // Event PWA header on mobile/tablet (< 1024px): mirror the sleek single-row APK TopBar
+    // (Wordmark on left + compact Guide (?) & Switch WordCamp (↻) circles on right, zero 2-row clutter).
+    .topbar__circle-btn {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--peach);
+        color: var(--ink);
+        border: 1px solid rgba(15, 23, 42, 0.06);
+        transition: transform 0.1s ease, background 0.15s ease;
+
+        svg {
+            width: 17px;
+            height: 17px;
+        }
+
+        &:hover,
+        &:focus-visible {
+            background: var(--brand-text);
+            color: #ffffff;
+        }
+    }
+
+    &.topbar--event {
+        @media (max-width: #{v.$bp-desktop - 1px}) {
+            min-height: 54px;
+
+            .topbar__inner {
+                flex-wrap: nowrap;
+                min-height: 54px;
+                padding: 8px 16px;
+                gap: 8px;
+            }
+
+            .topbar__nav {
+                display: none;
+            }
+
+            .topbar__circle-btn {
+                display: inline-flex;
+            }
+
+            .topbar__actions {
+                order: 2;
+                gap: 8px;
+            }
+        }
+    }
 }

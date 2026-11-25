@@ -13,38 +13,89 @@
     grid-template-columns: repeat(2, 1fr);
     gap: v.$space-3;
     margin-top: v.$space-2;
+
+    &--single {
+        grid-template-columns: 1fr;
+    }
 }
 
-// Display only (no click) — sponsor links open from the Deals tab.
 .sponsor-chip {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: v.$space-3 v.$space-4;
-    min-height: 48px;
-    border-radius: v.$radius-sm;
+    gap: 6px;
+    padding: 14px 12px;
+    min-height: 82px;
+    width: 100%;
+    text-align: center;
+    border-radius: 14px;
     border: 1px solid var(--line);
-    background: var(--paper);
+    background: #ffffff;
     font-weight: v.$font-weight-bold;
     font-size: v.$font-size-sm;
+    color: var(--ink);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 
     &--platinum {
         border-color: var(--gold);
-        background: var(--peach);
+        background: #fffbeb;
     }
 
     &--silver {
-        border-color: #c7c2bd;
+        border-color: #cbd5e1;
     }
 
     &--bronze {
-        border-color: #c8905e;
+        border-color: #fed7aa;
     }
 }
 
+.sponsor-chip__head {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.sponsor-chip__monogram {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--peach);
+    color: var(--brand-text);
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.sponsor-chip__name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.sponsor-chip__domain {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--muted);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .sponsor-chip__logo {
-    max-height: 28px;
+    max-height: 30px;
+    max-width: 130px;
     width: auto;
+    object-fit: contain;
 }
 
 // Explore → Deals (attendee/partials/deal-card.blade.php): one ticket per
