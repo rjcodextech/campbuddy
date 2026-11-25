@@ -98,8 +98,12 @@ internal fun LiveNoticeBanner(slug: String, onTab: (String) -> Unit) {
 @Composable
 private fun NoticeCard(n: LiveNotice, onTab: (String) -> Unit, onClose: () -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
-    val tone = when (n.tone) { "break" -> brand.accent; "together" -> brand.success; else -> brand.primary }
+    val shape = RoundedCornerShape(18.dp)
+    val (tone, bgTint, borderTint) = when (n.tone) {
+        "break" -> Triple(brand.accent, Color(0xFFFEF3C7), Color(0xFFF59E0B))
+        "together" -> Triple(brand.success, Color(0xFFECFDF5), Color(0xFFA7F3D0))
+        else -> Triple(brand.primary, Color(0xFFFFF5EE), brand.primary.copy(alpha = 0.4f))
+    }
     // A small "ring" of the icon when it shows (skipped by the system's remove-animations setting, like all animation).
     val ring = remember(n.id) { Animatable(0f) }
     LaunchedEffect(n.id) {
@@ -109,7 +113,7 @@ private fun NoticeCard(n: LiveNotice, onTab: (String) -> Unit, onClose: () -> Un
 
     Row(
         Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
-            .background(tone.copy(alpha = 0.12f), shape).border(1.dp, tone.copy(alpha = 0.5f), shape)
+            .background(bgTint, shape).border(1.dp, borderTint, shape)
             .clip(shape).clickable(enabled = n.tab != null, role = Role.Button) { n.tab?.let(onTab) }
             .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 4.dp)
             .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
@@ -118,7 +122,6 @@ private fun NoticeCard(n: LiveNotice, onTab: (String) -> Unit, onClose: () -> Un
     ) {
         Box(Modifier.size(40.dp).rotate(ring.value).background(tone, CircleShape), contentAlignment = Alignment.Center) { LineIcon(n.icon, Color.White, size = 20.dp) }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            // Darkened towards the text colour so gold and teal stay readable on their light background.
             Text("FROM THE ORGANIZERS", style = MaterialTheme.typography.labelMedium.copy(color = lerp(tone, brand.ink, 0.35f)))
             Text(n.title, style = MaterialTheme.typography.titleMedium)
             Text(n.body, style = MaterialTheme.typography.bodyMedium)

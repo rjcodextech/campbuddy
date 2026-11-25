@@ -195,29 +195,30 @@ private fun encodeUrl(text: String): String = buildString {
     }
 }
 
-/** The plan's progress card at the top of My schedule. */
+/** The plan's progress card at the top of My schedule (matching M09 dark navy hero card). */
 @Composable
 fun PlanSummary(done: Int, total: Int, onCalendar: () -> Unit = {}) {
     val brand = LocalBrand.current
     val pct = if (total == 0) 0 else done * 100 / total
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(18.dp)
     Column(
-        Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color.White, brand.peach)), shape).border(1.dp, brand.line, shape).padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        Modifier.fillMaxWidth().clip(shape).background(Color(0xFF0F172A), shape).border(1.dp, Color(0xFF334155), shape).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text("Your plan", style = MaterialTheme.typography.titleLarge)
-                Text(if (done == total) "All $total done" else "$done of $total done · ${total - done} left", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+            Column(Modifier.weight(1f)) {
+                Text("Your Plan · $done of $total Done", style = MaterialTheme.typography.titleMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                Text(if (done == total) "All caught up!" else "${total - done} remaining · $pct% complete", style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF94A3B8)))
             }
-            Text("$pct%", style = MaterialTheme.typography.titleLarge.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
+            Box(
+                Modifier.clip(RoundedCornerShape(50)).background(Color(0xFFD97706)).clickable(role = Role.Button, onClick = onCalendar).padding(horizontal = 14.dp, vertical = 7.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("Add Calendar", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+            }
         }
-        Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
-            if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
-        }
-        Row(Modifier.clickable(role = Role.Button, onClick = onCalendar).padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            LineIcon("calendar", brand.primary, size = 16.dp)
-            Text("Add all to calendar", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText))
+        Box(Modifier.fillMaxWidth().height(7.dp).background(Color(0xFF334155), RoundedCornerShape(50))) {
+            if (done > 0) Box(Modifier.fillMaxWidth(done.toFloat() / total).height(7.dp).background(brand.success, RoundedCornerShape(50)))
         }
     }
 }

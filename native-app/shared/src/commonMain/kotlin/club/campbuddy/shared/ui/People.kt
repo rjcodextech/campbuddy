@@ -35,6 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -195,15 +196,35 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
         if (joining) {
             JoinForm(model, roster, env.user.profile.interests, onClose = { joining = false })
         } else if (mine == null) {
-            Card(Modifier.clip(RoundedCornerShape(brand.radius.dp)).patternBackground(Res.drawable.pattern_people, brand.surface)) {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Image(painterResource(Res.drawable.art_people), contentDescription = null, modifier = Modifier.size(width = 64.dp, height = 48.dp))
-                    Text("Find people who match your interests", style = MaterialTheme.typography.titleMedium)
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(androidx.compose.ui.graphics.Color(0xFF0F172A))
+                    .border(1.dp, androidx.compose.ui.graphics.Color(0xFF334155), RoundedCornerShape(18.dp))
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        "Pick a few interests and see who here shares them. Names and photos help you find each other in the crowd. Leave any time.",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
+                        "Meet People Sharing Interests",
+                        style = MaterialTheme.typography.titleMedium.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold),
                     )
-                    PrimaryButton("Join attendee discovery", { joining = true }, Modifier.fillMaxWidth().padding(top = 4.dp))
+                    Text(
+                        "Create a private card & wave at matches.",
+                        style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF94A3B8)),
+                    )
+                }
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(brand.primary)
+                        .clickable(role = Role.Button) { joining = true }
+                        .padding(horizontal = 18.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Join", style = MaterialTheme.typography.labelLarge.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold))
                 }
             }
         } else {
@@ -238,12 +259,26 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
                             }
                         }
                         waves.mutual.forEach { m ->
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(androidx.compose.ui.graphics.Color(0xFFECFDF5))
+                                    .border(1.dp, androidx.compose.ui.graphics.Color(0xFF86EFAC), RoundedCornerShape(14.dp))
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
                                 Column(Modifier.weight(1f)) {
-                                    Text(m.name ?: "A match", style = MaterialTheme.typography.titleMedium)
-                                    Text(m.messages.lastOrNull()?.body ?: "You both waved. Say hello.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), maxLines = 2)
+                                    Text(m.name ?: "A match", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                                    Text(m.messages.lastOrNull()?.body ?: "Mutual match · Tap Chat to say hello", style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF047857)), maxLines = 2)
                                 }
-                                ActionButton("Chat", filled = true) { chat = m.discoveryId }
+                                Box(
+                                    Modifier.clip(RoundedCornerShape(50)).background(brand.ink).clickable { chat = m.discoveryId }.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text("Chat", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold))
+                                }
                             }
                         }
                     }
@@ -392,15 +427,38 @@ private fun ChatDialog(thread: MutualWave, max: Int, busy: Boolean, error: Strin
             else SheetActions("Close", onClose)
         },
     ) {
-        if (thread.messages.isEmpty()) Text("You both waved. Agree where to meet.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-        thread.messages.forEach { m ->
+        Box(
+            Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Color.White, RoundedCornerShape(50)).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
             Text(
-                (if (m.mine) "You: " else "${thread.name ?: "They"}: ") + m.body,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = if (m.mine) FontWeight.Normal else FontWeight.SemiBold),
+                if (thread.messages.isEmpty()) "Both of you waved · Say hello" else "Mutual match chat · Saved privately",
+                style = MaterialTheme.typography.labelSmall.copy(color = brand.muted),
             )
         }
+        thread.messages.forEach { m ->
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = if (m.mine) Arrangement.End else Arrangement.Start,
+            ) {
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(if (m.mine) brand.primary else androidx.compose.ui.graphics.Color.White)
+                        .border(if (m.mine) 0.dp else 1.dp, if (m.mine) androidx.compose.ui.graphics.Color.Transparent else brand.line, RoundedCornerShape(16.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                ) {
+                    Text(
+                        m.body,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = if (m.mine) androidx.compose.ui.graphics.Color.White else brand.ink,
+                        ),
+                    )
+                }
+            }
+        }
         Discovery.whyNot(thread.reason, max)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-        if (thread.canSend) OutlinedTextField(body, { body = it.take(140) }, label = { Text("Message") }, modifier = Modifier.fillMaxWidth())
+        if (thread.canSend) OutlinedTextField(body, { body = it.take(140) }, label = { Text("Write a short message...") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp))
         error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
     }
 }

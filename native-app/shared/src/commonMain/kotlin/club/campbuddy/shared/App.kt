@@ -1,12 +1,21 @@
 package club.campbuddy.shared
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -23,8 +32,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import campbuddy_native.shared.generated.resources.Res
+import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.wordmark
+import org.jetbrains.compose.resources.painterResource
 import kotlinx.coroutines.launch
 import club.campbuddy.shared.data.ApiClient
 import club.campbuddy.shared.data.KeyValueStore
@@ -189,14 +206,56 @@ fun App(deps: AppDeps) {
 private fun UpdateScreen(words: Words, deps: AppDeps, update: UpdateState) {
     val brand = LocalBrand.current
     val updater = deps.updater
-    Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(words("common.update_title"), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center)
-        Text(words("common.update_text"), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 12.dp))
-        if (updater == null) {
-            PrimaryButton("Update", { deps.openUrl("https://campbuddy.club") })
-            return@Column
+    val deepNavy = Color(0xFF0B1120)
+    val cardDark = Color(0xFF1E293B)
+    val borderDark = Color(0xFF334155)
+    Column(
+        Modifier.fillMaxSize().background(deepNavy).statusBarsPadding().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Box(
+            Modifier.background(Color.White, RoundedCornerShape(50)).padding(horizontal = 18.dp, vertical = 8.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(28.dp))
         }
-        UpdateSteps(words, deps, updater, update)
+        Spacer(Modifier.height(22.dp))
+        Box(
+            Modifier.size(86.dp).clip(RoundedCornerShape(22.dp)).background(cardDark).border(1.5.dp, borderDark, RoundedCornerShape(22.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(Modifier.size(62.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(48.dp))
+            }
+        }
+        Spacer(Modifier.height(18.dp))
+        Text(
+            words("common.update_title"),
+            style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 24.sp),
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            words("common.update_text"),
+            style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF94A3B8)),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp, bottom = 20.dp),
+        )
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(cardDark).border(1.dp, borderDark, RoundedCornerShape(18.dp)).padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(Modifier.size(8.dp).background(brand.success, CircleShape))
+                Text("100% Offline Venue-Ready", style = MaterialTheme.typography.labelMedium.copy(color = brand.success))
+            }
+            if (updater == null) {
+                PrimaryButton("Update CampBuddy", { deps.openUrl("https://campbuddy.club") }, Modifier.fillMaxWidth())
+            } else {
+                UpdateSteps(words, deps, updater, update)
+            }
+        }
     }
 }
 

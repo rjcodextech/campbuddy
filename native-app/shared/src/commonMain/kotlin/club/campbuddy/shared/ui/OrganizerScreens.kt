@@ -69,66 +69,68 @@ internal object OrgMemory {
 /** Admin / Event manager sign-in. The token goes to the platform store; the password is never kept. */
 @Composable
 fun OrganizerLoginScreen(api: ApiClient, repository: Repository, deviceName: String, onSignedIn: () -> Unit, onBack: () -> Unit) {
-    val brand = LocalBrand.current
-    val scope = rememberCoroutineScope()
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var show by remember { mutableStateOf(false) }
-    var role by remember { mutableStateOf("manager") }
-    var busy by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
+    OrgDarkTheme {
+        val brand = LocalBrand.current
+        val scope = rememberCoroutineScope()
+        var email by remember { mutableStateOf("") }
+        var password by remember { mutableStateOf("") }
+        var show by remember { mutableStateOf(false) }
+        var role by remember { mutableStateOf("manager") }
+        var busy by remember { mutableStateOf(false) }
+        var error by remember { mutableStateOf<String?>(null) }
 
-    PlatformBackHandler(true, onBack)
+        PlatformBackHandler(true, onBack)
 
-    Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        OrgHeader("Event staff sign-in", "For WordCamp organizers and administrators", onBack = onBack)
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text("Attendees never need to sign in. This is for the people running a WordCamp.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                RoleCard("manager", role, "Event manager", "Your assigned WordCamps", "briefcase", Modifier.weight(1f)) { role = it }
-                RoleCard("admin", role, "Administrator", "Every WordCamp + platform", "lock", Modifier.weight(1f)) { role = it }
-            }
-            Card {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OrgField("E-mail", email, { email = it }, keyboard = KeyboardType.Email, max = 255)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        OrgField("Password", password, { password = it }, Modifier.weight(1f), keyboard = KeyboardType.Password, password = !show, max = 255)
-                        OrgIconButton(if (show) "eye-off" else "eye", if (show) "Hide password" else "Show password", { show = !show }, filled = false)
-                    }
-                    error?.let {
-                        Row(
-                            Modifier.fillMaxWidth().background(brand.danger.copy(alpha = 0.08f), RoundedCornerShape(8.dp)).padding(10.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            LineIcon("siren", brand.danger, size = 16.dp)
-                            Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger))
+        Column(Modifier.fillMaxSize().background(ORG_DARK_BG).statusBarsPadding()) {
+            OrgHeader("Staff Sign In", "Organizer & Event Lead Console", onBack = onBack)
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("Attendees never need to sign in. This portal is for the people running a WordCamp.", style = MaterialTheme.typography.bodyMedium.copy(color = ORG_DARK_MUTED))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    RoleCard("manager", role, "Event manager", "Your assigned WordCamps", "briefcase", Modifier.weight(1f)) { role = it }
+                    RoleCard("admin", role, "Administrator", "Every WordCamp + platform", "lock", Modifier.weight(1f)) { role = it }
+                }
+                Card {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OrgField("E-mail", email, { email = it }, keyboard = KeyboardType.Email, max = 255)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            OrgField("Password", password, { password = it }, Modifier.weight(1f), keyboard = KeyboardType.Password, password = !show, max = 255)
+                            OrgIconButton(if (show) "eye-off" else "eye", if (show) "Hide password" else "Show password", { show = !show }, filled = false)
                         }
-                    }
-                    PrimaryButton(if (busy) "Signing in…" else "Sign in", enabled = !busy && email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth(), onClick = {
-                        busy = true
-                        error = null
-                        scope.launch {
-                            try {
-                                val login = api.login(email.trim(), password, role, deviceName)
-                                repository.saveOrganizer(login.token, login.role, login.user.name)
-                                OrgMemory.homeTab = if (login.role == "admin") "dashboard" else "events"
-                                onSignedIn()
-                            } catch (e: ApiException) {
-                                error = e.message
-                            } catch (e: Exception) {
-                                error = "Could not reach CampBuddy. Check your connection."
-                            } finally {
-                                busy = false
+                        error?.let {
+                            Row(
+                                Modifier.fillMaxWidth().background(brand.danger.copy(alpha = 0.14f), RoundedCornerShape(10.dp)).border(1.dp, brand.danger.copy(alpha = 0.45f), RoundedCornerShape(10.dp)).padding(10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                LineIcon("siren", brand.danger, size = 16.dp)
+                                Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFFCA5A5)))
                             }
                         }
-                    })
+                        PrimaryButton(if (busy) "Signing in…" else "Sign In", enabled = !busy && email.isNotBlank() && password.isNotBlank(), modifier = Modifier.fillMaxWidth(), onClick = {
+                            busy = true
+                            error = null
+                            scope.launch {
+                                try {
+                                    val login = api.login(email.trim(), password, role, deviceName)
+                                    repository.saveOrganizer(login.token, login.role, login.user.name)
+                                    OrgMemory.homeTab = if (login.role == "admin") "dashboard" else "events"
+                                    onSignedIn()
+                                } catch (e: ApiException) {
+                                    error = e.message
+                                } catch (e: Exception) {
+                                    error = "Could not reach CampBuddy. Check your connection."
+                                } finally {
+                                    busy = false
+                                }
+                            }
+                        })
+                    }
                 }
+                Text(
+                    if (role == "admin") "Admins see every WordCamp and platform console: dashboard, errors, feedback, event managers and maintenance."
+                    else "Managers run their own WordCamps: details, information, running late, reports, attendees and roles, quests, Contributor Day, and memories.",
+                    style = MaterialTheme.typography.bodySmall.copy(color = ORG_DARK_MUTED),
+                )
             }
-            Text(
-                if (role == "admin") "Admins see every WordCamp and the platform pages: dashboard, errors, feedback, event managers and maintenance. A sign-in lasts 12 hours."
-                else "Managers run their own WordCamps: details, information, running late, reports, attendees and roles, quests, Contributor Day, memories. A sign-in lasts 7 days.",
-                style = MaterialTheme.typography.bodySmall,
-            )
         }
     }
 }
@@ -137,18 +139,18 @@ fun OrganizerLoginScreen(api: ApiClient, repository: Repository, deviceName: Str
 private fun RoleCard(key: String, selected: String, title: String, sub: String, icon: String, modifier: Modifier, onPick: (String) -> Unit) {
     val brand = LocalBrand.current
     val on = key == selected
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(16.dp)
     Column(
-        modifier.clip(shape).background(if (on) brand.primary.copy(alpha = 0.08f) else brand.surface, shape)
-            .border(if (on) 2.dp else 1.dp, if (on) brand.primary else brand.line, shape)
+        modifier.clip(shape).background(if (on) brand.primary.copy(alpha = 0.16f) else ORG_DARK_CARD, shape)
+            .border(if (on) 1.5.dp else 1.dp, if (on) brand.primary else ORG_DARK_BORDER, shape)
             .clickable(role = Role.RadioButton) { onPick(key) }.padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(Modifier.size(32.dp).background(if (on) brand.primary else brand.peach, CircleShape), contentAlignment = Alignment.Center) {
-            LineIcon(icon, if (on) Color.White else brand.primary, size = 16.dp)
+        Box(Modifier.size(32.dp).background(if (on) brand.primary else ORG_DARK_INPUT, CircleShape), contentAlignment = Alignment.Center) {
+            LineIcon(icon, Color.White, size = 16.dp)
         }
-        Text(title, style = MaterialTheme.typography.titleMedium.copy(fontSize = 15.sp))
-        Text(sub, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 15.sp))
+        Text(title, style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp, color = Color.White))
+        Text(sub, style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp, lineHeight = 15.sp, color = ORG_DARK_MUTED))
     }
 }
 
@@ -189,62 +191,64 @@ fun OrganizerHomeScreen(
         onSignedOut()
     }
 
-    CompositionLocalProvider(LocalOrgToast provides toast) {
-        Box(Modifier.fillMaxSize().background(brand.background)) {
-            Column(Modifier.fillMaxSize().statusBarsPadding()) {
-                OrgHeader(
-                    title = when (tab) {
-                        "dashboard" -> "Dashboard"
-                        "managers" -> "Event managers"
-                        "more" -> "More"
-                        else -> if (isAdmin) "All WordCamps" else "My WordCamps"
-                    },
-                    subtitle = (if (isAdmin) "Administrator · " else "Event manager · ") + staffName,
-                    onBack = onBack,
-                ) {
-                    OrgIconButton("log-out", "Sign out", { askSignOut = true })
-                }
-                Box(Modifier.weight(1f)) {
-                    when (tab) {
-                        "dashboard" -> AdminDashboardPage(api, token, onEvent, onTab = { tab = it; OrgMemory.homeTab = it }, onExpired = onExpired)
-                        "managers" -> AdminManagersPage(api, token, onExpired)
-                        "more" -> AdminMorePage(api, token, onEvent, onExpired)
-                        else -> EventsListPage(api, token, isAdmin, onEvent, onPreviewAttendee, onExpired)
+    OrgDarkTheme {
+        CompositionLocalProvider(LocalOrgToast provides toast) {
+            Box(Modifier.fillMaxSize().background(ORG_DARK_BG)) {
+                Column(Modifier.fillMaxSize().statusBarsPadding()) {
+                    OrgHeader(
+                        title = when (tab) {
+                            "dashboard" -> "Global Dashboard"
+                            "managers" -> "Event Managers"
+                            "more" -> "Analytics & More"
+                            else -> if (isAdmin) "All WordCamps" else "My WordCamps"
+                        },
+                        subtitle = (if (isAdmin) "Super Admin · " else "Event Manager · ") + staffName,
+                        onBack = onBack,
+                    ) {
+                        OrgIconButton("log-out", "Sign out", { askSignOut = true })
+                    }
+                    Box(Modifier.weight(1f)) {
+                        when (tab) {
+                            "dashboard" -> AdminDashboardPage(api, token, onEvent, onTab = { tab = it; OrgMemory.homeTab = it }, onExpired = onExpired)
+                            "managers" -> AdminManagersPage(api, token, onExpired)
+                            "more" -> AdminMorePage(api, token, onEvent, onExpired)
+                            else -> EventsListPage(api, token, isAdmin, onEvent, onPreviewAttendee, onExpired)
+                        }
+                    }
+                    if (isAdmin) {
+                        OrgBottomBar(
+                            listOf(Triple("dashboard", "Dashboard", "home"), Triple("events", "Events", "calendar"), Triple("managers", "Managers", "users"), Triple("more", "More", "columns")),
+                            tab,
+                        ) { tab = it; OrgMemory.homeTab = it }
                     }
                 }
-                if (isAdmin) {
-                    OrgBottomBar(
-                        listOf(Triple("dashboard", "Dashboard", "home"), Triple("events", "Events", "calendar"), Triple("managers", "Managers", "users"), Triple("more", "More", "columns")),
-                        tab,
-                    ) { tab = it; OrgMemory.homeTab = it }
-                }
+                OrgToastHost(toast)
             }
-            OrgToastHost(toast)
         }
-    }
 
-    if (askSignOut) {
-        ConfirmSheet("Sign out?", "You will need your e-mail and password to sign in again on this phone.", "Sign out", onConfirm = signOut, onClose = { askSignOut = false })
+        if (askSignOut) {
+            ConfirmSheet("Sign out?", "You will need your e-mail and password to sign in again on this phone.", "Sign out", onConfirm = signOut, onClose = { askSignOut = false })
+        }
     }
 }
 
 @Composable
 internal fun OrgBottomBar(tabs: List<Triple<String, String, String>>, selected: String, onSelect: (String) -> Unit) {
-    val brand = LocalBrand.current
-    Column(Modifier.fillMaxWidth().background(brand.surface).navigationBarsPadding()) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+    Column(Modifier.fillMaxWidth().background(Color(0xFF0F172A)).navigationBarsPadding()) {
+        Box(Modifier.fillMaxWidth().height(1.dp).background(ORG_DARK_BORDER))
         FitTabsRow {
             tabs.forEach { (key, label, icon) ->
                 val on = key == selected
+                val activeColor = Color(0xFFF59E0B)
                 Column(
                     Modifier.fillMaxHeight().clickable(role = Role.Tab, onClick = { onSelect(key) }).padding(horizontal = 2.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Box(Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
-                        LineIcon(icon, if (on) brand.primary else brand.muted, size = 20.dp)
+                    Box(Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) ORG_DARK_CARD else Color.Transparent, RoundedCornerShape(50)), contentAlignment = Alignment.Center) {
+                        LineIcon(icon, if (on) activeColor else ORG_DARK_MUTED, size = 20.dp)
                     }
-                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primaryText else brand.muted), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp))
+                    Text(label, style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) activeColor else ORG_DARK_MUTED), maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp))
                 }
             }
         }
@@ -391,44 +395,46 @@ fun OrganizerEventScreen(
 
     PlatformBackHandler(true) { if (tab != "overview") open("overview") else onBack() }
 
-    CompositionLocalProvider(LocalOrgToast provides toast) {
-        Box(Modifier.fillMaxSize().background(brand.background)) {
-            Column(Modifier.fillMaxSize().statusBarsPadding()) {
-                OrgHeader(name, listOfNotNull(eventDates(ov?.startsOn ?: event.startsOn, ov?.endsOn ?: event.endsOn), (ov?.status ?: event.status).takeIf { it.isNotBlank() }?.let(::statusLabel)).joinToString(" · "), onBack = onBack) {
-                    if (slug.isNotBlank()) OrgIconButton("eye", "Attendee view", { onPreviewAttendee(slug) })
-                    OrgIconButton("refresh", "Reload", { stamp++ })
-                }
-                Row(
-                    Modifier.fillMaxWidth().background(brand.surface).horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    tabs.forEach { (key, label, icon) -> TabPill(label, icon, key == tab) { open(key) } }
-                }
-                Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-                Box(Modifier.weight(1f)) {
-                    androidx.compose.runtime.key(tab, stamp) {
-                        val ctx = EventCtx(api, token, event.id, slug, name, isAdmin, ov, reloadOverview = overview.reload, open = ::open, onExpired = onBack)
-                        when (tab) {
-                            "details" -> DetailsTab(ctx, onDeleted = onBack)
-                            "info" -> InformationTab(ctx)
-                            "delay" -> DelayTab(ctx)
-                            "broadcast" -> BroadcastTab(ctx)
-                            "reports" -> ReportsTab(ctx)
-                            "attendees" -> AttendeesTab(ctx)
-                            "quests" -> QuestsTab(ctx)
-                            "tables" -> TablesTab(ctx)
-                            "memories" -> MemoriesOrgTab(ctx)
-                            "notifications" -> NotificationsTab(ctx)
-                            "social" -> SocialTab(ctx)
-                            "deals" -> DealsTab(ctx)
-                            "leads" -> LeadsTab(ctx)
-                            "activity" -> EventActivityTab(ctx)
-                            else -> OverviewTab(ctx, overview, onPreview = { if (slug.isNotBlank()) onPreviewAttendee(slug) })
+    OrgDarkTheme {
+        CompositionLocalProvider(LocalOrgToast provides toast) {
+            Box(Modifier.fillMaxSize().background(ORG_DARK_BG)) {
+                Column(Modifier.fillMaxSize().statusBarsPadding()) {
+                    OrgHeader(name, listOfNotNull(eventDates(ov?.startsOn ?: event.startsOn, ov?.endsOn ?: event.endsOn), (ov?.status ?: event.status).takeIf { it.isNotBlank() }?.let(::statusLabel)).joinToString(" · "), onBack = onBack) {
+                        if (slug.isNotBlank()) OrgIconButton("eye", "Attendee view", { onPreviewAttendee(slug) })
+                        OrgIconButton("refresh", "Reload", { stamp++ })
+                    }
+                    Row(
+                        Modifier.fillMaxWidth().background(Color(0xFF0F172A)).horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        tabs.forEach { (key, label, icon) -> TabPill(label, icon, key == tab) { open(key) } }
+                    }
+                    Box(Modifier.fillMaxWidth().height(1.dp).background(ORG_DARK_BORDER))
+                    Box(Modifier.weight(1f)) {
+                        androidx.compose.runtime.key(tab, stamp) {
+                            val ctx = EventCtx(api, token, event.id, slug, name, isAdmin, ov, reloadOverview = overview.reload, open = ::open, onExpired = onBack)
+                            when (tab) {
+                                "details" -> DetailsTab(ctx, onDeleted = onBack)
+                                "info" -> InformationTab(ctx)
+                                "delay" -> DelayTab(ctx)
+                                "broadcast" -> BroadcastTab(ctx)
+                                "reports" -> ReportsTab(ctx)
+                                "attendees" -> AttendeesTab(ctx)
+                                "quests" -> QuestsTab(ctx)
+                                "tables" -> TablesTab(ctx)
+                                "memories" -> MemoriesOrgTab(ctx)
+                                "notifications" -> NotificationsTab(ctx)
+                                "social" -> SocialTab(ctx)
+                                "deals" -> DealsTab(ctx)
+                                "leads" -> LeadsTab(ctx)
+                                "activity" -> EventActivityTab(ctx)
+                                else -> OverviewTab(ctx, overview, onPreview = { if (slug.isNotBlank()) onPreviewAttendee(slug) })
+                            }
                         }
                     }
                 }
+                OrgToastHost(toast)
             }
-            OrgToastHost(toast)
         }
     }
 }
@@ -438,13 +444,13 @@ private fun TabPill(label: String, icon: String, selected: Boolean, onClick: () 
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.height(38.dp).clip(shape).background(if (selected) brand.primaryText else brand.background, shape)
-            .border(1.dp, if (selected) brand.primary else brand.line, shape)
+        Modifier.height(38.dp).clip(shape).background(if (selected) brand.primary else ORG_DARK_CARD, shape)
+            .border(1.dp, if (selected) brand.primary else ORG_DARK_BORDER, shape)
             .clickable(role = Role.Tab, onClick = onClick).padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LineIcon(icon, if (selected) Color.White else brand.ink, size = 15.dp)
-        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = if (selected) Color.White else brand.ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp), maxLines = 1)
+        LineIcon(icon, Color.White, size = 15.dp)
+        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = if (selected) Color.White else Color(0xFFCBD5E1), fontWeight = FontWeight.SemiBold, fontSize = 13.sp), maxLines = 1)
     }
 }

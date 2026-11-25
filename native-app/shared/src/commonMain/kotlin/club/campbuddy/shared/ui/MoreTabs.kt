@@ -163,13 +163,24 @@ fun QuestTab(slug: String, onTab: (String) -> Unit = {}) {
 
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-                            Text(words("tabs.quest"), style = MaterialTheme.typography.headlineSmall)
-                            if (total > 0) Text("$count/$total complete", style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted))
-                        }
+                        Text(words("tabs.quest"), style = MaterialTheme.typography.headlineSmall)
                         if (total > 0) {
-                            Box(Modifier.fillMaxWidth().height(8.dp).background(brand.line, RoundedCornerShape(50))) {
-                                if (count > 0) Box(Modifier.fillMaxWidth(count.toFloat() / total).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
+                            val level = (count / 2) + 1
+                            Column(
+                                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Color(0xFF0F172A)).border(1.dp, Color(0xFF334155), RoundedCornerShape(18.dp)).padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                            ) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text("Level $level Contributor", style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFFF59E0B), fontWeight = FontWeight.Bold))
+                                    Text("$count of $total done", style = MaterialTheme.typography.labelMedium.copy(color = Color.White))
+                                }
+                                Box(Modifier.fillMaxWidth().height(8.dp).background(Color(0xFF334155), RoundedCornerShape(50))) {
+                                    if (count > 0) Box(Modifier.fillMaxWidth(count.toFloat() / total).height(8.dp).background(Color(0xFFF59E0B), RoundedCornerShape(50)))
+                                }
+                                Text(
+                                    if (count == total) "All event challenges unlocked!" else "Complete quests below to unlock event milestones.",
+                                    style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF94A3B8)),
+                                )
                             }
                         }
                     }
@@ -382,11 +393,17 @@ fun ContributeTab(slug: String) {
             }
         } else {
             item {
-                Card {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text("Your opening line. Really, this is enough:", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                        Text("\"Hi, this is my first Contributor Day. Can you help me get started?\"", style = MaterialTheme.typography.titleLarge)
-                    }
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(brand.peach)
+                        .border(1.dp, Color(0xFFFB923C), RoundedCornerShape(16.dp))
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text("Conversation starter:", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                    Text("\"Hi, this is my first Contributor Day. Can you help me get started?\"", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink))
                 }
             }
             val ranked = CONTRIB_TEAMS.sortedByDescending { t -> t.matches.count { it in shown } }
@@ -661,22 +678,24 @@ fun ExploreTab(slug: String, start: String? = null) {
     }
 }
 
-/** One of the website's Explore tiles: an icon over its name; the open one is peach. */
+/** One of the website's Explore tiles matching M15/M17/M22: white hairline unselected, soft peach + orange outline selected. */
 @Composable
 private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(14.dp)
+    val tint = if (selected) brand.primaryText else brand.ink
     Column(
         modifier.heightIn(min = 65.dp)
-            .background(if (selected) brand.peach else Color.Transparent, Radii.input)
-            .border(1.dp, if (selected) Color.Transparent else brand.line, Radii.input)
+            .clip(shape)
+            .background(if (selected) brand.peach else Color.White, shape)
+            .border(1.dp, if (selected) Color(0xFFFB923C) else brand.line, shape)
             .clickable(role = Role.Tab, onClick = onClick)
             .padding(horizontal = 2.dp, vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp, Alignment.CenterVertically),
+        verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
     ) {
-        LineIcon(icon, brand.ink, size = 23.dp)
-        Text(label, style = MaterialTheme.typography.labelMedium.copy(color = brand.ink, lineHeight = 13.8.sp), textAlign = TextAlign.Center, maxLines = 2)
+        LineIcon(icon, tint, size = 22.dp)
+        Text(label, style = MaterialTheme.typography.labelMedium.copy(color = tint, lineHeight = 13.8.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold), textAlign = TextAlign.Center, maxLines = 2)
     }
 }
 
@@ -806,12 +825,12 @@ private fun SponsorList(slug: String) {
                                     val key = tier.lowercase()
                                     val (bg, border) = when {
                                         "platinum" in key -> brand.peach to brand.accent
-                                        "bronze" in key -> brand.surface to Color(0xFFC8905E)
-                                        "gold" in key -> brand.surface to brand.accent
-                                        else -> brand.surface to brand.line
+                                        "bronze" in key -> Color(0xFFFDFBF7) to Color(0xFFE2E8F0)
+                                        "gold" in key -> Color(0xFFFDFBF7) to brand.accent
+                                        else -> Color(0xFFFDFBF7) to brand.line
                                     }
                                     Box(
-                                        Modifier.weight(1f).heightIn(min = 54.dp).background(bg, Radii.input).border(1.dp, border, Radii.input)
+                                        Modifier.weight(1f).heightIn(min = 64.dp).background(bg, RoundedCornerShape(14.dp)).border(1.dp, border, RoundedCornerShape(14.dp))
                                             // The logo is a picture: the sponsor's name is what a screen reader says.
                                             .semantics(mergeDescendants = true) { contentDescription = sponsor.name }
                                             .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),

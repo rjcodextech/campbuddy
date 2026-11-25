@@ -86,10 +86,15 @@ fun GuideScreen(slug: String, onBack: () -> Unit, onTab: (String) -> Unit = {}) 
         .sortedBy { PRACTICAL_ORDER.indexOf(it.title) }
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding()) {
-        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(32.dp))
-            Box(Modifier.size(44.dp).clickable(role = Role.Button, onClickLabel = "Back", onClick = onBack), contentAlignment = Alignment.Center) {
-                Box(Modifier.size(32.dp).background(brand.primary, CircleShape), contentAlignment = Alignment.Center) { LineIcon("x", Color.White, size = 16.dp) }
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(38.dp).clip(CircleShape).background(brand.peach).clickable(role = Role.Button, onClickLabel = "Back", onClick = onBack), contentAlignment = Alignment.Center) {
+                    LineIcon("chevron-left", brand.primary, size = 18.dp)
+                }
+                Text("First-Timer Guide", style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold))
+            }
+            Box(Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
+                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(26.dp))
             }
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
@@ -200,44 +205,39 @@ private val PRACTICAL_ORDER = listOf("Venue", "Registration", "Wifi", "Contribut
 private fun GuideHero(tag: String?) {
     val brand = LocalBrand.current
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp))
-            .background(Brush.linearGradient(listOf(Color(0xFF6D2021), Color(0xFF4A1415))))
-            .patternBackground(Res.drawable.pattern_guide, null, alpha = 0.9f)
-            .drawBehind {
-                drawRect(Brush.radialGradient(listOf(Color(0x59F4A629), Color.Transparent), center = Offset(size.width * 0.92f, size.height * 0.12f), radius = size.width * 0.45f))
-                drawRect(Brush.radialGradient(listOf(Color(0x8CFF4D2D), Color.Transparent), center = Offset(0f, size.height), radius = size.width * 0.55f))
-                // The gold ticket-stub edge along the top.
-                var x = 0f
-                while (x < size.width) { drawRect(Color(0xCCD98A1C), Offset(x, 0f), androidx.compose.ui.geometry.Size(18.dp.toPx(), 5.dp.toPx())); x += 26.dp.toPx() }
-            }
-            .padding(horizontal = 20.dp, vertical = 24.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))))
+            .border(1.dp, Color(0xFF334155), RoundedCornerShape(20.dp))
+            .padding(horizontal = 20.dp, vertical = 22.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
-            Modifier.background(Color(0x1FFBEFD9), RoundedCornerShape(50)).padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
+            Modifier.background(Color(0xFF334155), RoundedCornerShape(50)).padding(start = 6.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(22.dp).clip(CircleShape).background(Color(0xFFFBEFD9)))
-            Text("WORDCAMP 101", style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFFFBEFD9), letterSpacing = 0.72.sp))
+            Box(Modifier.size(22.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(16.dp))
+            }
+            Text("WORDCAMP 101", style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFFF59E0B), letterSpacing = 0.72.sp))
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     "New to ${tag ?: "WordCamp"}?\nStart here.",
-                    style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 24.8.sp, lineHeight = 28.5.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-0.25).sp),
+                    style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontSize = 24.sp, lineHeight = 28.sp, fontWeight = FontWeight.ExtraBold),
                 )
-                Text("How the day runs, the words people throw around, and how to start talking to people you don't know yet.", style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xE0FBEFD9)))
+                Text("How the day runs, the words people use, and how to meet peers with ease.", style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFFCBD5E1)))
             }
-            Image(painterResource(Res.drawable.art_first_badge), contentDescription = null, modifier = Modifier.width(84.dp).padding(start = 8.dp))
+            Image(painterResource(Res.drawable.art_first_badge), contentDescription = null, modifier = Modifier.width(80.dp).padding(start = 8.dp))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("clock" to "5-minute read", "wifi" to "Works offline").forEach { (icon, label) ->
                 Row(
-                    Modifier.background(Color(0xFFD98A1C), RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),
+                    Modifier.background(Color(0xFFD97706), RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    LineIcon(icon, Color(0xFF4A1415), size = 14.dp)
-                    Text(label, style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF4A1415)))
+                    LineIcon(icon, Color.White, size = 14.dp)
+                    Text(label, style = MaterialTheme.typography.labelMedium.copy(color = Color.White))
                 }
             }
         }

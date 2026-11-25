@@ -114,41 +114,45 @@ fun PickerScreen(
 
     Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding().navigationBarsPadding()) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(40.dp))
+            Image(painterResource(Res.drawable.wordmark), contentDescription = "CampBuddy", modifier = Modifier.height(34.dp))
             if (isStaff) {
-                Box(
+                Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(if (isAdmin) brand.primary.copy(alpha = 0.12f) else brand.accent.copy(alpha = 0.22f))
-                        .border(1.dp, if (isAdmin) brand.primary.copy(alpha = 0.40f) else brand.accent.copy(alpha = 0.50f), RoundedCornerShape(50))
+                        .background(brand.peach)
+                        .border(1.dp, brand.primary.copy(alpha = 0.30f), RoundedCornerShape(50))
                         .clickable(role = Role.Button, onClickLabel = "Staff Area", onClick = onOrganizer)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    LineIcon(if (isAdmin) "crown" else "briefcase", brand.primary, size = 15.dp)
                     Text(
-                        if (isAdmin) "👑 Super Admin" else "👔 Event Manager",
+                        if (isAdmin) "Super Admin" else "Event Manager",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isAdmin) brand.primary else brand.ink,
+                            color = brand.primaryText,
                         ),
                     )
                 }
             } else if (organizerEnabled) {
-                Box(
+                Row(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                         .background(brand.peach)
                         .clickable(role = Role.Button, onClickLabel = "Staff Login", onClick = onOrganizer)
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(horizontal = 12.dp, vertical = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    LineIcon("crown", brand.primary, size = 14.dp)
                     Text(
                         "Staff Sign In",
-                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold, color = brand.ink),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold, color = brand.primaryText),
                     )
                 }
             }
@@ -181,8 +185,10 @@ fun PickerScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    Text(if (isAdmin) "👑" else "👔", style = MaterialTheme.typography.titleLarge)
+                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    Box(Modifier.size(38.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
+                                        LineIcon(if (isAdmin) "crown" else "briefcase", brand.primary, size = 20.dp)
+                                    }
                                     Column {
                                         Text(
                                             if (isAdmin) "Super Admin Console" else "Event Manager Hub",
@@ -265,7 +271,15 @@ fun PickerScreen(
                             )
                         }
                     }
-                    items(inCountry.take(shownCount), key = { it.slug }) { event -> EventRow(event, words("picker.open_event")) { onOpen(event) } }
+                    items(inCountry.take(shownCount), key = { it.slug }) { event ->
+                        EventRow(
+                            event = event,
+                            openLabel = words("picker.open_event"),
+                            featured = event.slug == inCountry.firstOrNull()?.slug,
+                            onFirstTimer = { onFirstTimer(event) },
+                            onClick = { onOpen(event) },
+                        )
+                    }
                     if (inCountry.size > shownCount) {
                         item { QuietButton("Load ${minOf(5, inCountry.size - shownCount)} more", { shownCount += 5 }, Modifier.fillMaxWidth()) }
                     }
@@ -376,36 +390,45 @@ private fun FeaturePill(label: String, icon: String, modifier: Modifier, popAfte
 }
 
 @Composable
-private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
+private fun EventRow(event: EventCard, openLabel: String, featured: Boolean = false, onFirstTimer: (() -> Unit)? = null, onClick: () -> Unit) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
-    // A finished WordCamp, as the website's .event-card--completed: white, a fainter line, the same coral
-    // call to action, and a "Completed" pill so it reads as done.
     val isCached = env.deps.store.get("event:${event.slug}") != null || env.deps.store.get("warm:${event.slug}") != null
     val done = event.completed
-    val fill = if (done) Color.White else brand.surface
+    val fill = Color.White
     val edge = if (done) brand.ink.copy(alpha = 0.08f) else brand.line
     val divider = if (done) brand.ink.copy(alpha = 0.06f) else brand.line
     val cta = brand.primary
     val photos = event.memories?.photos?.takeIf { it.isNotBlank() }
     val videos = event.memories?.videos?.takeIf { it.isNotBlank() }
     Column(
-        Modifier.fillMaxWidth().shadow(2.dp, shape, clip = false).clip(shape).background(fill, shape).border(1.dp, edge, shape)
+        Modifier.fillMaxWidth().clip(shape).background(fill, shape).border(1.dp, edge, shape)
             .clickable(role = Role.Button, onClick = onClick),
     ) {
-        Row(Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(64.dp).background(Color.White, CircleShape).border(1.dp, brand.line, CircleShape), contentAlignment = Alignment.Center) {
-                RemoteImage(event.mark ?: event.logo, Modifier.size(52.dp).clip(CircleShape)) {
-                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(46.dp))
+        Row(Modifier.padding(18.dp), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(58.dp).background(Color.White, RoundedCornerShape(14.dp)).border(1.dp, brand.line, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
+                RemoteImage(event.mark ?: event.logo, Modifier.size(48.dp).clip(CircleShape)) {
+                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(42.dp))
                 }
             }
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                datesText(event.startsOn, event.endsOn)?.let {
-                    Text(it.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.67.sp, fontSize = 12.sp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    datesText(event.startsOn, event.endsOn)?.let {
+                        Text(it, style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontSize = 12.sp))
+                    }
+                    if (isCached && !done) {
+                        Box(
+                            Modifier.background(Color(0xFFECFDF5), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
+                        ) {
+                            Text("Saved Offline", style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFF059669), fontWeight = FontWeight.Bold, fontSize = 10.sp))
+                        }
+                    }
                 }
-                Text(event.name, style = MaterialTheme.typography.titleMedium)
-                // The website's .event-card__status: a quiet grey pill, the icon in coral.
+                Text(event.name, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                event.venue?.let { venue ->
+                    Text(venue, style = MaterialTheme.typography.bodySmall.copy(color = brand.muted), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                }
                 if (done) Row(
                     Modifier.padding(top = 4.dp).background(brand.ink.copy(alpha = 0.05f), RoundedCornerShape(50))
                         .border(1.dp, brand.ink.copy(alpha = 0.07f), RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 3.dp),
@@ -414,24 +437,37 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
                     LineIcon("party", brand.primary, size = 13.dp)
                     Text("Completed", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold))
                 }
-                if (isCached && !done) Row(
-                    Modifier.padding(top = 4.dp).background(brand.success.copy(alpha = 0.12f), RoundedCornerShape(50))
-                        .border(1.dp, brand.success.copy(alpha = 0.35f), RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(5.dp), verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.size(6.dp).background(brand.success, CircleShape))
-                    Text("Offline Ready", style = MaterialTheme.typography.labelSmall.copy(color = brand.success, fontWeight = FontWeight.Bold, fontSize = 11.sp))
-                }
-            }
-        }
-        event.venue?.let { venue ->
-            Row(Modifier.padding(start = 20.dp, end = 20.dp, bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.Top) {
-                Box(Modifier.padding(top = 3.dp)) { LineIcon("map-pin", brand.primary, size = 14.dp) }
-                Text(venue, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
             }
         }
         Box(Modifier.fillMaxWidth().height(1.dp).background(divider))
-        Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = cta), modifier = Modifier.padding(16.dp))
+        if (featured && onFirstTimer != null && !done) {
+            Row(Modifier.fillMaxWidth().padding(14.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.weight(1f).heightIn(min = 42.dp).clip(RoundedCornerShape(50)).background(brand.background)
+                        .border(1.dp, brand.accent.copy(alpha = 0.45f), RoundedCornerShape(50))
+                        .clickable(role = Role.Button, onClick = onFirstTimer).padding(horizontal = 12.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("First-Timer Guide", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText, fontSize = 12.sp))
+                }
+                Box(
+                    Modifier.weight(1f).heightIn(min = 42.dp).clip(RoundedCornerShape(50)).background(brand.primary)
+                        .clickable(role = Role.Button, onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Open Event →", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontSize = 12.sp))
+                }
+            }
+        } else {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(openLabel, style = MaterialTheme.typography.labelLarge.copy(color = cta))
+                Box(
+                    Modifier.clip(RoundedCornerShape(50)).background(brand.surface).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 14.dp, vertical = 6.dp),
+                ) {
+                    Text("Open", style = MaterialTheme.typography.labelMedium.copy(color = brand.ink))
+                }
+            }
+        }
 
         // Photos and recorded talks on WordPress.tv (EventMemories)
         if (photos != null || videos != null) {
@@ -469,7 +505,6 @@ private fun EventRow(event: EventCard, openLabel: String, onClick: () -> Unit) {
         }
 
         if (done) {
-            // The website's joined "Save your WordCamp Data" bar: the PDF of what this phone kept for the event.
             val scope = androidx.compose.runtime.rememberCoroutineScope()
             var busy by remember { mutableStateOf(false) }
             var said by remember { mutableStateOf<String?>(null) }
@@ -494,7 +529,7 @@ internal fun datesText(starts: String?, ends: String?): String? {
     return if (b == null || b == a) EventClock.dayLabel(a) + " " + a.year else EventClock.dayLabel(a) + " – " + EventClock.dayLabel(b) + " " + b.year
 }
 
-/** Tactile country filter carousel: horizontal scrollable pills with instant 1-tap switching. */
+/** Tactile country filter carousel: dark active pill and white hairline inactive pills matching M02. */
 @Composable
 private fun CountryFilter(countries: List<String>, events: List<EventCard>, chosen: String, onPick: (String) -> Unit) {
     val brand = LocalBrand.current
@@ -508,12 +543,12 @@ private fun CountryFilter(countries: List<String>, events: List<EventCard>, chos
             val isAll = chosen == "all"
             Row(
                 Modifier
-                    .heightIn(min = 40.dp)
+                    .heightIn(min = 38.dp)
                     .clip(pill)
-                    .background(if (isAll) brand.primary else brand.surface, pill)
-                    .border(1.dp, if (isAll) brand.primary else brand.line, pill)
+                    .background(if (isAll) brand.ink else Color.White, pill)
+                    .border(1.dp, if (isAll) brand.ink else brand.line, pill)
                     .clickable(role = Role.Button) { onPick("all") }
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -531,12 +566,12 @@ private fun CountryFilter(countries: List<String>, events: List<EventCard>, chos
             val count = events.count { it.country == c }
             Row(
                 Modifier
-                    .heightIn(min = 40.dp)
+                    .heightIn(min = 38.dp)
                     .clip(pill)
-                    .background(if (on) brand.primary else brand.surface, pill)
-                    .border(1.dp, if (on) brand.primary else brand.line, pill)
+                    .background(if (on) brand.ink else Color.White, pill)
+                    .border(1.dp, if (on) brand.ink else brand.line, pill)
                     .clickable(role = Role.Button) { onPick(c) }
-                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                    .padding(horizontal = 14.dp, vertical = 7.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -566,34 +601,34 @@ private fun DesktopSyncCard() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     Box(
-                        Modifier.size(38.dp).background(brand.peach, CircleShape),
+                        Modifier.size(38.dp).background(brand.peach, RoundedCornerShape(10.dp)),
                         contentAlignment = Alignment.Center,
                     ) {
-                        LineIcon("refresh", brand.primary, size = 18.dp)
+                        LineIcon("qr-code", brand.primary, size = 18.dp)
                     }
                     Column {
                         Text(
-                            "Move data from laptop / PC",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            "Move plan from desktop?",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp),
                         )
                         Text(
-                            "Sync bookmarks & CampCard instantly",
-                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                            "Enter 6-digit sync code",
+                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted, fontSize = 12.sp),
                         )
                     }
                 }
                 Box(
                     Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(if (isExpanded) brand.peach else Color.Transparent)
+                        .background(if (isExpanded) brand.peach else brand.ink)
                         .clickable { isExpanded = !isExpanded }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                 ) {
                     Text(
                         if (isExpanded) "Close" else "Sync",
-                        style = MaterialTheme.typography.labelSmall.copy(color = brand.primary, fontWeight = FontWeight.Bold),
+                        style = MaterialTheme.typography.labelMedium.copy(color = if (isExpanded) brand.primaryText else Color.White, fontWeight = FontWeight.Bold),
                     )
                 }
             }

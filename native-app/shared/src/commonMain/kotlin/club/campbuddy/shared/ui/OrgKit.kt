@@ -23,10 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -136,13 +139,52 @@ fun BoxScope.OrgToastHost(toast: OrgToast) {
     }
 }
 
+val ORG_DARK_BG = Color(0xFF0B1120)
+val ORG_DARK_CARD = Color(0xFF1E293B)
+val ORG_DARK_INPUT = Color(0xFF0F172A)
+val ORG_DARK_BORDER = Color(0xFF334155)
+val ORG_DARK_MUTED = Color(0xFF94A3B8)
+
+/** Provides the Dark Ops palette (M23–M32) across Staff Login, Event Manager Hub, and SuperAdmin Console. */
+@Composable
+fun OrgDarkTheme(content: @Composable () -> Unit) {
+    val brand = LocalBrand.current
+    val base = MaterialTheme.typography
+    val darkType = base.copy(
+        headlineSmall = base.headlineSmall.copy(color = Color.White),
+        titleLarge = base.titleLarge.copy(color = Color.White),
+        titleMedium = base.titleMedium.copy(color = Color.White),
+        bodyLarge = base.bodyLarge.copy(color = Color(0xFFF8FAFC)),
+        bodyMedium = base.bodyMedium.copy(color = Color(0xFFE2E8F0)),
+        bodySmall = base.bodySmall.copy(color = ORG_DARK_MUTED),
+        labelMedium = base.labelMedium.copy(color = ORG_DARK_MUTED),
+    )
+    CompositionLocalProvider(LocalOrgDarkMode provides true) {
+        MaterialTheme(
+            colorScheme = darkColorScheme(
+                primary = brand.primary,
+                onPrimary = Color.White,
+                secondary = Color(0xFFF59E0B),
+                background = ORG_DARK_BG,
+                onBackground = Color.White,
+                surface = ORG_DARK_CARD,
+                onSurface = Color.White,
+                outline = ORG_DARK_BORDER,
+                onSurfaceVariant = ORG_DARK_MUTED,
+            ),
+            typography = darkType,
+            shapes = MaterialTheme.shapes,
+            content = content,
+        )
+    }
+}
+
 // ---- header ----------------------------------------------------------------------------------------------
 
-/** A screen's top row: back, title (and a line under it), then up to a few round tools. */
+/** A screen's top row matching M23–M32 Dark Ops headers. */
 @Composable
 fun OrgHeader(title: String, subtitle: String? = null, onBack: (() -> Unit)? = null, trailing: @Composable RowScope.() -> Unit = {}) {
-    val brand = LocalBrand.current
-    Column(Modifier.fillMaxWidth().background(brand.surface)) {
+    Column(Modifier.fillMaxWidth().background(ORG_DARK_BG)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(start = if (onBack != null) 4.dp else 16.dp, end = 8.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -150,22 +192,30 @@ fun OrgHeader(title: String, subtitle: String? = null, onBack: (() -> Unit)? = n
         ) {
             if (onBack != null) OrgIconButton("chevron-left", "Back", onBack)
             Column(Modifier.weight(1f).padding(start = 4.dp)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (!subtitle.isNullOrBlank()) Text(subtitle, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(title, style = MaterialTheme.typography.titleLarge.copy(color = Color.White, fontWeight = FontWeight.ExtraBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (!subtitle.isNullOrBlank()) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.size(7.dp).background(Color(0xFF10B981), CircleShape))
+                        Text(subtitle, style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF10B981), fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
             }
             trailing()
         }
-        Box(Modifier.fillMaxWidth().size(height = 1.dp, width = 1.dp).background(brand.line))
+        Box(Modifier.fillMaxWidth().size(height = 1.dp, width = 1.dp).background(ORG_DARK_BORDER))
     }
 }
 
 /** A round tool button, 44 dp to touch. */
 @Composable
 fun OrgIconButton(icon: String, label: String, onClick: () -> Unit, tint: Color? = null, filled: Boolean = true) {
-    val brand = LocalBrand.current
     Box(Modifier.size(44.dp).clip(CircleShape).clickable(role = Role.Button, onClickLabel = label, onClick = onClick), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(34.dp).background(if (filled) brand.peach else Color.Transparent, CircleShape), contentAlignment = Alignment.Center) {
-            LineIcon(icon, tint ?: brand.ink, size = 18.dp)
+        Box(
+            Modifier.size(34.dp).background(if (filled) ORG_DARK_CARD else Color.Transparent, CircleShape)
+                .let { if (filled) it.border(1.dp, ORG_DARK_BORDER, CircleShape) else it },
+            contentAlignment = Alignment.Center,
+        ) {
+            LineIcon(icon, tint ?: Color.White, size = 18.dp)
         }
     }
 }
@@ -245,16 +295,16 @@ fun StatGrid(stats: List<Stat>, columns: Int = 3) {
 fun StatTile(stat: Stat, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
     val color = toneColor(stat.tone)
-    val shape = RoundedCornerShape(brand.radius.dp)
+    val shape = RoundedCornerShape(16.dp)
     Column(
-        modifier.background(brand.surface, shape).border(1.dp, brand.line, shape)
+        modifier.clip(shape).background(ORG_DARK_CARD, shape).border(1.dp, ORG_DARK_BORDER, shape)
             .let { if (stat.onClick != null) it.clickable(role = Role.Button, onClick = stat.onClick) else it }
-            .padding(12.dp),
+            .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Box(Modifier.size(30.dp).background(color.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) { LineIcon(stat.icon, color, size = 16.dp) }
-        Text(stat.value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, lineHeight = 26.sp))
-        Text(stat.label, style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 15.sp), maxLines = 2)
+        Box(Modifier.size(32.dp).background(color.copy(alpha = 0.16f), CircleShape), contentAlignment = Alignment.Center) { LineIcon(stat.icon, color, size = 16.dp) }
+        Text(stat.value, style = MaterialTheme.typography.titleLarge.copy(color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, lineHeight = 26.sp))
+        Text(stat.label, style = MaterialTheme.typography.bodySmall.copy(color = ORG_DARK_MUTED, fontSize = 12.sp, lineHeight = 15.sp), maxLines = 2)
     }
 }
 
@@ -267,10 +317,10 @@ fun OrgSection(title: String, icon: String? = null, subtitle: String? = null, ac
     Card {
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (icon != null) Box(Modifier.size(34.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 18.dp) }
+                if (icon != null) Box(Modifier.size(34.dp).background(brand.primary.copy(alpha = 0.18f), CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 18.dp) }
                 Column(Modifier.weight(1f)) {
-                    Text(title, style = MaterialTheme.typography.titleMedium)
-                    if (!subtitle.isNullOrBlank()) Text(subtitle, style = MaterialTheme.typography.bodySmall)
+                    Text(title, style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
+                    if (!subtitle.isNullOrBlank()) Text(subtitle, style = MaterialTheme.typography.bodySmall.copy(color = ORG_DARK_MUTED))
                 }
                 action?.invoke()
             }
@@ -283,8 +333,8 @@ fun OrgSection(title: String, icon: String? = null, subtitle: String? = null, ac
 fun KeyValue(label: String, value: String?) {
     if (value.isNullOrBlank()) return
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(label, style = MaterialTheme.typography.bodySmall, modifier = Modifier.widthIn(min = 96.dp, max = 140.dp))
-        Text(value, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Text(label, style = MaterialTheme.typography.bodySmall.copy(color = ORG_DARK_MUTED), modifier = Modifier.widthIn(min = 96.dp, max = 140.dp))
+        Text(value, style = MaterialTheme.typography.bodyMedium.copy(color = Color.White), modifier = Modifier.weight(1f))
     }
 }
 
@@ -292,8 +342,8 @@ fun KeyValue(label: String, value: String?) {
 fun EmptyNote(text: String, icon: String = "sparkles") {
     val brand = LocalBrand.current
     Column(Modifier.fillMaxWidth().padding(vertical = 28.dp, horizontal = 16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Box(Modifier.size(52.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 24.dp) }
-        Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Box(Modifier.size(52.dp).background(ORG_DARK_CARD, CircleShape).border(1.dp, ORG_DARK_BORDER, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 24.dp) }
+        Text(text, style = MaterialTheme.typography.bodyMedium.copy(color = ORG_DARK_MUTED), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
 }
 
@@ -301,15 +351,15 @@ fun EmptyNote(text: String, icon: String = "sparkles") {
 
 enum class BtnKind { Primary, Quiet, Danger }
 
-/** The compact button (44 high) the organizer cards use, with an optional icon. */
+/** The compact button (44 high) the organizer cards use, with an optional icon (Dark Ops pill style matching M24–M32). */
 @Composable
 fun OrgButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, kind: BtnKind = BtnKind.Quiet, icon: String? = null, enabled: Boolean = true) {
     val brand = LocalBrand.current
-    val shape = Radii.input
+    val shape = RoundedCornerShape(50)
     val (bg, fg, border) = when (kind) {
         BtnKind.Primary -> Triple(brand.primary, Color.White, brand.primary)
-        BtnKind.Danger -> Triple(brand.danger.copy(alpha = 0.08f), brand.danger, brand.danger.copy(alpha = 0.45f))
-        BtnKind.Quiet -> Triple(brand.surface, brand.ink, brand.line)
+        BtnKind.Danger -> Triple(Color(0xFF450A0A), Color(0xFFFCA5A5), brand.danger.copy(alpha = 0.65f))
+        BtnKind.Quiet -> Triple(ORG_DARK_INPUT, Color.White, ORG_DARK_BORDER)
     }
     Row(
         modifier.heightIn(min = 44.dp).clip(shape).background(if (enabled) bg else bg.copy(alpha = 0.45f), shape).border(1.dp, border, shape)
@@ -325,17 +375,25 @@ fun OrgButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, 
 
 // ---- filters ---------------------------------------------------------------------------------------------
 
-/** A text box with the search icon; [onChange] gets every key, the caller decides when to search. */
+/** A text box with the search icon matching Dark Ops inputs. */
 @Composable
 fun OrgSearch(value: String, onChange: (String) -> Unit, placeholder: String, modifier: Modifier = Modifier) {
     val brand = LocalBrand.current
     OutlinedTextField(
         value, onChange, modifier.fillMaxWidth(),
-        placeholder = { Text(placeholder) },
-        leadingIcon = { LineIcon("search", brand.muted, size = 18.dp) },
-        trailingIcon = if (value.isNotEmpty()) ({ Box(Modifier.size(40.dp).clip(CircleShape).clickable(onClickLabel = "Clear") { onChange("") }, contentAlignment = Alignment.Center) { LineIcon("x", brand.muted, size = 16.dp) } }) else null,
+        placeholder = { Text(placeholder, color = ORG_DARK_MUTED) },
+        leadingIcon = { LineIcon("search", ORG_DARK_MUTED, size = 18.dp) },
+        trailingIcon = if (value.isNotEmpty()) ({ Box(Modifier.size(40.dp).clip(CircleShape).clickable(onClickLabel = "Clear") { onChange("") }, contentAlignment = Alignment.Center) { LineIcon("x", ORG_DARK_MUTED, size = 16.dp) } }) else null,
         singleLine = true,
-        shape = RoundedCornerShape(brand.radius.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = ORG_DARK_INPUT,
+            unfocusedContainerColor = ORG_DARK_INPUT,
+            focusedBorderColor = brand.primary,
+            unfocusedBorderColor = ORG_DARK_BORDER,
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+        ),
     )
 }
 
@@ -381,19 +439,27 @@ fun OrgField(
         value,
         { onChange(if (max != null) it.take(max) else it) },
         modifier.fillMaxWidth(),
-        label = { Text(label) },
-        placeholder = placeholder?.let { { Text(it) } },
+        label = { Text(label, color = ORG_DARK_MUTED) },
+        placeholder = placeholder?.let { { Text(it, color = ORG_DARK_MUTED) } },
         supportingText = if (help != null || (max != null && lines > 1)) ({
             Row(Modifier.fillMaxWidth()) {
-                Text(help.orEmpty(), modifier = Modifier.weight(1f))
-                if (max != null && lines > 1) Text("${value.length}/$max")
+                Text(help.orEmpty(), color = ORG_DARK_MUTED, modifier = Modifier.weight(1f))
+                if (max != null && lines > 1) Text("${value.length}/$max", color = ORG_DARK_MUTED)
             }
         }) else null,
         singleLine = lines == 1,
         minLines = lines,
         visualTransformation = if (password) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = keyboard),
-        shape = RoundedCornerShape(brand.radius.dp),
+        shape = RoundedCornerShape(14.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = ORG_DARK_INPUT,
+            unfocusedContainerColor = ORG_DARK_INPUT,
+            focusedBorderColor = brand.primary,
+            unfocusedBorderColor = ORG_DARK_BORDER,
+            focusedTextColor = Color.White,
+            unfocusedTextColor = Color.White,
+        ),
     )
 }
 

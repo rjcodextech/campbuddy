@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import campbuddy_native.shared.generated.resources.app_icon
+import campbuddy_native.shared.generated.resources.art_avatar
 import campbuddy_native.shared.generated.resources.pattern_event
 import campbuddy_native.shared.generated.resources.wordmark
 import kotlinx.datetime.LocalDate
@@ -118,9 +119,17 @@ fun EventScreen(
     }
     val tabs = words.config.enabledTabs()
     var selected by rememberSaveable(slug) { mutableStateOf(startTab?.takeIf { t -> tabs.any { it.key == t } } ?: tabs.firstOrNull()?.key ?: "home") }
+    var exploreSub by rememberSaveable(slug) { mutableStateOf(startSub) }
+    var myDayMine by rememberSaveable(slug) { mutableStateOf(startSub == "mine") }
     var guide by rememberSaveable(slug) { mutableStateOf(startInGuide) }
     var helpOpen by remember { mutableStateOf(false) }
     var legalSlug by remember { mutableStateOf<String?>(null) }
+
+    fun openTab(tabKey: String, sub: String? = null) {
+        if (tabKey == "explore" && sub != null) exploreSub = sub
+        if (tabKey == "my-day" && sub != null) myDayMine = (sub == "mine")
+        selected = tabKey
+    }
 
     if (guide) {
         GuideScreen(slug, onBack = { guide = false }, onTab = { guide = false; selected = it })
@@ -177,14 +186,15 @@ fun EventScreen(
                             sessions = list,
                             offline = offline,
                             onBack = onBack,
-                            onTab = { selected = it },
+                            onTab = { t -> openTab(t) },
+                            onRoute = ::openTab,
                             onGuide = { guide = true },
                             onLegal = { legalSlug = it },
                         )
-                        "my-day" -> MyDayTab(e.value, list, offline)
-                        "quest" -> QuestTab(slug) { selected = it }
+                        "my-day" -> MyDayTab(e.value, list, offline, startMine = myDayMine)
+                        "quest" -> QuestTab(slug) { openTab(it) }
                         "contribute" -> ContributeTab(slug)
-                        "explore" -> ExploreTab(slug, startSub)
+                        "explore" -> ExploreTab(slug, exploreSub)
                         "camp-card" -> CampCardTab(slug, e.value.name, e.value.logo, e.value.mark)
                         "memories" -> MemoriesTab(slug) { selected = tabs.firstOrNull()?.key ?: "home" }
                         else -> Unit
@@ -238,6 +248,7 @@ private fun LiveEventDashboard(
     offline: Boolean,
     onBack: () -> Unit,
     onTab: (String) -> Unit,
+    onRoute: (String, String?) -> Unit,
     onGuide: () -> Unit,
     onLegal: (String) -> Unit,
 ) {
@@ -265,20 +276,15 @@ private fun LiveEventDashboard(
 
         // Screen 1 Hero Card: Tactile Card with Navy background (#1E293B to #0F172A), 30s clock, next talk
         item {
-            when ("hero") {
-                "hero" -> HeroCard(
-                    event = event,
-                    phase = phase,
-                    zone = zone,
-                    now = now,
-                    sessions = sessions,
-                    offline = offline,
-                    onViewSchedule = { onTab("my-day") },
-                )
-                "happening_now" -> HappeningNow(sessions, zone, now)
-                "up_next" -> UpNext(sessions, zone, now)
-                else -> Unit
-            }
+            HeroCard(
+                event = event,
+                phase = phase,
+                zone = zone,
+                now = now,
+                sessions = sessions,
+                offline = offline,
+                onViewSchedule = { onTab("my-day") },
+            )
         }
 
         // Screen 1 People & Matches Strip: Pinned contacts and interest wave triggers
@@ -294,7 +300,9 @@ private fun LiveEventDashboard(
             ActionGrid(
                 savedCount = saved.size,
                 sessionCount = sessions.size,
-                onTab = onTab,
+                venueLabel = event.shortName?.takeIf { it.isNotBlank() } ?: "Venue & Info",
+                onRoute = onRoute,
+                onGuide = onGuide,
             )
         }
 
@@ -335,10 +343,11 @@ private fun TactileHeroCard(
     val cardShape = RoundedCornerShape(20.dp)
     val timeText = runCatching {
         val dt = now.toLocalDateTime(zone)
-        val h = dt.hour.toString().padStart(2, '0')
+        val h12 = ((dt.hour % 12).let { if (it == 0) 12 else it }).toString().padStart(2, '0')
         val m = dt.minute.toString().padStart(2, '0')
-        "$h:$m"
-    }.getOrDefault("10:00")
+        val ampm = if (dt.hour < 12) "AM" else "PM"
+        "$h12:$m $ampm"
+    }.getOrDefault("10:30 AM")
 
     val nextSession = sessions
         .filter { s ->
@@ -391,13 +400,14 @@ private fun TactileHeroCard(
 
             Box(
                 Modifier
-                    .size(48.dp)
-                    .background(Color(0xFF334155), CircleShape)
-                    .border(1.dp, Color(0xFF475569), CircleShape),
+                    .size(50.dp)
+                    .background(Color.White, CircleShape)
+                    .border(2.dp, Color(0xFF475569), CircleShape)
+                    .padding(3.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                RemoteImage(event.logo ?: event.mark, Modifier.size(36.dp).clip(CircleShape)) {
-                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(32.dp))
+                RemoteImage(event.logo ?: event.mark, Modifier.size(40.dp).clip(CircleShape)) {
+                    Image(painterResource(Res.drawable.app_icon), contentDescription = null, modifier = Modifier.size(36.dp))
                 }
             }
         }
@@ -634,11 +644,9 @@ private fun PeopleStrip(
                     }
                     Text(
                         person.name.split(" ").firstOrNull() ?: person.name,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontSize = 11.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        ),
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 4.dp),
                     )
                 }
@@ -651,73 +659,72 @@ private fun PeopleStrip(
 private fun ActionGrid(
     savedCount: Int,
     sessionCount: Int,
-    onTab: (String) -> Unit,
+    venueLabel: String,
+    onRoute: (String, String?) -> Unit,
+    onGuide: () -> Unit,
 ) {
     val brand = LocalBrand.current
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
-            "Event Hubs",
+            "Quick Actions",
             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            // Row 1: My Day & Schedule
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionTile(
-                    title = "My Day",
-                    subtitle = "$savedCount saved sessions",
-                    icon = "calendar",
-                    accent = brand.primary,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onTab("my-day") },
-                )
                 ActionTile(
                     title = "Schedule",
                     subtitle = "$sessionCount talks & tracks",
-                    icon = "presentation",
-                    accent = brand.accent,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onTab("my-day") },
-                )
-            }
-
-            // Row 2: CampCard & Attendees
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                ActionTile(
-                    title = "My CampCard",
-                    subtitle = "QR badge & networking",
-                    icon = "qr-code",
+                    icon = "calendar",
                     accent = brand.primary,
                     modifier = Modifier.weight(1f),
-                    onClick = { onTab("camp-card") },
+                    onClick = { onRoute("my-day", "full") },
                 )
                 ActionTile(
-                    title = "Attendees",
-                    subtitle = "Directory & speaker roles",
-                    icon = "users",
+                    title = "My Day",
+                    subtitle = "$savedCount saved sessions",
+                    icon = "clock",
                     accent = brand.accent,
                     modifier = Modifier.weight(1f),
-                    onClick = { onTab("explore") },
+                    onClick = { onRoute("my-day", "mine") },
                 )
             }
 
-            // Row 3: Quests & Sponsors/Swag
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ActionTile(
-                    title = "Quests",
-                    subtitle = "Contributor day roadmap",
-                    icon = "target",
-                    accent = brand.accent,
-                    modifier = Modifier.weight(1f),
-                    onClick = { onTab("quest") },
-                )
-                ActionTile(
-                    title = "Sponsors & Swag",
-                    subtitle = "Steals, deals & booths",
+                    title = "Sponsors & Steals",
+                    subtitle = "Booths, deals & freebies",
                     icon = "gift",
                     accent = brand.primary,
                     modifier = Modifier.weight(1f),
-                    onClick = { onTab("explore") },
+                    onClick = { onRoute("explore", "sponsors") },
+                )
+                ActionTile(
+                    title = "Contributor XP",
+                    subtitle = "Tables & badges",
+                    icon = "award",
+                    accent = brand.accent,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onRoute("quest", null) },
+                )
+            }
+
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ActionTile(
+                    title = "Venue & Info",
+                    subtitle = venueLabel,
+                    icon = "map-pin",
+                    accent = brand.primary,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onRoute("explore", "info") },
+                )
+                ActionTile(
+                    title = "CampCard QR",
+                    subtitle = "Share digital badge",
+                    icon = "qr-code",
+                    accent = brand.accent,
+                    modifier = Modifier.weight(1f),
+                    onClick = { onRoute("camp-card", null) },
                 )
             }
         }
@@ -842,45 +849,48 @@ private fun LegalFooter(onLegal: (String) -> Unit) {
 @Composable
 private fun StickyHelpBar(onHelp: () -> Unit) {
     val brand = LocalBrand.current
+    val shape = RoundedCornerShape(14.dp)
     Box(
         Modifier
             .fillMaxWidth()
-            .background(brand.surface)
+            .background(brand.background)
             .padding(horizontal = 16.dp, vertical = 6.dp),
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .clip(RoundedCornerShape(50))
-                .background(brand.danger)
-                .clickable(role = Role.Button, onClickLabel = "Need Help / SOS", onClick = onHelp)
-                .padding(horizontal = 16.dp),
+                .clip(shape)
+                .background(Color(0xFFFFF5F5), shape)
+                .border(1.5.dp, Color(0xFFFCA5A5), shape)
+                .clickable(role = Role.Button, onClickLabel = "Safety & Help Desk", onClick = onHelp)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                LineIcon("life-buoy", Color.White, size = 20.dp)
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                LineIcon("shield", Color(0xFFDC2626), size = 20.dp)
                 Column {
                     Text(
-                        "Need Help at WordCamp?",
-                        style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp),
+                        "Safety & Help Desk",
+                        style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFFDC2626), fontWeight = FontWeight.Bold, fontSize = 13.sp),
                     )
                     Text(
-                        "Helpdesk · Incident Support · Organizers",
-                        style = MaterialTheme.typography.labelSmall.copy(color = Color.White.copy(alpha = 0.85f), fontSize = 10.sp),
+                        "Venue support & confidential reporting",
+                        style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.5.sp),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
             Box(
                 Modifier
                     .clip(RoundedCornerShape(50))
-                    .background(Color.White.copy(alpha = 0.25f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp),
+                    .background(Color(0xFFEF4444))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
             ) {
                 Text(
-                    "HELP",
-                    style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.ExtraBold),
+                    "Emergency",
+                    style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.Bold),
                 )
             }
         }
@@ -895,97 +905,146 @@ private fun HelpSheet(
 ) {
     val brand = LocalBrand.current
     val env = LocalEnv.current
+    var reportText by remember { mutableStateOf("") }
+    var keepAnonymous by remember { mutableStateOf(true) }
+    var submitted by remember { mutableStateOf(false) }
 
     Sheet(
-        title = "Attendee Support & Incident Desk",
+        title = "Support & Safety",
         onClose = onClose,
         actions = {
             SheetActions(
-                primary = "Got it",
+                primary = "Done",
                 onPrimary = onClose,
             )
         },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            // Venue Helpdesk Card
-            Box(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(brand.peach.copy(alpha = 0.5f))
-                    .border(1.dp, brand.primary.copy(alpha = 0.25f), RoundedCornerShape(14.dp))
-                    .padding(14.dp),
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-                    LineIcon("life-buoy", brand.primary, size = 24.dp)
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            "Venue Registration & Info Desk",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
-                        )
-                        Text(
-                            "Located near the main entrance lobby. Visit the desk for physical badge assistance, track room directions, or lost-and-found items.",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = brand.ink),
-                        )
-                    }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Box(
+                    Modifier.weight(1f).clip(RoundedCornerShape(50)).background(Color(0xFFDC2626)).padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Help Desk", style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                }
+                Box(
+                    Modifier.weight(1f).clip(RoundedCornerShape(50)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(50)).clickable { onLegal("privacy") }.padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Privacy", style = MaterialTheme.typography.labelMedium.copy(color = brand.ink))
+                }
+                Box(
+                    Modifier.weight(1f).clip(RoundedCornerShape(50)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(50)).clickable { onLegal("terms") }.padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("Safety Code", style = MaterialTheme.typography.labelMedium.copy(color = brand.ink))
                 }
             }
 
-            // Code of Conduct & Safety
-            Box(
+            // Urgent Safety Desk Card
+            Column(
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(brand.surface)
-                    .border(1.dp, brand.line, RoundedCornerShape(14.dp))
-                    .padding(14.dp),
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFDC2626))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        LineIcon("shield", brand.danger, size = 20.dp)
-                        Text(
-                            "Code of Conduct & Safety",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
-                        )
-                    }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon("shield", Color.White, size = 22.dp)
                     Text(
-                        "WordCamp is dedicated to providing a harassment-free experience for everyone. If you experience or witness an incident, report it immediately to any organizer or volunteer wearing a staff badge.",
-                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+                        "Need Immediate Help?",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, color = Color.White),
                     )
-                    PrimaryButton(
-                        text = "Read Platform Terms & Safety Code",
-                        onClick = { onLegal("terms") },
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                    )
+                }
+                Text(
+                    "Connect directly with the venue safety & info desk team anytime during the event.",
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.92f)),
+                )
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(50))
+                        .background(Color.White)
+                        .clickable(role = Role.Button) { env.deps.openUrl("mailto:$GRIEVANCE_EMAIL?subject=Urgent%20Venue%20Support") }
+                        .padding(vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    LineIcon("phone", Color(0xFFDC2626), size = 16.dp)
+                    Text("Contact Organizer Desk", style = MaterialTheme.typography.labelLarge.copy(color = Color(0xFFDC2626), fontWeight = FontWeight.Bold))
                 }
             }
 
-            // Data Rights & Grievance
-            Box(
+            // On-Site Rooms Card
+            Column(
                 Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(14.dp))
-                    .background(brand.surface)
+                    .background(Color.White)
                     .border(1.dp, brand.line, RoundedCornerShape(14.dp))
                     .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                        LineIcon("shield-check", brand.success, size = 20.dp)
-                        Text(
-                            "DPDP Act 2023 & Data Rights",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = brand.ink),
-                        )
+                Text("Venue Info & Rooms", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 14.sp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon("heart", Color(0xFFDC2626), size = 16.dp)
+                    Text("Registration & First Aid: Main Entrance Lobby", style = MaterialTheme.typography.bodySmall)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon("bell", brand.accent, size = 16.dp)
+                    Text("Quiet & Accessibility Support: Ask any volunteer badge", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+
+            // Confidential Safety Report Form Card
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .border(1.dp, brand.line, RoundedCornerShape(14.dp))
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text("File Confidential Report", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Text("Safety, harassment, or accessibility concern", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+                androidx.compose.material3.OutlinedTextField(
+                    value = reportText,
+                    onValueChange = { reportText = it.take(500); submitted = false },
+                    placeholder = { Text("Describe what happened and where...") },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    Modifier.fillMaxWidth().clickable { keepAnonymous = !keepAnonymous },
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        Modifier.size(18.dp).background(if (keepAnonymous) brand.ink else Color.White, RoundedCornerShape(4.dp)).border(1.5.dp, if (keepAnonymous) brand.ink else brand.muted, RoundedCornerShape(4.dp)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (keepAnonymous) LineIcon("check", Color.White, size = 12.dp)
                     }
-                    Text(
-                        "You have full rights to inspect, export, or permanently erase your data stored on this device or in discovery.",
-                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
-                    )
-                    QuietButton(
-                        text = "Open Privacy Notice & Data Controls",
-                        onClick = { onLegal("privacy") },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    Text("Keep my report anonymous", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = brand.ink))
+                }
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 44.dp)
+                        .clip(RoundedCornerShape(50))
+                        .background(if (reportText.isNotBlank()) brand.ink else brand.ink.copy(alpha = 0.45f))
+                        .clickable(enabled = reportText.isNotBlank()) {
+                            submitted = true
+                            val subject = "WordCamp Safety Report (${event?.name ?: "Event"})"
+                            val body = (if (keepAnonymous) "[Anonymous Report]\n\n" else "") + reportText
+                            env.deps.openUrl("mailto:$GRIEVANCE_EMAIL?subject=${subject.replace(" ", "%20")}&body=${body.replace(" ", "%20").replace("\n", "%0A")}")
+                        }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(if (submitted) "Report Draft Prepared ✓" else "Submit Report", style = MaterialTheme.typography.labelLarge.copy(color = Color.White))
                 }
             }
         }
@@ -1403,21 +1462,23 @@ private fun TopBar(onGuide: () -> Unit, onSwitch: () -> Unit, onStaff: (() -> Un
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             if (isStaff) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .heightIn(min = 48.dp)
+                        .heightIn(min = 40.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(if (isAdmin) brand.primary.copy(alpha = 0.12f) else brand.accent.copy(alpha = 0.22f))
-                        .border(1.dp, if (isAdmin) brand.primary.copy(alpha = 0.40f) else brand.accent.copy(alpha = 0.50f), RoundedCornerShape(50))
+                        .background(brand.peach)
+                        .border(1.dp, brand.primary.copy(alpha = 0.30f), RoundedCornerShape(50))
                         .clickable(role = Role.Button, onClickLabel = "Staff Hub", onClick = onStaff)
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center,
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    LineIcon(if (isAdmin) "crown" else "briefcase", brand.primary, size = 14.dp)
                     Text(
-                        text = if (isAdmin) "👑 Staff" else "👔 Staff",
+                        text = "Staff",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            color = if (isAdmin) brand.primary else brand.ink,
+                            color = brand.primaryText,
                         ),
                     )
                 }
@@ -1449,20 +1510,17 @@ private fun RunningLate(slug: String) {
     val shape = RoundedCornerShape(brand.radius.dp)
 
     Row(
-        // A gap below too: the page scrolls under the notice, and a card cut off right at its edge looked stuck to it.
         Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 8.dp)
-            .background(brand.danger.copy(alpha = 0.10f), shape).border(1.dp, brand.danger.copy(alpha = 0.35f), shape)
-            .padding(start = 0.dp),
+            .background(Color(0xFFFEF3C7), shape).border(1.dp, Color(0xFFF59E0B), shape)
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        Box(Modifier.width(5.dp).heightIn(min = 96.dp).background(brand.primary, RoundedCornerShape(topStart = brand.radius.dp, bottomStart = brand.radius.dp)))
-        Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-            LineIcon("clock", brand.danger, size = 30.dp)
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Running late", style = MaterialTheme.typography.titleLarge)
-                active.forEach { Text(it.text.orEmpty(), style = MaterialTheme.typography.bodyLarge) }
-                Text("The times in CampBuddy already include this.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-            }
+        LineIcon("clock", Color(0xFFB45309), size = 24.dp)
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text("Schedule Running Late", style = MaterialTheme.typography.titleMedium.copy(color = Color(0xFF92400E), fontWeight = FontWeight.Bold))
+            active.forEach { Text(it.text.orEmpty(), style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF92400E))) }
+            Text("Your Schedule & My Day times updated automatically.", style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFB45309)))
         }
     }
 }

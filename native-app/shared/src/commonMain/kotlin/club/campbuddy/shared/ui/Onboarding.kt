@@ -42,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import club.campbuddy.shared.data.Profile
 import club.campbuddy.shared.domain.Onboarding
@@ -121,7 +122,15 @@ fun OnboardingCard(onDone: () -> Unit) {
                             modifier = Modifier.heightIn(min = 44.dp).clickable(role = Role.Button) { if (step == last) finish() else step++ }.padding(horizontal = 8.dp).wrapContentHeight(Alignment.CenterVertically),
                         )
                         Spacer(Modifier.weight(1f))
-                        PrimaryButton(if (step == last) "Finish" else words("common.next") + "  ›", { if (step == last) finish() else step++ })
+                        Box(
+                            Modifier.heightIn(min = 44.dp).clip(Radii.pill).background(brand.ink).clickable(role = Role.Button) { if (step == last) finish() else step++ }.padding(horizontal = 20.dp, vertical = 10.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                if (step == last) "Finish" else "Continue →",
+                                style = MaterialTheme.typography.labelLarge.copy(color = Color.White),
+                            )
+                        }
                     }
                     Text(
                         "Skip all questions",
@@ -157,10 +166,33 @@ private fun StepBody(step: Int, draft: Profile, change: (Profile) -> Unit) {
             StepIcon("sparkles")
             Text("What describes you?", style = question)
             Text("We use this to suggest talks, Contributor Day teams and people to meet.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
                 Onboarding.TAGS.forEach { tag ->
-                    ChoicePill(tag.replaceFirstChar { it.uppercase() }, selected = tag in draft.interests) {
-                        change(draft.copy(interests = Onboarding.toggleTag(draft.interests, tag)))
+                    val on = tag in draft.interests
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(if (on) brand.background else Color.White)
+                            .border(if (on) 1.5.dp else 1.dp, if (on) brand.primary else brand.line, RoundedCornerShape(14.dp))
+                            .clickable(role = Role.Checkbox) { change(draft.copy(interests = Onboarding.toggleTag(draft.interests, tag))) }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            tag.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp, color = brand.ink),
+                        )
+                        Box(
+                            Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .background(if (on) brand.primary else Color(0xFFF1F5F9)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            if (on) LineIcon("check", Color.White, size = 13.dp)
+                        }
                     }
                 }
             }

@@ -270,10 +270,10 @@ private fun MoreRow(icon: String, title: String, sub: String, onClick: () -> Uni
 private fun MoreSubPage(api: ApiClient, token: String, page: String, onEvent: (OrganizerEvent) -> Unit, onExpired: () -> Unit, onBack: () -> Unit) {
     val brand = LocalBrand.current
     PlatformBackHandler(true, onBack)
-    Column(Modifier.fillMaxSize()) {
-        Row(Modifier.fillMaxWidth().background(brand.background).padding(start = 4.dp, top = 4.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxSize().background(ORG_DARK_BG)) {
+        Row(Modifier.fillMaxWidth().background(ORG_DARK_BG).padding(start = 4.dp, top = 4.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
             OrgIconButton("chevron-left", "Back", onBack, filled = false)
-            Text(when (page) { "errors" -> "Errors"; "feedback" -> "Feedback"; "activity" -> "Manager activity"; "analytics" -> "Analytics"; else -> "Maintenance" }, style = MaterialTheme.typography.titleLarge)
+            Text(when (page) { "errors" -> "Errors"; "feedback" -> "Feedback"; "activity" -> "Manager activity"; "analytics" -> "Analytics"; else -> "Maintenance" }, style = MaterialTheme.typography.titleLarge.copy(color = androidx.compose.ui.graphics.Color.White))
         }
         Box(Modifier.weight(1f)) {
             when (page) {
@@ -383,7 +383,7 @@ private fun FeedbackPage(api: ApiClient, token: String, onExpired: () -> Unit) {
                             Text("★".repeat(f.rating.coerceIn(0, 5)) + "☆".repeat((5 - f.rating).coerceIn(0, 5)), style = MaterialTheme.typography.titleMedium.copy(color = brand.accent), modifier = Modifier.weight(1f))
                             orgWhen(f.at)?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                         }
-                        Text(f.comment ?: "No comment", style = MaterialTheme.typography.bodyMedium.copy(color = if (f.comment == null) brand.muted else brand.ink))
+                        Text(f.comment ?: "No comment", style = MaterialTheme.typography.bodyMedium.copy(color = if (f.comment == null) ORG_DARK_MUTED else androidx.compose.ui.graphics.Color.White))
                         f.event?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                     }
                 }
@@ -522,7 +522,7 @@ private fun ReportTable(title: String, rows: List<Map<String, String>>, events: 
             }
         }
         (if (all) rows else rows.take(10)).forEach { row ->
-            Row(Modifier.fillMaxWidth().background(brand.background, Radii.input).padding(vertical = 4.dp, horizontal = 4.dp)) {
+            Row(Modifier.fillMaxWidth().background(ORG_DARK_INPUT, Radii.input).padding(vertical = 4.dp, horizontal = 4.dp)) {
                 columns.forEachIndexed { i, c ->
                     val raw = row[c].orEmpty()
                     val shown = when {
@@ -531,7 +531,7 @@ private fun ReportTable(title: String, rows: List<Map<String, String>>, events: 
                         c == "engagementRate" -> "${((raw.toDoubleOrNull() ?: 0.0) * 100).toInt()}%"
                         else -> raw.ifBlank { "(not set)" }
                     }
-                    Text(shown, style = MaterialTheme.typography.bodySmall.copy(color = if (i == 0) brand.ink else brand.muted, fontSize = 12.sp), modifier = Modifier.weight(if (i == 0) 2f else 1f), maxLines = 2)
+                    Text(shown, style = MaterialTheme.typography.bodySmall.copy(color = if (i == 0) androidx.compose.ui.graphics.Color.White else ORG_DARK_MUTED, fontSize = 12.sp), modifier = Modifier.weight(if (i == 0) 2f else 1f), maxLines = 2)
                 }
             }
         }

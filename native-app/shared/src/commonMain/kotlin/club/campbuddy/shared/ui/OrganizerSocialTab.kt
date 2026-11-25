@@ -379,7 +379,7 @@ private fun ArtworkEditor(ctx: EventCtx, kit: SocialKitData, onSaved: () -> Unit
 @Composable
 private fun ArtRow(piece: ArtPiece, inUse: Boolean, busy: Boolean, onKind: ((String) -> Unit)?, onToggle: () -> Unit) {
     val brand = LocalBrand.current
-    Column(Modifier.fillMaxWidth().background(brand.background, RoundedCornerShape(8.dp)).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(Modifier.fillMaxWidth().background(ORG_DARK_INPUT, RoundedCornerShape(8.dp)).padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.size(64.dp).clip(Radii.input).background(brand.line)) {
                 RemoteImage(piece.url, Modifier.size(64.dp), contentScale = ContentScale.Crop) {}

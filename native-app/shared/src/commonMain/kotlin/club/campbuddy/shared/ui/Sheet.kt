@@ -46,6 +46,8 @@ fun Sheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val brand = LocalBrand.current
+    val darkOrg = LocalOrgDarkMode.current
+    val sheetBg = if (darkOrg) androidx.compose.ui.graphics.Color(0xFF1E293B) else brand.surface
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(
             Modifier.fillMaxSize().clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClose),
@@ -54,7 +56,7 @@ fun Sheet(
             Column(
                 Modifier.widthIn(max = 480.dp).fillMaxWidth().statusBarsPadding().imePadding()
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .background(brand.surface)
+                    .background(sheetBg)
                     .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = {})
                     .navigationBarsPadding()
                     .padding(start = 16.dp, end = 16.dp, top = if (grab) 8.dp else 20.dp, bottom = 16.dp),

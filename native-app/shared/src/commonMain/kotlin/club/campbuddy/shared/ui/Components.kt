@@ -152,16 +152,20 @@ fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
 fun Card(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, content: @Composable () -> Unit) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(brand.radius.dp)
+    val darkOrg = LocalOrgDarkMode.current
+    val bg = if (darkOrg) Color(0xFF1E293B) else Color.White
+    val borderColor = if (darkOrg) Color(0xFF334155) else brand.line
     val base = modifier
         .fillMaxWidth()
-        .shadow(4.dp, shape, clip = false, ambientColor = brand.ink.copy(alpha = 0.14f), spotColor = brand.ink.copy(alpha = 0.14f))
-        // The website's card surface is white (mixins card-surface), on the warm page.
-        .background(Color.White, shape)
-        .border(1.dp, brand.line, shape)
+        .clip(shape)
+        .background(bg, shape)
+        .border(1.dp, borderColor, shape)
         .let { if (onClick != null) it.clickable(role = Role.Button, onClick = onClick) else it }
         .padding(16.dp)
     Box(base) { content() }
 }
+
+val LocalOrgDarkMode = androidx.compose.runtime.compositionLocalOf { false }
 
 @Composable
 fun SectionTitle(text: String) {
@@ -417,21 +421,36 @@ fun BannerCard(
     }
 }
 
-/** A choice chip, as the website's .chip: ink on the page colour with a thin line; chosen = gold with ink words. */
+/** A choice chip matching M02/M31: crisp light hairline in Attendee mode, Dark Ops pill in Staff/Admin mode. */
 @Composable
 fun CbChip(selected: Boolean, onClick: () -> Unit, label: @Composable () -> Unit) {
     val brand = LocalBrand.current
+    val darkOrg = LocalOrgDarkMode.current
     FilterChip(
         selected = selected,
         onClick = onClick,
         label = label,
-        colors = FilterChipDefaults.filterChipColors(
-            containerColor = brand.surface,
-            labelColor = brand.ink,
-            selectedContainerColor = brand.accent,
-            selectedLabelColor = brand.ink,
+        colors = if (darkOrg) {
+            FilterChipDefaults.filterChipColors(
+                containerColor = Color(0xFF1E293B),
+                labelColor = Color(0xFFCBD5E1),
+                selectedContainerColor = Color(0xFFD97706),
+                selectedLabelColor = Color.White,
+            )
+        } else {
+            FilterChipDefaults.filterChipColors(
+                containerColor = Color.White,
+                labelColor = brand.ink,
+                selectedContainerColor = brand.ink,
+                selectedLabelColor = Color.White,
+            )
+        },
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = selected,
+            borderColor = if (darkOrg) Color(0xFF334155) else brand.line,
+            selectedBorderColor = if (darkOrg) Color(0xFFD97706) else brand.ink,
         ),
-        border = FilterChipDefaults.filterChipBorder(enabled = true, selected = selected, borderColor = brand.line, selectedBorderColor = brand.accent),
     )
 }
 
@@ -443,23 +462,38 @@ fun LinkButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier)
     }
 }
 
-/** The website's rounded choice button: the chosen one is gold with a tick, the others have a thin border. */
+/** Clean pill choice button matching M02/M09/M15: deep navy when selected, white hairline unselected (or dark-surface in Organizer mode). */
 @Composable
 fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
+    val darkOrg = LocalOrgDarkMode.current
     val shape = RoundedCornerShape(50)
+    val bg = when {
+        selected && darkOrg -> brand.primary
+        selected -> brand.ink
+        darkOrg -> Color(0xFF1E293B)
+        else -> Color.White
+    }
+    val border = when {
+        selected && darkOrg -> brand.primary
+        selected -> brand.ink
+        darkOrg -> Color(0xFF334155)
+        else -> brand.line
+    }
+    val fg = if (selected || darkOrg) Color.White else brand.ink
     Row(
-        Modifier.heightIn(min = 44.dp)
-            .background(if (selected) brand.accent else brand.surface, shape)
-            .border(1.dp, if (selected) brand.accent else brand.line, shape)
+        Modifier.heightIn(min = 40.dp)
+            .clip(shape)
+            .background(bg, shape)
+            .border(1.dp, border, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .semantics { this.selected = selected }
             .padding(horizontal = 14.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
-        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.SemiBold))
+        if (selected) LineIcon("check", fg, size = 14.dp)
+        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = fg, fontWeight = FontWeight.SemiBold, fontSize = 13.sp))
     }
 }
 

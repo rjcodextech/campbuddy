@@ -67,7 +67,7 @@ import kotlinx.datetime.Clock
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
+fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean, startMine: Boolean = false) {
     val env = LocalEnv.current
     val words = LocalWords.current
     val brand = LocalBrand.current
@@ -75,7 +75,8 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
     val scope = rememberCoroutineScope()
     val zone = EventClock.zone(event.timezone)
     var query by rememberSaveable { mutableStateOf("") }
-    var mine by rememberSaveable { mutableStateOf(false) }
+    var mine by rememberSaveable(event.slug, startMine) { mutableStateOf(startMine) }
+    var detailSession by remember { mutableStateOf<Session?>(null) }
     var dayFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var trackFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var typeFilter by rememberSaveable { mutableStateOf<String?>(null) }
@@ -151,6 +152,20 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         ) { Text("Want CampBuddy to remind you a few minutes before the sessions you save start?", style = MaterialTheme.typography.bodyLarge) }
     }
 
+    detailSession?.let { sx ->
+        SessionDetailSheet(
+            session = sx,
+            zone = zone,
+            speakers = sx.speakerIds.mapNotNull { names[it] },
+            saved = sx.id in savedIds,
+            alertsEnabled = user.notifications.enabled,
+            onToggleSave = { star(sx) },
+            onToggleReminder = { askFor = true },
+            onOpenUrl = { url -> env.deps.openUrl(url) },
+            onClose = { detailSession = null },
+        )
+    }
+
     val speakerNames = names
     val days = sessions.mapNotNull { s -> EventClock.startOf(s)?.let { EventClock.day(it, zone) } }.distinct().sorted()
     val now = Clock.System.now()
@@ -191,9 +206,12 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
         }
         item(key = "notifications-off") { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone) }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Segment("Full schedule", selected = !mine) { mine = false }
-                Segment("My schedule", selected = mine) { mine = true }
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(50)).background(Color(0xFFE2E8F0)).padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Segment("Full schedule", selected = !mine, modifier = Modifier.weight(1f)) { mine = false }
+                Segment("My schedule (${savedSessions.size})", selected = mine, modifier = Modifier.weight(1f)) { mine = true }
             }
         }
         item { SearchField(query) { query = it } }
@@ -277,6 +295,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean) {
                                 saved = session.id in savedIds,
                                 last = i == ordered.lastIndex,
                                 onStar = { star(session) },
+                                onOpenDetail = { detailSession = session },
                                 status = if (mine) statusById[session.id] else null,
                                 started = mine && (EventClock.startOf(session)?.let { it <= nowInstant } == true),
                                 onStatus = { st -> user.setSessionStatus(event.slug, session.id, st) },
@@ -312,18 +331,29 @@ private fun fullDayLabel(date: kotlinx.datetime.LocalDate): String {
     return "$weekday, $month ${date.dayOfMonth}"
 }
 
-/** The website's two-way switch: the chosen side is peach, the other has a thin border. */
+/** Pill switcher segment matching M07 / M09. */
 @Composable
-private fun Segment(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun Segment(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val brand = LocalBrand.current
     Box(
-        Modifier.heightIn(min = 44.dp)
-            .background(if (selected) brand.peach else Color.Transparent, Radii.input)
-            .border(1.dp, if (selected) Color.Transparent else brand.line, Radii.input)
+        modifier.heightIn(min = 40.dp)
+            .clip(RoundedCornerShape(50))
+            .background(if (selected) Color.White else Color.Transparent, RoundedCornerShape(50))
             .clickable(role = Role.Tab, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
-    ) { Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink)) }
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelLarge.copy(
+                color = if (selected) brand.primaryText else brand.muted,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
+                fontSize = 13.sp,
+            ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
 
 @Composable
@@ -356,76 +386,203 @@ private fun DayPill(label: String, selected: Boolean, onClick: () -> Unit) {
     val brand = LocalBrand.current
     val shape = RoundedCornerShape(50)
     Row(
-        Modifier.heightIn(min = 48.dp)
-            .background(if (selected) brand.accent else brand.surface, shape)
-            .border(1.dp, if (selected) brand.accent else brand.line, shape)
+        Modifier.heightIn(min = 38.dp)
+            .clip(shape)
+            .background(if (selected) brand.ink else Color.White, shape)
+            .border(1.dp, if (selected) brand.ink else brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 16.dp, vertical = 7.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (selected) Text("✓", style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
-        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = brand.ink))
+        if (selected) LineIcon("check", Color.White, size = 14.dp)
+        Text(label, style = MaterialTheme.typography.labelLarge.copy(color = if (selected) Color.White else brand.ink, fontSize = 13.sp))
     }
 }
 
 @Composable
-private fun SessionRow(session: Session, zone: kotlinx.datetime.TimeZone, now: kotlinx.datetime.Instant, speakers: List<String>, saved: Boolean, last: Boolean, onStar: () -> Unit, status: String? = null, started: Boolean = false, onStatus: (String) -> Unit = {}) {
+private fun SessionRow(
+    session: Session,
+    zone: kotlinx.datetime.TimeZone,
+    now: kotlinx.datetime.Instant,
+    speakers: List<String>,
+    saved: Boolean,
+    last: Boolean,
+    onStar: () -> Unit,
+    onOpenDetail: () -> Unit = {},
+    status: String? = null,
+    started: Boolean = false,
+    onStatus: (String) -> Unit = {},
+) {
     val brand = LocalBrand.current
-    var open by remember { mutableStateOf(false) }
     val start = EventClock.startOf(session)
     val end = EventClock.endOf(session)
     val live = start != null && end != null && now >= start && now < end
-    val hasMore = !session.description.isNullOrBlank()
     val type = when (session.sessionType) { "session" -> "Talk"; "custom" -> "Activity"; null -> null; else -> session.sessionType.replaceFirstChar { it.uppercase() } }
-
     val timeLabel = start?.let { EventClock.time(it, zone) } ?: "TBA"
-    val timeStyle = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold)
+    val room = session.trackNames.firstOrNull()
 
-    // Phones (under 480dp, like the website): the time sits on its own line above the title instead of in a
-    // 64dp column beside it, so a long talk title gets the row's full width.
-    BoxWithConstraints(Modifier.fillMaxWidth().background(if (live) brand.peach else Color.Transparent)) {
-    val stacked = maxWidth < 480.dp
-    Column(Modifier.fillMaxWidth()) {
-        if (stacked) Text(timeLabel, style = timeStyle, modifier = Modifier.padding(top = 12.dp))
-        Row(Modifier.fillMaxWidth().padding(top = if (stacked) 4.dp else 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.Top) {
-            if (!stacked) Text(timeLabel, style = timeStyle, modifier = Modifier.padding(top = 2.dp).width(64.dp))
-            Column(Modifier.weight(1f)) {
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 21.dp).clickable(enabled = hasMore, role = Role.Button) { open = !open },
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    SoftUnderlineText(
-                        session.title,
-                        style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 20.8.sp),
-                        modifier = Modifier.weight(1f, fill = false),
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(Color.White)
+            .border(if (live) 1.5.dp else 1.dp, if (live) Color(0xFFFB923C) else brand.line, RoundedCornerShape(16.dp))
+            .clickable(role = Role.Button, onClick = onOpenDetail)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier.clip(RoundedCornerShape(50))
+                    .background(if (live) brand.peach else Color(0xFFF1F5F9))
+                    .padding(horizontal = 10.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    if (live) "Live · $timeLabel" else timeLabel,
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = if (live) brand.primaryText else brand.muted,
+                        fontWeight = FontWeight.Bold,
+                    ),
+                )
+            }
+            if (!room.isNullOrBlank()) {
+                Text(
+                    room,
+                    style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontWeight = FontWeight.SemiBold),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+
+        Text(
+            session.title,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, fontSize = 15.5.sp, lineHeight = 20.sp, color = brand.ink),
+        )
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                if (speakers.isNotEmpty()) {
+                    Text(
+                        speakers.joinToString(", "),
+                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted, fontWeight = FontWeight.Medium),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    if (hasMore) LineIcon("chevron-down", brand.muted, size = 14.dp)
                 }
-                if (speakers.isNotEmpty()) Text(speakers.joinToString(", "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted), modifier = Modifier.padding(top = 4.dp))
-                val tags = listOfNotNull(session.trackNames.firstOrNull(), type).joinToString(" · ").uppercase()
-                if (live || tags.isNotEmpty()) {
-                    Row(Modifier.padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                        if (live) Text("● LIVE NOW", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
-                        if (tags.isNotEmpty()) Text(tags, style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 0.72.sp, fontWeight = FontWeight.SemiBold))
-                    }
+                if (!type.isNullOrBlank()) {
+                    Text(type.uppercase(), style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp))
                 }
-                if (started) {
-                    Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        StatusButton("✓ Attended", status == "attended", false) { onStatus("attended") }
-                        StatusButton("✗ Missed", status == "missed", true) { onStatus("missed") }
-                    }
-                }
-                if (open && hasMore) Text(session.description.orEmpty(), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp))
             }
             Box(
-                Modifier.offset(x = 10.dp).size(44.dp).clickable(role = Role.Button, onClick = onStar)
+                Modifier.size(40.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onStar)
                     .semantics { contentDescription = if (saved) "Remove from My Day" else "Save to My Day"; role = Role.Button },
                 contentAlignment = Alignment.Center,
             ) { LineIcon("star", if (saved) brand.accent else brand.muted, size = 22.dp, filled = saved) }
         }
-        if (!last) Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+
+        if (started) {
+            Row(Modifier.padding(top = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatusButton("✓ Attended", status == "attended", false) { onStatus("attended") }
+                StatusButton("✗ Missed", status == "missed", true) { onStatus("missed") }
+            }
+        }
     }
+}
+
+/** M08 Session Detail & Reminder Sheet. */
+@Composable
+private fun SessionDetailSheet(
+    session: Session,
+    zone: kotlinx.datetime.TimeZone,
+    speakers: List<String>,
+    saved: Boolean,
+    alertsEnabled: Boolean,
+    onToggleSave: () -> Unit,
+    onToggleReminder: () -> Unit,
+    onOpenUrl: (String) -> Unit,
+    onClose: () -> Unit,
+) {
+    val brand = LocalBrand.current
+    val timeLabel = EventClock.startOf(session)?.let { EventClock.time(it, zone) } ?: "Time TBA"
+    val room = session.trackNames.firstOrNull() ?: "Main Hall"
+
+    Sheet(title = "Session Details", onClose = onClose) {
+        if (speakers.isNotEmpty()) {
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(14.dp)).padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(44.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
+                    LineIcon("mic", brand.primary, size = 20.dp)
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(speakers.joinToString(", "), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text("Featured Speaker", style = MaterialTheme.typography.bodySmall.copy(color = brand.primaryText))
+                }
+            }
+        }
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.clip(RoundedCornerShape(50)).background(brand.peach).padding(horizontal = 12.dp, vertical = 5.dp)) {
+                Text(timeLabel, style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+            }
+            Text(room, style = MaterialTheme.typography.labelMedium.copy(color = brand.success, fontWeight = FontWeight.Bold))
+        }
+
+        Text(session.title, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold, fontSize = 20.sp, lineHeight = 25.sp))
+
+        session.description?.takeIf { it.isNotBlank() }?.let {
+            Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+        }
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                Modifier.weight(1f).heightIn(min = 46.dp).clip(RoundedCornerShape(50))
+                    .background(if (saved) brand.accent else brand.primary)
+                    .clickable(role = Role.Button, onClick = onToggleSave)
+                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    LineIcon("star", Color.White, size = 16.dp, filled = saved)
+                    Text(if (saved) "Saved to My Day" else "Save to My Day", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontSize = 13.sp))
+                }
+            }
+        }
+
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(14.dp))
+                .clickable(role = Role.Switch, onClick = onToggleReminder).padding(14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("Remind me 10 mins before", style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp))
+                Text("Works offline at the venue", style = MaterialTheme.typography.bodySmall.copy(color = brand.success))
+            }
+            Box(
+                Modifier.size(width = 48.dp, height = 28.dp).background(if (alertsEnabled) brand.success else Color(0xFFCBD5E1), RoundedCornerShape(50)).padding(3.dp),
+                contentAlignment = if (alertsEnabled) Alignment.CenterEnd else Alignment.CenterStart,
+            ) {
+                Box(Modifier.size(22.dp).background(Color.White, CircleShape))
+            }
+        }
+
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(14.dp)).padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LineIcon("map-pin", brand.primary, size = 20.dp)
+            Column {
+                Text(room, style = MaterialTheme.typography.titleMedium.copy(fontSize = 14.sp))
+                Text("Venue hall & session track", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+            }
+        }
     }
 }
 
@@ -502,15 +659,18 @@ private fun ScheduleHealthBanner(
                 }
             }
 
-            Box(
+            Row(
                 Modifier
                     .clip(RoundedCornerShape(50))
                     .background(if (conflictCount == 0) brand.success.copy(alpha = 0.12f) else brand.danger.copy(alpha = 0.12f))
                     .border(1.dp, if (conflictCount == 0) brand.success.copy(alpha = 0.35f) else brand.danger.copy(alpha = 0.35f), RoundedCornerShape(50))
                     .padding(horizontal = 10.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                LineIcon(if (conflictCount == 0) "check" else "shield-alert", if (conflictCount == 0) brand.success else brand.danger, size = 12.dp)
                 Text(
-                    if (conflictCount == 0) "✓ 0 Conflicts" else "⚠️ $conflictCount Conflicts",
+                    if (conflictCount == 0) "0 Conflicts" else "$conflictCount Conflicts",
                     style = MaterialTheme.typography.labelSmall.copy(
                         color = if (conflictCount == 0) brand.success else brand.danger,
                         fontWeight = FontWeight.Bold,

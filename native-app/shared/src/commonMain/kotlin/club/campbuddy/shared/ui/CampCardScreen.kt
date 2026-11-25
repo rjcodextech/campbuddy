@@ -119,6 +119,9 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
     val shown = if (live) saved else SAMPLE
     val faceData = CardFaceData(eventName, logo, mark, shown, sample = !live)
     val layers = CAMP_CARD_LAYOUTS.associate { (key, _) -> key to rememberGraphicsLayer() }
+    val carouselState = androidx.compose.foundation.lazy.rememberLazyListState()
+    var activeStyleIndex by rememberSaveable { mutableStateOf(1) }
+    var scannerOpen by remember { mutableStateOf(false) }
 
     // ---- the attendee-list copy ----
     var share by remember { mutableStateOf(env.user.share(slug)) }
@@ -191,8 +194,38 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
         }
     }
 
+    if (scannerOpen) {
+        QrConnectSheet(
+            eventName = eventName,
+            onOpenUrl = { url -> env.deps.openUrl(url) },
+            onClose = { scannerOpen = false },
+        )
+    }
+
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item { Text(words("tabs.camp_card"), style = MaterialTheme.typography.headlineSmall) }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(words("tabs.camp_card"), style = MaterialTheme.typography.headlineSmall)
+                Box(
+                    Modifier.size(40.dp).clip(CircleShape).background(brand.peach).clickable(role = Role.Button, onClickLabel = "Scan or Connect QR") { scannerOpen = true },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    LineIcon("camera", brand.primary, size = 20.dp)
+                }
+            }
+        }
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                CAMP_CARD_LAYOUTS.forEachIndexed { idx, (_, label) ->
+                    item(key = "style-$label") {
+                        ChoicePill(label, selected = activeStyleIndex == idx) {
+                            activeStyleIndex = idx
+                            scope.launch { carouselState.animateScrollToItem(idx) }
+                        }
+                    }
+                }
+            }
+        }
         item {
             ClaimProfileBanner(
                 share = share,
@@ -207,15 +240,24 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
             )
         }
         item {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            LazyRow(state = carouselState, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 CAMP_CARD_LAYOUTS.forEach { (key, label) ->
                     item(key = key) {
                         Card(Modifier.fillParentMaxWidth(0.915f)) {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 Text(label, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted, fontWeight = FontWeight.SemiBold))
                                 CampCardFace(key, faceData, Modifier.capture(layers.getValue(key)))
                                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    IconButtonOutline("share", "Share", Modifier.weight(1f)) { scope.launch { env.deps.shareImage(layers.getValue(key).toImageBitmap(), "campbuddy-$key.png") } }
+                                    Row(
+                                        Modifier.weight(1f).heightIn(min = 48.dp).clip(Radii.pill).background(brand.primary)
+                                            .clickable(role = Role.Button) { scope.launch { env.deps.shareImage(layers.getValue(key).toImageBitmap(), "campbuddy-$key.png") } }
+                                            .padding(horizontal = 12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        LineIcon("share", Color.White, size = 18.dp)
+                                        Text("Share", style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                                    }
                                     IconButtonOutline("download", "Download", Modifier.weight(1f)) {
                                         scope.launch { note = if (env.deps.saveImage(layers.getValue(key).toImageBitmap(), "campbuddy-$key.png")) "Saved to your photos." else "Could not save. Use Share instead." }
                                     }
@@ -440,11 +482,11 @@ private fun TagInput(tags: List<String>, onChange: (List<String>) -> Unit) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     tags.forEach { tag ->
                         Row(
-                            Modifier.background(brand.peach, RoundedCornerShape(50)).padding(start = 10.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                            Modifier.background(brand.ink, RoundedCornerShape(50)).padding(start = 12.dp, end = 8.dp, top = 5.dp, bottom = 5.dp),
                             horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(tag, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold))
-                            Box(Modifier.size(20.dp).clickable(role = Role.Button, onClickLabel = "Remove $tag") { onChange(tags - tag) }, contentAlignment = Alignment.Center) { LineIcon("x", brand.ink, size = 12.dp) }
+                            Text(tag, style = MaterialTheme.typography.bodyMedium.copy(color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 12.sp))
+                            Box(Modifier.size(20.dp).clickable(role = Role.Button, onClickLabel = "Remove $tag") { onChange(tags - tag) }, contentAlignment = Alignment.Center) { LineIcon("x", Color.White, size = 12.dp) }
                         }
                     }
                 }
@@ -581,7 +623,7 @@ private fun ClaimProfileBanner(
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("Verified Attendee", style = MaterialTheme.typography.labelSmall.copy(color = brand.success, fontWeight = FontWeight.Bold))
                         Text("•", style = MaterialTheme.typography.labelSmall.copy(color = brand.muted))
-                        Text(share.attendeeName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+                        Text(share.name, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
                     }
                     Text("Linked to Attendee List", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
                 }
@@ -592,6 +634,50 @@ private fun ClaimProfileBanner(
                 modifier = Modifier.clickable(role = Role.Button, onClick = onUnlink).padding(4.dp),
             )
         }
+    }
+}
+
+@Composable
+private fun QrConnectSheet(eventName: String, onOpenUrl: (String) -> Unit, onClose: () -> Unit) {
+    val brand = LocalBrand.current
+    var link by remember { mutableStateOf("") }
+    Sheet(
+        onClose = onClose,
+        head = {
+            Column {
+                Text("Scan or Connect CampCard", style = MaterialTheme.typography.titleLarge)
+                Text(eventName, style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+            }
+        },
+        actions = {
+            SheetActions(
+                primary = "Open Profile",
+                onPrimary = {
+                    val trimmed = link.trim()
+                    if (trimmed.isNotBlank()) {
+                        val url = if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) trimmed else "https://$trimmed"
+                        onOpenUrl(url)
+                    }
+                    onClose()
+                },
+                secondary = "Close",
+                onSecondary = onClose,
+                enabled = link.isNotBlank(),
+            )
+        },
+    ) {
+        Text(
+            "Point your phone camera at another attendee's CampCard QR code to open their badge directly in CampBuddy, or paste a shared profile link below.",
+            style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
+        )
+        androidx.compose.material3.OutlinedTextField(
+            value = link,
+            onValueChange = { link = it.take(300) },
+            label = { Text("Shared CampCard or profile URL") },
+            placeholder = { Text("https://campbuddy.club/...") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 
