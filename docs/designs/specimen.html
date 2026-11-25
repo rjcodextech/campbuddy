@@ -1137,9 +1137,16 @@
     .studio-grid { display: grid; grid-template-columns: 320px 1fr; gap: 32px; align-items: start; }
     .studio-card { background: #FFFFFF; border: 1px solid var(--line); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 14px; }
     .field-mock { background: #F8FAFC; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--ink); font-weight: 500; }
+    .web-png-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(680px, 1fr)); gap: 32px; }
+    .web-png-card { display: flex; flex-direction: column; gap: 12px; }
+    .web-png-bezel { width: 100%; border-radius: 18px; border: 1.5px solid #334155; background: #0F172A; box-shadow: 0 22px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06); overflow: hidden; cursor: zoom-in; transition: transform 0.2s ease; }
+    .web-png-bezel:hover { transform: translateY(-4px); }
+    .web-png-bezel img { width: 100%; height: auto; display: block; }
+    .web-meta-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .web-meta-sub { font-size: 12px; color: var(--muted-light); line-height: 1.45; }
     .lightbox-modal { display: none; position: fixed; inset: 0; background: rgba(11,17,32,0.92); z-index: 9999; align-items: center; justify-content: center; padding: 24px; }
     .lightbox-modal.open { display: flex; }
-    .lightbox-modal img { max-height: 88vh; max-width: 92vw; border-radius: 32px; border: 6px solid #1E293B; box-shadow: 0 30px 70px rgba(0,0,0,0.7); }
+    .lightbox-modal img { max-height: 88vh; max-width: 92vw; border-radius: 20px; border: 4px solid #334155; box-shadow: 0 30px 70px rgba(0,0,0,0.7); }
     .lightbox-close { position: fixed; top: 20px; right: 26px; background: #1E293B; border: 1px solid #334155; color: #FFFFFF; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
     .admin-main { min-width: 0; }
     .admin-main > div:first-child { flex-wrap: wrap; gap: 12px; }
@@ -1148,6 +1155,7 @@
       .admin-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
       .studio-grid { grid-template-columns: 1fr; }
       .web-hero-grid { grid-template-columns: 1fr; }
+      .web-png-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -1201,7 +1209,7 @@
 </svg>
 
       <span>2. Website Frontend (Web UI)</span>
-      <span class="count-badge">7 Screens</span>
+      <span class="count-badge">14 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('pwa')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1209,7 +1217,7 @@
 </svg>
 
       <span>3. Progressive Web App (PWA)</span>
-      <span class="count-badge">5 Screens</span>
+      <span class="count-badge">7 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('admin')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1217,7 +1225,7 @@
 </svg>
 
       <span>4. Admin Operations Panel</span>
-      <span class="count-badge">4 Screens</span>
+      <span class="count-badge">6 Screens</span>
     </button>
   </nav>
 
@@ -1904,7 +1912,7 @@
   </main>
 
   <!-- ========================================== -->
-  <!-- TAB 2: WEBSITE FRONTEND (7 SCREENS)        -->
+  <!-- TAB 2: WEBSITE FRONTEND (14 SCREENS)       -->
   <!-- ========================================== -->
   <main id="section-web" class="section-container">
     <div class="section-intro">
@@ -1912,370 +1920,233 @@
         <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/>
 </svg>
- Website Frontend (Desktop Web UI)</h2>
-        <p>Responsive web discovery, WordCamp Delhi dashboard, multi-track schedule matrix, speakers, seamless sponsor showcase, CampCard web studio, and venue guide.</p>
+ Website Frontend (Responsive Desktop Web UI)</h2>
+        <p>All 14 FigCraft-rendered desktop web screens (1280×780) spanning Public Discovery, Onboarding &amp; Sync, Guide, DPDP Privacy, Roster Removal, Sponsor Deal Portal, Multi-Track Matrix, People Discovery, Attendee Chat, Quests, CampCard Studio &amp; Memories.</p>
       </div>
-      <span class="badge-pill badge-pill-gold">Desktop 1280px+ Viewports · 7 Complete Web Screens</span>
+      <span class="badge-pill badge-pill-gold">14 Refined FigCraft Web Screens · 1280×780 Desktop</span>
     </div>
 
-    <div class="screens-grid-desktop">
-
-      <!-- Web 01: Landing Discovery Stage -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots">
-            <div class="browser-dot" style="background:#EF4444;"></div>
-            <div class="browser-dot" style="background:#F59E0B;"></div>
-            <div class="browser-dot" style="background:#10B981;"></div>
-          </div>
-          <div class="browser-url-pill">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
-</svg>
-
-            <span>https://campbuddy.club/</span>
-          </div>
-        </div>
-
-        <div class="browser-viewport">
-          <nav class="web-navbar">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <img src="assets/campbuddy_wordmark.png" style="height:34px; width:auto;" alt="CampBuddy" onerror="this.src='docs/designs/assets/campbuddy_wordmark.png'">
-              <span style="height:22px; width:1px; background:var(--line);"></span>
-              <img src="assets/delhi_favicon.png" style="height:30px; width:30px; border-radius:50%; object-fit:contain;" alt="WordCamp Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'">
-            </div>
-            <div class="web-nav-links">
-              <a href="#wordcamps">WordCamps</a>
-              <a href="#about">About</a>
-              <a href="#guide">First-Timer Guide</a>
-              <button class="btn-outline-lg" style="padding:7px 16px; font-size:12px;">Open on phone</button>
-              <button class="btn-coral-lg" style="padding:8px 20px; font-size:12px;">Install App</button>
-            </div>
-          </nav>
-
-          <div class="web-hero-grid">
-            <div class="web-hero-left">
-              <div class="badge-pill badge-pill-gold" style="margin-bottom:12px;">December 12–13, 2026 · DAIC New Delhi</div>
-              <h1>Make the most of your <span style="color:var(--coral);">WordCamp</span></h1>
-              <p>
-                Navigate multi-track schedules at Dr. Ambedkar International Centre, curate your personal My Day timetable, and swap digital CampCards via camera — zero paper clutter and no sign-up needed.
-              </p>
-              <div class="web-cta-row">
-                <button class="btn-coral-lg">Choose Your WordCamp</button>
-                <button class="btn-outline-lg">First WordCamp Guide →</button>
-              </div>
-            </div>
-            <div style="border-radius:20px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,0.1); border:1px solid var(--line);">
-              <img src="assets/delhi_skyline.webp" style="width:100%; height:260px; object-fit:cover;" alt="Delhi Skyline" onerror="this.src='docs/designs/assets/delhi_skyline.webp'">
-            </div>
-          </div>
-
-          <div class="web-stats-bar">
-            <div class="stat-item"><span class="stat-number">2 Days</span><span class="stat-label">Contributor &amp; Conf</span></div>
-            <div class="stat-item"><span class="stat-number">22 Talks</span><span class="stat-label">AI, SEO &amp; Enterprise</span></div>
-            <div class="stat-item"><span class="stat-number">11 Keynotes</span><span class="stat-label">Verified Speakers</span></div>
-            <div class="stat-item"><span class="stat-number">17 Brands</span><span class="stat-label">Verified Sponsors</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 02: Event Companion Dashboard -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
-          <div class="browser-url-pill"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#94A3B8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
-</svg>
-<span>https://campbuddy.club/event/wordcamp-delhi-2026</span></div>
-        </div>
-        <div class="browser-viewport">
-          <div class="studio-grid">
-            <div class="tactile-hero-card" style="padding:24px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <span class="hero-pretitle">LIVE EVENT DASHBOARD</span>
-                <div style="background:#FFFFFF; border-radius:50%; width:42px; height:42px; padding:3px;">
-                  <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi">
-                </div>
-              </div>
-              <div class="hero-clock">10:30 AM</div>
-              <div class="hero-meta-line"><span>Day 1 • Dec 12, 2026</span><span>•</span><span>DAIC New Delhi</span></div>
-              <div class="hero-next-pill" style="margin-top:14px;">
-                <div class="next-pill-text">
-                  <div class="next-pill-title">Next: Local SEO in the AI Era</div>
-                  <div class="next-pill-sub">Pankaj Kumar · BHIM Hall · in 15m</div>
-                </div>
-                <button class="btn-gold">View</button>
-              </div>
-            </div>
-
-            <div style="display:flex; flex-direction:column; gap:16px;">
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
-                <div class="studio-card" style="padding:16px;">
-                  <div style="font-size:11px; font-weight:700; color:var(--coral); text-transform:uppercase;">Happening Now</div>
-                  <div style="font-family:var(--font-heading); font-size:16px; font-weight:800;">From Feature to Ecosystem</div>
-                  <div style="font-size:12px; color:var(--muted);">Radhika Bhama &amp; Raitis Sevelis · BHIM Auditorium</div>
-                </div>
-                <div class="studio-card" style="padding:16px; background:var(--paper-soft); border-color:#FED7AA;">
-                  <div style="font-size:11px; font-weight:700; color:var(--wine); text-transform:uppercase;">First Time at WordCamp?</div>
-                  <div style="font-family:var(--font-heading); font-size:16px; font-weight:800;">5-Minute Venue &amp; Jargon Guide</div>
-                  <div style="font-size:12px; color:var(--muted);">Hall locations, Metro exits &amp; Contributor Day basics</div>
-                </div>
-              </div>
-              <div class="tactile-2col-grid" style="grid-template-columns:repeat(3, 1fr);">
-                <div class="tactile-card"><div class="tactile-card-title">My Day</div><div class="tactile-card-sub">4 saved sessions</div></div>
-                <div class="tactile-card"><div class="tactile-card-title">People Discovery</div><div class="tactile-card-sub">11 speakers · Waves</div></div>
-                <div class="tactile-card"><div class="tactile-card-title">Sponsors &amp; Deals</div><div class="tactile-card-sub">17 brands · Codes</div></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 03: Multi-Track Schedule Matrix -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots">
-            <div class="browser-dot" style="background:#EF4444;"></div>
-            <div class="browser-dot" style="background:#F59E0B;"></div>
-            <div class="browser-dot" style="background:#10B981;"></div>
-          </div>
-          <div class="browser-url-pill">https://campbuddy.club/event/wordcamp-delhi-2026/my-day</div>
-        </div>
-
-        <div class="browser-viewport">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <div>
-              <h2 style="font-family:var(--font-heading); font-size:26px; font-weight:800; color:var(--navy);">Conference Schedule Browser</h2>
-              <p style="font-size:13px; color:var(--muted);">Filter by track, room, and bookmark sessions to your offline itinerary.</p>
-            </div>
-            <div style="display:flex; gap:10px;">
-              <button class="btn-coral-lg" style="font-size:12px; padding:8px 16px;">Day 1: Contributor Day</button>
-              <button class="btn-outline-lg" style="font-size:12px; padding:8px 16px; background:#FFFFFF;">Day 2: Main Conference</button>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns: 120px 1fr 1fr; gap:16px;">
-            <div style="font-weight:700; font-size:12px; color:var(--muted); text-transform:uppercase;">Time</div>
-            <div style="font-weight:700; font-size:12px; color:var(--navy); text-transform:uppercase; background:#F1F5F9; padding:8px 12px; border-radius:8px;">Track 1: BHIM Auditorium (Main Stage)</div>
-            <div style="font-weight:700; font-size:12px; color:var(--navy); text-transform:uppercase; background:#F1F5F9; padding:8px 12px; border-radius:8px;">Track 2: Contributor &amp; Dev Lounge</div>
-
-            <div style="font-weight:700; font-size:13px; color:var(--wine); padding-top:10px;">10:00 AM</div>
-            <div class="session-item-card">
-              <span class="time-badge">30m Keynote</span>
-              <div class="session-title">From Feature to Ecosystem: How to Build WordPress Products That Last</div>
-              <div style="font-size:11px; color:var(--muted);">Radhika Bhama (VP Product) &amp; Raitis Sevelis (WPBakery)</div>
-            </div>
-            <div class="session-item-card" style="background:#F8FAFC;">
-              <span class="time-badge">Table Kickoff</span>
-              <div class="session-title">Core &amp; Gutenberg Architecture Review</div>
-              <div style="font-size:11px; color:var(--muted);">Amit Singh (WPoets)</div>
-            </div>
-
-            <div style="font-weight:700; font-size:13px; color:var(--wine); padding-top:10px;">11:20 AM</div>
-            <div class="session-item-card" style="border-left: 3px solid var(--coral);">
-              <span class="time-badge" style="background:#FEE2E2; color:#DC2626;">20m Tactical Talk</span>
-              <div class="session-title">10 Things to Do to Boost Local SEO in the AI Era</div>
-              <div style="font-size:11px; color:var(--muted);">Pankaj Kumar (Pankaj Kumar SEO)</div>
-            </div>
-            <div class="session-item-card" style="background:#F8FAFC;">
-              <span class="time-badge">Workshop</span>
-              <div class="session-title">Documentation &amp; HelpHub Sprint</div>
-              <div style="font-size:11px; color:var(--muted);">Shreya Agarwal</div>
-            </div>
-
-            <div style="font-weight:700; font-size:13px; color:var(--wine); padding-top:10px;">04:00 PM</div>
-            <div class="session-item-card" style="grid-column: 2 / span 2; border: 1px solid #F59E0B;">
-              <div style="display:flex; justify-content:space-between;">
-                <span class="time-badge" style="background:#FEF3C7; color:#B45309;">60m Featured Panel</span>
-                <span style="font-size:11px; font-weight:700; color:var(--coral);">Full Hall Plenary</span>
-              </div>
-              <div class="session-title">PANEL: The Value Shift in the AI Era — When Everyone Can Build a Website, What Makes Yours Matter?</div>
-              <div style="font-size:11px; color:var(--muted); margin-top:4px;">Panelists: Radhika Bhama, Amit Singh, Om Asnani, Abhay Kulkarni</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 04: Verified Speaker Showcase -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots">
-            <div class="browser-dot" style="background:#EF4444;"></div>
-            <div class="browser-dot" style="background:#F59E0B;"></div>
-            <div class="browser-dot" style="background:#10B981;"></div>
-          </div>
-          <div class="browser-url-pill">https://campbuddy.club/event/wordcamp-delhi-2026/explore#people</div>
-        </div>
-
-        <div class="browser-viewport">
-          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
-            <div>
-              <h2 style="font-family:var(--font-heading); font-size:26px; font-weight:800; color:var(--navy);">WordCamp Delhi 2026 Keynote Speakers &amp; People</h2>
-              <p style="font-size:13px; color:var(--muted);">Verified speakers, organizers, table leads, and mutual interest matches.</p>
-            </div>
-            <div style="display:flex; gap:8px;">
-              <span class="filter-chip active">All (420)</span>
-              <span class="filter-chip">Speakers (11)</span>
-              <span class="filter-chip">Organizers (13)</span>
-              <span class="filter-chip">Table Leads</span>
-            </div>
-          </div>
-
-          <div class="speaker-catalog-grid">
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/pankaj_kumar.webp" alt="Pankaj Kumar" onerror="this.src='docs/designs/assets/pankaj_kumar.webp'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Pankaj Kumar</div><div class="speaker-role">Founder @ Pankaj Kumar SEO</div><div class="speaker-talk-tag">Talk: 10 Things to Do to Boost Local SEO in the AI Era</div></div>
-            </div>
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/radhika_bhama.jpg" alt="Radhika Bhama" onerror="this.src='docs/designs/assets/radhika_bhama.jpg'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Radhika Bhama</div><div class="speaker-role">VP Product &amp; Community Leader</div><div class="speaker-talk-tag">Talk: From Feature to Ecosystem &amp; AI Value Panel</div></div>
-            </div>
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/amit_singh.webp" alt="Amit Singh" onerror="this.src='docs/designs/assets/amit_singh.webp'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Amit Kumar Singh</div><div class="speaker-role">Managing Partner @ WPoets</div><div class="speaker-talk-tag">Talk: Enterprise Architectures &amp; AI Shift Panel</div></div>
-            </div>
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/shammi_proothi.webp" alt="Shammi Proothi" onerror="this.src='docs/designs/assets/shammi_proothi.webp'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Shammi Proothi</div><div class="speaker-role">VP @ ANON Global Foundation</div><div class="speaker-talk-tag">Talk: Cited but Not Recommended in AI Search</div></div>
-            </div>
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/om_asnani.webp" alt="Om Asnani" onerror="this.src='docs/designs/assets/om_asnani.webp'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Omprakash Asnani</div><div class="speaker-role">AI Workflows Lead @ Outskill</div><div class="speaker-talk-tag">Talk: Content at Scale Without Drowning Editors</div></div>
-            </div>
-            <div class="speaker-card-detailed">
-              <div class="speaker-card-img-wrap"><img src="assets/abhay_kulkarni.webp" alt="Abhay Kulkarni" onerror="this.src='docs/designs/assets/abhay_kulkarni.webp'"></div>
-              <div class="speaker-card-body"><div class="speaker-name">Abhay Kulkarni</div><div class="speaker-role">India's First n8n Ambassador</div><div class="speaker-talk-tag">Talk: AI Automation for WordPress Agencies</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 05: Verified Sponsors & Deals Wall -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots">
-            <div class="browser-dot" style="background:#EF4444;"></div>
-            <div class="browser-dot" style="background:#F59E0B;"></div>
-            <div class="browser-dot" style="background:#10B981;"></div>
-          </div>
-          <div class="browser-url-pill">https://campbuddy.club/event/wordcamp-delhi-2026/explore#sponsors</div>
-        </div>
-
-        <div class="browser-viewport">
-          <div style="margin-bottom:24px;">
-            <h2 style="font-family:var(--font-heading); font-size:26px; font-weight:800; color:var(--navy);">Verified WordCamp Delhi Sponsors &amp; Perks</h2>
-            <p style="font-size:13px; color:var(--muted);">Seamless sponsor logo matrix across Platinum, Bronze, Startup, and After Party tiers.</p>
-          </div>
-
-          <div style="display:flex; flex-direction:column; gap:24px;">
-            <div>
-              <div style="font-size:12px; font-weight:700; color:var(--coral); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Bronze &amp; Platform Sponsors</div>
-              <div class="sponsor-logos-matrix">
-                <div class="sponsor-card-box"><img src="assets/sponsor_elementor.webp" alt="Elementor" onerror="this.src='docs/designs/assets/sponsor_elementor.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_nexgi.webp" alt="NexGi" onerror="this.src='docs/designs/assets/sponsor_nexgi.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_cookieadmin.webp" alt="CookieAdmin" onerror="this.src='docs/designs/assets/sponsor_cookieadmin.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_pankaj_seo.webp" alt="Pankaj Kumar SEO" onerror="this.src='docs/designs/assets/sponsor_pankaj_seo.webp'"></div>
-              </div>
-            </div>
-
-            <div>
-              <div style="font-size:12px; font-weight:700; color:var(--wine); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;">Startup, Community &amp; After Party Sponsors</div>
-              <div class="sponsor-logos-matrix">
-                <div class="sponsor-card-box"><img src="assets/sponsor_housewise.webp" alt="Housewise" onerror="this.src='docs/designs/assets/sponsor_housewise.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_zuptek.webp" alt="Zuptek" onerror="this.src='docs/designs/assets/sponsor_zuptek.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_digiliance.webp" alt="Digiliance" onerror="this.src='docs/designs/assets/sponsor_digiliance.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_montaki.webp" alt="Montaki" onerror="this.src='docs/designs/assets/sponsor_montaki.webp'"></div>
-                <div class="sponsor-card-box"><img src="assets/sponsor_wpfusion.webp" alt="WPFusion" onerror="this.src='docs/designs/assets/sponsor_wpfusion.webp'"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 06: CampCard Badge Studio -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
-          <div class="browser-url-pill">https://campbuddy.club/event/wordcamp-delhi-2026/camp-card</div>
-        </div>
-        <div class="browser-viewport">
-          <div style="margin-bottom:20px;">
-            <h2 style="font-family:var(--font-heading); font-size:26px; font-weight:800; color:var(--navy);">CampCard Digital Badge Studio</h2>
-            <p style="font-size:13px; color:var(--muted);">Customize your digital pass across 7 styles, control shared fields, and export 900 DPI print-ready badges.</p>
-          </div>
-          <div class="studio-grid">
-            <div class="campcard-badge-container" style="border-width:1.5px;">
-              <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div style="background:#FFFFFF; border-radius:50%; width:36px; height:36px; padding:2px;">
-                  <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi">
-                </div>
-                <span class="campcard-role">SPEAKER</span>
-              </div>
-              <div style="width:76px; height:76px; border-radius:50%; border:2.5px solid #D97706; overflow:hidden;">
-                <img src="assets/amit_singh.webp" style="width:100%; height:100%; object-fit:cover;" alt="Amit">
-              </div>
-              <div class="campcard-name">Amit Kumar Singh</div>
-              <div style="font-size:11px; color:#94A3B8; margin-top:-6px;">Managing Partner · WPoets</div>
-              <div class="campcard-qr"><img src="assets/qr_sample.png" style="width:124px; height:124px;" alt="CampCard QR"></div>
-              <div style="font-size:10px; color:#CBD5E1;">campbuddy.club · Offline Scannable QR</div>
-            </div>
-
-            <div class="studio-card">
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <span class="filter-chip">Ticket</span>
-                <span class="filter-chip active">Classic</span>
-                <span class="filter-chip">Minimal</span>
-                <span class="filter-chip">Bold</span>
-                <span class="filter-chip">Split</span>
-                <span class="filter-chip">Pass</span>
-              </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                <div class="field-mock">Name: Amit Kumar Singh</div>
-                <div class="field-mock">Role: Managing Partner</div>
-                <div class="field-mock">Company: WPoets</div>
-                <div class="field-mock">City: Pune / New Delhi</div>
-              </div>
-              <div style="background:var(--success-light); border:1px solid #A7F3D0; border-radius:12px; padding:12px; font-size:12px; color:#047857; font-weight:600;">
-                Saved on this device only · Linked to WordCamp Delhi roster listing
-              </div>
-              <div style="display:flex; gap:12px;">
-                <button class="btn-coral-lg" style="padding:10px 24px; font-size:13px;">Share CampCard</button>
-                <button class="btn-outline-lg" style="padding:10px 24px; font-size:13px; background:#FFFFFF;">Download 900 DPI PNG</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Web 07: Contributor Day & Venue Guide -->
-      <div class="desktop-browser-frame">
-        <div class="browser-top-bar">
-          <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
-          <div class="browser-url-pill">https://campbuddy.club/event/wordcamp-delhi-2026/guide</div>
-        </div>
-        <div class="browser-viewport">
-          <div class="web-hero-grid" style="margin-bottom:24px;">
-            <div>
-              <h2 style="font-family:var(--font-heading); font-size:26px; font-weight:800; color:var(--navy); margin-bottom:8px;">Venue, Contributor Day &amp; First-Timer Handbook</h2>
-              <p style="font-size:13px; color:var(--muted); margin-bottom:16px;">Dr. Ambedkar International Centre (DAIC), 15 Janpath Rd, Windsor Place, New Delhi · Metro: Janpath (Violet) &amp; Patel Chowk (Yellow).</p>
-              <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                <span class="filter-chip active">Core &amp; Gutenberg (Table 1 · Amit Singh)</span>
-                <span class="filter-chip">Documentation (Table 2 · Shreya Agarwal)</span>
-                <span class="filter-chip">Polyglots Hindi &amp; Urdu</span>
-              </div>
-            </div>
-            <div style="border-radius:16px; overflow:hidden; border:1px solid var(--line);">
-              <img src="assets/india_gate.jpg" style="width:100%; height:170px; object-fit:cover;" alt="India Gate New Delhi">
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div class="apk-filter-bar">
+      <button type="button" class="apk-filter-pill web-filter-pill active" onclick="filterWeb('all', this)">All Web Screens (14)</button>
+      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('public', this)">Public, Onboarding &amp; Info (6)</button>
+      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('workspace', this)">WordCamp Event Workspace (8)</button>
     </div>
+
+    
+        <section class="apk-group-block web-group-block" data-web-role="public">
+          <h3 class="apk-group-heading"><span>Group A · Public Discovery, Onboarding & Legal Pages (W01–W06)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
+          <div class="web-png-grid">
+            
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W01</span>
+                      <span>Landing & WordCamp Directory</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W01%20%C2%B7%20Landing%20%26%20WordCamp%20Directory.png')">
+                    <img src="screens/web/W01%20%C2%B7%20Landing%20%26%20WordCamp%20Directory.png" alt="W01 · Landing & WordCamp Directory" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Hero Banner · Delhi Skyline · Country Filter · Featured WordCamp Delhi · Desktop-to-Phone 6-Digit Sync</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W02</span>
+                      <span>Personalize Onboarding & Device Transfer</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/#personalize</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W02%20%C2%B7%20Personalize%20Onboarding%20%26%20Device%20Transfer.png')">
+                    <img src="screens/web/W02%20%C2%B7%20Personalize%20Onboarding%20%26%20Device%20Transfer.png" alt="W02 · Personalize Onboarding & Device Transfer" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">5-Step Web Interest Wizard · Encrypted QR Device Transfer · Zero-Login Browser Storage Guarantee</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W03</span>
+                      <span>About CampBuddy & Capabilities</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/about</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W03%20%C2%B7%20About%20CampBuddy%20%26%20Capabilities.png')">
+                    <img src="screens/web/W03%20%C2%B7%20About%20CampBuddy%20%26%20Capabilities.png" alt="W03 · About CampBuddy & Capabilities" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Community-Built Companion · Offline Architecture · Privacy Match Pillars · Android APK & Organizer Overview</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W04</span>
+                      <span>First-Timer Handbook & Venue Practicals</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../guide</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W04%20%C2%B7%20First-Timer%20Handbook%20%26%20Venue%20Practicals.png')">
+                    <img src="screens/web/W04%20%C2%B7%20First-Timer%20Handbook%20%26%20Venue%20Practicals.png" alt="W04 · First-Timer Handbook & Venue Practicals" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">India Gate 101 Hero · DAIC Address & Metro Stations · WordPress Jargon Decoder · Safety Desk Contact</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W05</span>
+                      <span>Privacy Policy & DPDP Act 2023 Rights</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/privacy</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W05%20%C2%B7%20Privacy%20Policy%20%26%20DPDP%20Act%202023%20Rights.png')">
+                    <img src="screens/web/W05%20%C2%B7%20Privacy%20Policy%20%26%20DPDP%20Act%202023%20Rights.png" alt="W05 · Privacy Policy & DPDP Act 2023 Rights" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Privacy & Terms Tabs · On-Device Data Scope · 90-Day Expiry · JSON Export & Erase Controls</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W06</span>
+                      <span>Attendee Roster Removal & Sponsor Deal Portal</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/sponsor-deals/submit</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W06%20%C2%B7%20Attendee%20Roster%20Removal%20%26%20Sponsor%20Deal%20Portal.png')">
+                    <img src="screens/web/W06%20%C2%B7%20Attendee%20Roster%20Removal%20%26%20Sponsor%20Deal%20Portal.png" alt="W06 · Attendee Roster Removal & Sponsor Deal Portal" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Instant Public Roster Self-Takedown Search · Verified Sponsor Coupon & Lead Capture Submission Form</div>
+                </div>
+              
+          </div>
+        </section>
+      
+        <section class="apk-group-block web-group-block" data-web-role="workspace">
+          <h3 class="apk-group-heading"><span>Group B · WordCamp Delhi Event Workspace & Chat (W07–W14)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">8 Screens</span></h3>
+          <div class="web-png-grid">
+            
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W07</span>
+                      <span>WordCamp Delhi Live Home Dashboard</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W07%20%C2%B7%20WordCamp%20Delhi%20Live%20Home%20Dashboard.png')">
+                    <img src="screens/web/W07%20%C2%B7%20WordCamp%20Delhi%20Live%20Home%20Dashboard.png" alt="W07 · WordCamp Delhi Live Home Dashboard" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Running-Late Notice Bar · Live Navy Clock Hero · 2×3 Hub Tiles · Keynote Peers Strip · Venue SOS Card</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W08</span>
+                      <span>Multi-Track Schedule Matrix & My Day</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../my-day</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W08%20%C2%B7%20Multi-Track%20Schedule%20Matrix%20%26%20My%20Day.png')">
+                    <img src="screens/web/W08%20%C2%B7%20Multi-Track%20Schedule%20Matrix%20%26%20My%20Day.png" alt="W08 · Multi-Track Schedule Matrix & My Day" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Two-Column Track Matrix (BHIM Hall & Dev Lounge) · Overlap Conflict Warning · Sticky Itinerary & PDF Export</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W09</span>
+                      <span>Explore: People Discovery & Waves</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../explore#people</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W09%20%C2%B7%20Explore_%20People%20Discovery%20%26%20Waves.png')">
+                    <img src="screens/web/W09%20%C2%B7%20Explore_%20People%20Discovery%20%26%20Waves.png" alt="W09 · Explore: People Discovery & Waves" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">5 Explore Tabs · Discovery Card Status · Incoming Hidden Wave Reveal · Mutual Match & Filterable Roster (420)</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W10</span>
+                      <span>Explore: Attendee Chat, Turn-Taking & Safety</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../explore#chat</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W10%20%C2%B7%20Explore_%20Attendee%20Chat%2C%20Turn-Taking%20%26%20Safety.png')">
+                    <img src="screens/web/W10%20%C2%B7%20Explore_%20Attendee%20Chat%2C%20Turn-Taking%20%26%20Safety.png" alt="W10 · Explore: Attendee Chat, Turn-Taking & Safety" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Mutual Match Thread Sidebar · Event Chat Window Timer · 3-Msg Daily Turn-Taking · CampCard Swap & Report Modal</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W11</span>
+                      <span>Explore: Verified Sponsors, Coupons & Free Steals</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../explore#sponsors</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W11%20%C2%B7%20Explore_%20Verified%20Sponsors%2C%20Coupons%20%26%20Free%20Steals.png')">
+                    <img src="screens/web/W11%20%C2%B7%20Explore_%20Verified%20Sponsors%2C%20Coupons%20%26%20Free%20Steals.png" alt="W11 · Explore: Verified Sponsors, Coupons & Free Steals" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Seamless Bronze & Startup Sponsor Matrix · Tear-Line Promo Code (WCDELHI30) · Free Community Steals</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W12</span>
+                      <span>Quests, Badges & Contributor Day</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../quest</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W12%20%C2%B7%20Quests%2C%20Badges%20%26%20Contributor%20Day.png')">
+                    <img src="screens/web/W12%20%C2%B7%20Quests%2C%20Badges%20%26%20Contributor%20Day.png" alt="W12 · Quests, Badges & Contributor Day" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Level 3 Progress Bar · Interactive Quests · Contributor Day Table Matcher & Team Leads (Core, Docs, Polyglots)</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W13</span>
+                      <span>CampCard Web Studio & 900 DPI Pass</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../camp-card</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W13%20%C2%B7%20CampCard%20Web%20Studio%20%26%20900%20DPI%20Pass.png')">
+                    <img src="screens/web/W13%20%C2%B7%20CampCard%20Web%20Studio%20%26%20900%20DPI%20Pass.png" alt="W13 · CampCard Web Studio & 900 DPI Pass" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Live Speaker Pass Preview · 6 Interactive Layouts · Field Privacy Controls · Roster Claim Toggle · 900 DPI Export</div>
+                </div>
+              
+                <div class="web-png-card">
+                  <div class="web-meta-row">
+                    <div class="screen-meta-title">
+                      <span class="screen-meta-badge">W14</span>
+                      <span>Post-Event Memories & Venue Info</span>
+                    </div>
+                    <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/.../memories</span>
+                  </div>
+                  <div class="web-png-bezel" onclick="openLightbox('screens/web/W14%20%C2%B7%20Post-Event%20Memories%20%26%20Venue%20Info.png')">
+                    <img src="screens/web/W14%20%C2%B7%20Post-Event%20Memories%20%26%20Venue%20Info.png" alt="W14 · Post-Event Memories & Venue Info" loading="lazy">
+                  </div>
+                  <div class="web-meta-sub">Official Photo Album & WordPress.tv Talks · Guest Wi-Fi Card · Keep or Auto-Delete After 90 Days Prompt</div>
+                </div>
+              
+          </div>
+        </section>
+      
   </main>
 
   <!-- ========================================== -->
-  <!-- TAB 3: PROGRESSIVE WEB APP (5 SCREENS)     -->
+  <!-- TAB 3: PROGRESSIVE WEB APP (7 SCREENS)     -->
   <!-- ========================================== -->
   <main id="section-pwa" class="section-container">
     <div class="section-intro">
@@ -2284,9 +2155,9 @@
   <path d="M13 2 3 14h9l-1 8 10-12h-9z"/>
 </svg>
  Progressive Web App (PWA Standalone)</h2>
-        <p>1-tap "Add to Home Screen", offline schedules stored locally on phone, conflict resolution, high-contrast QR CampCard, and venue directions.</p>
+        <p>1-tap "Add to Home Screen", offline schedules stored on device, conflict resolution, waves &amp; mutual match chat, quests, high-contrast QR CampCard, and venue safety.</p>
       </div>
-      <span class="badge-pill badge-pill-green">PWA Standalone · 5 Offline-Ready Screens</span>
+      <span class="badge-pill badge-pill-green">PWA Standalone · 7 Offline-Ready Screens</span>
     </div>
 
     <div class="screens-grid-phones">
@@ -2299,7 +2170,7 @@
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Offline · 98%</span></div>
           <div class="phone-scrollable" style="justify-content:center; align-items:center; text-align:center;">
             <div style="width:76px; height:76px; border-radius:20px; background:#FFFFFF; padding:6px; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid var(--line); margin-bottom:14px;">
-              <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="WordCamp Delhi">
+              <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="WordCamp Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'">
             </div>
             <h3 style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:var(--ink);">Install WordCamp Delhi</h3>
             <p style="font-size:11px; color:var(--muted); margin:6px 0 18px 0; max-width:260px;">Open straight from your home screen with schedules, bios, and your CampCard ready even without venue Wi-Fi.</p>
@@ -2328,10 +2199,10 @@
         <div class="screen-meta-title"><span class="screen-meta-badge">P02</span><span>Standalone Live Companion</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
-          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;"><span class="pulse-dot" style="width:6px; height:6px; display:inline-block;"></span> Ready · 98%</span></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">● Ready · 98%</span></div>
           <div class="phone-scrollable">
             <div class="app-bar">
-              <img src="assets/campbuddy_wordmark.png" style="height:26px; width:auto;" alt="CampBuddy">
+              <img src="assets/campbuddy_wordmark.png" style="height:26px; width:auto;" alt="CampBuddy" onerror="this.src='docs/designs/assets/campbuddy_wordmark.png'">
               <span class="role-badge-pill">Delhi 2026</span>
             </div>
             <div class="tactile-hero-card" style="padding:16px;">
@@ -2370,8 +2241,8 @@
           <div class="phone-scrollable">
             <div class="app-bar"><span style="font-family:var(--font-heading); font-size:18px; font-weight:800; color:var(--navy);">My Day</span><button class="btn-gold" style="font-size:9px; padding:5px 12px;">Add Calendar</button></div>
             <div style="background:#FFF5F5; border:1px solid #FCA5A5; border-radius:12px; padding:10px 12px;">
-              <div style="font-size:11px; font-weight:700; color:#DC2626;">Overlap at 11:00 AM</div>
-              <div style="font-size:10px; color:#64748B;">GEO Talk (BHIM) vs SEO Workshop</div>
+              <div style="font-size:11px; font-weight:700; color:#DC2626;">Overlap at 11:20 AM</div>
+              <div style="font-size:10px; color:#64748B;">Local SEO (BHIM) vs Docs Table</div>
             </div>
             <div class="session-item-card"><span class="time-badge">10:00 AM</span><div class="session-title">From Feature to Ecosystem</div><div style="font-size:10px; color:var(--muted);">Radhika Bhama · BHIM Hall</div></div>
             <div class="session-item-card"><span class="time-badge">11:20 AM</span><div class="session-title">Local SEO in the AI Era</div><div style="font-size:10px; color:var(--muted);">Pankaj Kumar · BHIM Hall</div></div>
@@ -2388,12 +2259,12 @@
           <div class="phone-scrollable" style="align-items:center;">
             <div class="campcard-badge-container" style="width:100%; border-width:1.5px;">
               <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div style="background:#FFFFFF; border-radius:50%; width:34px; height:34px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi"></div>
+                <div style="background:#FFFFFF; border-radius:50%; width:34px; height:34px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'"></div>
                 <span class="campcard-role">ATTENDEE</span>
               </div>
               <div class="campcard-name">Amit Kumar Singh</div>
               <div style="font-size:10px; color:#94A3B8;">Managing Partner · WPoets</div>
-              <div class="campcard-qr"><img src="assets/qr_sample.png" style="width:120px; height:120px;" alt="QR"></div>
+              <div class="campcard-qr"><img src="assets/qr_sample.png" style="width:120px; height:120px;" alt="QR" onerror="this.src='docs/designs/assets/qr_sample.png'"></div>
               <div style="font-size:10px; color:#CBD5E1;">Scan to save contact offline</div>
             </div>
             <button class="btn-outline-lg" style="width:100%; padding:10px; font-size:12px; background:#FFFFFF;">Download 900 DPI Card</button>
@@ -2408,8 +2279,9 @@
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Offline · 98%</span></div>
           <div class="phone-scrollable">
-            <img src="assets/india_gate.jpg" style="width:100%; height:110px; object-fit:cover; border-radius:14px;" alt="Delhi">
+            <img src="assets/india_gate.jpg" style="width:100%; height:110px; object-fit:cover; border-radius:14px;" alt="Delhi" onerror="this.src='docs/designs/assets/india_gate.jpg'">
             <div class="tactile-card"><div class="tactile-card-title">Dr. Ambedkar Intl. Centre</div><div class="tactile-card-sub">15 Janpath Rd · Metro: Janpath &amp; Patel Chowk</div></div>
+            <div class="tactile-card"><div class="tactile-card-title">Guest Wi-Fi: WCDELHI-GUEST</div><div class="tactile-card-sub">Passkey: CodeIsPoetry26 · Opens 8 AM</div></div>
             <div class="sticky-sos-wrap">
               <div class="sos-content"><div class="sos-heading">Need Immediate Support?</div><div class="sos-caption">Reach Safety Desk · delhi@wordcamp.org</div></div>
               <button class="btn-sos-red">Help</button>
@@ -2418,11 +2290,51 @@
         </div>
       </div>
 
+      <!-- PWA 06: Discovery Waves & Mutual Match Chat -->
+      <div class="phone-card-wrapper">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P06</span><span>Waves &amp; Mutual Chat</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Chat Open · 7 PM</span></div>
+          <div class="phone-scrollable">
+            <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Shammi Proothi</span><span class="role-badge-pill" style="background:#ECFDF5; color:#047857;">Mutual</span></div>
+            <div style="background:#ECFDF5; border:1px solid #86EFAC; border-radius:10px; padding:8px 10px; font-size:10px; font-weight:700; color:#047857;">Chat open until 7:00 PM · Day 1 of 2 · 3 msgs/day</div>
+            <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:10px 12px; font-size:11px; color:var(--ink);">
+              Hi Sunil! Saw your talk on headless WP security. Free after lunch?
+              <div style="font-size:9px; color:var(--muted); margin-top:4px;">Their message 1 of 3 · 11:20 AM</div>
+            </div>
+            <div style="background:var(--coral); border-radius:14px; padding:10px 12px; font-size:11px; color:#FFFFFF; align-self:flex-end; width:86%;">
+              Yes! Espresso stand at 2:15 PM?
+              <div style="font-size:9px; color:#FFE4DE; margin-top:4px; text-align:right;">Message 1 of 3 · sent ✓</div>
+            </div>
+            <div style="background:#FEF3C7; border:1px solid #F59E0B; border-radius:12px; padding:9px 11px; font-size:10px; color:#92400E; font-weight:600;">Waiting for their reply (2 left today) · Or Swap CampCard</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PWA 07: Quests & Contributor Day -->
+      <div class="phone-card-wrapper">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P07</span><span>Quests &amp; Contributor Day</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Saved Offline</span></div>
+          <div class="phone-scrollable">
+            <div class="tactile-hero-card" style="padding:14px;">
+              <div style="font-size:10px; color:#F59E0B; font-weight:800;">LEVEL 3 CONTRIBUTOR</div>
+              <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#FFFFFF; margin:3px 0;">5 of 9 Quests Done</div>
+              <div style="height:6px; background:#334155; border-radius:99px; overflow:hidden; margin-top:6px;"><div style="width:56%; height:100%; background:#F59E0B;"></div></div>
+            </div>
+            <div class="tactile-card" style="border-color:#10B981;"><div class="tactile-card-title">First Hello ✓</div><div class="tactile-card-sub">Introduced yourself to 3 peers</div></div>
+            <div class="tactile-card" style="background:var(--paper-soft); border-color:#FED7AA;"><div class="tactile-card-title">Table 1 · Core &amp; Gutenberg</div><div class="tactile-card-sub">Hall B · Lead: Amit Kumar Singh</div></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 
   <!-- ========================================== -->
-  <!-- TAB 4: ADMIN OPERATIONS PANEL (4 SCREENS)  -->
+  <!-- TAB 4: ADMIN OPERATIONS PANEL (6 SCREENS)  -->
   <!-- ========================================== -->
   <main id="section-admin" class="section-container">
     <div class="section-intro">
@@ -2431,9 +2343,9 @@
   <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
 </svg>
  Admin Operations Panel (Conference HQ)</h2>
-        <p>Live delay broadcaster, multi-channel announcements, media health &amp; sponsor leads export, and event manager roles.</p>
+        <p>Live delay broadcaster, push announcements, safety report triage, sponsor deal leads CSV export, contributor tables &amp; memories publisher, and SuperAdmin telemetry.</p>
       </div>
-      <span class="badge-pill badge-pill-coral">Staff &amp; Organizer Web Console · 4 Operations Screens</span>
+      <span class="badge-pill badge-pill-coral">Staff &amp; Organizer Web Console · 6 Operations Screens</span>
     </div>
 
     <div class="screens-grid-desktop">
@@ -2591,14 +2503,63 @@
             </div>
             <div class="campcard-badge-container" style="padding:18px; border-width:1.5px;">
               <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div style="background:#FFFFFF; border-radius:50%; width:32px; height:32px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi"></div>
+                <div style="background:#FFFFFF; border-radius:50%; width:32px; height:32px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'"></div>
                 <span style="font-size:10px; font-weight:700; color:#F59E0B;">WORDCAMP DELHI 2026</span>
               </div>
-              <div style="width:76px; height:76px; border-radius:50%; border:2px solid var(--coral); overflow:hidden;"><img src="assets/pankaj_kumar.webp" style="width:100%; height:100%; object-fit:cover;" alt="Pankaj"></div>
+              <div style="width:76px; height:76px; border-radius:50%; border:2px solid var(--coral); overflow:hidden;"><img src="assets/pankaj_kumar.webp" style="width:100%; height:100%; object-fit:cover;" alt="Pankaj" onerror="this.src='docs/designs/assets/pankaj_kumar.webp'"></div>
               <div style="font-family:var(--font-heading); font-size:16px; font-weight:800;">Pankaj Kumar</div>
               <div style="font-size:11px; color:#CBD5E1; text-align:center;">Local SEO in the AI Era · BHIM Hall</div>
               <div style="font-size:10px; color:#10B981; font-weight:700;">campbuddy.club/delhi-2026</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin 05: Contributor Tables, Quests & Memories Publisher -->
+      <div class="desktop-browser-frame">
+        <div class="browser-top-bar">
+          <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+          <div class="browser-url-pill">https://campbuddy.club/admin/events/wordcamp-delhi-2026/tables</div>
+        </div>
+        <div class="admin-main" style="padding:28px 32px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+            <div class="admin-kpi-card" style="gap:10px;">
+              <span class="kpi-title">Contributor Day Tables (4 Active)</span>
+              <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:10px 14px; font-size:12px; color:#FFFFFF;">Table 1 · Core &amp; Gutenberg · Lead: Amit Kumar Singh</div>
+              <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:10px 14px; font-size:12px; color:#FFFFFF;">Table 2 · Documentation &amp; HelpHub · Lead: Shreya Agarwal</div>
+              <button class="btn-coral-lg" style="padding:8px 18px; font-size:12px; align-self:flex-start;">+ Add Contributor Table</button>
+            </div>
+            <div class="admin-kpi-card" style="gap:10px;">
+              <span class="kpi-title">Post-Event Memories &amp; Push Alerts</span>
+              <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:10px 14px; font-size:12px; color:#CBD5E1;">Photo Album: photos.google.com/wordcamp-delhi-2026</div>
+              <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:10px 14px; font-size:12px; color:#CBD5E1;">WordPress.tv: wordpress.tv/event/wordcamp-delhi-2026</div>
+              <div style="display:flex; gap:10px;">
+                <button class="btn-gold" style="padding:8px 16px; font-size:12px;">Save Links</button>
+                <button style="background:#10B981; color:#FFFFFF; border:none; border-radius:9999px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer;">Notify Attendees</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin 06: SuperAdmin Global Analytics & System Health -->
+      <div class="desktop-browser-frame">
+        <div class="browser-top-bar">
+          <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+          <div class="browser-url-pill">https://campbuddy.club/admin/analytics</div>
+        </div>
+        <div class="admin-main" style="padding:28px 32px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div>
+              <h3 style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:#FFFFFF;">SuperAdmin Platform Health &amp; GA4 Telemetry</h3>
+              <p style="font-size:12px; color:#94A3B8;">Cross-event visitor analytics, automated fetch checks &amp; Thank-You card ratings (4.9 / 5.0).</p>
+            </div>
+            <span class="badge-pill badge-pill-green">0 Critical Issues · 100% Healthy</span>
+          </div>
+          <div class="admin-kpi-grid" style="grid-template-columns:repeat(3, 1fr);">
+            <div class="admin-kpi-card"><span class="kpi-title">Active Visitors (7d)</span><span class="kpi-value">4,820</span><span class="kpi-trend">84% Avg Engagement</span></div>
+            <div class="admin-kpi-card"><span class="kpi-title">Platform Split</span><span class="kpi-value">68% / 32%</span><span class="kpi-trend">Mobile APK &amp; PWA vs Desktop</span></div>
+            <div class="admin-kpi-card"><span class="kpi-title">Attendee Rating</span><span class="kpi-value">4.9 ★</span><span class="kpi-trend">96 Verified Thank-You Cards</span></div>
           </div>
         </div>
       </div>
@@ -2610,7 +2571,7 @@
   <footer class="audit-bar">
     <div style="display:flex; flex-direction:column; gap:2px;">
       <span style="font-family:var(--font-heading); font-size:14px; font-weight:700; color:#FFFFFF;">Clean Design System · Zero Visual Clutter Guarantee</span>
-      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
+      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 14 Desktop Web screens · 7 PWA screens · 6 Admin screens (81 Total)</span>
     </div>
     <div class="audit-checkmarks">
       <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -2651,9 +2612,9 @@
     }
 
     function filterApk(role, btn) {
-      document.querySelectorAll('.apk-filter-pill').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#section-apk .apk-filter-pill').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      document.querySelectorAll('.apk-group-block').forEach(g => {
+      document.querySelectorAll('#section-apk .apk-group-block').forEach(g => {
         const cards = g.querySelectorAll('.phone-card-wrapper');
         if (role === 'chat') {
           let visibleCount = 0;
@@ -2667,6 +2628,14 @@
           cards.forEach(c => { c.style.display = ''; });
           g.style.display = (role === 'all' || g.dataset.apkRole === role) ? 'block' : 'none';
         }
+      });
+    }
+
+    function filterWeb(role, btn) {
+      document.querySelectorAll('#section-web .web-filter-pill').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('#section-web .web-group-block').forEach(g => {
+        g.style.display = (role === 'all' || g.dataset.webRole === role) ? 'block' : 'none';
       });
     }
 
