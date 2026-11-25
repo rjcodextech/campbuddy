@@ -40,6 +40,21 @@
         padding: v.$space-1 0 v.$space-3;
         scroll-padding-inline: 0;
     }
+
+    @media (min-width: 1024px) {
+        .cc-studio__preview & {
+            scroll-snap-type: x mandatory;
+            gap: v.$space-4;
+            padding: v.$space-1 2px v.$space-3;
+
+            .camp-card-scroll__item {
+                flex: 0 0 100%;
+                width: 100%;
+                max-width: 380px;
+                scroll-snap-align: center;
+            }
+        }
+    }
 }
 
 // Every item is the same width (fluid on phones, 344px on larger

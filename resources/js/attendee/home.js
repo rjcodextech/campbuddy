@@ -458,11 +458,16 @@ function renderTactileHero(ctx) {
 
   if (next && titleEl) {
     const diffSec = Math.round((next.startMs - nowMs) / 1000);
-    const timing = diffSec <= 0
-      ? 'HAPPENING NOW'
-      : diffSec < 3600
-        ? `STARTS IN ${Math.max(1, Math.round(diffSec / 60))}M`
-        : `STARTS IN ${Math.floor(diffSec / 3600)}H ${Math.round((diffSec % 3600) / 60)}M`;
+    let timing;
+    if (diffSec <= 0) {
+      timing = 'HAPPENING NOW';
+    } else if (diffSec < 3600) {
+      timing = `STARTS IN ${Math.max(1, Math.round(diffSec / 60))}M`;
+    } else if (diffSec < 86400) {
+      timing = `STARTS IN ${Math.floor(diffSec / 3600)}H ${Math.round((diffSec % 3600) / 60)}M`;
+    } else {
+      timing = formatDayTime(next.startMs).toUpperCase();
+    }
 
     if (metaEl) metaEl.textContent = `NEXT UP · ${timing}`;
     titleEl.textContent = next.title;

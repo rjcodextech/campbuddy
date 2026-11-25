@@ -156,15 +156,17 @@
         </section>
 
         {{-- Legacy home-section hooks kept in canonical order for offline/home JS hydration without visual clutter --}}
-        <section aria-labelledby="happening-now-heading" class="home-section u-visually-hidden" aria-hidden="true">
-            <h2 id="happening-now-heading">Happening now</h2>
-            <div id="happening-now"></div>
-        </section>
+        <div class="u-visually-hidden" aria-hidden="true" hidden>
+            <section aria-labelledby="happening-now-heading" class="home-section">
+                <h2 id="happening-now-heading">Happening now</h2>
+                <div id="happening-now"></div>
+            </section>
 
-        <section aria-labelledby="up-next-heading" class="home-section u-visually-hidden" aria-hidden="true">
-            <h2 id="up-next-heading">Up next</h2>
-            <div id="up-next"></div>
-        </section>
+            <section aria-labelledby="up-next-heading" class="home-section">
+                <h2 id="up-next-heading">Up next</h2>
+                <div id="up-next"></div>
+            </section>
+        </div>
 
         {{-- First-timers guide card (shown smoothly inside tactile home just like APK) --}}
         <div class="start-here" id="start-here">

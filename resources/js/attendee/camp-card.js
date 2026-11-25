@@ -122,6 +122,7 @@ export async function renderCampCard() {
   setupRequiredFields(form);
   renderAllPreviews(card ? { ...card, interests: normalizeInterests(card.interests) } : card);
   renderSocialBadges(card);
+  setupStylePills();
 
   // "Show my Camp Card on the attendee list" (card-share.js) — works from what is saved.
   const app = document.getElementById('app');
@@ -722,6 +723,49 @@ function updateClaimBanner(isShared) {
     if (title) title.textContent = 'Verified Attendee Profile';
     if (desc) desc.textContent = 'Claim your name on the public roster to link your CampCard.';
     if (btn) btn.textContent = 'Claim Profile';
+  }
+}
+
+function setupStylePills() {
+  const scroller = document.getElementById('camp-card-scroll');
+  const pillsRoot = document.getElementById('cc-style-pills');
+  if (!scroller || !pillsRoot) return;
+
+  const pills = [...pillsRoot.querySelectorAll('[data-layout-jump]')];
+  const cards = [...scroller.querySelectorAll('[data-layout-card]')];
+
+  const setActive = (key) => {
+    pills.forEach((pill) => {
+      const on = pill.dataset.layoutJump === key;
+      pill.classList.toggle('is-active', on);
+      pill.setAttribute('aria-pressed', String(on));
+    });
+  };
+
+  pills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const key = pill.dataset.layoutJump;
+      const target = cards.find((c) => c.dataset.layoutCard === key);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        setActive(key);
+      }
+    });
+  });
+
+  if ('IntersectionObserver' in window && cards.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const best = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (best?.target?.dataset?.layoutCard) {
+          setActive(best.target.dataset.layoutCard);
+        }
+      },
+      { root: scroller, threshold: 0.6 },
+    );
+    cards.forEach((card) => observer.observe(card));
   }
 }
 

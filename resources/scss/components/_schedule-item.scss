@@ -11,6 +11,25 @@
     background: var(--paper);
     padding: v.$space-5;
     margin-bottom: v.$space-4;
+
+    @media (min-width: 960px) {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: v.$space-3 v.$space-5;
+        align-items: start;
+
+        > :not(.schedule-item-row) {
+            grid-column: 1 / -1;
+        }
+
+        > .schedule-item-row {
+            border-bottom: 0;
+            border: 1px solid var(--surface-border);
+            border-radius: v.$radius-row;
+            padding: 0 v.$space-3;
+            background: var(--paper-soft);
+        }
+    }
 }
 
 .schedule-day-heading {
@@ -378,6 +397,30 @@
 
 
 // My Day's "More filters" fold (Track / Type / Topic).
+.my-day-controls {
+    @media (min-width: 768px) {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: v.$space-3 v.$space-4;
+        margin-bottom: v.$space-3;
+
+        .my-day-filter-row {
+            margin-bottom: 0;
+        }
+
+        .filters-panel {
+            margin: 0;
+        }
+
+        .filters-panel[open] {
+            flex: 0 0 100%;
+            width: 100%;
+            margin-top: v.$space-2;
+        }
+    }
+}
+
 .filters-panel {
     margin: 0 0 v.$space-3;
 

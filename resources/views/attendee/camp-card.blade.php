@@ -18,35 +18,46 @@
             <a href="#cc-share" class="profile-claim-banner__btn" id="profile-claim-btn">Claim Profile</a>
         </div>
 
-        <div class="camp-card-scroll" id="camp-card-scroll">
-            @foreach (['ticket' => 'Ticket', 'classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'] as $key => $label)
-                <div class="camp-card-scroll__item" data-layout-card="{{ $key }}">
-                    <p class="camp-card-scroll__label">{{ $label }}</p>
-
-                    @include('attendee.partials.camp-card-face', ['key' => $key, 'event' => $event])
-
-                    {{-- Clear visual hierarchy: Share leads as primary, Download as secondary. --}}
-                    <div class="qr__actions">
-                        <button type="button" class="btn btn--primary" data-share-card="{{ $key }}"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
-                        <button type="button" class="btn btn--outline" data-download-card="{{ $key }}"><x-attendee.line-icon name="download" /><span data-export-label>Download</span></button>
-                    </div>
+        @php($layouts = ['ticket' => 'Ticket', 'classic' => 'Classic', 'minimal' => 'Minimal', 'bold' => 'Bold', 'split' => 'Split', 'badge' => 'Badge', 'pass' => 'Pass'])
+        <div class="cc-studio">
+            <div class="cc-studio__preview">
+                <div class="cc-style-pills" id="cc-style-pills" role="group" aria-label="Jump to card style">
+                    @foreach ($layouts as $key => $label)
+                        <button type="button" class="cc-style-pill {{ $loop->first ? 'is-active' : '' }}" data-layout-jump="{{ $key }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}">{{ $label }}</button>
+                    @endforeach
                 </div>
-            @endforeach
-        </div>
 
-        {{-- Active Social Badges Dock --}}
-        <div class="social-badges-dock" id="cc-social-badges"></div>
+                <div class="camp-card-scroll" id="camp-card-scroll">
+                    @foreach ($layouts as $key => $label)
+                        <div class="camp-card-scroll__item" data-layout-card="{{ $key }}">
+                            <p class="camp-card-scroll__label">{{ $label }}</p>
 
-        {{-- Under the cards, not above them: it appears once camp-card.js has looked for a saved card,
-             and above the cards it pushed the whole gallery down as it came in (layout shift). --}}
-        <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
-            This is a preview. Fill in the form below to make it yours.
-        </p>
-        <p class="cc-print-note">
-            <strong>Print quality:</strong> 900&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
-        </p>
+                            @include('attendee.partials.camp-card-face', ['key' => $key, 'event' => $event])
 
-        <details class="cc-editor" open id="cc-edit-details">
+                            {{-- Clear visual hierarchy: Share leads as primary, Download as secondary. --}}
+                            <div class="qr__actions">
+                                <button type="button" class="btn btn--primary" data-share-card="{{ $key }}"><x-attendee.line-icon name="share" /><span data-export-label>Share</span></button>
+                                <button type="button" class="btn btn--outline" data-download-card="{{ $key }}"><x-attendee.line-icon name="download" /><span data-export-label>Download</span></button>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Active Social Badges Dock --}}
+                <div class="social-badges-dock" id="cc-social-badges"></div>
+
+                {{-- Under the cards, not above them: it appears once camp-card.js has looked for a saved card,
+                     and above the cards it pushed the whole gallery down as it came in (layout shift). --}}
+                <p id="camp-card-sample-note" class="footer-note" style="text-align:left" hidden>
+                    This is a preview. Fill in the form <span class="cc-note-beside">or switch styles</span> to make it yours.
+                </p>
+                <p class="cc-print-note">
+                    <strong>Print quality:</strong> 900&nbsp;DPI, sized for a 3&nbsp;×&nbsp;5&nbsp;in card.
+                </p>
+            </div>
+
+            <div class="cc-studio__editor">
+                <details class="cc-editor" open id="cc-edit-details">
             <summary class="cc-editor__summary">
                 <span class="section-head__title">Edit Camp Card</span>
                 <svg class="cc-editor__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6" /></svg>
@@ -152,6 +163,8 @@
             </div>
             <div id="cc-share-body" aria-live="polite"></div>
         </section>
+            </div>
+        </div>
 
         <div id="data-controls" style="margin-top:24px">
             @include('attendee.partials.data-controls')

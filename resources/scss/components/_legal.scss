@@ -198,6 +198,16 @@
 }
 
 // Legal Card: Standard container for sections
+.legal-shell {
+    max-width: 820px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.legal-nav {
+    justify-content: flex-start;
+}
+
 .legal-card {
     background: #ffffff;
     border: 1.5px solid rgba(15, 23, 42, 0.08);

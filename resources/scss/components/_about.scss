@@ -938,6 +938,12 @@
         padding: v.$space-8 v.$space-8 calc(v.$space-8 + 36px);
         text-align: center;
     }
+
+    @media (min-width: v.$bp-desktop) {
+        .guide-doc-content & {
+            text-align: left;
+        }
+    }
 }
 
 .hero-breadcrumb {
@@ -956,6 +962,12 @@
 
     @include m.tablet {
         justify-content: center;
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        .guide-doc-content & {
+            justify-content: flex-start;
+        }
     }
 
     a {
@@ -1044,11 +1056,12 @@
     &::after {
         content: '';
         position: absolute;
-        bottom: -4px;
+        bottom: -6px;
         left: 0;
         right: 0;
-        height: 6px;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8' fill='none'%3E%3Cpath d='M0 4C5 0 7 0 10 4C13 8 15 8 20 4C25 0 27 0 30 4C33 8 35 8 40 4' stroke='%23FF4D2D' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 24px 6px;
+        height: 5px;
+        opacity: 0.72;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8' fill='none'%3E%3Cpath d='M0 4C5 0 7 0 10 4C13 8 15 8 20 4C25 0 27 0 30 4C33 8 35 8 40 4' stroke='%23FF4D2D' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 24px 5px;
     }
 }
 
@@ -1060,6 +1073,12 @@
     line-height: 1.65;
     color: var(--muted);
     max-width: 40rem;
+
+    @media (min-width: v.$bp-desktop) {
+        .guide-doc-content & {
+            margin-left: 0;
+        }
+    }
 }
 
 .hero-creative__pills {
@@ -1112,6 +1131,12 @@
 
     @include m.tablet {
         justify-content: center;
+    }
+
+    @media (min-width: v.$bp-desktop) {
+        .guide-doc-content & {
+            justify-content: flex-start;
+        }
     }
 }
 

@@ -207,9 +207,9 @@
                                     <option value="__custom__">&plus; Other / Sponsor name not listed...</option>
                                 </select>
 
-                                <div x-show="loadingSponsors" class="text-xs text-muted mt-1 flex items-center gap-1.5">
+                                <div x-show="loadingSponsors" x-cloak class="text-xs text-muted mt-1.5 flex items-center gap-1.5">
                                     <x-icon name="arrow-path" class="h-3.5 w-3.5 animate-spin text-maroon-text" />
-                                    <span>Fetching event sponsors...</span>
+                                    <span>Loading ingested event sponsors...</span>
                                 </div>
                             </div>
 
@@ -501,6 +501,16 @@
                 </div>
             </div>
         </div>
+
+        <footer class="mt-12 pt-6 border-t border-line flex flex-wrap items-center justify-between gap-4 text-xs text-muted">
+            <p>&copy; {{ date('Y') }} {{ config('campbuddy.name') }} &middot; WordCamp Companion</p>
+            <nav class="flex flex-wrap items-center gap-4" aria-label="Portal Footer">
+                <a href="{{ route('home') }}" class="hover:text-maroon-text transition-colors">WordCamps</a>
+                <a href="{{ route('guide') }}" class="hover:text-maroon-text transition-colors">First-Timer Guide</a>
+                <a href="{{ route('privacy') }}" class="hover:text-maroon-text transition-colors">Privacy Notice</a>
+                <a href="{{ route('terms') }}" class="hover:text-maroon-text transition-colors">Terms of Use</a>
+            </nav>
+        </footer>
     </div>
 </body>
 </html>

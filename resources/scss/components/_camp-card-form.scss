@@ -10,6 +10,69 @@
 
 $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
 
+.cc-studio {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-5;
+
+    @media (min-width: 1024px) {
+        display: grid;
+        grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+        gap: v.$space-6;
+        align-items: start;
+    }
+}
+
+.cc-studio__preview {
+    min-width: 0;
+
+    @media (min-width: 1024px) {
+        position: sticky;
+        top: 84px;
+    }
+}
+
+.cc-studio__editor {
+    min-width: 0;
+
+    @media (min-width: 1024px) {
+        .cc-editor {
+            margin-top: 0;
+        }
+    }
+}
+
+.cc-style-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: v.$space-3;
+}
+
+.cc-style-pill {
+    padding: 6px 12px;
+    border-radius: v.$radius-full;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+    font: inherit;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+
+    @include m.hover {
+        border-color: var(--brand-primary);
+        color: var(--brand-text);
+    }
+
+    &.is-active {
+        background: var(--brand-primary);
+        border-color: var(--brand-primary);
+        color: #fff;
+    }
+}
+
 .cc-editor {
     margin-top: v.$space-6;
 }

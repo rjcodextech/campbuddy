@@ -7,9 +7,11 @@
 // rest of Home underneath it.
 .onboarding-card {
     @include m.card-surface;
-    border-top: 3px solid var(--brand-primary);
-    padding: v.$space-5;
-    margin-bottom: v.$space-5;
+    border: 1.5px solid rgba(255, 77, 45, 0.22);
+    background: linear-gradient(135deg, #ffffff 0%, #fffaf5 100%);
+    box-shadow: var(--shadow-card-elevated);
+    padding: v.$space-6;
+    margin-bottom: v.$space-6;
 }
 
 .onboarding-card__actions {

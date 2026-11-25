@@ -848,3 +848,24 @@ dialog.deal-lead-dialog {
     line-height: 1.3;
 }
 
+// Hide duplicate initial monogram whenever the real sponsor logo image loads cleanly.
+.sponsor-chip:has(.sponsor-chip__logo:not([hidden])) .sponsor-chip__monogram {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .sponsor-group__row {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .sponsor-group__row--single {
+        grid-template-columns: minmax(0, 440px);
+    }
+
+    .deal-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: v.$space-4;
+    }
+}
+

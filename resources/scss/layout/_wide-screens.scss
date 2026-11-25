@@ -8,10 +8,10 @@
 // container width, margins, and padding across all viewports.
 // ==========================================================================
 
-$shell-max: 1120px;
+$shell-max: 1280px;
 $sidebar-width: 220px;
-$content-max: 868px;
-$reading-max: 760px;
+$content-max: 1004px;
+$reading-max: 820px;
 $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
 
 // Standalone pages (Home, About, Guide, Brand Guidelines, Legal):

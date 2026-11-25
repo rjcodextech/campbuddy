@@ -25,7 +25,9 @@ test('only the new device can open what the old one sealed for it', async () => 
   await assert.rejects(open(sealed, stranger.privateKey, 'transfer-1'), 'another key cannot open it');
   await assert.rejects(open(sealed, phone.privateKey, 'transfer-2'), 'bound to its own request');
 
-  const tampered = { ...sealed, payload: sealed.payload.slice(0, -2) + (sealed.payload.endsWith('A') ? 'BA' : 'AA') };
+  const mid = Math.floor(sealed.payload.length / 2);
+  const flippedChar = sealed.payload[mid] === 'A' ? 'B' : 'A';
+  const tampered = { ...sealed, payload: sealed.payload.slice(0, mid) + flippedChar + sealed.payload.slice(mid + 1) };
   await assert.rejects(open(tampered, phone.privateKey, 'transfer-1'), 'an altered payload is refused');
 });
 
