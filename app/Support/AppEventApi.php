@@ -131,13 +131,7 @@ class AppEventApi
             $href = $contact($info['emergency_contact']);
             $help[] = $row('siren', 'Emergency contact', $info['emergency_contact'], $href ? ['label' => 'Call', 'type' => 'url', 'value' => $href] : null, alert: true);
         }
-        if (filled($info['registration_info'] ?? null)) {
-            $help[] = $row('ticket', 'Registration', $info['registration_info']);
-        }
-        if ($coc = $web($info['code_of_conduct_url'] ?? null)) {
-            $help[] = $row('clipboard', 'Code of Conduct', null, ['label' => 'Open', 'type' => 'url', 'value' => $coc]);
-        }
-
+        $ticketsUrl = null;
         $links = [];
         foreach (preg_split('/\r?\n/', trim((string) ($info['important_links'] ?? ''))) as $line) {
             $line = trim((string) $line);
@@ -145,6 +139,10 @@ class AppEventApi
                 continue;
             }
             if (preg_match('#https?://\S+#i', $line, $m)) {
+                $url = $web($m[0]);
+                if ($url && $ticketsUrl === null && preg_match('#/(tickets?|registration|register|bilet|billets|entradas)/?$#i', (string) parse_url($url, PHP_URL_PATH))) {
+                    $ticketsUrl = $url;
+                }
                 $label = trim(preg_replace('#\s*:?\s*https?://\S+#i', '', $line));
                 $parts = array_values(array_filter(explode('/', (string) parse_url($m[0], PHP_URL_PATH)), 'strlen'));
                 $last = end($parts);
@@ -153,6 +151,13 @@ class AppEventApi
             } else {
                 $links[] = $row('link', $line);
             }
+        }
+
+        if (filled($info['registration_info'] ?? null)) {
+            $help[] = $row('ticket', 'Registration', $info['registration_info'], $ticketsUrl ? ['label' => 'Get tickets', 'type' => 'url', 'value' => $ticketsUrl] : null);
+        }
+        if ($coc = $web($info['code_of_conduct_url'] ?? null)) {
+            $help[] = $row('clipboard', 'Code of Conduct', null, ['label' => 'Open', 'type' => 'url', 'value' => $coc]);
         }
 
         return array_values(array_filter([

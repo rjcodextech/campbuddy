@@ -217,7 +217,7 @@ class WordCampSitePages
     }
 
     /** The page's main content area, without the theme's header/nav/footer. */
-    private function scrapePage(string $url): ?string
+    public function scrapePage(string $url): ?string
     {
         $html = $this->fetchHtml($url);
 

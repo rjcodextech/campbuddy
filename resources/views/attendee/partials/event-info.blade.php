@@ -28,6 +28,10 @@
         'nearby_venue_info' => $info['nearby_venue_info'] ?? null,
     ], 'filled');
     $cocUrl = $webUrl($info['code_of_conduct_url'] ?? null);
+    $links = collect(preg_split('/\r?\n/', trim((string) ($info['important_links'] ?? ''))))->filter(fn ($l) => filled($l))->values();
+    $ticketsUrl = $links
+        ->map(fn ($line) => preg_match('#https?://\S+#i', (string) $line, $m) ? $webUrl($m[0]) : null)
+        ->first(fn (?string $u) => $u !== null && preg_match('#/(tickets?|registration|register|bilet|billets|entradas)/?$#i', (string) parse_url($u, PHP_URL_PATH)));
     $hasHelp = filled($info['emergency_contact'] ?? null) || filled($info['registration_info'] ?? null) || $cocUrl;
 
     // "https://x.wordcamp.org/2026/tickets/" → "Tickets"; the event's own home → "Event website".
@@ -40,7 +44,6 @@
 
         return \Illuminate\Support\Str::ucfirst(str_replace(['-', '_'], ' ', urldecode($last)));
     };
-    $links = collect(preg_split('/\r?\n/', trim((string) ($info['important_links'] ?? ''))))->filter(fn ($l) => filled($l))->values();
 @endphp
 
 <div class="info-head">
@@ -108,7 +111,17 @@
                     @endif
                 @endif
                 @if (filled($info['registration_info'] ?? null))
-                    <div class="useful-link"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="ticket" /></span><span class="info-row__main"><span class="useful-link__title">Registration</span><span class="useful-link__desc">{{ $info['registration_info'] }}</span></span></div>
+                    <div class="useful-link">
+                        <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="ticket" /></span>
+                        <span class="info-row__main">
+                            <span class="useful-link__title">Registration</span>
+                            <span class="useful-link__desc">{{ $info['registration_info'] }}</span>
+                            @if ($ticketsUrl)
+                                <a class="btn btn--outline btn--compact info-row__button" href="{{ $ticketsUrl }}"
+                                   target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="tickets">Get tickets <x-attendee.line-icon name="external" /></a>
+                            @endif
+                        </span>
+                    </div>
                 @endif
                 @if ($cocUrl)
                     <a class="useful-link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct"><span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span><span class="info-row__main"><span class="useful-link__title">Code of Conduct</span></span><span class="info-row__chevron" aria-hidden="true"><x-attendee.line-icon name="external" /></span></a>

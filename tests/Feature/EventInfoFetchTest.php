@@ -416,4 +416,49 @@ class EventInfoFetchTest extends TestCase
     {
         $this->post(route('admin.events.fetch-info', $this->event()))->assertRedirect(route('login'));
     }
+
+    public function test_tickets_page_with_intro_paragraphs_camptix_table_and_invited_speakers_program(): void
+    {
+        $index = [
+            ['id' => 1, 'slug' => 'tickets', 'link' => self::SITE.'/tickets/', 'title' => ['rendered' => 'Tickets']],
+            ['id' => 2, 'slug' => 'invited-speakers-program', 'link' => self::SITE.'/invited-speakers-program/', 'title' => ['rendered' => 'Invited Speakers Program']],
+        ];
+        $restTickets = '<p>Join us in Penang, Malaysia for WordCamp Asia.</p>'
+            .'<p>Three days of WordPress, learning and community across the region.</p>'
+            .'<p>Your conference ticket includes access to both Conference Days, meals and the official After Party.</p>'
+            .'<a href="'.self::SITE.'/tickets/">Please view this page in a browser to purchase or manage tickets.</a>';
+        $liveTicketsHtml = '<main><div class="entry-content">'.$restTickets
+            .'<table class="tix_tickets_table"><tbody>'
+            .'<tr><td class="tix-column-description"><span class="tix-ticket-title">Regular Ticket</span></td><td class="tix-column-price">$35.00</td><td class="tix-column-remaining">373</td></tr>'
+            .'<tr><td class="tix-column-description"><span class="tix-ticket-title">Micro Sponsor</span></td><td class="tix-column-price">$350.00</td><td class="tix-column-remaining">97</td></tr>'
+            .'</tbody></table></div></main>';
+
+        Http::fake(function (Request $request) use ($index, $restTickets, $liveTicketsHtml) {
+            $url = $request->url();
+            parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+            if (str_contains($url, 'central.wordcamp.org')) {
+                return Http::response([]);
+            }
+            if (str_contains($url, '/wp-json/wp/v2/pages')) {
+                if (isset($query['include'])) {
+                    return Http::response([['id' => 1, 'link' => self::SITE.'/tickets/', 'content' => ['rendered' => $restTickets]]]);
+                }
+
+                return Http::response($index, 200, ['X-WP-TotalPages' => 1]);
+            }
+            if ($url === self::SITE.'/tickets/') {
+                return Http::response($liveTicketsHtml);
+            }
+
+            return Http::response('', 404);
+        });
+
+        $info = (new EventInfoFetcher(self::SITE, 'WordCamp Asia 2027'))->fetch();
+
+        $this->assertStringNotContainsString('invited-speakers-program', (string) $info['important_links']);
+        $this->assertStringContainsString('Regular Ticket ($35.00, 373 left)', (string) $info['registration_info']);
+        $this->assertStringContainsString('Micro Sponsor ($350.00, 97 left)', (string) $info['registration_info']);
+        $this->assertStringContainsString('conference ticket includes access', (string) $info['registration_info']);
+    }
 }

@@ -99,6 +99,20 @@ class EventInfoFetcher
         $picked = $this->pickPages($index);
         $html = $site->contents(array_values(array_intersect_key($picked, array_flip(self::READ))));
 
+        // CampTix shortcodes on /tickets/ turn into a "view this page in a browser"
+        // link in REST responses, hiding live ticket tiers and pricing; fetch the
+        // rendered HTML when that happens so Registration shows real ticket options.
+        if (isset($picked['tickets']) && $site->mode === 'rest') {
+            $ticketsUrl = $picked['tickets']['url'];
+            $restHtml = $html[$ticketsUrl] ?? '';
+            if ($restHtml === '' || ! str_contains($restHtml, 'tix_tickets_table')) {
+                $rendered = $site->scrapePage($ticketsUrl);
+                if ($rendered !== null && str_contains($rendered, 'tix_tickets_table')) {
+                    $html[$ticketsUrl] = $rendered;
+                }
+            }
+        }
+
         $this->reachable = $record !== null || $index !== [];
         $this->sources = sprintf(
             'central.wordcamp.org: %s; site pages: %s',
@@ -123,9 +137,8 @@ class EventInfoFetcher
             'venue' => $record ? VenueSpelling::fromSite($directory->venueLine($record), implode(' ', $texts)) : null,
             'important_links' => $this->importantLinks($picked),
             'wifi' => $this->wifi($texts),
-            // Only the page's opening paragraphs, and only if they're about tickets —
-            // a FAQ answer further down that happens to say "attendee" isn't registration info.
-            'registration_info' => isset($crawlers['tickets']) ? $this->firstParagraph($crawlers['tickets'], '/\b(tickets?|registration|register|admission)\b/iu', 2) : null,
+            // Opening ticket summary plus live CampTix tiers/availability when present.
+            'registration_info' => isset($crawlers['tickets']) ? $this->registrationInfo($crawlers['tickets']) : null,
             'contributor_day_location' => $this->contributorDay($texts),
             'code_of_conduct_url' => $picked['conduct']['url'] ?? null,
             'emergency_contact' => $this->contact($texts, $crawlers),
@@ -155,6 +168,11 @@ class EventInfoFetcher
             foreach ($index as $page) {
                 $tokens = preg_split('/[-_]+/', strtolower($page['slug'])) ?: [];
                 $titleWords = count(preg_split('/\s+/u', trim($page['title'])) ?: []);
+
+                // Speaker/call/sponsor program pages ("invited-speakers-program") are not the schedule.
+                if ($role === 'schedule' && array_intersect($tokens, ['speaker', 'speakers', 'invited', 'call', 'sponsor', 'sponsors', 'volunteer', 'volunteers', 'emcee', 'emcees', 'wapuu', 'scholarship', 'mentorship']) !== []) {
+                    continue;
+                }
 
                 // A page is "the schedule" / "the tickets page" only if it is
                 // that page — not a long, specific one that merely mentions
@@ -342,6 +360,72 @@ class EventInfoFetcher
         }
 
         return null;
+    }
+
+    /**
+     * Combines live CampTix ticket tiers/pricing (when present on the rendered
+     * /tickets/ table) with the opening ticket summary paragraph.
+     */
+    private function registrationInfo(Crawler $crawler): ?string
+    {
+        $tiers = $this->ticketTiers($crawler);
+        $summary = $this->firstParagraph($crawler, '/\b(tickets?|registration|register|admission|pass|badge)\b/iu', 6);
+
+        if ($tiers === [] && $summary === null) {
+            return null;
+        }
+
+        if ($tiers !== [] && $summary !== null) {
+            return $this->summarize(implode(' · ', $tiers).'. '.$summary, 420);
+        }
+
+        return $tiers !== [] ? $this->summarize(implode(' · ', $tiers), 420) : $summary;
+    }
+
+    /** @return list<string> e.g. ["Regular Ticket ($35.00, 373 left)", "Micro Sponsor ($350.00, 97 left)"] */
+    private function ticketTiers(Crawler $crawler): array
+    {
+        $tiers = [];
+
+        foreach ($crawler->filter('table.tix_tickets_table tbody tr') as $tr) {
+            $row = new Crawler($tr);
+            if ($row->filter('th')->count() > 0 && $row->filter('td')->count() < 2) {
+                continue;
+            }
+
+            $titleNode = $row->filter('.tix-ticket-title');
+            $cells = $row->filter('td');
+            $name = $titleNode->count() > 0
+                ? trim((string) preg_replace('/\s+/u', ' ', $titleNode->first()->text('')))
+                : ($cells->count() >= 2 ? trim((string) preg_replace('/\s+/u', ' ', $cells->eq(0)->text(''))) : '');
+
+            if ($name === '' || preg_match('/\b(coupon|enter a coupon)\b/i', $name)) {
+                continue;
+            }
+
+            $priceNode = $row->filter('.tix-column-price');
+            $remNode = $row->filter('.tix-column-remaining');
+            $price = $priceNode->count() > 0
+                ? trim((string) preg_replace('/\s+/u', ' ', $priceNode->first()->text('')))
+                : ($cells->count() >= 2 ? trim((string) preg_replace('/\s+/u', ' ', $cells->eq(1)->text(''))) : '');
+            $remaining = $remNode->count() > 0
+                ? trim((string) preg_replace('/\s+/u', ' ', $remNode->first()->text('')))
+                : ($cells->count() >= 3 ? trim((string) preg_replace('/\s+/u', ' ', $cells->eq(2)->text(''))) : '');
+
+            $meta = [];
+            if ($price !== '') {
+                $meta[] = $price;
+            }
+            if (preg_match('/^\d+$/', $remaining)) {
+                $meta[] = (int) $remaining > 0 ? "{$remaining} left" : 'Sold out';
+            } elseif (preg_match('/\bsold\s*out\b/i', $remaining)) {
+                $meta[] = 'Sold out';
+            }
+
+            $tiers[] = $meta !== [] ? $name.' ('.implode(', ', $meta).')' : $name;
+        }
+
+        return array_slice($tiers, 0, 6);
     }
 
     /** Whole sentences up to $max characters; a lone over-long sentence is cut at a word with "…". */
