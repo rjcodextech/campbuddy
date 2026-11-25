@@ -43,30 +43,52 @@ class ParseAttendeeRosterJob implements ShouldQueue
 
     private function fetchAndUpsert(): void
     {
-        $url = rtrim($this->event->source_site_url, '/').'/attendees/';
+        $baseUrl = rtrim($this->event->source_site_url, '/').'/attendees/';
 
         try {
-            $response = Http::timeout(15)
-                ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
-                ->accept('text/html')
-                ->retry(2, 1000, fn ($e) => $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429)), throw: true)
-                ->get($url)
-                ->throw();
-            $body = $response->body();
-            if (trim($body) === '') {
-                $this->log('error', 'Attendees page returned an empty response — keeping last known roster intact.');
-
-                return;
-            }
             $scraper = new AttendeeRosterScraper;
-            $entries = $scraper->parse($body);
+            $entries = [];
+            $visited = [];
+            $nextUrl = $baseUrl;
+            $maxPages = 20;
 
-            if ($entries === null) {
-                // The .tix-attendee-list markup wasn't found at all —
-                // treat as a parse failure, not an empty roster (IN4).
-                $this->log('error', 'Attendees page structure not recognized — the site markup may have changed, or the page is not public yet.');
+            for ($page = 1; $nextUrl !== null && $page <= $maxPages; $page++) {
+                if (isset($visited[$nextUrl])) {
+                    break;
+                }
+                $visited[$nextUrl] = true;
 
-                return;
+                $response = Http::timeout(15)
+                    ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+                    ->accept('text/html')
+                    ->retry(2, 1000, fn ($e) => $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429)), throw: true)
+                    ->get($nextUrl)
+                    ->throw();
+                $body = $response->body();
+
+                if (trim($body) === '') {
+                    if ($page === 1) {
+                        $this->log('error', 'Attendees page returned an empty response — keeping last known roster intact.');
+
+                        return;
+                    }
+                    break;
+                }
+
+                $pageEntries = $scraper->parse($body);
+                if ($pageEntries === null) {
+                    if ($page === 1) {
+                        // The .tix-attendee-list markup wasn't found at all —
+                        // treat as a parse failure, not an empty roster (IN4).
+                        $this->log('error', 'Attendees page structure not recognized — the site markup may have changed, or the page is not public yet.');
+
+                        return;
+                    }
+                    break;
+                }
+
+                array_push($entries, ...$pageEntries);
+                $nextUrl = $this->nextRosterPageUrl($body, $baseUrl);
             }
 
             // Keyed by hash, so the same person listed twice is stored once — a
@@ -164,6 +186,30 @@ class ParseAttendeeRosterJob implements ShouldQueue
         }
 
         return ['removed' => $staleIds->count(), 'held' => count($decision['held'])];
+    }
+
+    private function nextRosterPageUrl(string $html, string $fallbackBase): ?string
+    {
+        try {
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($html);
+            $next = $crawler->filter('a.next.page-numbers, link[rel="next"], .nav-next a, a[rel="next"]')->first();
+            if ($next->count() === 0) {
+                return null;
+            }
+            $href = trim((string) $next->attr('href'));
+            if ($href === '' || str_starts_with($href, '#')) {
+                return null;
+            }
+            if (str_starts_with($href, '/')) {
+                $parts = parse_url($fallbackBase);
+
+                return ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? '').$href;
+            }
+
+            return preg_match('#^https?://#i', $href) === 1 ? $href : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     private function log(string $status, string $message): void

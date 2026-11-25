@@ -197,7 +197,11 @@ class FillMissingPhotosJob implements ShouldQueue
         $byName = [];
         $byLoose = [];
         $byHash = [];
-        foreach ([...(EventData::get($this->event->id, 'organizers') ?? []), ...(EventData::get($this->event->id, 'speakers') ?? [])] as $p) {
+        foreach ([
+            ...(EventData::get($this->event->id, 'organizers') ?? []),
+            ...(EventData::get($this->event->id, 'speakers') ?? []),
+            ...(EventData::get($this->event->id, 'volunteers') ?? []),
+        ] as $p) {
             $person = [
                 'photo' => SafeUrl::web($p['avatar_url'] ?? null),
                 'gravatar' => SafeUrl::web($p['gravatar_url'] ?? null),

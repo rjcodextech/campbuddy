@@ -89,6 +89,7 @@ class EventPageController extends Controller
         return view('attendee.explore', [
             'event' => $event,
             'sponsors' => $this->cached($event, 'sponsors'),
+            'mediaPartners' => $this->cached($event, 'media_partners'),
             // The event's own deals, then the default deals for its country.
             'offers' => \App\Models\Offer::shownAt($event),
             // The same hand-picked list at every event; a maker attending this one puts theirs first.

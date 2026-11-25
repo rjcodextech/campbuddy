@@ -62,7 +62,13 @@
 
         <div data-explore-panel="sponsors" hidden>
             <p class="panel-intro">Sponsors keep WordCamp tickets accessible. Visit their booths to say hi.</p>
-            @forelse ($sponsorsByTier as $tier => $tierSponsors)
+            @php
+                $displayGroups = $sponsorsByTier;
+                if (! empty($mediaPartners)) {
+                    $displayGroups = $displayGroups->put('Media Partners', collect($mediaPartners));
+                }
+            @endphp
+            @forelse ($displayGroups as $tier => $tierSponsors)
                 <div class="sponsor-group">
                     <p class="u-eyebrow">{{ $tier }}</p>
                     <div @class(['sponsor-group__row', 'sponsor-group__row--single' => $tierSponsors->count() === 1])>
@@ -71,6 +77,7 @@
                                 $sponsorUrl = $webUrl($sponsor['website'] ?? $sponsor['link'] ?? null);
                                 $sponsorDomain = $sponsorUrl ? preg_replace('/^www\./', '', (string) parse_url($sponsorUrl, PHP_URL_HOST)) : null;
                                 $sponsorInitial = mb_strtoupper(mb_substr(trim((string) ($sponsor['name'] ?? 'S')), 0, 1));
+                                $trackTarget = str_contains(strtolower((string) $tier), 'media') ? 'media_partner_chip' : 'sponsor_chip';
                             @endphp
                             @if ($sponsorUrl)
                                 <button type="button" class="sponsor-chip {{ $tierClass($tier) }} sponsor-chip--interactive"
@@ -80,7 +87,7 @@
                                         data-track="sponsor_open"
                                         data-track-sponsor-name="{{ $sponsor['name'] }}"
                                         data-track-link-domain="{{ parse_url($sponsorUrl, PHP_URL_HOST) }}"
-                                        data-track-target="sponsor_chip"
+                                        data-track-target="{{ $trackTarget }}"
                                         title="{{ $sponsor['name'] }} (opens website)">
                                     @if (! empty($sponsor['logo_url']))
                                         <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.hidden=true;">
@@ -99,7 +106,7 @@
                                       data-inapp-title="{{ $sponsor['name'] }}"
                                       data-track="sponsor_open"
                                       data-track-sponsor-name="{{ $sponsor['name'] }}"
-                                      data-track-target="sponsor_chip"
+                                      data-track-target="{{ $trackTarget }}"
                                       title="{{ $sponsor['name'] }}">
                                     @if (! empty($sponsor['logo_url']))
                                         <img src="{{ $sponsor['logo_url'] }}" alt="{{ $sponsor['name'] }}" class="sponsor-chip__logo" loading="lazy" onerror="this.hidden=true;">

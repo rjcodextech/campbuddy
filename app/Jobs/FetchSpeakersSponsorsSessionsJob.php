@@ -109,21 +109,26 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
         $changes = [];
         $counts['sessions'] = $this->store('sessions', $sessions, $problems, $changes);
 
+        $sponsorsPageData = $client->fetchSponsorsPageData();
+
         $lists = [
             'speakers' => function () use ($client, $normalizer) {
-                $raw = $client->fetchSpeakers();
-                if (empty($raw)) {
-                    $raw = $client->fetchSpeakersFromPage();
-                }
+                $restSpeakers = $normalizer->normalizeSpeakers($client->fetchSpeakers());
+                $pageSpeakers = $normalizer->normalizeSpeakers($client->fetchSpeakersFromPage());
 
-                return $normalizer->normalizeSpeakers($raw);
+                return $normalizer->mergePagePeople($restSpeakers, $pageSpeakers);
             },
-            'sponsors' => function () use ($client, $normalizer, $tierNames) {
-                $pageLogoMap = $client->fetchSponsorLogosFromPage();
+            'sponsors' => function () use ($client, $normalizer, $tierNames, $sponsorsPageData) {
+                $restSponsors = $normalizer->normalizeSponsors($client->fetchSponsors(), $tierNames, $sponsorsPageData['logo_map']);
 
-                return $normalizer->normalizeSponsors($client->fetchSponsors(), $tierNames, $pageLogoMap);
+                return $normalizer->mergePageSponsors($restSponsors, $sponsorsPageData['sponsors']);
             },
-            'organizers' => fn () => $normalizer->normalizeOrganizers($client->fetchOrganizers()),
+            'organizers' => function () use ($client, $normalizer) {
+                $restOrganizers = $normalizer->normalizeOrganizers($client->fetchOrganizers());
+                $pageOrganizers = $normalizer->normalizeOrganizers($client->fetchOrganizersFromPage());
+
+                return $normalizer->mergePagePeople($restOrganizers, $pageOrganizers);
+            },
         ];
 
         foreach ($lists as $key => $fetch) {
@@ -131,11 +136,20 @@ class FetchSpeakersSponsorsSessionsJob implements ShouldQueue
             $counts[$key] = $items === null ? $this->cachedCount($key) : $this->store($key, $items, $problems, $changes);
         }
 
-        // Volunteers only mark people on the attendee list (RosterRoles). Older
-        // sites have no such list (404), most publish it on the day, so a failure
-        // here is never a problem to report: the last list simply stays.
+        // Volunteers: merge REST (wcb_volunteer / volunteers) with /volunteers/ HTML page so events
+        // without REST volunteer posts still tag every volunteer cleanly on the attendee roster.
         try {
-            $this->store('volunteers', $normalizer->normalizeVolunteers($client->fetchVolunteers()), $problems, $changes);
+            $restVols = $normalizer->normalizeVolunteers($client->fetchVolunteers());
+            $pageVols = $normalizer->normalizeVolunteers($client->fetchVolunteersFromPage());
+            $this->store('volunteers', $normalizer->mergePagePeople($restVols, $pageVols), $problems, $changes);
+        } catch (Throwable) {
+            // Kept as it was.
+        }
+
+        // Media & Community Partners (/media-partners/, /community-partners/, or sponsor blocks)
+        try {
+            $mediaPartners = $normalizer->normalizeMediaPartners($sponsorsPageData['media_partners']);
+            $this->store('media_partners', $mediaPartners, $problems, $changes);
         } catch (Throwable) {
             // Kept as it was.
         }

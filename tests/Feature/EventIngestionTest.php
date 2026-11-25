@@ -160,7 +160,7 @@ class EventIngestionTest extends TestCase
     {
         $roster = $this->scheduled('ingest-attendee-roster');
 
-        $this->assertSame('0 0 * * *', $roster->expression);
+        $this->assertSame('0 0,12 * * *', $roster->expression);
 
         $active = $this->event(['slug' => 'a', 'status' => 'active']);
         $this->event(['slug' => 'b', 'status' => 'approved']);
@@ -225,7 +225,7 @@ class EventIngestionTest extends TestCase
         Queue::fake();
 
         $backfill = $this->scheduled('backfill-event-branding');
-        $this->assertSame('30 2 * * *', $backfill->expression);
+        $this->assertSame('30 2,14 * * *', $backfill->expression);
         $backfill->run(app());
 
         Queue::assertPushed(FetchBrandingAssetsJob::class, 1);

@@ -289,4 +289,90 @@ class DataResilienceTest extends TestCase
         $this->assertSame(3, $event->attendeeRoster()->count());
         $this->assertTrue($event->attendeeRoster()->where('name', 'Grace')->value('is_suppressed'));
     }
+
+    public function test_hybrid_rest_and_html_pages_merge_sponsors_media_partners_volunteers_and_microsponsors(): void
+    {
+        $event = $this->event();
+        $ok = fn ($body) => Http::response($body, 200, ['X-WP-TotalPages' => '1']);
+
+        $sponsorsHtml = '
+            <div class="entry-content">
+                <div class="wp-block-group wcdh-sp-tier wcdh-sp-bronze">
+                    <p>Bronze Sponsors</p>
+                    <div class="wcdh-sp-logos">
+                        <a href="'.self::SITE.'/sponsor/acme/"><img src="https://cdn.example.com/acme.png" alt="Acme logo"></a>
+                        <figure class="wp-block-image"><img src="https://cdn.example.com/Knit-Pay.webp" alt=""></figure>
+                    </div>
+                </div>
+                <div class="wp-block-group wcdh-sp-tier wcdh-sp-startup">
+                    <h2>Startup Sponsors</h2>
+                    <figure class="wp-block-image"><img src="https://cdn.example.com/Ranking-Bite.webp" alt="Ranking Bite logo"></figure>
+                </div>
+            </div>';
+
+        $mediaPartnersHtml = '
+            <div class="entry-content">
+                <div class="wp-block-column"><h3>WPoetsTV</h3><img src="https://cdn.example.com/WPoets.png" alt="Logo for WPoets"></div>
+                <div class="wp-block-column"><img src="https://cdn.example.com/WPFolks.png" alt="WPFolks logo"></div>
+            </div>';
+
+        $volunteersHtml = '
+            <div class="entry-content">
+                <div class="wp-block-group an-org-team__card">
+                    <img src="https://cdn.example.com/ashish.jpg" alt="">
+                    <h4>Ashish Dwivedi</h4>
+                </div>
+            </div>';
+
+        Http::fake([
+            self::SITE.'/wp-json/' => Http::response(['timezone_string' => 'UTC', 'gmt_offset' => 0]),
+            self::SITE.'/wp-json/wp/v2/sessions*' => $ok([$this->wpSession(1)]),
+            self::SITE.'/wp-json/wp/v2/speakers*' => $ok([['id' => 10, 'title' => ['rendered' => 'Ada'], 'content' => ['rendered' => '']]]),
+            self::SITE.'/wp-json/wp/v2/sponsors*' => $ok([['id' => 20, 'title' => ['rendered' => 'Acme'], 'slug' => 'acme', 'sponsor_level' => [30], 'content' => ['rendered' => '']]]),
+            self::SITE.'/wp-json/wp/v2/sponsor_level*' => $ok([['id' => 30, 'name' => 'Bronze']]),
+            self::SITE.'/wp-json/wp/v2/organizers*' => $ok([]),
+            self::SITE.'/wp-json/wp/v2/wcb_volunteer*' => $ok([]),
+            self::SITE.'/wp-json/wp/v2/volunteers*' => $ok([]),
+            self::SITE.'/wp-json/wp/v2/session_track*' => $ok([]),
+            self::SITE.'/wp-json/wp/v2/session_category*' => $ok([]),
+            self::SITE.'/sponsors/' => Http::response($sponsorsHtml),
+            self::SITE.'/media-partners/' => Http::response($mediaPartnersHtml),
+            self::SITE.'/volunteers/' => Http::response($volunteersHtml),
+            self::SITE.'/attendees/' => Http::response('
+                <div class="entry-content">
+                    <h2>Microsponsors</h2>
+                    <ul class="tix-attendee-list"><li><span class="tix-attendee-name"><span class="tix-first">Mina</span> <span class="tix-last">Roy</span></span></li></ul>
+                    <h2>Attendees</h2>
+                    <ul class="tix-attendee-list"><li><span class="tix-attendee-name"><span class="tix-first">Ashish</span> <span class="tix-last">Dwivedi</span></span></li></ul>
+                    <a class="next page-numbers" href="'.self::SITE.'/attendees/page/2/">Next</a>
+                </div>
+            '),
+            self::SITE.'/attendees/page/2/' => Http::response('
+                <ul class="tix-attendee-list"><li><span class="tix-attendee-name"><span class="tix-first">Neha</span> <span class="tix-last">Sen</span></span></li></ul>
+            '),
+        ]);
+
+        FetchSpeakersSponsorsSessionsJob::dispatchSync($event);
+        ParseAttendeeRosterJob::dispatchSync($event);
+        \App\Support\RosterRoles::forget($event);
+
+        $sponsors = collect(Cache::get("event:{$event->id}:sponsors"))->keyBy('name');
+        $this->assertCount(3, $sponsors);
+        $this->assertSame(['Bronze'], $sponsors['Knit Pay']['tier_names']);
+        $this->assertSame(['Startup'], $sponsors['Ranking Bite']['tier_names']);
+
+        $media = collect(Cache::get("event:{$event->id}:media_partners"))->pluck('name')->all();
+        $this->assertSame(['WPoetsTV', 'WPFolks'], $media);
+
+        $volunteers = collect(Cache::get("event:{$event->id}:volunteers"))->pluck('name')->all();
+        $this->assertSame(['Ashish Dwivedi'], $volunteers);
+
+        $this->assertSame(3, $event->attendeeRoster()->count());
+
+        $roles = \App\Support\RosterRoles::forEvent($event);
+        $minaId = $event->attendeeRoster()->where('name', 'Mina Roy')->value('id');
+        $ashishId = $event->attendeeRoster()->where('name', 'Ashish Dwivedi')->value('id');
+        $this->assertContains('microsponsor', $roles[$minaId]['roles'] ?? []);
+        $this->assertContains('volunteer', $roles[$ashishId]['roles'] ?? []);
+    }
 }

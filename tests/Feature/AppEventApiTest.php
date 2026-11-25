@@ -167,7 +167,7 @@ class AppEventApiTest extends TestCase
     {
         $bundle = $this->getJson($this->url('/bundle'))->assertOk()->json('data');
 
-        $this->assertSame(['event', 'sessions', 'speakers', 'sponsors', 'organizers', 'deals', 'free_steals', 'quests', 'contributor_tables', 'guide', 'data_version'], array_keys($bundle));
+        $this->assertSame(['event', 'sessions', 'speakers', 'sponsors', 'organizers', 'deals', 'free_steals', 'quests', 'contributor_tables', 'info', 'delay', 'guide', 'data_version'], array_keys($bundle));
 
         $this->getJson($this->url('/bundle?since='.$bundle['data_version']))->assertStatus(304);
         $this->getJson($this->url('/bundle?since=stale'))->assertOk();

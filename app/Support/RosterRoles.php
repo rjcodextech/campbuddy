@@ -139,7 +139,23 @@ class RosterRoles
         }
 
         foreach (EventData::get($event->id, 'volunteers') ?? [] as $person) {
-            $site[] = ['role' => 'volunteer', 'person' => $person, 'talks' => [], 'ids' => $mark(['name' => $person['name'] ?? ''], 'volunteer')];
+            $site[] = ['role' => 'volunteer', 'person' => $person, 'talks' => [], 'ids' => $mark(['name' => $person['name'] ?? '', 'gravatar_url' => $person['gravatar_url'] ?? $person['avatar_url'] ?? null], 'volunteer')];
+        }
+
+        foreach (EventData::get($event->id, 'media_partners') ?? [] as $partner) {
+            if (is_array($partner) && filled($partner['name'] ?? null)) {
+                $mark(['name' => $partner['name']], 'media_partner');
+            }
+        }
+
+        foreach (EventData::get($event->id, 'sponsors') ?? [] as $sponsor) {
+            if (! is_array($sponsor) || empty($sponsor['name'])) {
+                continue;
+            }
+            $tiers = strtolower(implode(' ', $sponsor['tier_names'] ?? []));
+            if (preg_match('/micro[\s_-]*sponsor/i', $tiers)) {
+                $mark(['name' => $sponsor['name']], 'microsponsor');
+            }
         }
 
         foreach ($entries as $entry) {

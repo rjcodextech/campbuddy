@@ -58,6 +58,16 @@ class AttendeeRosterScraper
             }
 
             if ($depth === 0) {
+                $prev = $node->previousElementSibling;
+                for ($step = 0; $prev instanceof \DOMElement && $step < 3; $step++, $prev = $prev->previousElementSibling) {
+                    if (preg_match('/^h[1-6]$/i', $prev->nodeName) && preg_match($pattern, $prev->textContent)) {
+                        return true;
+                    }
+                    if (preg_match($pattern, $prev->getAttribute('class').' '.$prev->getAttribute('id'))) {
+                        return true;
+                    }
+                }
+
                 continue;
             }
 
@@ -80,6 +90,7 @@ class AttendeeRosterScraper
     private function parseList(Crawler $list, bool $microsponsor, array &$entries): void
     {
         $list->filter('li')->each(function (Crawler $li) use (&$entries, $microsponsor) {
+            $liMicro = $microsponsor || preg_match('/micro[\s_-]*sponsor/i', (string) $li->attr('class')) === 1;
             $nameNode = $li->filter('.tix-attendee-name');
 
             if ($nameNode->count() === 0) {
@@ -122,7 +133,7 @@ class AttendeeRosterScraper
             // 'name' is what people see and search (no invisible characters); the stored hash still
             // comes from the name as the site wrote it ('raw_name'), so a suppressed entry stays suppressed.
             $clean = PersonName::clean($name);
-            $entries[] = ['name' => $clean !== '' ? $clean : $name, 'raw_name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links, 'microsponsor' => $microsponsor];
+            $entries[] = ['name' => $clean !== '' ? $clean : $name, 'raw_name' => $name, 'gravatar_url' => $gravatarUrl, 'links' => $links, 'microsponsor' => $liMicro];
         });
     }
 

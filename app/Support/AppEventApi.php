@@ -199,13 +199,18 @@ class AppEventApi
     /** @return list<array<string, mixed>> */
     public static function sponsors(Event $event): array
     {
+        $all = [
+            ...(EventData::get($event->id, 'sponsors') ?? []),
+            ...(EventData::get($event->id, 'media_partners') ?? []),
+        ];
+
         return array_values(array_map(function ($sponsor) {
             $sponsor = is_array($sponsor) ? $sponsor : [];
             $text = HtmlText::plain($sponsor['description_html'] ?? null, 600);
             unset($sponsor['description_html']);
 
             return $sponsor + ['description' => $text];
-        }, EventData::get($event->id, 'sponsors') ?? []));
+        }, $all));
     }
 
     /** @return list<array<string, mixed>> */

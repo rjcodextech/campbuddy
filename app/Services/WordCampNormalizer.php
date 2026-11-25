@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Support\HtmlText;
+use App\Support\PersonName;
+use App\Support\RosterRoles;
 use App\Support\SafeUrl;
 
 /**
@@ -195,10 +197,204 @@ class WordCampNormalizer
      */
     public function normalizeVolunteers(array $volunteers): array
     {
-        return array_values(array_filter(array_map(fn (array $volunteer) => [
-            'id' => $volunteer['id'] ?? null,
-            'name' => $this->decodeTitle($this->rendered($volunteer['title'] ?? null)),
-        ], $volunteers), fn (array $v) => $v['id'] !== null && $v['name'] !== ''));
+        return array_values(array_filter(array_map(function (array $volunteer) {
+            $item = [
+                'id' => $volunteer['id'] ?? null,
+                'name' => $this->decodeTitle($this->rendered($volunteer['title'] ?? null)),
+            ];
+            if ($avatar = $this->featuredImage($volunteer, 'medium') ?? $this->avatar($volunteer)) {
+                $item['avatar_url'] = $avatar;
+            }
+            if ($gravatar = $this->avatar($volunteer)) {
+                $item['gravatar_url'] = $gravatar;
+            }
+
+            return $item;
+        }, $volunteers), fn (array $v) => $v['id'] !== null && $v['name'] !== ''));
+    }
+
+    /**
+     * Merges HTML-parsed sponsors (e.g. sponsors added via WordPress blocks without a wcb_sponsor
+     * REST post) into the normalized REST sponsor list without duplicating existing entries.
+     *
+     * @param  array<int, array<string, mixed>>  $restSponsors
+     * @param  array<int, array<string, mixed>>  $pageSponsors
+     * @return array<int, array<string, mixed>>
+     */
+    public function mergePageSponsors(array $restSponsors, array $pageSponsors): array
+    {
+        if ($pageSponsors === []) {
+            return $restSponsors;
+        }
+
+        $stems = [];
+        $logoFiles = [];
+        foreach ($restSponsors as $idx => $sp) {
+            foreach ($this->sponsorMatchKeys((string) ($sp['name'] ?? ''), (string) ($sp['link'] ?? '')) as $key) {
+                $stems[$key] = $idx;
+            }
+            if (! empty($sp['logo_url'])) {
+                $file = strtolower((string) pathinfo((string) parse_url((string) $sp['logo_url'], PHP_URL_PATH), PATHINFO_FILENAME));
+                $file = preg_replace('/[^a-z0-9]/', '', $file);
+                if ($file !== '') {
+                    $logoFiles[$file] = $idx;
+                }
+            }
+        }
+
+        $merged = $restSponsors;
+        foreach ($pageSponsors as $pageItem) {
+            $name = trim((string) ($pageItem['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $matchedIdx = null;
+            foreach ($this->sponsorMatchKeys($name, (string) ($pageItem['link'] ?? '')) as $key) {
+                if (isset($stems[$key])) {
+                    $matchedIdx = $stems[$key];
+                    break;
+                }
+            }
+            if ($matchedIdx === null && ! empty($pageItem['logo_url'])) {
+                $file = strtolower((string) pathinfo((string) parse_url((string) $pageItem['logo_url'], PHP_URL_PATH), PATHINFO_FILENAME));
+                $file = preg_replace('/[^a-z0-9]/', '', $file);
+                if ($file !== '' && isset($logoFiles[$file])) {
+                    $matchedIdx = $logoFiles[$file];
+                }
+            }
+
+            if ($matchedIdx !== null) {
+                if (empty($merged[$matchedIdx]['logo_url']) && ! empty($pageItem['logo_url'])) {
+                    $merged[$matchedIdx]['logo_url'] = SafeUrl::web($pageItem['logo_url']);
+                }
+                if (empty($merged[$matchedIdx]['website']) && ! empty($pageItem['website'])) {
+                    $merged[$matchedIdx]['website'] = SafeUrl::web($pageItem['website']);
+                }
+
+                continue;
+            }
+
+            $key = preg_replace('/[^a-z0-9]/', '', strtolower($name));
+            $merged[] = [
+                'id' => 900000 + (abs(crc32("page_sponsor:{$key}")) % 900000),
+                'name' => $name,
+                'description_html' => '',
+                'website' => SafeUrl::web($pageItem['website'] ?? null),
+                'logo_url' => SafeUrl::web($pageItem['logo_url'] ?? null),
+                'tier_ids' => [],
+                'tier_names' => [trim((string) ($pageItem['tier_name'] ?? '')) ?: 'Sponsor'],
+                'link' => SafeUrl::web($pageItem['link'] ?? null),
+            ];
+            $stems[$key] = count($merged) - 1;
+        }
+
+        return $merged;
+    }
+
+    /**
+     * Normalizes media/community partners scraped from partner pages or sponsor partner blocks.
+     *
+     * @param  array<int, array<string, mixed>>  $rawPartners
+     * @return array<int, array<string, mixed>>
+     */
+    public function normalizeMediaPartners(array $rawPartners): array
+    {
+        return array_values(array_filter(array_map(function (array $p) {
+            $name = trim((string) ($p['name'] ?? ''));
+            if ($name === '') {
+                return null;
+            }
+            $key = preg_replace('/[^a-z0-9]/', '', strtolower($name));
+
+            return [
+                'id' => 950000 + (abs(crc32("media_partner:{$key}")) % 900000),
+                'name' => $name,
+                'description_html' => '',
+                'website' => SafeUrl::web($p['website'] ?? null),
+                'logo_url' => SafeUrl::web($p['logo_url'] ?? null),
+                'tier_ids' => [],
+                'tier_names' => [trim((string) ($p['tier_name'] ?? '')) ?: 'Media Partner'],
+                'link' => SafeUrl::web($p['link'] ?? null),
+            ];
+        }, $rawPartners)));
+    }
+
+    /**
+     * Merges normalized REST people (speakers/organizers/volunteers) with HTML-scraped people,
+     * enriching missing avatars and adding any individuals missing from REST.
+     *
+     * @param  array<int, array<string, mixed>>  $restItems
+     * @param  array<int, array<string, mixed>>  $pageItems
+     * @return array<int, array<string, mixed>>
+     */
+    public function mergePagePeople(array $restItems, array $pageItems): array
+    {
+        if ($pageItems === []) {
+            return $restItems;
+        }
+
+        $byKey = [];
+        foreach ($restItems as $idx => $person) {
+            $name = (string) ($person['name'] ?? '');
+            foreach ([RosterRoles::nameKey($name), PersonName::loose($name)] as $k) {
+                if ($k !== '') {
+                    $byKey[$k] = $idx;
+                }
+            }
+        }
+
+        $merged = $restItems;
+        foreach ($pageItems as $person) {
+            $name = (string) ($person['name'] ?? '');
+            $exact = RosterRoles::nameKey($name);
+            $loose = PersonName::loose($name);
+            if ($exact === '' && $loose === '') {
+                continue;
+            }
+
+            $matchedIdx = $byKey[$exact] ?? $byKey[$loose] ?? null;
+            if ($matchedIdx !== null) {
+                if (empty($merged[$matchedIdx]['avatar_url']) && ! empty($person['avatar_url'])) {
+                    $merged[$matchedIdx]['avatar_url'] = $person['avatar_url'];
+                }
+                if (empty($merged[$matchedIdx]['social_links']) && ! empty($person['social_links'])) {
+                    $merged[$matchedIdx]['social_links'] = $person['social_links'];
+                }
+
+                continue;
+            }
+
+            $merged[] = $person;
+            if ($exact !== '') {
+                $byKey[$exact] = count($merged) - 1;
+            }
+            if ($loose !== '') {
+                $byKey[$loose] = count($merged) - 1;
+            }
+        }
+
+        return $merged;
+    }
+
+    /** @return list<string> */
+    private function sponsorMatchKeys(string $name, string $link = ''): array
+    {
+        $keys = [];
+        $lower = strtolower(trim($name));
+        if ($lower !== '') {
+            $keys[] = preg_replace('/[^a-z0-9]/', '', $lower);
+            $stripped = preg_replace('/\b(ltd|limited|inc|llc|infotech|technologies|technology|solutions|seo|group|co)\b/i', '', $lower);
+            $strippedKey = preg_replace('/[^a-z0-9]/', '', trim((string) $stripped));
+            if ($strippedKey !== '') {
+                $keys[] = $strippedKey;
+            }
+        }
+        if ($link !== '' && preg_match('#/sponsor/([^/]+)/?#i', $link, $m)) {
+            $keys[] = preg_replace('/[^a-z0-9]/', '', strtolower($m[1]));
+        }
+
+        return array_values(array_unique(array_filter($keys, fn ($k) => $k !== '')));
     }
 
     /** A WordPress `{ rendered: "…" }` field's string, or "" for anything else. */

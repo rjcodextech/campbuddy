@@ -16,7 +16,7 @@ use Throwable;
  */
 class EventData
 {
-    public const KINDS = ['sessions', 'speakers', 'sponsors', 'organizers'];
+    public const KINDS = ['sessions', 'speakers', 'sponsors', 'organizers', 'volunteers', 'media_partners'];
 
     private const CACHE_DAYS = 14;
 

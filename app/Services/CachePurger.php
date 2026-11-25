@@ -34,7 +34,7 @@ use Throwable;
  */
 class CachePurger
 {
-    private const INGESTED_KEYS = ['sessions', 'speakers', 'sponsors', 'organizers'];
+    private const INGESTED_KEYS = ['sessions', 'speakers', 'sponsors', 'organizers', 'volunteers', 'media_partners'];
 
     /**
      * Timestamps kept forever that a flush must not reset: without the
