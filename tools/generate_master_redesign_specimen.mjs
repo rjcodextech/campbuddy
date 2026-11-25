@@ -1222,7 +1222,7 @@ const html = `<!DOCTYPE html>
     <button class="platform-tab active" onclick="switchPlatform('apk')">
       ${getIcon('globe', 18)}
       <span>1. Mobile App APK (Compose)</span>
-      <span class="count-badge">32 Screens</span>
+      <span class="count-badge">50 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('web')">
       ${getIcon('columns', 18)}
@@ -1248,15 +1248,15 @@ const html = `<!DOCTYPE html>
     <div class="section-intro">
       <div>
         <h2>${getIcon('globe', 22)} Native Mobile App APK (Compose Multiplatform)</h2>
-        <p>All 32 refined, single-focus mobile screens spanning Attendee, First-Timer, Discovery, Explore, Quests, Contributor Day, and In-App Organizer/SuperAdmin modes.</p>
+        <p>All 50 refined, single-focus mobile screens spanning Attendee, First-Timer Onboarding, Discovery &amp; Modals, Explore, Quests, Contributor Day, Staff Editors, and SuperAdmin Console.</p>
       </div>
-      <span class="badge-pill badge-pill-coral">32 Refined FigCraft Screens · 360×760dp</span>
+      <span class="badge-pill badge-pill-coral">50 Refined FigCraft Screens · 360×760dp</span>
     </div>
 
     <div class="apk-filter-bar">
-      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (32)</button>
-      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (M01–M22)</button>
-      <button type="button" class="apk-filter-pill" onclick="filterApk('staff', this)">Organizer &amp; Admin Mode (M23–M32)</button>
+      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (50)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (28)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('staff', this)">Organizer &amp; Admin Mode (22)</button>
     </div>
 
     ${(() => {
@@ -1321,6 +1321,42 @@ const html = `<!DOCTYPE html>
             { id: 'M30', file: 'M30 · SuperAdmin Global Dashboard.png', note: 'System Health · 2×3 Key Metrics · Featured Delhi · Maintenance' },
             { id: 'M31', file: 'M31 · SuperAdmin Event Managers.png', note: 'Add Manager CTA · Status Filters · Clean Manager Roster' },
             { id: 'M32', file: 'M32 · SuperAdmin Analytics & Leads.png', note: 'Visitor Analytics · System Health · Feedback · Deal Lead Exports' },
+          ]
+        },
+        {
+          role: 'attendee',
+          title: 'Group 6 · Attendee Onboarding, Legal & Interactive Modals (M33–M38)',
+          items: [
+            { id: 'M33', file: 'M33 · Onboarding Intro & First-Timer.png', note: 'Welcome Personalize Prompt · Step 1 Binary Yes/No First-Timer Card' },
+            { id: 'M34', file: 'M34 · Onboarding Contributor & Finish.png', note: 'Steps 4–5 Who to Meet & WP.org · Private Summary Completion Card' },
+            { id: 'M35', file: 'M35 · Legal Notice & Terms Reader.png', note: 'Privacy Notice & Terms Tabs · On-Device Storage · DPDP Act 2023 Rights' },
+            { id: 'M36', file: 'M36 · Plan Meet & Schedule Pickers.png', note: 'Private Meeting Note · Date & Time Pickers · .ics & Google Calendar' },
+            { id: 'M37', file: 'M37 · Join Discovery & Wave Sheets.png', note: 'Name Picker & Interests · Consent Toggle · Private Wave Note Sheet' },
+            { id: 'M38', file: 'M38 · Contributor Quiz & Data Erase.png', note: '30-Sec Contributor Quiz · Matched Table Result · Clear Phone Data Modal' },
+          ]
+        },
+        {
+          role: 'staff',
+          title: 'Group 7 · Staff Directory, Venue Editors & CRUD Sheets (M39–M44)',
+          items: [
+            { id: 'M39', file: 'M39 · Staff Events Directory.png', note: 'Search All WordCamps · Status Filters · Manage & Preview Shortcuts' },
+            { id: 'M40', file: 'M40 · Staff Event Details & Data Sync.png', note: 'Slug & Dates Editor · Public Directory Switch · WordCamp Feed Refresh' },
+            { id: 'M41', file: 'M41 · Staff Venue Info & Danger Zone.png', note: 'Venue Address, Guest Wi-Fi & Desk Editor · Danger Zone Slug Confirm' },
+            { id: 'M42', file: 'M42 · Staff CRUD Sheets (Roles & Deals).png', note: 'Multi-Select Roster Roles · Sponsor Deal Coupon & Lead Capture Editor' },
+            { id: 'M43', file: 'M43 · Staff Notifications & Event Log.png', note: 'Event Push Notification Triggers · Real-Time Organizer Activity Timeline' },
+            { id: 'M44', file: 'M44 · Admin New Event & Report Sheet.png', note: 'Create WordCamp & Fetch Feed · Attendee Safety Report Moderation Sheet' },
+          ]
+        },
+        {
+          role: 'staff',
+          title: 'Group 8 · SuperAdmin More Hub & Platform Sub-Pages (M45–M50)',
+          items: [
+            { id: 'M45', file: 'M45 · SuperAdmin More & Maintenance.png', note: 'Analytics/Errors/Feedback/Logs Hub · Global Refresh & Cache Controls' },
+            { id: 'M46', file: 'M46 · SuperAdmin System Errors.png', note: '7d/30d Filters · Healthy Shield Card · Upstream Timeout Retry · Checks' },
+            { id: 'M47', file: 'M47 · SuperAdmin Attendee Feedback.png', note: '4.9/5 Average Rating Histogram · Thank-You Card Comments Stream' },
+            { id: 'M48', file: 'M48 · SuperAdmin Global Activity Log.png', note: 'Cross-Event Audit Feed · Filter by Manager · Timestamps & Actions' },
+            { id: 'M49', file: 'M49 · SuperAdmin Analytics.png', note: 'Visitors & Engagement KPIs · Top WordCamps · Device Platform Split' },
+            { id: 'M50', file: 'M50 · SuperAdmin Manager Sheet.png', note: 'Manager Email & Phone · Can Sign In Switch · Assigned WordCamps' },
           ]
         }
       ];
@@ -2003,7 +2039,7 @@ const html = `<!DOCTYPE html>
   <footer class="audit-bar">
     <div style="display:flex; flex-direction:column; gap:2px;">
       <span style="font-family:var(--font-heading); font-size:14px; font-weight:700; color:#FFFFFF;">Clean Design System · Zero Visual Clutter Guarantee</span>
-      <span style="font-size:11px; color:#94A3B8;">32 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
+      <span style="font-size:11px; color:#94A3B8;">50 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
     </div>
     <div class="audit-checkmarks">
       <span>${getIcon('award', 16, '#10B981')} 100% Real Delhi 2026 Data</span>
