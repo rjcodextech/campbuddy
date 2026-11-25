@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -160,13 +161,13 @@ class DiscoveryModel(private val slug: String, private val env: Env, private val
 
 /** The People tab's top: join (or your profile), waves and chats, and the best matches. */
 @OptIn(ExperimentalLayoutApi::class)
-fun LazyListScope.discoveryItems(model: DiscoveryModel, roster: List<RosterEntry>) {
-    item(key = "disc-top") { DiscoveryTop(model, roster) }
+fun LazyListScope.discoveryItems(model: DiscoveryModel, roster: List<RosterEntry>, onShareCampCard: () -> Unit = {}) {
+    item(key = "disc-top") { DiscoveryTop(model, roster, onShareCampCard) }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
+private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>, onShareCampCard: () -> Unit) {
     val env = LocalEnv.current
     val brand = LocalBrand.current
     var joining by remember { mutableStateOf(false) }
@@ -189,6 +190,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
     val ranked = Discovery.rank(model.cards, myTags, mine?.discoveryId, model.hidden)
     val waves = model.waves
     val byId = model.cards.associateBy { it.discoveryId }
+    val chatOpen = waves.chat?.open != false
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         model.message?.let { Text(it, style = MaterialTheme.typography.bodyLarge.copy(color = brand.primaryText)) }
@@ -212,7 +214,7 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
                         style = MaterialTheme.typography.titleMedium.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold),
                     )
                     Text(
-                        "Create a private card & wave at matches.",
+                        "Create a private card, wave at matches & unlock 1-to-1 chat.",
                         style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF94A3B8)),
                     )
                 }
@@ -230,10 +232,20 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
         } else {
             Card {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("You are in attendee discovery", style = MaterialTheme.typography.titleLarge)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text("You are in attendee discovery", style = MaterialTheme.typography.titleLarge)
+                        Box(
+                            Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(androidx.compose.ui.graphics.Color(0xFFECFDF5))
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                        ) {
+                            Text("Active", style = MaterialTheme.typography.labelSmall.copy(color = androidx.compose.ui.graphics.Color(0xFF059669), fontWeight = FontWeight.Bold))
+                        }
+                    }
                     Text(
                         model.myCard?.name?.let { "Shown as $it." } ?: "Shown without a name. People only see your name if you wave at each other.",
-                        style = MaterialTheme.typography.bodyLarge.copy(color = brand.muted),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted),
                     )
                     model.myCard?.let { card -> TagRow(card.fields.tags, emptyList()) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -243,21 +255,46 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
                 }
             }
 
-            if (waves.mutual.isNotEmpty() || waves.received.isNotEmpty()) {
+            // Waves Inbox & Mutual Match Chat Hub (M51)
+            val sentPending = waves.sent.filter { id -> waves.mutual.none { it.discoveryId == id } }
+            if (waves.received.isNotEmpty() || waves.mutual.isNotEmpty() || sentPending.isNotEmpty()) {
                 Card {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Your waves", style = MaterialTheme.typography.titleLarge)
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Waves & Chats", style = MaterialTheme.typography.titleLarge)
+                            Text(
+                                "${waves.mutual.size} mutual · ${waves.received.size} waiting",
+                                style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.Bold),
+                            )
+                        }
+
                         waves.received.forEach { id ->
                             val who = byId[id]
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f)) {
-                                    Text("A match waved at you", style = MaterialTheme.typography.titleMedium)
-                                    who?.fields?.tags?.takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-                                    if (id in waves.receivedWithMessage) Text("They wrote something. Wave back to read it.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText))
+                            Column(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(14.dp))
+                                    .background(androidx.compose.ui.graphics.Color.White)
+                                    .border(1.5.dp, brand.primary, RoundedCornerShape(14.dp))
+                                    .padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Box(
+                                    Modifier.clip(RoundedCornerShape(50)).background(brand.peach).padding(horizontal = 8.dp, vertical = 2.dp),
+                                ) {
+                                    Text("INCOMING WAVE", style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
+                                }
+                                Text("A match wants to meet you", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                                if (id in waves.receivedWithMessage) {
+                                    Text("They wrote a note! Wave back to swap names and read their message.", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+                                }
+                                who?.fields?.tags?.takeIf { it.isNotEmpty() }?.let {
+                                    Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
                                 }
                                 who?.let { ActionButton("Wave back", filled = true) { waveFor = it } }
                             }
                         }
+
                         waves.mutual.forEach { m ->
                             Row(
                                 Modifier
@@ -265,20 +302,51 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
                                     .clip(RoundedCornerShape(14.dp))
                                     .background(androidx.compose.ui.graphics.Color(0xFFECFDF5))
                                     .border(1.dp, androidx.compose.ui.graphics.Color(0xFF86EFAC), RoundedCornerShape(14.dp))
+                                    .clickable { chat = m.discoveryId }
                                     .padding(12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                Box(Modifier.size(40.dp)) {
+                                    Box(Modifier.size(40.dp).background(androidx.compose.ui.graphics.Color.White, CircleShape).border(1.5.dp, brand.success, CircleShape), contentAlignment = Alignment.Center) {
+                                        Text((m.name ?: "M").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = androidx.compose.ui.graphics.Color(0xFF047857), fontWeight = FontWeight.Bold))
+                                    }
+                                    Box(Modifier.size(11.dp).background(brand.success, CircleShape).border(2.dp, androidx.compose.ui.graphics.Color.White, CircleShape).align(Alignment.BottomEnd))
+                                }
                                 Column(Modifier.weight(1f)) {
-                                    Text(m.name ?: "A match", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-                                    Text(m.messages.lastOrNull()?.body ?: "Mutual match · Tap Chat to say hello", style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF047857)), maxLines = 2)
+                                    Text(m.name ?: "Mutual Match", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                                    Text(
+                                        m.messages.lastOrNull()?.body ?: "You both waved · Tap Chat to say hello",
+                                        style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF047857)),
+                                        maxLines = 2,
+                                    )
                                 }
                                 Box(
-                                    Modifier.clip(RoundedCornerShape(50)).background(brand.ink).clickable { chat = m.discoveryId }.padding(horizontal = 16.dp, vertical = 8.dp),
+                                    Modifier.clip(RoundedCornerShape(50)).background(brand.ink).clickable { chat = m.discoveryId }.padding(horizontal = 14.dp, vertical = 8.dp),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Text("Chat", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold))
+                                    Text("Chat →", style = MaterialTheme.typography.labelMedium.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold))
                                 }
+                            }
+                        }
+
+                        sentPending.forEach { id ->
+                            val who = byId[id]
+                            Row(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(brand.background)
+                                    .border(1.dp, brand.line, RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(who?.name ?: "Wave sent", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                                    Text("Waved ✓ · Waiting for wave back", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+                                }
+                                LinkButton("Take back", { model.takeBack(id) })
                             }
                         }
                     }
@@ -318,7 +386,10 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
 
     waveFor?.let { target ->
         WaveDialog(
+            targetName = target.name,
             needsName = model.myCard?.name == null,
+            chatOpen = chatOpen,
+            closedLabel = waves.chat?.opensLabel,
             onSend = { name, text -> waveFor = null; model.wave(target.discoveryId, name, text) },
             onCancel = { waveFor = null },
         )
@@ -333,7 +404,19 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>) {
 
     chat?.let { id ->
         val thread = waves.mutual.firstOrNull { it.discoveryId == id }
-        if (thread == null) chat = null else ChatDialog(thread, waves.maxMessages, busy = model.busy, error = model.message, onSend = { model.send(id, it) }, onClose = { chat = null })
+        val card = byId[id]
+        if (thread == null) chat = null else ChatDialog(
+            thread = thread,
+            sharedTags = Discovery.shared(myTags, card?.fields?.tags.orEmpty()),
+            chatStatus = waves.chat,
+            max = waves.maxMessages,
+            busy = model.busy,
+            error = model.message,
+            onSend = { model.send(id, it) },
+            onShareCampCard = { chat = null; onShareCampCard() },
+            onReport = { chat = null; card?.let { reportFor = it } },
+            onClose = { chat = null },
+        )
     }
 
     // A fresh start for the form when the profile appears or goes.
@@ -365,28 +448,40 @@ private fun MatchCard(
     val common = Discovery.shared(myTags, card.fields.tags)
 
     Card {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(44.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
-                    Text((card.name ?: "?").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText))
+                Box(Modifier.size(46.dp)) {
+                    Box(Modifier.size(46.dp).background(brand.peach, CircleShape).border(1.dp, brand.line, CircleShape), contentAlignment = Alignment.Center) {
+                        Text((card.name ?: "?").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                    }
+                    Box(Modifier.size(11.dp).background(brand.success, CircleShape).border(2.dp, androidx.compose.ui.graphics.Color.White, CircleShape).align(Alignment.BottomEnd))
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(card.name ?: "Someone at this WordCamp", style = MaterialTheme.typography.titleLarge)
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                        Text(card.name ?: "Someone at this WordCamp", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                        if (common.isNotEmpty()) {
+                            Box(
+                                Modifier.clip(RoundedCornerShape(50)).background(androidx.compose.ui.graphics.Color(0xFFECFDF5)).padding(horizontal = 8.dp, vertical = 3.dp),
+                            ) {
+                                Text("${common.size} shared", style = MaterialTheme.typography.labelSmall.copy(color = androidx.compose.ui.graphics.Color(0xFF059669), fontWeight = FontWeight.Bold))
+                            }
+                        }
+                    }
                     card.fields.profession?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
                 }
             }
-            card.fields.whoToMeet?.let { Text("Looking to meet: $it", style = MaterialTheme.typography.bodyLarge) }
+            card.fields.whoToMeet?.let { Text("Looking to meet: $it", style = MaterialTheme.typography.bodyMedium) }
             TagRow(card.fields.tags, common)
-            if (common.isNotEmpty()) Text("${common.size} in common", style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 when {
-                    mutual -> ActionButton("Chat", filled = true, onClick = onChat)
+                    mutual -> Box(
+                        Modifier.clip(RoundedCornerShape(50)).background(brand.ink).clickable(role = Role.Button, onClick = onChat).padding(horizontal = 16.dp, vertical = 9.dp),
+                    ) { Text("Chat →", style = MaterialTheme.typography.labelLarge.copy(color = androidx.compose.ui.graphics.Color.White, fontWeight = FontWeight.Bold)) }
                     waved -> { ActionButton("Waved ✓", filled = false) {}; LinkButton("Take back", onTakeBack) }
                     theyWaved -> ActionButton("Wave back", filled = true, onClick = onWave)
-                    else -> ActionButton("Wave", filled = true, onClick = onWave)
+                    else -> ActionButton("Wave Hello", filled = true, onClick = onWave)
                 }
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Spacer(Modifier.weight(1f))
                 LinkButton("Hide", onHide)
                 LinkButton("Report", onReport)
             }
@@ -395,70 +490,210 @@ private fun MatchCard(
 }
 
 @Composable
-private fun WaveDialog(needsName: Boolean, onSend: (String?, String?) -> Unit, onCancel: () -> Unit) {
+private fun WaveDialog(
+    targetName: String?,
+    needsName: Boolean,
+    chatOpen: Boolean,
+    closedLabel: String?,
+    onSend: (String?, String?) -> Unit,
+    onCancel: () -> Unit,
+) {
+    val brand = LocalBrand.current
     var name by remember { mutableStateOf("") }
     var text by remember { mutableStateOf("") }
-    Sheet("Send a wave", onClose = onCancel, actions = { SheetActions("Wave", { onSend(name, text) }, "Cancel", onCancel) }) {
-        Text("They only see that a match would like to meet. If they wave back, you both see each other's name.", style = MaterialTheme.typography.bodyLarge)
-        if (needsName) OutlinedTextField(name, { name = it.take(60) }, label = { Text("Your first name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(text, { text = it.take(140) }, label = { Text("A first message (optional)") }, modifier = Modifier.fillMaxWidth())
+    Sheet(
+        onClose = onCancel,
+        head = {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(44.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
+                    LineIcon("hand", brand.primary, size = 22.dp)
+                }
+                Column {
+                    Text("WAVE AT THIS MATCH", style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold))
+                    Text(targetName ?: "Wave hello", style = MaterialTheme.typography.titleLarge)
+                }
+            }
+        },
+        actions = { SheetActions("Send wave", { onSend(name, text) }, "Cancel", onCancel) },
+    ) {
+        Text("If they wave back, you both see each other's name and messages. If not, nothing is shared.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+        if (needsName) OutlinedTextField(name, { name = it.take(60) }, label = { Text("Your first name (revealed on match)") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+        if (chatOpen) {
+            OutlinedTextField(text, { text = it.take(140) }, label = { Text("Optional intro message (1 of 3)") }, placeholder = { Text("e.g. Coffee after the keynote?") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
+            Text("You each get 3 short messages to agree where to meet. Then swap Camp Cards.", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+        } else {
+            Text(
+                closedLabel?.let { "Wave now, and chat will open $it (event time)." } ?: "Chat opens during WordCamp hours, 1 hour before the first talk.",
+                style = MaterialTheme.typography.bodySmall.copy(color = brand.muted),
+            )
+        }
     }
 }
 
 @Composable
 private fun ReportDialog(onSend: (String, String?) -> Unit, onCancel: () -> Unit) {
+    val brand = LocalBrand.current
     var reason by remember { mutableStateOf("spam") }
     var note by remember { mutableStateOf("") }
-    Sheet("Report this profile", onClose = onCancel, actions = { SheetActions("Report", { onSend(reason, note) }, "Cancel", onCancel) }) {
-        Text("An organizer will review it. The profile is hidden on this phone from now on.", style = MaterialTheme.typography.bodyLarge)
+    Sheet(
+        onClose = onCancel,
+        head = {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(44.dp).background(androidx.compose.ui.graphics.Color(0xFFFEE2E2), CircleShape), contentAlignment = Alignment.Center) {
+                    LineIcon("shield", brand.danger, size = 20.dp)
+                }
+                Column {
+                    Text("REPORT & BLOCK PROFILE", style = MaterialTheme.typography.labelSmall.copy(color = brand.danger, fontWeight = FontWeight.ExtraBold))
+                    Text("Hide this attendee", style = MaterialTheme.typography.titleLarge)
+                }
+            }
+        },
+        actions = { SheetActions("Report & Block", { onSend(reason, note) }, "Cancel", onCancel) },
+    ) {
+        Text("They disappear from your matches and waves right away. Organizers review every report within 24 hours.", style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
         Discovery.REPORT_REASONS.forEach { (key, label) -> ChoicePill(label, selected = reason == key) { reason = key } }
-        OutlinedTextField(note, { note = it.take(300) }, label = { Text("Anything to add? (optional)") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(note, { note = it.take(300) }, label = { Text("Anything we should know? (optional)") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp))
     }
 }
 
 @Composable
-private fun ChatDialog(thread: MutualWave, max: Int, busy: Boolean, error: String?, onSend: (String) -> Unit, onClose: () -> Unit) {
+private fun ChatDialog(
+    thread: MutualWave,
+    sharedTags: List<String>,
+    chatStatus: club.campbuddy.shared.model.ChatStatus?,
+    max: Int,
+    busy: Boolean,
+    error: String?,
+    onSend: (String) -> Unit,
+    onShareCampCard: () -> Unit,
+    onReport: () -> Unit,
+    onClose: () -> Unit,
+) {
     val brand = LocalBrand.current
     var body by remember(thread.messages.size) { mutableStateOf("") }
+    val multiDay = thread.messages.mapNotNull { it.day }.distinct().size > 1
+    var sentByMe = 0
+    var sentByThem = 0
+
     Sheet(
-        thread.name ?: "Chat", onClose = onClose,
+        onClose = onClose,
+        head = {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(40.dp)) {
+                    Box(Modifier.size(40.dp).background(brand.peach, CircleShape).border(1.5.dp, brand.success, CircleShape), contentAlignment = Alignment.Center) {
+                        Text((thread.name ?: "M").take(1).uppercase(), style = MaterialTheme.typography.titleMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                    }
+                    Box(Modifier.size(11.dp).background(brand.success, CircleShape).border(2.dp, androidx.compose.ui.graphics.Color.White, CircleShape).align(Alignment.BottomEnd))
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(thread.name ?: "Mutual Match", style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        if (sharedTags.isNotEmpty()) "Mutual match · ${sharedTags.take(2).joinToString(" & ")}" else "Mutual match · Discovery chat",
+                        style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF059669), fontWeight = FontWeight.SemiBold),
+                    )
+                }
+            }
+        },
         actions = {
-            if (thread.canSend) SheetActions(if (busy) "Sending…" else "Send", { if (body.isNotBlank() && !busy) onSend(body) }, "Close", onClose)
-            else SheetActions("Close", onClose)
+            if (thread.canSend) SheetActions(if (busy) "Sending…" else "Send message", { if (body.isNotBlank() && !busy) onSend(body) }, "Close", onClose)
+            else SheetActions("Share Camp Card →", onShareCampCard, "Close", onClose)
         },
     ) {
-        Box(
-            Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Color.White, RoundedCornerShape(50)).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 12.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                if (thread.messages.isEmpty()) "Both of you waved · Say hello" else "Mutual match chat · Saved privately",
-                style = MaterialTheme.typography.labelSmall.copy(color = brand.muted),
-            )
+        // Event Time Window Pill (M52 / M53)
+        val windowBg = if (chatStatus?.open != false) androidx.compose.ui.graphics.Color(0xFFECFDF5) else androidx.compose.ui.graphics.Color(0xFF0F172A)
+        val windowBorder = if (chatStatus?.open != false) androidx.compose.ui.graphics.Color(0xFFA7F3D0) else androidx.compose.ui.graphics.Color(0xFF334155)
+        val windowTint = if (chatStatus?.open != false) androidx.compose.ui.graphics.Color(0xFF047857) else androidx.compose.ui.graphics.Color.White
+        val windowText = when {
+            chatStatus == null -> "Mutual match · $max short messages each today"
+            chatStatus.open && chatStatus.closesLabel != null ->
+                "Chat open until ${chatStatus.closesLabel}" + (if (chatStatus.days > 1 && chatStatus.dayNumber != null) " · Day ${chatStatus.dayNumber} of ${chatStatus.days}" else "") + " · $max msgs/day"
+            chatStatus.ended -> "WordCamp ended · Share Camp Cards to stay in touch"
+            chatStatus.opensLabel != null -> "Chat closed · Opens ${chatStatus.opensLabel} (event time)"
+            else -> "Chat opens during WordCamp hours"
         }
+        Row(
+            Modifier.fillMaxWidth().background(windowBg, RoundedCornerShape(12.dp)).border(1.dp, windowBorder, RoundedCornerShape(12.dp)).padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            LineIcon("clock", if (chatStatus?.open != false) androidx.compose.ui.graphics.Color(0xFF059669) else androidx.compose.ui.graphics.Color(0xFFF59E0B), size = 14.dp)
+            Text(windowText, style = MaterialTheme.typography.labelMedium.copy(color = windowTint, fontWeight = FontWeight.Bold))
+        }
+
+        if (thread.messages.isEmpty()) {
+            Text("Both of you waved! Take turns and keep it short to agree where to meet.", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+        }
+
+        var lastDay: String? = null
         thread.messages.forEach { m ->
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = if (m.mine) Arrangement.End else Arrangement.Start,
-            ) {
-                Box(
+            if (multiDay && !m.day.isNullOrBlank() && m.day != lastDay) {
+                lastDay = m.day
+                Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
+                    Text(m.day, style = MaterialTheme.typography.labelSmall.copy(color = brand.muted), modifier = Modifier.background(androidx.compose.ui.graphics.Color.White, RoundedCornerShape(50)).border(1.dp, brand.line, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 3.dp))
+                }
+            }
+            val msgNum = if (m.mine) { sentByMe++; sentByMe } else { sentByThem++; sentByThem }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = if (m.mine) Arrangement.End else Arrangement.Start) {
+                Column(
                     Modifier
                         .clip(RoundedCornerShape(16.dp))
                         .background(if (m.mine) brand.primary else androidx.compose.ui.graphics.Color.White)
                         .border(if (m.mine) 0.dp else 1.dp, if (m.mine) androidx.compose.ui.graphics.Color.Transparent else brand.line, RoundedCornerShape(16.dp))
                         .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
                     Text(
                         m.body,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = if (m.mine) androidx.compose.ui.graphics.Color.White else brand.ink,
-                        ),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = if (m.mine) androidx.compose.ui.graphics.Color.White else brand.ink),
+                    )
+                    Text(
+                        if (m.mine) "Message $msgNum of $max · sent ✓" else "Their message $msgNum of $max",
+                        style = MaterialTheme.typography.labelSmall.copy(color = if (m.mine) androidx.compose.ui.graphics.Color(0xFFFFE4DE) else brand.muted, fontSize = 10.sp),
                     )
                 }
             }
         }
-        Discovery.whyNot(thread.reason, max)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
-        if (thread.canSend) OutlinedTextField(body, { body = it.take(140) }, label = { Text("Write a short message...") }, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp))
+
+        // Turn-taking or Daily Limit Callout (M52 / M53)
+        if (thread.reason == "waiting") {
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(androidx.compose.ui.graphics.Color(0xFFFEF3C7)).border(1.dp, androidx.compose.ui.graphics.Color(0xFFF59E0B), RoundedCornerShape(14.dp)).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text("Waiting for their reply", style = MaterialTheme.typography.labelLarge.copy(color = androidx.compose.ui.graphics.Color(0xFF92400E), fontWeight = FontWeight.Bold))
+                Text("Take turns to keep it relaxed — you have sent ${thread.mine} of $max messages today.", style = MaterialTheme.typography.bodySmall.copy(color = androidx.compose.ui.graphics.Color(0xFF92400E)))
+            }
+        } else if (thread.reason == "limit") {
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(androidx.compose.ui.graphics.Color(0xFFFFF7ED)).border(1.dp, brand.primary, RoundedCornerShape(14.dp)).padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text("All $max of today's messages sent", style = MaterialTheme.typography.labelLarge.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                Text("Swap your Camp Card below to continue offline or stay connected after WordCamp.", style = MaterialTheme.typography.bodySmall.copy(color = brand.muted))
+            }
+        } else {
+            Discovery.whyNot(thread.reason, max)?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted)) }
+        }
+
+        if (thread.canSend) {
+            OutlinedTextField(
+                value = body,
+                onValueChange = { body = it.take(140) },
+                label = { Text("Message ${(thread.mine + 1).coerceAtMost(max)} of $max today...") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+            )
+        }
+
+        // Quick CampCard & Report footer
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            if (thread.canSend) {
+                LinkButton("Share Camp Card →", onShareCampCard)
+            } else {
+                Box(Modifier.weight(1f))
+            }
+            LinkButton("Report & Block", onReport)
+        }
         error?.let { Text(it, style = MaterialTheme.typography.bodyMedium.copy(color = brand.danger)) }
     }
 }

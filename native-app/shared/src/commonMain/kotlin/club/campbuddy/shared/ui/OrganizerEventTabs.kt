@@ -1029,7 +1029,7 @@ internal fun BroadcastTab(ctx: EventCtx) {
             val shownBody = (body ?: fill(preset?.body.orEmpty())).trim()
             item {
                 OrgSection("Send a live announcement", "megaphone", "To ${d.reach.web + d.reach.app} phones and browsers that opened this WordCamp in the last days with notifications on. It also shows on Home for 30 minutes, for everyone.") {
-                    if (!d.ready) Text("The server needs `php artisan migrate` first.", style = MaterialTheme.typography.bodySmall.copy(color = LocalBrand.current.danger))
+                    if (!d.ready) Text("Live announcements are getting ready. Please check back in a moment.", style = MaterialTheme.typography.bodySmall.copy(color = LocalBrand.current.danger))
                     Text("WHAT IS HAPPENING", style = MaterialTheme.typography.labelMedium)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         d.presets.forEach { p -> CbChip(selected = p.key == kind, onClick = { kind = p.key; title = null; body = null }, label = { Text(if (p.emoji.isNotEmpty()) "${p.emoji} ${p.label}" else p.label) }) }

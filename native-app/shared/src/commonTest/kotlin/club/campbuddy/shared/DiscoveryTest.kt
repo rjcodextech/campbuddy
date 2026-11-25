@@ -47,6 +47,9 @@ class DiscoveryTest {
 
         val state = club.campbuddy.shared.data.AppJson.decodeFromString(club.campbuddy.shared.model.WaveState.serializer(), json)
 
+        assertEquals(true, state.chat?.open)
+        assertEquals("2026-10-13", state.chat?.day)
+        assertEquals(2, state.chat?.days)
         assertEquals(listOf("aa"), state.sent)
         assertEquals(listOf("bb"), state.receivedWithMessage)
         assertEquals("Hi", state.pending.single().messages.single().body)

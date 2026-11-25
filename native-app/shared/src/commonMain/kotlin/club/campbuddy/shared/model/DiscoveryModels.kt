@@ -60,8 +60,23 @@ data class MutualWave(
 )
 
 @Serializable
+data class ChatStatus(
+    val open: Boolean = false,
+    val day: String? = null,
+    @SerialName("day_number") val dayNumber: Int? = null,
+    val days: Int = 0,
+    @SerialName("closes_at") val closesAt: String? = null,
+    @SerialName("closes_label") val closesLabel: String? = null,
+    @SerialName("opens_at") val opensAt: String? = null,
+    @SerialName("opens_label") val opensLabel: String? = null,
+    val ended: Boolean = false,
+    val timezone: String? = null,
+)
+
+@Serializable
 data class WaveState(
     @SerialName("max_messages") val maxMessages: Int = 3,
+    val chat: ChatStatus? = null,
     val sent: List<String> = emptyList(),
     val received: List<String> = emptyList(),
     @SerialName("received_with_message") val receivedWithMessage: List<String> = emptyList(),

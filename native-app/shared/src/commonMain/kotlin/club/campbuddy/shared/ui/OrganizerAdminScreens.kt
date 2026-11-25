@@ -256,12 +256,12 @@ private fun MoreRow(icon: String, title: String, sub: String, onClick: () -> Uni
     val brand = LocalBrand.current
     Card(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Box(Modifier.size(40.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 20.dp) }
+            Box(Modifier.size(40.dp).background(ORG_DARK_INPUT, CircleShape), contentAlignment = Alignment.Center) { LineIcon(icon, brand.primary, size = 20.dp) }
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(title, style = MaterialTheme.typography.titleMedium.copy(color = androidx.compose.ui.graphics.Color.White))
                 Text(sub, style = MaterialTheme.typography.bodySmall)
             }
-            LineIcon("chevron-right", brand.muted, size = 18.dp)
+            LineIcon("chevron-right", ORG_DARK_MUTED, size = 18.dp)
         }
     }
 }
@@ -366,7 +366,7 @@ private fun FeedbackPage(api: ApiClient, token: String, onExpired: () -> Unit) {
                         s.stars.forEachIndexed { i, n ->
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Text("${5 - i}★", style = MaterialTheme.typography.bodySmall, modifier = Modifier.width(28.dp))
-                                Box(Modifier.weight(1f).height(8.dp).background(brand.line, RoundedCornerShape(50))) {
+                                Box(Modifier.weight(1f).height(8.dp).background(ORG_DARK_INPUT, RoundedCornerShape(50))) {
                                     if (n > 0 && s.answers > 0) Box(Modifier.fillMaxWidth(n.toFloat() / s.answers).height(8.dp).background(brand.accent, RoundedCornerShape(50)))
                                 }
                                 Text(n.toString(), style = MaterialTheme.typography.bodySmall, modifier = Modifier.width(28.dp))

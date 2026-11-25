@@ -194,7 +194,7 @@ fun EventScreen(
                         "my-day" -> MyDayTab(e.value, list, offline, startMine = myDayMine)
                         "quest" -> QuestTab(slug) { openTab(it) }
                         "contribute" -> ContributeTab(slug)
-                        "explore" -> ExploreTab(slug, exploreSub)
+                        "explore" -> ExploreTab(slug, exploreSub) { selected = "camp-card" }
                         "camp-card" -> CampCardTab(slug, e.value.name, e.value.logo, e.value.mark)
                         "memories" -> MemoriesTab(slug) { selected = tabs.firstOrNull()?.key ?: "home" }
                         else -> Unit

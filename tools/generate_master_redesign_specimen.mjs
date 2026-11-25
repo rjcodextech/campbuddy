@@ -1222,7 +1222,7 @@ const html = `<!DOCTYPE html>
     <button class="platform-tab active" onclick="switchPlatform('apk')">
       ${getIcon('globe', 18)}
       <span>1. Mobile App APK (Compose)</span>
-      <span class="count-badge">50 Screens</span>
+      <span class="count-badge">54 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('web')">
       ${getIcon('columns', 18)}
@@ -1248,14 +1248,15 @@ const html = `<!DOCTYPE html>
     <div class="section-intro">
       <div>
         <h2>${getIcon('globe', 22)} Native Mobile App APK (Compose Multiplatform)</h2>
-        <p>All 50 refined, single-focus mobile screens spanning Attendee, First-Timer Onboarding, Discovery &amp; Modals, Explore, Quests, Contributor Day, Staff Editors, and SuperAdmin Console.</p>
+        <p>All 54 refined, single-focus mobile screens spanning Attendee, First-Timer Onboarding, Attendee Waves &amp; Chat Flow, Discovery &amp; Modals, Explore, Quests, Contributor Day, Staff Editors, and SuperAdmin Console.</p>
       </div>
-      <span class="badge-pill badge-pill-coral">50 Refined FigCraft Screens · 360×760dp</span>
+      <span class="badge-pill badge-pill-coral">54 Refined FigCraft Screens · 360×760dp</span>
     </div>
 
     <div class="apk-filter-bar">
-      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (50)</button>
-      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (28)</button>
+      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (54)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (32)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('chat', this)">Attendee Chat &amp; Waves (7)</button>
       <button type="button" class="apk-filter-pill" onclick="filterApk('staff', this)">Organizer &amp; Admin Mode (22)</button>
     </div>
 
@@ -1291,8 +1292,8 @@ const html = `<!DOCTYPE html>
             { id: 'M12', file: 'M12 · CampCard Carousel & Real QR.png', note: 'Style Switcher · Sharp Delhi Seal · Scannable QR · Share/Download' },
             { id: 'M13', file: 'M13 · Edit CampCard & Claim Profile.png', note: 'Roster Profile Link · Card Fields · Interest Chips · Privacy Toggles' },
             { id: 'M14', file: 'M14 · Fast QR Scanner & Contact Sheet.png', note: 'Camera Viewfinder · Flash Toggle · Detected Contact Bottom Sheet' },
-            { id: 'M15', file: 'M15 · Explore_ Discovery & Roster.png', note: '5 Explore Tabs · Join Banner · Discovery Match · Attendee Roster' },
-            { id: 'M16', file: 'M16 · Mutual Match Chat & Meet.png', note: 'Focused Light Chat · Suggested Meet Card · Quick Message Composer' },
+            { id: 'M15', chat: true, file: 'M15 · Explore_ Discovery & Roster.png', note: '5 Explore Tabs · Join Banner · Discovery Match · Attendee Roster' },
+            { id: 'M16', chat: true, title: 'Attendee Chat & Mutual Match', file: 'M16 · Mutual Match Chat & Meet.png', note: 'Focused Attendee Chat · Turn-Based Intro Bubbles · Plan Meet & Composer' },
           ]
         },
         {
@@ -1331,7 +1332,7 @@ const html = `<!DOCTYPE html>
             { id: 'M34', file: 'M34 · Onboarding Contributor & Finish.png', note: 'Steps 4–5 Who to Meet & WP.org · Private Summary Completion Card' },
             { id: 'M35', file: 'M35 · Legal Notice & Terms Reader.png', note: 'Privacy Notice & Terms Tabs · On-Device Storage · DPDP Act 2023 Rights' },
             { id: 'M36', file: 'M36 · Plan Meet & Schedule Pickers.png', note: 'Private Meeting Note · Date & Time Pickers · .ics & Google Calendar' },
-            { id: 'M37', file: 'M37 · Join Discovery & Wave Sheets.png', note: 'Name Picker & Interests · Consent Toggle · Private Wave Note Sheet' },
+            { id: 'M37', chat: true, file: 'M37 · Join Discovery & Wave Sheets.png', note: 'Name Picker & Interests · Consent Toggle · Private Wave Note Sheet' },
             { id: 'M38', file: 'M38 · Contributor Quiz & Data Erase.png', note: '30-Sec Contributor Quiz · Matched Table Result · Clear Phone Data Modal' },
           ]
         },
@@ -1358,6 +1359,16 @@ const html = `<!DOCTYPE html>
             { id: 'M49', file: 'M49 · SuperAdmin Analytics.png', note: 'Visitors & Engagement KPIs · Top WordCamps · Device Platform Split' },
             { id: 'M50', file: 'M50 · SuperAdmin Manager Sheet.png', note: 'Manager Email & Phone · Can Sign In Switch · Assigned WordCamps' },
           ]
+        },
+        {
+          role: 'attendee',
+          title: 'Group 9 · Attendee Waves, Mutual Match & Live Chat Flow (M51–M54)',
+          items: [
+            { id: 'M51', chat: true, file: 'M51 · Attendee Waves Inbox & Reveal.png', note: 'Incoming Hidden Wave Banner · Mutual Chat Unlocked Cards · Sent Pending & Take Back' },
+            { id: 'M52', chat: true, file: 'M52 · Attendee Chat (Active & Turn-Taking).png', note: 'Event Window Banner · Multi-Day Separators · Message 1 of 3 · Wait-for-Reply Lock' },
+            { id: 'M53', chat: true, file: 'M53 · Attendee Chat Limit & Card Swap.png', note: 'Daily 3-Message Limit · Share Camp Card CTA · Overnight Chat Closed State' },
+            { id: 'M54', chat: true, file: 'M54 · Attendee Report & Block Sheet.png', note: 'Safety Moderation Sheet · Report Reasons · Instant Hide & Block Attendee' },
+          ]
         }
       ];
       return apkGroups.map(g => `
@@ -1367,11 +1378,12 @@ const html = `<!DOCTYPE html>
             ${g.items.map(it => {
               const src = 'screens/apk/' + encodeURIComponent(it.file);
               const label = it.file.replace('.png', '').replace('Explore_ ', 'Explore: ');
+              const displayTitle = it.title || label.replace(it.id + ' · ', '');
               return `
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="${it.chat ? 'true' : 'false'}">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">${it.id}</span>
-                    <span>${label.replace(it.id + ' · ', '')}</span>
+                    <span>${displayTitle}</span>
                   </div>
                   <div class="phone-png-bezel" onclick="openLightbox('${src}')">
                     <img src="${src}" alt="${label}" loading="lazy">
@@ -2039,7 +2051,7 @@ const html = `<!DOCTYPE html>
   <footer class="audit-bar">
     <div style="display:flex; flex-direction:column; gap:2px;">
       <span style="font-family:var(--font-heading); font-size:14px; font-weight:700; color:#FFFFFF;">Clean Design System · Zero Visual Clutter Guarantee</span>
-      <span style="font-size:11px; color:#94A3B8;">50 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
+      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
     </div>
     <div class="audit-checkmarks">
       <span>${getIcon('award', 16, '#10B981')} 100% Real Delhi 2026 Data</span>
@@ -2071,7 +2083,19 @@ const html = `<!DOCTYPE html>
       document.querySelectorAll('.apk-filter-pill').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       document.querySelectorAll('.apk-group-block').forEach(g => {
-        g.style.display = (role === 'all' || g.dataset.apkRole === role) ? 'block' : 'none';
+        const cards = g.querySelectorAll('.phone-card-wrapper');
+        if (role === 'chat') {
+          let visibleCount = 0;
+          cards.forEach(c => {
+            const isChat = c.dataset.apkChat === 'true';
+            c.style.display = isChat ? '' : 'none';
+            if (isChat) visibleCount++;
+          });
+          g.style.display = visibleCount > 0 ? 'block' : 'none';
+        } else {
+          cards.forEach(c => { c.style.display = ''; });
+          g.style.display = (role === 'all' || g.dataset.apkRole === role) ? 'block' : 'none';
+        }
       });
     }
 

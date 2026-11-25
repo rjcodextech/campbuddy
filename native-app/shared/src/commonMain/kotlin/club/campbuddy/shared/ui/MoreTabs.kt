@@ -644,7 +644,7 @@ fun ContributorLeadCard(lead: club.campbuddy.shared.model.ContributorLeadDetail)
 // ---- Explore: people, sponsors, deals, free steals ---------------------------------------------------------------
 
 @Composable
-fun ExploreTab(slug: String, start: String? = null) {
+fun ExploreTab(slug: String, start: String? = null, onOpenCampCard: () -> Unit = {}) {
     val words = LocalWords.current
     var section by rememberSaveable(slug) { mutableStateOf(start?.takeIf { it in setOf("people", "sponsors", "deals", "steals", "quests", "info") } ?: "people") }
 
@@ -667,7 +667,7 @@ fun ExploreTab(slug: String, start: String? = null) {
         }
         Box(Modifier.weight(1f)) {
             when (section) {
-                "people" -> PeopleList(slug)
+                "people" -> PeopleList(slug, onOpenCampCard)
                 "sponsors" -> SponsorList(slug)
                 "deals" -> DealList(slug)
                 "quests" -> QuestTab(slug)
@@ -701,7 +701,7 @@ private fun ExploreTile(label: String, icon: String, selected: Boolean, modifier
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PeopleList(slug: String) {
+private fun PeopleList(slug: String, onOpenCampCard: () -> Unit = {}) {
     val env = LocalEnv.current
     val scope = rememberCoroutineScope()
     val brand = LocalBrand.current
@@ -713,7 +713,7 @@ private fun PeopleList(slug: String) {
     val model = remember(slug) { DiscoveryModel(slug, env, scope) }
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        discoveryItems(model, (state as? LoadState.Ready)?.value.orEmpty())
+        discoveryItems(model, (state as? LoadState.Ready)?.value.orEmpty(), onOpenCampCard)
         when (val s = state) {
             LoadState.Loading -> item { Loading() }
             is LoadState.Failed -> item { ErrorState(s.message, loader.reload) }

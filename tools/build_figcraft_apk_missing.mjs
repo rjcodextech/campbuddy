@@ -52,6 +52,8 @@ const ICONS = {
   refresh: 'M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5',
   x: 'M18 6 6 18M6 6l12 12',
   filter: 'M4 6h16M7 12h10M10 18h4',
+  hand: 'M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15',
+  messageCircle: 'M7.9 20A9 9 0 1 0 4 16.1L2 22z',
 };
 
 const ICON_DIMS = {
@@ -73,7 +75,7 @@ class MissingApkBuilder {
   constructor() {
     this.commands = [];
     this.nextId = 2;
-    this.commands.push({ command: 'page.rename', params: { name: 'Mobile APK - 18 Missing Sub-Screens (M33-M50)' } });
+    this.commands.push({ command: 'page.rename', params: { name: 'Mobile APK - 22 Missing & Chat Screens (M33-M54)' } });
     this.idx = 0;
   }
 
@@ -215,6 +217,27 @@ class MissingApkBuilder {
       this.text(rightText, 276, 48, 66, { fontSize: 9.5, fontWeight: 700, fill: '#F59E0B', textAlign: 'center' }, parent);
     } else {
       this.image(assets.cbIcon, 316, 41, 28, 28, parent, 'CBMark', 'fit');
+    }
+  }
+
+  bottomNav(parent, activeTab = 'explore') {
+    const y = 700;
+    this.rect('NavBG', 0, y, 360, 60, { fill: '#FFFFFF' }, parent);
+    this.line('NavDiv', 0, y, 360, { stroke: '#E2E8F0', strokeWeight: 1 }, parent);
+    const tabs = [
+      { key: 'home', label: 'Home', icon: 'home', x: 8 },
+      { key: 'myday', label: 'My Day', icon: 'calendar', x: 77 },
+      { key: 'explore', label: 'Explore', icon: 'compass', x: 146 },
+      { key: 'quests', label: 'Quests', icon: 'star', x: 215 },
+      { key: 'card', label: 'CampCard', icon: 'card', x: 284 },
+    ];
+    for (const t of tabs) {
+      const on = t.key === activeTab;
+      if (on) {
+        this.rect('NavActive', t.x + 11, y + 7, 46, 24, { fill: '#FFEDD5', cornerRadius: 12 }, parent);
+      }
+      this.vector(t.icon, t.x + 26, y + 11, 16, on ? '#D33417' : '#64748B', parent, `NavIco_${t.key}`);
+      this.text(t.label, t.x, y + 36, 68, { fontSize: 9.5, fontWeight: on ? 800 : 500, fill: on ? '#D33417' : '#64748B', textAlign: 'center' }, parent);
     }
   }
 
@@ -987,6 +1010,189 @@ class MissingApkBuilder {
       this.rect('DelMgr', 30, 656, 298, 40, { fill: '#450A0A', stroke: '#EF4444', strokeWeight: 1, cornerRadius: 20 }, f);
       this.text('Remove Manager Account', 34, 669, 290, { fontSize: 11, fontWeight: 700, fill: '#FCA5A5', textAlign: 'center' }, f);
     }
+
+    // M51: Attendee Waves Inbox & Mutual Matches
+    {
+      const f = this.screenFrame('M51 · Attendee Waves Inbox & Reveal', 'Incoming Hidden Waves · Pending Sent · Mutual Chat Entry', '#FFF7ED');
+      this.statusBar(f, false, 'Discovery Live');
+      this.subHeader(f, 'Waves & Chats');
+
+      // Incoming Wave (name hidden until wave back)
+      this.rect('InCard', 16, 86, 328, 178, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 18 }, f);
+      this.rect('InPill', 30, 102, 168, 22, { fill: '#FFEDD5', cornerRadius: 11 }, f);
+      this.text('INCOMING WAVE · 4m ago', 36, 107, 156, { fontSize: 9, fontWeight: 800, fill: '#EA580C', textAlign: 'center' }, f);
+      this.text('A match wants to meet you', 30, 134, 240, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('They also wrote a note! Wave back to swap names and read their message.', 30, 158, 296, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.pill(f, 'AI & Tools', 30, 198, 86, false);
+      this.pill(f, 'Developer', 124, 198, 86, false);
+      this.rect('WaveBackBtn', 220, 194, 108, 36, { fill: '#FF4D2D', cornerRadius: 18 }, f);
+      this.text('Wave Back', 224, 206, 100, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      // Mutual Matches (unlocked chat)
+      this.text('Mutual Matches (Chat Open)', 16, 282, 260, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.rect('Mut1', 16, 308, 328, 86, { fill: '#ECFDF5', stroke: '#86EFAC', strokeWeight: 1.5, cornerRadius: 18 }, f);
+      this.avatar(assets.shammi, 30, 324, 48, f, '#10B981', true);
+      this.text('Shammi Proothi', 90, 326, 156, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('You both waved · Tap Chat', 90, 346, 166, { fontSize: 10.5, fontWeight: 600, fill: '#047857' }, f);
+      this.text('"Meet near Sponsor Hall at 2 PM?"', 90, 365, 166, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
+      this.rect('ChatBtn1', 262, 334, 68, 34, { fill: '#0F172A', cornerRadius: 17 }, f);
+      this.text('Chat →', 266, 345, 60, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      // Pending Sent Wave
+      this.text('Waves You Sent', 16, 416, 220, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.rect('Pend1', 16, 442, 328, 92, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.avatar(assets.abhay, 30, 464, 44, f, '#CBD5E1', false);
+      this.text('Abhay Kulkarni', 86, 460, 156, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Waved ✓ · Waiting for wave back', 86, 480, 180, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('UndoBtn', 248, 496, 82, 26, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 13 }, f);
+      this.text('Take back', 252, 503, 74, { fontSize: 9.5, fontWeight: 700, fill: '#475569', textAlign: 'center' }, f);
+
+      // Privacy assurance note
+      this.rect('PrivBox', 16, 554, 328, 72, { fill: '#FFFBEB', stroke: '#FDE68A', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.vector('shield', 30, 578, 20, '#D97706', f);
+      this.text('Only mutual waves reveal names. Messages auto-delete 90 days after WordCamp ends.', 62, 570, 268, { fontSize: 10.5, fontWeight: 600, fill: '#92400E' }, f);
+
+      this.bottomNav(f, 'explore');
+    }
+
+    // M52: Attendee Chat (Turn-Taking & Open Event Window)
+    {
+      const f = this.screenFrame('M52 · Attendee Chat (Active & Turn-Taking)', 'Event Time Window · 3 Messages Per Day · Turn-Taking State', '#FFF7ED');
+      this.statusBar(f, false, 'Mutual Match');
+
+      // Custom Chat Header
+      this.rect('ChHdr', 0, 32, 360, 56, { fill: '#FFF7ED' }, f);
+      this.line('ChHdrLine', 0, 88, 360, { stroke: '#E2E8F0', strokeWeight: 1 }, f);
+      this.ellipse('ChBack', 14, 42, 34, 34, { fill: '#FFEDD5' }, f);
+      this.vector('chevronLeft', 28, 53, 12, '#FF4D2D', f);
+      this.avatar(assets.shammi, 56, 41, 36, f, '#10B981', true);
+      this.text('Shammi Proothi', 100, 42, 148, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Mutual match · Security & WP', 100, 60, 156, { fontSize: 9.5, fontWeight: 600, fill: '#059669' }, f);
+      this.rect('PlanPill', 268, 44, 78, 30, { fill: '#FFEDD5', cornerRadius: 15 }, f);
+      this.text('+ Meet', 272, 53, 70, { fontSize: 10.5, fontWeight: 800, fill: '#EA580C', textAlign: 'center' }, f);
+
+      // Open Window Banner
+      this.rect('WinBar', 16, 100, 328, 36, { fill: '#ECFDF5', stroke: '#A7F3D0', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.vector('clock', 28, 111, 14, '#059669', f);
+      this.text('Chat open until 7:00 PM · Day 1 of 2 · 3 msgs/day', 48, 112, 286, { fontSize: 10, fontWeight: 700, fill: '#047857' }, f);
+
+      // Day Separator
+      this.rect('DaySep', 112, 150, 136, 22, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 11 }, f);
+      this.text('Saturday, Dec 12', 116, 155, 128, { fontSize: 9.5, fontWeight: 700, fill: '#64748B', textAlign: 'center' }, f);
+
+      // Incoming bubble
+      this.rect('MB1', 16, 188, 250, 74, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Hi Sunil! Saw your talk slot on headless security. Free after lunch?', 28, 200, 226, { fontSize: 11.5, fontWeight: 500, fill: '#0F172A' }, f);
+      this.text('Their message 1 of 3 · 11:20 AM', 28, 240, 210, { fontSize: 9, fontWeight: 600, fill: '#64748B' }, f);
+
+      // Outgoing bubble
+      this.rect('MB2', 90, 276, 254, 78, { fill: '#FF4D2D', cornerRadius: 16 }, f);
+      this.text('Yes! Let us meet near the Auditorium foyer at 2:15 PM for coffee.', 104, 288, 228, { fontSize: 11.5, fontWeight: 500, fill: '#FFFFFF' }, f);
+      this.text('Message 1 of 3 · sent ✓ · 11:24 AM', 104, 330, 228, { fontSize: 9, fontWeight: 600, fill: '#FFE4DE', textAlign: 'right' }, f);
+
+      // Turn-taking wait card
+      this.rect('WaitCard', 16, 374, 328, 86, { fill: '#FEF3C7', stroke: '#F59E0B', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.vector('clock', 30, 392, 18, '#B45309', f);
+      this.text('Waiting for their reply', 56, 390, 240, { fontSize: 12, fontWeight: 800, fill: '#92400E' }, f);
+      this.text('Take turns to keep it relaxed: you can send message 2 of 3 once Shammi replies.', 30, 414, 298, { fontSize: 10.5, fontWeight: 500, fill: '#92400E' }, f);
+
+      // Quick Actions Row below chat
+      this.rect('MeetQuick', 16, 480, 158, 44, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('+ Save to My Day', 20, 495, 150, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      this.rect('CardQuick', 186, 480, 158, 44, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Share CampCard', 190, 495, 150, { fontSize: 10.5, fontWeight: 700, fill: '#FF4D2D', textAlign: 'center' }, f);
+
+      // Composer (turn locked preview)
+      this.rect('CompLock', 16, 636, 328, 46, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 23 }, f);
+      this.text('You can reply after Shammi responds...', 34, 652, 220, { fontSize: 10.5, fontWeight: 500, fill: '#94A3B8' }, f);
+      this.rect('SendDis', 274, 642, 64, 34, { fill: '#CBD5E1', cornerRadius: 17 }, f);
+      this.text('Send', 278, 653, 56, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      this.bottomNav(f, 'explore');
+    }
+
+    // M53: Attendee Chat Daily Limit, CampCard Swap & Closed Window
+    {
+      const f = this.screenFrame('M53 · Attendee Chat Limit & Card Swap', '3-Message Daily Limit · Share Camp Card CTA · Overnight Closed Window', '#FFF7ED');
+      this.statusBar(f, false, 'Mutual Match');
+      this.subHeader(f, 'Radhika Bhama');
+
+      // Limit Alert Banner
+      this.rect('LimCard', 16, 86, 328, 266, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.rect('LimBadge', 32, 102, 198, 24, { fill: '#FFEDD5', cornerRadius: 12 }, f);
+      this.text('3 OF 3 MESSAGES USED TODAY', 36, 108, 190, { fontSize: 9.5, fontWeight: 800, fill: '#EA580C', textAlign: 'center' }, f);
+      this.text('Ready to meet in person?', 32, 138, 290, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('CampBuddy keeps discovery short so you meet face-to-face. You get 3 more messages tomorrow at 8:00 AM.', 32, 164, 294, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+
+      this.rect('ShareCC', 32, 214, 296, 44, { fill: '#FF4D2D', cornerRadius: 22 }, f);
+      this.text('Share Your Camp Card →', 36, 229, 288, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      this.rect('AddMeet2', 32, 268, 142, 40, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.text('+ Plan Meet', 36, 282, 134, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      this.rect('MarkMet', 186, 268, 142, 40, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.text('✓ Mark as Met', 190, 282, 134, { fontSize: 10.5, fontWeight: 700, fill: '#047857', textAlign: 'center' }, f);
+
+      // Overnight / Closed window card
+      this.rect('ClosedCard', 16, 372, 328, 168, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.ellipse('MoonIco', 32, 392, 40, 40, { fill: '#1E293B' }, f);
+      this.vector('clock', 43, 403, 18, '#F59E0B', f);
+      this.text('Chat is closed for tonight', 84, 394, 236, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Reopens Sun Dec 13, 8:00 AM', 84, 416, 236, { fontSize: 10.5, fontWeight: 600, fill: '#10B981' }, f);
+      this.text('Attendee messaging stays open from 1 hour before the first session until 1 hour after the last talk.', 32, 452, 296, { fontSize: 10.5, fontWeight: 400, fill: '#CBD5E1' }, f);
+
+      this.rect('SafetyRow', 16, 560, 328, 54, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.vector('shield', 32, 578, 18, '#DC2626', f);
+      this.text('Uncomfortable? Report & Block profile →', 60, 580, 260, { fontSize: 11, fontWeight: 700, fill: '#DC2626' }, f);
+
+      this.bottomNav(f, 'explore');
+    }
+
+    // M54: Attendee Safety — Report & Block Profile Sheet
+    {
+      const f = this.screenFrame('M54 · Attendee Report & Block Sheet', 'Safety Moderation Reasons · Immediate Hide · Organizer Review', '#FFF7ED');
+      this.statusBar(f, false, 'Explore People');
+      this.subHeader(f, 'Discovery');
+
+      this.rect('Dim54', 0, 80, 360, 40, { fill: '#0F172A' }, f);
+      this.rect('Sheet54', 0, 108, 360, 652, { fill: '#FFFFFF', cornerRadius: 26 }, f);
+      this.rect('Grab54', 154, 120, 52, 5, { fill: '#CBD5E1', cornerRadius: 2.5 }, f);
+
+      this.ellipse('ShieldBg', 20, 146, 44, 44, { fill: '#FEE2E2' }, f);
+      this.vector('shield', 34, 158, 18, '#DC2626', f);
+      this.text('REPORT & BLOCK PROFILE', 76, 148, 220, { fontSize: 9.5, fontWeight: 800, fill: '#DC2626' }, f);
+      this.text('Hide this attendee', 76, 166, 220, { fontSize: 16.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.vector('x', 316, 158, 18, '#64748B', f);
+
+      this.text('They disappear from your matches and waves right away. WordCamp organizers review every report within 24 hours.', 20, 206, 320, { fontSize: 11, fontWeight: 400, fill: '#64748B' }, f);
+
+      this.text('What is wrong?', 20, 260, 240, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
+      const reasons = [
+        { label: 'Spam or commercial selling', on: true, y: 290 },
+        { label: 'Rude or abusive behavior', on: false, y: 342 },
+        { label: 'Pretending to be someone else', on: false, y: 394 },
+        { label: 'Something else', on: false, y: 446 },
+      ];
+      reasons.forEach(r => {
+        this.rect(`Rsn_${r.y}`, 20, r.y, 320, 44, {
+          fill: r.on ? '#FFF7ED' : '#FFFFFF',
+          stroke: r.on ? '#FF4D2D' : '#E2E8F0',
+          strokeWeight: r.on ? 1.5 : 1,
+          cornerRadius: 14,
+        }, f);
+        this.ellipse(`Rad_${r.y}`, 34, r.y + 13, 18, 18, { fill: r.on ? '#FF4D2D' : '#FFFFFF', stroke: r.on ? '#FF4D2D' : '#94A3B8', strokeWeight: 1.5 }, f);
+        if (r.on) this.ellipse(`RadDot_${r.y}`, 40, r.y + 19, 6, 6, { fill: '#FFFFFF' }, f);
+        this.text(r.label, 64, r.y + 15, 260, { fontSize: 11.5, fontWeight: r.on ? 700 : 500, fill: '#0F172A' }, f);
+      });
+
+      this.text('Anything we should know? (optional)', 20, 512, 260, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
+      this.rect('Note54', 20, 534, 320, 74, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Bio contains unsolicited affiliate promo links...', 32, 550, 296, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+
+      this.rect('Cancel54', 20, 668, 152, 46, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 23 }, f);
+      this.text('Cancel', 24, 684, 144, { fontSize: 12, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      this.rect('Block54', 188, 668, 152, 46, { fill: '#EF4444', cornerRadius: 23 }, f);
+      this.text('Report & Block', 192, 684, 144, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+    }
   }
 }
 
@@ -995,5 +1201,5 @@ builder.buildMissing18Screens();
 
 const scriptPath = path.resolve(rootDir, 'scratch/figcraft_apk_missing_script.json');
 fs.writeFileSync(scriptPath, JSON.stringify(builder.commands, null, 2), 'utf8');
-console.log(`Generated ${builder.commands.length} FigCraft commands for 18 Missing APK sub-screens (M33-M50).`);
+console.log(`Generated ${builder.commands.length} FigCraft commands for 22 Missing & Chat APK screens (M33-M54).`);
 console.log(`Saved script to ${scriptPath}`);

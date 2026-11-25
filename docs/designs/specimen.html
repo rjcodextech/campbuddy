@@ -1193,7 +1193,7 @@
 </svg>
 
       <span>1. Mobile App APK (Compose)</span>
-      <span class="count-badge">50 Screens</span>
+      <span class="count-badge">54 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('web')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1231,14 +1231,15 @@
   <circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
 </svg>
  Native Mobile App APK (Compose Multiplatform)</h2>
-        <p>All 50 refined, single-focus mobile screens spanning Attendee, First-Timer Onboarding, Discovery &amp; Modals, Explore, Quests, Contributor Day, Staff Editors, and SuperAdmin Console.</p>
+        <p>All 54 refined, single-focus mobile screens spanning Attendee, First-Timer Onboarding, Attendee Waves &amp; Chat Flow, Discovery &amp; Modals, Explore, Quests, Contributor Day, Staff Editors, and SuperAdmin Console.</p>
       </div>
-      <span class="badge-pill badge-pill-coral">50 Refined FigCraft Screens · 360×760dp</span>
+      <span class="badge-pill badge-pill-coral">54 Refined FigCraft Screens · 360×760dp</span>
     </div>
 
     <div class="apk-filter-bar">
-      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (50)</button>
-      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (28)</button>
+      <button type="button" class="apk-filter-pill active" onclick="filterApk('all', this)">All Screens (54)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('attendee', this)">Attendee Flow (32)</button>
+      <button type="button" class="apk-filter-pill" onclick="filterApk('chat', this)">Attendee Chat &amp; Waves (7)</button>
       <button type="button" class="apk-filter-pill" onclick="filterApk('staff', this)">Organizer &amp; Admin Mode (22)</button>
     </div>
 
@@ -1247,7 +1248,7 @@
           <h3 class="apk-group-heading"><span>Group 1 · Launch, Picker & Onboarding (M01–M04)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">4 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M01</span>
                     <span>Splash & App Update</span>
@@ -1258,7 +1259,7 @@
                   <div class="screen-meta-sub">CampBuddy Wordmark Pill · Delhi Roundel Seal · Offline Ready · App Update</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M02</span>
                     <span>WordCamp Picker & Directory</span>
@@ -1269,7 +1270,7 @@
                   <div class="screen-meta-sub">Native Wordmark · Country Filter · Featured Delhi Card · Sync Row</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M03</span>
                     <span>Personalize Interests</span>
@@ -1280,7 +1281,7 @@
                   <div class="screen-meta-sub">5-Step Progress · Soft Interest Selection · Session Reminders</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M04</span>
                     <span>Live Notice & Alert Prompts</span>
@@ -1298,7 +1299,7 @@
           <h3 class="apk-group-heading"><span>Group 2 · Core Attendee Experience (M05–M11)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">7 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M05</span>
                     <span>Tactile Live Home Dashboard</span>
@@ -1309,7 +1310,7 @@
                   <div class="screen-meta-sub">Flagship Home · Clock Hero · Circular My People · Quick Grid · SOS Bar</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M06</span>
                     <span>First-Timer Guide & Venue</span>
@@ -1320,7 +1321,7 @@
                   <div class="screen-meta-sub">India Gate Hero · 2-Day Flow · Venue & Metro · FAQ Accordion</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M07</span>
                     <span>Full Schedule & Filters</span>
@@ -1331,7 +1332,7 @@
                   <div class="screen-meta-sub">Schedule Root Header · Search Pill · Day & Hall Chips · Speaker Avatars</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M08</span>
                     <span>Session Detail & Reminder</span>
@@ -1342,7 +1343,7 @@
                   <div class="screen-meta-sub">Speaker Card · Talk Overview · Saved Action · 10m Alert Toggle</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M09</span>
                     <span>My Schedule & People Plan</span>
@@ -1353,7 +1354,7 @@
                   <div class="screen-meta-sub">Plan Progress · Conflict Banner · Attended Toggle · People to Meet</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M10</span>
                     <span>Memories & Post-Event Choice</span>
@@ -1364,7 +1365,7 @@
                   <div class="screen-meta-sub">Event Recap · Photo Album · WordPress.tv · Data Retention</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M11</span>
                     <span>Help Desk, Legal & Safety Report</span>
@@ -1382,7 +1383,7 @@
           <h3 class="apk-group-heading"><span>Group 3 · CampCard, QR Scanner & Discovery (M12–M16)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">5 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M12</span>
                     <span>CampCard Carousel & Real QR</span>
@@ -1393,7 +1394,7 @@
                   <div class="screen-meta-sub">Style Switcher · Sharp Delhi Seal · Scannable QR · Share/Download</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M13</span>
                     <span>Edit CampCard & Claim Profile</span>
@@ -1404,7 +1405,7 @@
                   <div class="screen-meta-sub">Roster Profile Link · Card Fields · Interest Chips · Privacy Toggles</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M14</span>
                     <span>Fast QR Scanner & Contact Sheet</span>
@@ -1415,7 +1416,7 @@
                   <div class="screen-meta-sub">Camera Viewfinder · Flash Toggle · Detected Contact Bottom Sheet</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="true">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M15</span>
                     <span>Explore: Discovery & Roster</span>
@@ -1426,15 +1427,15 @@
                   <div class="screen-meta-sub">5 Explore Tabs · Join Banner · Discovery Match · Attendee Roster</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="true">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M16</span>
-                    <span>Mutual Match Chat & Meet</span>
+                    <span>Attendee Chat & Mutual Match</span>
                   </div>
                   <div class="phone-png-bezel" onclick="openLightbox('screens/apk/M16%20%C2%B7%20Mutual%20Match%20Chat%20%26%20Meet.png')">
                     <img src="screens/apk/M16%20%C2%B7%20Mutual%20Match%20Chat%20%26%20Meet.png" alt="M16 · Mutual Match Chat & Meet" loading="lazy">
                   </div>
-                  <div class="screen-meta-sub">Focused Light Chat · Suggested Meet Card · Quick Message Composer</div>
+                  <div class="screen-meta-sub">Focused Attendee Chat · Turn-Based Intro Bubbles · Plan Meet & Composer</div>
                 </div>
               
           </div>
@@ -1444,7 +1445,7 @@
           <h3 class="apk-group-heading"><span>Group 4 · Explore Tabs, Contributor Day & Quests (M17–M22)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M17</span>
                     <span>Explore: Sponsors Tiered Grid</span>
@@ -1455,7 +1456,7 @@
                   <div class="screen-meta-sub">Seamless Sponsor Logos · Bronze, Startup & After Party Tiers</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M18</span>
                     <span>Explore: Deals & Lead Sheet</span>
@@ -1466,7 +1467,7 @@
                   <div class="screen-meta-sub">Tear-Line Coupon Card · Clean Elevated Lead Form Bottom Sheet</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M19</span>
                     <span>Explore: Free Steals & Sheet</span>
@@ -1477,7 +1478,7 @@
                   <div class="screen-meta-sub">Free Tools List · Made Here Badge · Elevated Tool Sheet</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M20</span>
                     <span>Contributor Day & Table Leads</span>
@@ -1488,7 +1489,7 @@
                   <div class="screen-meta-sub">Light Intro Card · Attendance Toggle · Conversation Starter · Table Leads</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M21</span>
                     <span>Quests, Checklist & Badges</span>
@@ -1499,7 +1500,7 @@
                   <div class="screen-meta-sub">Navy Level Hero · Checklist · Unlocked Vector-Icon Badges</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M22</span>
                     <span>Event Info & Data Controls</span>
@@ -1517,7 +1518,7 @@
           <h3 class="apk-group-heading"><span>Group 5 · In-App Organizer & SuperAdmin Console (M23–M32)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">10 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M23</span>
                     <span>Staff Sign In</span>
@@ -1528,7 +1529,7 @@
                   <div class="screen-meta-sub">Dedicated Organizer & Admin Sign-In · Role Auto-Detection</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M24</span>
                     <span>Staff Event Overview</span>
@@ -1539,7 +1540,7 @@
                   <div class="screen-meta-sub">Event Tabs · Live KPIs · Active WordCamp Card · Organizer Tools</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M25</span>
                     <span>Staff Running Late Delays</span>
@@ -1550,7 +1551,7 @@
                   <div class="screen-meta-sub">Hall Selector · +15m Offset · Shifted Talk Preview · Broadcast</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M26</span>
                     <span>Staff Announce & Sent Log</span>
@@ -1561,7 +1562,7 @@
                   <div class="screen-meta-sub">Tone Pills · Live Announcement Composer · Recent Broadcasts</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M27</span>
                     <span>Staff Reports & Roster Roles</span>
@@ -1572,7 +1573,7 @@
                   <div class="screen-meta-sub">Safety Report Triage · Hide/Dismiss · Roster Role Assignment</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M28</span>
                     <span>Staff Tables, Quests & Memories</span>
@@ -1583,7 +1584,7 @@
                   <div class="screen-meta-sub">Contributor Tables · Active Quests · Publish Album & WordPress.tv</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M29</span>
                     <span>Staff Social Kit & Reels</span>
@@ -1594,7 +1595,7 @@
                   <div class="screen-meta-sub">Speaker Card Studio · Sharp Delhi Seal · Circular Portrait · Share</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M30</span>
                     <span>SuperAdmin Global Dashboard</span>
@@ -1605,7 +1606,7 @@
                   <div class="screen-meta-sub">System Health · 2×3 Key Metrics · Featured Delhi · Maintenance</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M31</span>
                     <span>SuperAdmin Event Managers</span>
@@ -1616,7 +1617,7 @@
                   <div class="screen-meta-sub">Add Manager CTA · Status Filters · Clean Manager Roster</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M32</span>
                     <span>SuperAdmin Analytics & Leads</span>
@@ -1634,7 +1635,7 @@
           <h3 class="apk-group-heading"><span>Group 6 · Attendee Onboarding, Legal & Interactive Modals (M33–M38)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M33</span>
                     <span>Onboarding Intro & First-Timer</span>
@@ -1645,7 +1646,7 @@
                   <div class="screen-meta-sub">Welcome Personalize Prompt · Step 1 Binary Yes/No First-Timer Card</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M34</span>
                     <span>Onboarding Contributor & Finish</span>
@@ -1656,7 +1657,7 @@
                   <div class="screen-meta-sub">Steps 4–5 Who to Meet & WP.org · Private Summary Completion Card</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M35</span>
                     <span>Legal Notice & Terms Reader</span>
@@ -1667,7 +1668,7 @@
                   <div class="screen-meta-sub">Privacy Notice & Terms Tabs · On-Device Storage · DPDP Act 2023 Rights</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M36</span>
                     <span>Plan Meet & Schedule Pickers</span>
@@ -1678,7 +1679,7 @@
                   <div class="screen-meta-sub">Private Meeting Note · Date & Time Pickers · .ics & Google Calendar</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="true">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M37</span>
                     <span>Join Discovery & Wave Sheets</span>
@@ -1689,7 +1690,7 @@
                   <div class="screen-meta-sub">Name Picker & Interests · Consent Toggle · Private Wave Note Sheet</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M38</span>
                     <span>Contributor Quiz & Data Erase</span>
@@ -1707,7 +1708,7 @@
           <h3 class="apk-group-heading"><span>Group 7 · Staff Directory, Venue Editors & CRUD Sheets (M39–M44)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M39</span>
                     <span>Staff Events Directory</span>
@@ -1718,7 +1719,7 @@
                   <div class="screen-meta-sub">Search All WordCamps · Status Filters · Manage & Preview Shortcuts</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M40</span>
                     <span>Staff Event Details & Data Sync</span>
@@ -1729,7 +1730,7 @@
                   <div class="screen-meta-sub">Slug & Dates Editor · Public Directory Switch · WordCamp Feed Refresh</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M41</span>
                     <span>Staff Venue Info & Danger Zone</span>
@@ -1740,7 +1741,7 @@
                   <div class="screen-meta-sub">Venue Address, Guest Wi-Fi & Desk Editor · Danger Zone Slug Confirm</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M42</span>
                     <span>Staff CRUD Sheets (Roles & Deals)</span>
@@ -1751,7 +1752,7 @@
                   <div class="screen-meta-sub">Multi-Select Roster Roles · Sponsor Deal Coupon & Lead Capture Editor</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M43</span>
                     <span>Staff Notifications & Event Log</span>
@@ -1762,7 +1763,7 @@
                   <div class="screen-meta-sub">Event Push Notification Triggers · Real-Time Organizer Activity Timeline</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M44</span>
                     <span>Admin New Event & Report Sheet</span>
@@ -1780,7 +1781,7 @@
           <h3 class="apk-group-heading"><span>Group 8 · SuperAdmin More Hub & Platform Sub-Pages (M45–M50)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
           <div class="screens-grid-phones">
             
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M45</span>
                     <span>SuperAdmin More & Maintenance</span>
@@ -1791,7 +1792,7 @@
                   <div class="screen-meta-sub">Analytics/Errors/Feedback/Logs Hub · Global Refresh & Cache Controls</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M46</span>
                     <span>SuperAdmin System Errors</span>
@@ -1802,7 +1803,7 @@
                   <div class="screen-meta-sub">7d/30d Filters · Healthy Shield Card · Upstream Timeout Retry · Checks</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M47</span>
                     <span>SuperAdmin Attendee Feedback</span>
@@ -1813,7 +1814,7 @@
                   <div class="screen-meta-sub">4.9/5 Average Rating Histogram · Thank-You Card Comments Stream</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M48</span>
                     <span>SuperAdmin Global Activity Log</span>
@@ -1824,7 +1825,7 @@
                   <div class="screen-meta-sub">Cross-Event Audit Feed · Filter by Manager · Timestamps & Actions</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M49</span>
                     <span>SuperAdmin Analytics</span>
@@ -1835,7 +1836,7 @@
                   <div class="screen-meta-sub">Visitors & Engagement KPIs · Top WordCamps · Device Platform Split</div>
                 </div>
               
-                <div class="phone-card-wrapper">
+                <div class="phone-card-wrapper" data-apk-chat="false">
                   <div class="screen-meta-title">
                     <span class="screen-meta-badge">M50</span>
                     <span>SuperAdmin Manager Sheet</span>
@@ -1844,6 +1845,57 @@
                     <img src="screens/apk/M50%20%C2%B7%20SuperAdmin%20Manager%20Sheet.png" alt="M50 · SuperAdmin Manager Sheet" loading="lazy">
                   </div>
                   <div class="screen-meta-sub">Manager Email & Phone · Can Sign In Switch · Assigned WordCamps</div>
+                </div>
+              
+          </div>
+        </section>
+      
+        <section class="apk-group-block" data-apk-role="attendee">
+          <h3 class="apk-group-heading"><span>Group 9 · Attendee Waves, Mutual Match & Live Chat Flow (M51–M54)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">4 Screens</span></h3>
+          <div class="screens-grid-phones">
+            
+                <div class="phone-card-wrapper" data-apk-chat="true">
+                  <div class="screen-meta-title">
+                    <span class="screen-meta-badge">M51</span>
+                    <span>Attendee Waves Inbox & Reveal</span>
+                  </div>
+                  <div class="phone-png-bezel" onclick="openLightbox('screens/apk/M51%20%C2%B7%20Attendee%20Waves%20Inbox%20%26%20Reveal.png')">
+                    <img src="screens/apk/M51%20%C2%B7%20Attendee%20Waves%20Inbox%20%26%20Reveal.png" alt="M51 · Attendee Waves Inbox & Reveal" loading="lazy">
+                  </div>
+                  <div class="screen-meta-sub">Incoming Hidden Wave Banner · Mutual Chat Unlocked Cards · Sent Pending & Take Back</div>
+                </div>
+              
+                <div class="phone-card-wrapper" data-apk-chat="true">
+                  <div class="screen-meta-title">
+                    <span class="screen-meta-badge">M52</span>
+                    <span>Attendee Chat (Active & Turn-Taking)</span>
+                  </div>
+                  <div class="phone-png-bezel" onclick="openLightbox('screens/apk/M52%20%C2%B7%20Attendee%20Chat%20(Active%20%26%20Turn-Taking).png')">
+                    <img src="screens/apk/M52%20%C2%B7%20Attendee%20Chat%20(Active%20%26%20Turn-Taking).png" alt="M52 · Attendee Chat (Active & Turn-Taking)" loading="lazy">
+                  </div>
+                  <div class="screen-meta-sub">Event Window Banner · Multi-Day Separators · Message 1 of 3 · Wait-for-Reply Lock</div>
+                </div>
+              
+                <div class="phone-card-wrapper" data-apk-chat="true">
+                  <div class="screen-meta-title">
+                    <span class="screen-meta-badge">M53</span>
+                    <span>Attendee Chat Limit & Card Swap</span>
+                  </div>
+                  <div class="phone-png-bezel" onclick="openLightbox('screens/apk/M53%20%C2%B7%20Attendee%20Chat%20Limit%20%26%20Card%20Swap.png')">
+                    <img src="screens/apk/M53%20%C2%B7%20Attendee%20Chat%20Limit%20%26%20Card%20Swap.png" alt="M53 · Attendee Chat Limit & Card Swap" loading="lazy">
+                  </div>
+                  <div class="screen-meta-sub">Daily 3-Message Limit · Share Camp Card CTA · Overnight Chat Closed State</div>
+                </div>
+              
+                <div class="phone-card-wrapper" data-apk-chat="true">
+                  <div class="screen-meta-title">
+                    <span class="screen-meta-badge">M54</span>
+                    <span>Attendee Report & Block Sheet</span>
+                  </div>
+                  <div class="phone-png-bezel" onclick="openLightbox('screens/apk/M54%20%C2%B7%20Attendee%20Report%20%26%20Block%20Sheet.png')">
+                    <img src="screens/apk/M54%20%C2%B7%20Attendee%20Report%20%26%20Block%20Sheet.png" alt="M54 · Attendee Report & Block Sheet" loading="lazy">
+                  </div>
+                  <div class="screen-meta-sub">Safety Moderation Sheet · Report Reasons · Instant Hide & Block Attendee</div>
                 </div>
               
           </div>
@@ -2558,7 +2610,7 @@
   <footer class="audit-bar">
     <div style="display:flex; flex-direction:column; gap:2px;">
       <span style="font-family:var(--font-heading); font-size:14px; font-weight:700; color:#FFFFFF;">Clean Design System · Zero Visual Clutter Guarantee</span>
-      <span style="font-size:11px; color:#94A3B8;">50 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
+      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 7 Desktop Web screens · 5 PWA screens · 4 Admin screens</span>
     </div>
     <div class="audit-checkmarks">
       <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -2602,7 +2654,19 @@
       document.querySelectorAll('.apk-filter-pill').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
       document.querySelectorAll('.apk-group-block').forEach(g => {
-        g.style.display = (role === 'all' || g.dataset.apkRole === role) ? 'block' : 'none';
+        const cards = g.querySelectorAll('.phone-card-wrapper');
+        if (role === 'chat') {
+          let visibleCount = 0;
+          cards.forEach(c => {
+            const isChat = c.dataset.apkChat === 'true';
+            c.style.display = isChat ? '' : 'none';
+            if (isChat) visibleCount++;
+          });
+          g.style.display = visibleCount > 0 ? 'block' : 'none';
+        } else {
+          cards.forEach(c => { c.style.display = ''; });
+          g.style.display = (role === 'all' || g.dataset.apkRole === role) ? 'block' : 'none';
+        }
       });
     }
 
