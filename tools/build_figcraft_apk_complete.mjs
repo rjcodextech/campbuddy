@@ -10,6 +10,7 @@ const assets = {
   cbWordmark: path.resolve(rootDir, 'docs/designs/assets/campbuddy_wordmark.png'),
   cbIcon: path.resolve(rootDir, 'docs/designs/assets/campbuddy_icon.png'),
   delhiLogo: path.resolve(rootDir, 'docs/designs/assets/delhi_logo.png'),
+  delhiFavicon: path.resolve(rootDir, 'docs/designs/assets/delhi_favicon.png'),
   qrSample: path.resolve(rootDir, 'docs/designs/assets/qr_sample.png'),
   pankaj: path.resolve(rootDir, 'docs/designs/assets/pankaj_kumar.webp'),
   radhika: path.resolve(rootDir, 'docs/designs/assets/radhika_bhama.jpg'),
@@ -29,7 +30,7 @@ const assets = {
   sponsor_zuptek: path.resolve(rootDir, 'docs/designs/assets/sponsor_zuptek.webp'),
 };
 
-// Official CampBuddy Lucide Line Icons (from LineIconData.kt) - crisp stroke vectors!
+// Official CampBuddy Lucide Line Icons - crisp stroke vectors
 const ICONS = {
   home: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM9 22V12h6v10',
   calendar: 'M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2zM16 2v4M8 2v4M3 10h18',
@@ -61,25 +62,18 @@ const ICONS = {
   switchEvent: 'M16 3l4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16',
   help: 'M2 12a10 10 0 1 0 20 0 10 10 0 1 0 -20 0zM9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01',
   alert: 'M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1zM12 8v4M12 16h.01',
-  settings: 'M9 12a3 3 0 1 0 6 0 3 3 0 1 0 -6 0zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
   activity: 'M22 12h-4l-3 9L9 3l-3 9H2',
   wrench: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z',
-  eye: 'M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM9 12a3 3 0 1 0 6 0 3 3 0 1 0 -6 0z',
   download: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l 5 5 5-5M12 15V3',
   share: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13',
   filter: 'M4 6h16M7 12h10M10 18h4',
   coffee: 'M17 8h1a4 4 0 1 1 0 8h-1M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4zM6 2v2M10 2v2M14 2v2',
-  hand: 'M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15',
   pencil: 'M17 3l 4 4L7.5 20.5 2 22l1.5-5.5z',
   lifeBuoy: 'M2 12a10 10 0 1 0 20 0 10 10 0 1 0 -20 0zM8 12a4 4 0 1 0 8 0 4 4 0 1 0 -8 0zM4.93 4.93l 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24',
   target: 'M2 12a10 10 0 1 0 20 0 10 10 0 1 0 -20 0zM6 12a6 6 0 1 0 12 0 6 6 0 1 0 -12 0zM10 12a2 2 0 1 0 4 0 2 2 0 1 0 -4 0z',
-  refresh: 'M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16M8 16H3v5',
-  trash: 'M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6',
-  wifi: 'M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01',
   columns: 'M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2zM9 3v18M15 3v18',
 };
 
-// Natural SVG bounding box aspect ratios (w / h) for 100% proportional un-stretched centering
 const ICON_DIMS = {
   chevronLeft: [6, 12],
   chevronRight: [6, 12],
@@ -97,11 +91,11 @@ const ICON_DIMS = {
   lock: [16, 18],
 };
 
-class AuditedApkBuilder {
+class CleanApkBuilder {
   constructor() {
     this.commands = [];
     this.nextId = 2;
-    this.commands.push({ command: 'page.rename', params: { name: 'Mobile APK - All 32 Audited Screens' } });
+    this.commands.push({ command: 'page.rename', params: { name: 'Mobile APK - 32 Refined Clean Screens' } });
     this.idx = 0;
   }
 
@@ -112,13 +106,10 @@ class AuditedApkBuilder {
     return { x: 60 + col * 430, y: 120 + row * 880 };
   }
 
-  // Creates clean screen frame + places metadata label cleanly OUTSIDE above the frame!
   screenFrame(title, statesNote, fill = '#FFF7ED') {
     const pos = this.coords();
-    // External canvas label above screen (outside the phone!)
     this.text(title, pos.x, pos.y - 54, 360, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, null, `Lbl ${title}`);
-    this.text(`States: ${statesNote}`, pos.x, pos.y - 32, 360, { fontSize: 10, fontWeight: 600, fill: '#64748B' }, null, `Sub ${title}`);
-    // Actual Phone Frame
+    this.text(statesNote, pos.x, pos.y - 32, 360, { fontSize: 10, fontWeight: 600, fill: '#64748B' }, null, `Sub ${title}`);
     const id = this.nextId++;
     this.commands.push({
       command: 'frame.create',
@@ -186,11 +177,7 @@ class AuditedApkBuilder {
         name, parent
       }
     });
-    // node.set places exact bounding box top-left without unscaled SVG path offset!
-    this.commands.push({
-      command: 'node.set',
-      params: { id, x: cx, y: cy }
-    });
+    this.commands.push({ command: 'node.set', params: { id, x: cx, y: cy } });
     return id;
   }
 
@@ -206,78 +193,100 @@ class AuditedApkBuilder {
     return id;
   }
 
-  // Clipped Circular Avatar (ZERO square corners sticking out!)
-  avatar(filePath, x, y, size, parent, borderColor = '#E2E8F0', onlineDot = false) {
+  // Clipped Circular Avatar
+  avatar(filePath, x, y, size, parent, borderColor = '#FFFFFF', onlineDot = false) {
     const wrap = this.subFrame('AvatarClip', x, y, size, size, {
       fill: '#FFEDD5', cornerRadius: size / 2, clip: true, stroke: borderColor, strokeWeight: 2
     }, parent);
     this.image(filePath, 0, 0, size, size, wrap, 'Photo', 'fill');
     if (onlineDot) {
-      this.ellipse('Online', x + size - 11, y + size - 11, 11, 11, { fill: '#10B981', stroke: '#FFFFFF', strokeWeight: 2 }, parent);
+      this.ellipse('Online', x + size - 10, y + size - 10, 10, 10, { fill: '#10B981', stroke: '#FFFFFF', strokeWeight: 2 }, parent);
     }
     return wrap;
   }
 
-  // Clipped Rounded Banner Image
   roundedBanner(filePath, x, y, width, height, radius, parent) {
     const wrap = this.subFrame('BannerClip', x, y, width, height, { cornerRadius: radius, clip: true }, parent);
     this.image(filePath, 0, 0, width, height, wrap, 'BannerImg', 'fill');
     return wrap;
   }
 
-  // Universal Logo Box Standard: Works cleanly for dark, light, transparent, or colored logos on ANY surface!
-  logoBox(filePath, x, y, width, height, parent, radius = 10, padding = 4) {
-    this.rect('LogoPlate', x, y, width, height, {
-      fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: radius
-    }, parent);
-    this.image(filePath, x + padding, y + padding, width - padding * 2, height - padding * 2, parent, 'Logo', 'fit');
+  // Clean Logo Tile: matches card background cleanly without clunky borders
+  logoTile(filePath, x, y, width, height, parent, radius = 12, padding = 6, fill = '#FFFFFF', stroke = null) {
+    const props = { fill, cornerRadius: radius, clip: true };
+    if (stroke) {
+      props.stroke = stroke;
+      props.strokeWeight = 1;
+    }
+    const box = this.subFrame('LogoTile', x, y, width, height, props, parent);
+    this.image(filePath, padding, padding, width - padding * 2, height - padding * 2, box, 'Logo', 'fit');
+    return box;
   }
 
-  statusBar(parent, dark = false, statusText = 'Offline Ready') {
-    const color = dark ? '#FFFFFF' : '#0F172A';
-    this.text('10:30 AM', 22, 14, 70, { fontSize: 11, fontWeight: 700, fill: color }, parent);
-    this.ellipse('Dot', 210, 18, 6, 6, { fill: '#10B981' }, parent);
-    this.text(statusText, 220, 14, 100, { fontSize: 10, fontWeight: 700, fill: '#10B981' }, parent);
-    this.rect('Battery', 326, 15, 18, 9, { fill: color, cornerRadius: 2 }, parent);
+  // Clean Minimal Status Bar matching specimen.html
+  statusBar(parent, dark = false, centerText = 'Offline Ready') {
+    const color = dark ? '#F8FAFC' : '#0F172A';
+    this.text('10:30 AM', 20, 14, 70, { fontSize: 11, fontWeight: 700, fill: color }, parent);
+    if (centerText) {
+      this.ellipse('Dot', 224, 18, 6, 6, { fill: '#10B981' }, parent);
+      this.text(centerText, 234, 14, 86, { fontSize: 10, fontWeight: 700, fill: '#10B981' }, parent);
+    }
+    this.rect('Battery', 324, 15, 18, 9, { fill: color, cornerRadius: 2.5 }, parent);
   }
 
-  // Unified CampBuddy TopBar on Attendee Screens
-  attendeeTopBar(parent, title = null, back = false, rightBadge = null) {
-    if (back) {
-      this.ellipse('BackBtn', 16, 40, 32, 32, { fill: '#FFEDD5' }, parent);
-      this.vector('chevronLeft', 23, 47, 18, '#EA580C', parent, 'BackIco');
-      this.text(title || '', 56, 46, 200, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, parent);
-      this.logoBox(assets.cbIcon, 314, 40, 32, 32, parent, 8, 3);
-    } else {
-      // CampBuddy official wordmark + optional Staff/Badge
-      this.logoBox(assets.cbWordmark, 16, 40, 134, 34, parent, 10, 4);
-      if (rightBadge) {
-        this.rect('RightPill', 180, 44, 88, 26, { fill: '#FFEDD5', stroke: '#FF4D2D', strokeWeight: 1, cornerRadius: 13 }, parent);
-        this.vector('crown', 190, 50, 14, '#FF4D2D', parent, 'CrownIco');
-        this.text(rightBadge, 210, 50, 52, { fontSize: 10, fontWeight: 800, fill: '#FF4D2D' }, parent);
-      }
-      this.ellipse('GuideBtn', 278, 42, 30, 30, { fill: '#FFEDD5' }, parent);
-      this.vector('help', 285, 49, 16, '#EA580C', parent, 'HelpIco');
+  // Root Tab Header (NO redundant Back button — clean bold title like specimen.html A03/A06/A08!)
+  rootHeader(parent, title, rightIcon = null, dark = false) {
+    this.text(title, 18, 44, 220, { fontSize: 20, fontWeight: 800, fill: dark ? '#FFFFFF' : '#0F172A' }, parent);
+    if (rightIcon) {
+      this.ellipse('HdrActBG', 274, 41, 30, 30, { fill: '#FFEDD5' }, parent);
+      this.vector(rightIcon, 281, 48, 16, '#EA580C', parent, 'HdrActIco');
+    }
+    // Subtle CampBuddy mark directly placed (no clunky white box)
+    this.image(assets.cbIcon, 314, 41, 30, 30, parent, 'CBMark', 'fit');
+  }
+
+  // Drill-down Sub-screen Header (with Back chevron)
+  subHeader(parent, title, dark = false) {
+    this.ellipse('BackBtn', 16, 41, 30, 30, { fill: dark ? '#1E293B' : '#FFEDD5' }, parent);
+    this.vector('chevronLeft', 22, 47, 18, dark ? '#FFFFFF' : '#EA580C', parent, 'BackIco');
+    this.text(title, 56, 45, 240, { fontSize: 17, fontWeight: 800, fill: dark ? '#FFFFFF' : '#0F172A' }, parent);
+    this.image(assets.cbIcon, 314, 41, 30, 30, parent, 'CBMark', 'fit');
+  }
+
+  // Branded Home / Picker Header (native borderless CampBuddy Wordmark on #FFF7ED!)
+  brandHeader(parent, showStaffPill = true, showActions = true) {
+    this.image(assets.cbWordmark, 16, 40, 128, 34, parent, 'CBWordmark', 'fit');
+    if (showStaffPill) {
+      const rx = showActions ? 198 : 254;
+      const rw = showActions ? 70 : 90;
+      this.rect('StaffPill', rx, 44, rw, 26, { fill: '#FFEDD5', cornerRadius: 13 }, parent);
+      this.vector('crown', rx + 8, 50, 13, '#FF4D2D', parent, 'CrownIco');
+      this.text(showActions ? 'Staff' : 'Staff Sign In', rx + 24, 50, rw - 28, { fontSize: 10, fontWeight: 700, fill: '#FF4D2D' }, parent);
+    }
+    if (showActions) {
+      this.ellipse('GuideBtn', 276, 42, 30, 30, { fill: '#FFEDD5' }, parent);
+      this.vector('help', 283, 49, 16, '#EA580C', parent, 'HelpIco');
       this.ellipse('SwitchBtn', 314, 42, 30, 30, { fill: '#FFEDD5' }, parent);
       this.vector('switchEvent', 321, 49, 16, '#EA580C', parent, 'SwitchIco');
     }
   }
 
-  staffTopBar(parent, title, backLabel = 'Staff HQ', rightText = null) {
-    this.text(`< ${backLabel}`, 18, 46, 100, { fontSize: 12, fontWeight: 700, fill: '#94A3B8' }, parent);
-    this.text(title, 100, 45, 175, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, parent);
+  staffHeader(parent, title, backLabel = 'Events', rightText = null) {
+    this.text(`< ${backLabel}`, 18, 46, 94, { fontSize: 11.5, fontWeight: 700, fill: '#94A3B8' }, parent);
+    this.text(title, 102, 45, 168, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, parent);
     if (rightText) {
-      this.rect('RBtn', 278, 43, 66, 24, { fill: '#1E293B', stroke: '#F59E0B', strokeWeight: 1, cornerRadius: 12 }, parent);
-      this.text(rightText, 280, 48, 62, { fontSize: 9.5, fontWeight: 700, fill: '#F59E0B', textAlign: 'center' }, parent);
+      this.rect('RBtn', 274, 43, 70, 24, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 12 }, parent);
+      this.text(rightText, 276, 48, 66, { fontSize: 9.5, fontWeight: 700, fill: '#F59E0B', textAlign: 'center' }, parent);
     } else {
-      this.logoBox(assets.cbIcon, 314, 40, 30, 30, parent, 8, 3);
+      this.image(assets.cbIcon, 316, 41, 28, 28, parent, 'CBMark', 'fit');
     }
   }
 
-  // Real Vector Bottom Navigation Bar (5 real tabs from app config)
+  // Clean 5-Tab Bottom Navigation Bar
   bottomNav(parent, activeTab = 'home') {
     const y = 700;
-    this.rect('NavBG', 0, y, 360, 60, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1 }, parent);
+    this.rect('NavBG', 0, y, 360, 60, { fill: '#FFFFFF' }, parent);
+    this.line('NavDiv', 0, y, 360, { stroke: '#E2E8F0', strokeWeight: 1 }, parent);
     const tabs = [
       { key: 'home', label: 'Home', icon: 'home', x: 8 },
       { key: 'my-day', label: 'My Day', icon: 'calendar', x: 78 },
@@ -297,7 +306,8 @@ class AuditedApkBuilder {
 
   adminBottomNav(parent, activeTab = 'dashboard') {
     const y = 700;
-    this.rect('AdmNavBG', 0, y, 360, 60, { fill: '#0F172A', stroke: '#1E293B', strokeWeight: 1 }, parent);
+    this.rect('AdmNavBG', 0, y, 360, 60, { fill: '#0F172A' }, parent);
+    this.line('AdmDiv', 0, y, 360, { stroke: '#1E293B', strokeWeight: 1 }, parent);
     const tabs = [
       { key: 'dashboard', label: 'Dashboard', icon: 'home', x: 16 },
       { key: 'events', label: 'Events', icon: 'calendar', x: 102 },
@@ -314,35 +324,38 @@ class AuditedApkBuilder {
     }
   }
 
+  // Spacious 5-Tab Explore Bar (matches web/PWA explore.blade.php: People, Sponsors, Deals, Steals, Info!)
   exploreHeader(parent, activeKey = 'people') {
-    this.attendeeTopBar(parent, 'Explore', true);
+    this.rootHeader(parent, 'Explore');
     const tiles = [
-      { key: 'people', label: 'People', icon: 'users', x: 14 },
-      { key: 'sponsors', label: 'Sponsors', icon: 'heart', x: 70 },
-      { key: 'deals', label: 'Deals', icon: 'gift', x: 126 },
-      { key: 'steals', label: 'Steals', icon: 'sparkles', x: 182 },
-      { key: 'quests', label: 'Quests', icon: 'star', x: 238 },
-      { key: 'info', label: 'Info', icon: 'ticket', x: 294 },
+      { key: 'people', label: 'People', icon: 'users', x: 16 },
+      { key: 'sponsors', label: 'Sponsors', icon: 'heart', x: 83 },
+      { key: 'deals', label: 'Deals', icon: 'gift', x: 150 },
+      { key: 'steals', label: 'Steals', icon: 'sparkles', x: 217 },
+      { key: 'info', label: 'Info', icon: 'ticket', x: 284 },
     ];
     for (const t of tiles) {
       const on = t.key === activeKey;
-      this.rect(`ETile_${t.key}`, t.x, 84, 52, 54, {
+      this.rect(`ETile_${t.key}`, t.x, 84, 60, 52, {
         fill: on ? '#FFEDD5' : '#FFFFFF',
-        stroke: on ? '#FF4D2D' : '#E2E8F0',
-        strokeWeight: on ? 1.5 : 1,
-        cornerRadius: 10
+        stroke: on ? '#FB923C' : '#E2E8F0',
+        strokeWeight: 1,
+        cornerRadius: 12
       }, parent);
-      this.vector(t.icon, t.x + 17, 92, 18, on ? '#EA580C' : '#0F172A', parent, `EIco_${t.key}`);
-      this.text(t.label, t.x + 2, 117, 48, { fontSize: 9, fontWeight: on ? 800 : 600, fill: '#0F172A', textAlign: 'center' }, parent);
+      this.vector(t.icon, t.x + 22, 92, 16, on ? '#EA580C' : '#475569', parent, `EIco_${t.key}`);
+      this.text(t.label, t.x + 2, 115, 56, { fontSize: 9.5, fontWeight: on ? 800 : 600, fill: on ? '#EA580C' : '#0F172A', textAlign: 'center' }, parent);
     }
   }
 
-  pill(parent, label, x, y, w, active = false, color = '#0F172A') {
-    this.rect(`Pill_${label}`, x, y, w, 26, {
-      fill: active ? color : '#FFFFFF', stroke: active ? color : '#E2E8F0', strokeWeight: 1, cornerRadius: 13
+  pill(parent, label, x, y, w, active = false, color = '#0F172A', textColor = null, darkSurface = false) {
+    const inFill = darkSurface ? '#1E293B' : '#FFFFFF';
+    const inStroke = darkSurface ? '#334155' : '#E2E8F0';
+    const inText = darkSurface ? '#CBD5E1' : '#475569';
+    this.rect(`Pill_${label}`, x, y, w, 28, {
+      fill: active ? color : inFill, stroke: active ? color : inStroke, strokeWeight: 1, cornerRadius: 14
     }, parent);
-    this.text(label, x + 4, y + 7, w - 8, {
-      fontSize: 9.5, fontWeight: active ? 700 : 600, fill: active ? '#FFFFFF' : '#475569', textAlign: 'center'
+    this.text(label, x + 4, y + 8, w - 8, {
+      fontSize: 9.5, fontWeight: active ? 700 : 600, fill: active ? (textColor || '#FFFFFF') : inText, textAlign: 'center'
     }, parent);
   }
 
@@ -356,190 +369,179 @@ class AuditedApkBuilder {
     // GROUP 1: LAUNCH, PICKER & ONBOARDING (M01 - M04)
     // =========================================================================
 
-    // M01: Splash, Pre-Cache & Direct Update Sheet
+    // M01: Splash & App Update (Clean Dark Hero matching specimen A01!)
     {
-      const f = this.screenFrame('M01 · Splash & App Update', 'Offline Ready | Optional App Update Card', '#0F172A');
+      const f = this.screenFrame('M01 · Splash & App Update', 'CampBuddy Wordmark · Delhi Seal · Offline Sync · Optional Update', '#0F172A');
       this.statusBar(f, true, 'Offline Ready');
 
-      // CampBuddy Official Wordmark in Universal White Pill (crystal clear contrast!)
-      this.logoBox(assets.cbWordmark, 70, 96, 220, 68, f, 18, 10);
+      // Slim, refined CampBuddy wordmark pill
+      this.logoTile(assets.cbWordmark, 96, 86, 168, 44, f, 14, 6, '#FFFFFF');
 
-      // Selected Conference Badge
-      this.logoBox(assets.delhiLogo, 136, 194, 88, 88, f, 20, 10);
-      this.text('WordCamp Delhi 2026', 30, 296, 300, { fontSize: 21, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('"Dil se Dilli, code se community"', 30, 326, 300, { fontSize: 12, fontWeight: 500, fill: '#F59E0B', textAlign: 'center' }, f);
-      this.text('Dec 12–13 · DAIC, New Delhi', 30, 348, 300, { fontSize: 11, fontWeight: 500, fill: '#94A3B8', textAlign: 'center' }, f);
+      // WordCamp Delhi Roundel Seal inside soft dark-glass tile
+      this.rect('SealGlass', 136, 168, 88, 88, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 24 }, f);
+      this.logoTile(assets.delhiFavicon, 148, 180, 64, 64, f, 16, 4, '#FFFFFF');
 
-      // Friendly Offline Status Card (Zero technical jargon!)
-      this.rect('SyncBox', 24, 396, 312, 92, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Works 100% Offline at the Venue', 40, 412, 280, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
-      this.rect('BarBG', 40, 438, 280, 7, { fill: '#0F172A', cornerRadius: 3.5 }, f);
-      this.rect('BarFill', 40, 438, 280, 7, { fill: '#10B981', cornerRadius: 3.5 }, f);
-      this.text('22 talks, 11 speakers & venue maps ready', 40, 456, 280, { fontSize: 10, fontWeight: 600, fill: '#10B981' }, f);
+      this.text('WordCamp Delhi', 30, 276, 300, { fontSize: 24, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('2026 Edition · Dec 12–13', 30, 308, 300, { fontSize: 12.5, fontWeight: 600, fill: '#F59E0B', textAlign: 'center' }, f);
+      this.text('"Dil se Dilli, code se community"', 30, 332, 300, { fontSize: 11.5, fontWeight: 400, fill: '#94A3B8', textAlign: 'center' }, f);
 
-      // Update Card State
-      this.rect('UpdCard', 24, 508, 312, 82, { fill: '#FEF3C7', cornerRadius: 14 }, f);
-      this.text('New Version Ready (v2.4.1)', 40, 520, 180, { fontSize: 11.5, fontWeight: 800, fill: '#B45309' }, f);
-      this.text('Faster QR badge scan & venue map updates.', 40, 540, 175, { fontSize: 9.5, fontWeight: 500, fill: '#78350F' }, f);
-      this.rect('UpdBtn', 236, 528, 84, 32, { fill: '#D97706', cornerRadius: 16 }, f);
-      this.text('INSTALL', 238, 537, 80, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Clean Offline Ready Status Card
+      this.rect('SyncBox', 24, 396, 312, 82, { fill: '#1E293B', cornerRadius: 16 }, f);
+      this.text('Works 100% Offline at DAIC', 40, 412, 280, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.rect('BarBG', 40, 436, 280, 6, { fill: '#0F172A', cornerRadius: 3 }, f);
+      this.rect('BarFill', 40, 436, 280, 6, { fill: '#10B981', cornerRadius: 3 }, f);
+      this.text('22 talks, 11 speakers & venue maps synced', 40, 452, 280, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
 
-      this.rect('StartBtn', 24, 628, 312, 48, { fill: '#FF4D2D', cornerRadius: 24 }, f);
-      this.text('GET STARTED', 24, 644, 312, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Subtle Optional Update Pill
+      this.rect('UpdCard', 24, 496, 312, 62, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('sparkles', 38, 518, 18, '#F59E0B', f, 'UpdIco');
+      this.text('App update ready (v2.4.1)', 64, 510, 170, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.text('Faster badge scan & venue maps', 64, 528, 170, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
+      this.rect('UpdBtn', 248, 513, 74, 28, { fill: '#D97706', cornerRadius: 14 }, f);
+      this.text('Install', 250, 520, 70, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      // Primary CTA
+      this.rect('StartBtn', 24, 626, 312, 48, { fill: '#FF4D2D', cornerRadius: 24 }, f);
+      this.text('Enter Experience', 24, 642, 312, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
     }
 
-    // M02: WordCamp Picker, Hero Orbit & Desktop PIN
+    // M02: WordCamp Picker (Clean, Airy Event Directory + Desktop Sync Row!)
     {
-      const f = this.screenFrame('M02 · WordCamp Picker & Hero Orbit', 'Hero Orbit | Country Filter | Desktop PIN | Staff');
+      const f = this.screenFrame('M02 · WordCamp Picker & Directory', 'Clean Wordmark · Country Filter · Featured Delhi Card · Sync Link');
       this.statusBar(f, false, 'Offline Ready');
+      this.brandHeader(f, true, false);
 
-      // CampBuddy Wordmark Header
-      this.logoBox(assets.cbWordmark, 16, 40, 146, 36, f, 10, 4);
-      this.rect('StaffSign', 244, 44, 100, 26, { fill: '#FFEDD5', stroke: '#FF4D2D', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('Staff Sign In', 246, 50, 96, { fontSize: 10, fontWeight: 700, fill: '#FF4D2D', textAlign: 'center' }, f);
-
-      // Hero Orbit Graphic (from PickerScreen.kt!)
-      this.ellipse('OuterOrbit', 110, 90, 140, 140, { fill: 'none', stroke: '#FF4D2D', strokeWeight: 1.5, dashes: [5, 4] }, f);
-      this.ellipse('InnerOrbit', 132, 112, 96, 96, { fill: 'none', stroke: '#F59E0B', strokeWeight: 1.5 }, f);
-      this.logoBox(assets.cbIcon, 148, 128, 64, 64, f, 16, 6);
-      // Coffee & MapPin orbiting dots
-      this.ellipse('Orb1', 216, 146, 24, 24, { fill: '#FFFFFF', stroke: '#F59E0B', strokeWeight: 1 }, f);
-      this.vector('coffee', 221, 151, 14, '#D97706', f, 'OrbCaf');
-      this.ellipse('Orb2', 120, 146, 24, 24, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 1 }, f);
-      this.vector('mapPin', 125, 151, 14, '#FF4D2D', f, 'OrbPin');
-      // 4 Floating Feature Pills with crisp icons!
-      const orbPills = [
-        { lbl: 'Talks', ico: 'calendar', x: 16, y: 94, w: 84 },
-        { lbl: 'People', ico: 'users', x: 254, y: 108, w: 90 },
-        { lbl: 'Alerts', ico: 'bell', x: 16, y: 194, w: 84 },
-        { lbl: 'CampCard', ico: 'card', x: 244, y: 194, w: 100 },
-      ];
-      for (const p of orbPills) {
-        this.rect(`OP_${p.lbl}`, p.x, p.y, p.w, 30, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 15 }, f);
-        this.ellipse(`OI_${p.lbl}`, p.x + 5, p.y + 4, 22, 22, { fill: '#FFEDD5' }, f);
-        this.vector(p.ico, p.x + 10, p.y + 9, 12, '#FF4D2D', f, `OIV_${p.lbl}`);
-        this.text(p.lbl, p.x + 30, p.y + 8, p.w - 36, { fontSize: 10, fontWeight: 700, fill: '#0F172A' }, f);
-      }
+      // Crisp Page Heading
+      this.text('Choose your WordCamp', 18, 94, 324, { fontSize: 21, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('No sign-up needed · Schedules work offline at the venue.', 18, 124, 324, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
 
       // Country Filter Chips
-      this.pill(f, 'All (26)', 16, 250, 68, true, '#0F172A');
-      this.pill(f, 'India (4)', 90, 250, 74, false);
-      this.pill(f, 'Greece (1)', 170, 250, 82, false);
-      this.pill(f, 'Kenya (1)', 258, 250, 80, false);
+      this.pill(f, 'All (26)', 16, 156, 68, true, '#0F172A');
+      this.pill(f, 'India (4)', 90, 156, 74, false);
+      this.pill(f, 'Greece (1)', 170, 156, 82, false);
+      this.pill(f, 'Kenya (1)', 258, 156, 80, false);
 
-      // Event 1: Delhi (Active/Featured)
-      this.rect('EvtDelhi', 16, 286, 328, 112, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 2, cornerRadius: 16 }, f);
-      this.logoBox(assets.delhiLogo, 28, 300, 56, 56, f, 12, 6);
-      this.text('WordCamp Delhi 2026', 94, 298, 236, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Dec 12–13 · DAIC, New Delhi', 94, 318, 236, { fontSize: 10.5, fontWeight: 600, fill: '#EA580C' }, f);
-      this.text('Saved on this phone · Works Offline', 94, 336, 236, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
-      this.rect('GuideBtn', 28, 364, 130, 24, { fill: '#FFEDD5', cornerRadius: 12 }, f);
-      this.text('First-Timer Guide', 30, 369, 126, { fontSize: 9, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
-      this.rect('OpenBtn', 238, 362, 94, 28, { fill: '#FF4D2D', cornerRadius: 14 }, f);
-      this.text('OPEN EVENT', 240, 369, 90, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Featured Card: WordCamp Delhi 2026 (Calm hairline highlight, crisp roundel seal)
+      this.rect('EvtDelhi', 16, 200, 328, 156, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.logoTile(assets.delhiFavicon, 30, 216, 62, 62, f, 14, 2, '#FFFFFF', '#F1F5F9');
+      this.rect('SavBadge', 238, 216, 92, 20, { fill: '#ECFDF5', cornerRadius: 10 }, f);
+      this.text('Saved Offline', 240, 220, 88, { fontSize: 8.5, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.text('WordCamp Delhi 2026', 104, 220, 140, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Dec 12–13 · DAIC, New Delhi', 104, 260, 220, { fontSize: 10.5, fontWeight: 600, fill: '#EA580C' }, f);
+      this.line('DelSep', 30, 294, 300, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+      this.rect('GuideBtn', 30, 308, 138, 34, { fill: '#FFF7ED', stroke: '#FED7AA', strokeWeight: 1, cornerRadius: 17 }, f);
+      this.text('First-Timer Guide', 32, 318, 134, { fontSize: 10, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
+      this.rect('OpenBtn', 178, 308, 152, 34, { fill: '#FF4D2D', cornerRadius: 17 }, f);
+      this.text('Open Event →', 180, 318, 148, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // Event 2: Athens (Default)
-      this.rect('EvtAthens', 16, 408, 328, 76, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('WordCamp Athens 2026', 28, 422, 210, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Dec 11–12 · Athens, Greece', 28, 442, 210, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('Open2', 258, 430, 74, 28, { fill: '#F1F5F9', cornerRadius: 14 }, f);
-      this.text('OPEN', 260, 437, 70, { fontSize: 9.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      // Event 2: Athens
+      this.rect('EvtAthens', 16, 372, 328, 86, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('WordCamp Athens 2026', 30, 388, 200, { fontSize: 14, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Dec 11–12 · Megaron Athens, Greece', 30, 410, 210, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.text('24 Sessions · Contributor Day', 30, 428, 200, { fontSize: 9.5, fontWeight: 600, fill: '#EA580C' }, f);
+      this.rect('Open2', 256, 400, 74, 30, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 15 }, f);
+      this.text('Open', 258, 408, 70, { fontSize: 10, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
 
-      // Desktop 6-Digit PIN Card
-      this.rect('PinCard', 16, 496, 328, 136, { fill: '#0F172A', cornerRadius: 18 }, f);
-      this.text('Bring My Plan from Desktop', 30, 512, 280, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Enter the 6-digit code shown on CampBuddy Web:', 30, 532, 290, { fontSize: 10, fontWeight: 400, fill: '#94A3B8' }, f);
-      for (let i = 0; i < 6; i++) {
-        const dx = 30 + i * 48;
-        this.rect(`Pin_${i}`, dx, 556, 40, 40, { fill: '#1E293B', stroke: i < 4 ? '#F59E0B' : '#334155', strokeWeight: 1.5, cornerRadius: 8 }, f);
-        this.text(i < 4 ? ['4', '8', '2', '9'][i] : '_', dx, 568, 40, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      }
-      this.text('Import starred talks & contacts in 1 second', 30, 606, 290, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
+      // Event 3: Pune
+      this.rect('EvtPune', 16, 472, 328, 82, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('WordCamp Pune 2027', 30, 488, 200, { fontSize: 14, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Feb 2027 · Pune, India', 30, 510, 200, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('Open3', 256, 498, 74, 30, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 15 }, f);
+      this.text('Open', 258, 506, 70, { fontSize: 10, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
 
-      this.text('Privacy Policy · Terms · My Data Controls', 16, 650, 328, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+      // Clean Single-Row Desktop Transfer Trigger (replaces bulky dark pin block!)
+      this.rect('PinRow', 16, 574, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.rect('PinIcoBG', 28, 589, 36, 36, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+      this.vector('qr', 37, 598, 18, '#EA580C', f, 'PinIco');
+      this.text('Move plan from desktop?', 74, 588, 180, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Enter 6-digit sync code', 74, 608, 180, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('SyncPill', 260, 593, 70, 28, { fill: '#0F172A', cornerRadius: 14 }, f);
+      this.text('Sync', 262, 600, 66, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      this.text('Privacy Notice · Terms of Use · Data Controls', 16, 664, 328, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
     }
 
-    // M03: Onboarding Wizard & Notification Choices (Overlap Fixed!)
+    // M03: Onboarding Interests Wizard (Clean Hairline Borders, Airy Spacing!)
     {
-      const f = this.screenFrame('M03 · Onboarding & Alerts Setup', '5-Step Progress | Multi-Select | Alert Consent');
-      this.statusBar(f, false, 'Step 2 of 5');
-      this.attendeeTopBar(f, 'Personalize', true);
+      const f = this.screenFrame('M03 · Personalize Interests', '5-Step Onboarding · Soft Active Selection · Alert Opt-In');
+      this.statusBar(f, false, 'Offline Ready');
+      this.subHeader(f, 'Personalize');
 
-      // Progress Bars
       for (let i = 0; i < 5; i++) {
-        this.rect(`Step_${i}`, 18 + i * 66, 84, 58, 5, { fill: i <= 1 ? '#FF4D2D' : '#E2E8F0', cornerRadius: 2.5 }, f);
+        this.rect(`Step_${i}`, 18 + i * 66, 86, 58, 5, { fill: i <= 1 ? '#FF4D2D' : '#E2E8F0', cornerRadius: 2.5 }, f);
       }
 
-      // Proper Spacing: Title wraps across 2 lines (y=102..148), Subtitle cleanly at y=156!
-      this.text('What brings you to WordCamp Delhi?', 18, 102, 324, { fontSize: 18, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Used only on this phone to highlight matching talks & peers.', 18, 156, 324, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.text('What brings you to WordCamp Delhi?', 18, 108, 324, { fontSize: 19, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Step 2 of 5 · Saved on this device to highlight matching talks.', 18, 160, 324, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
 
       const opts = [
         { t: 'Building WordPress Products & AI', s: 'Plugin/Theme creators & agency founders', on: true, y: 198 },
-        { t: 'SEO, Content & Growth Marketing', s: 'AI search, Local SEO & editorial tools', on: true, y: 272 },
-        { t: 'First-Time Contributor & Open Source', s: 'Core, Documentation & Translation tables', on: false, y: 346 },
-        { t: 'Networking & Finding Collaborators', s: 'Meet speakers, sponsors & peers', on: false, y: 420 },
+        { t: 'SEO, Content & Growth Marketing', s: 'AI search, Local SEO & editorial tools', on: true, y: 276 },
+        { t: 'First-Time Contributor & Open Source', s: 'Core, Documentation & Translation tables', on: false, y: 354 },
+        { t: 'Networking & Finding Collaborators', s: 'Meet speakers, sponsors & peers', on: false, y: 432 },
       ];
       for (const o of opts) {
-        this.rect(`Opt_${o.t}`, 16, o.y, 328, 64, {
-          fill: o.on ? '#FFEDD5' : '#FFFFFF', stroke: o.on ? '#FF4D2D' : '#E2E8F0', strokeWeight: o.on ? 2 : 1, cornerRadius: 14
+        this.rect(`Opt_${o.t}`, 16, o.y, 328, 66, {
+          fill: o.on ? '#FFF7ED' : '#FFFFFF', stroke: o.on ? '#FB923C' : '#E2E8F0', strokeWeight: 1, cornerRadius: 16
         }, f);
-        this.text(o.t, 30, o.y + 12, 260, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-        this.text(o.s, 30, o.y + 34, 260, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-        this.ellipse('Circle', 306, o.y + 21, 22, 22, { fill: o.on ? '#FF4D2D' : '#F1F5F9' }, f);
-        if (o.on) this.vector('check', 310, o.y + 25, 14, '#FFFFFF', f, 'Chk');
+        this.text(o.t, 32, o.y + 13, 256, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+        this.text(o.s, 32, o.y + 35, 256, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+        this.ellipse('Circle', 306, o.y + 22, 22, 22, { fill: o.on ? '#FF4D2D' : '#F1F5F9' }, f);
+        if (o.on) this.vector('check', 310, o.y + 26, 14, '#FFFFFF', f, 'Chk');
       }
 
-      // Notification Prompt Card
-      this.rect('NotifBox', 16, 500, 328, 92, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Talk Reminders & Live Updates', 30, 514, 230, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('10-min alerts before your saved talks start.', 30, 534, 230, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
-      this.toggle(f, 286, 520, true);
-      this.text('Privacy First: Everything stays on your device.', 30, 564, 290, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      // Slim Alert Toggle Card
+      this.rect('NotifBox', 16, 514, 328, 68, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('10-Min Session Reminders', 32, 528, 220, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Gentle alert before starred talks start', 32, 548, 220, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.toggle(f, 286, 536, true);
 
       this.rect('ContBtn', 16, 616, 220, 46, { fill: '#0F172A', cornerRadius: 23 }, f);
-      this.text('CONTINUE (2 SELECTED)', 18, 632, 216, { fontSize: 10.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Continue (2 selected)', 18, 631, 216, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
       this.rect('SkipBtn', 246, 616, 98, 46, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 23 }, f);
-      this.text('SKIP', 248, 632, 94, { fontSize: 10.5, fontWeight: 700, fill: '#475569', textAlign: 'center' }, f);
+      this.text('Skip', 248, 631, 94, { fontSize: 11, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
     }
 
-    // M04: Live Organizer Banner & Pre-Event Alert Prompt
+    // M04: Live Notice & Organizer Update Prompt (Cohesive Light Cards!)
     {
-      const f = this.screenFrame('M04 · Live Notice & Alert Prompts', 'Organizer Notice Banner | 3-Day Prompt | Delay');
-      this.statusBar(f, false, 'Live Updates');
-      this.attendeeTopBar(f, null, false, 'Staff');
+      const f = this.screenFrame('M04 · Live Notice & Alert Prompts', 'Organizer Notice Banner · +15m Delay Chip · Alert Consent · Guide Card');
+      this.statusBar(f, false, 'Offline Ready');
+      this.brandHeader(f, true, true);
 
-      // 1. LiveNoticeBanner ("FROM THE ORGANIZERS")
-      this.rect('NoticeBG', 16, 86, 328, 108, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.ellipse('NoticeIcoBG', 28, 100, 38, 38, { fill: '#10B981' }, f);
-      this.vector('megaphone', 38, 110, 18, '#FFFFFF', f, 'MegIco');
-      this.text('FROM THE ORGANIZERS', 76, 98, 200, { fontSize: 9.5, fontWeight: 800, fill: '#065F46' }, f);
-      this.text('Lunch is Ready in Courtyard!', 76, 114, 220, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Visit Dining Courtyard now. Elementor & WP Fusion booths are handing out swag.', 76, 134, 240, { fontSize: 10, fontWeight: 400, fill: '#475569' }, f);
-      this.text('✕', 320, 96, 16, { fontSize: 12, fontWeight: 700, fill: '#64748B' }, f);
+      // Organizer Live Notice Banner (Soft Emerald Tint, hairline border)
+      this.rect('NoticeBG', 16, 90, 328, 102, { fill: '#ECFDF5', stroke: '#A7F3D0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.ellipse('NoticeIcoBG', 30, 106, 36, 36, { fill: '#10B981' }, f);
+      this.vector('megaphone', 39, 115, 18, '#FFFFFF', f, 'MegIco');
+      this.text('FROM THE ORGANIZERS', 76, 102, 200, { fontSize: 9, fontWeight: 800, fill: '#047857' }, f);
+      this.text('Lunch is Ready in Courtyard!', 76, 118, 214, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Visit Dining Courtyard now. Elementor & WP Fusion booths have swag.', 76, 140, 240, { fontSize: 10, fontWeight: 400, fill: '#475569' }, f);
+      this.text('✕', 318, 100, 16, { fontSize: 12, fontWeight: 600, fill: '#64748B' }, f);
 
-      // 2. RunningLate Banner
-      this.rect('DelayBG', 16, 208, 328, 68, { fill: '#FEF3C7', stroke: '#F59E0B', strokeWeight: 1.5, cornerRadius: 14 }, f);
-      this.vector('clock', 28, 224, 20, '#B45309', f, 'ClkIco');
-      this.text('BHIM Auditorium Running +15m Late', 56, 218, 270, { fontSize: 11.5, fontWeight: 800, fill: '#B45309' }, f);
-      this.text('Session times in Schedule & My Day updated.', 56, 238, 270, { fontSize: 10, fontWeight: 500, fill: '#78350F' }, f);
+      // Running Late Alert Strip
+      this.rect('DelayBG', 16, 208, 328, 66, { fill: '#FEF3C7', stroke: '#FDE68A', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('clock', 30, 231, 18, '#B45309', f, 'ClkIco');
+      this.text('BHIM Auditorium Running +15m Late', 58, 222, 270, { fontSize: 11.5, fontWeight: 700, fill: '#92400E' }, f);
+      this.text('Your Schedule & My Day times updated automatically.', 58, 242, 270, { fontSize: 9.5, fontWeight: 500, fill: '#78350F' }, f);
 
-      // 3. LiveAskCard ("Get live updates from organizers")
-      this.rect('AskBG', 16, 290, 328, 152, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.vector('bell', 30, 306, 20, '#FF4D2D', f, 'BellAsk');
-      this.text('Get live updates from the organizers', 58, 306, 260, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('"Opening remarks starting", "Lunch is served", or a talk about to begin — sent to your phone even when CampBuddy is closed.', 30, 336, 300, { fontSize: 10, fontWeight: 400, fill: '#475569' }, f);
-      this.rect('TurnOn', 30, 392, 146, 36, { fill: '#FF4D2D', cornerRadius: 18 }, f);
-      this.text('TURN ON ALERTS', 32, 404, 142, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('NotNow', 186, 392, 146, 36, { fill: '#F1F5F9', cornerRadius: 18 }, f);
-      this.text('NOT NOW', 188, 404, 142, { fontSize: 9.5, fontWeight: 700, fill: '#475569', textAlign: 'center' }, f);
+      // Live Ask Card
+      this.rect('AskBG', 16, 290, 328, 152, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.rect('BellBG', 30, 306, 34, 34, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+      this.vector('bell', 38, 314, 18, '#EA580C', f, 'BellAsk');
+      this.text('Get live organizer updates', 74, 314, 240, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('"Keynote starting soon" or "Lunch served" — delivered cleanly even when the app is closed.', 30, 350, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('TurnOn', 30, 392, 146, 34, { fill: '#FF4D2D', cornerRadius: 17 }, f);
+      this.text('Turn On Alerts', 32, 402, 142, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('NotNow', 186, 392, 146, 34, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 17 }, f);
+      this.text('Not Now', 188, 402, 142, { fontSize: 10, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
 
-      // 4. First-Timer StartHere Card
-      this.rect('FirstBG', 16, 458, 328, 100, { fill: '#0F172A', cornerRadius: 16 }, f);
-      this.text('First time at WordCamp?', 30, 474, 240, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Read our 2-minute guide on talks, Contributor Day & Delhi Metro.', 30, 496, 290, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
-      this.rect('StartGuide', 30, 524, 140, 24, { fill: '#D97706', cornerRadius: 12 }, f);
-      this.text('OPEN GUIDE →', 32, 529, 136, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Cohesive Light First-Timer Card (NO jarring dark block!)
+      this.rect('FirstBG', 16, 458, 328, 114, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.rect('FtTag', 30, 472, 108, 20, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+      this.text('First-Timer Guide', 32, 476, 104, { fontSize: 8.5, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
+      this.text('First time at WordCamp?', 30, 500, 220, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('5-min guide to talks, Contributor Day & Delhi Metro.', 30, 522, 210, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('StartGuide', 248, 508, 82, 34, { fill: '#0F172A', cornerRadius: 17 }, f);
+      this.text('Read →', 250, 518, 78, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'home');
     }
@@ -548,36 +550,35 @@ class AuditedApkBuilder {
     // GROUP 2: CORE ATTENDEE EXPERIENCE (M05 - M11)
     // =========================================================================
 
-    // M05: Tactile Live Event Home Dashboard (Flagship Screen!)
+    // M05: Tactile Live Home Dashboard (Clean Flagship matching specimen.html A02!)
     {
-      const f = this.screenFrame('M05 · Tactile Live Home Dashboard', 'Flagship Home | Vector Grid | Circular Avatars | SOS');
+      const f = this.screenFrame('M05 · Tactile Live Home Dashboard', 'Flagship Home · Clock Hero · My People · Quick Grid · SOS Bar');
       this.statusBar(f, false, 'Offline Ready');
-      this.attendeeTopBar(f, null, false, 'Staff');
+      this.brandHeader(f, true, true);
 
-      // Dark Navy Hero Card with White-Framed Delhi Logo!
-      this.rect('HeroBG', 16, 84, 328, 152, { fill: '#0F172A', cornerRadius: 20 }, f);
-      this.text('10:30 AM', 32, 98, 160, { fontSize: 30, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Dec 12–13 · WordCamp Delhi', 32, 134, 210, { fontSize: 10.5, fontWeight: 600, fill: '#94A3B8' }, f);
-      // Universal White Logo Container on Dark Hero!
-      this.logoBox(assets.delhiLogo, 276, 98, 52, 52, f, 26, 6);
-      // Offline Ready Status Pill
-      this.rect('OffPill', 32, 158, 114, 22, { fill: '#064E3B', stroke: '#10B981', strokeWeight: 1, cornerRadius: 11 }, f);
-      this.ellipse('OffDot', 42, 166, 6, 6, { fill: '#10B981' }, f);
-      this.text('Offline Ready', 54, 163, 86, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF' }, f);
-      // Next Up Sub-Card
-      this.rect('NextBox', 28, 190, 304, 36, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('NEXT UP · in 15m: Local SEO (Pankaj)', 38, 202, 220, { fontSize: 10, fontWeight: 700, fill: '#FBBF24' }, f);
-      this.rect('ViewBtn', 268, 196, 56, 24, { fill: '#D97706', cornerRadius: 12 }, f);
-      this.text('VIEW', 270, 202, 52, { fontSize: 9, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Signature Navy Hero Card
+      this.rect('HeroBG', 16, 86, 328, 154, { fill: '#0F172A', cornerRadius: 20 }, f);
+      this.text('GOOD MORNING, SUNIL', 32, 100, 200, { fontSize: 9.5, fontWeight: 700, fill: '#94A3B8' }, f);
+      this.text('10:30 AM', 32, 116, 170, { fontSize: 28, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Day 1 • Dec 12 • DAIC New Delhi', 32, 150, 220, { fontSize: 10.5, fontWeight: 500, fill: '#CBD5E1' }, f);
 
-      // My People Strip (Clipped Circular Avatars!)
-      this.text('My People & Matches', 16, 248, 180, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('All peers →', 244, 249, 100, { fontSize: 10, fontWeight: 700, fill: '#FF4D2D', textAlign: 'right' }, f);
+      // Crisp Delhi Roundel Favicon in soft white circle
+      this.logoTile(assets.delhiFavicon, 276, 102, 50, 50, f, 25, 2, '#FFFFFF');
 
-      // Wave Circle
-      this.ellipse('WaveCircle', 16, 270, 48, 48, { fill: '#FFEDD5', stroke: '#D97706', strokeWeight: 1.5 }, f);
-      this.vector('plus', 31, 285, 18, '#FF4D2D', f, 'WavePlus');
-      this.text('Wave', 14, 322, 52, { fontSize: 9.5, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
+      // Glassmorphic Next Up Sub-Card
+      this.rect('NextBox', 28, 182, 304, 44, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Next: Local SEO in the AI Era', 40, 190, 206, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.text('Pankaj Kumar · BHIM Hall · in 15m', 40, 206, 206, { fontSize: 9.5, fontWeight: 500, fill: '#CBD5E1' }, f);
+      this.rect('ViewBtn', 268, 192, 54, 24, { fill: '#D97706', cornerRadius: 12 }, f);
+      this.text('View', 270, 197, 50, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+
+      // My People & Matches Strip
+      this.text('My People & Matches', 16, 254, 180, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('All peers →', 244, 255, 100, { fontSize: 10, fontWeight: 700, fill: '#EA580C', textAlign: 'right' }, f);
+
+      this.ellipse('WaveCircle', 16, 278, 48, 48, { fill: '#FFEDD5', stroke: '#FB923C', strokeWeight: 1.5 }, f);
+      this.vector('plus', 31, 293, 18, '#EA580C', f, 'WavePlus');
+      this.text('Wave', 14, 330, 52, { fontSize: 9.5, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
 
       const ppl = [
         { img: assets.pankaj, name: 'Pankaj' },
@@ -587,767 +588,739 @@ class AuditedApkBuilder {
       ];
       for (let i = 0; i < ppl.length; i++) {
         const px = 80 + i * 66;
-        this.avatar(ppl[i].img, px, 270, 48, f, '#E2E8F0', true);
-        this.text(ppl[i].name, px - 2, 322, 52, { fontSize: 9.5, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
+        this.avatar(ppl[i].img, px, 278, 48, f, '#FFFFFF', true);
+        this.text(ppl[i].name, px - 2, 330, 52, { fontSize: 9.5, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
       }
 
-      // Event Hubs 2x3 Tactile Grid (from EventScreens.kt ActionGrid!)
-      this.text('Event Hubs', 16, 344, 160, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      // Quick Actions 2x3 Clean Grid
+      this.text('Quick Actions', 16, 354, 160, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
       const hubs = [
-        { t: 'My Day', s: '4 saved sessions', icon: 'calendar', x: 16, y: 366 },
-        { t: 'Schedule', s: '22 talks & tracks', icon: 'clock', x: 184, y: 366 },
-        { t: 'My CampCard', s: 'QR badge & shares', icon: 'qr', x: 16, y: 434 },
-        { t: 'Attendees', s: 'Peers & speakers', icon: 'users', x: 184, y: 434 },
-        { t: 'Quests', s: 'Contributor roadmap', icon: 'star', x: 16, y: 502 },
-        { t: 'Sponsors & Swag', s: 'Steals, deals & booths', icon: 'gift', x: 184, y: 502 },
+        { t: 'Schedule', s: '22 talks · 3 tracks', icon: 'calendar', x: 16, y: 376 },
+        { t: 'My Day', s: '4 saved · 0 clashes', icon: 'clock', x: 184, y: 376 },
+        { t: 'Sponsors & Steals', s: 'Elementor & 16 more', icon: 'gift', x: 16, y: 444 },
+        { t: 'Contributor XP', s: '6 tables · Earn badges', icon: 'award', x: 184, y: 444 },
+        { t: 'Venue Map', s: 'DAIC Janpath Rd', icon: 'mapPin', x: 16, y: 512 },
+        { t: 'CampCard QR', s: 'Share digital badge', icon: 'qr', x: 184, y: 512 },
       ];
       for (const h of hubs) {
-        this.rect(`Hub_${h.t}`, h.x, h.y, 160, 60, { fill: '#FAFAFD', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-        this.rect(`IcoBG_${h.t}`, h.x + 10, h.y + 10, 26, 26, { fill: '#FFEDD5', cornerRadius: 8 }, f);
-        this.vector(h.icon, h.x + 16, h.y + 16, 14, '#EA580C', f, `HubIco_${h.t}`);
-        this.text(h.t, h.x + 42, h.y + 14, 110, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
-        this.text(h.s, h.x + 10, h.y + 40, 140, { fontSize: 9, fontWeight: 500, fill: '#64748B' }, f);
+        this.rect(`Hub_${h.t}`, h.x, h.y, 160, 60, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.rect(`IcoBG_${h.t}`, h.x + 10, h.y + 12, 32, 32, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+        this.vector(h.icon, h.x + 18, h.y + 20, 16, '#EA580C', f, `HubIco_${h.t}`);
+        this.text(h.t, h.x + 48, h.y + 14, 106, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
+        this.text(h.s, h.x + 48, h.y + 32, 106, { fontSize: 9, fontWeight: 400, fill: '#64748B' }, f);
       }
 
-      // Sticky Help / SOS Bar (matching StickyHelpBar in EventScreens.kt)
-      this.rect('SOSBar', 16, 578, 328, 48, { fill: '#EF4444', cornerRadius: 24 }, f);
-      this.vector('phone', 30, 593, 18, '#FFFFFF', f, 'SosPhone');
-      this.text('Need Help at WordCamp?', 56, 586, 180, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Helpdesk · Safety · Organizers', 56, 602, 180, { fontSize: 9, fontWeight: 500, fill: '#FEE2E2' }, f);
-      this.rect('HelpPill', 274, 590, 58, 24, { fill: '#FFFFFF', cornerRadius: 12 }, f);
-      this.text('HELP', 276, 596, 54, { fontSize: 9.5, fontWeight: 800, fill: '#EF4444', textAlign: 'center' }, f);
+      // Clean Safety & SOS Hotline Bar matching specimen A02!
+      this.rect('SOSBar', 16, 586, 328, 48, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('shield', 28, 602, 16, '#DC2626', f, 'SosSh');
+      this.text('Safety & Help Desk', 50, 594, 180, { fontSize: 11, fontWeight: 700, fill: '#DC2626' }, f);
+      this.text('DAIC on-site medical & conduct support', 50, 610, 190, { fontSize: 9, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('HelpPill', 252, 598, 80, 24, { fill: '#FF4D2D', cornerRadius: 12 }, f);
+      this.text('Emergency', 254, 603, 76, { fontSize: 9, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      this.text('Privacy · Terms · My Data Controls', 16, 638, 328, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+      this.text('Privacy Policy · Terms · Data Controls', 16, 650, 328, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
       this.bottomNav(f, 'home');
     }
 
-    // M06: First-Timer Guide & Practical Info
+    // M06: First-Timer Guide & Venue (Clean Airy Spacing!)
     {
-      const f = this.screenFrame('M06 · First-Timer Guide & Venue', 'Full-Bleed Delhi Banner | Stepper | FAQ Accordion');
-      this.statusBar(f, false, 'Offline Guide');
-      this.attendeeTopBar(f, 'First-Timer Guide', true);
+      const f = this.screenFrame('M06 · First-Timer Guide & Venue', 'India Gate Hero · 2-Day Flow · Venue & Metro · FAQ Accordion');
+      this.statusBar(f, false, 'Offline Ready');
+      this.subHeader(f, 'First-Timer Guide');
 
       // Full-bleed rounded banner image + dark gradient scrim card
-      this.roundedBanner(assets.indiaGate, 16, 82, 328, 112, 16, f);
-      this.rect('Scrim', 16, 140, 328, 54, { fill: '#0F172A', cornerRadius: 14 }, f);
-      this.text('Dil se Dilli — Welcome to WordCamp Delhi 2026!', 28, 150, 304, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Everything you need for Dec 12–13 at DAIC.', 28, 170, 304, { fontSize: 9.5, fontWeight: 500, fill: '#F59E0B' }, f);
+      this.roundedBanner(assets.indiaGate, 16, 84, 328, 114, 16, f);
+      this.rect('Scrim', 16, 144, 328, 54, { fill: '#0F172A', cornerRadius: 14 }, f);
+      this.text('Dil se Dilli — Welcome to WordCamp Delhi!', 28, 152, 304, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Dec 12–13 · Dr. Ambedkar Intl. Centre', 28, 172, 304, { fontSize: 9.5, fontWeight: 500, fill: '#F59E0B' }, f);
 
-      // Conference Stepper
-      this.rect('StepBox', 16, 206, 328, 102, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('2-Day Conference Flow', 28, 218, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('1. Dec 12 · Contributor Day (Check-in 08:00 AM)', 28, 240, 300, { fontSize: 10, fontWeight: 700, fill: '#EA580C' }, f);
-      this.text('2. Dec 13 · Main Conference (BHIM Auditorium)', 28, 260, 300, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
-      this.text('3. Dec 13 · Community After Party (WP Fusion)', 28, 280, 300, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('StepBox', 16, 212, 328, 102, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('2-Day Conference Flow', 30, 224, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('1. Dec 12 · Contributor Day (08:00 AM)', 30, 248, 290, { fontSize: 10, fontWeight: 700, fill: '#EA580C' }, f);
+      this.text('2. Dec 13 · Main Conference (BHIM Hall)', 30, 268, 290, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
+      this.text('3. Dec 13 · Community After Party (WP Fusion)', 30, 288, 290, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
-      // Venue & Transit (using crisp vector icons instead of broken emojis!)
-      this.rect('VenueBox', 16, 320, 328, 116, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Venue & Metro Directions', 28, 332, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.vector('mapPin', 28, 356, 14, '#FF4D2D', f, 'PinIco');
-      this.text('15, Janpath Rd, Windsor Place, New Delhi', 48, 356, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
-      this.vector('compass', 28, 378, 14, '#0F172A', f, 'MetIco');
-      this.text('Metro: Janpath (Violet) / Patel Chowk (Yellow)', 48, 378, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
-      this.vector('phone', 28, 400, 14, '#DC2626', f, 'EmgIco');
-      this.text('Emergency Contact: delhi@wordcamp.org', 48, 400, 280, { fontSize: 10, fontWeight: 700, fill: '#DC2626' }, f);
+      this.rect('VenueBox', 16, 328, 328, 114, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Venue & Metro Directions', 30, 340, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.vector('mapPin', 30, 364, 14, '#FF4D2D', f, 'PinIco');
+      this.text('15, Janpath Rd, Windsor Place, New Delhi', 50, 364, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
+      this.vector('compass', 30, 386, 14, '#0F172A', f, 'MetIco');
+      this.text('Metro: Janpath (Violet) / Patel Chowk (Yellow)', 50, 386, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
+      this.vector('phone', 30, 408, 14, '#DC2626', f, 'EmgIco');
+      this.text('Helpdesk: delhi@wordcamp.org', 50, 408, 280, { fontSize: 10, fontWeight: 700, fill: '#DC2626' }, f);
 
-      // Expandable FAQ
-      this.rect('FaqOpen', 16, 448, 328, 86, { fill: '#FAFAFD', stroke: '#FF4D2D', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('▾ What should I bring to Contributor Day?', 28, 460, 290, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Bring your laptop, charger, and a WordPress.org account. Lunch & Wi-Fi are provided.', 28, 482, 300, { fontSize: 10, fontWeight: 400, fill: '#475569' }, f);
+      this.rect('FaqOpen', 16, 456, 328, 84, { fill: '#FFFFFF', stroke: '#FB923C', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('▾ What should I bring to Contributor Day?', 30, 468, 290, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Bring your laptop, charger, and a WordPress.org account. Lunch & Wi-Fi are provided.', 30, 490, 296, { fontSize: 10, fontWeight: 400, fill: '#475569' }, f);
 
-      this.rect('Faq2', 16, 544, 328, 40, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('▸ Is the venue wheelchair accessible?', 28, 556, 290, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
+      this.rect('Faq2', 16, 554, 328, 42, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.text('▸ Is the venue wheelchair accessible?', 30, 567, 290, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
 
-      this.rect('Faq3', 16, 592, 328, 40, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('▸ Where are quiet & nursing rooms?', 28, 604, 290, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
+      this.rect('Faq3', 16, 608, 328, 42, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.text('▸ Where are quiet & nursing rooms?', 30, 621, 290, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
 
       this.bottomNav(f, 'home');
     }
 
-    // M07: Full Schedule & More Filters (MyDayTab -> Full schedule)
+    // M07: Full Schedule & Filters (Matches specimen.html A03 cleanliness!)
     {
-      const f = this.screenFrame('M07 · Full Schedule & Filters', 'Schedule Health | Full vs My Switch | Track & Type');
-      this.statusBar(f, false, '22 Sessions');
-      this.attendeeTopBar(f, 'Schedule & My Day', true);
+      const f = this.screenFrame('M07 · Full Schedule & Filters', 'Root Schedule Header · Soft Search Pill · Day & Hall Chips · Speaker Avatars');
+      this.statusBar(f, false, 'Offline Ready');
+      this.rootHeader(f, 'Schedule', 'filter');
 
-      // ScheduleHealthBanner (from MyDay.kt lines 461-547!)
-      this.rect('HealthCard', 16, 82, 328, 86, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Schedule Health', 28, 92, 160, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('4 bookmarked · 2h 30m planned', 28, 108, 190, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('ConfBadge', 238, 94, 94, 22, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 11 }, f);
-      this.text('✓ 0 Conflicts', 240, 99, 90, { fontSize: 9, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.rect('AlertStrip', 28, 130, 304, 28, { fill: '#FFEDD5', cornerRadius: 8 }, f);
-      this.vector('bell', 36, 137, 14, '#FF4D2D', f, 'AlBell');
-      this.text('10-minute prior alerts active', 56, 138, 190, { fontSize: 9.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.text('Change', 278, 138, 46, { fontSize: 9.5, fontWeight: 800, fill: '#FF4D2D', textAlign: 'right' }, f);
+      // Day Segmented Switch (matching specimen.html A03)
+      this.rect('DaySeg', 16, 86, 328, 36, { fill: '#E2E8F0', cornerRadius: 18 }, f);
+      this.text('Day 1 (Dec 12)', 20, 96, 156, { fontSize: 10.5, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
+      this.rect('Day2On', 180, 90, 160, 28, { fill: '#FFFFFF', cornerRadius: 14 }, f);
+      this.text('Day 2 (Dec 13)', 182, 97, 156, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
 
-      // Two-Way Switch: Full schedule | My schedule (from MyDay.kt Segment!)
-      this.pill(f, 'Full schedule', 16, 178, 160, true, '#EA580C');
-      this.pill(f, 'My schedule (4)', 184, 178, 160, false);
+      // Crisp Soft Search Input (Hairline #E2E8F0 — NO harsh black outline!)
+      this.rect('SearchBox', 16, 134, 328, 38, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 19 }, f);
+      this.vector('search', 28, 144, 16, '#94A3B8', f, 'SrchIco');
+      this.text('Search talks or speakers...', 52, 146, 270, { fontSize: 10.5, fontWeight: 400, fill: '#94A3B8' }, f);
 
-      // Search Field with crisp vector icon
-      this.rect('SearchBox', 16, 212, 328, 36, { fill: '#FFFFFF', stroke: '#0F172A', strokeWeight: 1.5, cornerRadius: 10 }, f);
-      this.vector('search', 26, 221, 18, '#0F172A', f, 'SrchIco');
-      this.text('Search sessions or speakers...', 52, 223, 270, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+      // Room Filter Chips
+      this.pill(f, 'All Halls', 16, 184, 78, true, '#0F172A');
+      this.pill(f, 'BHIM Auditorium', 100, 184, 114, false);
+      this.pill(f, 'Workshop', 220, 184, 78, false);
+      this.pill(f, 'Lounge', 304, 184, 54, false);
 
-      // More Filters Expanded: Day + Track + Type
-      this.pill(f, 'All days', 16, 256, 74, false);
-      this.pill(f, '✓ Sun, Dec 13', 96, 256, 108, true, '#D97706');
-      this.pill(f, 'BHIM Hall', 210, 256, 76, true, '#0F172A');
-      this.pill(f, 'Talk', 292, 256, 52, false);
-
-      // Session List with Live Highlight + Starred/Unstarred
+      // Spacious Session Cards with Speaker Avatars (matching specimen A03!)
       const talks = [
-        { time: '11:00 AM', live: true, title: 'Generative Engine Optimization (GEO)', spk: 'Mayank Kumar · BHIM Hall', starred: true, y: 294 },
-        { time: '11:20 AM', live: false, title: '10 Things to Boost Local SEO in AI Era', spk: 'Pankaj Kumar · BHIM Hall', starred: true, y: 392 },
-        { time: '02:00 PM', live: false, title: 'Cited but Not Recommended in AI Search', spk: 'Shammi Proothi · BHIM Hall', starred: false, y: 490 },
-        { time: '04:00 PM', live: false, title: 'PANEL: The Value Shift in the AI Era', spk: 'Radhika, Amit, Om · Plenary', starred: true, y: 588 },
+        { time: '11:00 AM · 20m', hall: 'BHIM Auditorium', live: true, title: 'Generative Engine Optimization (GEO) for WordPress', spk: 'Mayank Kumar · Search Expert', img: assets.abhay, starred: true, y: 226 },
+        { time: '11:20 AM · 20m', hall: 'BHIM Auditorium', live: false, title: '10 Things to Boost Local SEO in the AI Era', spk: 'Pankaj Kumar · Pankaj Kumar SEO', img: assets.pankaj, starred: true, y: 374 },
+        { time: '02:00 PM · 30m', hall: 'BHIM Auditorium', live: false, title: 'Cited but Not Recommended in AI Search', spk: 'Shammi Proothi · Digital Strategist', img: assets.shammi, starred: false, y: 522 },
       ];
       for (const s of talks) {
-        this.rect(`Talk_${s.time}`, 16, s.y, 328, 88, {
-          fill: s.live ? '#FFEDD5' : '#FFFFFF', stroke: s.live ? '#FF4D2D' : '#E2E8F0', strokeWeight: s.live ? 1.5 : 1, cornerRadius: 14
+        this.rect(`Talk_${s.time}`, 16, s.y, 328, 134, {
+          fill: '#FFFFFF', stroke: s.live ? '#FB923C' : '#E2E8F0', strokeWeight: 1, cornerRadius: 16
         }, f);
-        this.text(s.live ? `● LIVE NOW · ${s.time}` : s.time, 28, s.y + 10, 180, { fontSize: 9.5, fontWeight: 800, fill: s.live ? '#FF4D2D' : '#EA580C' }, f);
-        this.text(s.title, 28, s.y + 28, 254, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-        this.text(s.spk, 28, s.y + 62, 254, { fontSize: 9.5, fontWeight: 500, fill: '#475569' }, f);
-        this.vector('star', 306, s.y + 32, 20, s.starred ? '#D97706' : '#CBD5E1', f, `Star_${s.time}`);
+        this.rect(`TB_${s.time}`, 30, s.y + 14, 114, 22, { fill: s.live ? '#FFEDD5' : '#F8FAFC', cornerRadius: 11 }, f);
+        this.text(s.live ? `Live · ${s.time}` : s.time, 32, s.y + 19, 110, { fontSize: 9, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
+        this.text(s.hall, 200, s.y + 19, 130, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'right' }, f);
+
+        this.text(s.title, 30, s.y + 46, 296, { fontSize: 13.5, fontWeight: 700, fill: '#0F172A' }, f);
+
+        this.avatar(s.img, 30, s.y + 92, 26, f, '#FFFFFF', false);
+        this.text(s.spk, 64, s.y + 98, 220, { fontSize: 10.5, fontWeight: 600, fill: '#475569' }, f);
+        this.vector('star', 308, s.y + 94, 20, s.starred ? '#D97706' : '#CBD5E1', f, `Star_${s.time}`);
       }
 
       this.bottomNav(f, 'my-day');
     }
 
-    // M08: Session Detail & 10-Min Reminder
+    // M08: Session Detail & 10-Min Reminder (Airy, Clean Hierarchy!)
     {
-      const f = this.screenFrame('M08 · Session Detail & Reminder', 'Speaker Bio | Saved State | Slides | 10-Min Alert');
+      const f = this.screenFrame('M08 · Session Detail & Reminder', 'Speaker Card · Talk Overview · Saved Action · 10m Alert Toggle');
       this.statusBar(f, false, 'Offline Ready');
-      this.attendeeTopBar(f, 'Session Profile', true);
+      this.subHeader(f, 'Session');
 
-      // Speaker Bio Card (Circular Clipped Avatar!)
-      this.rect('SpkBox', 16, 84, 328, 88, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.avatar(assets.pankaj, 28, 96, 62, f, '#FFEDD5', true);
-      this.text('Pankaj Kumar', 102, 100, 224, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Founder @ Pankaj Kumar SEO', 102, 120, 224, { fontSize: 11, fontWeight: 600, fill: '#FF4D2D' }, f);
-      this.text('10+ Years · Local SEO & AI Visibility', 102, 138, 224, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      // Speaker Bio Card
+      this.rect('SpkBox', 16, 86, 328, 88, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.pankaj, 30, 99, 60, f, '#FFFFFF', true);
+      this.text('Pankaj Kumar', 104, 102, 224, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Founder @ Pankaj Kumar SEO', 104, 122, 224, { fontSize: 11, fontWeight: 600, fill: '#EA580C' }, f);
+      this.text('Local SEO & AI Visibility Strategist', 104, 140, 224, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
-      // Session Details
-      this.rect('TalkBox', 16, 184, 328, 246, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Sun, Dec 13 · 11:20 AM (20m)', 28, 198, 190, { fontSize: 10, fontWeight: 700, fill: '#EA580C' }, f);
-      this.text('BHIM Auditorium', 226, 198, 104, { fontSize: 10, fontWeight: 700, fill: '#10B981', textAlign: 'right' }, f);
-      this.text('10 Things to Do to Boost Local SEO in the AI Era', 28, 220, 300, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('AI search engines are changing how local businesses get discovered. Walk away with 10 practical schema, review, and entity strategies for WordPress.', 28, 272, 300, { fontSize: 11, fontWeight: 400, fill: '#475569' }, f);
+      // Session Card
+      this.rect('TalkBox', 16, 188, 328, 250, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.rect('TimeP', 30, 202, 152, 22, { fill: '#FFEDD5', cornerRadius: 11 }, f);
+      this.text('Sun, Dec 13 · 11:20 AM', 32, 207, 148, { fontSize: 9.5, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
+      this.text('BHIM Auditorium', 216, 207, 114, { fontSize: 10, fontWeight: 700, fill: '#10B981', textAlign: 'right' }, f);
 
-      this.rect('StarredBtn', 28, 372, 144, 40, { fill: '#D97706', cornerRadius: 20 }, f);
-      this.text('★ SAVED TO MY DAY', 30, 385, 140, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('SlidesBtn', 184, 372, 144, 40, { fill: '#F1F5F9', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 20 }, f);
-      this.text('OPEN SLIDES', 186, 385, 140, { fontSize: 10, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      this.text('10 Things to Do to Boost Local SEO in the AI Era', 30, 236, 300, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('AI search engines are changing how local businesses get discovered. Walk away with 10 practical schema, review, and entity strategies for WordPress.', 30, 290, 300, { fontSize: 11, fontWeight: 400, fill: '#475569' }, f);
+
+      this.rect('StarredBtn', 30, 380, 146, 40, { fill: '#D97706', cornerRadius: 20 }, f);
+      this.text('★ Saved to My Day', 32, 392, 142, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('SlidesBtn', 186, 380, 144, 40, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.text('Open Slides', 188, 392, 140, { fontSize: 10, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
 
       // 10-Min Reminder Card
-      this.rect('RemBox', 16, 444, 328, 62, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Remind me 10 mins before', 28, 456, 220, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Works offline — no internet needed', 28, 476, 220, { fontSize: 10, fontWeight: 600, fill: '#10B981' }, f);
-      this.toggle(f, 286, 464, true);
+      this.rect('RemBox', 16, 454, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Remind me 10 mins before', 30, 468, 220, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Works offline at venue', 30, 488, 220, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
+      this.toggle(f, 286, 476, true);
 
-      // Venue Location Pin
-      this.rect('LocBox', 16, 518, 328, 62, { fill: '#FAFAFD', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.vector('mapPin', 28, 534, 18, '#FF4D2D', f, 'LocPin');
-      this.text('Ground Floor · BHIM Auditorium', 54, 530, 260, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('2 min walk from Main Registration Desk', 54, 550, 260, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-
-      this.bottomNav(f, 'my-day');
-    }
-
-    // M09: My Schedule, People Plan & Clash Hub (MyDayTab -> My schedule + Plan!)
-    {
-      const f = this.screenFrame('M09 · My Schedule & People Plan', 'Clash Warning | Plan Progress | People to Meet');
-      this.statusBar(f, false, '5 In My Plan');
-      this.attendeeTopBar(f, 'My Schedule', true);
-
-      // Switch: Full vs My Schedule active
-      this.pill(f, 'Full schedule', 16, 82, 160, false);
-      this.pill(f, 'My schedule (5)', 184, 82, 160, true, '#EA580C');
-
-      // PlanSummary Card (from Plan.kt!)
-      this.rect('PlanSum', 16, 118, 328, 68, { fill: '#0F172A', cornerRadius: 16 }, f);
-      this.text('Your WordCamp Plan · 2 of 5 Done', 28, 130, 210, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.rect('AddCal', 238, 128, 94, 24, { fill: '#D97706', cornerRadius: 12 }, f);
-      this.text('Add to Calendar', 240, 133, 90, { fontSize: 9, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('PBarBG', 28, 162, 304, 6, { fill: '#334155', cornerRadius: 3 }, f);
-      this.rect('PBarFill', 28, 162, 122, 6, { fill: '#10B981', cornerRadius: 3 }, f);
-
-      // Plan Filter Chips (All, To do, Done, Missed, Hidden)
-      this.pill(f, 'All 5', 16, 196, 56, true, '#0F172A');
-      this.pill(f, 'To do 3', 78, 196, 66, false);
-      this.pill(f, 'Done 1', 150, 196, 62, false);
-      this.pill(f, 'Missed 0', 218, 196, 68, false);
-      this.pill(f, 'Hidden 1', 292, 196, 58, false);
-
-      // Conflict Warning Card (from MyDay.kt lines 551-616!)
-      this.rect('ClashCard', 16, 232, 328, 92, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1.5, cornerRadius: 14 }, f);
-      this.vector('alert', 28, 242, 16, '#DC2626', f, 'ClashIco');
-      this.text('Overlapping Talk Conflicts Detected', 50, 243, 270, { fontSize: 11, fontWeight: 800, fill: '#DC2626' }, f);
-      this.text('GEO Talk (BHIM) vs SEO Workshop (Lounge) · 11:00 AM', 28, 264, 300, { fontSize: 9.5, fontWeight: 500, fill: '#0F172A' }, f);
-      this.rect('RemBtn', 28, 288, 114, 24, { fill: '#FFFFFF', stroke: '#DC2626', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('Remove One', 30, 293, 110, { fontSize: 9, fontWeight: 800, fill: '#DC2626', textAlign: 'center' }, f);
-
-      // Saved Session with Attendance Status Buttons (from MyDay.kt lines 413-418)
-      this.rect('SessSaved', 16, 336, 328, 98, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('10:00 AM · BHIM Auditorium', 28, 346, 220, { fontSize: 9.5, fontWeight: 700, fill: '#EA580C' }, f);
-      this.text('From Feature to Ecosystem', 28, 364, 290, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.rect('AttBtn', 28, 394, 96, 26, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('✓ Attended', 30, 400, 92, { fontSize: 9.5, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.rect('MissBtn', 132, 394, 86, 26, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('✗ Missed', 134, 400, 82, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
-
-      // People to Meet Section (PersonPlanCard from Plan.kt!)
-      this.text('People to Meet', 16, 448, 200, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('MeetCard', 16, 474, 328, 128, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.avatar(assets.radhika, 28, 488, 44, f, '#E2E8F0', true);
-      this.text('Radhika Bhama', 82, 488, 180, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('01:30 PM · Dining Courtyard Coffee', 82, 506, 240, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
-      this.text('Note: Discuss WordPress product partnerships.', 28, 540, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
-      this.rect('MetBtn', 28, 564, 90, 26, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('✓ Met', 30, 570, 86, { fontSize: 9.5, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.rect('MissP', 126, 564, 90, 26, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('Missed', 128, 570, 86, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
-      this.rect('SkipP', 224, 564, 90, 26, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 13 }, f);
-      this.text('Skip', 226, 570, 86, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+      // Venue Room Pin
+      this.rect('LocBox', 16, 534, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.vector('mapPin', 30, 558, 18, '#FF4D2D', f, 'LocPin');
+      this.text('Ground Floor · BHIM Auditorium', 56, 548, 260, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('2 min walk from Main Registration Desk', 56, 568, 260, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
       this.bottomNav(f, 'my-day');
     }
 
-    // M10: Memories Archive & Post-Event Data Choice
+    // M09: My Schedule & People Plan (De-crowded Clean Itinerary!)
     {
-      const f = this.screenFrame('M10 · Memories & Post-Event Choice', 'Photo Album | WordPress.tv | Keep vs Auto-Sweep');
-      this.statusBar(f, false, 'After Event');
-      this.attendeeTopBar(f, 'Memories', true);
+      const f = this.screenFrame('M09 · My Schedule & People Plan', 'Plan Progress · Conflict Banner · Attended Toggle · People to Meet');
+      this.statusBar(f, false, 'Offline Ready');
+      this.rootHeader(f, 'My Day');
 
-      // Event Header Card with White-Framed Delhi Logo
-      this.rect('MemHdr', 16, 84, 328, 92, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.logoBox(assets.delhiLogo, 28, 96, 68, 68, f, 14, 6);
-      this.text('MEMORIES', 108, 98, 120, { fontSize: 9.5, fontWeight: 800, fill: '#FF4D2D' }, f);
-      this.text('WordCamp Delhi 2026', 108, 114, 220, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Dec 12–13, 2026', 108, 138, 220, { fontSize: 10.5, fontWeight: 500, fill: '#64748B' }, f);
+      // Switch: Full vs My Schedule
+      this.rect('MySeg', 16, 86, 328, 36, { fill: '#E2E8F0', cornerRadius: 18 }, f);
+      this.text('Full schedule', 20, 96, 156, { fontSize: 10.5, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
+      this.rect('MyOn', 180, 90, 160, 28, { fill: '#FFFFFF', cornerRadius: 14 }, f);
+      this.text('My schedule (5)', 182, 97, 156, { fontSize: 10.5, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
 
-      // Album & WordPress.tv Links
-      this.rect('AlbumCard', 16, 188, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.vector('camera', 28, 208, 22, '#FF4D2D', f, 'CamIco');
-      this.text('Official Photo Album', 60, 198, 220, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('The official photos — find yourself in them.', 60, 218, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      // Compact Navy Plan Summary Card
+      this.rect('PlanSum', 16, 134, 328, 68, { fill: '#0F172A', cornerRadius: 16 }, f);
+      this.text('Your Plan · 2 of 5 Done', 30, 146, 200, { fontSize: 12.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.rect('AddCal', 238, 144, 92, 24, { fill: '#D97706', cornerRadius: 12 }, f);
+      this.text('Add Calendar', 240, 149, 88, { fontSize: 9, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('PBarBG', 30, 178, 300, 6, { fill: '#334155', cornerRadius: 3 }, f);
+      this.rect('PBarFill', 30, 178, 120, 6, { fill: '#10B981', cornerRadius: 3 }, f);
+
+      // 4 Balanced Filter Chips
+      this.pill(f, 'All (5)', 16, 214, 72, true, '#0F172A');
+      this.pill(f, 'To do (3)', 94, 214, 80, false);
+      this.pill(f, 'Done (2)', 180, 214, 78, false);
+      this.pill(f, 'Hidden', 264, 214, 76, false);
+
+      // Slim Conflict Alert
+      this.rect('ClashCard', 16, 254, 328, 56, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('alert', 28, 274, 16, '#DC2626', f, 'ClashIco');
+      this.text('11:00 AM Overlap: GEO Talk vs Workshop', 50, 266, 210, { fontSize: 10, fontWeight: 700, fill: '#DC2626' }, f);
+      this.text('Two saved talks run together', 50, 284, 200, { fontSize: 9, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('RemBtn', 260, 269, 72, 26, { fill: '#FFFFFF', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 13 }, f);
+      this.text('Resolve', 262, 275, 68, { fontSize: 9.5, fontWeight: 700, fill: '#DC2626', textAlign: 'center' }, f);
+
+      // Saved Session Card
+      this.rect('SessSaved', 16, 324, 328, 100, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('10:00 AM · BHIM Auditorium', 30, 336, 220, { fontSize: 9.5, fontWeight: 700, fill: '#EA580C' }, f);
+      this.text('From Feature to Ecosystem', 30, 355, 290, { fontSize: 13.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.rect('AttBtn', 30, 384, 96, 28, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('✓ Attended', 32, 391, 92, { fontSize: 9.5, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.rect('MissBtn', 136, 384, 86, 28, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('✗ Missed', 138, 391, 82, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+
+      // People to Meet Card
+      this.text('People to Meet', 16, 442, 200, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+      this.rect('MeetCard', 16, 468, 328, 128, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.radhika, 30, 482, 44, f, '#FFFFFF', true);
+      this.text('Radhika Bhama', 84, 482, 180, { fontSize: 13.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('01:30 PM · Dining Courtyard Coffee', 84, 502, 240, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
+      this.text('Note: Discuss WordPress product partnerships.', 30, 534, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('MetBtn', 30, 558, 92, 28, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('✓ Met', 32, 565, 88, { fontSize: 9.5, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.rect('MissP', 130, 558, 92, 28, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Missed', 132, 565, 88, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+      this.rect('SkipP', 230, 558, 92, 28, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Skip', 232, 565, 88, { fontSize: 9.5, fontWeight: 600, fill: '#64748B', textAlign: 'center' }, f);
+
+      this.bottomNav(f, 'my-day');
+    }
+
+    // M10: Post-Event Memories & Data Choice (Clean Hairline Style!)
+    {
+      const f = this.screenFrame('M10 · Memories & Post-Event Choice', 'Event Recap · Photo Album · WordPress.tv · Data Retention');
+      this.statusBar(f, false, 'Offline Ready');
+      this.subHeader(f, 'Memories');
+
+      this.rect('MemHdr', 16, 86, 328, 86, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.logoTile(assets.delhiFavicon, 30, 99, 60, 60, f, 14, 2, '#FFFFFF', '#F1F5F9');
+      this.text('MEMORIES ARCHIVE', 104, 100, 150, { fontSize: 9, fontWeight: 800, fill: '#FF4D2D' }, f);
+      this.text('WordCamp Delhi 2026', 104, 116, 220, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Dec 12–13, 2026 · DAIC', 104, 138, 220, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
+
+      this.rect('AlbumCard', 16, 186, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('camera', 30, 208, 20, '#FF4D2D', f, 'CamIco');
+      this.text('Official Photo Album', 62, 198, 220, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Browse event photos — find yourself', 62, 218, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
       this.vector('chevronRight', 318, 212, 16, '#94A3B8', f, 'Ar1');
 
       this.rect('WptvCard', 16, 264, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.vector('activity', 28, 284, 22, '#D97706', f, 'VidIco');
-      this.text('Talks on WordPress.tv', 60, 274, 220, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Watch speaker recordings anytime.', 60, 294, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
-      this.vector('chevronRight', 318, 288, 16, '#94A3B8', f, 'Ar2');
+      this.vector('activity', 30, 286, 20, '#D97706', f, 'VidIco');
+      this.text('Talks on WordPress.tv', 62, 276, 220, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Watch recorded sessions anytime', 62, 296, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      this.vector('chevronRight', 318, 290, 16, '#94A3B8', f, 'Ar2');
 
-      // AfterEventChoice Privacy Sweep Modal (from AfterEvent.kt!)
-      this.rect('SweepBox', 16, 344, 328, 250, { fill: '#FFFFFF', stroke: '#D97706', strokeWeight: 1.5, cornerRadius: 18 }, f);
-      this.text('What should we do with your event data?', 28, 358, 300, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Scheduled cleanup on Dec 28, 2026.', 28, 378, 280, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
+      // Clean Hairline Data Retention Card
+      this.rect('SweepBox', 16, 346, 328, 248, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.text('Keep or clear your event data?', 30, 362, 300, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Scheduled cleanup on Dec 28, 2026', 30, 384, 280, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
 
-      this.rect('OptKeep', 28, 404, 304, 72, { fill: '#FFEDD5', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 12 }, f);
-      this.text('● Keep My People & CampCard', 40, 414, 260, { fontSize: 11.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Keep scanned contacts & digital card for future WordCamps.', 40, 434, 276, { fontSize: 9.5, fontWeight: 500, fill: '#475569' }, f);
+      this.rect('OptKeep', 30, 412, 300, 74, { fill: '#FFF7ED', stroke: '#FB923C', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('● Keep My People & CampCard', 44, 424, 260, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Save scanned contacts & digital card for next WordCamps.', 44, 444, 270, { fontSize: 9.5, fontWeight: 400, fill: '#475569' }, f);
 
-      this.rect('OptSweep', 28, 486, 304, 72, { fill: '#FAFAFD', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('○ Clean up everything automatically', 40, 496, 260, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Erase schedule, waves & event notes after 14 days.', 40, 516, 276, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('OptSweep', 30, 496, 300, 74, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('○ Clean up automatically after 14 days', 44, 508, 260, { fontSize: 11.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.text('Erase schedule bookmarks, waves & event notes.', 44, 528, 270, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
 
-      this.rect('SaveChoice', 16, 608, 328, 44, { fill: '#0F172A', cornerRadius: 22 }, f);
-      this.text('SAVE PREFERENCE', 16, 622, 328, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('SaveChoice', 16, 610, 328, 46, { fill: '#0F172A', cornerRadius: 23 }, f);
+      this.text('Save Preference', 16, 625, 328, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'home');
     }
 
-    // M11: Help Sheet, Legal & Confidential Safety Report
+    // M11: Help Desk & Confidential Safety Report (Spacious, Zero Jamming!)
     {
-      const f = this.screenFrame('M11 · Help Desk, Legal & Safety Report', 'HelpDesk | Privacy & Terms | Confidential Report');
-      this.statusBar(f, false, '24/7 Support');
-      this.attendeeTopBar(f, 'Support & Safety', true);
+      const f = this.screenFrame('M11 · Help Desk, Legal & Safety Report', 'Organizer Dialer · Support Rooms · Confidential Report Form');
+      this.statusBar(f, false, 'Offline Ready');
+      this.subHeader(f, 'Support & Safety');
 
-      // Tabs: Help Desk | Privacy | Terms | Code of Conduct
-      this.pill(f, 'Help Desk', 16, 82, 78, true, '#DC2626');
-      this.pill(f, 'Privacy', 100, 82, 68, false);
-      this.pill(f, 'Terms', 174, 82, 64, false);
-      this.pill(f, 'Safety Code', 244, 82, 92, false);
+      this.pill(f, 'Help Desk', 16, 86, 104, true, '#DC2626');
+      this.pill(f, 'Privacy', 128, 86, 104, false);
+      this.pill(f, 'Safety Code', 240, 86, 104, false);
 
       // 1-Tap Organizer Call Card
-      this.rect('SOSBox', 16, 120, 328, 118, { fill: '#DC2626', cornerRadius: 16 }, f);
-      this.vector('shield', 28, 134, 22, '#FFFFFF', f, 'ShIco');
-      this.text('Need Immediate Support?', 58, 134, 240, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Reach the Venue Info Desk, Medical Support or Safety Team anytime.', 28, 162, 300, { fontSize: 10, fontWeight: 400, fill: '#FEE2E2' }, f);
-      this.rect('CallBtn', 28, 194, 304, 34, { fill: '#FFFFFF', cornerRadius: 17 }, f);
-      this.vector('phone', 74, 203, 16, '#DC2626', f, 'PhBtn');
-      this.text('CALL ORGANIZER DESK', 96, 204, 190, { fontSize: 10, fontWeight: 800, fill: '#DC2626' }, f);
+      this.rect('SOSBox', 16, 128, 328, 120, { fill: '#DC2626', cornerRadius: 18 }, f);
+      this.vector('shield', 30, 144, 20, '#FFFFFF', f, 'ShIco');
+      this.text('Need Immediate Help?', 58, 143, 240, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Connect directly with the DAIC Venue Safety & Info Desk anytime.', 30, 170, 300, { fontSize: 10, fontWeight: 400, fill: '#FEE2E2' }, f);
+      this.rect('CallBtn', 30, 202, 300, 34, { fill: '#FFFFFF', cornerRadius: 17 }, f);
+      this.vector('phone', 78, 211, 16, '#DC2626', f, 'PhBtn');
+      this.text('Call Organizer Desk', 100, 211, 180, { fontSize: 10.5, fontWeight: 700, fill: '#DC2626' }, f);
 
-      // Venue Support Rooms (Clean vector icons!)
-      this.rect('FacBox', 16, 250, 328, 96, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('On-Site Support Facilities (DAIC)', 28, 262, 260, { fontSize: 11.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.vector('heart', 28, 286, 14, '#DC2626', f, 'AidIco');
-      this.text('First Aid Room: Ground Floor Main Lobby', 48, 286, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
-      this.vector('bell', 28, 310, 14, '#D97706', f, 'QtIco');
-      this.text('Quiet & Nursing Room: 1st Floor, Room 104', 48, 310, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
+      // Venue Support Rooms
+      this.rect('FacBox', 16, 264, 328, 96, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('On-Site Rooms (DAIC)', 30, 278, 260, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.vector('heart', 30, 304, 14, '#DC2626', f, 'AidIco');
+      this.text('First Aid Room: Ground Floor Lobby', 52, 303, 270, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
+      this.vector('bell', 30, 328, 14, '#D97706', f, 'QtIco');
+      this.text('Quiet & Nursing Room: 1st Floor, Rm 104', 52, 327, 270, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
 
-      // Confidential Incident Report Form
-      this.rect('FormBox', 16, 358, 328, 274, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('File Confidential Incident Report', 28, 372, 280, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Category: Safety / Harassment / Accessibility', 28, 394, 290, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
-      this.rect('TextBox', 28, 416, 304, 100, { fill: '#F8FAFC', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 10 }, f);
-      this.text('Describe what happened and where (e.g., Hall A Corridor)...', 38, 428, 284, { fontSize: 10, fontWeight: 400, fill: '#94A3B8' }, f);
-      this.text('☑ Keep my report anonymous', 28, 528, 260, { fontSize: 10, fontWeight: 600, fill: '#0F172A' }, f);
-      this.rect('SubRep', 28, 558, 304, 40, { fill: '#0F172A', cornerRadius: 20 }, f);
-      this.text('SEND CONFIDENTIAL REPORT', 30, 571, 300, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('Works offline — sends automatically when connected', 28, 608, 300, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
+      // Confidential Report Form
+      this.rect('FormBox', 16, 376, 328, 290, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.text('File Confidential Report', 30, 392, 260, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Safety, harassment, or accessibility concern', 30, 414, 290, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('TextBox', 30, 440, 300, 102, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.text('Describe what happened and where...', 42, 454, 276, { fontSize: 10.5, fontWeight: 400, fill: '#94A3B8' }, f);
+      this.text('☑ Keep my report anonymous', 30, 554, 260, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.rect('SubRep', 30, 586, 300, 42, { fill: '#0F172A', cornerRadius: 21 }, f);
+      this.text('Submit Report', 32, 600, 296, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Works offline — sends when connected', 30, 638, 300, { fontSize: 9.5, fontWeight: 500, fill: '#10B981', textAlign: 'center' }, f);
     }
 
     // =========================================================================
     // GROUP 3: CAMPCARD, QR SCANNER & DISCOVERY (M12 - M16)
     // =========================================================================
 
-    // M12: CampCard 7-Layout Carousel & Real QR Code
+    // M12: CampCard Digital Badge (Clean Focus matching specimen.html A06!)
     {
-      const f = this.screenFrame('M12 · CampCard Carousel & Real QR', '7 Card Layouts | Real QR | Share & Save PNG');
-      this.statusBar(f, false, 'My CampCard');
-      this.attendeeTopBar(f, 'My CampCard', true);
+      const f = this.screenFrame('M12 · CampCard Carousel & Real QR', 'Style Carousel · Sharp Delhi Seal · Scannable QR · Share/Download');
+      this.statusBar(f, false, 'Offline Ready');
+      this.rootHeader(f, 'My CampCard', 'camera');
 
-      // Verified Profile Banner (ClaimProfileBanner from CampCardScreen.kt)
-      this.rect('ClaimDone', 16, 82, 328, 48, { fill: '#FFFFFF', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 14 }, f);
-      this.vector('award', 28, 96, 20, '#10B981', f, 'VerIco');
-      this.text('Verified Attendee · Amit Singh', 56, 92, 190, { fontSize: 11, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Linked to WordCamp Delhi roster', 56, 108, 190, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
-      this.text('Unlink', 292, 98, 44, { fontSize: 10, fontWeight: 700, fill: '#DC2626', textAlign: 'right' }, f);
+      // Compact Layout Switcher
+      this.pill(f, 'Ticket', 16, 86, 56, false);
+      this.pill(f, 'Classic', 76, 86, 62, true, '#0F172A');
+      this.pill(f, 'Minimal', 142, 86, 62, false);
+      this.pill(f, 'Bold', 208, 86, 48, false);
+      this.pill(f, 'Split', 260, 86, 46, false);
+      this.pill(f, 'Pass', 310, 86, 42, false);
 
-      // 7 Layout Pills (from CampCardFaces.kt: Ticket, Classic, Minimal, Bold, Split, Badge, Pass)
-      this.pill(f, 'Ticket', 16, 138, 56, false);
-      this.pill(f, 'Classic', 76, 138, 62, true, '#0F172A');
-      this.pill(f, 'Minimal', 142, 138, 62, false);
-      this.pill(f, 'Bold', 208, 138, 48, false);
-      this.pill(f, 'Split', 260, 138, 46, false);
-      this.pill(f, 'Pass', 310, 138, 42, false);
+      // Classic Navy Badge Card
+      this.rect('CardFace', 22, 128, 316, 392, { fill: '#0F172A', stroke: '#D97706', strokeWeight: 1.5, cornerRadius: 22 }, f);
+      this.logoTile(assets.delhiFavicon, 38, 144, 42, 42, f, 21, 2, '#FFFFFF');
+      this.rect('RoleTag', 232, 150, 90, 22, { fill: '#33291A', stroke: '#D97706', strokeWeight: 1, cornerRadius: 11 }, f);
+      this.text('SPEAKER', 234, 155, 86, { fontSize: 9, fontWeight: 800, fill: '#F59E0B', textAlign: 'center' }, f);
 
-      // Classic Card Face with Universal White Logo Container + Circular Avatar + REAL QR PNG!
-      this.rect('CardFace', 26, 174, 308, 366, { fill: '#1E1E1E', stroke: '#D97706', strokeWeight: 2, cornerRadius: 20 }, f);
-      this.logoBox(assets.delhiLogo, 42, 190, 42, 42, f, 10, 4);
-      this.rect('RoleTag', 228, 196, 90, 22, { fill: '#FEF3C7', cornerRadius: 11 }, f);
-      this.text('SPEAKER', 230, 201, 86, { fontSize: 9, fontWeight: 800, fill: '#B45309', textAlign: 'center' }, f);
+      this.avatar(assets.amit, 140, 162, 80, f, '#D97706', false);
+      this.text('Amit Kumar Singh', 36, 252, 288, { fontSize: 18, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Managing Partner · WPoets, Pune', 36, 278, 288, { fontSize: 10.5, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
 
-      this.avatar(assets.amit, 142, 206, 76, f, '#D97706', false);
-      this.text('Amit Kumar Singh', 42, 290, 276, { fontSize: 17, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('Managing Partner @ WPoets · Pune', 42, 314, 276, { fontSize: 10, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
+      this.rect('QrPlate', 110, 306, 140, 140, { fill: '#FFFFFF', cornerRadius: 14 }, f);
+      this.image(assets.qrSample, 118, 314, 124, 124, f, 'RealQR');
+      this.text('Hold near camera or scan to save contact', 36, 460, 288, { fontSize: 10, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
+      this.text('campbuddy.club · Offline QR', 36, 480, 288, { fontSize: 9, fontWeight: 700, fill: '#F59E0B', textAlign: 'center' }, f);
 
-      // REAL QR Code Image inside White Plate!
-      this.rect('QrPlate', 110, 340, 140, 140, { fill: '#FFFFFF', cornerRadius: 12 }, f);
-      this.image(assets.qrSample, 118, 348, 124, 124, f, 'RealQR');
-      this.text('Scan to open CampCard or save contact', 42, 492, 276, { fontSize: 9.5, fontWeight: 500, fill: '#F59E0B', textAlign: 'center' }, f);
+      // Share & Download Pill Row
+      this.rect('SharePng', 22, 536, 152, 40, { fill: '#FF4D2D', cornerRadius: 20 }, f);
+      this.vector('share', 52, 548, 16, '#FFFFFF', f, 'ShIco');
+      this.text('Share', 74, 550, 60, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
 
-      // Share & Save PNG Buttons
-      this.rect('SharePng', 26, 552, 148, 38, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 19 }, f);
-      this.vector('share', 52, 563, 16, '#0F172A', f, 'ShIco');
-      this.text('Share', 76, 565, 60, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.rect('SavePng', 186, 536, 152, 40, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.vector('download', 210, 548, 16, '#0F172A', f, 'DlIco');
+      this.text('Download', 232, 550, 74, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
 
-      this.rect('SavePng', 186, 552, 148, 38, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 19 }, f);
-      this.vector('download', 208, 563, 16, '#0F172A', f, 'DlIco');
-      this.text('Download', 230, 565, 70, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A' }, f);
-
-      // Active Social Channels in QR (from CampCardScreen.kt ActiveSocialBadges)
-      this.text('ACTIVE CHANNELS IN QR:', 26, 604, 200, { fontSize: 9, fontWeight: 800, fill: '#64748B' }, f);
-      this.pill(f, '● LinkedIn', 26, 624, 82, false);
-      this.pill(f, '● WordPress.org', 114, 624, 110, false);
-      this.pill(f, '● X / Twitter', 230, 624, 96, false);
+      // Clean Roster Verified Footer Bar
+      this.rect('ClaimDone', 22, 594, 316, 46, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.vector('award', 36, 608, 18, '#10B981', f, 'VerIco');
+      this.text('Verified on WordCamp Delhi Roster', 62, 609, 200, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Edit', 284, 609, 40, { fontSize: 10.5, fontWeight: 700, fill: '#EA580C', textAlign: 'right' }, f);
 
       this.bottomNav(f, 'camp-card');
     }
 
-    // M13: CampCard Edit Form & Claim Attendee Profile Picker
+    // M13: Edit CampCard & Claim Profile (Zero Dev Jargon, Calm Borders!)
     {
-      const f = this.screenFrame('M13 · Edit CampCard & Claim Profile', 'Claim Roster Picker | Tag Chips | Privacy Switches');
+      const f = this.screenFrame('M13 · Edit CampCard & Claim Profile', 'Roster Profile Link · Card Fields · Interest Chips · Privacy Toggles');
       this.statusBar(f, false, 'Saved On Phone');
-      this.attendeeTopBar(f, 'Edit CampCard', true);
+      this.subHeader(f, 'Edit CampCard');
 
-      // Claim Profile Banner + SharePicker ("Which name on the list is yours?")
-      this.rect('ClaimBox', 16, 82, 328, 150, { fill: '#FFEDD5', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.text('Claim Your Attendee Profile', 28, 94, 240, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Which name on the WordCamp list is yours?', 28, 114, 280, { fontSize: 10, fontWeight: 500, fill: '#475569' }, f);
-      this.rect('PickSearch', 28, 134, 304, 32, { fill: '#FFFFFF', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Sunil...', 38, 143, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.rect('MatchRow', 28, 174, 304, 44, { fill: '#FFFFFF', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 10 }, f);
-      this.text('Sunil Kumar Sharma (Ticket #482)', 38, 182, 220, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A' }, f);
-      this.text('Tap to link your CampCard to the list', 38, 198, 220, { fontSize: 9, fontWeight: 500, fill: '#10B981' }, f);
+      // Roster Claim Card (Clean soft peach fill, no loud borders)
+      this.rect('ClaimBox', 16, 86, 328, 126, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Link Attendee Listing', 30, 100, 240, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Match your name on the WordCamp Delhi roster:', 30, 120, 290, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('MatchRow', 30, 144, 300, 52, { fill: '#ECFDF5', stroke: '#A7F3D0', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.text('Amit Kumar Singh · Ticket #482', 44, 153, 210, { fontSize: 11, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Linked · Shown on attendees directory', 44, 171, 210, { fontSize: 9.5, fontWeight: 500, fill: '#047857' }, f);
+      this.text('Change', 274, 162, 46, { fontSize: 10, fontWeight: 700, fill: '#047857', textAlign: 'right' }, f);
 
-      // Form Fields (About You)
-      this.rect('FormBG', 16, 244, 328, 188, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('About You (Saved on this phone only)', 28, 256, 280, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('F1', 28, 280, 304, 34, { fill: '#FAFAFD', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Name: Amit Kumar Singh *', 38, 290, 280, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.rect('F2', 28, 322, 304, 34, { fill: '#FAFAFD', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Role: Managing Partner · WPoets', 38, 332, 280, { fontSize: 10.5, fontWeight: 500, fill: '#475569' }, f);
-      this.text('Interests (TagInput):', 28, 366, 200, { fontSize: 10, fontWeight: 700, fill: '#0F172A' }, f);
-      this.pill(f, 'AI & WordPress ×', 28, 388, 108, true, '#0F172A');
-      this.pill(f, 'Enterprise ×', 142, 388, 86, true, '#0F172A');
-      this.pill(f, '+ Add tag', 234, 388, 76, false);
+      // About You Form
+      this.rect('FormBG', 16, 226, 328, 198, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('About You (On this phone)', 30, 240, 280, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.rect('F1', 30, 268, 300, 36, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('Amit Kumar Singh', 42, 279, 270, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
+      this.rect('F2', 30, 312, 300, 36, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('Managing Partner · WPoets', 42, 323, 270, { fontSize: 10.5, fontWeight: 500, fill: '#475569' }, f);
 
-      // Visibility Switches + Save Button
-      this.rect('VisBox', 16, 444, 328, 128, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Show on CampCard QR & Attendee List', 28, 456, 280, { fontSize: 11.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Share Role & Company', 28, 482, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.toggle(f, 288, 478, true);
-      this.text('List my card in Attendees Directory', 28, 514, 220, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.toggle(f, 288, 510, true);
-      this.text('☑ I agree to share selected fields with attendees', 28, 544, 300, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      this.text('Interests', 30, 360, 200, { fontSize: 10, fontWeight: 700, fill: '#475569' }, f);
+      this.pill(f, 'AI & WordPress ×', 30, 382, 108, true, '#0F172A');
+      this.pill(f, 'Enterprise ×', 144, 382, 86, true, '#0F172A');
+      this.pill(f, '+ Add', 236, 382, 64, false);
 
-      this.rect('SaveCard', 16, 588, 328, 44, { fill: '#FF4D2D', cornerRadius: 22 }, f);
-      this.text('SAVE CAMP CARD', 16, 602, 328, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Visibility Switches
+      this.rect('VisBox', 16, 438, 328, 124, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Privacy Controls', 30, 452, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Show Role & Company on QR', 30, 480, 220, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.toggle(f, 286, 476, true);
+      this.text('Show my CampCard in Attendees', 30, 514, 220, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.toggle(f, 286, 510, true);
+
+      this.rect('SaveCard', 16, 582, 328, 46, { fill: '#FF4D2D', cornerRadius: 23 }, f);
+      this.text('Save CampCard', 16, 597, 328, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'camp-card');
     }
 
-    // M14: Native QR Scanner & Detected Contact Sheet
+    // M14: QR Scanner & Detected Contact Sheet (Clean Camera UI matching specimen A07!)
     {
-      const f = this.screenFrame('M14 · Fast QR Scanner & Contact Sheet', 'Live Viewfinder | Real QR Target | Saved Sheet', '#000000');
+      const f = this.screenFrame('M14 · Fast QR Scanner & Contact Sheet', 'Live Camera Viewfinder · Flash Toggle · Detected Contact Sheet', '#000000');
       this.statusBar(f, true, 'Camera Active');
       this.text('< Back', 20, 48, 80, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
-      this.rect('Torch', 268, 44, 72, 26, { fill: '#1E293B', stroke: '#F59E0B', strokeWeight: 1, cornerRadius: 13 }, f);
+      this.rect('Torch', 268, 44, 72, 26, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 13 }, f);
       this.vector('sparkles', 278, 50, 14, '#F59E0B', f, 'TrchIco');
       this.text('Flash', 296, 50, 40, { fontSize: 10, fontWeight: 700, fill: '#F59E0B' }, f);
 
-      // Viewfinder framing a REAL QR card target!
-      this.rect('FrameBox', 60, 118, 240, 240, { fill: '#111827', stroke: '#FF4D2D', strokeWeight: 2.5, cornerRadius: 24 }, f);
-      this.rect('QrTarget', 100, 158, 160, 160, { fill: '#FFFFFF', cornerRadius: 14 }, f);
-      this.image(assets.qrSample, 110, 168, 140, 140, f, 'TargetQR');
-      this.line('Laser', 74, 238, 212, { stroke: '#FF4D2D', strokeWeight: 3 }, f);
+      this.rect('FrameBox', 62, 118, 236, 236, { fill: '#0F172A', stroke: '#FF4D2D', strokeWeight: 2, cornerRadius: 24 }, f);
+      this.rect('QrTarget', 102, 158, 156, 156, { fill: '#FFFFFF', cornerRadius: 14 }, f);
+      this.image(assets.qrSample, 110, 166, 140, 140, f, 'TargetQR');
+      this.line('Laser', 76, 236, 208, { stroke: '#FF4D2D', strokeWeight: 2.5 }, f);
 
-      this.text('Point at any attendee CampCard or sponsor booth', 30, 376, 300, { fontSize: 11, fontWeight: 600, fill: '#E2E8F0', textAlign: 'center' }, f);
+      this.text('Align attendee CampCard QR inside frame', 30, 374, 300, { fontSize: 11, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
 
-      // Detected Contact Bottom Sheet (Circular Clipped Radhika Photo!)
-      this.rect('DetSheet', 0, 446, 360, 314, { fill: '#1E293B', cornerRadius: 24 }, f);
-      this.rect('Handle', 156, 458, 48, 4, { fill: '#475569', cornerRadius: 2 }, f);
-      this.avatar(assets.radhika, 24, 484, 58, f, '#10B981', true);
-      this.text('Radhika Bhama', 94, 488, 220, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Speaker · WordCamp Delhi 2026', 94, 510, 240, { fontSize: 11, fontWeight: 500, fill: '#CBD5E1' }, f);
-      this.text('Shared: LinkedIn, X, Bio · Stored on your phone', 94, 530, 240, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      // Clean Bottom Contact Sheet
+      this.rect('DetSheet', 0, 452, 360, 308, { fill: '#1E293B', cornerRadius: 26 }, f);
+      this.rect('Handle', 156, 466, 48, 4, { fill: '#475569', cornerRadius: 2 }, f);
+      this.avatar(assets.radhika, 24, 492, 58, f, '#10B981', true);
+      this.text('Radhika Bhama', 94, 494, 220, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('VP Product · Speaker · WordCamp Delhi', 94, 516, 240, { fontSize: 11, fontWeight: 500, fill: '#CBD5E1' }, f);
+      this.text('Shared: LinkedIn, X · Saved locally on phone', 94, 536, 240, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
 
-      this.rect('SaveBtn', 24, 568, 312, 46, { fill: '#D97706', cornerRadius: 23 }, f);
-      this.text('SAVE TO MY PEOPLE', 24, 584, 312, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('NextBtn', 24, 626, 312, 42, { fill: '#334155', cornerRadius: 21 }, f);
-      this.text('SCAN ANOTHER CODE', 24, 640, 312, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('SaveBtn', 24, 578, 312, 46, { fill: '#D97706', cornerRadius: 23 }, f);
+      this.text('Save Contact to My People', 24, 593, 312, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('NextBtn', 24, 636, 312, 42, { fill: '#334155', cornerRadius: 21 }, f);
+      this.text('Scan Another Code', 24, 650, 312, { fontSize: 11, fontWeight: 600, fill: '#FFFFFF', textAlign: 'center' }, f);
     }
 
-    // M15: Explore -> People Discovery & Attendee Roster (Discovery + Roster!)
+    // M15: Explore -> People Discovery & Roster (Calm, Spacious Cards!)
     {
-      const f = this.screenFrame('M15 · Explore: Discovery & Roster', 'Join Discovery | Match Waves | Role Filter Pills');
-      this.statusBar(f, false, '11 Verified');
+      const f = this.screenFrame('M15 · Explore: Discovery & Roster', '5 Explore Tabs · Join Banner · Discovery Match · Attendee Roster');
+      this.statusBar(f, false, 'Offline Ready');
       this.exploreHeader(f, 'people');
 
-      // Discovery Top Prompt (for users not yet joined)
-      this.rect('JoinBanner', 16, 148, 328, 72, { fill: '#0F172A', cornerRadius: 14 }, f);
-      this.text('Meet People Sharing Your Interests', 28, 158, 220, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Create a private discovery card & wave at matches.', 28, 178, 210, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
-      this.rect('JoinBtn', 244, 166, 88, 32, { fill: '#FF4D2D', cornerRadius: 16 }, f);
-      this.text('JOIN NOW', 246, 175, 84, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Discovery Banner
+      this.rect('JoinBanner', 16, 152, 328, 74, { fill: '#0F172A', cornerRadius: 16 }, f);
+      this.text('Meet People Sharing Interests', 30, 165, 210, { fontSize: 12.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.text('Create a private card & wave at matches.', 30, 186, 210, { fontSize: 9.5, fontWeight: 400, fill: '#CBD5E1' }, f);
+      this.rect('JoinBtn', 252, 173, 78, 32, { fill: '#FF4D2D', cornerRadius: 16 }, f);
+      this.text('Join', 254, 182, 74, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // Discovery Match Cards (Default Wave + Mutual Chat Unlocked)
-      this.rect('M1', 16, 230, 328, 108, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.avatar(assets.abhay, 28, 242, 46, f, '#E2E8F0', true);
-      this.text('Abhay Kulkarni', 84, 240, 170, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('Match92', 262, 240, 70, 20, { fill: '#ECFDF5', cornerRadius: 10 }, f);
-      this.text('92% Match', 264, 244, 66, { fontSize: 9, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.text('n8n Ambassador · AI Workflows', 84, 260, 240, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('WaveB', 28, 298, 144, 28, { fill: '#FF4D2D', cornerRadius: 14 }, f);
-      this.text('WAVE HELLO', 30, 305, 140, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('MeetB', 184, 298, 144, 28, { fill: '#F1F5F9', cornerRadius: 14 }, f);
-      this.text('+ MEET', 186, 305, 140, { fontSize: 9.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      // Single Focus Match Card (Abhay Kulkarni)
+      this.rect('M1', 16, 240, 328, 122, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.abhay, 30, 254, 48, f, '#FFFFFF', true);
+      this.text('Abhay Kulkarni', 88, 254, 166, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
+      this.rect('Match92', 260, 254, 70, 20, { fill: '#ECFDF5', cornerRadius: 10 }, f);
+      this.text('92% Match', 262, 258, 66, { fontSize: 9, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.text('n8n Ambassador · AI Workflows & Automation', 88, 274, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('WaveB', 30, 316, 146, 32, { fill: '#FF4D2D', cornerRadius: 16 }, f);
+      this.text('Wave Hello', 32, 325, 142, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('MeetB', 184, 316, 146, 32, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('+ Plan Meet', 186, 325, 142, { fontSize: 10, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
 
-      // Mutual Match Card (Chat Unlocked!)
-      this.rect('M2', 16, 348, 328, 104, { fill: '#FFFFFF', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 14 }, f);
-      this.avatar(assets.om, 28, 360, 46, f, '#10B981', true);
-      this.text('Omprakash Asnani', 84, 358, 170, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('MutPill', 256, 358, 76, 20, { fill: '#10B981', cornerRadius: 10 }, f);
-      this.text('MUTUAL ✓', 258, 362, 72, { fontSize: 9, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('AI Workflows Lead @ Outskill', 84, 378, 240, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('ChatB', 28, 412, 144, 28, { fill: '#0F172A', cornerRadius: 14 }, f);
-      this.text('OPEN CHAT', 30, 419, 140, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('RepB', 184, 412, 144, 28, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('HIDE / REPORT', 186, 419, 140, { fontSize: 9, fontWeight: 700, fill: '#DC2626', textAlign: 'center' }, f);
+      // Mutual Match Row (Compact)
+      this.rect('M2', 16, 376, 328, 80, { fill: '#FFFFFF', stroke: '#A7F3D0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.om, 30, 393, 46, f, '#10B981', true);
+      this.text('Omprakash Asnani', 86, 392, 160, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('AI Workflows Lead · Mutual Match ✓', 86, 412, 180, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      this.rect('ChatB', 262, 400, 68, 30, { fill: '#0F172A', cornerRadius: 15 }, f);
+      this.text('Chat', 264, 408, 64, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // Full Attendee Roster + Role Filter Pills (from MoreTabs.kt lines 704-760)
-      this.text('Attendee Roster (420)', 16, 464, 200, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.pill(f, 'All', 16, 488, 44, true, '#0F172A');
-      this.pill(f, 'Speakers 11', 66, 488, 84, false);
-      this.pill(f, 'Organizers 13', 156, 488, 92, false);
-      this.pill(f, 'Table Leads', 254, 488, 86, false);
+      // Attendee Roster Filter + Single Row
+      this.text('Attendee Roster (420)', 16, 474, 200, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+      this.pill(f, 'All', 16, 502, 50, true, '#0F172A');
+      this.pill(f, 'Speakers 11', 72, 502, 84, false);
+      this.pill(f, 'Organizers 13', 162, 502, 92, false);
+      this.pill(f, 'Leads', 260, 502, 68, false);
 
-      this.rect('Ros1', 16, 524, 328, 84, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.avatar(assets.shreya, 28, 540, 44, f, '#E2E8F0', false);
-      this.text('Shreya Agarwal', 82, 536, 170, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('BadgeSpk', 82, 558, 70, 18, { fill: '#FEF3C7', cornerRadius: 9 }, f);
-      this.text('Table Lead', 84, 561, 66, { fontSize: 8.5, fontWeight: 800, fill: '#B45309', textAlign: 'center' }, f);
-      this.rect('OpenMeet', 158, 558, 92, 18, { fill: '#ECFDF5', cornerRadius: 9 }, f);
-      this.text('Open to meet', 160, 561, 88, { fontSize: 8.5, fontWeight: 700, fill: '#065F46', textAlign: 'center' }, f);
-      this.rect('MeetRos', 268, 550, 64, 28, { fill: '#FFEDD5', cornerRadius: 14 }, f);
-      this.text('+ Meet', 270, 557, 60, { fontSize: 9.5, fontWeight: 800, fill: '#EA580C', textAlign: 'center' }, f);
+      this.rect('Ros1', 16, 544, 328, 84, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.shreya, 30, 563, 46, f, '#FFFFFF', false);
+      this.text('Shreya Agarwal', 86, 560, 160, { fontSize: 13, fontWeight: 700, fill: '#0F172A' }, f);
+      this.rect('BadgeSpk', 86, 582, 74, 20, { fill: '#FEF3C7', cornerRadius: 10 }, f);
+      this.text('Table Lead', 88, 586, 70, { fontSize: 8.5, fontWeight: 700, fill: '#B45309', textAlign: 'center' }, f);
+      this.rect('MeetRos', 264, 571, 66, 30, { fill: '#FFEDD5', cornerRadius: 15 }, f);
+      this.text('+ Meet', 266, 579, 62, { fontSize: 10, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'explore');
     }
 
-    // M16: Discovery Join Form, Wave, Chat & Meet Modals
+    // M16: Mutual Match Chat & Meet Planner (Replaced 3-stacked cards with 1 focused Chat & Meet screen!)
     {
-      const f = this.screenFrame('M16 · Join Form, Wave, Chat & Meet', '3 Identity Modes | Tags | Wave | Chat | MeetSheet');
-      this.statusBar(f, false, 'Discovery Flow');
-      this.attendeeTopBar(f, 'Join & Connect', true);
+      const f = this.screenFrame('M16 · Mutual Match Chat & Meet', 'Focused Light Chat · Suggested Meet Card · Quick Message Composer');
+      this.statusBar(f, false, 'Mutual Match');
 
-      // Join Discovery Form Card (from People.kt JoinForm!)
-      this.rect('JoinForm', 16, 82, 328, 224, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.text('Join Attendee Discovery', 28, 94, 240, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('How should you appear?', 28, 114, 200, { fontSize: 10, fontWeight: 600, fill: '#64748B' }, f);
-      this.pill(f, 'Pick my name', 28, 134, 96, true, '#0F172A');
-      this.pill(f, 'Type name', 130, 134, 84, false);
-      this.pill(f, 'Anonymous', 220, 134, 92, false);
-      this.text('Interests (pick up to 5):', 28, 170, 200, { fontSize: 10, fontWeight: 600, fill: '#64748B' }, f);
-      this.pill(f, 'AI & WordPress', 28, 190, 102, true, '#D97706');
-      this.pill(f, 'SEO', 136, 190, 52, true, '#D97706');
-      this.pill(f, 'Community', 194, 190, 82, false);
-      this.text('Who to meet: Agency founders, Core contributors', 28, 226, 300, { fontSize: 10, fontWeight: 500, fill: '#0F172A' }, f);
-      this.text('☑ Share my card only with discovery attendees', 28, 248, 300, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
-      this.rect('JoinSubmit', 28, 268, 304, 28, { fill: '#FF4D2D', cornerRadius: 14 }, f);
-      this.text('JOIN ATTENDEE DISCOVERY', 30, 275, 300, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Custom Chat TopBar with Om's Avatar & Meet Action
+      this.ellipse('BackBtn', 16, 40, 30, 30, { fill: '#FFEDD5' }, f);
+      this.vector('chevronLeft', 22, 46, 18, '#EA580C', f, 'BackIco');
+      this.avatar(assets.om, 54, 38, 34, f, '#10B981', true);
+      this.text('Omprakash Asnani', 96, 39, 160, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Mutual match · AI Workflows', 96, 56, 160, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      this.rect('PlanMeetHdr', 264, 42, 80, 26, { fill: '#FFEDD5', cornerRadius: 13 }, f);
+      this.text('Plan Meet', 266, 48, 76, { fontSize: 9.5, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
 
-      // Wave + Chat Modal Preview
-      this.rect('ChatCard', 16, 318, 328, 172, { fill: '#0F172A', cornerRadius: 16 }, f);
-      this.text('Mutual Match Chat (Omprakash Asnani)', 28, 330, 280, { fontSize: 11.5, fontWeight: 800, fill: '#10B981' }, f);
-      this.rect('Msg1', 28, 354, 210, 30, { fill: '#1E293B', cornerRadius: 10 }, f);
-      this.text('Om: Let’s meet after the AI panel!', 36, 362, 194, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('Msg2', 120, 390, 212, 30, { fill: '#D97706', cornerRadius: 10 }, f);
-      this.text('You: See you at the Coffee Courtyard!', 128, 398, 196, { fontSize: 10, fontWeight: 600, fill: '#FFFFFF' }, f);
-      this.rect('InputC', 28, 434, 238, 34, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 17 }, f);
-      this.text('Write a short message...', 40, 444, 200, { fontSize: 10, fontWeight: 400, fill: '#94A3B8' }, f);
-      this.rect('SendC', 274, 434, 58, 34, { fill: '#10B981', cornerRadius: 17 }, f);
-      this.text('SEND', 276, 444, 54, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.line('ChatDiv', 0, 82, 360, { stroke: '#E2E8F0', strokeWeight: 1 }, f);
 
-      // Meet Scheduler Sheet
-      this.rect('MeetBox', 16, 502, 328, 134, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Schedule a Meet (MeetSheet)', 28, 514, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.pill(f, '01:30 PM · Coffee', 28, 538, 114, true, '#0F172A');
-      this.pill(f, '03:30 PM · Booth', 148, 538, 114, false);
-      this.rect('ConfM', 28, 578, 144, 30, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 15 }, f);
-      this.text('CONFIRM MEET', 30, 586, 140, { fontSize: 9.5, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.rect('DecM', 184, 578, 144, 30, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 15 }, f);
-      this.text('DECLINE', 186, 586, 140, { fontSize: 9.5, fontWeight: 700, fill: '#DC2626', textAlign: 'center' }, f);
+      // Privacy Intro Pill
+      this.rect('PrivHint', 36, 98, 288, 30, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 15 }, f);
+      this.text('Both of you waved · Up to 3 short intro messages', 40, 107, 280, { fontSize: 9, fontWeight: 500, fill: '#64748B', textAlign: 'center' }, f);
+
+      // Incoming Message Bubble (Light Clean White)
+      this.rect('Msg1', 16, 148, 244, 62, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Hey! Saw we share WordPress + n8n interests. Catch up after the AI panel?', 30, 160, 216, { fontSize: 11, fontWeight: 500, fill: '#0F172A' }, f);
+      this.text('11:04 AM', 30, 194, 80, { fontSize: 8.5, fontWeight: 500, fill: '#94A3B8' }, f);
+
+      // Outgoing Message Bubble (Warm Coral)
+      this.rect('Msg2', 94, 226, 250, 62, { fill: '#FF4D2D', cornerRadius: 16 }, f);
+      this.text('Definitely! Let’s grab coffee at the Dining Courtyard around 1:30 PM.', 108, 238, 222, { fontSize: 11, fontWeight: 500, fill: '#FFFFFF' }, f);
+      this.text('11:06 AM · Sent', 238, 272, 92, { fontSize: 8.5, fontWeight: 500, fill: '#FEE2E2', textAlign: 'right' }, f);
+
+      // Clean Suggested Meet Card inside Chat (replaces separate stacked MeetSheet!)
+      this.rect('MeetCardChat', 16, 314, 328, 134, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.rect('MCIco', 30, 328, 34, 34, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+      this.vector('calendar', 39, 337, 16, '#EA580C', f, 'MCCal');
+      this.text('Add Meet to My Day', 74, 328, 200, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('01:30 PM · Dining Courtyard Coffee', 74, 347, 230, { fontSize: 10, fontWeight: 600, fill: '#EA580C' }, f);
+      this.text('Saved on this phone only.', 30, 376, 280, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('AddPlanB', 30, 400, 146, 32, { fill: '#0F172A', cornerRadius: 16 }, f);
+      this.text('Save to My Schedule', 32, 409, 142, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('SkipMB', 184, 400, 146, 32, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Edit Time', 186, 409, 142, { fontSize: 9.5, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
+
+      // Pinned Composer Bar above Bottom Nav
+      this.rect('CompBar', 16, 636, 328, 48, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 24 }, f);
+      this.text('Write a short message...', 34, 653, 210, { fontSize: 10.5, fontWeight: 400, fill: '#94A3B8' }, f);
+      this.rect('SendC', 274, 643, 62, 34, { fill: '#10B981', cornerRadius: 17 }, f);
+      this.text('Send', 276, 653, 58, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'explore');
     }
 
     // =========================================================================
-    // GROUP 4: EXPLORE TABS — SPONSORS, DEALS, STEALS, CONTRIBUTE, QUESTS, INFO (M17 - M22)
+    // GROUP 4: EXPLORE TABS & CONTRIBUTOR EXPERIENCE (M17 - M22)
     // =========================================================================
 
-    // M17: Explore -> Sponsors Tiered Grid (Real Logos in Universal White Boxes!)
+    // M17: Explore -> Sponsors Tiered Grid (Seamless Logo Blending, Zero Nested Box!)
     {
-      const f = this.screenFrame('M17 · Explore: Sponsors Tiered Grid', 'Real Sponsor Logos | Bronze, Startup & After Party');
-      this.statusBar(f, false, '17 Sponsors');
+      const f = this.screenFrame('M17 · Explore: Sponsors Tiered Grid', 'Seamless Sponsor Logos · Bronze, Startup & After Party Tiers');
+      this.statusBar(f, false, 'Offline Ready');
       this.exploreHeader(f, 'sponsors');
 
-      this.text('Stop by sponsor booths for demos, swag & open jobs.', 16, 150, 328, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.text('Visit sponsor booths for live demos, swag & careers.', 16, 152, 328, { fontSize: 10.5, fontWeight: 400, fill: '#64748B' }, f);
 
-      // Bronze Tier
-      this.text('BRONZE & PLATFORM SPONSORS', 16, 178, 260, { fontSize: 10, fontWeight: 800, fill: '#EA580C' }, f);
-      this.logoBox(assets.sponsor_elementor, 16, 200, 158, 72, f, 12, 12);
-      this.logoBox(assets.sponsor_nexgi, 186, 200, 158, 72, f, 12, 12);
-      this.logoBox(assets.sponsor_cookieadmin, 16, 284, 158, 72, f, 12, 12);
+      // Bronze & Platform Sponsors (#FDFBF7 blends seamlessly with webp backgrounds!)
+      this.text('BRONZE & PLATFORM SPONSORS', 16, 184, 260, { fontSize: 9.5, fontWeight: 800, fill: '#EA580C' }, f);
+      this.logoTile(assets.sponsor_elementor, 16, 206, 158, 74, f, 14, 14, '#FDFBF7', '#E2E8F0');
+      this.logoTile(assets.sponsor_nexgi, 186, 206, 158, 74, f, 14, 14, '#FDFBF7', '#E2E8F0');
+      this.logoTile(assets.sponsor_cookieadmin, 16, 292, 158, 74, f, 14, 14, '#FDFBF7', '#E2E8F0');
 
-      // Startup Tier
-      this.text('STARTUP & COMMUNITY SPONSORS', 16, 374, 260, { fontSize: 10, fontWeight: 800, fill: '#0F172A' }, f);
-      this.logoBox(assets.sponsor_housewise, 16, 396, 158, 72, f, 12, 12);
-      this.logoBox(assets.sponsor_zuptek, 186, 396, 158, 72, f, 12, 12);
+      // Startup & Community
+      this.text('STARTUP & COMMUNITY SPONSORS', 16, 386, 260, { fontSize: 9.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.logoTile(assets.sponsor_housewise, 16, 408, 158, 74, f, 14, 14, '#FDFBF7', '#E2E8F0');
+      this.logoTile(assets.sponsor_zuptek, 186, 408, 158, 74, f, 14, 14, '#FDFBF7', '#E2E8F0');
 
-      // After Party Tier
-      this.text('AFTER PARTY SPONSOR', 16, 486, 260, { fontSize: 10, fontWeight: 800, fill: '#D97706' }, f);
-      this.logoBox(assets.sponsor_wpfusion, 16, 508, 328, 84, f, 14, 14);
+      // After Party Sponsor
+      this.text('AFTER PARTY SPONSOR', 16, 502, 260, { fontSize: 9.5, fontWeight: 800, fill: '#D97706' }, f);
+      this.logoTile(assets.sponsor_wpfusion, 16, 524, 328, 86, f, 16, 18, '#FDFBF7', '#E2E8F0');
 
       this.bottomNav(f, 'explore');
     }
 
-    // M18: Explore -> Deals (Signature Tear-Line Coupon Cards & Lead Form!)
+    // M18: Explore -> Deals & Clean White Lead Sheet (Harmonious Modal Sheet!)
     {
-      const f = this.screenFrame('M18 · Explore: Deals & Lead Form', 'Tear-Line Coupons | Copy Code | Short Lead Form');
-      this.statusBar(f, false, '8 Active Deals');
+      const f = this.screenFrame('M18 · Explore: Deals & Lead Sheet', 'Tear-Line Coupon Card · Clean Elevated Lead Form Bottom Sheet', '#EDE8DF');
+      this.statusBar(f, false, 'Offline Ready');
       this.exploreHeader(f, 'deals');
 
-      // Tear-Line Deal Card 1 (Elementor)
-      this.rect('Deal1', 16, 150, 328, 224, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 18 }, f);
-      this.logoBox(assets.sponsor_elementor, 28, 164, 52, 52, f, 10, 6);
-      this.text('Elementor Ltd', 90, 168, 150, { fontSize: 13, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('elementor.com', 90, 188, 150, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('HotTag', 248, 166, 84, 22, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 6 }, f);
-      this.text('HOT DEAL', 250, 171, 80, { fontSize: 9, fontWeight: 800, fill: '#FF4D2D', textAlign: 'center' }, f);
+      // Dimmed Top Coupon Card
+      this.rect('Deal1', 16, 152, 328, 180, { fill: '#F8FAFC', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.logoTile(assets.sponsor_elementor, 28, 164, 48, 48, f, 10, 6, '#FDFBF7', '#E2E8F0');
+      this.text('Elementor Ltd', 86, 168, 150, { fontSize: 12.5, fontWeight: 700, fill: '#475569' }, f);
+      this.text('3 Months Elementor One Free', 28, 224, 280, { fontSize: 13, fontWeight: 700, fill: '#475569' }, f);
+      this.line('TearLine', 28, 260, 304, { stroke: '#CBD5E1', strokeWeight: 1.5, dashes: [6, 4] }, f);
+      this.rect('CodeBox', 28, 276, 304, 34, { fill: '#EFE6D8', cornerRadius: 10 }, f);
+      this.text('Code: WCDELHI26', 40, 286, 200, { fontSize: 11, fontWeight: 700, fill: '#475569' }, f);
 
-      this.text('3 Months Elementor One Free for Attendees', 28, 226, 300, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-      // Tear Line with Details Pill!
-      this.line('TearLine', 26, 272, 308, { stroke: '#CBD5E1', strokeWeight: 1.5, dashes: [6, 4] }, f);
-      this.rect('DetPill', 136, 260, 88, 24, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('Details ▾', 138, 265, 84, { fontSize: 9.5, fontWeight: 700, fill: '#FF4D2D', textAlign: 'center' }, f);
+      // Clean Elevated White Bottom Sheet (NO jarring dark block or dev jargon!)
+      this.rect('LeadSheet', 0, 340, 360, 360, { fill: '#FFFFFF', cornerRadius: 26 }, f);
+      this.rect('Grab', 156, 354, 48, 4, { fill: '#CBD5E1', cornerRadius: 2 }, f);
 
-      // Coupon Code Box
-      this.rect('CodeBox', 28, 294, 304, 34, { fill: '#FFEDD5', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 10 }, f);
-      this.text('Code: WCDELHI26', 40, 304, 180, { fontSize: 11.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('CopyB', 256, 299, 66, 24, { fill: '#FFFFFF', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.text('Copied ✓', 258, 304, 62, { fontSize: 9, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.logoTile(assets.sponsor_wpfusion, 24, 376, 56, 38, f, 10, 6, '#FDFBF7', '#E2E8F0');
+      this.text('Claim 30% Off · WP Fusion', 90, 376, 240, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Share your details to unlock this deal:', 90, 398, 240, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
-      this.rect('GetDeal', 28, 336, 304, 28, { fill: '#FF4D2D', cornerRadius: 14 }, f);
-      this.text('GET THE DEAL →', 30, 343, 300, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Work Email *', 24, 434, 200, { fontSize: 10, fontWeight: 700, fill: '#475569' }, f);
+      this.rect('LF1', 24, 452, 312, 38, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('sunil@wpsimplified.com', 38, 464, 270, { fontSize: 11, fontWeight: 600, fill: '#0F172A' }, f);
 
-      // Lead Capture Dialog Preview (Short form first!)
-      this.rect('LeadModal', 16, 388, 328, 240, { fill: '#0F172A', stroke: '#D97706', strokeWeight: 1.5, cornerRadius: 18 }, f);
-      this.text('Quick Sponsor Form (LeadDialog)', 28, 402, 280, { fontSize: 12.5, fontWeight: 800, fill: '#F59E0B' }, f);
-      this.text('WP Fusion asks for a quick intro before opening your 30% discount:', 28, 424, 300, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
-      this.rect('LF1', 28, 456, 304, 34, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Work Email: sunil@wpsimplified.com', 38, 466, 280, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('LF2', 28, 498, 304, 34, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Agency Size: 10–25 Builders', 38, 508, 280, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('SubLead', 28, 548, 180, 34, { fill: '#10B981', cornerRadius: 17 }, f);
-      this.text('SEND & OPEN DEAL ↗', 30, 558, 176, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('CanLead', 218, 548, 114, 34, { fill: '#334155', cornerRadius: 17 }, f);
-      this.text('CANCEL', 220, 558, 110, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Agency Team Size', 24, 502, 200, { fontSize: 10, fontWeight: 700, fill: '#475569' }, f);
+      this.rect('LF2', 24, 520, 312, 38, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('10–25 WordPress Builders', 38, 532, 270, { fontSize: 11, fontWeight: 500, fill: '#0F172A' }, f);
+
+      this.text('Shared only with WP Fusion to issue your coupon.', 24, 572, 312, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+
+      this.rect('SubLead', 24, 602, 198, 42, { fill: '#FF4D2D', cornerRadius: 21 }, f);
+      this.text('Send & Open Deal →', 26, 615, 194, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('CanLead', 232, 602, 104, 42, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 21 }, f);
+      this.text('Cancel', 234, 615, 100, { fontSize: 10.5, fontWeight: 600, fill: '#475569', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'explore');
     }
 
-    // M19: Explore -> Free Steals & Steal Sheet
+    // M19: Explore -> Free Steals & Clean Sheet
     {
-      const f = this.screenFrame('M19 · Explore: Free Steals & Sheet', 'Free Tools | Featured Tag | Made Here | Sheet');
-      this.statusBar(f, false, 'Free Steals');
+      const f = this.screenFrame('M19 · Explore: Free Steals & Sheet', 'Free Tools List · Made by Attendee Badge · Tool Sheet', '#EDE8DF');
+      this.statusBar(f, false, 'Offline Ready');
       this.exploreHeader(f, 'steals');
 
-      this.text('Great free WordPress tools picked by CampBuddy.', 16, 150, 328, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
+      this.text('Free WordPress plugins picked by CampBuddy.', 16, 150, 328, { fontSize: 10, fontWeight: 500, fill: '#64748B' }, f);
 
-      // Steal Rows
       const steals = [
-        { img: assets.sponsor_cookieadmin, name: 'CookieAdmin DPDP Shield', maker: 'by CookieAdmin Team', feat: true, y: 178 },
-        { img: assets.sponsor_wpfusion, name: 'WP Fusion Lite Sync', maker: 'by VeryGoodPlugins', feat: false, y: 256 },
+        { img: assets.sponsor_cookieadmin, name: 'CookieAdmin DPDP Shield', maker: 'by CookieAdmin Team', feat: true, y: 176 },
+        { img: assets.sponsor_wpfusion, name: 'WP Fusion Lite Sync', maker: 'by VeryGoodPlugins', feat: false, y: 254 },
       ];
       for (const s of steals) {
-        this.rect(`St_${s.name}`, 16, s.y, 328, 68, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-        this.logoBox(s.img, 26, s.y + 10, 48, 48, f, 10, 6);
-        this.text(s.name, 84, s.y + 14, 170, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
-        this.text(s.maker, 84, s.y + 34, 170, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
+        this.rect(`St_${s.name}`, 16, s.y, 328, 68, { fill: '#F8FAFC', stroke: '#CBD5E1', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.logoTile(s.img, 26, s.y + 10, 48, 48, f, 10, 6, '#FDFBF7', '#E2E8F0');
+        this.text(s.name, 84, s.y + 15, 166, { fontSize: 12, fontWeight: 700, fill: '#475569' }, f);
+        this.text(s.maker, 84, s.y + 35, 166, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
         if (s.feat) {
-          this.rect('Feat', 256, s.y + 22, 66, 20, { fill: '#FFFFFF', stroke: '#FF4D2D', strokeWeight: 1.5, cornerRadius: 6 }, f);
-          this.text('FEATURED', 258, s.y + 26, 62, { fontSize: 8, fontWeight: 800, fill: '#FF4D2D', textAlign: 'center' }, f);
+          this.rect('Feat', 252, s.y + 23, 66, 20, { fill: '#FFF7ED', stroke: '#FB923C', strokeWeight: 1, cornerRadius: 10 }, f);
+          this.text('Featured', 254, s.y + 27, 62, { fontSize: 8.5, fontWeight: 700, fill: '#EA580C', textAlign: 'center' }, f);
         }
-        this.vector('chevronRight', 324, s.y + 26, 14, '#94A3B8', f, `Ch_${s.name}`);
       }
 
-      // Open StealSheet Bottom Sheet!
-      this.rect('StealSheet', 0, 344, 360, 416, { fill: '#FFFFFF', stroke: '#0F172A', strokeWeight: 1.5, cornerRadius: 24 }, f);
-      this.rect('Grab', 156, 356, 48, 4, { fill: '#CBD5E1', cornerRadius: 2 }, f);
-      this.logoBox(assets.sponsor_cookieadmin, 24, 376, 60, 60, f, 12, 8);
-      this.text('CookieAdmin DPDP Shield', 96, 382, 230, { fontSize: 15, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('by CookieAdmin Team', 96, 404, 230, { fontSize: 11, fontWeight: 500, fill: '#64748B' }, f);
+      // Elevated Bottom Sheet
+      this.rect('StealSheet', 0, 340, 360, 360, { fill: '#FFFFFF', cornerRadius: 26 }, f);
+      this.rect('Grab', 156, 354, 48, 4, { fill: '#CBD5E1', cornerRadius: 2 }, f);
+      this.logoTile(assets.sponsor_cookieadmin, 24, 376, 62, 62, f, 14, 8, '#FDFBF7', '#E2E8F0');
+      this.text('CookieAdmin DPDP Shield', 98, 382, 236, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('by CookieAdmin Team', 98, 406, 236, { fontSize: 11, fontWeight: 500, fill: '#64748B' }, f);
 
-      this.rect('MadeHere', 24, 450, 260, 24, { fill: '#ECFDF5', cornerRadius: 12 }, f);
-      this.vector('mapPin', 34, 455, 14, '#10B981', f, 'PinMade');
-      this.text('Made by someone attending Delhi 2026', 54, 456, 224, { fontSize: 9.5, fontWeight: 700, fill: '#065F46' }, f);
+      this.rect('MadeHere', 24, 456, 266, 26, { fill: '#ECFDF5', cornerRadius: 13 }, f);
+      this.vector('mapPin', 34, 462, 14, '#10B981', f, 'PinMade');
+      this.text('Made by someone attending Delhi 2026', 54, 463, 224, { fontSize: 9.5, fontWeight: 700, fill: '#047857' }, f);
 
-      this.text('Lightweight consent banner & privacy preference manager built for Indian & global WordPress sites.', 24, 488, 312, { fontSize: 11, fontWeight: 400, fill: '#475569' }, f);
-      this.rect('GetFree', 24, 558, 312, 46, { fill: '#FF4D2D', cornerRadius: 23 }, f);
-      this.text('GET IT FREE ↗', 24, 574, 312, { fontSize: 11.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('Opens wordpress.org/plugins', 24, 616, 312, { fontSize: 10, fontWeight: 500, fill: '#64748B', textAlign: 'center' }, f);
+      this.text('Lightweight consent banner & privacy preference manager built for Indian & global WordPress websites.', 24, 498, 312, { fontSize: 11, fontWeight: 400, fill: '#475569' }, f);
+
+      this.rect('GetFree', 24, 574, 312, 46, { fill: '#FF4D2D', cornerRadius: 23 }, f);
+      this.text('Get It Free →', 24, 589, 312, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Opens wordpress.org/plugins', 24, 632, 312, { fontSize: 10, fontWeight: 500, fill: '#64748B', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'explore');
     }
 
-    // M20: Contributor Day, Matcher & Table Leads (from MoreTabs.kt ContributeTab)
+    // M20: Contributor Day & Table Leads (Cohesive Clean Light UI!)
     {
-      const f = this.screenFrame('M20 · Contributor Day & Table Leads', 'Attendance Pill | Interest Matcher | Table Lead Card');
-      this.statusBar(f, false, 'Dec 12 · Tables');
-      this.attendeeTopBar(f, 'Contributor Day', true);
+      const f = this.screenFrame('M20 · Contributor Day & Table Leads', 'Light Header Card · Attendance Toggle · Conversation Starter · Table Leads');
+      this.statusBar(f, false, 'Offline Ready');
+      this.subHeader(f, 'Contributor Day');
 
-      // Contribute Hero
-      this.rect('ContHero', 16, 82, 328, 92, { fill: '#0F172A', cornerRadius: 16 }, f);
-      this.rect('TagC', 28, 94, 90, 20, { fill: '#FF4D2D', cornerRadius: 10 }, f);
-      this.text('CONTRIBUTE', 30, 98, 86, { fontSize: 8.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('Where could you help?', 28, 120, 260, { fontSize: 15, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Writers, designers, translators & devs all have a table.', 28, 144, 300, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
+      // Cohesive Light Intro Card
+      this.rect('ContHero', 16, 86, 328, 86, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Where could you help?', 30, 100, 260, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Writers, designers, translators & developers all have a table — beginners welcome.', 30, 124, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
-      // Going to Contributor Day?
-      this.rect('GoingBox', 16, 184, 328, 84, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Going to Contributor Day?', 28, 196, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.pill(f, 'Yes', 28, 224, 62, true, '#0F172A');
-      this.pill(f, 'Not sure yet', 96, 224, 96, false);
-      this.pill(f, 'Not this time', 198, 224, 96, false);
+      // Attendance Selector
+      this.rect('GoingBox', 16, 186, 328, 82, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Going to Contributor Day?', 30, 198, 240, { fontSize: 12, fontWeight: 700, fill: '#0F172A' }, f);
+      this.pill(f, 'Yes', 30, 226, 66, true, '#0F172A');
+      this.pill(f, 'Not sure yet', 104, 226, 100, false);
+      this.pill(f, 'Not this time', 212, 226, 100, false);
 
-      // Opener Quote Card
-      this.rect('OpenLine', 16, 278, 328, 66, { fill: '#FFEDD5', stroke: '#D97706', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Your opening line:', 28, 288, 200, { fontSize: 9.5, fontWeight: 700, fill: '#B45309' }, f);
-      this.text('"Hi, this is my first Contributor Day. Can you help me get started?"', 28, 306, 300, { fontSize: 10.5, fontWeight: 700, fill: '#0F172A' }, f);
+      // Warm Soft Opener Card
+      this.rect('OpenLine', 16, 282, 328, 66, { fill: '#FFF7ED', stroke: '#FED7AA', strokeWeight: 1, cornerRadius: 14 }, f);
+      this.text('Conversation starter:', 30, 293, 200, { fontSize: 9.5, fontWeight: 700, fill: '#EA580C' }, f);
+      this.text('"Hi, this is my first Contributor Day. Can you help me get started?"', 30, 311, 300, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
 
-      // Table + Rich ContributorLeadCard (from MoreTabs.kt lines 490-625!)
-      this.rect('TableBox', 16, 356, 328, 188, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Core & Gutenberg Table', 28, 368, 200, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.pill(f, 'Hall B · Table 1', 238, 366, 94, false);
-      this.text('Bring a laptop for block theme testing & core patches.', 28, 392, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
+      // Core & Gutenberg Table Card
+      this.rect('TableBox', 16, 362, 328, 178, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Core & Gutenberg Table', 30, 376, 196, { fontSize: 13.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.pill(f, 'Hall B · Table 1', 238, 372, 92, false);
+      this.text('Block theme testing & beginner core patches.', 30, 400, 300, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
 
-      // Lead Inner Card
-      this.rect('LeadInner', 28, 418, 304, 114, { fill: '#FAFAFD', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.avatar(assets.amit, 38, 428, 44, f, '#D97706', true);
-      this.text('Amit Kumar Singh', 92, 428, 140, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('TLBadge', 240, 428, 78, 18, { fill: '#FEF3C7', stroke: '#D97706', strokeWeight: 1, cornerRadius: 6 }, f);
-      this.text('Table Lead', 242, 431, 74, { fontSize: 8.5, fontWeight: 800, fill: '#7A4B00', textAlign: 'center' }, f);
-      this.text('Managing Partner @ WPoets', 92, 448, 200, { fontSize: 9.5, fontWeight: 600, fill: '#FF4D2D' }, f);
-      this.text('Building enterprise WordPress systems since 2006.', 38, 480, 280, { fontSize: 9.5, fontWeight: 400, fill: '#475569' }, f);
-      this.pill(f, 'Speaker Profile ↗', 38, 502, 108, false);
-      this.pill(f, 'LinkedIn ↗', 152, 502, 84, false);
+      this.line('TblSep', 30, 426, 300, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+      this.avatar(assets.amit, 30, 438, 44, f, '#FFFFFF', true);
+      this.text('Amit Kumar Singh', 84, 438, 148, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.rect('TLBadge', 240, 438, 90, 20, { fill: '#FEF3C7', cornerRadius: 10 }, f);
+      this.text('Table Lead', 242, 442, 86, { fontSize: 8.5, fontWeight: 700, fill: '#B45309', textAlign: 'center' }, f);
+      this.text('Managing Partner · WPoets', 84, 458, 200, { fontSize: 9.5, fontWeight: 500, fill: '#EA580C' }, f);
+      this.pill(f, 'Speaker Profile ↗', 30, 496, 114, false);
+      this.pill(f, 'LinkedIn ↗', 152, 496, 86, false);
 
-      // Documentation Table Row
-      this.rect('DocTable', 16, 556, 328, 66, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.avatar(assets.shreya, 28, 568, 42, f, '#E2E8F0', false);
-      this.text('Documentation & HelpHub', 80, 568, 220, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Lead: Shreya Agarwal · Table 2 (No coding needed)', 80, 588, 250, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
+      // Table 2 Row
+      this.rect('DocTable', 16, 554, 328, 70, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.avatar(assets.shreya, 30, 568, 42, f, '#FFFFFF', false);
+      this.text('Documentation & HelpHub', 82, 568, 220, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Lead: Shreya Agarwal · Table 2 (No coding)', 82, 588, 240, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
 
       this.bottomNav(f, 'quest');
     }
 
-    // M21: Quests, Checklist & Achievement Badges (Real Vector Icons inside Badges!)
+    // M21: Quests, Checklist & Badges (Matches specimen.html A09 Hero XP Card!)
     {
-      const f = this.screenFrame('M21 · Quests, Checklist & Badges', 'Progress Bar | Things To Do | Checklist | Icon Badges');
-      this.statusBar(f, false, '3/5 Complete');
-      this.attendeeTopBar(f, 'Quests', true);
+      const f = this.screenFrame('M21 · Quests, Checklist & Badges', 'Navy Level Hero · Checklist · Unlocked Icon Badges');
+      this.statusBar(f, false, 'Offline Ready');
+      this.rootHeader(f, 'Quests');
 
-      // Progress Header
-      this.text('Conference Quests', 16, 84, 200, { fontSize: 16, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('3 / 5 complete', 250, 88, 94, { fontSize: 11, fontWeight: 700, fill: '#EA580C', textAlign: 'right' }, f);
-      this.rect('QBarBG', 16, 112, 328, 8, { fill: '#E2E8F0', cornerRadius: 4 }, f);
-      this.rect('QBarFill', 16, 112, 196, 8, { fill: '#D97706', cornerRadius: 4 }, f);
+      // Navy XP Progress Hero matching specimen.html A09
+      this.rect('XPHero', 16, 86, 328, 86, { fill: '#0F172A', cornerRadius: 18 }, f);
+      this.text('Level 2 Contributor', 32, 100, 180, { fontSize: 12.5, fontWeight: 800, fill: '#F59E0B' }, f);
+      this.text('450 / 600 XP · 3 of 5 done', 200, 102, 130, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1', textAlign: 'right' }, f);
+      this.rect('QBarBG', 32, 128, 296, 6, { fill: '#334155', cornerRadius: 3 }, f);
+      this.rect('QBarFill', 32, 128, 210, 6, { fill: '#F59E0B', cornerRadius: 3 }, f);
+      this.text('Next unlock: "Community Pioneer" badge', 32, 144, 296, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
 
-      // Things to do Cards (with Action Jump + Mark Done / Done ✓)
-      this.text('Things to do', 16, 134, 160, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.rect('Q1', 16, 158, 328, 108, { fill: '#FFFFFF', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.rect('QIco1', 28, 170, 38, 38, { fill: '#FFEDD5', cornerRadius: 10 }, f);
-      this.vector('card', 37, 179, 20, '#FF4D2D', f, 'Q1Ico');
-      this.text('Build & Share Your CampCard', 76, 170, 240, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Generate your digital badge and scan 3 peers.', 76, 190, 250, { fontSize: 10, fontWeight: 400, fill: '#64748B' }, f);
-      this.rect('Jump1', 76, 224, 114, 28, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Open CampCard →', 78, 231, 110, { fontSize: 9, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
-      this.rect('Done1', 198, 224, 104, 28, { fill: '#ECFDF5', stroke: '#10B981', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Done ✓', 200, 231, 100, { fontSize: 9.5, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
+      // Action Quest Card
+      this.rect('Q1', 16, 186, 328, 96, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.rect('QIco1', 30, 198, 38, 38, { fill: '#FFEDD5', cornerRadius: 10 }, f);
+      this.vector('card', 39, 207, 20, '#EA580C', f, 'Q1Ico');
+      this.text('Build & Share Your CampCard', 78, 198, 230, { fontSize: 12.5, fontWeight: 700, fill: '#0F172A' }, f);
+      this.text('Generate QR badge & scan 3 attendees', 78, 218, 230, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('Jump1', 78, 244, 114, 26, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 13 }, f);
+      this.text('Open CampCard', 80, 250, 110, { fontSize: 9, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
+      this.rect('Done1', 200, 244, 88, 26, { fill: '#ECFDF5', stroke: '#A7F3D0', strokeWeight: 1, cornerRadius: 13 }, f);
+      this.text('✓ Done', 202, 250, 84, { fontSize: 9.5, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
 
-      // Checklist Section (from MoreTabs.kt lines 205-226)
-      this.text('Checklist', 16, 282, 160, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      // Clean Checklist
+      this.text('Checklist', 16, 298, 160, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
       const checks = [
-        { t: 'Visit 3 Sponsor Booths', s: 'Elementor, WP Fusion & CookieAdmin', on: true, y: 306 },
-        { t: 'Star 3 Sessions in My Day', s: 'Build your conference plan', on: true, y: 368 },
-        { t: 'Say Hi at a Contributor Table', s: 'Core, Docs, or Polyglots on Dec 12', on: false, y: 430 },
+        { t: 'Visit 3 Sponsor Booths', s: 'Elementor, WP Fusion & CookieAdmin', on: true, y: 324 },
+        { t: 'Star 3 Sessions in My Day', s: 'Build your personal timetable', on: true, y: 386 },
+        { t: 'Say Hi at a Contributor Table', s: 'Core, Docs, or Polyglots on Dec 12', on: false, y: 448 },
       ];
       for (const c of checks) {
-        this.rect(`Chk_${c.t}`, 16, c.y, 328, 54, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 12 }, f);
-        this.rect(`Box_${c.t}`, 28, c.y + 18, 18, 18, { fill: c.on ? '#FF4D2D' : '#FFFFFF', stroke: c.on ? '#FF4D2D' : '#94A3B8', strokeWeight: 1.5, cornerRadius: 4 }, f);
-        if (c.on) this.vector('check', 30, c.y + 20, 14, '#FFFFFF', f, `CkV_${c.t}`);
-        this.text(c.t, 56, c.y + 10, 270, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
-        this.text(c.s, 56, c.y + 30, 270, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+        this.rect(`Chk_${c.t}`, 16, c.y, 328, 54, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.rect(`Box_${c.t}`, 30, c.y + 18, 18, 18, { fill: c.on ? '#FF4D2D' : '#FFFFFF', stroke: c.on ? '#FF4D2D' : '#CBD5E1', strokeWeight: 1.5, cornerRadius: 5 }, f);
+        if (c.on) this.vector('check', 32, c.y + 20, 14, '#FFFFFF', f, `CkV_${c.t}`);
+        this.text(c.t, 58, c.y + 10, 260, { fontSize: 11.5, fontWeight: 700, fill: '#0F172A' }, f);
+        this.text(c.s, 58, c.y + 30, 260, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
       }
 
-      // Achievement Badges Grid WITH Crisp Vector Icons inside EVERY badge!
-      this.text('UNLOCKED BADGES', 16, 500, 200, { fontSize: 11, fontWeight: 800, fill: '#0F172A' }, f);
+      // Badges Row
+      this.text('Badges', 16, 516, 200, { fontSize: 12.5, fontWeight: 800, fill: '#0F172A' }, f);
       const badges = [
         { name: 'Early Bird', ico: 'clock', unlocked: true },
         { name: 'Core Helper', ico: 'wrench', unlocked: true },
@@ -1357,60 +1330,57 @@ class AuditedApkBuilder {
       for (let i = 0; i < 4; i++) {
         const bx = 16 + i * 84;
         const b = badges[i];
-        this.rect(`Bdg_${i}`, bx, 524, 76, 84, {
-          fill: b.unlocked ? '#FFFFFF' : '#F1F5F9', stroke: b.unlocked ? '#D97706' : '#CBD5E1', strokeWeight: 1.5, cornerRadius: 14
+        this.rect(`Bdg_${i}`, bx, 542, 76, 82, {
+          fill: b.unlocked ? '#FFFFFF' : '#F8FAFC', stroke: b.unlocked ? '#FDE68A' : '#E2E8F0', strokeWeight: 1, cornerRadius: 14
         }, f);
-        this.ellipse(`BIcoBG_${i}`, bx + 20, 536, 36, 36, { fill: b.unlocked ? '#FEF3C7' : '#E2E8F0' }, f);
-        this.vector(b.ico, bx + 29, 545, 18, b.unlocked ? '#D97706' : '#94A3B8', f, `BIco_${i}`);
-        this.text(b.name, bx + 4, 582, 68, { fontSize: 9, fontWeight: 700, fill: b.unlocked ? '#0F172A' : '#94A3B8', textAlign: 'center' }, f);
+        this.ellipse(`BIcoBG_${i}`, bx + 20, 554, 36, 36, { fill: b.unlocked ? '#FEF3C7' : '#E2E8F0' }, f);
+        this.vector(b.ico, bx + 29, 563, 18, b.unlocked ? '#D97706' : '#94A3B8', f, `BIco_${i}`);
+        this.text(b.name, bx + 4, 598, 68, { fontSize: 9, fontWeight: 600, fill: b.unlocked ? '#0F172A' : '#94A3B8', textAlign: 'center' }, f);
       }
 
       this.bottomNav(f, 'quest');
     }
 
-    // M22: Explore -> Event Info, Data Controls & Reminders
+    // M22: Explore -> Event Info & Data Controls
     {
-      const f = this.screenFrame('M22 · Event Info & Data Controls', 'Event Info Rows | Copy/Open | Data Controls | Alerts');
+      const f = this.screenFrame('M22 · Event Info & Data Controls', 'Event Details · Venue & Wi-Fi Copy · Notification Toggles · Data Controls');
       this.statusBar(f, false, 'Offline Ready');
       this.exploreHeader(f, 'info');
 
-      // Event Info Header with White-Framed Delhi Logo
-      this.rect('InfoHdr', 16, 150, 328, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.logoBox(assets.delhiLogo, 28, 162, 48, 48, f, 10, 4);
-      this.text('WordCamp Delhi 2026', 88, 164, 230, { fontSize: 14, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('Sat 12 – Sun 13 Dec 2026', 88, 186, 230, { fontSize: 10.5, fontWeight: 500, fill: '#64748B' }, f);
+      this.rect('InfoHdr', 16, 152, 328, 72, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.logoTile(assets.delhiFavicon, 30, 163, 48, 48, f, 12, 2, '#FFFFFF', '#F1F5F9');
+      this.text('WordCamp Delhi 2026', 88, 166, 230, { fontSize: 14.5, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Sat 12 – Sun 13 Dec 2026', 88, 188, 230, { fontSize: 10.5, fontWeight: 500, fill: '#64748B' }, f);
 
-      // Practical Info Rows
-      this.rect('InfoList', 16, 232, 328, 168, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.vector('mapPin', 28, 246, 16, '#FF4D2D', f, 'I1');
-      this.text('Venue: DAIC, 15 Janpath Rd, New Delhi', 52, 246, 210, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.pill(f, 'Open Map ↗', 260, 242, 74, false);
+      this.rect('InfoList', 16, 238, 328, 162, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.vector('mapPin', 30, 254, 16, '#FF4D2D', f, 'I1');
+      this.text('DAIC, 15 Janpath Rd, New Delhi', 54, 254, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.pill(f, 'Open Map', 260, 248, 72, false);
 
-      this.line('Sep1', 28, 284, 304, { stroke: '#E2E8F0', strokeWeight: 1 }, f);
-      this.vector('shield', 28, 298, 16, '#DC2626', f, 'I2');
-      this.text('Emergency: delhi@wordcamp.org', 52, 298, 210, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.pill(f, 'Copy', 278, 294, 56, false);
+      this.line('Sep1', 30, 290, 300, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+      this.vector('shield', 30, 304, 16, '#DC2626', f, 'I2');
+      this.text('delhi@wordcamp.org', 54, 304, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.pill(f, 'Copy', 276, 298, 56, false);
 
-      this.line('Sep2', 28, 336, 304, { stroke: '#E2E8F0', strokeWeight: 1 }, f);
-      this.vector('ticket', 28, 350, 16, '#0F172A', f, 'I3');
-      this.text('Venue Wi-Fi: WCDELHI-GUEST', 52, 350, 210, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.pill(f, 'Copy', 278, 346, 56, false);
+      this.line('Sep2', 30, 340, 300, { stroke: '#F1F5F9', strokeWeight: 1 }, f);
+      this.vector('ticket', 30, 354, 16, '#0F172A', f, 'I3');
+      this.text('Wi-Fi: WCDELHI-GUEST', 54, 354, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
+      this.pill(f, 'Copy', 276, 348, 56, false);
 
-      // NotificationChoicesCard & DataControls (Zero technical jargon!)
-      this.rect('NotifCard', 16, 412, 328, 108, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Your Notification Choices', 28, 424, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('10-min Session Reminders', 28, 450, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.toggle(f, 286, 446, true);
-      this.text('Organizer Live Announcements', 28, 482, 200, { fontSize: 10.5, fontWeight: 600, fill: '#0F172A' }, f);
-      this.toggle(f, 286, 478, true);
+      this.rect('NotifCard', 16, 414, 328, 108, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Notification Choices', 30, 428, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('10-min Session Reminders', 30, 456, 200, { fontSize: 10.5, fontWeight: 500, fill: '#0F172A' }, f);
+      this.toggle(f, 286, 452, true);
+      this.text('Organizer Live Updates', 30, 488, 200, { fontSize: 10.5, fontWeight: 500, fill: '#0F172A' }, f);
+      this.toggle(f, 286, 484, true);
 
-      this.rect('DataCard', 16, 532, 328, 100, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Your Saved Data Controls', 28, 544, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
-      this.text('All bookmarks & contacts are saved on this phone.', 28, 564, 300, { fontSize: 9.5, fontWeight: 500, fill: '#64748B' }, f);
-      this.rect('ExpD', 28, 588, 146, 30, { fill: '#F1F5F9', cornerRadius: 15 }, f);
-      this.text('Download My Data', 30, 596, 142, { fontSize: 9.5, fontWeight: 700, fill: '#0F172A', textAlign: 'center' }, f);
-      this.rect('DelD', 184, 588, 146, 30, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 15 }, f);
-      this.text('Clear Event Data', 186, 596, 142, { fontSize: 9.5, fontWeight: 800, fill: '#DC2626', textAlign: 'center' }, f);
+      this.rect('DataCard', 16, 536, 328, 102, { fill: '#FFFFFF', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Your Device Data', 30, 550, 240, { fontSize: 12, fontWeight: 800, fill: '#0F172A' }, f);
+      this.text('Saved bookmarks & contacts stay on this phone.', 30, 570, 300, { fontSize: 9.5, fontWeight: 400, fill: '#64748B' }, f);
+      this.rect('ExpD', 30, 594, 144, 32, { fill: '#F8FAFC', stroke: '#E2E8F0', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Download Data', 32, 603, 140, { fontSize: 10, fontWeight: 600, fill: '#0F172A', textAlign: 'center' }, f);
+      this.rect('DelD', 184, 594, 144, 32, { fill: '#FFF5F5', stroke: '#FCA5A5', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Clear Event Data', 186, 603, 140, { fontSize: 10, fontWeight: 700, fill: '#DC2626', textAlign: 'center' }, f);
 
       this.bottomNav(f, 'explore');
     }
@@ -1419,403 +1389,387 @@ class AuditedApkBuilder {
     // GROUP 5: IN-APP ORGANIZER & SUPERADMIN CONSOLE (M23 - M32)
     // =========================================================================
 
-    // M23: Staff Login & Managed Events List
+    // M23: Staff Sign In (Clean Single-Purpose Console Entry!)
     {
-      const f = this.screenFrame('M23 · Staff Login & My WordCamps', 'Staff Sign-In | Role Cards | Managed Events List', '#0F172A');
-      this.statusBar(f, true, 'Staff Console');
-      this.staffTopBar(f, 'Staff Sign In', 'Attendee App');
+      const f = this.screenFrame('M23 · Staff Sign In', 'Dedicated Organizer & Admin Login · Clean Dark Card', '#0F172A');
+      this.statusBar(f, true, 'Staff Portal');
+      this.staffHeader(f, 'Staff Sign In', 'Attendee');
 
-      this.logoBox(assets.cbWordmark, 80, 86, 200, 54, f, 14, 8);
+      this.logoTile(assets.cbWordmark, 96, 114, 168, 44, f, 14, 6, '#FFFFFF');
+      this.text('Organizer & Event Lead Console', 30, 174, 300, { fontSize: 12, fontWeight: 500, fill: '#94A3B8', textAlign: 'center' }, f);
 
-      // Login Card
-      this.rect('LoginBox', 16, 152, 328, 224, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Sign in to Organizer Mode', 30, 166, 260, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.rect('InEm', 30, 194, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('organizer@wordcampdelhi.org', 40, 205, 260, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('InPw', 30, 238, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('••••••••••••', 40, 249, 260, { fontSize: 12, fontWeight: 700, fill: '#94A3B8' }, f);
-      this.rect('SignBtn', 30, 286, 300, 40, { fill: '#FF4D2D', cornerRadius: 20 }, f);
-      this.text('SIGN IN TO STAFF HUB', 30, 299, 300, { fontSize: 10.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('Role detected automatically (Manager or Super Admin)', 30, 340, 290, { fontSize: 9.5, fontWeight: 500, fill: '#10B981', textAlign: 'center' }, f);
+      this.rect('LoginBox', 20, 214, 320, 290, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 20 }, f);
+      this.text('Sign in with your staff email', 36, 234, 260, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
 
-      // Managed Events List Preview (EventsListPage)
-      this.text('AFTER SIGN IN · MY WORDCAMPS (2)', 18, 394, 280, { fontSize: 10, fontWeight: 800, fill: '#94A3B8' }, f);
-      this.rect('EvtRow1', 16, 416, 328, 108, { fill: '#1E293B', stroke: '#10B981', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.logoBox(assets.delhiLogo, 28, 430, 46, 46, f, 10, 4);
-      this.text('WordCamp Delhi 2026', 84, 430, 180, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Dec 12–13 · Active · 2 Open Reports', 84, 450, 220, { fontSize: 10, fontWeight: 600, fill: '#F59E0B' }, f);
-      this.rect('MngBtn', 28, 486, 146, 26, { fill: '#FF4D2D', cornerRadius: 13 }, f);
-      this.text('MANAGE EVENT', 30, 492, 142, { fontSize: 9, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('PrevBtn', 186, 486, 146, 26, { fill: '#334155', cornerRadius: 13 }, f);
-      this.text('PREVIEW ATTENDEE', 188, 492, 142, { fontSize: 9, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Email', 36, 268, 120, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1' }, f);
+      this.rect('InEm', 36, 286, 288, 40, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('organizer@wordcampdelhi.org', 48, 299, 260, { fontSize: 11, fontWeight: 500, fill: '#FFFFFF' }, f);
 
-      this.rect('NewEvt', 16, 540, 328, 42, { fill: '#D97706', cornerRadius: 21 }, f);
-      this.text('+ CREATE NEW WORDCAMP', 16, 554, 328, { fontSize: 10.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Password', 36, 338, 120, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1' }, f);
+      this.rect('InPw', 36, 356, 288, 40, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('••••••••••••', 48, 369, 260, { fontSize: 12, fontWeight: 700, fill: '#94A3B8' }, f);
+
+      this.rect('SignBtn', 36, 418, 288, 44, { fill: '#FF4D2D', cornerRadius: 22 }, f);
+      this.text('Sign In', 36, 432, 288, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Role detected automatically (Manager or Admin)', 36, 474, 288, { fontSize: 9.5, fontWeight: 500, fill: '#10B981', textAlign: 'center' }, f);
+
+      this.text('Need organizer access? Contact hello@campbuddy.club', 24, 540, 312, { fontSize: 10, fontWeight: 400, fill: '#64748B', textAlign: 'center' }, f);
     }
 
-    // M24: Staff Event Overview & Details Editor
+    // M24: Staff Event Overview (Zero Dev Labels, Clean KPI + Quick Tools Grid!)
     {
-      const f = this.screenFrame('M24 · Staff Event Overview & Details', '14 Event Tabs | KPIs | Details & Visibility Edit', '#0B1120');
+      const f = this.screenFrame('M24 · Staff Event Overview', 'Event Tabs · Live KPIs · Active Event Card · Organizer Tools', '#0B1120');
       this.statusBar(f, true, 'Event Manager');
-      this.staffTopBar(f, 'WordCamp Delhi', 'Events', 'Preview');
+      this.staffHeader(f, 'WordCamp Delhi', 'Events', 'Preview');
 
-      // Horizontal Scrollable TabPills with LineIcons (Overview active)
+      // Clean Horizontal Tabs
       const orgPills = [
-        { lbl: 'Overview', ico: 'home', x: 16, w: 90, on: true },
-        { lbl: 'Details', ico: 'pencil', x: 112, w: 78, on: false },
-        { lbl: 'Info', ico: 'mapPin', x: 196, w: 62, on: false },
-        { lbl: 'Announce', ico: 'megaphone', x: 264, w: 86, on: false },
+        { lbl: 'Overview', x: 16, w: 80, on: true },
+        { lbl: 'Delays', x: 102, w: 70, on: false },
+        { lbl: 'Announce', x: 178, w: 84, on: false },
+        { lbl: 'Details', x: 268, w: 76, on: false },
       ];
       for (const op of orgPills) {
-        this.rect(`OP_${op.lbl}`, op.x, 82, op.w, 28, {
+        this.rect(`OP_${op.lbl}`, op.x, 86, op.w, 28, {
           fill: op.on ? '#FF4D2D' : '#1E293B', stroke: op.on ? '#FF4D2D' : '#334155', strokeWeight: 1, cornerRadius: 14
         }, f);
-        this.vector(op.ico, op.x + 10, 89, 13, '#FFFFFF', f, `OPI_${op.lbl}`);
-        this.text(op.lbl, op.x + 26, 89, op.w - 30, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+        this.text(op.lbl, op.x + 4, 93, op.w - 8, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
       }
 
-      // 2x2 KPIs
-      const kpis = [
-        { t: 'Checked In', v: '584', s: '92% Ticketed', c: '#10B981', x: 16, y: 120 },
-        { t: 'Open Reports', v: '2', s: 'Tap to Triage', c: '#F59E0B', x: 184, y: 120 },
+      // 2 Clean KPI Tiles
+      this.rect('K1', 16, 130, 158, 78, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Checked In', 30, 142, 130, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
+      this.text('584', 30, 160, 130, { fontSize: 22, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('92% of ticketed', 30, 188, 130, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+
+      this.rect('K2', 186, 130, 158, 78, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Open Reports', 200, 142, 130, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
+      this.text('2', 200, 160, 130, { fontSize: 22, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Tap to review', 200, 188, 130, { fontSize: 9.5, fontWeight: 600, fill: '#F59E0B' }, f);
+
+      // Active WordCamp Card
+      this.rect('EvtCard', 16, 224, 328, 92, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.logoTile(assets.delhiFavicon, 30, 239, 58, 58, f, 14, 2, '#FFFFFF');
+      this.text('WordCamp Delhi 2026', 100, 240, 220, { fontSize: 14.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Dec 12–13 · Visible in public app', 100, 262, 220, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
+      this.text('Synced 4 mins ago', 100, 280, 220, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
+
+      // Organizer 2x2 Quick Tools Grid
+      this.text('Event Tools', 16, 334, 180, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      const tools = [
+        { t: 'Running Late', s: 'Shift track times', ico: 'clock', c: '#F59E0B', x: 16, y: 360 },
+        { t: 'Live Broadcast', s: 'Send alert to phones', ico: 'megaphone', c: '#FF4D2D', x: 184, y: 360 },
+        { t: 'Roster & Reports', s: 'Roles & safety queue', ico: 'users', c: '#38BDF8', x: 16, y: 440 },
+        { t: 'Social Studio', s: 'Speaker & reel cards', ico: 'camera', c: '#10B981', x: 184, y: 440 },
+        { t: 'Tables & Quests', s: 'Contributor Day setup', ico: 'wrench', c: '#A78BFA', x: 16, y: 520 },
+        { t: 'Memories Archive', s: 'Photos & WordPress.tv', ico: 'award', c: '#F59E0B', x: 184, y: 520 },
       ];
-      for (const k of kpis) {
-        this.rect(`K_${k.t}`, k.x, k.y, 160, 74, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
-        this.text(k.t, k.x + 12, k.y + 10, 136, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
-        this.text(k.v, k.x + 12, k.y + 26, 136, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF' }, f);
-        this.text(k.s, k.x + 12, k.y + 52, 136, { fontSize: 9.5, fontWeight: 700, fill: k.c }, f);
+      for (const tl of tools) {
+        this.rect(`OT_${tl.t}`, tl.x, tl.y, 160, 68, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.vector(tl.ico, tl.x + 14, tl.y + 14, 16, tl.c, f, `OTI_${tl.t}`);
+        this.text(tl.t, tl.x + 14, tl.y + 36, 134, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+        this.text(tl.s, tl.x + 14, tl.y + 52, 134, { fontSize: 8.5, fontWeight: 400, fill: '#94A3B8' }, f);
       }
 
-      // DetailsTab & InformationTab Quick Editor Preview
-      this.rect('DetForm', 16, 208, 328, 304, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Event Details & Venue Info (DetailsTab)', 28, 222, 280, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.rect('DF1', 28, 248, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Name: WordCamp Delhi 2026', 38, 258, 280, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('DF2', 28, 290, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Venue: DAIC, 15 Janpath Rd, New Delhi', 38, 300, 280, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.rect('DF3', 28, 332, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Emergency Email: delhi@wordcamp.org', 38, 342, 280, { fontSize: 10.5, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('Visible in Public Picker', 28, 382, 200, { fontSize: 10.5, fontWeight: 600, fill: '#FFFFFF' }, f);
-      this.toggle(f, 288, 378, true);
-      this.text('Lock Dates (Manual Override)', 28, 414, 200, { fontSize: 10.5, fontWeight: 600, fill: '#FFFFFF' }, f);
-      this.toggle(f, 288, 410, false);
-      this.rect('SaveDet', 28, 450, 304, 40, { fill: '#10B981', cornerRadius: 20 }, f);
-      this.text('SAVE DETAILS & PUBLISH', 30, 463, 300, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-
-      this.rect('DelEvt', 16, 526, 328, 40, { fill: '#0F172A', stroke: '#EF4444', strokeWeight: 1, cornerRadius: 20 }, f);
-      this.text('DELETE THIS WORDCAMP...', 16, 539, 328, { fontSize: 10, fontWeight: 800, fill: '#EF4444', textAlign: 'center' }, f);
+      this.rect('EditDet', 16, 610, 328, 44, { fill: '#334155', cornerRadius: 22 }, f);
+      this.text('Edit Event Details & Venue Info', 16, 624, 328, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
     }
 
-    // M25: Staff Running Late (Delay Broadcaster)
+    // M25: Staff Running Late Delays (Clean Dark UI!)
     {
-      const f = this.screenFrame('M25 · Staff Running Late Delays', 'Track Selection | +15m Offset | Cascade | Clear', '#0B1120');
-      this.statusBar(f, true, 'Live Delays');
-      this.staffTopBar(f, 'Running Late', 'Overview');
+      const f = this.screenFrame('M25 · Staff Running Late Delays', 'Hall Selector · +15m Offset · Shifted Talk Preview · Broadcast', '#0B1120');
+      this.statusBar(f, true, 'Event Manager');
+      this.staffHeader(f, 'Running Late', 'Overview');
 
-      this.pill(f, 'BHIM Auditorium', 16, 84, 130, true, '#FF4D2D');
-      this.pill(f, 'Contrib Lounge', 154, 84, 114, false);
-      this.pill(f, 'All Halls', 274, 84, 70, false);
+      this.pill(f, 'BHIM Auditorium', 16, 86, 130, true, '#FF4D2D', null, true);
+      this.pill(f, 'Contrib Lounge', 154, 86, 114, false, '#0F172A', null, true);
+      this.pill(f, 'All Halls', 274, 86, 70, false, '#0F172A', null, true);
 
-      this.rect('OffCard', 16, 126, 328, 144, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Active Delay: +15 Minutes', 30, 142, 260, { fontSize: 16, fontWeight: 800, fill: '#F59E0B' }, f);
-      this.text('Automatically shifts 5 upcoming talks in BHIM Hall.', 30, 168, 290, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
+      this.rect('OffCard', 16, 132, 328, 144, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Active Delay: +15 Minutes', 30, 148, 260, { fontSize: 16, fontWeight: 800, fill: '#F59E0B' }, f);
+      this.text('Shifts 5 upcoming talks in BHIM Auditorium.', 30, 174, 290, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
       const mins = ['+5m', '+10m', '+15m', '+30m'];
       for (let i = 0; i < 4; i++) {
         const bx = 30 + i * 76;
         const on = i === 2;
-        this.rect(`Min_${i}`, bx, 206, 68, 38, { fill: on ? '#FF4D2D' : '#0F172A', stroke: on ? '#FF4D2D' : '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
-        this.text(mins[i], bx, 218, 68, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+        this.rect(`Min_${i}`, bx, 212, 68, 40, { fill: on ? '#FF4D2D' : '#0F172A', stroke: on ? '#FF4D2D' : '#334155', strokeWeight: 1, cornerRadius: 12 }, f);
+        this.text(mins[i], bx, 224, 68, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
       }
 
-      this.rect('CasBox', 16, 286, 328, 156, { fill: '#1E293B', cornerRadius: 16 }, f);
-      this.text('Updated Schedule Preview', 28, 300, 240, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('• Local SEO (Pankaj): 11:20 AM → 11:35 AM', 28, 326, 300, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
-      this.text('• AI Citations (Shammi): 02:00 PM → 02:15 PM', 28, 350, 300, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
-      this.text('• Value Shift Panel: 04:00 PM → 04:15 PM', 28, 374, 300, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
-      this.text('Sends push update to 584 phones immediately.', 28, 408, 300, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
+      this.rect('CasBox', 16, 294, 328, 158, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Updated Schedule Preview', 30, 310, 240, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('• Local SEO (Pankaj): 11:20 AM → 11:35 AM', 30, 338, 296, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
+      this.text('• AI Citations (Shammi): 02:00 PM → 02:15 PM', 30, 362, 296, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
+      this.text('• Value Shift Panel: 04:00 PM → 04:15 PM', 30, 386, 296, { fontSize: 10.5, fontWeight: 600, fill: '#F59E0B' }, f);
+      this.text('Sends instant update to 584 attendee phones.', 30, 420, 296, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
 
-      this.rect('BrcBtn', 16, 464, 328, 46, { fill: '#FF4D2D', cornerRadius: 23 }, f);
-      this.text('BROADCAST +15M DELAY', 16, 479, 328, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('ClrBtn', 16, 522, 328, 42, { fill: '#0F172A', stroke: '#475569', strokeWeight: 1, cornerRadius: 21 }, f);
-      this.text('CLEAR DELAY (BACK ON SCHEDULE)', 16, 536, 328, { fontSize: 10, fontWeight: 700, fill: '#CBD5E1', textAlign: 'center' }, f);
+      this.rect('BrcBtn', 16, 474, 328, 46, { fill: '#FF4D2D', cornerRadius: 23 }, f);
+      this.text('Broadcast +15m Delay', 16, 489, 328, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('ClrBtn', 16, 534, 328, 42, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 21 }, f);
+      this.text('Clear Delay (Back on Schedule)', 16, 548, 328, { fontSize: 10.5, fontWeight: 600, fill: '#CBD5E1', textAlign: 'center' }, f);
     }
 
-    // M26: Staff Announce & Notifications History
+    // M26: Staff Announce & Sent History (Zero Dev Labels!)
     {
-      const f = this.screenFrame('M26 · Staff Announce & Sent Log', 'Tone Pills | Live Composer | Audience | Sent History', '#0B1120');
-      this.statusBar(f, true, 'Broadcasts');
-      this.staffTopBar(f, 'Announce & Log', 'Overview');
+      const f = this.screenFrame('M26 · Staff Announce & Sent Log', 'Tone Pills · Announcement Composer · Recent Broadcast History', '#0B1120');
+      this.statusBar(f, true, 'Event Manager');
+      this.staffHeader(f, 'Announce & Log', 'Overview');
 
-      // BroadcastTab Composer
-      this.rect('CompBox', 16, 84, 328, 250, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Send Live Announcement (BroadcastTab)', 28, 98, 290, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.pill(f, 'Notice', 28, 124, 68, false);
-      this.pill(f, 'Break / Food', 102, 124, 96, true, '#D97706');
-      this.pill(f, 'Together', 204, 124, 82, false);
+      this.rect('CompBox', 16, 86, 328, 256, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Send Live Announcement', 30, 102, 260, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.pill(f, 'Notice', 30, 130, 72, false, '#0F172A', null, true);
+      this.pill(f, 'Break / Food', 108, 130, 96, true, '#D97706', null, true);
+      this.pill(f, 'Together', 210, 130, 82, false, '#0F172A', null, true);
 
-      this.rect('TitleIn', 28, 160, 304, 32, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Title: Lunch is Served in Courtyard!', 38, 169, 280, { fontSize: 10.5, fontWeight: 600, fill: '#FFFFFF' }, f);
-      this.rect('BodyIn', 28, 200, 304, 66, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Hot buffet open near Hall B. Stop by sponsor booths on your way!', 38, 210, 284, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
+      this.rect('TitleIn', 30, 170, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('Lunch is Served in Courtyard!', 42, 181, 276, { fontSize: 11, fontWeight: 600, fill: '#FFFFFF' }, f);
+      this.rect('BodyIn', 30, 214, 300, 64, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('Hot buffet open near Hall B. Stop by sponsor booths on your way!', 42, 224, 276, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
 
-      this.text('Reaches 584 phones + Top Banner', 28, 284, 180, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
-      this.rect('SendAnn', 216, 278, 116, 32, { fill: '#FF4D2D', cornerRadius: 16 }, f);
-      this.text('SEND NOW', 218, 287, 112, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Reaches 584 phones + banner', 30, 296, 180, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
+      this.rect('SendAnn', 218, 289, 112, 34, { fill: '#FF4D2D', cornerRadius: 17 }, f);
+      this.text('Send Now', 220, 299, 108, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // NotificationsTab History
-      this.text('SENT HISTORY (NOTIFICATIONS TAB)', 18, 352, 260, { fontSize: 10, fontWeight: 800, fill: '#94A3B8' }, f);
+      this.text('Recent Broadcasts', 18, 364, 240, { fontSize: 12, fontWeight: 800, fill: '#CBD5E1' }, f);
       const sent = [
-        { t: 'BHIM Hall +15m Delay', m: '10:29 AM · Delivered to 584', y: 374 },
-        { t: 'Opening Ceremony Starts in 10m', m: '08:50 AM · Delivered to 412', y: 446 },
-        { t: 'Registration Desk Open', m: '08:00 AM · Delivered to 320', y: 518 },
+        { t: 'BHIM Hall +15m Delay', m: '10:29 AM · Delivered to 584 phones', y: 392 },
+        { t: 'Opening Ceremony in 10 mins', m: '08:50 AM · Delivered to 412 phones', y: 468 },
+        { t: 'Registration Desk Open', m: '08:00 AM · Delivered to 320 phones', y: 544 },
       ];
       for (const s of sent) {
-        this.rect(`S_${s.t}`, 16, s.y, 328, 60, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 12 }, f);
-        this.text(s.t, 28, s.y + 12, 280, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF' }, f);
-        this.text(s.m, 28, s.y + 34, 280, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
+        this.rect(`S_${s.t}`, 16, s.y, 328, 64, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.text(s.t, 30, s.y + 13, 280, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+        this.text(s.m, 30, s.y + 36, 280, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
       }
     }
 
-    // M27: Staff Safety Reports & Attendee Roster Manager
+    // M27: Staff Safety Reports & Roster Roles (Zero Dev Labels!)
     {
-      const f = this.screenFrame('M27 · Staff Reports & Roster Roles', 'Report Triage | Hide/Resolve | Roster Role Picker', '#0B1120');
+      const f = this.screenFrame('M27 · Staff Reports & Roster Roles', 'Safety Report Triage · Hide/Dismiss · Roster Role Assignment', '#0B1120');
       this.statusBar(f, true, '2 Open Reports');
-      this.staffTopBar(f, 'Reports & Roster', 'Overview');
+      this.staffHeader(f, 'Reports & Roster', 'Overview');
 
-      // ReportsTab Queue
-      this.text('OPEN REPORTS QUEUE (2)', 18, 84, 200, { fontSize: 10, fontWeight: 800, fill: '#FCA5A5' }, f);
-      this.rect('Rep1', 16, 106, 328, 138, { fill: '#1E293B', stroke: '#FCA5A5', strokeWeight: 1.5, cornerRadius: 16 }, f);
-      this.text('Flagged Discovery Profile · "Spam Links"', 28, 118, 230, { fontSize: 11.5, fontWeight: 800, fill: '#FCA5A5' }, f);
-      this.rect('OpenP', 274, 116, 58, 20, { fill: '#FEF3C7', cornerRadius: 10 }, f);
-      this.text('OPEN', 276, 120, 54, { fontSize: 8.5, fontWeight: 800, fill: '#B45309', textAlign: 'center' }, f);
-      this.text('Reported by attendee: "Card promotes off-topic crypto links."', 28, 144, 300, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
-      this.rect('HideBtn', 28, 194, 144, 32, { fill: '#EF4444', cornerRadius: 16 }, f);
-      this.text('HIDE PROFILE', 30, 203, 140, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('ResBtn', 184, 194, 144, 32, { fill: '#334155', cornerRadius: 16 }, f);
-      this.text('DISMISS REPORT', 186, 203, 140, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('Open Safety Reports (2)', 18, 86, 200, { fontSize: 11.5, fontWeight: 800, fill: '#FCA5A5' }, f);
+      this.rect('Rep1', 16, 112, 328, 138, { fill: '#1E293B', stroke: '#7F1D1D', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Flagged Profile · Spam Links', 30, 126, 210, { fontSize: 12, fontWeight: 700, fill: '#FFFFFF' }, f);
+      this.rect('OpenP', 274, 124, 56, 20, { fill: '#FEF3C7', cornerRadius: 10 }, f);
+      this.text('Open', 276, 128, 52, { fontSize: 8.5, fontWeight: 700, fill: '#B45309', textAlign: 'center' }, f);
+      this.text('Attendee report: "Card promotes off-topic external links."', 30, 152, 298, { fontSize: 10, fontWeight: 400, fill: '#CBD5E1' }, f);
+      this.rect('HideBtn', 30, 200, 144, 34, { fill: '#EF4444', cornerRadius: 17 }, f);
+      this.text('Hide Profile', 32, 210, 140, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('ResBtn', 186, 200, 144, 34, { fill: '#334155', cornerRadius: 17 }, f);
+      this.text('Dismiss', 188, 210, 140, { fontSize: 10, fontWeight: 600, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // AttendeesTab Roster & Role Assignment
-      this.text('ATTENDEE ROSTER & ROLES (ATTENDEES TAB)', 18, 262, 290, { fontSize: 10, fontWeight: 800, fill: '#94A3B8' }, f);
-      this.rect('RosSearch', 16, 284, 328, 36, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
-      this.vector('search', 28, 293, 16, '#94A3B8', f, 'RSrch');
-      this.text('Search roster name or role...', 52, 295, 250, { fontSize: 10.5, fontWeight: 400, fill: '#94A3B8' }, f);
+      this.text('Attendee Roster & Roles', 18, 272, 240, { fontSize: 12, fontWeight: 800, fill: '#CBD5E1' }, f);
+      this.rect('RosSearch', 16, 300, 328, 38, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 19 }, f);
+      this.vector('search', 30, 310, 16, '#94A3B8', f, 'RSrch');
+      this.text('Search attendee name or role...', 54, 312, 250, { fontSize: 10.5, fontWeight: 400, fill: '#94A3B8' }, f);
 
       const roster = [
-        { img: assets.pankaj, name: 'Pankaj Kumar', role: 'Speaker · Claimed Card ✓', y: 332 },
-        { img: assets.shreya, name: 'Shreya Agarwal', role: 'Table Lead · Documentation', y: 422 },
+        { img: assets.pankaj, name: 'Pankaj Kumar', role: 'Speaker · Claimed Card', y: 354 },
+        { img: assets.shreya, name: 'Shreya Agarwal', role: 'Table Lead · Documentation', y: 446 },
+        { img: assets.amit, name: 'Amit Kumar Singh', role: 'Speaker · Core Table Lead', y: 538 },
       ];
       for (const r of roster) {
-        this.rect(`Ros_${r.name}`, 16, r.y, 328, 78, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
-        this.avatar(r.img, 28, r.y + 14, 46, f, '#334155', false);
-        this.text(r.name, 84, r.y + 14, 180, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
-        this.text(r.role, 84, r.y + 34, 190, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
-        this.rect(`EdR_${r.name}`, 268, r.y + 24, 64, 26, { fill: '#334155', cornerRadius: 13 }, f);
-        this.text('Edit Role', 270, r.y + 30, 60, { fontSize: 9, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+        this.rect(`Ros_${r.name}`, 16, r.y, 328, 78, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+        this.avatar(r.img, 30, r.y + 16, 46, f, '#334155', false);
+        this.text(r.name, 86, r.y + 18, 174, { fontSize: 13, fontWeight: 700, fill: '#FFFFFF' }, f);
+        this.text(r.role, 86, r.y + 38, 174, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
+        this.rect(`EdR_${r.name}`, 262, r.y + 24, 68, 28, { fill: '#334155', cornerRadius: 14 }, f);
+        this.text('Edit Role', 264, r.y + 31, 64, { fontSize: 9.5, fontWeight: 600, fill: '#FFFFFF', textAlign: 'center' }, f);
       }
     }
 
     // M28: Staff Tables, Quests & Memories Publisher
     {
-      const f = this.screenFrame('M28 · Staff Tables, Quests & Memories', 'TablesTab | QuestsTab | Publish Album & WPTV', '#0B1120');
+      const f = this.screenFrame('M28 · Staff Tables, Quests & Memories', 'Contributor Tables · Active Quests · Publish Album & WordPress.tv', '#0B1120');
       this.statusBar(f, true, 'Event Setup');
-      this.staffTopBar(f, 'Tables & Memories', 'Overview');
+      this.staffHeader(f, 'Tables & Memories', 'Overview');
 
-      // TablesTab + QuestsTab Summary
-      this.rect('TabEd', 16, 84, 328, 176, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Contributor Tables & Quests', 28, 98, 240, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.rect('AddTb', 238, 94, 94, 24, { fill: '#FF4D2D', cornerRadius: 12 }, f);
-      this.text('+ ADD TABLE', 240, 100, 90, { fontSize: 8.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('• Core & Gutenberg · Hall B · Lead: Amit Singh', 28, 130, 300, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1' }, f);
-      this.text('• Documentation · Hall B · Lead: Shreya Agarwal', 28, 152, 300, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1' }, f);
-      this.text('• Polyglots Hindi/Urdu · Table 3', 28, 174, 300, { fontSize: 10, fontWeight: 600, fill: '#CBD5E1' }, f);
-      this.rect('EdQ', 28, 208, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
-      this.text('5 Active Quests Configured · Tap to Edit', 38, 218, 280, { fontSize: 10, fontWeight: 600, fill: '#F59E0B' }, f);
+      this.rect('TabEd', 16, 86, 328, 182, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Contributor Tables & Quests', 30, 102, 204, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.rect('AddTb', 240, 98, 90, 26, { fill: '#FF4D2D', cornerRadius: 13 }, f);
+      this.text('+ Add Table', 242, 104, 86, { fontSize: 9.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // MemoriesOrgTab (Set Photo Album & WordPress.tv URLs + Notify Attendees!)
-      this.rect('MemOrg', 16, 276, 328, 274, { fill: '#1E293B', stroke: '#10B981', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Publish Post-Event Memories', 28, 290, 280, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Official Photo Album URL:', 28, 316, 260, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
-      this.rect('Url1', 28, 336, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('https://photos.app.goo.gl/wcdelhi2026', 38, 346, 280, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('WordPress.tv Event URL:', 28, 382, 260, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
-      this.rect('Url2', 28, 402, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('https://wordpress.tv/event/wordcamp-delhi-2026/', 38, 412, 280, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('☑ Notify attendees that photos & talks are live', 28, 448, 300, { fontSize: 10, fontWeight: 600, fill: '#10B981' }, f);
-      this.rect('PubMem', 28, 482, 304, 42, { fill: '#10B981', cornerRadius: 21 }, f);
-      this.text('SAVE & NOTIFY ATTENDEES', 30, 496, 300, { fontSize: 10.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('• Core & Gutenberg · Hall B · Amit Singh', 30, 138, 300, { fontSize: 10, fontWeight: 500, fill: '#CBD5E1' }, f);
+      this.text('• Documentation · Hall B · Shreya Agarwal', 30, 160, 300, { fontSize: 10, fontWeight: 500, fill: '#CBD5E1' }, f);
+      this.text('• Polyglots Hindi & Urdu · Table 3', 30, 182, 300, { fontSize: 10, fontWeight: 500, fill: '#CBD5E1' }, f);
+
+      this.rect('EdQ', 30, 216, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('5 Active Quests Configured · Edit Quests', 42, 227, 276, { fontSize: 10, fontWeight: 600, fill: '#F59E0B' }, f);
+
+      this.rect('MemOrg', 16, 286, 328, 286, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.text('Post-Event Memories', 30, 304, 280, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Official Photo Album URL', 30, 334, 260, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
+      this.rect('Url1', 30, 354, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('https://photos.app.goo.gl/wcdelhi2026', 42, 365, 276, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
+
+      this.text('WordPress.tv Event URL', 30, 404, 260, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
+      this.rect('Url2', 30, 424, 300, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 10 }, f);
+      this.text('https://wordpress.tv/event/wordcamp-delhi-2026/', 42, 435, 276, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
+
+      this.text('☑ Notify attendees that photos & talks are live', 30, 474, 300, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
+      this.rect('PubMem', 30, 508, 300, 44, { fill: '#10B981', cornerRadius: 22 }, f);
+      this.text('Save & Publish Memories', 32, 522, 296, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
     }
 
-    // M29: Staff Social Kit & Daylight Card Studio (Fixed Logo + Circular Portrait!)
+    // M29: Staff Social Kit & Reels (Sharp Delhi Seal + Clean CampBuddy Icon!)
     {
-      const f = this.screenFrame('M29 · Staff Social Kit & Reels', 'White-Framed Logos | Circular Speaker | PNG Share', '#0B1120');
+      const f = this.screenFrame('M29 · Staff Social Kit & Reels', 'Speaker Card Studio · Sharp Delhi Seal · Circular Portrait · Share', '#0B1120');
       this.statusBar(f, true, 'Social Studio');
-      this.staffTopBar(f, 'Social Card Studio', 'Overview');
+      this.staffHeader(f, 'Social Card Studio', 'Overview');
 
-      this.pill(f, 'Speaker Card', 16, 82, 108, true, '#FF4D2D');
-      this.pill(f, 'Daylight Card', 130, 82, 108, false);
-      this.pill(f, 'Schedule Reel', 244, 82, 100, false);
+      this.pill(f, 'Speaker Card', 16, 86, 108, true, '#FF4D2D', null, true);
+      this.pill(f, 'Daylight Card', 130, 86, 108, false, '#0F172A', null, true);
+      this.pill(f, 'Schedule Reel', 244, 86, 100, false, '#0F172A', null, true);
 
-      // Generated Social Card Canvas
-      this.rect('SocCanvas', 28, 122, 304, 396, { fill: '#0F172A', stroke: '#D97706', strokeWeight: 2, cornerRadius: 20 }, f);
-      // Both Delhi Logo and CampBuddy Mark in clean White Containers!
-      this.logoBox(assets.delhiLogo, 44, 138, 42, 42, f, 10, 4);
-      this.text('WORDCAMP DELHI 2026', 96, 152, 170, { fontSize: 10.5, fontWeight: 800, fill: '#F59E0B' }, f);
-      this.logoBox(assets.cbIcon, 276, 138, 38, 38, f, 10, 3);
+      this.rect('SocCanvas', 28, 130, 304, 396, { fill: '#0F172A', stroke: '#D97706', strokeWeight: 1.5, cornerRadius: 22 }, f);
+      this.logoTile(assets.delhiFavicon, 46, 146, 42, 42, f, 21, 2, '#FFFFFF');
+      this.text('WORDCAMP DELHI 2026', 98, 160, 166, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
+      this.image(assets.cbIcon, 278, 148, 36, 36, f, 'CBMark', 'fit');
 
-      // Circular Clipped Speaker Headshot (ZERO corners sticking out!)
-      this.avatar(assets.pankaj, 118, 200, 124, f, '#FF4D2D', false);
+      this.avatar(assets.pankaj, 118, 206, 124, f, '#FF4D2D', false);
 
-      this.text('Pankaj Kumar', 44, 340, 272, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.text('10 Things to Do to Boost Local SEO in the AI Era', 44, 372, 272, { fontSize: 12, fontWeight: 600, fill: '#FF4D2D', textAlign: 'center' }, f);
-      this.text('Sun, Dec 13 · 11:20 AM · BHIM Auditorium', 44, 420, 272, { fontSize: 10.5, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
-      this.text('campbuddy.org/delhi-2026', 44, 470, 272, { fontSize: 10, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
+      this.text('Pankaj Kumar', 44, 348, 272, { fontSize: 20, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.text('10 Things to Do to Boost Local SEO in the AI Era', 44, 380, 272, { fontSize: 12, fontWeight: 600, fill: '#FF4D2D', textAlign: 'center' }, f);
+      this.text('Sun, Dec 13 · 11:20 AM · BHIM Auditorium', 44, 428, 272, { fontSize: 10.5, fontWeight: 500, fill: '#CBD5E1', textAlign: 'center' }, f);
+      this.text('campbuddy.club/delhi-2026', 44, 476, 272, { fontSize: 10, fontWeight: 700, fill: '#10B981', textAlign: 'center' }, f);
 
-      this.rect('ExpSoc', 28, 536, 304, 44, { fill: '#FF4D2D', cornerRadius: 22 }, f);
-      this.text('SHARE SOCIAL IMAGE', 28, 551, 304, { fontSize: 11, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('SwTheme', 28, 592, 304, 40, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 20 }, f);
-      this.text('SWITCH TO DAYLIGHT PAPER THEME', 28, 605, 304, { fontSize: 10, fontWeight: 700, fill: '#CBD5E1', textAlign: 'center' }, f);
+      this.rect('ExpSoc', 28, 544, 304, 44, { fill: '#FF4D2D', cornerRadius: 22 }, f);
+      this.text('Share Social Image', 28, 558, 304, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('SwTheme', 28, 600, 304, 42, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 21 }, f);
+      this.text('Switch to Daylight Paper Theme', 28, 614, 304, { fontSize: 10.5, fontWeight: 600, fill: '#CBD5E1', textAlign: 'center' }, f);
     }
 
-    // M30: SuperAdmin Global Dashboard & Maintenance (AdminDashboardPage!)
+    // M30: SuperAdmin Global Dashboard (Airy 2x3 KPI Grid instead of cramped 3x3!)
     {
-      const f = this.screenFrame('M30 · SuperAdmin Global Dashboard', '9-KPI StatGrid | 26 WordCamps | Refresh & Cache', '#0B1120');
+      const f = this.screenFrame('M30 · SuperAdmin Global Dashboard', 'System Health · 2x3 Key Metrics · Featured Delhi · Maintenance', '#0B1120');
       this.statusBar(f, true, 'Super Admin');
-      this.staffTopBar(f, 'Global Dashboard', 'Sign Out');
+      this.staffHeader(f, 'Global Dashboard', 'Sign Out');
 
-      // Health Banner
-      this.rect('HealthOk', 16, 82, 328, 48, { fill: '#064E3B', stroke: '#10B981', strokeWeight: 1, cornerRadius: 12 }, f);
-      this.vector('check', 28, 97, 18, '#10B981', f, 'HChk');
-      this.text('All good · No system errors in 7 days', 54, 98, 270, { fontSize: 11, fontWeight: 700, fill: '#FFFFFF' }, f);
+      // Slim Health Banner
+      this.rect('HealthOk', 16, 86, 328, 44, { fill: '#064E3B', stroke: '#10B981', strokeWeight: 1, cornerRadius: 12 }, f);
+      this.vector('check', 28, 99, 16, '#10B981', f, 'HChk');
+      this.text('All systems healthy · 0 errors in 7 days', 52, 100, 276, { fontSize: 11, fontWeight: 600, fill: '#FFFFFF' }, f);
 
-      // 3x3 StatGrid (matching AdminDashboardPage 9 stats with crisp LineIcons!)
+      // Clean Spacious 2x3 Stat Grid
       const stats = [
-        { t: 'WordCamps', v: '26', ico: 'calendar', c: '#FF4D2D', x: 16, y: 142 },
-        { t: 'Live', v: '6', ico: 'clock', c: '#10B981', x: 128, y: 142 },
-        { t: 'Drafts', v: '2', ico: 'pencil', c: '#F59E0B', x: 240, y: 142 },
-        { t: 'Attendees', v: '4.2k', ico: 'users', c: '#FF4D2D', x: 16, y: 214 },
-        { t: 'Deal Leads', v: '184', ico: 'gift', c: '#D97706', x: 128, y: 214 },
-        { t: 'Managers', v: '18', ico: 'shield', c: '#38BDF8', x: 240, y: 214 },
-        { t: 'Feedback', v: '96', ico: 'heart', c: '#EC4899', x: 16, y: 286 },
-        { t: 'Errors', v: '0', ico: 'alert', c: '#10B981', x: 128, y: 286 },
-        { t: 'Activity', v: 'Log', ico: 'activity', c: '#94A3B8', x: 240, y: 286 },
+        { t: 'WordCamps', v: '26 · 6 Live', ico: 'calendar', c: '#FF4D2D', x: 16, y: 146 },
+        { t: 'Attendees', v: '4.2k', ico: 'users', c: '#38BDF8', x: 184, y: 146 },
+        { t: 'Deal Leads', v: '184', ico: 'gift', c: '#F59E0B', x: 16, y: 222 },
+        { t: 'Event Managers', v: '18', ico: 'shield', c: '#10B981', x: 184, y: 222 },
+        { t: 'Avg Feedback', v: '4.9 ★ (96)', ico: 'heart', c: '#EC4899', x: 16, y: 298 },
+        { t: 'System Errors', v: '0', ico: 'activity', c: '#10B981', x: 184, y: 298 },
       ];
       for (const s of stats) {
-        this.rect(`SG_${s.t}`, s.x, s.y, 104, 62, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 12 }, f);
-        this.vector(s.ico, s.x + 10, s.y + 12, 14, s.c, f, `SGI_${s.t}`);
-        this.text(s.v, s.x + 30, s.y + 10, 66, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF', textAlign: 'right' }, f);
-        this.text(s.t, s.x + 10, s.y + 38, 84, { fontSize: 9.5, fontWeight: 600, fill: '#94A3B8' }, f);
+        this.rect(`SG_${s.t}`, s.x, s.y, 160, 66, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
+        this.vector(s.ico, s.x + 14, s.y + 14, 15, s.c, f, `SGI_${s.t}`);
+        this.text(s.t, s.x + 36, s.y + 13, 114, { fontSize: 10, fontWeight: 600, fill: '#94A3B8' }, f);
+        this.text(s.v, s.x + 14, s.y + 36, 134, { fontSize: 16, fontWeight: 800, fill: '#FFFFFF' }, f);
       }
 
-      // Next WordCamps List
-      this.text('NEXT WORDCAMPS', 18, 366, 200, { fontSize: 10, fontWeight: 800, fill: '#94A3B8' }, f);
-      this.rect('Next1', 16, 388, 328, 66, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.logoBox(assets.delhiLogo, 28, 398, 44, 44, f, 10, 4);
-      this.text('WordCamp Delhi 2026', 82, 400, 180, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Dec 12–13 · 17 Sponsors Ready', 82, 420, 200, { fontSize: 9.5, fontWeight: 500, fill: '#10B981' }, f);
+      // Featured Next WordCamp
+      this.text('Up Next', 16, 382, 200, { fontSize: 12, fontWeight: 800, fill: '#CBD5E1' }, f);
+      this.rect('Next1', 16, 408, 328, 72, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.logoTile(assets.delhiFavicon, 30, 420, 48, 48, f, 12, 2, '#FFFFFF');
+      this.text('WordCamp Delhi 2026', 90, 422, 180, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Dec 12–13 · 17 Sponsors Ready', 90, 444, 210, { fontSize: 10, fontWeight: 500, fill: '#10B981' }, f);
 
-      // MaintenanceCard (Refresh All Data + Clear Cache)
-      this.rect('MaintBox', 16, 468, 328, 126, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.text('Platform Maintenance', 28, 480, 220, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('Last sync: Today 10:25 AM (Success)', 28, 502, 280, { fontSize: 10, fontWeight: 500, fill: '#94A3B8' }, f);
-      this.rect('RefBtn', 28, 534, 146, 38, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 19 }, f);
-      this.text('REFRESH DATA', 30, 546, 142, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('PurBtn', 186, 534, 146, 38, { fill: '#EF4444', cornerRadius: 19 }, f);
-      this.text('CLEAR CACHE', 188, 546, 142, { fontSize: 9.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      // Platform Maintenance Card
+      this.rect('MaintBox', 16, 496, 328, 118, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+      this.text('Platform Maintenance', 30, 512, 220, { fontSize: 13, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('Last sync: Today 10:25 AM (Success)', 30, 534, 280, { fontSize: 10, fontWeight: 400, fill: '#94A3B8' }, f);
+      this.rect('RefBtn', 30, 562, 144, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.text('Refresh Data', 32, 572, 140, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('PurBtn', 186, 562, 144, 36, { fill: '#EF4444', cornerRadius: 18 }, f);
+      this.text('Clear Cache', 188, 572, 140, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      // Admin 4-Tab Bottom Bar
       this.adminBottomNav(f, 'dashboard');
     }
 
-    // M31: SuperAdmin Managers & ManagerSheet
+    // M31: SuperAdmin Event Managers (Clean Focused List, NO jammed Nested Sheet!)
     {
-      const f = this.screenFrame('M31 · SuperAdmin Event Managers', 'Search/Filter | Add ManagerSheet | WordCamp Chips', '#0B1120');
-      this.statusBar(f, true, '18 Managers');
-      this.staffTopBar(f, 'Event Managers', 'Dashboard');
+      const f = this.screenFrame('M31 · SuperAdmin Event Managers', 'Add Manager CTA · Status Filters · Clean Manager Roster', '#0B1120');
+      this.statusBar(f, true, 'Super Admin');
+      this.staffHeader(f, 'Event Managers', 'Dashboard');
 
-      this.rect('AddMgr', 16, 82, 328, 40, { fill: '#FF4D2D', cornerRadius: 20 }, f);
-      this.text('+ ADD EVENT MANAGER', 16, 95, 328, { fontSize: 10.5, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('AddMgr', 16, 86, 328, 42, { fill: '#FF4D2D', cornerRadius: 21 }, f);
+      this.text('+ Add Event Manager', 16, 99, 328, { fontSize: 11.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
 
-      this.pill(f, 'All (18)', 16, 134, 70, true, '#F59E0B');
-      this.pill(f, 'Active (16)', 92, 134, 86, false);
-      this.pill(f, 'Switched Off (2)', 184, 134, 114, false);
+      this.pill(f, 'All (18)', 16, 142, 74, true, '#F59E0B', '#0F172A', true);
+      this.pill(f, 'Active (16)', 96, 142, 88, false, '#0F172A', null, true);
+      this.pill(f, 'Paused (2)', 190, 142, 88, false, '#0F172A', null, true);
 
-      // Manager Row Card
-      this.rect('MgrCard', 16, 174, 328, 108, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
-      this.text('Rohan Verma', 28, 186, 200, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.rect('OnPill', 280, 186, 48, 20, { fill: '#ECFDF5', cornerRadius: 10 }, f);
-      this.text('ON', 282, 190, 44, { fontSize: 8.5, fontWeight: 800, fill: '#10B981', textAlign: 'center' }, f);
-      this.text('rohan@wordcampdelhi.org · +91 98110xxxxx', 28, 208, 290, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
-      this.pill(f, 'WordCamp Delhi 2026', 28, 234, 146, true, '#0F172A');
-      this.pill(f, 'Rajasthan 2026', 180, 234, 114, true, '#0F172A');
+      const mgrs = [
+        { name: 'Rohan Verma', email: 'rohan@wordcampdelhi.org', ev1: 'WordCamp Delhi 2026', ev2: 'Rajasthan 2026', on: true, y: 186 },
+        { name: 'Neha Kapoor', email: 'neha@wcdelhi.org', ev1: 'WordCamp Delhi 2026', ev2: 'Pune 2027', on: true, y: 332 },
+        { name: 'Arjun Mehta', email: 'arjun@wpindia.org', ev1: 'Kerala 2026', ev2: null, on: false, y: 478 },
+      ];
+      for (const m of mgrs) {
+        this.rect(`MC_${m.name}`, 16, m.y, 328, 130, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
+        this.text(m.name, 30, m.y + 14, 190, { fontSize: 14, fontWeight: 800, fill: '#FFFFFF' }, f);
+        this.rect(`St_${m.name}`, 266, m.y + 14, 62, 22, { fill: m.on ? '#064E3B' : '#334155', cornerRadius: 11 }, f);
+        this.text(m.on ? 'Active' : 'Paused', 268, m.y + 18, 58, { fontSize: 9, fontWeight: 700, fill: m.on ? '#10B981' : '#94A3B8', textAlign: 'center' }, f);
 
-      // ManagerSheet Edit Modal Preview
-      this.rect('MgrSheet', 16, 296, 328, 356, { fill: '#1E293B', stroke: '#F59E0B', strokeWeight: 1.5, cornerRadius: 18 }, f);
-      this.text('Edit Manager: Rohan Verma', 28, 310, 260, { fontSize: 13, fontWeight: 800, fill: '#F59E0B' }, f);
-      this.rect('MF1', 28, 338, 304, 34, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 8 }, f);
-      this.text('Email: rohan@wordcampdelhi.org', 38, 348, 280, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('Can sign in to App & Web Panel', 28, 386, 220, { fontSize: 10.5, fontWeight: 600, fill: '#FFFFFF' }, f);
-      this.toggle(f, 288, 382, true);
-      this.text('Assigned WordCamps (2 selected):', 28, 418, 260, { fontSize: 10, fontWeight: 700, fill: '#CBD5E1' }, f);
-      this.pill(f, '✓ Delhi 2026', 28, 440, 100, true, '#10B981');
-      this.pill(f, '✓ Rajasthan 2026', 134, 440, 120, true, '#10B981');
-      this.pill(f, 'Mumbai 2027', 260, 440, 76, false);
-
-      this.rect('SaveMgr', 28, 520, 304, 40, { fill: '#10B981', cornerRadius: 20 }, f);
-      this.text('SAVE MANAGER CHANGES', 30, 533, 300, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('DelMgr', 28, 572, 304, 36, { fill: '#0F172A', stroke: '#EF4444', strokeWeight: 1, cornerRadius: 18 }, f);
-      this.text('REVOKE / DELETE MANAGER', 30, 584, 300, { fontSize: 9.5, fontWeight: 700, fill: '#EF4444', textAlign: 'center' }, f);
+        this.text(m.email, 30, m.y + 38, 280, { fontSize: 10, fontWeight: 400, fill: '#94A3B8' }, f);
+        this.pill(f, m.ev1, 30, m.y + 64, 146, true, '#0F172A');
+        if (m.ev2) {
+          this.pill(f, m.ev2, 184, m.y + 64, 114, true, '#0F172A');
+        }
+        this.line(`MSep_${m.name}`, 30, m.y + 100, 298, { stroke: '#334155', strokeWeight: 1 }, f);
+        this.text('Tap card to edit assignments & sign-in access →', 30, m.y + 108, 298, { fontSize: 9, fontWeight: 500, fill: '#64748B' }, f);
+      }
 
       this.adminBottomNav(f, 'managers');
     }
 
-    // M32: SuperAdmin More: Analytics, Errors, Deals & Lead Exports
+    // M32: SuperAdmin More: Analytics, Deals & Lead Exports
     {
-      const f = this.screenFrame('M32 · SuperAdmin Analytics, Deals & Leads', 'Analytics | Errors | Sponsor Deals & Lead Exports', '#0B1120');
-      this.statusBar(f, true, 'Admin More');
-      this.staffTopBar(f, 'Analytics & Leads', 'Dashboard');
+      const f = this.screenFrame('M32 · SuperAdmin Analytics & Leads', 'Visitor Analytics · System Health · Feedback · Deal Lead Exports', '#0B1120');
+      this.statusBar(f, true, 'Super Admin');
+      this.staffHeader(f, 'Analytics & Leads', 'Dashboard');
 
-      // AdminMorePage Quick Rows
       const rows = [
-        { ico: 'activity', t: 'Visitor Analytics', s: '4,820 active attendees · Top: Delhi 2026', y: 84 },
-        { ico: 'alert', t: 'System Health & Fetches', s: 'All feeds healthy · 0 failed checks', y: 152 },
-        { ico: 'heart', t: 'Attendee Feedback', s: '4.9 ★ avg rating from Thank-You card', y: 220 },
+        { ico: 'activity', t: 'Visitor Analytics', s: '4,820 active attendees · Top: Delhi 2026', y: 86 },
+        { ico: 'shield', t: 'System Health & Fetches', s: 'All feeds healthy · 0 failed checks', y: 156 },
+        { ico: 'heart', t: 'Attendee Feedback', s: '4.9 ★ avg rating from Thank-You card', y: 226 },
       ];
       for (const r of rows) {
         this.rect(`MR_${r.t}`, 16, r.y, 328, 58, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 14 }, f);
         this.ellipse(`MI_${r.t}`, 28, r.y + 11, 36, 36, { fill: '#0F172A' }, f);
         this.vector(r.ico, 37, r.y + 20, 18, '#F59E0B', f, `MVI_${r.t}`);
-        this.text(r.t, 74, r.y + 12, 220, { fontSize: 12, fontWeight: 800, fill: '#FFFFFF' }, f);
-        this.text(r.s, 74, r.y + 32, 230, { fontSize: 9.5, fontWeight: 500, fill: '#94A3B8' }, f);
+        this.text(r.t, 74, r.y + 12, 220, { fontSize: 12.5, fontWeight: 700, fill: '#FFFFFF' }, f);
+        this.text(r.s, 74, r.y + 32, 230, { fontSize: 9.5, fontWeight: 400, fill: '#94A3B8' }, f);
         this.vector('chevronRight', 320, r.y + 22, 14, '#64748B', f, `MA_${r.t}`);
       }
 
-      // DealsTab & LeadsTab (Admin Sponsor Lead Export!)
-      this.text('EVENT DEALS & CAPTURED LEADS (ADMIN)', 18, 294, 300, { fontSize: 10, fontWeight: 800, fill: '#F59E0B' }, f);
-      this.rect('LeadsBox', 16, 316, 328, 290, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 16 }, f);
-      this.logoBox(assets.sponsor_wpfusion, 28, 330, 64, 36, f, 8, 4);
-      this.text('WP Fusion · 64 Leads Captured', 102, 332, 220, { fontSize: 12.5, fontWeight: 800, fill: '#FFFFFF' }, f);
-      this.text('30% Off CRM Deal · Active', 102, 352, 220, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
+      // Sponsor Deal Leads Card
+      this.text('Sponsor Deals & Leads', 16, 304, 240, { fontSize: 12.5, fontWeight: 800, fill: '#F59E0B' }, f);
+      this.rect('LeadsBox', 16, 330, 328, 286, { fill: '#1E293B', stroke: '#334155', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.logoTile(assets.sponsor_wpfusion, 30, 346, 68, 38, f, 8, 6, '#FDFBF7');
+      this.text('WP Fusion · 64 Leads', 108, 348, 216, { fontSize: 13.5, fontWeight: 800, fill: '#FFFFFF' }, f);
+      this.text('30% Off CRM Deal · Active', 108, 368, 216, { fontSize: 9.5, fontWeight: 600, fill: '#10B981' }, f);
 
-      this.line('LSep', 28, 380, 304, { stroke: '#334155', strokeWeight: 1 }, f);
-      this.text('Latest Leads (Opt-In Verified):', 28, 392, 260, { fontSize: 10, fontWeight: 700, fill: '#94A3B8' }, f);
-      this.text('1. sunil@wpsimplified.com · Agency (10–25)', 28, 416, 300, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('2. priya@delhiwp.in · Freelancer', 28, 438, 300, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
-      this.text('3. rahul@wpindia.org · Enterprise', 28, 460, 300, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
+      this.line('LSep', 30, 398, 298, { stroke: '#334155', strokeWeight: 1 }, f);
+      this.text('Latest Opt-In Leads:', 30, 412, 260, { fontSize: 10, fontWeight: 700, fill: '#94A3B8' }, f);
+      this.text('1. sunil@wpsimplified.com · Agency (10–25)', 30, 436, 298, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
+      this.text('2. priya@delhiwp.in · Freelancer', 30, 458, 298, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
+      this.text('3. rahul@wpindia.org · Enterprise', 30, 480, 298, { fontSize: 10, fontWeight: 500, fill: '#FFFFFF' }, f);
 
-      this.rect('ExpLeads', 28, 502, 304, 40, { fill: '#D97706', cornerRadius: 20 }, f);
-      this.text('EXPORT CAPTURED LEADS (CSV)', 30, 515, 300, { fontSize: 10, fontWeight: 800, fill: '#FFFFFF', textAlign: 'center' }, f);
-      this.rect('AddDeal', 28, 552, 304, 38, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 19 }, f);
-      this.text('+ ADD SPONSOR DEAL', 30, 564, 300, { fontSize: 10, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('ExpLeads', 30, 516, 298, 40, { fill: '#D97706', cornerRadius: 20 }, f);
+      this.text('Export Captured Leads (CSV)', 32, 529, 294, { fontSize: 10.5, fontWeight: 700, fill: '#FFFFFF', textAlign: 'center' }, f);
+      this.rect('AddDeal', 30, 566, 298, 36, { fill: '#0F172A', stroke: '#334155', strokeWeight: 1, cornerRadius: 18 }, f);
+      this.text('+ Add Sponsor Deal', 32, 577, 294, { fontSize: 10, fontWeight: 600, fill: '#FFFFFF', textAlign: 'center' }, f);
 
       this.adminBottomNav(f, 'more');
     }
   }
 }
 
-const builder = new AuditedApkBuilder();
+const builder = new CleanApkBuilder();
 builder.buildAll32Screens();
 
 const scriptPath = path.resolve(rootDir, 'scratch/figcraft_apk_32_script.json');
 fs.writeFileSync(scriptPath, JSON.stringify(builder.commands, null, 2), 'utf8');
-console.log(`Generated ${builder.commands.length} FigCraft commands for ALL 32 audited Mobile APK screens.`);
+console.log(`Generated ${builder.commands.length} refined FigCraft commands for ALL 32 Mobile APK screens.`);
 console.log(`Saved script to ${scriptPath}`);
