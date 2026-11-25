@@ -219,7 +219,6 @@ export function initPickerFilter({
 
   let choice = filterable ? initialChoice({ saved: readStorage(storage), detected, counts }) : ALL;
   let shown = FIRST;
-  const pillsContainer = doc.querySelector('[data-picker-pills]');
 
   if (filterable && select && bar) {
     const sorted = codes.sort((a, b) => name(a).localeCompare(name(b)));
@@ -235,30 +234,6 @@ export function initPickerFilter({
       ...sorted.map((code) => option(code, `${name(code)} (${counts[code]})`)),
     );
 
-    if (pillsContainer) {
-      const makePill = (value, label) => {
-        const btn = doc.createElement('button');
-        btn.type = 'button';
-        btn.className = 'country-filter-pills__pill';
-        if (btn.dataset) btn.dataset.countryCode = value;
-        btn.textContent = label;
-        if (typeof btn.addEventListener === 'function') {
-          btn.addEventListener('click', () => {
-            choose(value);
-            track('picker_filter', { target: value });
-          });
-        }
-        return btn;
-      };
-
-      if (typeof pillsContainer.replaceChildren === 'function') {
-        pillsContainer.replaceChildren(
-          makePill(ALL, `All (${cards.length})`),
-          ...sorted.map((code) => makePill(code, `${name(code)} (${counts[code]})`)),
-        );
-      }
-    }
-
     bar.hidden = false;
   }
 
@@ -270,11 +245,6 @@ export function initPickerFilter({
     });
 
     if (select) select.value = choice;
-    if (pillsContainer && typeof pillsContainer.querySelectorAll === 'function') {
-      pillsContainer.querySelectorAll('[data-country-code]').forEach((pill) => {
-        pill.classList?.toggle?.('is-active', pill.dataset?.countryCode === choice);
-      });
-    }
     bar?.classList?.toggle('is-filtered', choice !== ALL);
     if (status) status.textContent = statusText(view, choice === ALL ? null : name(choice));
 

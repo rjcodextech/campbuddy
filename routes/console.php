@@ -111,15 +111,15 @@ Schedule::call(fn () => Cache::forever(SystemHealth::HEARTBEAT_KEY, now()->toIso
 
 // The reminder window is 5-10 minutes before a session — every
 // minute is the tightest useful cadence without spamming the queue.
-Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders');
+Schedule::job(new SendSessionRemindersJob)->everyMinute()->name('send-session-reminders')->withoutOverlapping(5);
 
 // Day 3 after a WordCamp: one thank-you push per event (rating + PDF export).
 // Hourly, so each venue gets it in its own daytime (the job checks the hour).
-Schedule::job(new SendThankYouPushJob)->hourlyAt(5)->name('send-thank-you-push');
+Schedule::job(new SendThankYouPushJob)->hourlyAt(5)->name('send-thank-you-push')->withoutOverlapping(10);
 
 // Day 7 ("save your data") and day 15 ("take it with you") after a WordCamp:
 // once each per event, in the venue's daytime (the job checks the hour).
-Schedule::job(new SendAfterEventPushesJob)->hourlyAt(10)->name('send-after-event-pushes');
+Schedule::job(new SendAfterEventPushesJob)->hourlyAt(10)->name('send-after-event-pushes')->withoutOverlapping(10);
 
 // Central discovery, every 2 days — new WordCamps don't appear hourly,
 // and every result lands as a draft pending admin approval. Laravel's
@@ -164,7 +164,8 @@ Schedule::call(fn () => Artisan::call('campbuddy:erase-expired-data'))
 // most; this cleans up expired ones every 15 minutes instead of hammering the DB every 5.
 Schedule::call(fn () => DeviceTransfer::prune())
     ->everyFifteenMinutes()
-    ->name('prune-device-transfers');
+    ->name('prune-device-transfers')
+    ->withoutOverlapping(10);
 
 /*
 |--------------------------------------------------------------------------

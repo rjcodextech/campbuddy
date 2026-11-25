@@ -383,11 +383,11 @@
 
     &__cells {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
 
         @media (min-width: 640px) {
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 12px;
         }
 
@@ -402,6 +402,7 @@
     flex-direction: row;
     align-items: center;
     gap: 10px;
+    min-width: 0;
     min-height: 70px;
     padding: 10px 12px;
     border-radius: 16px;
@@ -410,8 +411,19 @@
     box-shadow: $shadow-card;
     text-decoration: none;
     color: inherit;
+    overflow: hidden;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     cursor: pointer;
+
+    @media (max-width: 375px) {
+        gap: 8px;
+        padding: 10px 8px;
+
+        .action-tile__icon-box {
+            width: 34px;
+            height: 34px;
+        }
+    }
 
     &:hover, &:focus-visible {
         transform: translateY(-1px);

@@ -92,6 +92,9 @@ class ScheduledTasks
             preg_match('#^\*/(\d+)$#', $m, $x) === 1 && $h === '*' && $dom === '*' => "every {$x[1]} minutes",
             ctype_digit($m) && $h === '*' && $dom === '*' => sprintf('every hour at :%02d', (int) $m),
             ctype_digit($m) && ctype_digit($h) && $dom === '*' && $mon === '*' && $dow === '*' => 'every day at '.$at($h, $m),
+            ctype_digit($m) && preg_match('/^\d+(?:,\d+)+$/', $h) === 1 && $dom === '*' && $mon === '*' && $dow === '*' => 'every day at '
+                .implode(' & ', array_map(fn (string $hr) => sprintf('%02d:%02d', (int) $hr, (int) $m), explode(',', $h)))
+                ." {$tz}",
             // */2 in the day-of-month field: the even dates, so a gap of one or two days at a month's end.
             ctype_digit($m) && ctype_digit($h) && $dom === '*/2' => 'every other day (even dates) at '.$at($h, $m),
             ctype_digit($m) && ctype_digit($h) && preg_match('#^\*/(\d+)$#', $dom, $x) === 1 => "every {$x[1]} days at ".$at($h, $m),

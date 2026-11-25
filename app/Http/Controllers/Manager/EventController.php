@@ -7,7 +7,9 @@ use App\Http\Middleware\EnsureEventManager;
 use App\Http\Requests\Manager\UpdateManagedEventInfoRequest;
 use App\Http\Requests\Manager\UpdateManagedEventRequest;
 use App\Jobs\FetchSpeakersSponsorsSessionsJob;
+use App\Support\EventData;
 use App\Support\EventEdits;
+use App\Support\EventListing;
 use App\Support\ManagerActivity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,7 +31,24 @@ class EventController extends Controller
 
     public function details(Request $request, string $eventId): View
     {
-        return view('manager.events.details', ['event' => $this->managedEvent($request, $eventId)]);
+        $event = $this->managedEvent($request, $eventId);
+        EventData::prime($event->id);
+
+        $infoFieldsFilled = count(array_filter(is_array($event->info) ? $event->info : [], fn ($v) => filled($v)));
+
+        return view('manager.events.details', [
+            'event' => $event,
+            'timing' => EventListing::timing($event, today()),
+            'stats' => [
+                'roster' => $event->attendeeRoster()->where('is_suppressed', false)->count(),
+                'sessions' => count(EventData::get($event->id, 'sessions') ?? []),
+                'speakers' => count(EventData::get($event->id, 'speakers') ?? []),
+                'organizers' => count(EventData::get($event->id, 'organizers') ?? []),
+                'sponsors' => count(EventData::get($event->id, 'sponsors') ?? []),
+                'info_filled' => $infoFieldsFilled,
+                'info_total' => 9,
+            ],
+        ]);
     }
 
     public function updateDetails(UpdateManagedEventRequest $request, string $eventId): RedirectResponse

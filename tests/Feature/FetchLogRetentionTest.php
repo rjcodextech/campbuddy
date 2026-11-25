@@ -204,7 +204,7 @@ class FetchLogRetentionTest extends TestCase
         $task = collect($this->app->make(Schedule::class)->events())->first(fn ($e) => $e->description === 'prune-fetch-log');
 
         $this->assertNotNull($task, 'The nightly prune is scheduled.');
-        $this->assertSame('20 3 * * *', $task->expression);
+        $this->assertSame('20 3,15 * * *', $task->expression);
     }
 
     // ---- What people read from the log keeps working ---------------------

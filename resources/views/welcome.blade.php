@@ -208,9 +208,6 @@
                     {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
                     script runs, so without it every event simply shows, as before. --}}
                     <div class="picker-filter" data-picker-filter hidden>
-                        {{-- Tactile horizontal scrollable country filter pills --}}
-                        <div class="country-filter-pills" data-picker-pills></div>
-
                         <div class="picker-filter__row">
                             <label class="u-visually-hidden" for="picker-country">Country</label>
                             <span class="picker-filter__select">

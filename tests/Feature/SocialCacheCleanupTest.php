@@ -66,7 +66,7 @@ class SocialCacheCleanupTest extends TestCase
     {
         $event = collect(app(Schedule::class)->events())->first(fn ($e) => $e->description === 'clear-social-cache');
         $this->assertNotNull($event);
-        $this->assertSame('15 0 * * *', $event->expression);
+        $this->assertSame('15 0,12 * * *', $event->expression);
     }
 
     public function test_an_empty_or_missing_cache_is_fine(): void

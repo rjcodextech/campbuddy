@@ -55,7 +55,6 @@
     background-image:
         radial-gradient(55% 70% at 90% 10%, v.$color-glow 0%, transparent 70%),
         radial-gradient(45% 60% at 5% 95%, v.$color-glow-primary 0%, transparent 72%);
-    padding-bottom: v.$space-8;
 
     // A soft wave swell along the foot, like the site's hero.
     &::after {
@@ -281,11 +280,11 @@
     }
 }
 
-// ---- Scroll reveal (reveal.js marks only blocks that start below the fold,
-// so the first paint is never hidden) --------------------------------------
+// ---- Scroll reveal: keep sections always visible on paint so fast scrolls,
+// anchor jumps, screenshots, and slow connections never leave sections invisible.
 .reveal {
-    opacity: 0;
-    transform: translateY(v.$space-6);
+    opacity: 1;
+    transform: none;
     transition: opacity v.$duration-slow ease, transform v.$duration-slow v.$ease-out;
 }
 
