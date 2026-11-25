@@ -146,18 +146,19 @@
     .platform-tab {
       flex: 1;
       min-width: 220px;
-      padding: 14px 20px;
+      padding: 12px 14px;
       border-radius: 12px;
       background: transparent;
       border: none;
       color: var(--muted-light);
       font-family: var(--font-heading);
-      font-size: 16px;
+      font-size: 14.5px;
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
+      white-space: nowrap;
       cursor: pointer;
       transition: all 0.2s ease;
     }
@@ -177,6 +178,8 @@
       padding: 2px 8px;
       border-radius: var(--radius-pill);
       font-family: var(--font-body);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     /* Section Containers */
@@ -1209,7 +1212,7 @@
 </svg>
 
       <span>2. Website Frontend (Web UI)</span>
-      <span class="count-badge">14 Screens</span>
+      <span class="count-badge">24 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('pwa')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1217,7 +1220,7 @@
 </svg>
 
       <span>3. Progressive Web App (PWA)</span>
-      <span class="count-badge">8 Screens</span>
+      <span class="count-badge">24 Screens</span>
     </button>
     <button class="platform-tab" onclick="switchPlatform('admin')">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1230,7 +1233,7 @@
   </nav>
 
   <!-- ========================================== -->
-  <!-- TAB 1: MOBILE APP APK (ALL 32 REFINED)     -->
+  <!-- TAB 1: MOBILE APP APK (ALL 54 SCREENS)     -->
   <!-- ========================================== -->
   <main id="section-apk" class="section-container active">
     <div class="section-intro">
@@ -1912,7 +1915,7 @@
   </main>
 
   <!-- ========================================== -->
-  <!-- TAB 2: WEBSITE FRONTEND (14 SCREENS)       -->
+  <!-- TAB 2: WEBSITE FRONTEND (24 SCREENS)       -->
   <!-- ========================================== -->
   <main id="section-web" class="section-container">
     <div class="section-intro">
@@ -1920,16 +1923,16 @@
         <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
   <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18"/>
 </svg>
- Website Frontend (Responsive Desktop Web UI)</h2>
-        <p>All 14 FigCraft-rendered desktop web screens (1280×780) spanning Public Discovery, Onboarding &amp; Sync, Guide, DPDP Privacy, Roster Removal, Sponsor Deal Portal, Multi-Track Matrix, People Discovery, Attendee Chat, Quests, CampCard Studio &amp; Memories.</p>
+ Website Frontend (Complete Desktop Web UI)</h2>
+        <p>All 24 desktop web routes, workspaces &amp; modal screens (1280×780): Public Directory, Onboarding, About, General &amp; Event Guides, Privacy &amp; Terms, Roster Takedown, Sponsor Deals Portal, Brand Guidelines, Live Home, Track Matrix, Explore (People/Chat/Sponsors/Deals/Steals/Info), Quests, Contributor Day, CampCard Studio, Data Transfer &amp; Safety Help Desk.</p>
       </div>
-      <span class="badge-pill badge-pill-gold">14 Refined FigCraft Web Screens · 1280×780 Desktop</span>
+      <span class="badge-pill badge-pill-gold">24 Complete Desktop Web Screens · 1280×780</span>
     </div>
 
     <div class="apk-filter-bar">
-      <button type="button" class="apk-filter-pill web-filter-pill active" onclick="filterWeb('all', this)">All Web Screens (14)</button>
-      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('public', this)">Public, Onboarding &amp; Info (6)</button>
-      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('workspace', this)">WordCamp Event Workspace (8)</button>
+      <button type="button" class="apk-filter-pill web-filter-pill active" onclick="filterWeb('all', this)">All Web Screens (24)</button>
+      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('public', this)">Public, Info &amp; Legal (11)</button>
+      <button type="button" class="apk-filter-pill web-filter-pill" onclick="filterWeb('workspace', this)">WordCamp Workspace &amp; Modals (13)</button>
     </div>
 
     
@@ -2142,226 +2145,924 @@
               
           </div>
         </section>
+
+        <section class="apk-group-block web-group-block" data-web-role="public">
+          <h3 class="apk-group-heading"><span>Group C · Dedicated Public, Legal &amp; Brand Routes (W15–W19)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">5 Screens</span></h3>
+          <div class="web-png-grid">
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W15</span><span>General First-Timer Handbook</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/guide</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/guide</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <img src="assets/campbuddy_wordmark.png" style="height:22px; width:auto;" alt="CampBuddy">
+      <span class="badge-pill badge-pill-gold" style="font-size:10px;">First-Timer Handbook</span>
+    </div>
+    <div class="tactile-hero-card" style="padding:16px 20px;">
+      <div class="hero-pretitle" style="color:#F59E0B;">New to WordCamp?</div>
+      <div style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:#FFFFFF;">Your Calm First-Timer Playbook</div>
+      <div style="font-size:11px; color:#CBD5E1; margin-top:4px;">What to expect on Main Day &amp; Contributor Day, plain-English jargon decoder, and how to break the ice.</div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+      <div class="studio-card" style="padding:12px;"><div style="font-size:11px; font-weight:700; color:var(--coral);">1. Arrival &amp; Swag</div><div style="font-size:10px; color:var(--muted);">Grab your lanyard, coffee &amp; bookmark 3 talks offline.</div></div>
+      <div class="studio-card" style="padding:12px;"><div style="font-size:11px; font-weight:700; color:var(--navy);">2. Hallway Track</div><div style="font-size:10px; color:var(--muted);">Send a gentle Wave or scan QR badges in seconds.</div></div>
+      <div class="studio-card" style="padding:12px;"><div style="font-size:11px; font-weight:700; color:var(--gold);">3. Contributor Day</div><div style="font-size:10px; color:var(--muted);">Take our 3-question quiz to join your ideal table.</div></div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Platform-Wide WordCamp Guide · Packing Checklist · 4 Key Moments · WordPress Glossary</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W16</span><span>Terms of Service & Community Rules</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/terms</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/terms</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <img src="assets/campbuddy_wordmark.png" style="height:22px; width:auto;" alt="CampBuddy">
+      <div style="display:flex; gap:6px;"><span class="filter-chip">Privacy</span><span class="filter-chip active">Terms of Use</span></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1.1fr 0.9fr; gap:14px;">
+      <div class="studio-card" style="padding:14px;">
+        <div style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Terms of Use</div>
+        <div style="font-size:11px; color:var(--muted);">Effective 2026 · Plain English alongside DPDP Act 2023 compliance.</div>
+        <div class="field-mock">1. What CampBuddy is: companion schedule &amp; local tools.</div>
+        <div class="field-mock">2. Schedules change: organizers push live offsets &amp; notices.</div>
+        <div class="field-mock">3. Code of Conduct: mutual respect across Discovery &amp; Chat.</div>
+      </div>
+      <div class="studio-card" style="padding:14px; background:#FFFBEB; border-color:#FCD34D;">
+        <div style="font-size:12px; font-weight:700; color:#92400E;">Deals, Free Steals &amp; Sponsors</div>
+        <div style="font-size:10.5px; color:#78350F; line-height:1.45;">Discounts &amp; free tools are fulfilled directly by each sponsor. Claim forms log explicit opt-in consent before sharing your email.</div>
+        <div style="font-size:10.5px; color:var(--ink); font-weight:600; margin-top:4px;">Need data help? legal@campbuddy.club</div>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Plain-Language Terms · Code of Conduct Alignment · Sponsor Deals Disclaimer · Legal Scope</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W17</span><span>Attendee Roster Self-Removal</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026/roster-removal</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026/roster-removal</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px;"><img src="assets/delhi_favicon.png" style="height:24px; width:24px;" alt="Delhi"><span style="font-family:var(--font-heading); font-weight:800; color:var(--navy);">WordCamp Delhi 2026</span></div>
+      <span class="badge-pill badge-pill-coral" style="font-size:10px;">DPDP Opt-Out</span>
+    </div>
+    <div class="studio-card" style="padding:16px; gap:10px;">
+      <div style="font-family:var(--font-heading); font-size:18px; font-weight:800; color:var(--navy);">Remove me from the attendee list</div>
+      <div style="font-size:11px; color:var(--muted);">Search by your full name from the official WordCamp ticket roster to remove yourself immediately.</div>
+      <div style="display:flex; gap:10px;"><div class="field-mock" style="flex:1;">Search: Amit Kumar...</div><button class="btn-coral-lg" style="padding:8px 18px; font-size:12px;">Find Entry</button></div>
+      <div style="background:#FFF5F5; border:1px solid #FCA5A5; border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+        <div><div style="font-size:12px; font-weight:700; color:var(--ink);">Amit Kumar · Attendee</div><div style="font-size:10px; color:var(--muted);">WordCamp Delhi 2026 Public Roster</div></div>
+        <button class="btn-coral-lg" style="padding:6px 14px; font-size:11px; background:#DC2626;">Remove Now</button>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Zero-Friction Opt-Out Search · Instant Public Roster Removal · Privacy Audit Trail</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W18</span><span>Sponsor Deal Submission Confirmed</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/sponsor-deals/success</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/sponsor-deals/success</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <img src="assets/campbuddy_wordmark.png" style="height:22px; width:auto;" alt="CampBuddy">
+      <span class="badge-pill badge-pill-green" style="font-size:10px;">Verified Submission</span>
+    </div>
+    <div class="studio-card" style="padding:20px; align-items:center; text-align:center;">
+      <div style="width:44px; height:44px; border-radius:50%; background:var(--success-light); color:var(--success); display:flex; align-items:center; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:var(--navy);">Deal Submitted for Review!</div>
+      <div style="font-size:11px; color:var(--muted); max-width:420px;">Your offer for <strong>WordCamp Delhi 2026</strong> has been queued for instant organizer verification and auto-publish.</div>
+      <div style="background:var(--paper-soft); border:1px dashed #F59E0B; border-radius:12px; padding:10px 16px; width:100%; max-width:440px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px; font-weight:700; color:var(--ink);">WP Fusion · 30% Off Pro</span>
+        <span style="font-size:11px; font-weight:800; color:var(--wine);">CODE: WCDELHI30</span>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Verification Summary · Live Deal Badge Preview · Event Manager Approval Status</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W19</span><span>Brand & Visual Guidelines</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/brand-guidelines</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/brand-guidelines</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:10px;">
+      <img src="assets/campbuddy_wordmark.png" style="height:22px; width:auto;" alt="CampBuddy">
+      <span class="badge-pill badge-pill-coral" style="font-size:10px;">Design Tokens &amp; Voice</span>
+    </div>
+    <div style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:var(--navy);">A friend who has been to WordCamp before.</div>
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+      <div style="background:#FAF8F5; border:1px solid var(--line); border-radius:12px; padding:10px;"><div style="height:24px; border-radius:6px; background:#FAF8F5; border:1px solid #CBD5E1; margin-bottom:6px;"></div><div style="font-size:10px; font-weight:700;">Warm Paper</div><div style="font-size:9px; color:var(--muted);">#FAF8F5</div></div>
+      <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:10px;"><div style="height:24px; border-radius:6px; background:#0F172A; margin-bottom:6px;"></div><div style="font-size:10px; font-weight:700;">Deep Navy</div><div style="font-size:9px; color:var(--muted);">#0F172A</div></div>
+      <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:10px;"><div style="height:24px; border-radius:6px; background:#FF4D2D; margin-bottom:6px;"></div><div style="font-size:10px; font-weight:700;">Camp Coral</div><div style="font-size:9px; color:var(--muted);">#FF4D2D</div></div>
+      <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:10px;"><div style="height:24px; border-radius:6px; background:#D97706; margin-bottom:6px;"></div><div style="font-size:10px; font-weight:700;">Marigold</div><div style="font-size:9px; color:var(--muted);">#D97706</div></div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Color Tokens (#FF4D2D, #FAF8F5, #0F172A) · Baloo 2 + Poppins · Daylight Social Cards</div>
+      </div>
+          </div>
+        </section>
+
+        <section class="apk-group-block web-group-block" data-web-role="workspace">
+          <h3 class="apk-group-heading"><span>Group D · Dedicated Workspace Tabs, Data Sync &amp; Safety Modal (W20–W24)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">5 Screens</span></h3>
+          <div class="web-png-grid">
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W20</span><span>Full Multi-Track Schedule & Talk Sheet</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026/my-day#full</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026/my-day#full</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+      <div style="display:flex; gap:6px;"><span class="filter-chip active">All Sessions (22)</span><span class="filter-chip">My Day (2)</span></div>
+      <div class="field-mock" style="flex:1; max-width:260px; padding:6px 12px;">Search sessions or speakers...</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <div class="session-item-card">
+        <div class="session-card-header"><span class="time-badge">10:00 AM · Day 1</span><span class="room-badge">BHIM Hall</span></div>
+        <div class="session-title">From Feature to Ecosystem</div>
+        <div class="session-speaker-row"><div class="speaker-info-chip"><img src="assets/radhika_bhama.jpg" class="speaker-micro-avatar" alt="Radhika"><span class="speaker-name-title">Radhika Bhama</span></div><span style="color:var(--gold); font-size:12px;">★ Saved</span></div>
+      </div>
+      <div class="session-item-card" style="border-color:var(--coral); background:#FFFBF7;">
+        <div class="session-card-header"><span class="time-badge">11:20 AM · Talk Modal</span><span class="room-badge">Auditorium</span></div>
+        <div class="session-title">Local SEO in the AI Era</div>
+        <div class="session-speaker-row"><div class="speaker-info-chip"><img src="assets/pankaj_kumar.webp" class="speaker-micro-avatar" alt="Pankaj"><span class="speaker-name-title">Pankaj Kumar</span></div><button class="btn-gold" style="font-size:9px; padding:4px 10px;">Add .ics</button></div>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">All 22 Sessions Search · Track/Day Filter Pills · Session Detail Modal & .ics Export</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W21</span><span>Explore: Tiered Sponsors & Claim Sheet</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026/explore#sponsors</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026/explore#sponsors</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); padding-bottom:8px;">
+      <div style="display:flex; gap:6px;"><span class="filter-chip">People</span><span class="filter-chip active">Sponsors (18)</span><span class="filter-chip">Deals</span><span class="filter-chip">Steals</span></div>
+      <span style="font-size:10px; font-weight:700; color:var(--success);">100% Tiered &amp; Solo Full-Width</span>
+    </div>
+    <div style="font-size:10px; font-weight:800; color:var(--wine);">GOLD SPONSOR · FULL-WIDTH SOLO</div>
+    <div class="studio-card" style="padding:12px; background:#FFFBEB; border-color:var(--gold); flex-direction:row; justify-content:space-between; align-items:center;">
+      <div style="display:flex; align-items:center; gap:10px;"><img src="assets/sponsor_wpfusion.webp" style="height:28px; width:auto;" alt="WP Fusion"><div><div style="font-size:12px; font-weight:700;">Digital Polygon &amp; WP Fusion</div><div style="font-size:10px; color:var(--muted);">verified sponsor booths · lead claim open</div></div></div>
+      <button class="btn-coral-lg" style="padding:6px 14px; font-size:11px;">Claim 30% Off</button>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+      <div class="sponsor-card-box" style="height:62px;"><img src="assets/sponsor_elementor.webp" alt="Elementor"></div>
+      <div class="sponsor-card-box" style="height:62px;"><img src="assets/sponsor_cookieadmin.webp" alt="CookieAdmin"></div>
+      <div class="sponsor-card-box" style="height:62px;"><img src="assets/sponsor_zuptek.webp" alt="Zuptek"></div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Platinum -> Gold -> Microsponsors Tiers · Monogram Fallbacks · Sponsor Deal Lead Capture</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W22</span><span>Explore: Free Steals & Event Info Controls</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026/explore#steals</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026/explore#steals</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="studio-card" style="padding:14px; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-family:var(--font-heading); font-size:15px; font-weight:800;">Free Community Steals</span><span class="badge-pill badge-pill-gold" style="font-size:9px;">Made Here</span></div>
+        <div class="field-mock" style="display:flex; justify-content:space-between;"><span>CookieAdmin Pro Free License</span><span style="color:var(--coral); font-weight:700;">Open</span></div>
+        <div class="field-mock" style="display:flex; justify-content:space-between;"><span>Zuptek WP Speed Toolkit</span><span style="color:var(--coral); font-weight:700;">Claim</span></div>
+      </div>
+      <div class="studio-card" style="padding:14px; gap:8px;">
+        <div style="font-family:var(--font-heading); font-size:15px; font-weight:800;">Venue Wi-Fi &amp; Your Data</div>
+        <div class="field-mock">Wi-Fi: WCDELHI-GUEST · Key: CodeIsPoetry26</div>
+        <div style="display:flex; gap:8px;"><button class="btn-outline-lg" style="padding:6px 12px; font-size:11px; flex:1;">Download JSON</button><button class="btn-coral-lg" style="padding:6px 12px; font-size:11px; flex:1;">Erase Data</button></div>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Community Tools Made Here · Guest Wi-Fi Copy · JSON Export & Clear Browser Data</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W23</span><span>Move My Data: Cross-Device QR & Sync</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026/camp-card#move</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026/camp-card#move</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:grid; grid-template-columns:1fr 140px; gap:16px; align-items:center;" class="studio-card">
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <span class="badge-pill badge-pill-green" style="width:fit-content; font-size:10px;">End-to-End Local Bundle</span>
+        <div style="font-family:var(--font-heading); font-size:18px; font-weight:800; color:var(--navy);">Move your plan to Android or PWA</div>
+        <div style="font-size:11px; color:var(--muted);">Carry saved talks, quest badges, and CampCard contacts from desktop browser directly into your phone.</div>
+        <div style="display:flex; gap:8px; align-items:center;"><div style="font-family:monospace; font-size:20px; font-weight:800; letter-spacing:3px; color:var(--coral); background:var(--peach); padding:6px 14px; border-radius:10px;">482-915</div><span style="font-size:10px; color:var(--muted);">Valid for 10 min</span></div>
+      </div>
+      <div class="campcard-qr" style="border:1px solid var(--line);"><img src="assets/qr_sample.png" style="width:105px; height:105px;" alt="Sync QR"></div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Encrypted 6-Digit Transfer Code · Scan to Load Sessions, Quests & CampCard on Phone</div>
+      </div>
+            
+      <div class="web-png-card">
+        <div class="web-meta-row">
+          <div class="screen-meta-title"><span class="screen-meta-badge">W24</span><span>Safety Help Desk Modal & Offline Fallback</span></div>
+          <span style="font-size:11px; color:#94A3B8; font-family:monospace;">campbuddy.club/event/wordcamp-delhi-2026#help-modal</span>
+        </div>
+        <div class="desktop-browser-frame" style="border-radius:18px; min-height:390px;">
+          <div class="browser-top-bar" style="padding:10px 16px;">
+            <div class="browser-dots"><div class="browser-dot" style="background:#EF4444;"></div><div class="browser-dot" style="background:#F59E0B;"></div><div class="browser-dot" style="background:#10B981;"></div></div>
+            <div class="browser-url-pill" style="font-size:11px; padding:4px 14px;">https://campbuddy.club/event/wordcamp-delhi-2026#help-modal</div>
+          </div>
+          <div class="browser-viewport" style="padding:20px 24px; flex:1; display:flex; flex-direction:column; gap:14px;">
+            
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="studio-card" style="padding:14px; border-color:#FCA5A5; background:#FFF5F5; gap:8px;">
+        <div style="font-family:var(--font-heading); font-size:15px; font-weight:800; color:#DC2626;">Safety &amp; Help Desk</div>
+        <div style="font-size:10.5px; color:var(--muted);">DAIC Main Lobby Desk · Confidential Conduct Report</div>
+        <div class="field-mock" style="background:#FFFFFF;">Describe issue (Anonymous Toggle: ON)</div>
+        <button class="btn-coral-lg" style="padding:7px 14px; font-size:11px; background:#DC2626;">Send Urgent Report</button>
+      </div>
+      <div class="studio-card" style="padding:14px; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-family:var(--font-heading); font-size:15px; font-weight:800;">Offline Mode Ready</span><span class="badge-pill badge-pill-green" style="font-size:9px;">Cached</span></div>
+        <div style="font-size:10.5px; color:var(--muted);">No venue Wi-Fi detected? Your saved schedule, map, and CampCard QR stay 100% readable offline.</div>
+        <button class="btn-outline-lg" style="padding:7px 14px; font-size:11px;">Open Saved My Day</button>
+      </div>
+    </div>
+    
+          </div>
+        </div>
+        <div class="web-meta-sub">Code of Conduct Incident Form · Organizer Direct Help · Cached Offline Recovery Banner</div>
+      </div>
+          </div>
+        </section>
       
   </main>
 
   <!-- ========================================== -->
-  <!-- TAB 3: PROGRESSIVE WEB APP (8 SCREENS)     -->
+  <!-- TAB 3: PROGRESSIVE WEB APP (24 SCREENS)    -->
   <!-- ========================================== -->
   <main id="section-pwa" class="section-container">
     <div class="section-intro">
       <div>
-        <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M13 2 3 14h9l-1 8 10-12h-9z"/>
-</svg>
- Progressive Web App (PWA Standalone — APK Parity)</h2>
-        <p>1-tap "Add to Home Screen", single-row APK TopBar, deep navy Hero card, 2×3 horizontal Quick Actions, tiered Sponsors, single-row role filters, docked Safety &amp; Help Desk bar, offline My Day, high-contrast QR CampCard, and automatic cron sync.</p>
+        <h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></svg>
+ Progressive Web App (PWA Standalone — Complete APK Parity)</h2>
+        <p>All 24 mobile PWA attendee screens achieving full APK parity: Install/Pre-cache, Switcher, Onboarding, Single-Row APK TopBar, Dark Navy Hero, 2×3 Quick Actions, Full Schedule &amp; My Day, CampCard QR &amp; Camera Scanner, Explore 5-Up, Waves &amp; Turn-Taking Chat, Quests, Contributor Day &amp; Safety Help Desk.</p>
       </div>
-      <span class="badge-pill badge-pill-green">PWA Standalone · 8 APK-Aligned Screens</span>
+      <span class="badge-pill badge-pill-green">PWA Standalone · 24 APK-Aligned Screens</span>
     </div>
 
-    <div class="screens-grid-phones">
+    <div class="apk-filter-bar">
+      <button type="button" class="apk-filter-pill pwa-filter-pill active" onclick="filterPwa('all', this)">All PWA (24)</button>
+      <button type="button" class="apk-filter-pill pwa-filter-pill" onclick="filterPwa('home', this)">Home, Switcher &amp; Guide (6)</button>
+      <button type="button" class="apk-filter-pill pwa-filter-pill" onclick="filterPwa('schedule', this)">Schedule, My Day &amp; Memories (5)</button>
+      <button type="button" class="apk-filter-pill pwa-filter-pill" onclick="filterPwa('campcard', this)">CampCard &amp; Transfer (4)</button>
+      <button type="button" class="apk-filter-pill pwa-filter-pill" onclick="filterPwa('explore', this)">Explore, Chat &amp; Quests (9)</button>
+    </div>
 
-      <!-- PWA 01: Add to Home Screen -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P01</span><span>Add to Home Screen</span></div>
+    <section class="apk-group-block pwa-group-block" data-pwa-group="home">
+      <h3 class="apk-group-heading"><span>Group 1 · Install, WordCamp Switcher, Onboarding &amp; Live Home (P01–P06)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">6 Screens</span></h3>
+      <div class="screens-grid-phones">
+      <!-- PWA P01: Add to Home Screen & Pre-Cache -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P01</span><span>Add to Home Screen & Pre-Cache</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Synced · 98%</span></div>
-          <div class="phone-scrollable" style="justify-content:center; align-items:center; text-align:center;">
-            <div style="width:76px; height:76px; border-radius:20px; background:#FFFFFF; padding:6px; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid var(--line); margin-bottom:14px;">
-              <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="WordCamp Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'">
-            </div>
-            <h3 style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:var(--ink);">Install WordCamp Delhi</h3>
-            <p style="font-size:11px; color:var(--muted); margin:6px 0 18px 0; max-width:260px;">Open straight from your home screen with schedules, bios, and your CampCard ready even without venue Wi-Fi.</p>
-            <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:14px; width:100%; text-align:left; display:flex; flex-direction:column; gap:8px;">
-              <div style="font-size:11px; font-weight:700; color:var(--ink);">Saved &amp; Auto-Refreshed on Device</div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/>
-</svg>
- <span>22 Sessions &amp; 11 Speaker Profiles</span></div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/>
-</svg>
- <span>18 Sponsors &amp; 185 Verified Attendees</span></div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/>
-</svg>
- <span>Instant Offline CampCard QR</span></div>
-            </div>
-            <button class="btn-coral-lg" style="margin-top:22px; width:100%; font-size:13px;">Add to Home Screen</button>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:16px;">
+          <div style="width:74px; height:74px; border-radius:20px; background:#FFFFFF; padding:6px; box-shadow:0 10px 25px rgba(0,0,0,0.08); border:1px solid var(--line); margin-bottom:12px;">
+            <img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="WordCamp Delhi">
           </div>
+          <h3 style="font-family:var(--font-heading); font-size:20px; font-weight:800; color:var(--ink);">Install WordCamp Delhi</h3>
+          <p style="font-size:11px; color:var(--muted); margin:6px 0 14px 0; max-width:260px;">Open straight from your home screen with schedules, bios, and your CampCard ready even without venue Wi-Fi.</p>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:14px; width:100%; text-align:left; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:11px; font-weight:700; color:var(--ink);">Saved &amp; Auto-Refreshed on Device</div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg><span>22 Sessions &amp; 11 Speaker Profiles</span></div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg><span>18 Sponsors &amp; 185 Verified Attendees</span></div>
+            <div style="display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted);"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg><span>Instant Offline CampCard QR &amp; Maps</span></div>
+          </div>
+          <button class="btn-coral-lg" style="margin-top:18px; width:100%; font-size:13px;">Add to Home Screen</button>
+          <div style="font-size:10px; color:var(--muted); margin-top:10px;">v0.0.26 Cache Verified · Zero Login Needed</div>
+        </div>
+          </div>
+          
         </div>
       </div>
-
-      <!-- PWA 02: Standalone Live Home (APK-Aligned) -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P02</span><span>Standalone Live Home (APK Parity)</span></div>
+      <!-- PWA P02: WordCamp Switcher & Directory -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P02</span><span>WordCamp Switcher & Directory</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">5 Events Cached</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><img src="assets/campbuddy_wordmark.png" style="height:24px;" alt="CampBuddy"><span class="role-badge-pill">Switch Camp</span></div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:99px; padding:7px 12px; font-size:11px; color:var(--muted); display:flex; align-items:center; gap:8px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search cities or WordCamps...</span></div>
+        <div class="filter-chips-row"><span class="filter-chip active">All (5)</span><span class="filter-chip">India (3)</span><span class="filter-chip">Europe</span></div>
+        <div class="tactile-hero-card" style="padding:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:9px; color:#F59E0B; font-weight:700;">FEATURED · DEC 12–13</span>
+            <span style="font-size:9px; color:#34D399; font-weight:700;">● Offline Ready</span>
+          </div>
+          <div style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:#FFFFFF; margin:4px 0;">WordCamp Delhi 2026</div>
+          <div style="font-size:10px; color:#CBD5E1; margin-bottom:10px;">DAIC New Delhi · 22 Talks · 185 People</div>
+          <button class="btn-coral-lg" style="width:100%; padding:8px; font-size:11px;">Open Companion</button>
+        </div>
+        <div class="tactile-card" style="background:#FFFFFF; flex-direction:row; justify-content:space-between; align-items:center;"><div><div class="tactile-card-title">WordCamp Bengaluru 2026</div><div class="tactile-card-sub">Upcoming · Schedule Preview</div></div><span style="font-size:10px; font-weight:700; color:var(--coral);">Open</span></div>
+        <div class="tactile-card" style="background:#FFFFFF; flex-direction:row; justify-content:space-between; align-items:center;"><div><div class="tactile-card-title">WordCamp Asia 2026</div><div class="tactile-card-sub">Archive &amp; Memories Cached</div></div><span style="font-size:10px; font-weight:700; color:var(--muted);">View</span></div>
+          </div>
+          
+        </div>
+      </div>
+      <!-- PWA P03: Personalize Onboarding Wizard -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P03</span><span>Personalize Onboarding Wizard</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Step 3 of 5</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:var(--navy);">Personalize CampBuddy</span><span style="font-size:10px; color:var(--muted); font-weight:700;">Skip</span></div>
+        <div style="height:6px; background:#E2E8F0; border-radius:99px; overflow:hidden;"><div style="width:60%; height:100%; background:var(--coral);"></div></div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+          <span class="role-badge-pill" style="width:fit-content;">First-Timer Check</span>
+          <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:var(--navy); line-height:1.25;">Which talks matter most to you?</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <span class="filter-chip active">Gutenberg Blocks</span>
+            <span class="filter-chip active">AI &amp; SEO</span>
+            <span class="filter-chip">WooCommerce</span>
+            <span class="filter-chip active">Community</span>
+            <span class="filter-chip">Headless WP</span>
+            <span class="filter-chip">Accessibility</span>
+          </div>
+        </div>
+        <div style="background:#FFFBEB; border:1px solid #FDE68A; border-radius:14px; padding:12px;">
+          <div style="font-size:11px; font-weight:700; color:#92400E;">Saved Privately in Your Browser</div>
+          <div style="font-size:10px; color:#78350F; margin-top:2px;">We highlight matching talks and Contributor tables without creating an account.</div>
+        </div>
+        <button class="btn-coral-lg" style="width:100%; padding:11px; font-size:12px; margin-top:auto;">Continue to Step 4</button>
+          </div>
+          
+        </div>
+      </div>
+      <!-- PWA P04: Standalone Live Home (APK Parity) -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P04</span><span>Standalone Live Home (APK Parity)</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">● Ready · 98%</span></div>
           <div class="phone-scrollable" style="gap:10px;">
-            <div class="app-bar">
-              <img src="assets/campbuddy_wordmark.png" style="height:24px; width:auto;" alt="CampBuddy" onerror="this.src='docs/designs/assets/campbuddy_wordmark.png'">
-              <div style="display:flex; gap:6px;">
-                <span style="width:28px; height:28px; border-radius:50%; background:var(--peach); color:var(--ink); display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">?</span>
-                <span style="width:28px; height:28px; border-radius:50%; background:var(--peach); color:var(--ink); display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">↻</span>
-              </div>
-            </div>
-            <div class="tactile-hero-card" style="padding:14px;">
-              <div style="font-size:9px; color:#94A3B8; font-weight:700; letter-spacing:0.6px;">WORDCAMP COMPANION</div>
-              <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#FFFFFF; margin:2px 0;">WordCamp Delhi 2026</div>
-              <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-                <div>
-                  <div style="font-size:9px; color:#F59E0B; font-weight:700;">NEXT UP · REGISTRATION</div>
-                  <div style="font-size:11px; font-weight:700; color:#FFFFFF;">Registration + Breakfast</div>
-                </div>
-                <span style="background:#D97706; color:#FFFFFF; font-size:9px; font-weight:800; padding:4px 10px; border-radius:99px;">VIEW</span>
-              </div>
-            </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">Schedule</div><div style="font-size:8px; color:var(--muted);">22 talks &amp; tracks</div></div></div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">My Day</div><div style="font-size:8px; color:var(--muted);">0 saved sessions</div></div></div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 3.9L18 8.8l-3 2.9.7 4.1L12 13.8l-3.7 2 .7-4.1-3-2.9 4.1-1.9z"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">Sponsors</div><div style="font-size:8px; color:var(--muted);">Deals &amp; steals</div></div></div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M9 13l-1 8 4-2 4 2-1-8"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">Contributor XP</div><div style="font-size:8px; color:var(--muted);">Quests &amp; badges</div></div></div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">Venue &amp; Info</div><div style="font-size:8px; color:var(--muted);">Wi-Fi &amp; metro</div></div></div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></span><div><div style="font-size:10px; font-weight:700; color:var(--ink);">CampCard QR</div><div style="font-size:8px; color:var(--muted);">Share digital badge</div></div></div>
-            </div>
-            <div style="background:#FFF5F5; border:1px solid #FECACA; border-radius:12px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;">
-              <div><div style="font-size:10px; font-weight:700; color:#DC2626;">Safety &amp; Help Desk</div><div style="font-size:8px; color:var(--muted);">Venue support &amp; reporting</div></div>
-              <span style="background:#EF4444; color:#FFFFFF; font-size:8px; font-weight:700; padding:4px 9px; border-radius:99px;">Emergency</span>
-            </div>
+            
+        <div class="app-bar">
+          <img src="assets/campbuddy_wordmark.png" style="height:24px; width:auto;" alt="CampBuddy">
+          <div style="display:flex; gap:6px;">
+            <span style="width:28px; height:28px; border-radius:50%; background:var(--peach); color:var(--ink); display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">?</span>
+            <span style="width:28px; height:28px; border-radius:50%; background:var(--peach); color:var(--ink); display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">↻</span>
           </div>
         </div>
+        <div class="tactile-hero-card" style="padding:14px;">
+          <div style="font-size:9px; color:#94A3B8; font-weight:700; letter-spacing:0.6px;">WORDCAMP COMPANION</div>
+          <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#FFFFFF; margin:2px 0;">WordCamp Delhi 2026</div>
+          <div style="background:#0F172A; border:1px solid #334155; border-radius:10px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <div>
+              <div style="font-size:9px; color:#F59E0B; font-weight:700;">NEXT UP · REGISTRATION</div>
+              <div style="font-size:11px; font-weight:700; color:#FFFFFF;">Registration + Breakfast</div>
+            </div>
+            <span style="background:#D97706; color:#FFFFFF; font-size:9px; font-weight:800; padding:4px 10px; border-radius:99px;">VIEW</span>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><div><div style="font-size:10px; font-weight:700;">Schedule</div><div style="font-size:8px; color:var(--muted);">22 talks &amp; tracks</div></div></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span><div><div style="font-size:10px; font-weight:700;">My Day</div><div style="font-size:8px; color:var(--muted);">2 saved sessions</div></div></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 3.9L18 8.8l-3 2.9.7 4.1L12 13.8l-3.7 2 .7-4.1-3-2.9 4.1-1.9z"/></svg></span><div><div style="font-size:10px; font-weight:700;">Sponsors</div><div style="font-size:8px; color:var(--muted);">Deals &amp; steals</div></div></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></span><div><div style="font-size:10px; font-weight:700;">Contributor XP</div><div style="font-size:8px; color:var(--muted);">Quests &amp; badges</div></div></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></span><div><div style="font-size:10px; font-weight:700;">Venue &amp; Info</div><div style="font-size:8px; color:var(--muted);">Wi-Fi &amp; metro</div></div></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; display:flex; align-items:center; gap:8px;"><span style="width:26px; height:26px; border-radius:50%; background:var(--peach); color:var(--coral); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></span><div><div style="font-size:10px; font-weight:700;">CampCard QR</div><div style="font-size:8px; color:var(--muted);">Share digital badge</div></div></div>
+        </div>
+        <div style="background:#FFF5F5; border:1px solid #FECACA; border-radius:12px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+          <div><div style="font-size:10px; font-weight:700; color:#DC2626;">Safety &amp; Help Desk</div><div style="font-size:8px; color:var(--muted);">Venue support &amp; reporting</div></div>
+          <span style="background:#EF4444; color:#FFFFFF; font-size:8px; font-weight:700; padding:4px 9px; border-radius:99px;">Emergency</span>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
       </div>
+      <!-- PWA P05: Live Notice & Reminder Prompt -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P05</span><span>Live Notice & Reminder Prompt</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Push Active</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="background:#FEF3C7; border:1px solid #F59E0B; border-radius:12px; padding:10px 12px; display:flex; gap:8px; align-items:flex-start;">
+          <span style="color:#B45309; flex-shrink:0;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+          <div><div style="font-size:10.5px; font-weight:800; color:#92400E;">BHIM Hall running +15 min late</div><div style="font-size:9.5px; color:#78350F;">Afternoon talks shifted automatically · Check My Day</div></div>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:11px; font-weight:700; color:var(--navy);">Get 10-Min Talk Alerts</span><span style="font-size:9px; color:var(--success); font-weight:700;">PWA Web Push</span></div>
+          <div style="font-size:10px; color:var(--muted);">Receive venue delay alerts and saved session nudges right on your lock screen.</div>
+          <div style="display:flex; gap:8px;"><button class="btn-coral-lg" style="flex:1; padding:7px; font-size:10px;">Allow Alerts</button><button class="btn-outline-lg" style="padding:7px 12px; font-size:10px;">Not Now</button></div>
+        </div>
+        <div class="tactile-hero-card" style="padding:12px;">
+          <div style="font-size:9px; color:#F59E0B; font-weight:700;">STARTING IN 10 MIN</div>
+          <div style="font-size:13px; font-weight:700; color:#FFFFFF; margin-top:2px;">Local SEO in the AI Era · Pankaj Kumar</div>
+          <div style="font-size:10px; color:#CBD5E1; margin-top:2px;">BHIM Auditorium · Ground Floor</div>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P06: First-Timer Handbook & Venue Guide -->
+      <div class="phone-card-wrapper" data-pwa-role="home">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P06</span><span>First-Timer Handbook & Venue Guide</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Offline Ready</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">First-Timer Guide</span><span class="role-badge-pill">Delhi 101</span></div>
+        <img src="assets/india_gate.jpg" style="width:100%; height:100px; object-fit:cover; border-radius:14px;" alt="Delhi">
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Dr. Ambedkar Intl. Centre</div><div class="tactile-card-sub">15 Janpath Rd · Metro: Janpath (Exit 2) &amp; Patel Chowk</div></div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">WordCamp Flow · 2 Days</div><div class="tactile-card-sub">Day 1: Main Track &amp; Hallway · Day 2: Contributor Day</div></div>
+        <div class="tactile-card" style="background:#FFFBEB; border-color:#FDE68A;"><div class="tactile-card-title">Jargon Decoder · Contributor Table</div><div class="tactile-card-sub">Friendly tables to fix docs, translate WordPress, or test themes.</div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div></div>
+    </section>
 
-      <!-- PWA 03: Offline My Day & Overlap Check -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P03</span><span>Offline My Day &amp; Overlaps</span></div>
+    <section class="apk-group-block pwa-group-block" data-pwa-group="schedule">
+      <h3 class="apk-group-heading"><span>Group 2 · Schedule, Session Detail, My Day &amp; Memories (P07–P11)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">5 Screens</span></h3>
+      <div class="screens-grid-phones">
+      <!-- PWA P07: Full Schedule, Search & Filters -->
+      <div class="phone-card-wrapper" data-pwa-role="schedule">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P07</span><span>Full Schedule, Search & Filters</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">22 Sessions</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Schedule</span><div style="display:flex; gap:4px;"><span class="filter-chip active" style="padding:3px 9px; font-size:9px;">All</span><span class="filter-chip" style="padding:3px 9px; font-size:9px;">My Day</span></div></div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:99px; padding:7px 12px; font-size:10.5px; color:var(--muted); display:flex; align-items:center; gap:6px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search sessions or speakers...</span></div>
+        <div class="filter-chips-row"><span class="filter-chip active">Day 1 · Dec 12</span><span class="filter-chip">Day 2 · Dec 13</span><span class="filter-chip">BHIM Hall</span></div>
+        <div class="session-item-card"><div class="session-card-header"><span class="time-badge">10:00 AM</span><span class="room-badge">BHIM Hall</span></div><div class="session-title">From Feature to Ecosystem</div><div class="session-speaker-row"><div class="speaker-info-chip"><img src="assets/radhika_bhama.jpg" class="speaker-micro-avatar" alt="Radhika"><span class="speaker-name-title">Radhika Bhama</span></div><span style="color:var(--gold); font-size:12px;">★</span></div></div>
+        <div class="session-item-card"><div class="session-card-header"><span class="time-badge">11:20 AM</span><span class="room-badge">Auditorium</span></div><div class="session-title">Local SEO in the AI Era</div><div class="session-speaker-row"><div class="speaker-info-chip"><img src="assets/pankaj_kumar.webp" class="speaker-micro-avatar" alt="Pankaj"><span class="speaker-name-title">Pankaj Kumar</span></div><span style="color:var(--muted); font-size:12px;">☆</span></div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P08: Session Detail Sheet & Calendar -->
+      <div class="phone-card-wrapper" data-pwa-role="schedule">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P08</span><span>Session Detail Sheet & Calendar</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Talk Sheet</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="opacity:0.4; font-size:10px; color:var(--muted);">Schedule background dimmed...</div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 -8px 24px rgba(15,23,42,0.12); display:flex; flex-direction:column; gap:10px; margin-top:auto;">
+          <div style="width:36px; height:4px; border-radius:99px; background:#CBD5E1; align-self:center;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span class="time-badge">11:20 AM – 12:00 PM</span><span class="room-badge">BHIM Hall</span></div>
+          <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:var(--navy);">Local SEO in the AI Era</div>
+          <div style="display:flex; align-items:center; gap:10px; background:var(--paper-soft); padding:8px; border-radius:12px;">
+            <img src="assets/pankaj_kumar.webp" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" alt="Pankaj">
+            <div><div style="font-size:11px; font-weight:700;">Pankaj Kumar</div><div style="font-size:9px; color:var(--muted);">SEO Strategist · Rank &amp; Schema</div></div>
+          </div>
+          <div style="font-size:10px; color:var(--muted); line-height:1.4;">How local WordPress businesses win AI Overviews with clean structured schema and Google Business profiles.</div>
+          <button class="btn-coral-lg" style="width:100%; padding:9px; font-size:11px;">★ Saved to My Day</button>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><button class="btn-outline-lg" style="padding:7px; font-size:10px;">Add .ics</button><button class="btn-outline-lg" style="padding:7px; font-size:10px;">10m Alert ✓</button></div>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P09: Offline My Day & Overlaps -->
+      <div class="phone-card-wrapper" data-pwa-role="schedule">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P09</span><span>Offline My Day & Overlaps</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Offline · 98%</span></div>
-          <div class="phone-scrollable">
-            <div class="app-bar"><span style="font-family:var(--font-heading); font-size:18px; font-weight:800; color:var(--navy);">My Day</span><button class="btn-gold" style="font-size:9px; padding:5px 12px;">Add Calendar</button></div>
-            <div style="background:#FFF5F5; border:1px solid #FCA5A5; border-radius:12px; padding:10px 12px;">
-              <div style="font-size:11px; font-weight:700; color:#DC2626;">Overlap at 11:20 AM</div>
-              <div style="font-size:10px; color:#64748B;">Local SEO (BHIM) vs Docs Table</div>
-            </div>
-            <div class="session-item-card"><span class="time-badge">10:00 AM</span><div class="session-title">From Feature to Ecosystem</div><div style="font-size:10px; color:var(--muted);">Radhika Bhama · BHIM Hall</div></div>
-            <div class="session-item-card"><span class="time-badge">11:20 AM</span><div class="session-title">Local SEO in the AI Era</div><div style="font-size:10px; color:var(--muted);">Pankaj Kumar · BHIM Hall</div></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:18px; font-weight:800; color:var(--navy);">My Day</span><button class="btn-gold" style="font-size:9px; padding:5px 12px;">Add Calendar</button></div>
+        <div style="background:#FFF5F5; border:1px solid #FCA5A5; border-radius:12px; padding:10px 12px;"><div style="font-size:11px; font-weight:700; color:#DC2626;">Overlap at 11:20 AM</div><div style="font-size:10px; color:#64748B;">Local SEO (BHIM) vs Docs Table</div></div>
+        <div class="session-item-card"><div class="session-card-header"><span class="time-badge">10:00 AM</span><span style="font-size:9px; color:var(--success); font-weight:700;">Attended ✓</span></div><div class="session-title">From Feature to Ecosystem</div><div style="font-size:10px; color:var(--muted);">Radhika Bhama · BHIM Hall</div></div>
+        <div class="session-item-card"><div class="session-card-header"><span class="time-badge">11:20 AM</span><span style="font-size:9px; color:var(--coral); font-weight:700;">Next Talk</span></div><div class="session-title">Local SEO in the AI Era</div><div style="font-size:10px; color:var(--muted);">Pankaj Kumar · BHIM Hall</div></div>
+        <div class="tactile-card" style="background:#FFFFFF; flex-direction:row; justify-content:space-between; align-items:center;"><div><div class="tactile-card-title">Meet Shammi @ 2:15 PM</div><div class="tactile-card-sub">Espresso Stand · Mutual Wave</div></div><button class="btn-gold" style="padding:4px 10px; font-size:9px;">Edit</button></div>
           </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
         </div>
       </div>
+      <!-- PWA P10: Plan Meet & Schedule Pickers -->
+      <div class="phone-card-wrapper" data-pwa-role="schedule">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P10</span><span>Plan Meet & Schedule Pickers</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Private Plan</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Plan a Meet</span><span class="role-badge-pill">Private</span></div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="assets/shammi_proothi.webp" style="width:38px; height:38px; border-radius:50%; object-fit:cover;" alt="Shammi">
+            <div><div style="font-size:12px; font-weight:700;">Shammi Proothi</div><div style="font-size:9.5px; color:var(--muted);">WordPress Builder · Mutual Wave</div></div>
+          </div>
+          <div class="field-mock" style="font-size:11px;">Spot: Espresso Bar · Main Courtyard</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <div class="field-mock" style="font-size:10px; text-align:center;">Dec 12, 2026</div>
+            <div class="field-mock" style="font-size:10px; text-align:center;">2:15 PM</div>
+          </div>
+          <button class="btn-coral-lg" style="width:100%; padding:9px; font-size:11px;">Save to My Day</button>
+          <button class="btn-outline-lg" style="width:100%; padding:8px; font-size:10px;">Download Meetup .ics</button>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P11: Post-Event Memories & Data Choice -->
+      <div class="phone-card-wrapper" data-pwa-role="schedule">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P11</span><span>Post-Event Memories & Data Choice</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">After Event</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Delhi Memories</span><span class="role-badge-pill">2026 Wrap</span></div>
+        <div class="tactile-hero-card" style="padding:14px;"><div style="font-size:9px; color:#F59E0B; font-weight:700;">THANK YOU FOR COMING</div><div style="font-family:var(--font-heading); font-size:16px; font-weight:800;">WordCamp Delhi Photos &amp; Talks</div><div style="font-size:10px; color:#CBD5E1;">140+ gallery photos &amp; WordPress.tv links</div></div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Watch Sessions on WordPress.tv</div><div class="tactile-card-sub">Revisit talks you missed with slides &amp; Q&amp;A</div></div>
+        <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:11px; font-weight:700; color:#92400E;">Keep or Erase Your Plan?</div>
+          <div style="font-size:9.5px; color:#78350F;">Auto-deletes in 90 days unless you choose Keep Offline.</div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><button class="btn-gold" style="padding:6px; font-size:9.5px;">Keep Data</button><button class="btn-outline-lg" style="padding:6px; font-size:9.5px;">Delete in 90d</button></div>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div></div>
+    </section>
 
-      <!-- PWA 04: Offline CampCard Badge -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P04</span><span>Offline CampCard Badge</span></div>
+    <section class="apk-group-block pwa-group-block" data-pwa-group="campcard">
+      <h3 class="apk-group-heading"><span>Group 3 · CampCard QR, Scanner &amp; Cross-Device Transfer (P12–P15)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">4 Screens</span></h3>
+      <div class="screens-grid-phones">
+      <!-- PWA P12: Offline CampCard Badge & Themes -->
+      <div class="phone-card-wrapper" data-pwa-role="campcard">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P12</span><span>Offline CampCard Badge & Themes</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">QR Ready · 98%</span></div>
-          <div class="phone-scrollable" style="align-items:center;">
-            <div class="campcard-badge-container" style="width:100%; border-width:1.5px;">
-              <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                <div style="background:#FFFFFF; border-radius:50%; width:34px; height:34px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi" onerror="this.src='docs/designs/assets/delhi_favicon.png'"></div>
-                <span class="campcard-role">ATTENDEE</span>
-              </div>
-              <div class="campcard-name">Amit Kumar Singh</div>
-              <div style="font-size:10px; color:#94A3B8;">Managing Partner · WPoets</div>
-              <div class="campcard-qr"><img src="assets/qr_sample.png" style="width:120px; height:120px;" alt="QR" onerror="this.src='docs/designs/assets/qr_sample.png'"></div>
-              <div style="font-size:10px; color:#CBD5E1;">Scan to save contact offline</div>
-            </div>
-            <button class="btn-outline-lg" style="width:100%; padding:10px; font-size:12px; background:#FFFFFF;">Download 900 DPI Card</button>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:flex; gap:6px; justify-content:center;">
+          <span class="filter-chip active" style="padding:4px 10px; font-size:9px;">Night Navy</span>
+          <span class="filter-chip" style="padding:4px 10px; font-size:9px;">Marigold</span>
+          <span class="filter-chip" style="padding:4px 10px; font-size:9px;">Warm Coral</span>
+        </div>
+        <div class="campcard-badge-container" style="width:100%; border-width:1.5px; padding:14px;">
+          <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+            <div style="background:#FFFFFF; border-radius:50%; width:32px; height:32px; padding:2px;"><img src="assets/delhi_favicon.png" style="width:100%; height:100%; object-fit:contain;" alt="Delhi"></div>
+            <span class="campcard-role">ATTENDEE</span>
           </div>
+          <div class="campcard-name">Amit Kumar Singh</div>
+          <div style="font-size:10px; color:#94A3B8;">Managing Partner · WPoets</div>
+          <div class="campcard-qr"><img src="assets/qr_sample.png" style="width:112px; height:112px;" alt="QR"></div>
+          <div style="font-size:9.5px; color:#CBD5E1;">Scan to save vCard 100% offline</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><button class="btn-coral-lg" style="padding:9px; font-size:10px;">Scan QR</button><button class="btn-outline-lg" style="padding:9px; font-size:10px; background:#FFFFFF;">900 DPI PNG</button></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
         </div>
       </div>
-
-      <!-- PWA 05: Venue Map & Support Sheet -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P05</span><span>Venue Guide &amp; Support Sheet</span></div>
+      <!-- PWA P13: Edit CampCard & Claim Profile -->
+      <div class="phone-card-wrapper" data-pwa-role="campcard">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P13</span><span>Edit CampCard & Claim Profile</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
-          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Offline · 98%</span></div>
-          <div class="phone-scrollable">
-            <img src="assets/india_gate.jpg" style="width:100%; height:110px; object-fit:cover; border-radius:14px;" alt="Delhi" onerror="this.src='docs/designs/assets/india_gate.jpg'">
-            <div class="tactile-card"><div class="tactile-card-title">Dr. Ambedkar Intl. Centre</div><div class="tactile-card-sub">15 Janpath Rd · Metro: Janpath &amp; Patel Chowk</div></div>
-            <div class="tactile-card"><div class="tactile-card-title">Guest Wi-Fi: WCDELHI-GUEST</div><div class="tactile-card-sub">Passkey: CodeIsPoetry26 · Opens 8 AM</div></div>
-            <div style="background:#DC2626; border-radius:12px; padding:10px 12px; color:#FFFFFF;">
-              <div style="font-size:11px; font-weight:700;">Need Immediate Help?</div>
-              <div style="font-size:9px; opacity:0.9;">Safety Desk · Main Entrance Lobby &amp; Conduct</div>
-            </div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Local Draft</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Edit CampCard</span><span style="font-size:10px; font-weight:700; color:var(--success);">Saved Local</span></div>
+        <div class="field-mock" style="background:#FFFBEB; border-color:#FCD34D; font-size:10.5px;">Claimed Roster: Amit Kumar Singh · Confirmed</div>
+        <div class="field-mock" style="font-size:11px;">Name: Amit Kumar Singh</div>
+        <div class="field-mock" style="font-size:11px;">Role: Managing Partner · WPoets</div>
+        <div class="field-mock" style="font-size:11px;">WordPress.org: @amitsingh</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px;"><span class="filter-chip active" style="font-size:9px;">Enterprise WP</span><span class="filter-chip active" style="font-size:9px;">Speaker</span><span class="filter-chip" style="font-size:9px;">+ Add Tag</span></div>
+        <button class="btn-coral-lg" style="width:100%; padding:10px; font-size:12px; margin-top:auto;">Save Card &amp; Refresh QR</button>
           </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
         </div>
       </div>
+      <!-- PWA P14: Camera QR Scanner & Contact Sheet -->
+      <div class="phone-card-wrapper" data-pwa-role="campcard">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P14</span><span>Camera QR Scanner & Contact Sheet</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar dark-theme"><span>10:30 AM</span><span style="font-weight:700; color:#34D399;">Camera Ready</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="background:#0F172A; border-radius:16px; padding:18px; display:flex; flex-direction:column; align-items:center; gap:10px; color:#FFFFFF;">
+          <div style="font-size:10px; color:#94A3B8; display:flex; align-items:center; gap:6px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg><span>Point camera at a CampCard QR</span></div>
+          <div style="width:128px; height:128px; border:2px dashed #FF4D2D; border-radius:16px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.04); font-size:10px; color:#F59E0B;">Scanning...</div>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:9px; font-weight:800; color:var(--success);">CONTACT DETECTED</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="assets/om_asnani.webp" style="width:36px; height:36px; border-radius:50%; object-fit:cover;" alt="Om">
+            <div><div style="font-size:12px; font-weight:700;">Om Asnani</div><div style="font-size:9.5px; color:var(--muted);">WordPress Engineer · Delhi</div></div>
+          </div>
+          <button class="btn-coral-lg" style="width:100%; padding:8px; font-size:11px;">Save Contact Offline (.vcf)</button>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P15: Move Data: 6-Digit & QR Transfer -->
+      <div class="phone-card-wrapper" data-pwa-role="campcard">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P15</span><span>Move Data: 6-Digit & QR Transfer</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Sync Bridge</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Move Data</span><span class="role-badge-pill">End-to-End</span></div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:12px; text-align:center; display:flex; flex-direction:column; gap:8px;">
+          <div style="font-size:11px; font-weight:700; color:var(--navy);">Enter 6-Digit Desktop Code</div>
+          <div style="font-family:monospace; font-size:20px; font-weight:800; letter-spacing:4px; color:var(--coral); background:var(--peach); padding:8px; border-radius:10px;">482-915</div>
+          <div style="font-size:9.5px; color:var(--muted);">Imports saved schedule, quest checklist, and CampCard in 1 tap.</div>
+          <button class="btn-coral-lg" style="width:100%; padding:9px; font-size:11px;">Sync to This Phone</button>
+        </div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Export Backup JSON</div><div class="tactile-card-sub">Keep a portable copy of your WordCamp notes</div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div></div>
+    </section>
 
-      <!-- PWA 06: Discovery Waves & Mutual Match Chat -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P06</span><span>Waves &amp; Mutual Chat</span></div>
+    <section class="apk-group-block pwa-group-block" data-pwa-group="explore">
+      <h3 class="apk-group-heading"><span>Group 4 · Explore 5-Up, Waves, Mutual Chat, Quests &amp; Safety (P16–P24)</span><span style="font-size:11px; color:#94A3B8; font-weight:600;">9 Screens</span></h3>
+      <div class="screens-grid-phones">
+      <!-- PWA P16: Explore 5-Up: People & Role Chips -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P16</span><span>Explore 5-Up: People & Role Chips</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">185 Attendees</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;"><div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--wine);">People</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Sponsors</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Deals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Steals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Info</div></div>
+        <div class="filter-chips-row"><span class="filter-chip active">All (185)</span><span class="filter-chip">Speakers (11)</span><span class="filter-chip">Organizers</span><span class="filter-chip">Microsponsors</span></div>
+        <div style="background:#FFFBEB; border:1px solid #FCD34D; border-radius:12px; padding:10px; display:flex; justify-content:space-between; align-items:center;"><div><div style="font-size:11px; font-weight:700; color:#92400E;">Join People Discovery</div><div style="font-size:9px; color:#78350F;">Share interests &amp; exchange waves</div></div><button class="btn-gold" style="padding:4px 10px; font-size:9px;">Join</button></div>
+        <div class="session-item-card" style="padding:10px;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; align-items:center; gap:8px;"><img src="assets/shreya_agarwal.webp" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" alt="Shreya"><div><div style="font-size:11px; font-weight:700;">Shreya Agarwal</div><div style="font-size:9px; color:var(--muted);">Speaker · UX &amp; Blocks</div></div></div><button class="btn-coral-lg" style="padding:4px 10px; font-size:9px;">Wave</button></div></div>
+        <div class="session-item-card" style="padding:10px;"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; align-items:center; gap:8px;"><img src="assets/abhay_kulkarni.webp" style="width:32px; height:32px; border-radius:50%; object-fit:cover;" alt="Abhay"><div><div style="font-size:11px; font-weight:700;">Abhay Kulkarni</div><div style="font-size:9px; color:var(--muted);">Microsponsor · Community</div></div></div><button class="btn-outline-lg" style="padding:4px 10px; font-size:9px;">Wave</button></div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P17: Join Discovery & Send Wave Sheet -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P17</span><span>Join Discovery & Send Wave Sheet</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Wave Sheet</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:9px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="assets/shammi_proothi.webp" style="width:38px; height:38px; border-radius:50%; object-fit:cover;" alt="Shammi">
+            <div><div style="font-size:12px; font-weight:700;">Say Hello to Shammi</div><div style="font-size:9.5px; color:var(--muted);">Hidden until Shammi waves back</div></div>
+          </div>
+          <div class="field-mock" style="font-size:10.5px;">Note: Loved your headless WP demo — free for coffee?</div>
+          <div style="font-size:9.5px; color:var(--muted); display:flex; gap:6px; align-items:center;"><span style="color:var(--success); font-weight:700;">✓</span><span>DPDP Opt-In Active · Auto-expires after WordCamp</span></div>
+          <button class="btn-coral-lg" style="width:100%; padding:9px; font-size:11px;">Send Gentle Wave</button>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P18: Waves Inbox & Mutual Match Reveal -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P18</span><span>Waves Inbox & Mutual Match Reveal</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">2 Mutual Matches</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;"><div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--wine);">People</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Sponsors</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Deals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Steals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Info</div></div>
+        <div style="background:#FFFBEB; border:1px solid #F59E0B; border-radius:12px; padding:10px;">
+          <div style="font-size:10.5px; font-weight:700; color:#92400E;">2 Attendees Waved at You</div>
+          <div style="font-size:9.5px; color:#78350F;">Wave back on Discovery to reveal &amp; unlock chat</div>
+        </div>
+        <div class="session-item-card"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; gap:8px; align-items:center;"><img src="assets/amit_singh.webp" style="width:34px; height:34px; border-radius:50%; object-fit:cover;" alt="Amit"><div><div style="font-size:11px; font-weight:700;">Amit Kumar Singh</div><div style="font-size:9px; color:#047857; font-weight:700;">Mutual Match · Chat Open</div></div></div><button class="btn-coral-lg" style="padding:5px 10px; font-size:9.5px;">Chat</button></div></div>
+        <div class="session-item-card"><div style="display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; gap:8px; align-items:center;"><img src="assets/radhika_bhama.jpg" style="width:34px; height:34px; border-radius:50%; object-fit:cover;" alt="Radhika"><div><div style="font-size:11px; font-weight:700;">Radhika Bhama</div><div style="font-size:9px; color:var(--muted);">Sent wave · Pending</div></div></div><span style="font-size:9.5px; color:var(--muted); font-weight:600;">Take Back</span></div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P19: Waves Chat, Turn-Taking & Limit -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P19</span><span>Waves Chat, Turn-Taking & Limit</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Chat Open · 7 PM</span></div>
-          <div class="phone-scrollable">
-            <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Shammi Proothi</span><span class="role-badge-pill" style="background:#ECFDF5; color:#047857;">Mutual</span></div>
-            <div style="background:#ECFDF5; border:1px solid #86EFAC; border-radius:10px; padding:8px 10px; font-size:10px; font-weight:700; color:#047857;">Chat open until 7:00 PM · Day 1 of 2 · 3 msgs/day</div>
-            <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:10px 12px; font-size:11px; color:var(--ink);">
-              Hi Sunil! Saw your talk on headless WP security. Free after lunch?
-              <div style="font-size:9px; color:var(--muted); margin-top:4px;">Their message 1 of 3 · 11:20 AM</div>
-            </div>
-            <div style="background:var(--coral); border-radius:14px; padding:10px 12px; font-size:11px; color:#FFFFFF; align-self:flex-end; width:86%;">
-              Yes! Espresso stand at 2:15 PM?
-              <div style="font-size:9px; color:#FFE4DE; margin-top:4px; text-align:right;">Message 1 of 3 · sent ✓</div>
-            </div>
-            <div style="background:#FEF3C7; border:1px solid #F59E0B; border-radius:12px; padding:9px 11px; font-size:10px; color:#92400E; font-weight:600;">Waiting for their reply (2 left today) · Or Swap CampCard</div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="app-bar"><span style="font-family:var(--font-heading); font-size:17px; font-weight:800; color:var(--navy);">Shammi Proothi</span><span class="role-badge-pill" style="background:#ECFDF5; color:#047857;">Mutual</span></div>
+        <div style="background:#ECFDF5; border:1px solid #86EFAC; border-radius:10px; padding:8px 10px; font-size:10px; font-weight:700; color:#047857;">Chat open until 7:00 PM · Day 1 of 2 · 3 msgs/day</div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:10px 12px; font-size:11px; color:var(--ink);">
+          Hi Sunil! Saw your talk on headless WP security. Free after lunch?
+          <div style="font-size:9px; color:var(--muted); margin-top:4px;">Their message 1 of 3 · 11:20 AM</div>
+        </div>
+        <div style="background:var(--coral); border-radius:14px; padding:10px 12px; font-size:11px; color:#FFFFFF; align-self:flex-end; width:86%;">
+          Yes! Espresso stand at 2:15 PM?
+          <div style="font-size:9px; color:#FFE4DE; margin-top:4px; text-align:right;">Message 1 of 3 · sent ✓</div>
+        </div>
+        <div style="background:#FEF3C7; border:1px solid #F59E0B; border-radius:12px; padding:9px 11px; font-size:10px; color:#92400E; font-weight:600;">Waiting for their reply (2 left today) · Or Swap CampCard</div>
+        <div style="display:flex; gap:8px; margin-top:auto;"><button class="btn-outline-lg" style="flex:1; padding:7px; font-size:10px;">Swap CampCard</button><button class="btn-outline-lg" style="padding:7px 12px; font-size:10px; color:#DC2626; border-color:#FCA5A5;">Block</button></div>
           </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
         </div>
       </div>
-
-      <!-- PWA 07: Quests & Contributor Day -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P07</span><span>Quests &amp; Contributor Day</span></div>
-        <div class="phone-device">
-          <div class="notch"><div class="notch-camera"></div></div>
-          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Saved Offline</span></div>
-          <div class="phone-scrollable">
-            <div class="tactile-hero-card" style="padding:14px;">
-              <div style="font-size:10px; color:#F59E0B; font-weight:800;">LEVEL 3 CONTRIBUTOR</div>
-              <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#FFFFFF; margin:3px 0;">5 of 9 Quests Done</div>
-              <div style="height:6px; background:#334155; border-radius:99px; overflow:hidden; margin-top:6px;"><div style="width:56%; height:100%; background:#F59E0B;"></div></div>
-            </div>
-            <div class="tactile-card" style="border-color:#10B981;"><div class="tactile-card-title">First Hello ✓</div><div class="tactile-card-sub">Introduced yourself to 3 peers</div></div>
-            <div class="tactile-card" style="background:var(--paper-soft); border-color:#FED7AA;"><div class="tactile-card-title">Table 1 · Core &amp; Gutenberg</div><div class="tactile-card-sub">Hall B · Lead: Amit Kumar Singh</div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PWA 08: Explore Tabs & Tiered Sponsors (APK Parity) -->
-      <div class="phone-card-wrapper">
-        <div class="screen-meta-title"><span class="screen-meta-badge">P08</span><span>Explore 5-Up &amp; Tiered Sponsors</span></div>
+      <!-- PWA P20: Explore 5-Up: Tiered Sponsors Grid -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P20</span><span>Explore 5-Up: Tiered Sponsors Grid</span></div>
         <div class="phone-device">
           <div class="notch"><div class="notch-camera"></div></div>
           <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">18 Sponsors</span></div>
           <div class="phone-scrollable" style="gap:10px;">
-            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;">
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8px; font-weight:700; color:var(--ink);">People</div>
-              <div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8px; font-weight:700; color:var(--wine);">Sponsors</div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8px; font-weight:700; color:var(--ink);">Deals</div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8px; font-weight:700; color:var(--ink);">Steals</div>
-              <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8px; font-weight:700; color:var(--ink);">Info</div>
-            </div>
-            <div style="font-size:9px; font-weight:800; color:var(--wine); letter-spacing:0.6px;">PLATINUM</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-              <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:8px; text-align:center;"><div style="font-size:10px; font-weight:700; color:var(--ink);">W · Woo</div><div style="font-size:8px; color:var(--muted);">woo.com</div></div>
-              <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:8px; text-align:center;"><div style="font-size:10px; font-weight:700; color:var(--ink);">B · Bluehost</div><div style="font-size:8px; color:var(--muted);">bluehost.com</div></div>
-            </div>
-            <div style="font-size:9px; font-weight:800; color:var(--wine); letter-spacing:0.6px;">GOLD</div>
-            <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:10px; text-align:center;">
-              <div style="font-size:11px; font-weight:700; color:var(--ink);">D · Digital Polygon</div>
-              <div style="font-size:8px; color:var(--muted);">www.digitalpolygon.com</div>
-            </div>
+            
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;"><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">People</div><div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--wine);">Sponsors</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Deals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Steals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Info</div></div>
+        <div style="font-size:9px; font-weight:800; color:var(--wine); letter-spacing:0.6px;">PLATINUM</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:8px; text-align:center;"><div style="font-size:10px; font-weight:700; color:var(--ink);">W · Woo</div><div style="font-size:8px; color:var(--muted);">woo.com</div></div>
+          <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:8px; text-align:center;"><div style="font-size:10px; font-weight:700; color:var(--ink);">B · Bluehost</div><div style="font-size:8px; color:var(--muted);">bluehost.com</div></div>
+        </div>
+        <div style="font-size:9px; font-weight:800; color:var(--wine); letter-spacing:0.6px;">GOLD · FULL-WIDTH SOLO</div>
+        <div style="background:#FFFBEB; border:1px solid var(--gold); border-radius:12px; padding:10px; text-align:center;"><div style="font-size:11px; font-weight:700; color:var(--ink);">D · Digital Polygon</div><div style="font-size:8px; color:var(--muted);">www.digitalpolygon.com</div></div>
+        <div style="font-size:9px; font-weight:800; color:var(--wine); letter-spacing:0.6px;">SILVER &amp; STARTUP</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center;"><img src="assets/sponsor_elementor.webp" style="height:22px; width:auto;" alt="Elementor"></div>
+          <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center;"><img src="assets/sponsor_wpfusion.webp" style="height:22px; width:auto;" alt="WP Fusion"></div>
+        </div>
           </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
         </div>
       </div>
-
-    </div>
+      <!-- PWA P21: Explore 5-Up: Sponsor Deals & Claim -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P21</span><span>Explore 5-Up: Sponsor Deals & Claim</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Verified Deals</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;"><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">People</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Sponsors</div><div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--wine);">Deals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Steals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Info</div></div>
+        <div style="background:#FFFFFF; border:1.5px dashed #F59E0B; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:12px; font-weight:700;">WP Fusion · 30% Off</span><span style="font-size:9.5px; font-weight:800; color:var(--wine); background:var(--peach); padding:2px 8px; border-radius:99px;">WCDELHI30</span></div>
+          <div style="font-size:10px; color:var(--muted);">Valid for WordCamp Delhi 2026 attendees through Jan 2027.</div>
+          <button class="btn-coral-lg" style="padding:7px; font-size:10.5px;">Claim with Consent</button>
+        </div>
+        <div style="background:#FFFFFF; border:1px solid var(--line); border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:6px;">
+          <div style="font-size:11px; font-weight:700; color:var(--navy);">Claim Sheet (Opt-In Lead)</div>
+          <div class="field-mock" style="font-size:10px; padding:6px 10px;">amit@wpoets.com · Share only with WP Fusion ✓</div>
+        </div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P22: Explore 5-Up: Free Steals & Event Info -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P22</span><span>Explore 5-Up: Free Steals & Event Info</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Wi-Fi & Tools</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px;"><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">People</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Sponsors</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Deals</div><div style="background:var(--peach); border:1.5px solid #FB923C; border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--wine);">Steals</div><div style="background:#FFFFFF; border:1px solid var(--line); border-radius:10px; padding:6px 2px; text-align:center; font-size:8.5px; font-weight:700; color:var(--ink);">Info</div></div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div style="display:flex; justify-content:space-between;"><div class="tactile-card-title">CookieAdmin Pro Free</div><span class="badge-pill badge-pill-gold" style="font-size:8px; padding:2px 7px;">Made Here</span></div><div class="tactile-card-sub">Lightweight WP DPDP cookie bar · 100% Free for attendees</div></div>
+        <div style="font-size:9px; font-weight:800; color:var(--navy); letter-spacing:0.5px;">INFO TAB · VENUE &amp; YOUR DATA</div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Guest Wi-Fi: WCDELHI-GUEST</div><div class="tactile-card-sub">Passkey: CodeIsPoetry26 · Tap to Copy</div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;"><button class="btn-outline-lg" style="padding:7px; font-size:9.5px;">Export JSON</button><button class="btn-outline-lg" style="padding:7px; font-size:9.5px; color:#DC2626; border-color:#FCA5A5;">Clear Phone</button></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P23: Quests & Contributor Day -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P23</span><span>Quests & Contributor Day</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Saved Offline</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div class="tactile-hero-card" style="padding:14px;">
+          <div style="font-size:10px; color:#F59E0B; font-weight:800;">LEVEL 3 CONTRIBUTOR</div>
+          <div style="font-family:var(--font-heading); font-size:16px; font-weight:800; color:#FFFFFF; margin:3px 0;">5 of 9 Quests Done</div>
+          <div style="height:6px; background:#334155; border-radius:99px; overflow:hidden; margin-top:6px;"><div style="width:56%; height:100%; background:#F59E0B;"></div></div>
+        </div>
+        <div class="tactile-card" style="background:#FFFFFF; border-color:#10B981;"><div class="tactile-card-title">First Hello ✓</div><div class="tactile-card-sub">Introduced yourself to 3 peers · +50 XP</div></div>
+        <div class="tactile-card" style="background:var(--paper-soft); border-color:#FED7AA;"><div class="tactile-card-title">Table 1 · Core &amp; Gutenberg</div><div class="tactile-card-sub">Hall B · Lead: Amit Kumar Singh · Tap for Quiz</div></div>
+        <button class="btn-gold" style="width:100%; padding:9px; font-size:11px; margin-top:auto;">Take 30-Sec Table Quiz</button>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div>
+      <!-- PWA P24: Safety Help Desk & Roster Takedown -->
+      <div class="phone-card-wrapper" data-pwa-role="explore">
+        <div class="screen-meta-title"><span class="screen-meta-badge">P24</span><span>Safety Help Desk & Roster Takedown</span></div>
+        <div class="phone-device">
+          <div class="notch"><div class="notch-camera"></div></div>
+          <div class="phone-status-bar"><span>10:30 AM</span><span style="color:var(--success); font-weight:700;">Confidential</span></div>
+          <div class="phone-scrollable" style="gap:10px;">
+            
+        <div style="background:#FFF5F5; border:1.5px solid #FCA5A5; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-family:var(--font-heading); font-size:15px; font-weight:800; color:#DC2626;">Safety &amp; Conduct Desk</span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div style="font-size:10px; color:var(--muted);">Dr. Ambedkar Intl. Centre Lobby · Instant Alert to Organizers</div>
+          <div class="field-mock" style="background:#FFFFFF; font-size:10px;">Send confidential note (Anonymous: ON)</div>
+          <button class="btn-coral-lg" style="width:100%; padding:8px; font-size:10.5px; background:#DC2626;">Submit Conduct Report</button>
+        </div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Remove Me from Public Roster</div><div class="tactile-card-sub">Instant DPDP self-takedown · Search ticket name</div></div>
+        <div class="tactile-card" style="background:#FFFFFF;"><div class="tactile-card-title">Privacy Policy &amp; Terms Reader</div><div class="tactile-card-sub">Hindi summary &amp; 90-day expiry guarantees offline</div></div>
+          </div>
+          <div class="phone-bottom-nav"><div class="nav-tab-item active"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div><span>Home</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span>Schedule</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><span>Explore</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11"/></svg></div><span>Quest</span></div><div class="nav-tab-item"><div class="nav-icon-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg></div><span>CampCard</span></div></div>
+        </div>
+      </div></div>
+    </section>
   </main>
 
   <!-- ========================================== -->
@@ -2602,7 +3303,7 @@
   <footer class="audit-bar">
     <div style="display:flex; flex-direction:column; gap:2px;">
       <span style="font-family:var(--font-heading); font-size:14px; font-weight:700; color:#FFFFFF;">Clean Design System · Zero Visual Clutter Guarantee</span>
-      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 14 Desktop Web screens · 8 PWA APK-Parity screens · 6 Admin screens (82 Total)</span>
+      <span style="font-size:11px; color:#94A3B8;">54 Mobile APK screens · 24 Desktop Web screens · 24 PWA APK-Parity screens · 6 Admin screens (108 Total)</span>
     </div>
     <div class="audit-checkmarks">
       <span><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -2667,6 +3368,14 @@
       if (btn) btn.classList.add('active');
       document.querySelectorAll('#section-web .web-group-block').forEach(g => {
         g.style.display = (role === 'all' || g.dataset.webRole === role) ? 'block' : 'none';
+      });
+    }
+
+    function filterPwa(role, btn) {
+      document.querySelectorAll('#section-pwa .pwa-filter-pill').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.querySelectorAll('#section-pwa .pwa-group-block').forEach(g => {
+        g.style.display = (role === 'all' || g.dataset.pwaGroup === role) ? 'block' : 'none';
       });
     }
 
