@@ -62,8 +62,8 @@ class PersonName
     public static function variantKeys(string $name): array
     {
         $decoded = self::clean(html_entity_decode($name, ENT_QUOTES | ENT_HTML5));
-        // Strip parenthetical nicknames e.g. "Satyam Vishwakarma (Satya)".
-        $noParens = trim((string) preg_replace('/\s*\([^)]{1,40}\)/u', '', $decoded));
+        // Strip parenthetical or bracketed nicknames/handles e.g. "(Satya)", "[Yugi5002]".
+        $noParens = trim((string) preg_replace('/\s*(?:\([^)]{1,40}\)|\[[^\]]{1,40}\])/u', '', $decoded));
         // Strip trailing digits stuck onto a word e.g. "srinjana123 Sarma" -> "srinjana Sarma".
         $noDigits = trim((string) preg_replace('/(\p{L}{2,})\d+\b/u', '$1', $noParens));
 

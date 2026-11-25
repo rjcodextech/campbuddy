@@ -178,14 +178,20 @@ class WordCampNormalizer
      */
     public function normalizeOrganizers(array $organizers): array
     {
-        return array_map(fn (array $organizer) => [
-            'id' => $organizer['id'],
-            'name' => $this->decodeTitle($this->rendered($organizer['title'] ?? null)),
-            'bio_html' => $this->rendered($organizer['content'] ?? null),
-            'avatar_url' => $this->featuredImage($organizer, 'medium') ?? $this->avatar($organizer),
-            'gravatar_url' => $this->avatar($organizer),
-            'wporg_username' => $this->username($organizer),
-        ], $organizers);
+        return array_map(function (array $organizer) {
+            $bioHtml = $this->rendered($organizer['content'] ?? null);
+
+            return [
+                'id' => $organizer['id'],
+                'name' => $this->decodeTitle($this->rendered($organizer['title'] ?? null)),
+                'bio_html' => $bioHtml,
+                'avatar_url' => $this->featuredImage($organizer, 'medium') ?? $this->avatar($organizer),
+                'gravatar_url' => $this->avatar($organizer),
+                'wporg_username' => $this->username($organizer),
+                'link' => $this->httpUrl($organizer['link'] ?? null),
+                'social_links' => $this->client->extractSocialLinks($bioHtml),
+            ];
+        }, $organizers);
     }
 
     /**
