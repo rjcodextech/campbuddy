@@ -140,16 +140,16 @@ Same shell as /guide: no event, no tab bar. Data: App\Support\BrandTokens. --}}
             <section id="type" class="home-section bg-section">
                 <p class="bg-kicker">{{ $n('type') }} · Typography</p>
                 <h2 class="section-head__title bg-h2">Friendly display, clear text.</h2>
-                <p class="bg-lead">Baloo 2 for headings and numbers, Poppins for everything else. Both self-hosted, both with Devanagari for Hindi.</p>
+                <p class="bg-lead">Plus Jakarta Sans for headings and numbers, Poppins for everything else, with Baloo 2 Devanagari fallback for Hindi — all self-hosted.</p>
                 <div class="bg-grid bg-grid--2">
-                    <div class="card bg-font"><span class="bg-font__aa" style="font-family: var(--font-display)">Aa</span><strong>Baloo 2</strong><span>Headings, numbers, display · 600 · 700 · 800</span><span class="bg-font__set" style="font-family: var(--font-display)">ABCDEFGHIJKLM abcdefghijklm 0123456789 पहला वर्डकैंप</span></div>
+                    <div class="card bg-font"><span class="bg-font__aa" style="font-family: var(--font-display)">Aa</span><strong>Plus Jakarta Sans</strong><span>Headings, numbers, display · 600 · 700 · 800</span><span class="bg-font__set" style="font-family: var(--font-display)">ABCDEFGHIJKLM abcdefghijklm 0123456789 पहला वर्डकैंप</span></div>
                     <div class="card bg-font"><span class="bg-font__aa" style="font-family: Poppins">Aa</span><strong>Poppins</strong><span>Body, UI, labels, buttons · 400 · 500 · 600 · 700</span><span class="bg-font__set">ABCDEFGHIJKLM abcdefghijklm 0123456789 पहला वर्डकैंप</span></div>
                 </div>
                 <h3 class="bg-h3">Type scale</h3>
                 <div class="card bg-scale">
                     @foreach (B::TYPE_SCALE as [$role, $family, $weight, $size, $sample])
                         <div class="bg-scale__row">
-                            <div class="bg-scale__meta"><strong>{{ $role }}</strong><span>{{ $family === 'display' ? 'Baloo 2' : 'Poppins' }} {{ $weight }} · {{ $size }} px</span></div>
+                            <div class="bg-scale__meta"><strong>{{ $role }}</strong><span>{{ $family === 'display' ? 'Plus Jakarta Sans' : 'Poppins' }} {{ $weight }} · {{ $size }} px</span></div>
                             <div class="bg-scale__sample" style="font-family: {{ $family === 'display' ? 'var(--font-display)' : 'Poppins' }}; font-weight: {{ $weight }}; font-size: {{ $size }}px;{{ in_array($role, ['Kicker', 'Badge']) ? ' letter-spacing:.14em; color: var(--brand-primary)' : '' }}">{{ $sample }}</div>
                         </div>
                     @endforeach

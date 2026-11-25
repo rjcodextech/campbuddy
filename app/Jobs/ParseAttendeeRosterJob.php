@@ -10,6 +10,7 @@ use App\Support\SafeSync;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -46,12 +47,19 @@ class ParseAttendeeRosterJob implements ShouldQueue
 
         try {
             $response = Http::timeout(15)
+                ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
                 ->accept('text/html')
-                ->retry(2, 1000, fn ($e) => $e instanceof ConnectionException, throw: true)
+                ->retry(2, 1000, fn ($e) => $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429)), throw: true)
                 ->get($url)
                 ->throw();
+            $body = $response->body();
+            if (trim($body) === '') {
+                $this->log('error', 'Attendees page returned an empty response — keeping last known roster intact.');
+
+                return;
+            }
             $scraper = new AttendeeRosterScraper;
-            $entries = $scraper->parse($response->body());
+            $entries = $scraper->parse($body);
 
             if ($entries === null) {
                 // The .tix-attendee-list markup wasn't found at all —

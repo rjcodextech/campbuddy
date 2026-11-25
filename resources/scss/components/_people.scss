@@ -38,9 +38,14 @@
     // poke out past the row's edge.
     .meet-btn {
         position: relative;
-        min-width: 80px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        min-width: 82px;
         min-height: 32px;
-        padding: 0 v.$space-2;
+        padding: 0 v.$space-3;
+        text-align: center;
         font-size: 0.8125rem; // 13px — a step under the 14px name
 
         &::after {
@@ -232,7 +237,9 @@
     -webkit-overflow-scrolling: touch;
     gap: 8px;
     margin: v.$space-3 0;
-    padding-bottom: 4px;
+    padding: 2px 28px 6px 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 88%, transparent 100%);
 
     &::-webkit-scrollbar {
         display: none;

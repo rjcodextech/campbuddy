@@ -30,7 +30,7 @@
     $cocUrl = $webUrl($info['code_of_conduct_url'] ?? null);
 @endphp
 
-<div class="guide-doc-layout">
+<div class="guide-doc-layout{{ $event ? ' guide-doc-layout--event' : '' }}">
     {{-- Left Side: Sticky Navigation Menu --}}
     <aside class="guide-doc-sidebar" aria-label="Guide Navigation">
         <div class="guide-doc-sidebar__card">
@@ -143,6 +143,46 @@
         </section>
 
 
+@if ($event && ($practical || $cocUrl))
+    <section id="guide-here" class="guide-section" data-track-section-view="here" aria-labelledby="guide-here-heading">
+        <div class="section-head">
+            <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> Venue Practicals</span>
+            <h2 id="guide-here-heading" class="guide-section__title">At {{ $event->display_name }}</h2>
+            <span class="section-head__desc">Essential venue address, help desk, Wi-Fi, and safety details for this WordCamp</span>
+        </div>
+        <div class="guide-practical__grid">
+            @foreach ($practical as [$icon, $label, $value, $href])
+                @if ($href)
+                    <a class="practical-card practical-card--link" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency">
+                        <span class="practical-card__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
+                        <span class="practical-card__body">
+                            <span class="practical-card__label">{{ $label }}</span>
+                            <span class="practical-card__value">{{ $value }}</span>
+                        </span>
+                    </a>
+                @else
+                    <div class="practical-card">
+                        <span class="practical-card__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
+                        <span class="practical-card__body">
+                            <span class="practical-card__label">{{ $label }}</span>
+                            <span class="practical-card__value">{{ $value }}</span>
+                        </span>
+                    </div>
+                @endif
+            @endforeach
+            @if ($cocUrl)
+                <a class="practical-card practical-card--link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct">
+                    <span class="practical-card__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span>
+                    <span class="practical-card__body">
+                        <span class="practical-card__label">Code of Conduct</span>
+                        <span class="practical-card__value">The community standards that keep this WordCamp welcoming for everyone.</span>
+                    </span>
+                </a>
+            @endif
+        </div>
+    </section>
+@endif
+
 <section id="guide-why" class="guide-section" aria-labelledby="guide-why-heading">
     <div class="card guide-why-card">
         <div class="section-head" style="margin-bottom:16px">
@@ -174,33 +214,6 @@
         </div>
     </div>
 </section>
-
-@if ($event && ($practical || $cocUrl))
-    <section id="guide-here" class="guide-section" data-track-section-view="here" aria-labelledby="guide-here-heading">
-        <h2 id="guide-here-heading" class="guide-section__title">At {{ $event->display_name }}</h2>
-        <div class="card guide-practical">
-            @foreach ($practical as [$icon, $label, $value, $href])
-                @if ($href)
-                    <a class="useful-link" href="{{ $href }}" data-track="useful_link_click" data-track-link-type="emergency">
-                        <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
-                        <span><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ $value }}</span></span>
-                    </a>
-                @else
-                    <div class="useful-link">
-                        <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon :name="$icon" /></span>
-                        <span><span class="useful-link__title">{{ $label }}</span><span class="useful-link__desc">{{ $value }}</span></span>
-                    </div>
-                @endif
-            @endforeach
-            @if ($cocUrl)
-                <a class="useful-link" href="{{ $cocUrl }}" target="_blank" rel="noopener" data-track="useful_link_click" data-track-link-type="code_of_conduct">
-                    <span class="useful-link__icon" aria-hidden="true"><x-attendee.line-icon name="clipboard" /></span>
-                    <span><span class="useful-link__title">Code of Conduct</span><span class="useful-link__desc">The rules that keep this event welcoming for everyone.</span></span>
-                </a>
-            @endif
-        </div>
-    </section>
-@endif
 
 <section id="guide-what" class="guide-section" data-track-section-view="what" aria-labelledby="guide-what-heading">
     <div class="section-head">

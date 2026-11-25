@@ -226,16 +226,23 @@
     }
 }
 
-// A button that reads as an inline text link (e.g. "Download the raw data").
+// A button that reads as a clean inline action link (e.g. "Download the raw data").
 .link-button {
-    padding: 0;
-    border: 0;
-    background: none;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: v.$radius-full;
+    background: var(--paper);
     font: inherit;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
     color: var(--brand-text);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    text-decoration: none;
     cursor: pointer;
+
+    @include m.hover {
+        border-color: var(--brand-primary);
+        background: var(--peach);
+    }
 }
 
 // --- Contributor Day tables on the Contribute tab (contribute.js) ------------

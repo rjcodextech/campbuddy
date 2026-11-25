@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -37,6 +39,7 @@ class WordCampDiscoveryScraper
         try {
             $html = Http::timeout(self::TIMEOUT_SECONDS)
                 ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://wordpress.org/plugins/)'])
+                ->retry(3, 800, fn (\Throwable $e) => $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429)), throw: true)
                 ->get(self::URL)
                 ->throw()
                 ->body();
@@ -44,12 +47,9 @@ class WordCampDiscoveryScraper
             return null;
         }
 
-        if (! preg_match('/globalEventsPayload\["events\d+"\]\s*=\s*(\{.*?\});/s', $html, $matches)) {
-            return null;
-        }
-
-        $payload = json_decode($matches[1], true);
-        $events = $payload['events'] ?? null;
+        $json = self::extractGlobalPayload($html);
+        $payload = $json !== null ? json_decode($json, true) : null;
+        $events = is_array($payload) ? ($payload['events'] ?? null) : null;
 
         if (! is_array($events)) {
             return null;
@@ -68,6 +68,51 @@ class WordCampDiscoveryScraper
                 'ends_on' => self::localDate($event['end_date'] ?? null),
             ];
         }, $events)));
+    }
+
+    /**
+     * Extract the full JSON object assigned to `globalEventsPayload["eventsN"]`
+     * safely by balancing braces outside quoted strings.
+     */
+    private static function extractGlobalPayload(string $html): ?string
+    {
+        if (! preg_match('/globalEventsPayload\["events\d+"\]\s*=\s*\{/', $html, $m, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $start = $m[0][1] + strlen($m[0][0]) - 1;
+        $len = strlen($html);
+        $depth = 0;
+        $inStr = false;
+        $escape = false;
+
+        for ($i = $start; $i < $len; $i++) {
+            $ch = $html[$i];
+            if ($escape) {
+                $escape = false;
+                continue;
+            }
+            if ($inStr) {
+                if ($ch === '\\') {
+                    $escape = true;
+                } elseif ($ch === '"') {
+                    $inStr = false;
+                }
+                continue;
+            }
+            if ($ch === '"') {
+                $inStr = true;
+            } elseif ($ch === '{') {
+                $depth++;
+            } elseif ($ch === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    return substr($html, $start, $i - $start + 1);
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

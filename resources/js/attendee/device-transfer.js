@@ -76,7 +76,7 @@ export function openTransferRequest({ eventSlug, eventId, entry }) {
         transferId: made.transfer_id,
         secret: made.secret,
         privateKey: keys.privateKey,
-        code: await codeFor(keys.publicKey),
+        code: made.code ?? await codeFor(keys.publicKey),
         entry: { id: entry.id, name: entry.name ?? '', gravatar_url: entry.gravatar_url ?? null },
         expiresAt: Date.parse(made.expires_at),
       };
@@ -317,8 +317,8 @@ function askToApprove({ eventSlug, eventId, mine, transfer }) {
       const btn = dialog.querySelector('[data-transfer-approve]');
       const typed = input.value.replace(/\D/g, '');
 
-      if (typed !== (await codeFor(transfer.requester_key))) {
-        fail("That code doesn't match. Type the 6 digits shown on your new device — if you didn't ask, tap Not me.");
+      if (!/^\d{6}$/.test(typed)) {
+        fail("Type the 6-digit code shown on your new device — if you didn't ask, tap Not me.");
         input.focus();
         return;
       }
@@ -330,12 +330,13 @@ function askToApprove({ eventSlug, eventId, mine, transfer }) {
         const dump = await exportAll();
         const local = Object.fromEntries(LOCAL_KEYS.map((k) => [k, safeLocalGet(k)]));
         const sealed = await seal(bundleFrom(dump, local), transfer.requester_key, transfer.transfer_id);
-        senderSecret = (await apiMutate(eventSlug, `/discovery/${mine.discoveryId}/transfer/${transfer.transfer_id}/approve`, 'POST', sealed, mine.ownerToken)).secret;
+        senderSecret = (await apiMutate(eventSlug, `/discovery/${mine.discoveryId}/transfer/${transfer.transfer_id}/approve`, 'POST', { ...sealed, code: typed }, mine.ownerToken)).secret;
         await kvSet(SENT_KEY(eventId), { transferId: transfer.transfer_id, secret: senderSecret }).catch(() => {});
         track('device_transfer_approve');
       } catch (error) {
         btn.disabled = false;
-        fail(error.userMessage ?? "Couldn't send. Check your connection and try again.");
+        fail(error.userMessage ?? "That code didn't match or couldn't send. Check the 6 digits and try again.");
+        input.focus();
         return;
       }
 

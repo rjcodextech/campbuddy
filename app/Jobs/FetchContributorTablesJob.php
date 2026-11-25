@@ -9,6 +9,9 @@ use App\Services\ContributorDayParser;
 use App\Support\ContributorTables;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -38,6 +41,13 @@ class FetchContributorTablesJob implements ShouldQueue
             return;
         }
 
+        Cache::lock("ingest:tables:{$this->event->id}", 120)->block(10, function () {
+            $this->syncTables();
+        });
+    }
+
+    private function syncTables(): void
+    {
         try {
             [$found, $pages] = $this->read();
         } catch (Throwable $e) {
@@ -82,7 +92,12 @@ class FetchContributorTablesJob implements ShouldQueue
     private function read(): array
     {
         $base = rtrim($this->event->source_site_url, '/');
-        $hits = Http::timeout(15)->acceptJson()->get("{$base}/wp-json/wp/v2/search", ['search' => 'contributor day', 'per_page' => 10, 'type' => 'post'])->throw()->json();
+        $retry = fn (Throwable $e) => $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429));
+        $hits = Http::timeout(15)
+            ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+            ->acceptJson()
+            ->retry(2, 500, $retry, throw: true)
+            ->get("{$base}/wp-json/wp/v2/search", ['search' => 'contributor day', 'per_page' => 10, 'type' => 'post'])->throw()->json();
         $hits = is_array($hits) && array_is_list($hits) ? $hits : [];
 
         $parser = new ContributorDayParser;
@@ -94,7 +109,11 @@ class FetchContributorTablesJob implements ShouldQueue
             if (! str_contains($title, 'contributor') || ! in_array($subtype, ['page', 'post'], true) || ! is_int($hit['id'] ?? null)) {
                 continue;
             }
-            $post = Http::timeout(15)->acceptJson()->get("{$base}/wp-json/wp/v2/{$subtype}s/{$hit['id']}", ['_fields' => 'content'])->throw()->json();
+            $post = Http::timeout(15)
+                ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+                ->acceptJson()
+                ->retry(2, 500, $retry, throw: true)
+                ->get("{$base}/wp-json/wp/v2/{$subtype}s/{$hit['id']}", ['_fields' => 'content'])->throw()->json();
             $pages++;
             $found = [...$found, ...$parser->parse((string) ($post['content']['rendered'] ?? ''))];
             if ($pages >= 3) {

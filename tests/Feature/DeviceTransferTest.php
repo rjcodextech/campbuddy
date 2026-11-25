@@ -275,4 +275,54 @@ class DeviceTransferTest extends TestCase
         $this->assertNull(DeviceTransfer::labelFor(null));
         $this->assertSame(40, strlen(Str::random(40)));
     }
+
+    public function test_unique_six_digit_code_is_generated_on_request_and_verified_safely(): void
+    {
+        $secondAttendee = AttendeeRoster::create([
+            'event_id' => $this->event->id,
+            'name' => 'Grace Hopper',
+            'content_hash' => hash('sha256', 'grace'),
+            'is_suppressed' => false,
+        ]);
+        $secondJoin = $this->postJson(route('api.discovery.store', $this->event), ['tags' => ['speaker'], 'attendee_roster_id' => $secondAttendee->id])->assertCreated();
+
+        $req1 = $this->request()->assertCreated();
+        $req2 = $this->request($secondAttendee->id)->assertCreated();
+
+        $code1 = $req1->json('code');
+        $code2 = $req2->json('code');
+
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $code1);
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $code2);
+        $this->assertNotSame($code1, $code2, 'Active transfer codes must never collide');
+
+        // Old device never receives the secret PIN via /pending.
+        $pending = $this->pending()->assertOk();
+        $pending->assertJsonMissingPath('transfer.code');
+        $pending->assertJsonMissingPath('transfer.transfer_code');
+        $pending->assertJsonMissingPath('transfer.code_hash');
+
+        $tid1 = $req1->json('transfer_id');
+        $wrongCode = $code1 === '987654' ? '456789' : '987654';
+
+        // Wrong 6-digit codes fail server verification, until MAX_CODE_ATTEMPTS cancels it.
+        for ($i = 1; $i < DeviceTransfer::MAX_CODE_ATTEMPTS; $i++) {
+            $this->approve($tid1, $this->sealed() + ['code' => $wrongCode])->assertUnprocessable()->assertJsonValidationErrors('code');
+            $this->assertSame('pending', DeviceTransfer::firstWhere('transfer_id', $tid1)->status);
+        }
+        $this->approve($tid1, $this->sealed() + ['code' => $wrongCode])->assertUnprocessable()->assertJsonValidationErrors('code');
+        $cancelled = DeviceTransfer::firstWhere('transfer_id', $tid1);
+        $this->assertSame('cancelled', $cancelled->status);
+        $this->assertNull($cancelled->transfer_code);
+
+        // Fresh request succeeds with exact 6-digit PIN and releases its transfer_code immediately.
+        $fresh = $this->request()->assertCreated();
+        $freshTid = $fresh->json('transfer_id');
+        $freshCode = $fresh->json('code');
+        $this->approve($freshTid, $this->sealed() + ['code' => $freshCode])->assertOk();
+        $approved = DeviceTransfer::firstWhere('transfer_id', $freshTid);
+        $this->assertSame('approved', $approved->status);
+        $this->assertNull($approved->transfer_code);
+        $this->assertSame(1, $secondJoin->json() ? 1 : 0);
+    }
 }

@@ -5,6 +5,35 @@
 // (icon/heading/description/actions) than the plain Checklist rows
 // below them, which stay a simple checkbox list for admin-authored
 // per-event quests.
+// 2-column crisp grid on tablet/desktop so quest cards stay balanced rather than 840px wide
+#things-to-do-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: v.$space-3;
+
+    @include m.tablet {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quest-card {
+        margin-bottom: 0;
+        height: 100%;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .quest-card__body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .quest-card__actions {
+        margin-top: auto;
+        align-items: center;
+    }
+}
+
 .quest-card {
     @include m.card-surface;
     display: flex;

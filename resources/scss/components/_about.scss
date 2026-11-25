@@ -1016,10 +1016,10 @@
     z-index: 2;
     margin: 0 0 v.$space-3;
     font-family: v.$font-display;
-    font-size: clamp(1.65rem, 5.2vw, 2.85rem);
+    font-size: clamp(1.55rem, 3.6vw, 2.4rem);
     font-weight: v.$font-weight-black;
     line-height: 1.18;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.025em;
     color: var(--ink);
 }
 
@@ -1056,10 +1056,10 @@
     position: relative;
     z-index: 2;
     margin: 0 auto v.$space-4;
-    font-size: v.$font-size-base;
+    font-size: 0.96rem;
     line-height: 1.65;
     color: var(--muted);
-    max-width: 38rem;
+    max-width: 40rem;
 }
 
 .hero-creative__pills {
@@ -1067,12 +1067,12 @@
     z-index: 2;
     display: flex;
     flex-wrap: wrap;
-    gap: v.$space-2;
+    gap: 8px;
     margin: 0 auto v.$space-5;
 
     @include m.tablet {
         justify-content: center;
-        max-width: 44rem;
+        max-width: 100%;
     }
 }
 

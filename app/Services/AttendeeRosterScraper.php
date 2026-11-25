@@ -89,6 +89,9 @@ class AttendeeRosterScraper
             $first = trim($nameNode->filter('.tix-first')->count() ? $nameNode->filter('.tix-first')->text() : '');
             $last = trim($nameNode->filter('.tix-last')->count() ? $nameNode->filter('.tix-last')->text() : '');
             $name = trim("{$first} {$last}");
+            if ($name === '') {
+                $name = trim(preg_replace('/\s+/u', ' ', $nameNode->text('')) ?? '');
+            }
 
             if ($name === '') {
                 return;

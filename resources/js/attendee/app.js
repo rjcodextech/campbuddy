@@ -209,6 +209,34 @@ async function init() {
   }
 
   initDocSidebarScrollSpy();
+  initGlobalHelpModal();
+}
+
+function initGlobalHelpModal() {
+  const btn = document.getElementById('sticky-help-btn');
+  const modal = document.getElementById('help-modal');
+  const close = document.getElementById('help-modal-close');
+  if (!btn || !modal || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+
+  const open = () => {
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+  };
+
+  const dismiss = () => {
+    modal.classList.remove('is-open');
+    setTimeout(() => { modal.hidden = true; }, 250);
+  };
+
+  btn.addEventListener('click', open);
+  close?.addEventListener('click', dismiss);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) dismiss();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) dismiss();
+  });
 }
 
 function initDocSidebarScrollSpy() {

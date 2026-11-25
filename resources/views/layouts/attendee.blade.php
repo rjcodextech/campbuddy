@@ -92,6 +92,7 @@
             {{ $slot }}
         </div>
 
+        @include('attendee.partials.help-desk')
         @include('attendee.partials.nav')
     </div>
 

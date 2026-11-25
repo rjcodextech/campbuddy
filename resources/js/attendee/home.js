@@ -84,7 +84,6 @@ export async function renderHome(root) {
   renderTactileHero(ctx);
   renderPeopleStrip(eventSlug, eventId, ctx.urls?.explore);
   renderActionGrid(bookmarks.length);
-  initHelpModal();
 
   const discoveryEl = document.getElementById('people-discovery-home');
   if (discoveryEl) {
@@ -538,38 +537,6 @@ function renderActionGrid(savedCount) {
   if (countEl) {
     countEl.textContent = String(savedCount);
   }
-}
-
-// --- Sticky Help Bar & SOS Sheet ---
-
-function initHelpModal() {
-  const btn = document.getElementById('sticky-help-btn');
-  const modal = document.getElementById('help-modal');
-  const close = document.getElementById('help-modal-close');
-  if (!btn || !modal) return;
-
-  function open() {
-    modal.hidden = false;
-    requestAnimationFrame(() => {
-      modal.classList.add('is-open');
-    });
-  }
-
-  function dismiss() {
-    modal.classList.remove('is-open');
-    setTimeout(() => {
-      modal.hidden = true;
-    }, 250);
-  }
-
-  btn.addEventListener('click', open);
-  close?.addEventListener('click', dismiss);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) dismiss();
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) dismiss();
-  });
 }
 
 

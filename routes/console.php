@@ -49,7 +49,7 @@ Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchSpeakersSponsorsSessionsJob::dispatch($event)->delay(now()->addSeconds($index * 5));
     });
-})->dailyAt('02:00')->name('ingest-sessions-speakers-sponsors');
+})->twiceDaily(2, 14)->name('ingest-sessions-speakers-sponsors')->withoutOverlapping(30);
 
 // On the event day(s), event-related ingestion runs on every hour for live schedule & roster accuracy.
 Schedule::call(function () {
@@ -64,44 +64,35 @@ Schedule::call(function () {
                 ParseAttendeeRosterJob::dispatch($event)->delay(now()->addSeconds($index * 15));
             }
         });
-})->hourly()->name('event-day-hourly-refresh');
+})->hourly()->name('event-day-hourly-refresh')->withoutOverlapping(30);
 
-// Event Information (venue, links, contact…) changes rarely — venue and
-// pages get filled in as organizers finish them — so once a day is plenty,
-// for events that are approved or live. Admin-typed values are never touched.
+// Event Information (venue, links, contact…) runs twice daily for approved and live events. Admin-typed values are never touched.
 Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchEventInfoJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
-})->dailyAt('02:00')->name('ingest-event-info');
+})->cron('10 2,14 * * *')->name('ingest-event-info')->withoutOverlapping(30);
 
-// Midnight in the app's timezone (APP_TIMEZONE, UTC unless set), every active
-// event, staggered so two WordCamp sites are never scraped at once. The job
-// upserts new attendees and drops the ones who've left the source page.
+// Twice daily staggered per active event (00:00 and 12:00); upserts new attendees and keeps suppressed entries suppressed.
 Schedule::call(function () {
     Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         ParseAttendeeRosterJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
-})->dailyAt('00:00')->name('ingest-attendee-roster');
+})->twiceDaily(0, 12)->name('ingest-attendee-roster')->withoutOverlapping(30);
 
-// Branding is fetched when an event goes live, but that one-shot can miss
-// (site down at that moment, queue hiccup). Retry daily for any live event
-// still without a logo or favicon — only the missing one, never overwriting
-// what an admin uploaded.
-// A real photo for everyone on the attendee list (FillMissingPhotosJob), after
-// the night's roster scrape; retries any missing or failed photos daily.
+// A real photo for everyone on the attendee list (FillMissingPhotosJob), after each roster scrape.
 Schedule::call(function () {
     Event::where('status', 'active')->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FillMissingPhotosJob::dispatch($event, retryMissing: true)->delay(now()->addSeconds($index * 20));
     });
-})->dailyAt('00:40')->name('fill-missing-photos');
+})->cron('40 0,12 * * *')->name('fill-missing-photos')->withoutOverlapping(30);
 
-// Contributor Day teams and table leads from the site's own pages (FetchContributorTablesJob).
+// Contributor Day teams and table leads from the site's own pages (FetchContributorTablesJob), twice daily.
 Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])->get()->filter(fn (Event $event) => EventTime::refreshing($event))->values()->each(function (Event $event, int $index) {
         FetchContributorTablesJob::dispatch($event)->delay(now()->addSeconds($index * 10));
     });
-})->dailyAt('02:15')->name('fetch-contributor-tables');
+})->cron('15 2,14 * * *')->name('fetch-contributor-tables')->withoutOverlapping(30);
 
 Schedule::call(function () {
     Event::whereIn('status', ['approved', 'active'])
@@ -110,7 +101,7 @@ Schedule::call(function () {
         ->each(function (Event $event, int $index) {
             FetchBrandingAssetsJob::dispatch($event, onlyMissing: true)->delay(now()->addSeconds($index * 10));
         });
-})->dailyAt('02:30')->name('backfill-event-branding');
+})->cron('30 2,14 * * *')->name('backfill-event-branding')->withoutOverlapping(30);
 
 // Proof of life for the admin dashboard: if this stops being written, the
 // cron entry that runs the scheduler isn't running (App\Support\SystemHealth).
@@ -136,46 +127,36 @@ Schedule::job(new SendAfterEventPushesJob)->hourlyAt(10)->name('send-after-event
 // expression: day-of-month divisible by 2 (i.e. every even calendar
 // day), not a rolling 48-hour timer — close enough for a discovery job
 // with no real time pressure.
-Schedule::job(new DiscoverWordCampsJob)->cron('0 3 */2 * *')->name('discover-wordcamps');
+Schedule::job(new DiscoverWordCampsJob)->twiceDaily(3, 15)->name('discover-wordcamps')->withoutOverlapping(30);
 
 // Auto-publish a draft once its site is up and it has a real attendee,
-// and archive whatever's dates have already passed — daily, offset from
-// midnight so it doesn't pile onto ingest-attendee-roster's own run.
-Schedule::job(new EvaluateEventLifecycleJob)->dailyAt('01:00')->name('evaluate-event-lifecycle');
+// and archive whatever's dates have already passed — twice daily.
+Schedule::job(new EvaluateEventLifecycleJob)->twiceDaily(1, 13)->name('evaluate-event-lifecycle')->withoutOverlapping(30);
 
-// The fetch log gets a row every 15 minutes for every active event (about 26,000 a month
-// live) and nothing reads it for more than the last few days — except "the last fetch of each
-// kind", which stays. Keeps 7 days plus the newest row of each (event, kind of fetch); deletes in
-// chunks so it never holds a lock for long. `php artisan campbuddy:prune-fetch-log` does it by hand.
+// Keeps 7 days plus the newest row of each (event, kind of fetch); runs twice daily.
 Schedule::call(fn () => FetchLogRetention::prune())
-    ->dailyAt('03:20')
+    ->cron('20 3,15 * * *')
     ->name('prune-fetch-log')
     ->withoutOverlapping(30);
-// The Social media copies of logos, artwork and fonts: unused copies go, and
-// automatically deletes event branding and cache for events finished 30+ days ago.
+// Automatically cleans unused social media artwork caches and old expired event caches twice daily.
 Schedule::call(fn () => Artisan::call('campbuddy:clear-social-cache'))
-    ->dailyAt('00:15')
+    ->cron('15 0,12 * * *')
     ->name('clear-social-cache')
     ->withoutOverlapping(30);
-// The posts due today (SocialPlan), pushed every morning to the organizers who
-// turned on post reminders; hourly at :15 to avoid colliding with :05 thank-you pushes.
+// The posts due today (SocialPlan), pushed to organizers; hourly at :15.
 Schedule::call(fn () => Artisan::call('campbuddy:post-reminders'))
     ->hourlyAt(15)
     ->name('post-reminders')
     ->withoutOverlapping(10);
-// Tell search engines about new and changed pages (IndexNow) once a day. Run
-// in-process (Artisan::call) like the queue drain below — hosts often disable
-// proc_open. The command itself does nothing outside production.
+// Notify search engines (IndexNow) twice daily in production.
 Schedule::call(fn () => Artisan::call('campbuddy:indexnow'))
-    ->dailyAt('04:30')
+    ->cron('30 4,16 * * *')
     ->name('indexnow')
     ->withoutOverlapping(30);
 
-// What attendees shared (discovery profiles, shared Camp Cards, push addresses, deal-form leads…) is only
-// hidden after an event's retention window; 60 days later it is really deleted (DPDPA: purpose served).
-// Nightly, after the other maintenance. `php artisan campbuddy:erase-expired-data --dry-run` only counts.
+// DPDPA compliance: erase expired shared personal data twice daily.
 Schedule::call(fn () => Artisan::call('campbuddy:erase-expired-data'))
-    ->dailyAt('03:40')
+    ->cron('40 3,15 * * *')
     ->name('erase-expired-personal-data')
     ->withoutOverlapping(30);
 

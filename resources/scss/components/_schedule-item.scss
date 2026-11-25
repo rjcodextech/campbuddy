@@ -102,22 +102,21 @@
 .schedule-item__title {
     display: flex;
     align-items: center;
-    gap: v.$space-1;
+    justify-content: space-between;
+    gap: v.$space-2;
     width: 100%;
-    // A one-line title is only ~21px tall. Grow the tappable area to 44px
-    // into the row's own padding (the negative margin cancels it, so the
-    // layout doesn't move).
     padding: 12px 0;
     margin: -12px 0;
     border: 0;
     background: none;
     text-align: left;
     cursor: pointer;
+    font-family: v.$font-display;
     font-size: v.$font-size-base;
-    font-weight: v.$font-weight-regular;
+    font-weight: v.$font-weight-bold;
     line-height: v.$line-height-heading;
     color: var(--ink);
-    text-decoration: underline;
+    text-decoration: none;
     text-underline-offset: 3px;
     text-decoration-color: var(--line);
     transition: text-decoration-color 0.15s ease;

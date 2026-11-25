@@ -262,20 +262,69 @@
 
     @media (min-width: v.$bp-desktop) {
         display: grid;
-        grid-template-columns: 260px minmax(0, 1fr);
+        grid-template-columns: 248px minmax(0, 1fr);
         gap: v.$space-8;
         align-items: start;
+    }
+}
+
+// Inside an event (/event/{slug}/guide), the primary left nav is already present,
+// so Guide Sections uses a sticky horizontal bar instead of a second left column.
+.guide-doc-layout--event {
+    @media (min-width: v.$bp-desktop) {
+        display: flex;
+        flex-direction: column;
+        gap: v.$space-5;
+
+        .guide-doc-sidebar {
+            position: sticky;
+            top: 72px;
+            z-index: 15;
+            width: 100%;
+            max-height: none;
+            overflow-x: auto;
+            overflow-y: visible;
+            padding: 0;
+        }
+
+        .guide-doc-sidebar__card {
+            padding: 8px 14px;
+            border-radius: 16px;
+        }
+
+        .guide-doc-sidebar__head {
+            display: none;
+        }
+
+        .guide-jump.guide-jump--sidebar {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            overflow: visible;
+
+            .chip {
+                width: auto;
+                min-height: 34px;
+                padding: 5px 11px;
+                white-space: nowrap;
+                flex-shrink: 0;
+                border-radius: v.$radius-full;
+            }
+        }
     }
 }
 
 // Left Sidebar
 .guide-doc-sidebar {
     @media (max-width: #{v.$bp-desktop - 1px}) {
-        order: 2; // Below hero on mobile
+        order: 2; // Sticky immediately below hero on mobile/tablet
         position: sticky;
-        top: 88px;
+        top: 56px;
         z-index: 20;
-        margin: calc(-1 * #{v.$space-2}) calc(-1 * #{v.$space-4}) v.$space-4;
+        margin: calc(-1 * #{v.$space-1}) calc(-1 * #{v.$space-4}) v.$space-3;
         padding: v.$space-2 v.$space-4;
         background: var(--surface-glass);
         backdrop-filter: blur(14px);
@@ -287,6 +336,11 @@
 
         &::-webkit-scrollbar {
             display: none;
+        }
+
+        .guide-jump.guide-jump--sidebar {
+            margin: 0;
+            padding: 0;
         }
 
         @media (min-width: v.$bp-tablet) {
@@ -364,7 +418,15 @@
     min-width: 0;
 
     @media (max-width: #{v.$bp-desktop - 1px}) {
-        display: contents; // Hero is order 1, sections are order 3
+        display: contents;
+
+        .hero-creative {
+            order: 1;
+        }
+
+        > section {
+            order: 3;
+        }
     }
 
     @media (min-width: v.$bp-desktop) {
@@ -463,16 +525,20 @@
 }
 
 .guide-section__title {
-    font-size: v.$font-size-md;
+    font-family: v.$font-display;
+    font-size: 1.35rem;
     font-weight: v.$font-weight-black;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
     color: var(--ink);
-    margin: 0 0 v.$space-2;
+    margin: 0 0 6px;
 }
 
 .guide-section__desc {
-    font-size: v.$font-size-sm;
+    font-size: 0.92rem;
+    line-height: 1.55;
     color: var(--muted);
-    margin: 0 0 v.$space-3;
+    margin: 0 0 v.$space-4;
 }
 
 .guide-prose p {
@@ -491,6 +557,83 @@
     .useful-link:last-child {
         border-bottom: 0;
     }
+}
+
+.guide-practical__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: v.$space-3;
+
+    @include m.tablet {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: v.$space-4;
+    }
+}
+
+.practical-card {
+    @include m.card-surface;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: v.$radius-card;
+    border: 1px solid var(--surface-border);
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+    text-decoration: none;
+    color: var(--ink);
+    transition: transform v.$duration-fast var(--ease-spring), border-color v.$duration-fast ease, box-shadow v.$duration-fast ease;
+
+    &--link {
+        cursor: pointer;
+
+        @include m.hover {
+            transform: translateY(-2px);
+            border-color: var(--brand-border-glow);
+            box-shadow: var(--shadow-card-elevated);
+        }
+    }
+}
+
+.practical-card__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: v.$radius-row;
+    background: var(--peach);
+    color: var(--brand-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    svg,
+    .line-icon {
+        width: 19px;
+        height: 19px;
+    }
+}
+
+.practical-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.practical-card__label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.practical-card__value {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--ink);
+    overflow-wrap: anywhere;
 }
 
 // The day, as a vertical timeline: an icon bubble on a connecting line.
@@ -947,15 +1090,11 @@
     grid-template-columns: 1fr;
     gap: v.$space-3;
     margin-top: v.$space-5;
+    align-items: stretch;
 
-    @media (min-width: v.$bp-tablet) {
-        grid-template-columns: repeat(2, 1fr);
+    @media (min-width: 640px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: v.$space-4;
-    }
-
-    @media (min-width: v.$bp-desktop) {
-        grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-        gap: v.$space-5;
     }
 
     .superpower-col {
@@ -963,6 +1102,7 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
+        height: 100%;
         padding: v.$space-4;
         background: var(--paper);
         border: 1px solid var(--surface-border);
@@ -970,7 +1110,7 @@
         box-shadow: v.$shadow-sm;
         transition: transform v.$duration-normal var(--ease-spring), box-shadow v.$duration-normal ease, border-color v.$duration-normal ease;
 
-        &:hover {
+        @include m.hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-card-hover);
             border-color: var(--brand-border-glow);

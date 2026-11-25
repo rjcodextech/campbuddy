@@ -23,10 +23,16 @@ class DeviceTransfer extends Model
     /** The sealed data's largest accepted size, in base64url characters (~1.5 MB). */
     public const MAX_PAYLOAD = 2_000_000;
 
+    /** Max wrong 6-digit PIN entries before the transfer self-cancels. */
+    public const MAX_CODE_ATTEMPTS = 5;
+
     protected $fillable = [
         'event_id',
         'discovery_profile_id',
         'transfer_id',
+        'transfer_code',
+        'code_hash',
+        'failed_code_attempts',
         'status',
         'requester_key',
         'requester_secret_hash',
@@ -43,10 +49,38 @@ class DeviceTransfer extends Model
     ];
 
     protected $hidden = [
+        'transfer_code',
+        'code_hash',
         'requester_secret_hash',
         'sender_secret_hash',
         'payload',
     ];
+
+    /**
+     * Generates a cryptographically random 6-digit code guaranteed unused across
+     * all active transfer requests (enforced by lock + DB unique index).
+     */
+    public static function generateUniqueCode(): string
+    {
+        $weak = ['000000', '111111', '222222', '333333', '444444', '555555', '666666', '777777', '888888', '999999', '123456', '654321'];
+
+        for ($attempt = 0; $attempt < 30; $attempt++) {
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            if (in_array($code, $weak, true)) {
+                continue;
+            }
+            if (! static::where('transfer_code', $code)->exists()) {
+                return $code;
+            }
+        }
+
+        throw new \RuntimeException('Unable to allocate a unique 6-digit transfer code.');
+    }
+
+    public static function codeMatches(?string $hash, ?string $code): bool
+    {
+        return $hash !== null && $code !== null && preg_match('/^\d{6}$/', $code) === 1 && hash_equals($hash, hash('sha256', $code));
+    }
 
     public function profile(): BelongsTo
     {

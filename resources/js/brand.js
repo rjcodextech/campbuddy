@@ -18,9 +18,9 @@ export const BRAND = {
   navy: '#1e293b',
 };
 
-// Poppins for every line of text, Baloo 2 for headlines and big numbers (§4).
+// Poppins for every line of text, Plus Jakarta Sans (+ Baloo 2 for Devanagari) for headlines and big numbers (§4).
 export const FONT_TEXT = '"Poppins", "Segoe UI", system-ui, -apple-system, sans-serif';
-export const FONT_DISPLAY = '"Baloo 2", "Poppins", "Segoe UI", system-ui, sans-serif';
+export const FONT_DISPLAY = '"Plus Jakarta Sans", "Baloo 2", "Poppins", "Segoe UI", system-ui, sans-serif';
 
 /**
  * A canvas never asks for a font, so the browser only downloads the brand
@@ -33,6 +33,7 @@ export async function loadBrandFonts() {
   const sample = 'Aa अ';
   await Promise.allSettled([
     ...['400', '500', '600', '700'].map((w) => document.fonts.load(`${w} 32px "Poppins"`, sample)),
+    ...['600', '700', '800'].map((w) => document.fonts.load(`${w} 32px "Plus Jakarta Sans"`, 'Aa')),
     ...['600', '700', '800'].map((w) => document.fonts.load(`${w} 32px "Baloo 2"`, sample)),
   ]);
 }

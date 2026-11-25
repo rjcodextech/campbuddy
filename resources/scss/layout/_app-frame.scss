@@ -40,7 +40,11 @@ body.app-shell {
     overflow-x: clip;
 
     &--with-nav {
-        padding-bottom: var(--bottom-nav-space);
+        padding-bottom: calc(var(--bottom-nav-space) + 64px);
+
+        @media (min-width: v.$bp-desktop) {
+            padding-bottom: var(--bottom-nav-space);
+        }
     }
 }
 

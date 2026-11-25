@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
@@ -86,6 +88,11 @@ class WordCampSitePages
         return $contents;
     }
 
+    private function isTransient(\Throwable $e): bool
+    {
+        return $e instanceof ConnectionException || ($e instanceof RequestException && ($e->response?->serverError() || $e->response?->status() === 429));
+    }
+
     /** @return list<array{id: int|null, slug: string, url: string, title: string}> */
     private function indexFromRest(): array
     {
@@ -95,7 +102,10 @@ class WordCampSitePages
 
         try {
             do {
-                $response = Http::timeout(self::TIMEOUT_SECONDS)->acceptJson()
+                $response = Http::timeout(self::TIMEOUT_SECONDS)
+                    ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+                    ->acceptJson()
+                    ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
                     ->get("{$this->baseUrl}/wp-json/wp/v2/pages", [
                         'per_page' => 100,
                         'page' => $page,
@@ -180,7 +190,10 @@ class WordCampSitePages
         }
 
         try {
-            $items = Http::timeout(self::TIMEOUT_SECONDS)->acceptJson()
+            $items = Http::timeout(self::TIMEOUT_SECONDS)
+                ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+                ->acceptJson()
+                ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: true)
                 ->get("{$this->baseUrl}/wp-json/wp/v2/pages", [
                     'include' => implode(',', $ids),
                     'per_page' => count($ids),
@@ -228,7 +241,11 @@ class WordCampSitePages
     private function fetchHtml(string $url): ?string
     {
         try {
-            $response = Http::timeout(self::TIMEOUT_SECONDS)->accept('text/html')->get($url);
+            $response = Http::timeout(self::TIMEOUT_SECONDS)
+                ->withHeaders(['User-Agent' => 'CampBuddy/1.0 (+https://campbuddy.club)'])
+                ->accept('text/html')
+                ->retry(2, 500, fn (\Throwable $e) => $this->isTransient($e), throw: false)
+                ->get($url);
 
             return $response->successful() ? $response->body() : null;
         } catch (Throwable) {

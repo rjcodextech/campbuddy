@@ -64,7 +64,7 @@ expect(where, 'gold', twVar('color-gold'), colours.gold);
 expect(where, 'navy', twVar('color-navy'), colours.navy);
 expect(where, 'teal', twVar('color-teal'), colours.teal);
 if (!/^Poppins,/.test(twVar('font-sans') ?? '')) problems.push(`${where}: --font-sans must start with Poppins`);
-if (!/^'Baloo 2'/.test(twVar('font-display') ?? '')) problems.push(`${where}: --font-display must start with 'Baloo 2'`);
+if (!/^'Plus Jakarta Sans'/.test(twVar('font-display') ?? '')) problems.push(`${where}: --font-display must start with 'Plus Jakarta Sans'`);
 expect(where, 'radius xl (cards)', twVar('radius-xl'), token('radius-card'));
 
 // Canvas tokens (resources/js/brand.js).
@@ -72,7 +72,7 @@ const brand = read('resources/js/brand.js');
 const js = (key) => brand.match(new RegExp(`\\b${key}:\\s*'(#[0-9a-fA-F]{6})'`))?.[1];
 for (const key of ['maroon', 'maroonDark', 'wine', 'gold', 'ink', 'paper', 'paperSoft', 'line', 'muted', 'teal', 'navy']) expect('resources/js/brand.js', key, js(key), colours[key]);
 if (!/FONT_TEXT = '"Poppins"/.test(brand)) problems.push('resources/js/brand.js: FONT_TEXT must start with "Poppins"');
-if (!/FONT_DISPLAY = '"Baloo 2"/.test(brand)) problems.push('resources/js/brand.js: FONT_DISPLAY must start with "Baloo 2"');
+if (!/FONT_DISPLAY = '"Plus Jakarta Sans"/.test(brand)) problems.push('resources/js/brand.js: FONT_DISPLAY must start with "Plus Jakarta Sans"');
 
 // The Brand guidelines page's data (app/Support/BrandTokens.php) shows the real colours.
 const tokensPhp = read('app/Support/BrandTokens.php');

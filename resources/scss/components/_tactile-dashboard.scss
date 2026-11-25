@@ -539,25 +539,31 @@
     }
 }
 
-// 5. Docked Safety & Help Desk Bar (matches APK StickyHelpBar cleanly above BottomBar)
+// 5. Docked Safety & Help Desk Bar (matches APK StickyHelpBar cleanly above BottomBar on mobile/PWA)
 .sticky-help-bar {
     position: fixed;
     bottom: var(--bottom-nav-space, 64px);
     left: 0;
     right: 0;
-    z-index: 19;
+    z-index: 24;
     padding: 8px 16px;
     background: $color-paper;
     border-top: 1px solid $color-line;
 
     @media (min-width: 1024px) {
-        left: auto;
-        right: 24px;
-        bottom: 24px;
-        width: 340px;
+        left: 16px;
+        right: auto;
+        bottom: 16px;
+        width: 188px;
         padding: 0;
         background: transparent;
         border-top: none;
+        z-index: 26;
+
+        .sticky-help-bar__subtitle,
+        .sticky-help-bar__badge {
+            display: none;
+        }
     }
 
     &__btn {
@@ -621,18 +627,6 @@
         font-weight: 700;
         color: #ffffff;
         flex-shrink: 0;
-    }
-}
-
-.help-modal__card--danger {
-    background: #dc2626;
-    border-color: #b91c1c;
-    color: #ffffff;
-
-    .help-modal__card-title,
-    .help-modal__card-title svg,
-    .help-modal__card-desc {
-        color: #ffffff;
     }
 }
 
@@ -745,6 +739,18 @@
         &--peach {
             background: rgba(255, 237, 213, 0.5);
             border-color: rgba(255, 77, 45, 0.25);
+        }
+
+        &--danger {
+            background: #dc2626;
+            border-color: #b91c1c;
+            color: #ffffff;
+
+            .help-modal__card-title,
+            .help-modal__card-title svg,
+            .help-modal__card-desc {
+                color: #ffffff;
+            }
         }
     }
 

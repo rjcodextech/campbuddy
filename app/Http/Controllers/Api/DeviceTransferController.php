@@ -9,6 +9,7 @@ use App\Models\Event;
 use App\Support\ApiClient;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -72,31 +73,41 @@ class DeviceTransferController extends Controller
 
         [$secret, $secretHash] = DeviceTransfer::secret();
 
-        $transfer = DB::transaction(function () use ($event, $profile, $data, $secretHash, $request) {
-            $open = DeviceTransfer::where('discovery_profile_id', $profile->id)->live()->lockForUpdate()->get();
+        [$transfer, $code] = Cache::lock('device-transfers:code-alloc', 5)->block(5, function () use ($event, $profile, $data, $secretHash, $request) {
+            return DB::transaction(function () use ($event, $profile, $data, $secretHash, $request) {
+                $open = DeviceTransfer::where('discovery_profile_id', $profile->id)->live()->lockForUpdate()->get();
 
-            if ($open->contains('status', 'approved')) {
-                throw ValidationException::withMessages(['attendee_roster_id' => 'A move to another device is already under way. Try again in a few minutes.']);
-            }
+                if ($open->contains('status', 'approved')) {
+                    throw ValidationException::withMessages(['attendee_roster_id' => 'A move to another device is already under way. Try again in a few minutes.']);
+                }
 
-            // A newer request replaces one still waiting: the old device only ever sees the latest.
-            $open->where('status', 'pending')->each->update(['status' => 'cancelled']);
+                // A newer request replaces one still waiting and releases its unique 6-digit PIN.
+                $open->where('status', 'pending')->each->update(['status' => 'cancelled', 'transfer_code' => null]);
 
-            return DeviceTransfer::create([
-                'event_id' => $event->id,
-                'discovery_profile_id' => $profile->id,
-                'transfer_id' => Str::random(40),
-                'status' => 'pending',
-                'requester_key' => $data['public_key'],
-                'requester_secret_hash' => $secretHash,
-                'requester_label' => DeviceTransfer::labelFor($request->userAgent()),
-                'expires_at' => now()->addMinutes(DeviceTransfer::WAIT_MINUTES),
-            ]);
+                $code = DeviceTransfer::generateUniqueCode();
+
+                $created = DeviceTransfer::create([
+                    'event_id' => $event->id,
+                    'discovery_profile_id' => $profile->id,
+                    'transfer_id' => Str::random(40),
+                    'transfer_code' => $code,
+                    'code_hash' => hash('sha256', $code),
+                    'failed_code_attempts' => 0,
+                    'status' => 'pending',
+                    'requester_key' => $data['public_key'],
+                    'requester_secret_hash' => $secretHash,
+                    'requester_label' => DeviceTransfer::labelFor($request->userAgent()),
+                    'expires_at' => now()->addMinutes(DeviceTransfer::WAIT_MINUTES),
+                ]);
+
+                return [$created, $code];
+            });
         });
 
         return $this->json([
             'transfer_id' => $transfer->transfer_id,
             'secret' => $secret,
+            'code' => $code,
             'expires_at' => $transfer->expires_at->toIso8601String(),
         ], 201);
     }
@@ -191,15 +202,36 @@ class DeviceTransferController extends Controller
             'sender_key' => self::KEY,
             'iv' => ['required', 'string', 'size:16', 'regex:/^[A-Za-z0-9_-]+$/'],
             'payload' => ['required', 'string', 'max:'.DeviceTransfer::MAX_PAYLOAD, 'regex:/^[A-Za-z0-9_-]+$/'],
+            'code' => ['nullable', 'string', 'regex:/^\d{6}$/'],
         ]);
 
         [$secret, $secretHash] = DeviceTransfer::secret();
+        $codeError = null;
 
-        DB::transaction(function () use ($profile, $transferId, $data, $secretHash) {
+        DB::transaction(function () use ($profile, $transferId, $data, $secretHash, &$codeError) {
             $transfer = $this->pendingFor($profile, $transferId);
+
+            if (isset($data['code']) && ! DeviceTransfer::codeMatches($transfer->code_hash, $data['code'])) {
+                $attempts = $transfer->failed_code_attempts + 1;
+                if ($attempts >= DeviceTransfer::MAX_CODE_ATTEMPTS) {
+                    $transfer->update([
+                        'failed_code_attempts' => $attempts,
+                        'status' => 'cancelled',
+                        'transfer_code' => null,
+                    ]);
+                    $codeError = 'Too many wrong codes. That request has been cancelled for your safety — start again from your new device.';
+                } else {
+                    $transfer->update(['failed_code_attempts' => $attempts]);
+                    $left = DeviceTransfer::MAX_CODE_ATTEMPTS - $attempts;
+                    $codeError = "That code doesn't match ({$left} attempt(s) left). Type the 6 digits shown on your new device.";
+                }
+
+                return;
+            }
 
             $transfer->update([
                 'status' => 'approved',
+                'transfer_code' => null,
                 'sender_key' => $data['sender_key'],
                 'sender_secret_hash' => $secretHash,
                 'iv' => $data['iv'],
@@ -207,6 +239,10 @@ class DeviceTransferController extends Controller
                 'expires_at' => now()->addMinutes(DeviceTransfer::WAIT_MINUTES),
             ]);
         });
+
+        if ($codeError !== null) {
+            throw ValidationException::withMessages(['code' => $codeError]);
+        }
 
         return $this->json(['secret' => $secret]);
     }
@@ -219,6 +255,7 @@ class DeviceTransferController extends Controller
         DB::transaction(function () use ($profile, $transferId) {
             $this->pendingFor($profile, $transferId)->update([
                 'status' => 'declined',
+                'transfer_code' => null,
                 'expires_at' => now()->addMinutes(DeviceTransfer::WAIT_MINUTES),
             ]);
         });
