@@ -53,6 +53,11 @@ class EventController extends Controller
         return $this->json($request, ['data' => AppEventApi::organizers($event)]);
     }
 
+    public function volunteers(Request $request, Event $event): JsonResponse
+    {
+        return $this->json($request, ['data' => AppEventApi::volunteers($event)]);
+    }
+
     public function deals(Request $request, Event $event): JsonResponse
     {
         return $this->json($request, ['data' => AppEventApi::deals($event)]);

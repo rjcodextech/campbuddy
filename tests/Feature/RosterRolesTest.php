@@ -202,4 +202,66 @@ class RosterRolesTest extends TestCase
         $this->assertSame('ok', $log->status);
         $this->assertStringNotContainsString('volunteer', $log->message);
     }
+
+    public function test_roles_match_handles_variants_and_explore_exposes_unlisted_lineup(): void
+    {
+        $event = $this->event('wc-variants');
+        $amit = AttendeeRoster::create([
+            'event_id' => $event->id, 'name' => 'Amit Kumar Singh',
+            'links' => [['type' => 'linkedin', 'url' => 'https://www.linkedin.com/in/thecancerus/']],
+            'content_hash' => 'h1', 'is_suppressed' => false,
+        ]);
+        $aditya = $this->entry($event, 'Aditya Singh');
+        $aman = $this->entry($event, 'Amanraj Sain');
+        $priyanshi = $this->entry($event, 'Priyanshii Vijayvargiya');
+        $satyam = $this->entry($event, 'Satyam Vishwakarma (Satya)');
+        $srinjana = $this->entry($event, 'srinjana123 Sarma');
+        $harshit = $this->entry($event, 'Harshit Arora');
+        $suppressed = $this->entry($event, 'Suppressed Speaker');
+        $suppressed->suppress();
+
+        EventData::put($event->id, 'speakers', [
+            ['id' => 1, 'name' => 'Amit Singh', 'wporg_username' => 'thecancerus'],
+            ['id' => 2, 'name' => 'Aditya Vikram Singh', 'wporg_username' => 'Aditya112'],
+            ['id' => 3, 'name' => 'Radhika Bhamaa'],
+            ['id' => 4, 'name' => 'Suppressed Speaker'],
+        ]);
+        EventData::put($event->id, 'organizers', [
+            ['id' => 10, 'name' => 'Aditya Vikram Singh'],
+            ['id' => 11, 'name' => 'Radhika Bhamaa'],
+        ]);
+        EventData::put($event->id, 'volunteers', [
+            ['id' => 20, 'name' => 'Aman Raj Sain'],
+            ['id' => 21, 'name' => 'Priyanshi Vijayvargiya'],
+            ['id' => 22, 'name' => 'Satyam Vishwakarma'],
+            ['id' => 23, 'name' => 'Srinjana Sarma'],
+            ['id' => 24, 'name' => 'Harsh Raj'],
+        ]);
+
+        $roles = RosterRoles::forEvent($event);
+
+        $this->assertSame(['speaker'], $roles[$amit->id]['roles']);
+        $this->assertSame(['organizer', 'speaker'], $roles[$aditya->id]['roles']);
+        $this->assertSame(['volunteer'], $roles[$aman->id]['roles']);
+        $this->assertSame(['volunteer'], $roles[$priyanshi->id]['roles']);
+        $this->assertSame(['volunteer'], $roles[$satyam->id]['roles']);
+        $this->assertSame(['volunteer'], $roles[$srinjana->id]['roles']);
+        $this->assertArrayNotHasKey($harshit->id, $roles, 'Harsh Raj must not match Harshit Arora');
+
+        $grouped = RosterRoles::groupedUnlisted($event);
+        $byName = collect($grouped)->keyBy('name');
+        $this->assertSame(['Radhika Bhamaa', 'Harsh Raj'], array_column($grouped, 'name'));
+        $this->assertSame(['organizer', 'speaker'], $byName['Radhika Bhamaa']['roles']);
+        $this->assertArrayNotHasKey('Suppressed Speaker', $byName->all());
+
+        $this->get("/event/{$event->slug}/explore")
+            ->assertOk()
+            ->assertSee('Radhika Bhamaa')
+            ->assertSee('Harsh Raj')
+            ->assertDontSee('Suppressed Speaker');
+
+        $this->getJson("/api/v1/app/events/{$event->slug}/volunteers")
+            ->assertOk()
+            ->assertJsonCount(5, 'data');
+    }
 }

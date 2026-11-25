@@ -10,6 +10,7 @@ use App\Models\Quest;
 use App\Support\ScheduleDelay;
 use App\Support\EventData;
 use App\Support\HtmlText;
+use App\Support\RosterRoles;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -85,11 +86,13 @@ class EventPageController extends Controller
     public function explore(Event $event): View
     {
         $this->refreshRosterIfStale($event);
+        EventData::prime($event->id);
 
         return view('attendee.explore', [
             'event' => $event,
             'sponsors' => $this->cached($event, 'sponsors'),
             'mediaPartners' => $this->cached($event, 'media_partners'),
+            'unlistedTeam' => RosterRoles::groupedUnlisted($event),
             // The event's own deals, then the default deals for its country.
             'offers' => \App\Models\Offer::shownAt($event),
             // The same hand-picked list at every event; a maker attending this one puts theirs first.

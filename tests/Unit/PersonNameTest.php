@@ -34,4 +34,22 @@ class PersonNameTest extends TestCase
         $this->assertSame('md jewel', PersonName::loose('Md. Jewel'));
         $this->assertSame('a b', PersonName::loose('A. B.'));
     }
+
+    public function test_variant_keys_catch_nicknames_digits_spacing_middle_names_and_doubled_letters(): void
+    {
+        $this->assertSame('satyam vishwakarma', PersonName::variantKeys('Satyam Vishwakarma (Satya)')['stripped']);
+        $this->assertSame('srinjana sarma', PersonName::variantKeys('srinjana123 Sarma')['stripped']);
+        $this->assertSame(
+            PersonName::variantKeys('Aman Raj Sain')['compact'],
+            PersonName::variantKeys('Amanraj Sain')['compact']
+        );
+        $this->assertSame(
+            PersonName::variantKeys('Aditya Vikram Singh')['first_last'],
+            PersonName::variantKeys('Aditya Singh')['first_last']
+        );
+        $this->assertSame(
+            PersonName::variantKeys('Priyanshi Vijayvargiya')['folded'],
+            PersonName::variantKeys('Priyanshii Vijayvargiya')['folded']
+        );
+    }
 }

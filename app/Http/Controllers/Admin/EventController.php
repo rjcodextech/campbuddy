@@ -109,6 +109,7 @@ class EventController extends Controller
 
         // What attendees see right now: the cached lists (null = never fetched)
         // and the visible attendee list.
+        EventData::prime($event->id);
         $cachedCount = function (string $key) use ($event): ?int {
             return EventData::count($event->id, $key);
         };

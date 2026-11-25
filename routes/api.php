@@ -148,6 +148,7 @@ Route::prefix('v1')->middleware(['throttle:api-general', 'api.handshake'])->grou
             Route::get('/speakers', [AppEventController::class, 'speakers'])->name('api.app.events.speakers');
             Route::get('/sponsors', [AppEventController::class, 'sponsors'])->name('api.app.events.sponsors');
             Route::get('/organizers', [AppEventController::class, 'organizers'])->name('api.app.events.organizers');
+            Route::get('/volunteers', [AppEventController::class, 'volunteers'])->name('api.app.events.volunteers');
             Route::get('/deals', [AppEventController::class, 'deals'])->name('api.app.events.deals');
             Route::get('/free-steals', [AppEventController::class, 'freeSteals'])->name('api.app.events.free-steals');
             Route::get('/quests', [AppEventController::class, 'quests'])->name('api.app.events.quests');

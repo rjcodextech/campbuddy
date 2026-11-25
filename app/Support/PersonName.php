@@ -51,4 +51,48 @@ class PersonName
 
         return implode(' ', count($kept) >= 2 ? $kept : $words);
     }
+
+    /**
+     * Disambiguated variant keys for cross-referencing the public attendee
+     * roster against official WordCamp organizer/speaker/volunteer lists.
+     * Callers must only accept a match when it resolves to a single person.
+     *
+     * @return array{stripped: string, compact: ?string, first_last: ?string, folded: ?string}
+     */
+    public static function variantKeys(string $name): array
+    {
+        $decoded = self::clean(html_entity_decode($name, ENT_QUOTES | ENT_HTML5));
+        // Strip parenthetical nicknames e.g. "Satyam Vishwakarma (Satya)".
+        $noParens = trim((string) preg_replace('/\s*\([^)]{1,40}\)/u', '', $decoded));
+        // Strip trailing digits stuck onto a word e.g. "srinjana123 Sarma" -> "srinjana Sarma".
+        $noDigits = trim((string) preg_replace('/(\p{L}{2,})\d+\b/u', '$1', $noParens));
+
+        $stripped = self::loose($noDigits);
+        $words = $stripped === '' ? [] : explode(' ', $stripped);
+
+        $compact = null;
+        $compactRaw = preg_replace('/\s+/u', '', $stripped) ?? '';
+        if (mb_strlen($compactRaw) >= 6) {
+            $compact = $compactRaw;
+        }
+
+        // First + last word when middle names are dropped ("Aditya Vikram Singh" -> "Aditya Singh").
+        $firstLast = count($words) >= 2 ? $words[0].' '.$words[count($words) - 1] : null;
+
+        // Collapse doubled ASCII letters so one-letter typos match ("Priyanshii Vijayvargiya" == "Priyanshi Vijayvargiya").
+        $folded = null;
+        if (count($words) >= 2 && mb_strlen($stripped) >= 8) {
+            $candidate = preg_replace('/([a-z])\1+/u', '$1', $stripped) ?? '';
+            if ($candidate !== '') {
+                $folded = $candidate;
+            }
+        }
+
+        return [
+            'stripped' => $stripped,
+            'compact' => $compact,
+            'first_last' => $firstLast,
+            'folded' => $folded,
+        ];
+    }
 }

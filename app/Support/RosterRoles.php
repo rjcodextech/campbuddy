@@ -89,6 +89,7 @@ class RosterRoles
     {
         Cache::forget(self::cacheKey($event));
         Cache::forget(self::cacheKey($event).':unlisted');
+        Cache::forget(self::cacheKey($event).':grouped-unlisted');
     }
 
     private static function cacheKey(Event $event): string
@@ -99,12 +100,17 @@ class RosterRoles
     /** @return array{marked: array<int, array{roles: list<string>, talks: list<string>}>, auto: array<int, array{roles: list<string>, talks: list<string>}>, unlisted: list<array{role: string, person: array<string, mixed>, talks: list<string>, ids: list<int>}>} */
     private static function build(Event $event): array
     {
+        EventData::prime($event->id);
         $query = fn (array $columns) => $event->attendeeRoster()->where('is_suppressed', false)->get($columns);
         try {
-            $entries = $query(['id', 'name', 'gravatar_url', 'is_microsponsor']);
+            $entries = $query(['id', 'name', 'links', 'gravatar_url', 'is_microsponsor']);
         } catch (QueryException) {
-            // Before `php artisan migrate` has added the column: everything but the microsponsor mark.
-            $entries = $query(['id', 'name', 'gravatar_url']);
+            try {
+                // Before `php artisan migrate` has added the column: everything but the microsponsor mark.
+                $entries = $query(['id', 'name', 'gravatar_url', 'is_microsponsor']);
+            } catch (QueryException) {
+                $entries = $query(['id', 'name', 'gravatar_url']);
+            }
         }
 
         $index = self::index($entries);
@@ -139,7 +145,7 @@ class RosterRoles
         }
 
         foreach (EventData::get($event->id, 'volunteers') ?? [] as $person) {
-            $site[] = ['role' => 'volunteer', 'person' => $person, 'talks' => [], 'ids' => $mark(['name' => $person['name'] ?? '', 'gravatar_url' => $person['gravatar_url'] ?? $person['avatar_url'] ?? null], 'volunteer')];
+            $site[] = ['role' => 'volunteer', 'person' => $person, 'talks' => [], 'ids' => $mark(is_array($person) ? $person : ['name' => (string) $person], 'volunteer')];
         }
 
         foreach (EventData::get($event->id, 'media_partners') ?? [] as $partner) {
@@ -196,34 +202,147 @@ class RosterRoles
     }
 
     /**
-     * The list's entries by Gravatar hash, exact name and loose name.
+     * Deduplicated public event lineup (organizers, speakers, volunteers) whose
+     * role is not already represented on the public attendee list and who did
+     * not suppress their name from the list. Merges multiple roles (e.g. a
+     * person who is both organizer and speaker) into one card.
      *
-     * @param  iterable<object>  $entries  with id, name and gravatar_url
-     * @return array{hash: array<string, list<int>>, hashOf: array<int, string>, name: array<string, list<int>>, loose: array<string, list<int>>}
+     * @return list<array<string, mixed>>
+     */
+    public static function groupedUnlisted(Event $event): array
+    {
+        return Cache::remember(self::cacheKey($event).':grouped-unlisted', 60, fn () => self::buildGroupedUnlisted($event));
+    }
+
+    /** @return list<array<string, mixed>> */
+    private static function buildGroupedUnlisted(Event $event): array
+    {
+        $byKey = [];
+        foreach (self::unlisted($event) as $item) {
+            $person = $item['person'] ?? [];
+            $name = trim((string) ($person['name'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+            $hash = self::avatarHash($person['gravatar_url'] ?? $person['avatar_url'] ?? null);
+            $key = $hash !== null ? 'h:'.$hash : 'n:'.PersonName::loose($name);
+
+            if (! isset($byKey[$key])) {
+                $links = [];
+                if ($siteUrl = SafeUrl::web($person['link'] ?? null)) {
+                    $links[] = ['type' => 'website', 'url' => $siteUrl];
+                }
+                foreach ($person['social_links'] ?? [] as $social) {
+                    if (is_array($social) && ($url = SafeUrl::web($social['url'] ?? null))) {
+                        $links[] = ['type' => (string) ($social['type'] ?? 'website'), 'url' => $url];
+                    }
+                }
+                if (! empty($person['wporg_username'])) {
+                    $wporgUrl = SafeUrl::web('https://profiles.wordpress.org/'.rawurlencode((string) $person['wporg_username']).'/');
+                    if ($wporgUrl) {
+                        $links[] = ['type' => 'website', 'url' => $wporgUrl];
+                    }
+                }
+
+                $photo = SafeUrl::web($person['avatar_url'] ?? $person['gravatar_url'] ?? null);
+                $gravatar = SafeUrl::web($person['gravatar_url'] ?? null);
+
+                $byKey[$key] = [
+                    'id' => 'team-'.substr(md5($key), 0, 10),
+                    'name' => $name,
+                    'photo_url' => $photo,
+                    'gravatar_url' => $gravatar ?? $photo,
+                    'links' => collect($links)->unique('url')->values()->all(),
+                    'roles' => [],
+                    'talks' => [],
+                    'open_to_meet' => false,
+                    'is_team_lineup' => true,
+                ];
+            }
+
+            $role = $item['role'];
+            if (! in_array($role, $byKey[$key]['roles'], true)) {
+                $byKey[$key]['roles'][] = $role;
+            }
+            foreach ($item['talks'] ?? [] as $talk) {
+                if (is_string($talk) && $talk !== '' && ! in_array($talk, $byKey[$key]['talks'], true)) {
+                    $byKey[$key]['talks'][] = $talk;
+                }
+            }
+        }
+
+        return array_values(array_map(function (array $entry) {
+            $entry['roles'] = array_values(array_filter(self::ROLES, fn ($r) => in_array($r, $entry['roles'], true)));
+            $entry['talks'] = array_slice($entry['talks'], 0, self::MAX_TALKS);
+
+            return $entry;
+        }, $byKey));
+    }
+
+    /**
+     * The list's entries by Gravatar hash, social handle, exact name, loose
+     * name, and disambiguated variants (parenthetical nicknames, trailing
+     * digits, spaceless compounds, first+last, doubled-letter collapse).
+     *
+     * @param  iterable<object>  $entries  with id, name, gravatar_url and optionally links
+     * @return array<string, mixed>
      */
     private static function index(iterable $entries): array
     {
-        $index = ['hash' => [], 'hashOf' => [], 'name' => [], 'loose' => []];
+        $index = [
+            'hash' => [],
+            'hashOf' => [],
+            'wporg' => [],
+            'handle' => [],
+            'nameOf' => [],
+            'name' => [],
+            'loose' => [],
+            'stripped' => [],
+            'compact' => [],
+            'first_last' => [],
+            'folded' => [],
+        ];
+
         foreach ($entries as $entry) {
             if ($hash = self::avatarHash($entry->gravatar_url)) {
                 $index['hash'][$hash][] = $entry->id;
                 $index['hashOf'][$entry->id] = $hash;
             }
+
+            $variants = PersonName::variantKeys((string) $entry->name);
+            $index['nameOf'][$entry->id] = $variants['stripped'];
             $index['name'][self::nameKey((string) $entry->name)][] = $entry->id;
             $index['loose'][PersonName::loose((string) $entry->name)][] = $entry->id;
+
+            foreach (['stripped', 'compact', 'first_last', 'folded'] as $kind) {
+                if (! empty($variants[$kind])) {
+                    $index[$kind][$variants[$kind]][] = $entry->id;
+                }
+            }
+
+            foreach ($entry->links ?? [] as $link) {
+                $url = is_array($link) ? ($link['url'] ?? '') : '';
+                if (! is_string($url) || $url === '') {
+                    continue;
+                }
+                foreach (self::extractHandles($url) as $pair) {
+                    if ($pair['wporg']) {
+                        $index['wporg'][$pair['handle']][] = $entry->id;
+                    }
+                    $index['handle'][$pair['handle']][] = $entry->id;
+                }
+            }
         }
 
         return $index;
     }
 
     /**
-     * Who on the list a site person is: the same Gravatar, else a name that
-     * is one person there, else a loosely equal name that is one person there.
-     * One person: one entry, or several with the same Gravatar (two tickets,
-     * one e-mail address).
+     * Who on the list a site person is: the same Gravatar, else their wp.org /
+     * social handle, else a name that resolves to one person on the list.
      *
      * @param  array<string, mixed>  $person
-     * @param  array{hash: array<string, list<int>>, hashOf: array<int, string>, name: array<string, list<int>>, loose: array<string, list<int>>}  $index
+     * @param  array<string, mixed>  $index
      * @param  bool  $once  false: everyone the name could be (to keep clear of people who left the list)
      * @return list<int>
      */
@@ -233,10 +352,66 @@ class RosterRoles
         $hash = self::avatarHash($person['gravatar_url'] ?? $person['avatar_url'] ?? null);
         $ids = $hash !== null ? ($index['hash'][$hash] ?? []) : [];
         $name = (string) ($person['name'] ?? '');
+        $variants = trim($name) !== '' ? PersonName::variantKeys($name) : ['stripped' => '', 'compact' => null, 'first_last' => null, 'folded' => null];
+        $siteTokens = array_values(array_filter(explode(' ', $variants['stripped']), fn ($t) => mb_strlen($t) >= 3));
+
+        $isSinglePerson = fn (array $named): bool => count($named) === 1
+            || ($named !== [] && count(array_unique(array_map(fn ($id) => $index['hashOf'][$id] ?? "none:{$id}", $named))) === 1);
+
+        // WordPress.org handle match: profiles.wordpress.org/<user> directly, or same social handle with a shared name token.
+        if ($ids === []) {
+            $wporg = strtolower(trim((string) ($person['wporg_username'] ?? '')));
+            if ($wporg !== '' && ($matchedWporg = $index['wporg'][$wporg] ?? []) !== []) {
+                if (! $once || $isSinglePerson($matchedWporg)) {
+                    $ids = $matchedWporg;
+                }
+            }
+
+            if ($ids === []) {
+                $candidateHandles = [];
+                if ($wporg !== '' && strlen($wporg) >= 4) {
+                    $candidateHandles[] = $wporg;
+                }
+                foreach ($person['social_links'] ?? [] as $social) {
+                    $url = is_array($social) ? ($social['url'] ?? '') : '';
+                    if (is_string($url) && $url !== '') {
+                        foreach (self::extractHandles($url) as $pair) {
+                            $candidateHandles[] = $pair['handle'];
+                        }
+                    }
+                }
+                foreach (array_unique($candidateHandles) as $handle) {
+                    $matched = $index['handle'][$handle] ?? [];
+                    if ($matched === []) {
+                        continue;
+                    }
+                    if (! $once) {
+                        $ids = $matched;
+                        break;
+                    }
+                    if ($isSinglePerson($matched) && $siteTokens !== []) {
+                        $entryTokens = explode(' ', (string) ($index['nameOf'][$matched[0]] ?? ''));
+                        if (array_intersect($siteTokens, $entryTokens) !== []) {
+                            $ids = $matched;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         if ($ids === [] && trim($name) !== '') {
-            foreach ([$index['name'][self::nameKey($name)] ?? [], $index['loose'][PersonName::loose($name)] ?? []] as $named) {
-                $onePerson = count($named) === 1 || ($named !== [] && count(array_unique(array_map(fn ($id) => $index['hashOf'][$id] ?? "none:{$id}", $named))) === 1);
+            $buckets = [
+                $index['name'][self::nameKey($name)] ?? [],
+                $index['loose'][PersonName::loose($name)] ?? [],
+                $variants['stripped'] !== '' ? ($index['stripped'][$variants['stripped']] ?? []) : [],
+                $variants['compact'] !== null ? ($index['compact'][$variants['compact']] ?? []) : [],
+                $variants['first_last'] !== null ? ($index['first_last'][$variants['first_last']] ?? []) : [],
+                $variants['folded'] !== null ? ($index['folded'][$variants['folded']] ?? []) : [],
+            ];
+
+            foreach ($buckets as $named) {
+                $onePerson = $isSinglePerson($named);
                 $ids = ! $once || $onePerson ? $named : [];
                 if ($named !== []) {
                     break;
@@ -245,6 +420,34 @@ class RosterRoles
         }
 
         return $ids;
+    }
+
+    /** @return list<array{handle: string, wporg: bool}> */
+    private static function extractHandles(string $url): array
+    {
+        $parts = parse_url(trim($url));
+        if (! is_array($parts) || empty($parts['host']) || empty($parts['path'])) {
+            return [];
+        }
+
+        $host = strtolower(preg_replace('/^www\./', '', $parts['host']) ?? '');
+        $path = trim($parts['path'], '/');
+        if ($path === '') {
+            return [];
+        }
+
+        $segments = explode('/', $path);
+        if ($host === 'profiles.wordpress.org' && isset($segments[0]) && preg_match('/^[a-z0-9._-]{3,}$/i', $segments[0])) {
+            return [['handle' => strtolower($segments[0]), 'wporg' => true]];
+        }
+        if ($host === 'linkedin.com' && ($segments[0] ?? '') === 'in' && isset($segments[1]) && preg_match('/^[a-z0-9._-]{3,}$/i', $segments[1])) {
+            return [['handle' => strtolower($segments[1]), 'wporg' => false]];
+        }
+        if (in_array($host, ['x.com', 'twitter.com', 'github.com', 'instagram.com'], true) && isset($segments[0]) && preg_match('/^[a-z0-9._-]{3,}$/i', ltrim($segments[0], '@'))) {
+            return [['handle' => strtolower(ltrim($segments[0], '@')), 'wporg' => false]];
+        }
+
+        return [];
     }
 
     /**
@@ -271,7 +474,13 @@ class RosterRoles
             return [];
         }
 
-        $removed = self::index($event->attendeeRoster()->where('is_suppressed', true)->get(['id', 'name', 'gravatar_url']));
+        try {
+            $removedEntries = $event->attendeeRoster()->where('is_suppressed', true)->get(['id', 'name', 'links', 'gravatar_url']);
+        } catch (QueryException) {
+            $removedEntries = $event->attendeeRoster()->where('is_suppressed', true)->get(['id', 'name', 'gravatar_url']);
+        }
+
+        $removed = self::index($removedEntries);
 
         return array_values(array_filter($site, fn (array $one) => self::match($one['person'], $removed, false) === []));
     }

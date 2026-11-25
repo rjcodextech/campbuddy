@@ -57,6 +57,16 @@
                 <div id="people-roster" class="card" aria-live="polite" aria-busy="true">
                     <div class="discovery-skeleton" aria-hidden="true" style="height:72px;margin:0"></div>
                 </div>
+                <div id="people-team" hidden>
+                    <div class="section-head" style="margin-top:20px">
+                        <h2 class="section-head__title">Organizers, speakers &amp; volunteers</h2>
+                        <span class="section-head__desc">On the event lineup · not listed on public attendees</span>
+                    </div>
+                    <div id="people-team-list" class="card"></div>
+                </div>
+                @if (! empty($unlistedTeam))
+                    <script type="application/json" id="unlisted-team-data">@json($unlistedTeam)</script>
+                @endif
             </div>
         </div>
 

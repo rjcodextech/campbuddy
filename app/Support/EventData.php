@@ -20,9 +20,69 @@ class EventData
 
     private const CACHE_DAYS = 14;
 
+    /**
+     * Load all feeds for one event in a single SQL query into request-scoped
+     * attributes so reading several kinds in one request costs one query.
+     *
+     * @param  list<string>  $kinds
+     */
+    public static function prime(int $eventId, array $kinds = self::KINDS): void
+    {
+        $req = app()->bound('request') ? request() : null;
+        $attrKey = "event_data.primed.{$eventId}";
+        $primed = $req?->attributes->get($attrKey);
+        if (is_array($primed)) {
+            return;
+        }
+
+        $missing = [];
+        $map = [];
+        foreach ($kinds as $kind) {
+            $cached = Cache::get(self::key($eventId, $kind));
+            if (is_array($cached)) {
+                $map[$kind] = $cached;
+            } else {
+                $missing[] = $kind;
+            }
+        }
+
+        if ($missing !== []) {
+            try {
+                $rows = DB::table('event_feeds')
+                    ->where('event_id', $eventId)
+                    ->whereIn('kind', $missing)
+                    ->get(['kind', 'payload', 'fetched_at'])
+                    ->keyBy('kind');
+            } catch (Throwable) {
+                $rows = collect();
+            }
+
+            foreach ($missing as $kind) {
+                $row = $rows->get($kind);
+                $value = $row ? json_decode($row->payload, true) : null;
+                if (is_array($value)) {
+                    $map[$kind] = $value;
+                    Cache::put(self::key($eventId, $kind), $value, now()->addDays(self::CACHE_DAYS));
+                    Cache::add("event:{$eventId}:fetched-at", Carbon::parse($row->fetched_at), now()->addDays(self::CACHE_DAYS));
+                } else {
+                    $map[$kind] = null;
+                }
+            }
+        }
+
+        $req?->attributes->set($attrKey, $map);
+    }
+
     /** @return array<int, mixed>|null null = never fetched */
     public static function get(int $eventId, string $kind): ?array
     {
+        if (app()->bound('request')) {
+            $primed = request()->attributes->get("event_data.primed.{$eventId}");
+            if (is_array($primed) && array_key_exists($kind, $primed)) {
+                return $primed[$kind];
+            }
+        }
+
         $cached = Cache::get(self::key($eventId, $kind));
 
         if (is_array($cached)) {
@@ -105,6 +165,9 @@ class EventData
     /** @param array<int, mixed> $items */
     public static function put(int $eventId, string $kind, array $items): void
     {
+        if (app()->bound('request')) {
+            request()->attributes->remove("event_data.primed.{$eventId}");
+        }
         Cache::put(self::key($eventId, $kind), $items, now()->addDays(self::CACHE_DAYS));
         DataVersion::forget($eventId);
 
@@ -186,6 +249,9 @@ class EventData
     /** Clear all cached feeds and stamps for an event (e.g. after retention window). */
     public static function forget(int $eventId): void
     {
+        if (app()->bound('request')) {
+            request()->attributes->remove("event_data.primed.{$eventId}");
+        }
         foreach (self::KINDS as $kind) {
             Cache::forget(self::key($eventId, $kind));
         }

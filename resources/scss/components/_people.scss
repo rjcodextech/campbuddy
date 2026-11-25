@@ -105,7 +105,8 @@
 
 // With rows in it the card gives the sides back to the rows (the middle
 // column is the tight one on a phone); the messages keep the normal padding.
-#people-roster:has(> .roster-row) {
+#people-roster:has(> .roster-row),
+#people-team-list:has(> .roster-row) {
     padding: v.$space-1 v.$space-3;
 
     @media (min-width: 820px) {

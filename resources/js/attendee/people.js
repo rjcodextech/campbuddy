@@ -117,9 +117,23 @@ function wireMeetButton(btn, eventId, person) {
 // connection the saved one still works.
 const rosterStore = createRosterStore({ kvGet, kvSet });
 
+function readUnlistedTeam() {
+  const node = document.getElementById('unlisted-team-data');
+  if (!node) return [];
+  try {
+    const parsed = JSON.parse(node.textContent || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 async function renderRoster(eventSlug, eventId) {
   const el = document.getElementById('people-roster');
   const searchEl = document.getElementById('roster-search');
+  const teamWrap = document.getElementById('people-team');
+  const teamListEl = document.getElementById('people-team-list');
+  const unlistedTeam = readUnlistedTeam();
   const saved = await rosterStore.read(eventSlug);
   let entries = saved?.entries ?? [];
   let noteEl = null;
@@ -140,9 +154,9 @@ async function renderRoster(eventSlug, eventId) {
   };
 
   // "All 319 · Organizers 15 · Speakers 25 …" above the list — only when
-  // someone on it has a role (roster-roles.js). Counts are of the whole list.
+  // someone on the roster or official lineup has a role (roster-roles.js).
   const drawRoleChips = () => {
-    const counts = roleCounts(entries);
+    const counts = roleCounts([...entries, ...unlistedTeam]);
     const filters = visibleRoleFilters(counts);
     roleFilter = effectiveRoleFilter(roleFilter, counts);
 
@@ -185,11 +199,34 @@ async function renderRoster(eventSlug, eventId) {
     drawRoleChips();
     const q = searchEl.value.trim().toLowerCase();
     const list = entries.filter((a) => matchesRole(a, roleFilter) && (!q || a.name.toLowerCase().includes(q)));
+    const teamList = unlistedTeam.filter((a) => matchesRole(a, roleFilter) && (!q || a.name.toLowerCase().includes(q)));
+
+    if (teamWrap && teamListEl) {
+      if (teamList.length > 0) {
+        const teamFrag = document.createDocumentFragment();
+        teamList.forEach((a) => teamFrag.appendChild(rosterRow(a, eventId)));
+        teamListEl.replaceChildren(teamFrag);
+        teamWrap.hidden = false;
+      } else {
+        teamListEl.replaceChildren();
+        teamWrap.hidden = true;
+      }
+    }
+
+    el.setAttribute('aria-busy', 'false');
 
     if (list.length === 0) {
-      el.replaceChildren(render(entries.length === 0 ? 'tpl-roster-empty' : 'tpl-roster-no-match'));
+      if (teamList.length > 0) {
+        el.replaceChildren();
+        el.hidden = true;
+      } else {
+        el.hidden = false;
+        el.replaceChildren(render((entries.length === 0 && unlistedTeam.length === 0) ? 'tpl-roster-empty' : 'tpl-roster-no-match'));
+      }
       return;
     }
+
+    el.hidden = false;
 
     // Render first chunk of up to CHUNK_SIZE immediately for fast initial paint
     const initialChunk = list.slice(0, CHUNK_SIZE);
@@ -377,11 +414,11 @@ function rosterRow(a, eventId) {
   row.classList.toggle('roster-row--role', roles.length > 0);
 
   const person = {
-    personKey: `r:${a.id}`,
+    personKey: a.is_team_lineup ? String(a.id) : `r:${a.id}`,
     name: a.name ?? '',
     avatarUrl: a.photo_url || a.gravatar_url || null,
-    sub: 'On the attendee list',
-    source: 'roster',
+    sub: a.is_team_lineup ? 'On the official event lineup' : 'On the attendee list',
+    source: a.is_team_lineup ? 'lineup' : 'roster',
     links: (a.links ?? []).filter((l) => /^https?:\/\//i.test(l.url ?? '')),
   };
   wireMeetButton(row.querySelector('.meet-btn'), eventId, person);

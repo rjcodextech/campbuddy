@@ -220,6 +220,12 @@ class AppEventApi
     }
 
     /** @return list<array<string, mixed>> */
+    public static function volunteers(Event $event): array
+    {
+        return array_values(EventData::get($event->id, 'volunteers') ?? []);
+    }
+
+    /** @return list<array<string, mixed>> */
     public static function deals(Event $event): array
     {
         return Offer::shownAt($event)->load('mediaAsset')->map(fn (Offer $offer) => [
