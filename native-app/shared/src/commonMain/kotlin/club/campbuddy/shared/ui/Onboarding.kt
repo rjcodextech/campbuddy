@@ -27,6 +27,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.foundation.background
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -69,75 +76,127 @@ fun OnboardingCard(onDone: () -> Unit) {
         if (skipAll) onDone() else done = profile
     }
 
-    // The website's card: paper surface, thin border, a 3 dp brand-coloured top edge.
+    // Invitation card stays on Picker; tapping "Let's go" opens the dedicated M03 Personalize flow so Continue & Skip stay pinned at the bottom.
     val shape = RoundedCornerShape(brand.radius.dp)
-    Column(
-        Modifier.fillMaxWidth().shadow(3.dp, shape, clip = false).clip(shape).background(brand.surface).border(1.dp, brand.line, shape),
-    ) {
-        Box(Modifier.fillMaxWidth().height(3.dp).background(brand.primary))
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            when {
-                done != null -> {
-                    StepIcon("party", gold = true)
-                    Text("You are set", style = MaterialTheme.typography.titleLarge)
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Onboarding.summary(done!!).forEach {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
-                                Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                    PrimaryButton(words("picker.choose") + " →", onDone, Modifier.fillMaxWidth())
+    if (!started && done == null) {
+        Column(
+            Modifier.fillMaxWidth().clip(shape).background(brand.surface).border(1.dp, brand.line, shape),
+        ) {
+            Box(Modifier.fillMaxWidth().height(3.dp).background(brand.primary))
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Optional · 30 seconds",
+                    style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold),
+                    modifier = Modifier.background(brand.peach, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 2.dp),
+                )
+                Text(words("onboarding.title"), style = MaterialTheme.typography.titleLarge)
+                Text(words("onboarding.lead"), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
+                Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    QuietButton(words("onboarding.not_now"), { finish(skipAll = true) }, Modifier.weight(1f))
+                    PrimaryButton(words("onboarding.start") + " →", { started = true }, Modifier.weight(1f))
                 }
-                !started -> {
-                    Text(
-                        "Optional · 30 seconds",
-                        style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold),
-                        modifier = Modifier.background(brand.peach, RoundedCornerShape(50)).padding(horizontal = 10.dp, vertical = 2.dp),
-                    )
-                    Text(words("onboarding.title"), style = MaterialTheme.typography.titleLarge)
-                    Text(words("onboarding.lead"), style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted))
-                    Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        QuietButton(words("onboarding.not_now"), { finish(skipAll = true) }, Modifier.weight(1f))
-                        PrimaryButton(words("onboarding.start") + " →", { started = true }, Modifier.weight(1f))
-                    }
-                }
-                else -> {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            repeat(Onboarding.STEPS) { index ->
-                                val color = if (index == step) brand.primary else if (index < step) brand.accent else brand.line
-                                Box(Modifier.width(if (index == step) 36.dp else 22.dp).height(6.dp).background(color, RoundedCornerShape(3.dp)))
-                            }
-                        }
-                        Text("Step ${step + 1} of ${Onboarding.STEPS}", style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.Bold))
-                    }
-                    StepBody(step, draft) { draft = it }
-                    Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (step > 0) QuietButton("‹  " + words("common.back"), { step-- })
-                        Text(
-                            words("common.skip"),
-                            style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted, textDecoration = TextDecoration.Underline),
-                            modifier = Modifier.heightIn(min = 44.dp).clickable(role = Role.Button) { if (step == last) finish() else step++ }.padding(horizontal = 8.dp).wrapContentHeight(Alignment.CenterVertically),
-                        )
-                        Spacer(Modifier.weight(1f))
+            }
+        }
+    } else {
+        Dialog(onDismissRequest = { started = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+            Column(Modifier.fillMaxSize().background(brand.background).statusBarsPadding().navigationBarsPadding()) {
+                // Sticky header matching M03 Personalize
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(
-                            Modifier.heightIn(min = 44.dp).clip(Radii.pill).background(brand.ink).clickable(role = Role.Button) { if (step == last) finish() else step++ }.padding(horizontal = 20.dp, vertical = 10.dp),
+                            Modifier.size(38.dp).clip(CircleShape).background(brand.peach)
+                                .clickable(role = Role.Button, onClickLabel = "Back") {
+                                    if (done != null) { done = null; started = false; onDone() }
+                                    else if (step > 0) step--
+                                    else started = false
+                                },
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                if (step == last) "Finish" else "Continue →",
-                                style = MaterialTheme.typography.labelLarge.copy(color = Color.White),
-                            )
+                            LineIcon("chevron-left", brand.primary, size = 18.dp)
+                        }
+                        Text(
+                            if (done != null) "You are set" else "Personalize",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                        )
+                    }
+                    if (done == null) {
+                        Text(
+                            "Step ${step + 1} of ${Onboarding.STEPS}",
+                            style = MaterialTheme.typography.labelMedium.copy(color = brand.muted, fontWeight = FontWeight.Bold),
+                        )
+                    }
+                }
+                if (done == null) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        repeat(Onboarding.STEPS) { index ->
+                            val color = if (index == step) brand.primary else if (index < step) brand.accent else brand.line
+                            Box(Modifier.weight(1f).height(5.dp).background(color, RoundedCornerShape(3.dp)))
                         }
                     }
-                    Text(
-                        "Skip all questions",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = brand.muted, textDecoration = TextDecoration.Underline),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).clickable(role = Role.Button) { finish(skipAll = true) }.wrapContentHeight(Alignment.CenterVertically),
-                    )
+                }
+                Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+
+                // Scrollable step content
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    if (done != null) {
+                        StepIcon("party", gold = true)
+                        Text("You are set", style = MaterialTheme.typography.headlineSmall)
+                        Column(
+                            Modifier.fillMaxWidth().clip(shape).background(Color.White).border(1.dp, brand.line, shape).padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Onboarding.summary(done!!).forEach {
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text("•", style = MaterialTheme.typography.bodyMedium.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                                    Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    } else {
+                        StepBody(step, draft) { draft = it }
+                    }
+                }
+
+                // Sticky bottom action bar matching M03
+                Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
+                Column(
+                    Modifier.fillMaxWidth().background(brand.surface).padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    if (done != null) {
+                        PrimaryButton(words("picker.choose") + " →", onDone, Modifier.fillMaxWidth())
+                    } else {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                Modifier.weight(1f).heightIn(min = 48.dp).clip(Radii.pill).background(brand.ink)
+                                    .clickable(role = Role.Button) { if (step == last) finish() else step++ }
+                                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    if (step == last) "Finish" else "Continue →",
+                                    style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Bold),
+                                )
+                            }
+                            QuietButton(words("common.skip"), { if (step == last) finish() else step++ }, Modifier.width(104.dp))
+                        }
+                        Text(
+                            "Skip all questions",
+                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted, textDecoration = TextDecoration.Underline),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().clickable(role = Role.Button) { finish(skipAll = true) }.padding(vertical = 4.dp),
+                        )
+                    }
                 }
             }
         }

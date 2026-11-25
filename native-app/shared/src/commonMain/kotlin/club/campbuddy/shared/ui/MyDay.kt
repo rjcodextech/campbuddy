@@ -113,8 +113,9 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean, star
         "todo" -> !done; "done" -> done && !missed; "missed" -> missed; "hidden" -> false; else -> true
     }
     val pool = if (mine) savedSessions.filter { inFilter(sessionDone(it), statusById[it.id] == "missed") } else sessions
-    val names = (rememberLoader("speakers:${event.slug}") { env.repository.speakers(event.slug) }.state.value as? LoadState.Ready)
-        ?.value.orEmpty().associate { it.id to it.name }
+    val speakersById = (rememberLoader("speakers:${event.slug}") { env.repository.speakers(event.slug) }.state.value as? LoadState.Ready)
+        ?.value.orEmpty().associateBy { it.id }
+    val names = speakersById.mapValues { it.value.name }
     val shown = pool.filter { s ->
         (query.isBlank() || s.title.contains(query, ignoreCase = true) || s.trackNames.any { t -> t.contains(query, ignoreCase = true) } ||
             s.speakerIds.any { names[it]?.contains(query, ignoreCase = true) == true }) &&
@@ -156,7 +157,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean, star
         SessionDetailSheet(
             session = sx,
             zone = zone,
-            speakers = sx.speakerIds.mapNotNull { names[it] },
+            speakers = sx.speakerIds.mapNotNull { speakersById[it] },
             saved = sx.id in savedIds,
             alertsEnabled = user.notifications.enabled,
             onToggleSave = { star(sx) },
@@ -291,7 +292,7 @@ fun MyDayTab(event: EventDetail, sessions: List<Session>, offline: Boolean, star
                         ordered.forEachIndexed { i, session ->
                             SessionRow(
                                 session, zone, now,
-                                speakers = session.speakerIds.mapNotNull { speakerNames[it] },
+                                speakers = session.speakerIds.mapNotNull { speakersById[it] },
                                 saved = session.id in savedIds,
                                 last = i == ordered.lastIndex,
                                 onStar = { star(session) },
@@ -405,7 +406,7 @@ private fun SessionRow(
     session: Session,
     zone: kotlinx.datetime.TimeZone,
     now: kotlinx.datetime.Instant,
-    speakers: List<String>,
+    speakers: List<club.campbuddy.shared.model.Speaker>,
     saved: Boolean,
     last: Boolean,
     onStar: () -> Unit,
@@ -418,7 +419,7 @@ private fun SessionRow(
     val start = EventClock.startOf(session)
     val end = EventClock.endOf(session)
     val live = start != null && end != null && now >= start && now < end
-    val type = when (session.sessionType) { "session" -> "Talk"; "custom" -> "Activity"; null -> null; else -> session.sessionType.replaceFirstChar { it.uppercase() } }
+    val type = when (session.sessionType) { "session" -> if (speakers.isNotEmpty()) "Talk" else null; "custom" -> "Activity"; null -> null; else -> session.sessionType.replaceFirstChar { it.uppercase() } }
     val timeLabel = start?.let { EventClock.time(it, zone) } ?: "TBA"
     val room = session.trackNames.firstOrNull()
 
@@ -463,17 +464,29 @@ private fun SessionRow(
         )
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                if (speakers.isNotEmpty()) {
-                    Text(
-                        speakers.joinToString(", "),
-                        style = MaterialTheme.typography.bodySmall.copy(color = brand.muted, fontWeight = FontWeight.Medium),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                speakers.firstOrNull()?.let { leadSpeaker ->
+                    Box(
+                        Modifier.size(26.dp).clip(CircleShape).background(brand.peach).border(1.dp, brand.line, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        RemoteImage(leadSpeaker.avatarUrl, Modifier.size(26.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop) {
+                            Text(leadSpeaker.name.take(1).uppercase(), style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.Bold))
+                        }
+                    }
                 }
-                if (!type.isNullOrBlank()) {
-                    Text(type.uppercase(), style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    if (speakers.isNotEmpty()) {
+                        Text(
+                            speakers.joinToString(", ") { it.name },
+                            style = MaterialTheme.typography.bodySmall.copy(color = brand.muted, fontWeight = FontWeight.Medium),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                    if (!type.isNullOrBlank()) {
+                        Text(type.uppercase(), style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp))
+                    }
                 }
             }
             Box(
@@ -497,7 +510,7 @@ private fun SessionRow(
 private fun SessionDetailSheet(
     session: Session,
     zone: kotlinx.datetime.TimeZone,
-    speakers: List<String>,
+    speakers: List<club.campbuddy.shared.model.Speaker>,
     saved: Boolean,
     alertsEnabled: Boolean,
     onToggleSave: () -> Unit,
@@ -511,16 +524,19 @@ private fun SessionDetailSheet(
 
     Sheet(title = "Session Details", onClose = onClose) {
         if (speakers.isNotEmpty()) {
+            val leadSpeaker = speakers.first()
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Color.White).border(1.dp, brand.line, RoundedCornerShape(14.dp)).padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(44.dp).background(brand.peach, CircleShape), contentAlignment = Alignment.Center) {
-                    LineIcon("mic", brand.primary, size = 20.dp)
+                Box(Modifier.size(46.dp).clip(CircleShape).background(brand.peach).border(1.dp, brand.line, CircleShape), contentAlignment = Alignment.Center) {
+                    RemoteImage(leadSpeaker.avatarUrl, Modifier.size(46.dp).clip(CircleShape), contentScale = androidx.compose.ui.layout.ContentScale.Crop) {
+                        LineIcon("mic", brand.primary, size = 20.dp)
+                    }
                 }
                 Column(Modifier.weight(1f)) {
-                    Text(speakers.joinToString(", "), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                    Text(speakers.joinToString(", ") { it.name }, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                     Text("Featured Speaker", style = MaterialTheme.typography.bodySmall.copy(color = brand.primaryText))
                 }
             }

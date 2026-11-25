@@ -228,12 +228,15 @@ fun CampCardFace(layout: String, data: CardFaceData, modifier: Modifier = Modifi
                 }
                 Spacer(Modifier.weight(1f))
 
-                // The QR footer, once there is a link for it to open.
-                val link = card.qrLink
-                if (link != null && !data.sample) {
+                // The QR footer: real link when set, or sample CampBuddy preview QR matching M12.
+                val link = card.qrLink ?: if (data.sample) "https://campbuddy.club" else null
+                if (link != null) {
                     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.d())) {
                         Box(Modifier.background(Color.White, RoundedCornerShape(8.d())).border(1.d(), Color(0xFFEADFD6), RoundedCornerShape(8.d())).padding(5.d())) { QrCodeView(link, 74.d()) }
-                        Text("Scan to connect", style = TextStyle(fontFamily = sans, fontSize = 10.s(), color = if (dark || layout == "split") Color.White.copy(alpha = 0.8f) else Color(0xFF6B625E)))
+                        Text(
+                            if (data.sample) "Hold near camera or scan to save contact" else "Scan to connect",
+                            style = TextStyle(fontFamily = sans, fontSize = 10.s(), color = if (dark || layout == "split") Color.White.copy(alpha = 0.8f) else Color(0xFF6B625E)),
+                        )
                     }
                 }
             }

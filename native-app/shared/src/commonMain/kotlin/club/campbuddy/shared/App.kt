@@ -94,6 +94,8 @@ class AppDeps(
     val encodePng: (androidx.compose.ui.graphics.ImageBitmap) -> ByteArray? = { null },
     /** The APK build's self-updater; null on iPhone and in the Play Store build (their stores update them). */
     val updater: club.campbuddy.shared.domain.AppUpdater? = null,
+    /** Updates Android system status bar icon contrast when entering dark Organizer/Admin screens. */
+    val onDarkStatusBar: (Boolean) -> Unit = {},
 )
 
 private sealed interface Screen {
@@ -206,6 +208,10 @@ fun App(deps: AppDeps) {
 private fun UpdateScreen(words: Words, deps: AppDeps, update: UpdateState) {
     val brand = LocalBrand.current
     val updater = deps.updater
+    androidx.compose.runtime.DisposableEffect(deps) {
+        deps.onDarkStatusBar(true)
+        onDispose { deps.onDarkStatusBar(false) }
+    }
     val deepNavy = Color(0xFF0B1120)
     val cardDark = Color(0xFF1E293B)
     val borderDark = Color(0xFF334155)

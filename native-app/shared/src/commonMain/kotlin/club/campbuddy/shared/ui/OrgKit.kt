@@ -148,7 +148,12 @@ val ORG_DARK_MUTED = Color(0xFF94A3B8)
 /** Provides the Dark Ops palette (M23–M32) across Staff Login, Event Manager Hub, and SuperAdmin Console. */
 @Composable
 fun OrgDarkTheme(content: @Composable () -> Unit) {
+    val env = LocalEnv.current
     val brand = LocalBrand.current
+    androidx.compose.runtime.DisposableEffect(env) {
+        env.deps.onDarkStatusBar(true)
+        onDispose { env.deps.onDarkStatusBar(false) }
+    }
     val base = MaterialTheme.typography
     val darkType = base.copy(
         headlineSmall = base.headlineSmall.copy(color = Color.White),
@@ -226,14 +231,13 @@ enum class Tone { Ok, Warn, Danger, Muted, Primary, Accent }
 
 @Composable
 private fun toneColor(tone: Tone): Color {
-    val brand = LocalBrand.current
     return when (tone) {
-        Tone.Ok -> brand.success
-        Tone.Warn -> Color(0xFFB45309)
-        Tone.Danger -> brand.danger
-        Tone.Muted -> brand.muted
-        Tone.Primary -> brand.primary
-        Tone.Accent -> Color(0xFF8A5A00)
+        Tone.Ok -> Color(0xFF34D399)
+        Tone.Warn -> Color(0xFFFBBF24)
+        Tone.Danger -> Color(0xFFF87171)
+        Tone.Muted -> Color(0xFFCBD5E1)
+        Tone.Primary -> Color(0xFFFF785A)
+        Tone.Accent -> Color(0xFFF59E0B)
     }
 }
 

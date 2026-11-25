@@ -45,6 +45,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import campbuddy_native.shared.generated.resources.Res
+import campbuddy_native.shared.generated.resources.wordmark
 import club.campbuddy.shared.PlatformBackHandler
 import club.campbuddy.shared.data.ApiClient
 import club.campbuddy.shared.data.ApiException
@@ -84,10 +86,25 @@ fun OrganizerLoginScreen(api: ApiClient, repository: Repository, deviceName: Str
         Column(Modifier.fillMaxSize().background(ORG_DARK_BG).statusBarsPadding()) {
             OrgHeader("Staff Sign In", "Organizer & Event Lead Console", onBack = onBack)
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).imePadding().padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Box(
+                        Modifier.background(Color.White, RoundedCornerShape(50)).padding(horizontal = 18.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        androidx.compose.foundation.Image(
+                            org.jetbrains.compose.resources.painterResource(Res.drawable.wordmark),
+                            contentDescription = "CampBuddy",
+                            modifier = Modifier.height(26.dp),
+                        )
+                    }
+                }
                 Text("Attendees never need to sign in. This portal is for the people running a WordCamp.", style = MaterialTheme.typography.bodyMedium.copy(color = ORG_DARK_MUTED))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    RoleCard("manager", role, "Event manager", "Your assigned WordCamps", "briefcase", Modifier.weight(1f)) { role = it }
-                    RoleCard("admin", role, "Administrator", "Every WordCamp + platform", "lock", Modifier.weight(1f)) { role = it }
+                Row(
+                    Modifier.fillMaxWidth().height(androidx.compose.foundation.layout.IntrinsicSize.Max),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    RoleCard("manager", role, "Event manager", "Your assigned WordCamps", "briefcase", Modifier.weight(1f).fillMaxHeight()) { role = it }
+                    RoleCard("admin", role, "Administrator", "Every WordCamp + platform", "lock", Modifier.weight(1f).fillMaxHeight()) { role = it }
                 }
                 Card {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

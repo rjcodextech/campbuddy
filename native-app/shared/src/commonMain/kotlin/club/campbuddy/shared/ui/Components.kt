@@ -121,16 +121,25 @@ fun LineIcon(name: String, tint: Color, size: Dp = 24.dp, filled: Boolean = fals
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val brand = LocalBrand.current
+    val darkOrg = LocalOrgDarkMode.current
     val shape = Radii.pill
+    val labelColor = when {
+        enabled -> Color.White
+        darkOrg -> Color(0xFF94A3B8)
+        else -> Color(0xFF64748B)
+    }
     Box(
         modifier.heightIn(min = 44.dp)
             // The website's primary button (--gradient-button): deep coral → deep amber, so the white label is 4.9–5.2:1.
             .then(if (enabled) Modifier.shadow(6.dp, shape, clip = false, ambientColor = brand.primary, spotColor = brand.primary) else Modifier)
-            .background(Brush.linearGradient(listOf(brand.primaryText, BRAND_WINE_DEEP)), shape, alpha = if (enabled) 1f else 0.4f)
+            .then(
+                if (enabled) Modifier.background(Brush.linearGradient(listOf(brand.primaryText, BRAND_WINE_DEEP)), shape)
+                else Modifier.background(if (darkOrg) Color(0xFF334155) else Color(0xFFE2E8F0), shape),
+            )
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = 18.dp, vertical = 10.dp),
         contentAlignment = Alignment.Center,
-    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = Color.White), textAlign = TextAlign.Center) }
+    ) { Text(text, style = MaterialTheme.typography.labelLarge.copy(color = labelColor), textAlign = TextAlign.Center) }
 }
 
 @Composable

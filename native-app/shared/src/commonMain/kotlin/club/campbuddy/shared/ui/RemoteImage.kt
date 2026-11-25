@@ -1,10 +1,12 @@
 package club.campbuddy.shared.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
@@ -38,16 +40,21 @@ internal fun absoluteUrl(apiBase: String, url: String): String {
 fun RemoteImage(url: String?, modifier: Modifier = Modifier, contentScale: ContentScale = ContentScale.Fit, fallback: @Composable () -> Unit) {
     val env = LocalEnv.current
     var failed by remember(url) { mutableStateOf(false) }
+    var loaded by remember(url) { mutableStateOf(false) }
 
     if (url.isNullOrBlank() || failed) {
         fallback()
     } else {
-        AsyncImage(
-            model = absoluteUrl(env.deps.apiBase, url),
-            contentDescription = null,
-            modifier = modifier,
-            contentScale = contentScale,
-            onError = { failed = true },
-        )
+        Box(modifier, contentAlignment = Alignment.Center) {
+            if (!loaded) fallback()
+            AsyncImage(
+                model = absoluteUrl(env.deps.apiBase, url),
+                contentDescription = null,
+                modifier = Modifier.matchParentSize(),
+                contentScale = contentScale,
+                onSuccess = { loaded = true },
+                onError = { failed = true },
+            )
+        }
     }
 }

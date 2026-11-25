@@ -119,9 +119,13 @@ fun CampCardTab(slug: String, eventName: String, logo: String?, mark: String? = 
     val shown = if (live) saved else SAMPLE
     val faceData = CardFaceData(eventName, logo, mark, shown, sample = !live)
     val layers = CAMP_CARD_LAYOUTS.associate { (key, _) -> key to rememberGraphicsLayer() }
-    val carouselState = androidx.compose.foundation.lazy.rememberLazyListState()
-    var activeStyleIndex by rememberSaveable { mutableStateOf(1) }
+    var activeStyleIndex by rememberSaveable { mutableStateOf(0) }
+    val carouselState = androidx.compose.foundation.lazy.rememberLazyListState(initialFirstVisibleItemIndex = activeStyleIndex)
     var scannerOpen by remember { mutableStateOf(false) }
+
+    androidx.compose.runtime.LaunchedEffect(carouselState.firstVisibleItemIndex) {
+        activeStyleIndex = carouselState.firstVisibleItemIndex.coerceIn(0, CAMP_CARD_LAYOUTS.lastIndex)
+    }
 
     // ---- the attendee-list copy ----
     var share by remember { mutableStateOf(env.user.share(slug)) }
@@ -558,10 +562,9 @@ private fun ClaimProfileBanner(
         Column(
             Modifier
                 .fillMaxWidth()
-                .shadow(2.dp, shape, clip = false)
                 .clip(shape)
-                .background(brand.peach.copy(alpha = 0.5f), shape)
-                .border(1.5.dp, brand.primary.copy(alpha = 0.35f), shape)
+                .background(Color(0xFFFFF5EB), shape)
+                .border(1.dp, Color(0xFFFDBA74), shape)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {

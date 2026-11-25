@@ -130,6 +130,10 @@ class MainActivity : ComponentActivity() {
                     },
                     apiBase = api,
                     updater = updater,
+                    onDarkStatusBar = { dark ->
+                        androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
+                            .isAppearanceLightStatusBars = !dark
+                    },
                 )
             )
         }

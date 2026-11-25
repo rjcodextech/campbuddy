@@ -204,9 +204,10 @@ fun EventScreen(
         }
 
         if (selected == "home") {
+            Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
             StickyHelpBar(onHelp = { helpOpen = true })
         }
-        BottomBar(tabs, selected) { selected = it }
+        BottomBar(tabs, selected) { openTab(it, if (it == "my-day") "full" else null) }
     }
 
     if (helpOpen) {
@@ -380,6 +381,15 @@ private fun TactileHeroCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column {
+                Text(
+                    text = if (phase == Phase.During) "LIVE AT WORDCAMP" else "WORDCAMP COMPANION",
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = Color(0xFF94A3B8),
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        fontSize = 10.5.sp,
+                    ),
+                )
                 Text(
                     text = timeText,
                     style = MaterialTheme.typography.headlineSmall.copy(
@@ -692,8 +702,8 @@ private fun ActionGrid(
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 ActionTile(
-                    title = "Sponsors & Steals",
-                    subtitle = "Booths, deals & freebies",
+                    title = "Sponsors",
+                    subtitle = "Deals & free steals",
                     icon = "gift",
                     accent = brand.primary,
                     modifier = Modifier.weight(1f),
@@ -741,42 +751,34 @@ private fun ActionTile(
     onClick: () -> Unit,
 ) {
     val brand = LocalBrand.current
-    val shape = RoundedCornerShape(20.dp)
+    val shape = RoundedCornerShape(16.dp)
 
-    Column(
+    Row(
         modifier = modifier
-            .heightIn(min = 104.dp)
-            .shadow(2.dp, shape, clip = false)
+            .heightIn(min = 72.dp)
             .clip(shape)
-            .background(brand.surface, shape)
+            .background(Color.White, shape)
             .border(1.dp, brand.line, shape)
             .clickable(role = Role.Button, onClick = onClick)
-            .padding(14.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 12.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            Modifier
+                .size(38.dp)
+                .background(brand.peach, CircleShape),
+            contentAlignment = Alignment.Center,
         ) {
-            Box(
-                Modifier
-                    .size(38.dp)
-                    .background(brand.peach, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                LineIcon(icon, accent, size = 20.dp)
-            }
-            LineIcon("chevron-right", brand.muted.copy(alpha = 0.5f), size = 16.dp)
+            LineIcon(icon, accent, size = 19.dp)
         }
-
-        Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    lineHeight = 19.sp,
+                    fontSize = 13.5.sp,
+                    lineHeight = 17.sp,
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -786,7 +788,7 @@ private fun ActionTile(
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = brand.muted,
                     fontSize = 11.sp,
-                    lineHeight = 15.sp,
+                    lineHeight = 14.sp,
                 ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -912,12 +914,6 @@ private fun HelpSheet(
     Sheet(
         title = "Support & Safety",
         onClose = onClose,
-        actions = {
-            SheetActions(
-                primary = "Done",
-                onPrimary = onClose,
-            )
-        },
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1029,13 +1025,14 @@ private fun HelpSheet(
                     }
                     Text("Keep my report anonymous", style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold, color = brand.ink))
                 }
+                val canSend = reportText.isNotBlank()
                 Box(
                     Modifier
                         .fillMaxWidth()
                         .heightIn(min = 44.dp)
                         .clip(RoundedCornerShape(50))
-                        .background(if (reportText.isNotBlank()) brand.ink else brand.ink.copy(alpha = 0.45f))
-                        .clickable(enabled = reportText.isNotBlank()) {
+                        .background(if (canSend) brand.ink else Color(0xFFE2E8F0))
+                        .clickable(enabled = canSend) {
                             submitted = true
                             val subject = "WordCamp Safety Report (${event?.name ?: "Event"})"
                             val body = (if (keepAnonymous) "[Anonymous Report]\n\n" else "") + reportText
@@ -1044,8 +1041,17 @@ private fun HelpSheet(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(if (submitted) "Report Draft Prepared ✓" else "Submit Report", style = MaterialTheme.typography.labelLarge.copy(color = Color.White))
+                    Text(
+                        if (submitted) "Report Draft Prepared ✓" else "Submit Report",
+                        style = MaterialTheme.typography.labelLarge.copy(color = if (canSend) Color.White else Color(0xFF64748B)),
+                    )
                 }
+                Text(
+                    "Works offline — sends when connected",
+                    style = MaterialTheme.typography.labelSmall.copy(color = brand.success, fontWeight = FontWeight.SemiBold),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }
@@ -1532,7 +1538,7 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
     val words = LocalWords.current
     Column(Modifier.fillMaxWidth().background(brand.surface).navigationBarsPadding()) {
         Box(Modifier.fillMaxWidth().height(1.dp).background(brand.line))
-        FitTabsRow {
+        FitTabsRow(Modifier.padding(horizontal = 6.dp)) {
             tabs.forEach { tab ->
                 val on = tab.key == selected
                 Column(
@@ -1541,14 +1547,13 @@ private fun BottomBar(tabs: List<club.campbuddy.shared.model.TabConfig>, selecte
                     verticalArrangement = Arrangement.Center,
                 ) {
                     Box(
-                        Modifier.fillMaxWidth().widthIn(max = 48.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)),
+                        Modifier.fillMaxWidth().widthIn(max = 46.dp).height(26.dp).background(if (on) brand.peach else Color.Transparent, RoundedCornerShape(50)),
                         contentAlignment = Alignment.Center,
                     ) { TabIcon(tab.key, tab.icon, on) }
-                    // 11sp, never cut off: FitTabsRow gives a long label the width it needs.
                     Text(
                         words(tab.title),
-                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 11.sp, lineHeight = 13.sp, color = if (on) brand.primaryText else brand.muted),
-                        maxLines = 2, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp),
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = 10.sp, lineHeight = 12.sp, color = if (on) brand.primaryText else brand.muted),
+                        maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 3.dp),
                     )
                 }
             }

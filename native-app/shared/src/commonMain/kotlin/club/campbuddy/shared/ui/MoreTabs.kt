@@ -820,28 +820,57 @@ private fun SponsorList(slug: String) {
                     item(key = "tier-$tier") {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             if (tier.isNotBlank()) Text(tier.uppercase(), style = MaterialTheme.typography.labelMedium.copy(color = brand.primaryText, letterSpacing = 0.72.sp))
-                            FlowRow(maxItemsInEachRow = 2, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                list.forEach { sponsor ->
-                                    val key = tier.lowercase()
-                                    val (bg, border) = when {
-                                        "platinum" in key -> brand.peach to brand.accent
-                                        "bronze" in key -> Color(0xFFFDFBF7) to Color(0xFFE2E8F0)
-                                        "gold" in key -> Color(0xFFFDFBF7) to brand.accent
-                                        else -> Color(0xFFFDFBF7) to brand.line
-                                    }
-                                    Box(
-                                        Modifier.weight(1f).heightIn(min = 64.dp).background(bg, RoundedCornerShape(14.dp)).border(1.dp, border, RoundedCornerShape(14.dp))
-                                            // The logo is a picture: the sponsor's name is what a screen reader says.
-                                            .semantics(mergeDescendants = true) { contentDescription = sponsor.name }
-                                            .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 16.dp, vertical = 12.dp),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(28.dp)) {
-                                            Text(sponsor.name, style = MaterialTheme.typography.labelLarge, textAlign = TextAlign.Center)
+                            val rows = list.chunked(2)
+                            rows.forEach { pair ->
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    pair.forEach { sponsor ->
+                                        val key = tier.lowercase()
+                                        val (bg, border) = when {
+                                            "platinum" in key -> brand.peach to brand.accent
+                                            "gold" in key -> Color(0xFFFFFBEB) to brand.accent
+                                            "bronze" in key -> Color(0xFFFDFBF7) to Color(0xFFE2E8F0)
+                                            else -> Color(0xFFFDFBF7) to brand.line
+                                        }
+                                        val host = sponsor.website?.removePrefix("https://")?.removePrefix("http://")?.trimEnd('/')?.substringBefore('/')
+                                        Box(
+                                            Modifier.weight(1f).heightIn(min = if (pair.size == 1) 76.dp else 72.dp).clip(RoundedCornerShape(14.dp)).background(bg, RoundedCornerShape(14.dp)).border(1.dp, border, RoundedCornerShape(14.dp))
+                                                .semantics(mergeDescendants = true) { contentDescription = sponsor.name }
+                                                .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 12.dp, vertical = 12.dp),
+                                            contentAlignment = Alignment.Center,
+                                        ) {
+                                            RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(32.dp)) {
+                                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                        Box(
+                                                            Modifier.size(22.dp).background(brand.peach, CircleShape),
+                                                            contentAlignment = Alignment.Center,
+                                                        ) {
+                                                            Text(
+                                                                sponsor.name.take(1).uppercase(),
+                                                                style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold),
+                                                            )
+                                                        }
+                                                        Text(
+                                                            sponsor.name,
+                                                            style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                                            maxLines = 1,
+                                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                                        )
+                                                    }
+                                                    if (!host.isNullOrBlank()) {
+                                                        Text(
+                                                            host,
+                                                            style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp),
+                                                            maxLines = 1,
+                                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                                        )
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
+                                    if (pair.size == 1 && list.size > 1) Box(Modifier.weight(1f))
                                 }
-                                if (list.size % 2 == 1) Box(Modifier.weight(1f))
                             }
                         }
                     }
