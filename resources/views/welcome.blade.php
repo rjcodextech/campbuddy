@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="campbuddy-events-version" content="{{ \App\Support\CatalogVersion::current() }}">
     <title>{{ config('campbuddy.name') }} | {{ config('campbuddy.tagline') }}</title>
     @include('attendee.partials.seo', [
         'seoTitle' => config('campbuddy.name').' | '.config('campbuddy.tagline'),

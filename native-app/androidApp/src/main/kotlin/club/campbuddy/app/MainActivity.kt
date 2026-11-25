@@ -24,6 +24,8 @@ class MainActivity : ComponentActivity() {
     private var waiting: CancellableContinuation<Boolean>? = null
     private var link by androidx.compose.runtime.mutableStateOf<DeepLink?>(null)
     private var linkCount = 0
+    private var foregroundTick by androidx.compose.runtime.mutableStateOf(0)
+    private var startedOnce = false
 
     private fun linkFrom(intent: Intent?): DeepLink? =
         intent?.data?.let { DeepLink.parse(it.scheme, it.host, it.path, ++linkCount, it.query) }
@@ -134,6 +136,7 @@ class MainActivity : ComponentActivity() {
                         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView)
                             .isAppearanceLightStatusBars = !dark
                     },
+                    foregroundTick = foregroundTick,
                 )
             )
         }
@@ -141,6 +144,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        if (startedOnce) foregroundTick++ else startedOnce = true
         club.campbuddy.app.update.Updates.onForeground(applicationContext, true)
     }
 

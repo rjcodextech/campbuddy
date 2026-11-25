@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\App\OrganizerSocialController as AppOrganizerSocial
 use App\Http\Controllers\Api\AppConfigController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\CacheVersionController;
+use App\Http\Controllers\Api\CatalogVersionController;
 use App\Http\Controllers\Api\DataVersionController;
 use App\Http\Controllers\Api\DeviceTransferController;
 use App\Http\Controllers\Api\DiscoveryController;
@@ -38,6 +39,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->middleware(['throttle:api-general', 'api.handshake'])->group(function () {
     Route::get('/health', HealthController::class)->name('api.health');
     Route::get('/cache-version', CacheVersionController::class)->name('api.cache-version');
+    Route::get('/events-version', CatalogVersionController::class)->name('api.events-version');
     // The native app start-up check: minimum build, store link, feature switches.
     Route::get('/app-config', AppConfigController::class)->name('api.app-config');
     // The native app's server-driven settings (Admin > Mobile app).

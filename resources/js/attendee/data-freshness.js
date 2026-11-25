@@ -51,8 +51,33 @@ function scheduleNext(retryAfter = 0) {
   nextCheckAt = Date.now() + nextDelay({ inWindow: inEventWindow(eventFacts()), failures, retryAfter });
 }
 
+function targetConfig() {
+  const slug = document.getElementById('app')?.dataset.eventSlug;
+  const eventVer = document.querySelector('meta[name="campbuddy-data-version"]')?.content ?? null;
+  if (slug && eventVer) {
+    return {
+      key: slug,
+      version: eventVer,
+      endpoint: `/api/v1/events/${encodeURIComponent(slug)}/data-version`,
+      matchUrl: (url) => url.pathname === `/event/${slug}` || url.pathname.startsWith(`/event/${slug}/`),
+    };
+  }
+
+  const eventsVer = document.querySelector('meta[name="campbuddy-events-version"]')?.content ?? null;
+  if (eventsVer) {
+    return {
+      key: 'catalog',
+      version: eventsVer,
+      endpoint: '/api/v1/events-version',
+      matchUrl: (url) => url.pathname === '/',
+    };
+  }
+
+  return null;
+}
+
 function pageVersion() {
-  return document.querySelector('meta[name="campbuddy-data-version"]')?.content ?? null;
+  return targetConfig()?.version ?? null;
 }
 
 function busy() {
@@ -63,13 +88,13 @@ function busy() {
   return typing || dialogOpen || Date.now() - lastInteraction < IDLE_MS;
 }
 
-/** This event's saved pages, each swapped for a fresh copy in place. Nothing is deleted, whatever the network does. */
-async function refreshSavedPages(slug) {
-  await refreshCopies((url) => url.pathname === `/event/${slug}` || url.pathname.startsWith(`/event/${slug}/`));
+/** Saved pages matching the current scope, swapped for a fresh copy in place. */
+async function refreshSavedPages(target) {
+  await refreshCopies(target.matchUrl);
 }
 
-async function refresh(slug) {
-  await refreshSavedPages(slug);
+async function refresh(target) {
+  await refreshSavedPages(target);
 
   try {
     sessionStorage.setItem(SCROLL_KEY, JSON.stringify({ path: location.pathname, y: window.scrollY }));
@@ -80,7 +105,7 @@ async function refresh(slug) {
   location.reload();
 }
 
-function showPill(slug) {
+function showPill(target) {
   if (document.getElementById('data-updated-pill')) return;
 
   const pill = document.createElement('button');
@@ -88,21 +113,21 @@ function showPill(slug) {
   pill.id = 'data-updated-pill';
   pill.className = 'data-updated-pill';
   pill.textContent = 'New info. Tap to refresh';
-  pill.addEventListener('click', () => { track('data_refresh_tap'); refresh(slug); });
+  pill.addEventListener('click', () => { track('data_refresh_tap'); refresh(target); });
   document.body.appendChild(pill);
 }
 
-async function check(slug, options = {}) {
+async function check(target, options = {}) {
   if (checking) return;
   checking = true;
   try {
-    await checkNow(slug, options);
+    await checkNow(target, options);
   } finally {
     checking = false;
   }
 }
 
-async function checkNow(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
+async function checkNow(target, { returning = false, minGap = MIN_GAP_MS } = {}) {
   if (!navigator.onLine || document.visibilityState !== 'visible') return;
   if (Date.now() - lastCheck < minGap) return;
   lastCheck = Date.now();
@@ -115,7 +140,7 @@ async function checkNow(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
     // 304 when nothing has changed) and a CDN may hold the answer for a few
     // seconds, which is what keeps a crowd of phones cheap. `no-cache` = always
     // check with the server, never trust a stored copy.
-    const response = await fetch(`/api/v1/events/${encodeURIComponent(slug)}/data-version`, {
+    const response = await fetch(target.endpoint, {
       cache: 'no-cache',
       headers: apiHeaders(),
       signal: controller?.signal,
@@ -143,21 +168,21 @@ async function checkNow(slug, { returning = false, minGap = MIN_GAP_MS } = {}) {
   scheduleNext();
 
   // Only a real fingerprint counts: an empty or odd answer must not reload the page.
-  if ((typeof latest !== 'string' && typeof latest !== 'number') || latest === '' || String(latest) === pageVersion()) return;
+  if ((typeof latest !== 'string' && typeof latest !== 'number') || latest === '' || String(latest) === target.version) return;
 
   // Coming back to the app is the natural moment: nothing is in progress yet.
   if (returning && !document.querySelector('dialog[open]')) {
-    refresh(slug);
+    refresh(target);
     return;
   }
 
   if (busy()) {
     pendingReload = true;
-    showPill(slug);
+    showPill(target);
     return;
   }
 
-  refresh(slug);
+  refresh(target);
 }
 
 function restoreScroll() {
@@ -174,8 +199,8 @@ function restoreScroll() {
 }
 
 export function initDataFreshness() {
-  const slug = document.getElementById('app')?.dataset.eventSlug;
-  if (!slug || !pageVersion()) return;
+  const target = targetConfig();
+  if (!target) return;
 
   restoreScroll();
 
@@ -193,10 +218,10 @@ export function initDataFreshness() {
       return;
     }
     // Only a real return counts (not a quick glance at a notification).
-    check(slug, { returning: hiddenAt > 0 && Date.now() - hiddenAt > MIN_GAP_MS });
+    check(target, { returning: hiddenAt > 0 && Date.now() - hiddenAt > MIN_GAP_MS });
   });
 
-  window.addEventListener('online', () => check(slug));
+  window.addEventListener('online', () => check(target));
 
   // The page was just built, so the first regular check is a while away.
   lastCheck = Date.now();
@@ -204,9 +229,9 @@ export function initDataFreshness() {
 
   setInterval(() => {
     if (pendingReload && !busy()) {
-      refresh(slug);
+      refresh(target);
       return;
     }
-    if (Date.now() >= nextCheckAt) check(slug, { minGap: 0 });
+    if (Date.now() >= nextCheckAt) check(target, { minGap: 0 });
   }, 30 * 1000);
 }

@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -176,8 +177,9 @@ private fun DiscoveryTop(model: DiscoveryModel, roster: List<RosterEntry>, onSha
     var reportFor by remember { mutableStateOf<DiscoveryCard?>(null) }
     var confirmLeave by remember { mutableStateOf(false) }
     val slugKey = model.mine?.discoveryId
+    val eventTick by env.repository.eventTick.collectAsState()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(slugKey, eventTick) {
         model.refresh()
         while (true) {
             delay(20_000)

@@ -95,6 +95,9 @@ val AppJson = Json {
 data class ShareReply(@kotlinx.serialization.SerialName("share_id") val shareId: String, @kotlinx.serialization.SerialName("owner_token") val ownerToken: String)
 
 @kotlinx.serialization.Serializable
+internal data class VersionReply(val version: String)
+
+@kotlinx.serialization.Serializable
 internal data class PushRegistration(
     val token: String,
     @kotlinx.serialization.SerialName("device_id") val deviceId: String,
@@ -147,6 +150,10 @@ class ApiClient(
     private fun handshakeTime(): String = (kotlinx.datetime.Clock.System.now().epochSeconds + clockOffsetSeconds).toString()
 
     suspend fun config(): AppConfig = get("/app/config")
+
+    suspend fun eventsVersion(): String = get<VersionReply>("/events-version").version
+
+    suspend fun dataVersion(slug: String): String = get<VersionReply>("/events/$slug/data-version").version
 
     suspend fun legal(slug: String): LegalDoc = get("/legal/$slug")
 

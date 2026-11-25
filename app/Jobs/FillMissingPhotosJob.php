@@ -173,6 +173,7 @@ class FillMissingPhotosJob implements ShouldQueue
         if ($found['site'] + $found['gravatar'] + $found['wporg'] > 0) {
             // The roster pages and the social kit read photos from here.
             \App\Http\Controllers\Api\RosterController::forget($this->event);
+            \App\Support\DataVersion::forget($this->event->id);
         }
 
         FetchLog::create([

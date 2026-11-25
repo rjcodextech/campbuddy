@@ -96,6 +96,8 @@ class AppDeps(
     val updater: club.campbuddy.shared.domain.AppUpdater? = null,
     /** Updates Android system status bar icon contrast when entering dark Organizer/Admin screens. */
     val onDarkStatusBar: (Boolean) -> Unit = {},
+    /** Increments when the platform shell returns from background so cached cron data re-checks right away. */
+    val foregroundTick: Int = 0,
 )
 
 private sealed interface Screen {
@@ -121,6 +123,29 @@ fun App(deps: AppDeps) {
 
     // The saved (or bundled) config draws the first frame; the fresh one replaces it when it arrives.
     LaunchedEffect(Unit) { repository.freshConfig()?.let { config = it } }
+
+    // Whenever the app returns to foreground (or opens), check server versions right away so cron updates land seamlessly.
+    val currentScreen = stack.lastOrNull()
+    val activeSlug = (currentScreen as? Screen.Event)?.slug
+    LaunchedEffect(deps.foregroundTick) {
+        repository.freshConfig()?.let { config = it }
+        repository.syncCatalogIfChanged()
+        if (activeSlug != null) repository.syncEventIfChanged(activeSlug)
+    }
+
+    // While viewing an event or the picker, poll lightweight version fingerprints (ETag/304 friendly)
+    // so server cron updates propagate automatically into local cache and live UI.
+    LaunchedEffect(activeSlug) {
+        while (true) {
+            if (activeSlug != null) {
+                repository.syncEventIfChanged(activeSlug)
+                kotlinx.coroutines.delay(120_000)
+            } else {
+                repository.syncCatalogIfChanged()
+                kotlinx.coroutines.delay(180_000)
+            }
+        }
+    }
 
     // A link from outside (a message, a QR code, a notification) opens that event, on top of the picker.
     LaunchedEffect(deps.link?.id, deps.link?.slug) {

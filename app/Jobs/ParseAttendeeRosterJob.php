@@ -108,6 +108,12 @@ class ParseAttendeeRosterJob implements ShouldQueue
             $new = collect($seenHashes)->reject(fn ($hash) => $existing->has($hash))->count();
             $pruned = $this->pruneDepartedAttendees($seenHashes);
 
+            if ($upserts !== [] || $pruned['removed'] > 0) {
+                \App\Http\Controllers\Api\RosterController::forget($this->event);
+                \App\Support\RosterRoles::forget($this->event);
+                \App\Support\DataVersion::forget($this->event->id);
+            }
+
             $this->log($pruned['held'] > 0 ? 'partial' : 'ok', sprintf(
                 '%d attendees parsed%s%s%s',
                 count($rows),

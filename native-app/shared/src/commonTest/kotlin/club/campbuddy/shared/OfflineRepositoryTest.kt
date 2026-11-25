@@ -99,4 +99,55 @@ class OfflineRepositoryTest {
         assertEquals(false, loaded.fromCache)
         assertTrue(store.map.containsKey("cache:sessions:wc"))
     }
+
+    @Test
+    fun cronDataVersionChangeRefreshesEventCacheAndBumpsEventTick() = runTest {
+        val store = OfflineTestStore().apply { put("dataver:wc", "v1") }
+        var version = "v2"
+        val seen = mutableListOf<String>()
+        val engine = MockEngine { request ->
+            val p = request.url.encodedPath
+            lock.withLock { seen += p }
+            when {
+                p.endsWith("/events/wc/data-version") -> respond("""{"version":"$version"}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                p.endsWith("/app/events/wc") -> respond("""{"data":{"slug":"wc","name":"WordCamp Test","data_version":"$version"}}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                p.endsWith("/app/events/wc/guide") -> respond("""{"data":{}}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                p.endsWith("/events/wc/roster") -> respond("""{"data":[],"last_page":1}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                else -> respond("""{"data":[]}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+            }
+        }
+        val api = ApiClient(baseUrl = "https://campbuddy.test/api/v1", client = HttpClient(engine) { install(ContentNegotiation) { json(AppJson) } })
+        val repo = Repository(api, store)
+
+        val changed = real { repo.syncEventIfChanged("wc") }
+        assertTrue(changed)
+        assertEquals(1, repo.eventTick.value)
+        assertEquals("v2", store.map["dataver:wc"])
+        assertTrue(seen.any { it.endsWith("/app/events/wc/sessions") })
+
+        // Same version again -> no refetch or tick bump
+        val unchanged = real { repo.syncEventIfChanged("wc") }
+        assertEquals(false, unchanged)
+        assertEquals(1, repo.eventTick.value)
+    }
+
+    @Test
+    fun cronCatalogVersionChangeRefreshesEventsAndBumpsCatalogTick() = runTest {
+        val store = OfflineTestStore().apply { put("catalog_ver", "cat1") }
+        val engine = MockEngine { request ->
+            val p = request.url.encodedPath
+            when {
+                p.endsWith("/events-version") -> respond("""{"version":"cat2"}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                p.endsWith("/app/config") -> respond("""{}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+                else -> respond("""{"data":[]}""", HttpStatusCode.OK, headersOf("Content-Type", "application/json"))
+            }
+        }
+        val api = ApiClient(baseUrl = "https://campbuddy.test/api/v1", client = HttpClient(engine) { install(ContentNegotiation) { json(AppJson) } })
+        val repo = Repository(api, store)
+
+        val changed = real { repo.syncCatalogIfChanged() }
+        assertTrue(changed)
+        assertEquals(1, repo.catalogTick.value)
+        assertEquals("cat2", store.map["catalog_ver"])
+    }
 }

@@ -121,6 +121,8 @@ class EventController extends Controller
             'free_steals' => AppEventApi::freeSteals($event),
             'quests' => AppEventApi::quests($event),
             'contributor_tables' => AppEventApi::tables($event),
+            'info' => AppEventApi::info($event),
+            'delay' => AppEventApi::delay($event),
             'guide' => AppEventApi::guide(),
             'data_version' => $version,
         ]], 30);
