@@ -13,45 +13,74 @@
     'pageDescription' => $pageDescription,
 ])
 
+@section('toc')
+    @if ($hasCustomContent)
+        @php
+            preg_match_all('/<h2[^>]*>(.*?)<\/h2>/is', \App\Support\SafeHtml::clean($document->content), $tocMatches);
+        @endphp
+        <a class="chip" href="#legal-doc-top"><x-attendee.line-icon name="clipboard" /> <span>Overview</span></a>
+        @foreach ($tocMatches[1] ?? [] as $idx => $rawHeading)
+            @php($label = trim(html_entity_decode(strip_tags($rawHeading), ENT_QUOTES, 'UTF-8')))
+            @if ($label !== '')
+                <a class="chip" href="#legal-sec-{{ $idx + 1 }}"><x-attendee.line-icon name="shield" /> <span>{{ \Illuminate\Support\Str::limit($label, 28) }}</span></a>
+            @endif
+        @endforeach
+        <a class="chip" href="#legal-grievance-cta"><x-attendee.line-icon name="mail" /> <span>Data Request</span></a>
+    @else
+        <a class="chip" href="#intro"><x-attendee.line-icon name="sparkles" /> <span>Overview</span></a>
+        <a class="chip" href="#companion"><x-attendee.line-icon name="compass" /> <span>What CampBuddy is</span></a>
+        <a class="chip" href="#changes"><x-attendee.line-icon name="refresh" /> <span>Info changes</span></a>
+        <a class="chip" href="#sponsors"><x-attendee.line-icon name="tag" /> <span>Deals &amp; sponsors</span></a>
+        <a class="chip" href="#conduct"><x-attendee.line-icon name="users" /> <span>Meeting people</span></a>
+        <a class="chip" href="#usage"><x-attendee.line-icon name="shield" /> <span>Using service</span></a>
+        <a class="chip" href="#liability"><x-attendee.line-icon name="clipboard" /> <span>Liability</span></a>
+        <a class="chip" href="#contact"><x-attendee.line-icon name="mail" /> <span>Contact</span></a>
+    @endif
+@endsection
+
 @section('content')
-    <header class="legal-hero">
-        <div class="legal-hero__badge legal-hero__badge--terms">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            <span>Platform Terms & Code of Conduct</span>
+    <section id="legal-doc-top" class="hero-creative" aria-labelledby="terms-hero-title">
+        <nav class="hero-breadcrumb" aria-label="Breadcrumb">
+            <a href="{{ route('home') }}">Home</a>
+            <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
+            <span class="hero-breadcrumb__current" aria-current="page">Terms of use</span>
+        </nav>
+
+        <div class="hero-kicker">
+            <x-attendee.line-icon name="clipboard" />
+            <span>Platform Terms &amp; Code of Conduct</span>
         </div>
-        <h1 class="legal-hero__title">{{ $hasCustomContent ? $pageTitle : 'Terms of use' }}</h1>
-        <p class="legal-hero__subtitle">The rules for using CampBuddy, the WordCamp companion app and website. Clear, fair, and community-first.</p>
-        <div class="legal-hero__meta">
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Last updated {{ $updated }}
-            </span>
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-3"/></svg>
-                Governed by laws of India
-            </span>
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                ~2 min read
-            </span>
+
+        <h1 id="terms-hero-title" class="hero-creative__title">
+            @if ($hasCustomContent)
+                {{ $pageTitle }}
+            @else
+                Clear, community-first <span class="hero-creative__highlight">Terms of use</span>.
+            @endif
+        </h1>
+
+        <p class="hero-creative__lead">
+            The rules for using CampBuddy, the WordCamp companion app and website &mdash; fair, transparent, and built for the WordPress community.
+        </p>
+
+        <div class="hero-creative__pills">
+            <span class="hero-pill"><x-attendee.line-icon name="calendar" /> Updated {{ $updated }}</span>
+            <span class="hero-pill"><x-attendee.line-icon name="globe" /> Laws of India</span>
+            <span class="hero-pill"><x-attendee.line-icon name="clock" /> ~2 min read</span>
         </div>
-    </header>
+
+        <div class="hero-creative__waves" aria-hidden="true">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+            </svg>
+        </div>
+    </section>
 
     @if ($hasCustomContent)
         <div class="legal-card legal-custom-content">
             {!! \App\Support\SafeHtml::clean($document->content) !!}
         </div>
     @else
-        <nav class="legal-toc" aria-label="Quick jump sections">
-            <a href="#intro" class="legal-toc__pill">✨ Overview</a>
-            <a href="#companion" class="legal-toc__pill">1. What CampBuddy is</a>
-            <a href="#changes" class="legal-toc__pill">2. Info changes</a>
-            <a href="#sponsors" class="legal-toc__pill">3. Deals & sponsors</a>
-            <a href="#conduct" class="legal-toc__pill">4. Meeting people</a>
-            <a href="#usage" class="legal-toc__pill">5. Using service</a>
-            <a href="#liability" class="legal-toc__pill">6. Liability</a>
-            <a href="#contact" class="legal-toc__pill">8. Contact</a>
-        </nav>
 
         {{-- Intro card --}}
         <section id="intro" class="legal-box" aria-label="Overview">

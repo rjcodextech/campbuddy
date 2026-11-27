@@ -128,6 +128,12 @@ async function init() {
     import('./move-data.js').then(({ initMoveData }) => initMoveData()).catch(() => {});
   }
 
+  // Guide navigation + scrollspy runs on both /guide (no #app) and /event/{slug}/guide.
+  if (document.getElementById('guide-data') || document.querySelector('.guide-jump')) {
+    const { renderGuide } = await import('./guide.js');
+    renderGuide();
+  }
+
   const root = document.getElementById('app');
   if (!root) return;
 
@@ -186,11 +192,6 @@ async function init() {
   if (document.getElementById('people-root')) {
     const { renderPeople } = await import('./people.js');
     renderPeople(root);
-  }
-
-  if (document.getElementById('guide-data')) {
-    const { renderGuide } = await import('./guide.js');
-    renderGuide();
   }
 
   if (document.getElementById('data-controls')) {

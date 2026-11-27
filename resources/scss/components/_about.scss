@@ -911,6 +911,7 @@
 // --- Signature Creative Hero (Inspired by WPSimplified MLPages) -------------
 .hero-creative {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
     margin: 0 0 v.$space-6;
     padding: v.$space-6 v.$space-5 calc(v.$space-6 + 32px);
@@ -921,6 +922,66 @@
         var(--paper);
     border: 1px solid var(--surface-border);
     box-shadow: var(--shadow-card-elevated);
+
+    // Give /about a distinct architectural Obsidian Navy presence so it reads
+    // uniquely from /guide's festive WordCamp 101 handbook banner.
+    body[data-page-type="about"] & {
+        background:
+            radial-gradient(520px circle at 92% 10%, rgba(255, 77, 45, 0.24), transparent 55%),
+            radial-gradient(400px circle at 8% 92%, rgba(217, 119, 6, 0.14), transparent 55%),
+            linear-gradient(145deg, #162238 0%, var(--ink) 100%);
+        border-color: #334155;
+        color: #ffffff;
+
+        .hero-breadcrumb,
+        .hero-breadcrumb a,
+        .hero-breadcrumb span,
+        .hero-creative__lead {
+            color: #cbd5e1;
+        }
+
+        .hero-kicker {
+            background: rgba(255, 77, 45, 0.16);
+            border-color: rgba(255, 139, 112, 0.35);
+            color: #fed7aa;
+
+            .line-icon {
+                color: #ff8b70;
+            }
+        }
+
+        .hero-breadcrumb [aria-current="page"] {
+            color: #f8fafc;
+        }
+
+        .hero-creative__title {
+            color: #ffffff;
+        }
+
+        .hero-creative__highlight {
+            color: #ff8b70;
+
+            &::before {
+                background: rgba(255, 77, 45, 0.22);
+            }
+        }
+
+        .hero-creative__pills .pill,
+        .hero-creative__pills .chip {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.18);
+            color: #f8fafc;
+        }
+
+        &::before {
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+        }
+
+        .hero-creative__waves svg {
+            fill: rgba(255, 255, 255, 0.08);
+            opacity: 1;
+        }
+    }
 
     // Architectural dot grid aura
     &::before {

@@ -86,8 +86,4 @@ export function initDesktopNotice() {
     rememberDismissed();
     track('desktop_notice_dismiss');
   });
-
-  if (query.matches && !recentlyDismissed()) {
-    open('auto');
-  }
 }

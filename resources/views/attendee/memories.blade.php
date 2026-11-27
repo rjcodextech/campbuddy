@@ -24,11 +24,7 @@
     @include('attendee.partials.line-icons')
 
     <div class="app-frame">
-        <header class="topbar">
-            <a href="{{ route('home') }}" class="brand" data-track="home_link_click" data-track-target="brand">
-                <img src="/media/logo-wordmark-sm.png" alt="CampBuddy home" class="brand__logo brand__logo--wordmark" width="351" height="104">
-            </a>
-        </header>
+        @include('attendee.partials.public-header')
 
         <main id="main-content" tabindex="-1">
             {{-- The WordCamp site's own artwork, faint behind the name (SiteTheme::hero, components/_hero.scss). --}}

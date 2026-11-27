@@ -275,18 +275,28 @@ private fun LiveEventDashboard(
         item { NotificationsOffNotice(event.slug, event.firstDay, event.lastDay, zone, home = true) }
         item { LiveAskCard(event.slug, event.firstDay, event.lastDay, zone) }
 
-        // Screen 1 Hero Card: Tactile Card with Navy background (#1E293B to #0F172A), 30s clock, next talk
-        item {
-            HeroCard(
-                event = event,
-                phase = phase,
-                zone = zone,
-                now = now,
-                sessions = sessions,
-                offline = offline,
-                onViewSchedule = { onTab("my-day") },
-            )
-        }
+        // Dynamic server-driven home blocks ("hero", "happening_now", "up_next")
+        words.config.home.sections
+            .filter { visible(it, phase, profile.firstWordCamp, saved.isNotEmpty()) }
+            .forEach { sec ->
+                if (sec.type in setOf("hero", "happening_now", "up_next")) {
+                    item(key = "sec-${sec.type}-${sec.title}") {
+                        when (sec.type) {
+                            "hero" -> HeroCard(
+                                event = event,
+                                phase = phase,
+                                zone = zone,
+                                now = now,
+                                sessions = sessions,
+                                offline = offline,
+                                onViewSchedule = { onTab("my-day") },
+                            )
+                            "happening_now" -> HappeningNow(sec, phase, sessions, now, zone, event, startHereShown, onTab, onGuide)
+                            "up_next" -> UpNext(sec, sessions, now, zone, event.slug, saved.map { it.sessionId }.toSet()) { onTab("my-day") }
+                        }
+                    }
+                }
+            }
 
         // Screen 1 People & Matches Strip: Pinned contacts and interest wave triggers
         item {

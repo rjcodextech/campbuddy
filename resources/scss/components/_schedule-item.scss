@@ -25,9 +25,16 @@
         > .schedule-item-row {
             border-bottom: 0;
             border: 1px solid var(--surface-border);
+            border-left: 3px solid var(--line);
             border-radius: v.$radius-row;
-            padding: 0 v.$space-3;
+            padding: v.$space-1 v.$space-3 v.$space-1 v.$space-4;
             background: var(--paper-soft);
+            transition: border-color v.$duration-fast var(--ease-smooth), box-shadow v.$duration-fast var(--ease-smooth);
+
+            &:focus-within {
+                border-left-color: var(--brand-primary);
+                box-shadow: v.$shadow-sm;
+            }
         }
     }
 }
@@ -90,8 +97,10 @@
 
 .schedule-item__time {
     font-size: v.$font-size-xs;
-    font-weight: v.$font-weight-medium;
-    color: var(--muted);
+    font-weight: v.$font-weight-bold;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    color: var(--brand-text);
     white-space: nowrap;
 }
 

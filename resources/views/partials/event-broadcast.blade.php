@@ -14,7 +14,7 @@
     $from = \App\Support\EventBroadcasts::windowStart($event)->setTimezone($zone);
 @endphp
 
-<div class="max-w-4xl space-y-6">
+<div class="w-full space-y-6">
     <form method="POST" action="{{ $sendUrl }}" data-broadcast-form>
         @csrf
         <x-card title="Send a live announcement" :description="'To '.($reach['web'] + $reach['app']).' phones and browsers that opened this WordCamp since '.$from->format('j M').' with notifications on. It also shows on Home for '.\App\Support\EventBroadcasts::BANNER_MINUTES.' minutes, for everyone.'">

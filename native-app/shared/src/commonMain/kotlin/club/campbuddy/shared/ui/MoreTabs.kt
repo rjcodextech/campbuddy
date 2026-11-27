@@ -838,11 +838,11 @@ private fun SponsorList(slug: String) {
                                                 .let { m -> (sponsor.link ?: sponsor.website)?.let { u -> m.clickable(role = Role.Button) { (env.deps.openInApp ?: env.deps.openUrl)(u) } } ?: m }.padding(horizontal = 12.dp, vertical = 12.dp),
                                             contentAlignment = Alignment.Center,
                                         ) {
-                                            RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(32.dp)) {
-                                                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                if (!sponsor.logoUrl.isNullOrBlank()) {
+                                                    RemoteImage(sponsor.logoUrl, Modifier.fillMaxWidth().height(28.dp)) {
                                                         Box(
-                                                            Modifier.size(22.dp).background(brand.peach, CircleShape),
+                                                            Modifier.size(26.dp).background(brand.peach, CircleShape),
                                                             contentAlignment = Alignment.Center,
                                                         ) {
                                                             Text(
@@ -850,21 +850,31 @@ private fun SponsorList(slug: String) {
                                                                 style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold),
                                                             )
                                                         }
+                                                    }
+                                                } else {
+                                                    Box(
+                                                        Modifier.size(26.dp).background(brand.peach, CircleShape),
+                                                        contentAlignment = Alignment.Center,
+                                                    ) {
                                                         Text(
-                                                            sponsor.name,
-                                                            style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.Bold, fontSize = 13.sp),
-                                                            maxLines = 1,
-                                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                                            sponsor.name.take(1).uppercase(),
+                                                            style = MaterialTheme.typography.labelSmall.copy(color = brand.primaryText, fontWeight = FontWeight.ExtraBold),
                                                         )
                                                     }
-                                                    if (!host.isNullOrBlank()) {
-                                                        Text(
-                                                            host,
-                                                            style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp),
-                                                            maxLines = 1,
-                                                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                                        )
-                                                    }
+                                                }
+                                                Text(
+                                                    sponsor.name,
+                                                    style = MaterialTheme.typography.labelLarge.copy(color = brand.ink, fontWeight = FontWeight.Bold, fontSize = 13.sp),
+                                                    maxLines = 1,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                                )
+                                                if (!host.isNullOrBlank()) {
+                                                    Text(
+                                                        host,
+                                                        style = MaterialTheme.typography.labelSmall.copy(color = brand.muted, fontSize = 10.sp),
+                                                        maxLines = 1,
+                                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                                    )
                                                 }
                                             }
                                         }

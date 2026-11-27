@@ -2,14 +2,14 @@
     @include('attendee.partials.topbar')
 
     <main id="main-content" tabindex="-1">
-        <section class="u-page-intro">
-            <div class="badge">Contribute</div>
-            <h1 class="u-page-title">Where could you help?</h1>
-            <p class="footer-note" style="text-align:left">
+        <div class="section-head">
+            <span class="u-eyebrow"><x-attendee.line-icon name="wrench" /> Contributor Day</span>
+            <h1 class="section-head__title">Where could you help?</h1>
+            <span class="section-head__desc">
                 No code needed &mdash; writers, designers, organizers, and students all have a table.
                 <strong>Students:</strong> contributions appear on your WordPress.org profile for your CV.
-            </p>
-        </section>
+            </span>
+        </div>
 
         {{-- The picker's "Interested in Contributor Day?" answer, shown and changeable
         here (contribute.js; saved back to the onboarding answers on this device). --}}

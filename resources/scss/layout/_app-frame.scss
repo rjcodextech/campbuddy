@@ -58,4 +58,12 @@ body.app-shell {
     display: block;
     flex: 1;
     padding: v.$space-4 v.$space-4 v.$space-8;
+
+    .app-frame--with-nav & {
+        padding-bottom: calc(var(--bottom-nav-space) + 84px);
+
+        @media (min-width: v.$bp-desktop) {
+            padding-bottom: v.$space-8;
+        }
+    }
 }

@@ -15,44 +15,73 @@
     'pageDescription' => $pageDescription,
 ])
 
+@section('toc')
+    @if ($hasCustomContent)
+        @php
+            preg_match_all('/<h2[^>]*>(.*?)<\/h2>/is', \App\Support\SafeHtml::clean($document->content), $tocMatches);
+        @endphp
+        <a class="chip" href="#legal-doc-top"><x-attendee.line-icon name="shield" /> <span>Overview</span></a>
+        @foreach ($tocMatches[1] ?? [] as $idx => $rawHeading)
+            @php($label = trim(html_entity_decode(strip_tags($rawHeading), ENT_QUOTES, 'UTF-8')))
+            @if ($label !== '')
+                <a class="chip" href="#legal-sec-{{ $idx + 1 }}"><x-attendee.line-icon name="clipboard" /> <span>{{ \Illuminate\Support\Str::limit($label, 28) }}</span></a>
+            @endif
+        @endforeach
+        <a class="chip" href="#legal-grievance-cta"><x-attendee.line-icon name="mail" /> <span>Data Request</span></a>
+    @else
+        <a class="chip" href="#summary"><x-attendee.line-icon name="zap" /> <span>Short version</span></a>
+        <a class="chip" href="#responsible"><x-attendee.line-icon name="shield" /> <span>Who is responsible</span></a>
+        <a class="chip" href="#data-table"><x-attendee.line-icon name="clipboard" /> <span>What we keep</span></a>
+        <a class="chip" href="#third-parties"><x-attendee.line-icon name="users" /> <span>Who sees it</span></a>
+        <a class="chip" href="#rights"><x-attendee.line-icon name="check" /> <span>Your rights</span></a>
+        <a class="chip" href="#grievance"><x-attendee.line-icon name="mail" /> <span>Grievance &amp; email</span></a>
+        <a class="chip" href="#hindi"><x-attendee.line-icon name="globe" /> <span>सारांश (Hindi)</span></a>
+    @endif
+@endsection
+
 @section('content')
-    <header class="legal-hero">
-        <div class="legal-hero__badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <section id="legal-doc-top" class="hero-creative" aria-labelledby="privacy-hero-title">
+        <nav class="hero-breadcrumb" aria-label="Breadcrumb">
+            <a href="{{ route('home') }}">Home</a>
+            <span class="hero-breadcrumb__sep" aria-hidden="true">/</span>
+            <span class="hero-breadcrumb__current" aria-current="page">Privacy notice</span>
+        </nav>
+
+        <div class="hero-kicker">
+            <x-attendee.line-icon name="shield" />
             <span>DPDP Act 2023 Compliant</span>
         </div>
-        <h1 class="legal-hero__title">{{ $hasCustomContent ? $pageTitle : 'Privacy notice' }}</h1>
-        <p class="legal-hero__subtitle">What personal data CampBuddy keeps, why, for how long, and how to see, correct or erase it. Built privacy-first with local data control.</p>
-        <div class="legal-hero__meta">
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Last updated {{ $updated }}
-            </span>
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Written under India's Digital Personal Data Protection Act, 2023 (DPDP Act)
-            </span>
-            <span class="legal-hero__meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                ~3 min read
-            </span>
+
+        <h1 id="privacy-hero-title" class="hero-creative__title">
+            @if ($hasCustomContent)
+                {{ $pageTitle }}
+            @else
+                Your data stays <span class="hero-creative__highlight">on your phone</span>.
+            @endif
+        </h1>
+
+        <p class="hero-creative__lead">
+            What personal data CampBuddy keeps, why, for how long, and how to see, correct or erase it. Privacy notice built for attendee control.
+        </p>
+
+        <div class="hero-creative__pills">
+            <span class="hero-pill"><x-attendee.line-icon name="calendar" /> Updated {{ $updated }}</span>
+            <span class="hero-pill"><x-attendee.line-icon name="shield" /> DPDP Act 2023 (India)</span>
+            <span class="hero-pill"><x-attendee.line-icon name="clock" /> ~3 min read</span>
         </div>
-    </header>
+
+        <div class="hero-creative__waves" aria-hidden="true">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+            </svg>
+        </div>
+    </section>
 
     @if ($hasCustomContent)
         <div class="legal-card legal-custom-content">
             {!! \App\Support\SafeHtml::clean($document->content) !!}
         </div>
     @else
-        <nav class="legal-toc" aria-label="Quick jump sections">
-            <a href="#summary" class="legal-toc__pill">⚡ The short version</a>
-            <a href="#responsible" class="legal-toc__pill">1. Who is responsible</a>
-            <a href="#data-table" class="legal-toc__pill">2. What we keep</a>
-            <a href="#third-parties" class="legal-toc__pill">3. Who sees it</a>
-            <a href="#rights" class="legal-toc__pill">4. Your rights</a>
-            <a href="#grievance" class="legal-toc__pill">5. Grievance & email</a>
-            <a href="#hindi" class="legal-toc__pill">🇮🇳 सारांश (Hindi)</a>
-        </nav>
 
         {{-- The short version card --}}
         <section id="summary" class="legal-box" aria-label="Summary">

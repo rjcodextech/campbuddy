@@ -157,12 +157,9 @@
     }
 
     @media (min-width: v.$bp-tablet) {
-        position: sticky;
-        top: 64px;
-        z-index: 15;
-        margin: 0 0 v.$space-8;
-        padding: 10px v.$space-5;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        padding: 0;
+        margin: 0;
     }
 
     .chip {
@@ -227,6 +224,19 @@
         &:focus-visible {
             @include m.focus-ring;
         }
+
+        &.is-active {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #ffffff;
+            box-shadow: 0 6px 16px -4px rgba(255, 77, 45, 0.45);
+
+            svg,
+            .line-icon {
+                color: #ffffff;
+                opacity: 1;
+            }
+        }
     }
 }
 
@@ -269,7 +279,7 @@
 }
 
 // Inside an event (/event/{slug}/guide), the primary left nav is already present,
-// so Guide Sections uses a sticky horizontal bar instead of a second left column.
+// so Guide Sections uses a sticky single-line horizontal rail instead of a second left column.
 .guide-doc-layout--event {
     @media (min-width: v.$bp-desktop) {
         display: flex;
@@ -282,13 +292,12 @@
             z-index: 15;
             width: 100%;
             max-height: none;
-            overflow-x: auto;
-            overflow-y: visible;
+            overflow: visible;
             padding: 0;
         }
 
         .guide-doc-sidebar__card {
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 16px;
         }
 
@@ -299,48 +308,84 @@
         .guide-jump.guide-jump--sidebar {
             display: flex;
             flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
             align-items: center;
             gap: 6px;
-            overflow: visible;
+            overflow-x: auto;
+            padding-right: 28px;
+            scrollbar-width: none;
+            mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 28px), transparent 100%);
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
 
             .chip {
                 width: auto;
-                min-height: 34px;
-                padding: 5px 11px;
+                min-height: 36px;
+                padding: 5px 12px;
                 white-space: nowrap;
                 flex-shrink: 0;
                 border-radius: v.$radius-full;
+
+                &.is-active {
+                    background: var(--brand-primary);
+                    border-color: var(--brand-primary);
+                    color: #ffffff;
+
+                    svg,
+                    .line-icon {
+                        color: #ffffff;
+                    }
+                }
             }
         }
     }
 }
 
-// Left Sidebar
+// Left Sidebar (Desktop) & Single-Row Floating Sticky Chapter Rail (Mobile + Tablet)
 .guide-doc-sidebar {
     @media (max-width: #{v.$bp-desktop - 1px}) {
-        order: 2; // Sticky immediately below hero on mobile/tablet
+        order: 2; // Docked cleanly right below hero on mobile/tablet
         position: sticky;
         top: 56px;
         z-index: 20;
-        margin: calc(-1 * #{v.$space-1}) calc(-1 * #{v.$space-4}) v.$space-3;
-        padding: v.$space-2 v.$space-4;
-        background: var(--surface-glass);
+        margin: 0 0 v.$space-2;
+        padding: 8px 10px;
+        border-radius: 0 0 16px 16px;
+        background: rgba(255, 255, 255, 0.96);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
-        border-bottom: 1px solid var(--line);
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-
-        &::-webkit-scrollbar {
-            display: none;
-        }
+        border: 1px solid var(--surface-border);
+        border-top: 0;
+        box-shadow: 0 8px 24px -10px rgba(15, 23, 42, 0.12);
+        overflow: hidden;
 
         .guide-jump.guide-jump--sidebar {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
             margin: 0;
-            padding: 0;
+            padding: 2px 24px 2px 2px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 24px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 24px), transparent 100%);
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            .chip {
+                min-height: 36px;
+                padding: 0 12px;
+                font-size: 0.8rem;
+                flex-shrink: 0;
+                box-shadow: none;
+            }
         }
 
         @media (min-width: v.$bp-tablet) {
@@ -424,7 +469,7 @@
             order: 1;
         }
 
-        > section {
+        > *:not(.hero-creative) {
             order: 3;
         }
     }

@@ -21,7 +21,6 @@
 
     @include('attendee.partials.head-meta', ['manifestUrl' => route('manifest', absolute: false)])
 
-
     @include('attendee.partials.analytics')
 
     @vite(['resources/css/fonts.css', 'resources/scss/main.scss', 'resources/js/attendee/app.js'])
@@ -35,67 +34,90 @@
         <main id="main-content" class="landing-main" tabindex="-1">
             @include('attendee.partials.announcement-banner')
 
-            {{-- The first screen answers "what is this, and what do I do?" before
-            anything else: one plain sentence, the three promises people ask
-            about most, and the two ways in. --}}
+            @php
+                $featuredEvent = $featuredEvent ?? ($events ?? collect())->first();
+                $featuredMeta = $featuredMeta ?? null;
+                $spotlightsCollection = collect($heroSpotlights ?? []);
+                $firstSpotlight = ($featuredEvent
+                    ? $spotlightsCollection->firstWhere('event_id', $featuredEvent->id)
+                    : null)
+                    ?? $spotlightsCollection->first()
+                    ?? [
+                        'event_name' => $featuredEvent?->display_name ?? 'WordCamp Delhi 2026',
+                        'event_logo' => $featuredEvent?->markUrl() ?? '/media/icons/icon-192.png',
+                        'eyebrow' => 'Featured Next Camp',
+                        'badge' => 'Featured Session',
+                        'title' => 'Explore talks, speakers & rooms',
+                        'meta' => 'Offline-ready multi-track schedule & Digital Camp Card',
+                        'url' => $featuredEvent ? route('event.home', $featuredEvent) : '#find-your-camp',
+                    ];
+            @endphp
+
+            {{-- Editorial Split Hero + Atmospheric Dark Featured Camp Stage --}}
             <section class="landing-hero" aria-labelledby="landing-hero-title">
                 <div class="landing-hero__text">
                     <div class="hero-kicker">
                         <x-attendee.line-icon name="sparkles" />
-                        <span>Open-Source Community Companion</span>
+                        <span>Community WordCamp Companion · Zero Sign-Up</span>
                     </div>
+
                     <h1 id="landing-hero-title" class="landing-hero__title">
-                        Make the most of your <span class="landing-hero__highlight">WordCamp</span>
+                        One calm hub for <span class="landing-hero__highlight">sessions, people</span> &amp; Contributor Day.
                     </h1>
+
                     <p class="landing-hero__lead">
-                        Offline-ready WordCamp schedule, people matcher, and QR badge &mdash; zero login needed.
+                        Pick your WordCamp to build an offline corridor schedule, swap digital Camp Cards by QR, and see live hall delays before crossing rooms.
                     </p>
-                    <ul class="landing-hero__promises" aria-label="Key promises">
-                        <li>100% Free &amp; Open Source</li>
-                        <li>No Account or Login Needed</li>
-                        <li>Runs 100% Offline in Venue</li>
-                        <li>Instant Progressive Web App</li>
-                    </ul>
+
+                    @if ($featuredMeta && (($featuredMeta['avatars'] ?? []) !== [] || ($featuredMeta['roster'] ?? 0) > 0))
+                        <div class="hero-peer-proof">
+                            @if (($featuredMeta['avatars'] ?? []) !== [])
+                                <div class="hero-avatar-stack" aria-hidden="true">
+                                    @foreach ($featuredMeta['avatars'] as $av)
+                                        <img src="{{ $av['photo'] }}" alt="" width="34" height="34" loading="eager" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
+                                    @endforeach
+                                </div>
+                            @endif
+                            <p class="hero-peer-proof__text">
+                                @if (($featuredMeta['roster'] ?? 0) > 0 && ($featuredMeta['speakers'] ?? 0) > 0)
+                                    <strong>{{ $featuredMeta['roster'] }} attendees &amp; {{ $featuredMeta['speakers'] }} speakers</strong> live in {{ $featuredEvent?->display_name }}
+                                @else
+                                    <strong>{{ ($events ?? collect())->count() }} WordCamps</strong> synced for offline schedules &amp; badges
+                                @endif
+                            </p>
+                        </div>
+                    @endif
+
                     <div class="landing-hero__actions">
-                        <a class="btn btn--primary btn--hero-cta" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">
-                            <span>Choose your WordCamp</span>
-                            <span aria-hidden="true">&darr;</span>
+                        @if ($featuredEvent)
+                            <a class="btn btn--primary btn--hero-cta" href="{{ route('event.home', $featuredEvent) }}" data-track="picker_cta" data-track-target="featured_event">
+                                <span>Open {{ $featuredEvent->display_name }}</span>
+                                <span aria-hidden="true">&rarr;</span>
+                            </a>
+                        @endif
+                        <a class="btn btn--outline btn--hero-guide" href="#find-your-camp" data-track="picker_cta" data-track-target="choose">
+                            <span>Choose your WordCamp &darr;</span>
                         </a>
                         <a class="btn btn--outline btn--hero-guide" href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker">
-                            <span>First WordCamp?</span>
-                            <span aria-hidden="true">&rarr;</span>
+                            <span>First-Timer Guide</span>
                         </a>
                     </div>
                 </div>
 
-                {{-- Interactive Live Companion Stage (Bespoke Glassmorphic Device Experience) --}}
+                {{-- Atmospheric Obsidian-Coral Featured Pass --}}
                 <div class="landing-hero__visual">
-                    {{-- Ambient Layered Radial Glow behind the Stage --}}
                     <div class="hero-ambient-glow" aria-hidden="true"></div>
 
-                    {{-- Embedded Live Spotlights Data from Active WordCamps --}}
                     <script type="application/json" id="hero-spotlights-data">@json($heroSpotlights ?? [])</script>
 
-                    @php
-                        $firstSpotlight = ($heroSpotlights ?? [])[0] ?? [
-                            'event_name' => 'WordCamp Delhi 2026',
-                            'event_logo' => '/media/icons/icon-192.png',
-                            'badge' => 'Speaker Spotlight',
-                            'title' => 'Aditya Vikram Singh',
-                            'meta' => 'Sharing knowledge with the WordPress community',
-                            'url' => '#find-your-camp',
-                        ];
-                    @endphp
-
-                    <div class="hero-companion-stage hero-stage" id="hero-companion-stage">
-                        {{-- Stage Top Navigation Bar --}}
+                    <div class="hero-companion-stage hero-stage hero-stage--featured" id="hero-companion-stage">
                         <div class="hero-stage__header">
                             <div class="hero-stage__brand" id="hero-stage-event-brand">
-                                <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="32" height="32" class="hero-stage__event-logo" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
+                                <img src="{{ $firstSpotlight['event_logo'] ?? '/media/icons/icon-192.png' }}" id="hero-stage-event-logo" alt="" width="36" height="36" class="hero-stage__event-logo" data-fallback="/media/icons/icon-192.png" onerror="this.onerror=null; this.src='/media/icons/icon-192.png';">
                                 <div class="hero-stage__brand-text">
                                     <div class="hero-stage__brand-eyebrow">
                                         <span class="live-dot live-dot--green live-dot--pulse" id="hero-stage-live-dot" aria-hidden="true" @if($firstSpotlight['is_over'] ?? false) style="display:none" @endif></span>
-                                        <span id="hero-stage-event-eyebrow">{{ $firstSpotlight['eyebrow'] ?? 'Active WordCamp' }}</span>
+                                        <span id="hero-stage-event-eyebrow">{{ $firstSpotlight['eyebrow'] ?? 'Featured Next Camp' }}</span>
                                     </div>
                                     <span id="hero-stage-event-name" class="hero-stage__event-name" title="{{ $firstSpotlight['event_name'] ?? 'WordCamp Delhi 2026' }}">{{ $firstSpotlight['event_name'] ?? 'WordCamp Delhi 2026' }}</span>
                                 </div>
@@ -111,14 +133,14 @@
                             </div>
                         </div>
 
-                        {{-- Card 1: Dynamic Community Spotlight (Real Sessions, Speakers, Organizers, Sponsors) --}}
+                        {{-- Live Highlight Inside Pass --}}
                         <div class="hero-stage__card hero-stage__card--spotlight" id="hero-spotlight-card">
                             <div class="hero-stage__card-header">
                                 <span class="track-pill" id="hero-spotlight-badge">{{ $firstSpotlight['badge'] ?? 'Speaker Spotlight' }}</span>
-                                <span class="hero-stage__card-tag">Real-Time Sync</span>
+                                <span class="hero-stage__card-tag">Offline Cached</span>
                             </div>
 
-                            <div class="hero-stage__talk-title" id="hero-spotlight-title">{{ $firstSpotlight['title'] ?? 'Aditya Vikram Singh' }}</div>
+                            <div class="hero-stage__talk-title" id="hero-spotlight-title">{{ $firstSpotlight['title'] ?? 'WordCamp Delhi 2026' }}</div>
 
                             <div class="hero-stage__speaker">
                                 <span class="speaker-avatar" id="hero-spotlight-avatar">
@@ -128,7 +150,7 @@
                                         {{ !empty($firstSpotlight['title']) ? strtoupper(substr(trim($firstSpotlight['title']), 0, 2)) : '★' }}
                                     @endif
                                 </span>
-                                <span class="star-badge" id="hero-spotlight-meta">{{ $firstSpotlight['meta'] ?? 'Sharing knowledge with the WordPress community' }}</span>
+                                <span class="star-badge" id="hero-spotlight-meta">{{ $firstSpotlight['meta'] ?? 'Schedules, speakers & QR Camp Card' }}</span>
                             </div>
 
                             <div class="hero-stage__card-footer">
@@ -139,7 +161,7 @@
                             </div>
                         </div>
 
-                        {{-- Card 2: Digital Camp Card Swap --}}
+                        {{-- Bottom Instant Access Pass Strip --}}
                         <div class="hero-stage__card hero-stage__card--card-swap">
                             <div class="swap-row">
                                 <div class="qr-mini">
@@ -147,13 +169,18 @@
                                 </div>
                                 <div class="swap-info">
                                     <strong>Instant Digital Camp Card (P2P Swap)</strong>
-                                    <span>Swap LinkedIn, website &amp; contacts via camera &mdash; zero paper cards</span>
+                                    <span>
+                                        @if ($featuredMeta && (($featuredMeta['sessions'] ?? 0) > 0 || ($featuredMeta['sponsors'] ?? 0) > 0))
+                                            {{ $featuredMeta['sessions'] }} Sessions · {{ $featuredMeta['sponsors'] }} Sponsors · Offline QR Swap
+                                        @else
+                                            Swap LinkedIn, website &amp; contacts via camera — zero paper cards
+                                        @endif
+                                    </span>
                                 </div>
-                                <span class="offline-tag">P2P QR Swap</span>
+                                <span class="offline-tag">100% Free</span>
                             </div>
                         </div>
 
-                        {{-- Quick Feature Chips Dock --}}
                         <div class="hero-stage__chips" aria-label="Core Capabilities">
                             <span class="stage-chip"><x-attendee.line-icon name="calendar" /> Multi-Track</span>
                             <span class="stage-chip"><x-attendee.line-icon name="qr-code" /> Camp Card</span>
@@ -164,13 +191,28 @@
                 </div>
             </section>
 
-            {{-- Choosing the event is the one job of this page, so it comes right after the
-            hero. Personalising is optional and follows it. --}}
+            {{-- Directory Section --}}
             <section id="find-your-camp" aria-labelledby="find-your-camp-heading">
-                <div class="section-head">
-                    <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> Events</span>
-                    <h2 id="find-your-camp-heading" class="section-head__title">Choose your WordCamp</h2>
-                    <span class="section-head__desc">Pick an event to view schedules, attendees, and venue info.</span>
+                <div class="directory-bar">
+                    <div class="section-head">
+                        <span class="u-eyebrow"><x-attendee.line-icon name="map-pin" /> WordCamp Directory</span>
+                        <h2 id="find-your-camp-heading" class="section-head__title">Find your WordCamp</h2>
+                        <span class="section-head__desc">Focused to your region automatically — switch country or view all anytime.</span>
+                    </div>
+
+                    @if (($events ?? collect())->isNotEmpty())
+                        <div class="picker-filter" data-picker-filter hidden>
+                            <div class="picker-filter__row">
+                                <label class="u-visually-hidden" for="picker-country">Country</label>
+                                <span class="picker-filter__select">
+                                    <x-attendee.line-icon name="map-pin" class="picker-filter__icon" />
+                                    <select id="picker-country" data-picker-country></select>
+                                </span>
+                                <button type="button" class="picker-filter__toggle" data-picker-toggle hidden></button>
+                            </div>
+                            <p class="picker-filter__status" data-picker-status aria-live="polite"></p>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Move data from laptop / PC sync card --}}
@@ -182,10 +224,10 @@
                             </div>
                             <div>
                                 <h3 class="desktop-sync-card__title">Sync from laptop / PC</h3>
-                                <p class="desktop-sync-card__subtitle">Enter a 6-digit code to sync this device</p>
+                                <p class="desktop-sync-card__subtitle">Enter a 6-digit code to sync your saved schedule &amp; Camp Card</p>
                             </div>
                         </div>
-                        <button type="button" class="desktop-sync-card__toggle-btn" id="desktop-sync-btn">Sync</button>
+                        <button type="button" class="desktop-sync-card__toggle-btn" id="desktop-sync-btn">Sync PIN</button>
                     </div>
 
                     <div class="desktop-sync-card__body" id="desktop-sync-body" hidden>
@@ -205,20 +247,6 @@
                         <p class="footer-note">No WordCamp is open yet. Events show up here a few weeks before they start. Until then, the <a href="{{ route('guide') }}" data-track="guide_open" data-track-surface="picker_intro">first-timer guide</a> is a good place to start.</p>
                     </div>
                 @else
-                    {{-- Country filter + "Load more" (picker-filter.js). Hidden until the
-                    script runs, so without it every event simply shows, as before. --}}
-                    <div class="picker-filter" data-picker-filter hidden>
-                        <div class="picker-filter__row">
-                            <label class="u-visually-hidden" for="picker-country">Country</label>
-                            <span class="picker-filter__select">
-                                <x-attendee.line-icon name="map-pin" class="picker-filter__icon" />
-                                <select id="picker-country" data-picker-country></select>
-                            </span>
-                            <button type="button" class="picker-filter__toggle" data-picker-toggle hidden></button>
-                        </div>
-                        <p class="picker-filter__status" data-picker-status aria-live="polite"></p>
-                    </div>
-
                     <div class="card-grid" data-picker-list>
                         @foreach ($events as $index => $event)
                             @php($isCompleted = isset($completed[$event->id]))
@@ -226,6 +254,8 @@
                                 :event="$event"
                                 :is-completed="$isCompleted"
                                 :country="$eventCountries[$event->id] ?? ''"
+                                :country-name="$eventStats[$event->id]['country_name'] ?? ''"
+                                :sessions-count="$eventStats[$event->id]['sessions'] ?? 0"
                                 :date="$event->starts_on ? \App\Support\SocialKit::dates($event) : null"
                                 :memory-links="$isCompleted ? \App\Support\EventMemories::links($event) : []"
                                 :priority="$index < 4"
@@ -235,27 +265,19 @@
 
                     <button type="button" class="btn btn--outline picker-more" data-picker-more hidden></button>
 
-                    {{-- A thank-you card per "Completed" WordCamp; thank-you.js opens the first one this phone has data for. --}}
                     @foreach ($events as $event)
                         @if (isset($completed[$event->id]))
                             @include('attendee.partials.thank-you', ['event' => $event])
                         @endif
                     @endforeach
 
-                    {{-- Country names, and each listed country's time zones: the browser
-                    matches its own zone against these to find the visitor's country. --}}
                     <script type="application/json" id="picker-countries">{!! json_encode(['names' => (object) ($countryNames ?? []), 'zones' => (object) ($countryZones ?? [])], JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
                 @endif
             </section>
 
-            {{-- Stays hidden until onboarding.js finds this device hasn't completed it yet
-            (the stepper, Skip / Next and the profile it saves are wired there). One
-            question at a time; every step can be skipped. The answers go to the same
-            kv 'onboarding' record as always, so Home, Contribute, discovery and the
-            Camp Card read them unchanged (profile-sync.js). --}}
+            {{-- Optional Quick Onboarding --}}
             <section id="onboarding-welcome" class="ob" aria-labelledby="onboarding-welcome-heading" hidden>
                 <div class="onboarding-card">
-                    {{-- Before it starts: a short invitation, never a wall of questions. --}}
                     <div class="ob__intro" data-ob-intro>
                         <p class="onboarding-card__badge">Optional · 30 seconds</p>
                         <h2 class="form-group__title" id="onboarding-welcome-heading">Make CampBuddy yours</h2>
@@ -288,10 +310,6 @@
                                 </div>
                             </div>
 
-                            {{-- The same questions attendee discovery asks (same tags, same limit), so
-                            these answers fill in the discovery form and the Camp Card later
-                            (profile-sync.js). The tag list is DESCRIBE_TAGS there; a test keeps
-                            the two equal. --}}
                             <div class="ob__step" data-step hidden>
                                 <span class="ob__icon" aria-hidden="true"><x-attendee.line-icon name="sparkles" /></span>
                                 <h3 class="ob__q" id="ob-interests-label" tabindex="-1">What describes you?</h3>
@@ -363,7 +381,6 @@
                         <button type="button" class="ob__quit" data-action="skip-all">Skip all questions</button>
                     </div>
 
-                    {{-- After the last step: what the answers will do. --}}
                     <div class="ob__done" data-ob-done hidden>
                         <span class="ob__icon ob__icon--done" aria-hidden="true"><x-attendee.line-icon name="party" /></span>
                         <h3 class="ob__q" tabindex="-1">You are set</h3>
@@ -380,12 +397,9 @@
 
         @include('attendee.partials.footer')
 
-        {{-- Shown by native-bridge.js, in the store app only: event staff sign in to the panel there. --}}
         <p class="footer-note landing-footer" data-app-only hidden>Event staff: <a href="{{ route('manager.login') }}">Event manager sign in</a> &middot; <a href="{{ route('login') }}">Admin sign in</a></p>
 
         @if (($events ?? collect())->isNotEmpty())
-            {{-- Starts tucked away; landing-bar.js brings it up once the hero's own
-            "Choose your WordCamp" button has scrolled off screen. --}}
             <noscript><style>.landing-bottom-bar.is-tucked { transform: none; visibility: visible; }</style></noscript>
             <nav class="landing-bottom-bar is-tucked" aria-label="Continue">
                 @if ($events->count() === 1)

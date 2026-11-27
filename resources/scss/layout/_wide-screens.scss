@@ -56,30 +56,64 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
     }
 }
 
-// In-event pages (with sidebar on desktop)
-@media (min-width: v.$bp-tablet) {
+// ==========================================================================
+// TABLET APP SHELL (768px - 1023px)
+// Behaves like an adaptive tablet app: fixed 84px Left Navigation Rail +
+// compact spacing (never a cramped desktop or stretched mobile bottom bar).
+// ==========================================================================
+@media (min-width: v.$bp-tablet) and (max-width: #{v.$bp-desktop - 1px}) {
     .app-frame--with-nav {
-        .topbar {
-            padding: 0;
-        }
+        padding-bottom: 92px;
 
         #main-content {
-            width: 100%;
-            max-width: $shell-max;
-            margin-right: auto;
-            margin-left: auto;
-            padding-right: 24px;
-            padding-left: 24px;
+            width: calc(100% - 84px);
+            max-width: none;
+            margin-left: 84px;
+            margin-right: 0;
+            padding: v.$space-5 v.$space-6 112px;
             box-sizing: border-box;
         }
     }
 
+    .sticky-help-bar {
+        left: auto;
+        right: 20px;
+        bottom: 16px;
+        width: auto;
+        max-width: 340px;
+    }
+
     .bottom-nav {
-        justify-content: center;
+        position: fixed;
+        top: 64px;
+        bottom: 0;
+        left: 0;
+        right: auto;
+        width: 84px;
+        height: auto;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        gap: 6px;
+        padding: v.$space-4 v.$space-2;
+        border-top: 0;
+        border-right: 1px solid rgba(15, 23, 42, 0.08);
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
     }
 
     .bottom-nav__item {
-        flex: 0 1 110px;
+        flex: 0 0 auto;
+        padding: 10px 4px;
+        border-radius: 14px;
+        gap: 4px;
+        font-size: 0.6875rem;
+    }
+
+    .bottom-nav__item--active {
+        background: var(--peach);
+        color: var(--brand-text);
     }
 }
 
@@ -91,9 +125,6 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
     .app-frame--with-nav {
         padding-bottom: 0;
 
-        // The column right of the side nav: what is left of the screen, at most the shell's width.
-        // (width: 100% plus this left margin ran 120px past the right edge from 1024 to 1167px,
-        // and the frame's overflow clip cut the cards off.)
         #main-content {
             width: min(calc(#{$shell-max} - #{$sidebar-width} - 28px), calc(100% - #{$shell-gutter} - #{$sidebar-width} - 28px - #{v.$space-6}));
             max-width: none;

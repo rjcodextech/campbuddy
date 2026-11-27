@@ -921,3 +921,12 @@
     font-size: 0.82rem;
     color: var(--muted);
 }
+
+.guide-doc-content .legal-box,
+.guide-doc-content .legal-card {
+    scroll-margin-top: 132px;
+
+    @media (min-width: v.$bp-desktop) {
+        scroll-margin-top: 84px;
+    }
+}
