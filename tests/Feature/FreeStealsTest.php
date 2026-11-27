@@ -285,9 +285,10 @@ class FreeStealsTest extends TestCase
         $html = $this->get(route('event.explore', $this->event()))->assertOk()->getContent();
 
         $this->assertStringContainsString('class="tab-strip tab-strip--icons"', $html);
-        $this->assertMatchesRegularExpression('/class="btn btn--compact" data-explore-tab="people" role="tab" aria-selected="true"/', $html);
+        // Each tab also carries a title (its full name, e.g. "Free Steals") between role and aria-selected.
+        $this->assertMatchesRegularExpression('/class="btn btn--compact" data-explore-tab="people" role="tab"[^>]* aria-selected="true"/', $html);
         foreach (['sponsors', 'deals', 'free-steals', 'info'] as $tab) {
-            $this->assertMatchesRegularExpression('/class="btn btn--compact btn--outline" data-explore-tab="'.$tab.'" role="tab" aria-selected="false"/', $html);
+            $this->assertMatchesRegularExpression('/class="btn btn--compact btn--outline" data-explore-tab="'.$tab.'" role="tab"[^>]* aria-selected="false"/', $html);
         }
         $this->assertStringContainsString('<span>Info</span>', $html);
     }

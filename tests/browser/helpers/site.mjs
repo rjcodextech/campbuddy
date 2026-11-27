@@ -102,8 +102,14 @@ window.addEventListener('load', async () => {
       res.end(body);
     };
 
-    // The real worker, with the photo host pointed at the fake one (the real one is secure.gravatar.com).
-    if (route === '/sw.js') return send(200, 'text/javascript', fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8').replace("['secure.gravatar.com']", `['${avatarHost}']`), { 'Cache-Control': 'no-cache' });
+    // The real worker, with the fake photo host added to its list (the real ones are Gravatar, WordPress.org…).
+    if (route === '/sw.js') {
+      const worker = fs.readFileSync(path.join(ROOT, 'public/sw.js'), 'utf8');
+      const patched = worker.replace('const AVATAR_HOSTS = [', `const AVATAR_HOSTS = ['${avatarHost}', `);
+      // Loud, not a silently photo-less test, if the worker's list is ever renamed or reshaped.
+      if (patched === worker) return send(500, 'text/plain', 'site.mjs: AVATAR_HOSTS not found in public/sw.js');
+      return send(200, 'text/javascript', patched, { 'Cache-Control': 'no-cache' });
+    }
     if (route === '/sw-flags.json') return send(200, 'application/json', state.flags, { 'Cache-Control': 'no-store' });
     if (route === '/build/manifest.json') return send(200, 'application/json', JSON.stringify(manifest()));
     if (route === '/build/assets/boot.js') return send(200, 'text/javascript', BOOT, { 'Cache-Control': 'public, max-age=31536000, immutable' });
@@ -117,7 +123,8 @@ window.addEventListener('load', async () => {
       return send(200, 'text/javascript', code, { 'Cache-Control': 'public, max-age=31536000, immutable' });
     }
 
-    if (route === '/media/logo.png') return send(200, 'image/png', PNG, { 'Cache-Control': 'public, max-age=86400' });
+    // The page's logo, and the app icons the warm-up always saves first (offline-warmup.js).
+    if (['/media/logo.png', '/media/icons/icon-192.png', '/media/icons/icon-512.png'].includes(route)) return send(200, 'image/png', PNG, { 'Cache-Control': 'public, max-age=86400' });
 
     if (route.startsWith('/api/v1/events/') && route.endsWith('/data-version')) {
       count('data-version');
