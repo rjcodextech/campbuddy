@@ -402,16 +402,25 @@ function rosterRow(a, eventId) {
     'avatar-img': (a.photo_url || a.gravatar_url) ? { attrs: { src: a.photo_url || a.gravatar_url } } : null,
     'avatar-initial': (a.photo_url || a.gravatar_url) ? null : initial,
     name: a.name ?? '',
-    roles: roles.length > 0 || a.camp_card
-      ? [
-        ...roles.map((role) => render('tpl-role-badge', { badge: { text: ROLE_LABELS[role], class: { [`role-badge--${role}`]: true } } })),
-        ...(a.camp_card ? [render('tpl-role-badge', { badge: { text: 'Camp Card', class: { 'role-badge--card': true } } })] : []),
-      ]
-      : null,
+    // A role is shown by the card's colour (data-role below), not a badge;
+    // the filter chips above the list are its legend. Camp Card isn't a role.
+    roles: a.camp_card ? [render('tpl-role-badge', { badge: { text: 'Camp Card', class: { 'role-badge--card': true } } })] : null,
     'open-badge': Boolean(a.open_to_meet),
     links: links.length > 0 ? links : null,
   });
   row.classList.toggle('roster-row--role', roles.length > 0);
+  if (roles.length > 0) {
+    // The first role colours the card; a second one tints its far corner and the photo's outer ring.
+    row.dataset.role = roles[0];
+    if (roles[1]) row.dataset.role2 = roles[1];
+    const said = roles.map((role) => ROLE_LABELS[role]).join(', ');
+    row.title = said;
+    // Colour alone says nothing to a screen reader: the name button reads "Anup Kumar, Organizer".
+    const sr = document.createElement('span');
+    sr.className = 'u-visually-hidden';
+    sr.textContent = `, ${said}`;
+    row.querySelector('.roster-row__name')?.append(sr);
+  }
 
   const person = {
     personKey: a.is_team_lineup ? String(a.id) : `r:${a.id}`,

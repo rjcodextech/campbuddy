@@ -89,7 +89,8 @@
 
 @include('attendee.templates.camp-card-tags')
 
-{{-- people.js: Organizer / Speaker / Volunteer / Microsponsor on a roster row (roster-roles.js) --}}
+{{-- A role (roster-roles.js) in the person sheet (person-card.js), and "Camp Card" on a
+    roster row. On the row itself a role is the card's colour (people.js data-role), not a badge. --}}
 <template id="tpl-role-badge">
     <span class="role-badge" data-slot="badge"></span>
 </template>

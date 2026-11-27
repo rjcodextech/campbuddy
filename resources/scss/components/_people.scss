@@ -1,5 +1,12 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
+@use 'sass:map';
+
+// A role card's ground (Explore → People, see "Roles on the attendee list"
+// below): the role's faint corner icon over its tint, fading towards a second
+// role's tint when there is one.
+$role-ground: var(--role-icon, none) right -10px top -12px / 64px 64px no-repeat,
+    linear-gradient(120deg, var(--role-tint, #fff8e8) 0 58%, var(--role-2-tint, #fffdf9) 100%);
 
 // Explore → People's "Who's attending" roster row — one entry per
 // ingested attendee, laid out as three columns on every screen:
@@ -116,10 +123,41 @@
         padding: v.$space-4;
 
         > .roster-row {
+            // Each card keeps to its own grid cell (a role card's phone-size
+            // bleed used to push it over the card beside it).
+            margin: 0;
             padding: v.$space-3;
             border: 1px solid var(--surface-border);
             border-radius: v.$radius-row;
             background: var(--paper-soft);
+            transition: transform v.$duration-fast var(--ease-smooth), box-shadow v.$duration-fast ease, border-color v.$duration-fast ease;
+
+            @media (hover: hover) {
+                &:hover {
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-card-elevated);
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+
+                &:hover {
+                    transform: none;
+                }
+            }
+        }
+
+        > .roster-row--role {
+            padding-left: calc(#{v.$space-3} + 4px);
+            border-color: var(--role-line, var(--surface-border));
+            background: $role-ground;
+
+            @media (hover: hover) {
+                &:hover {
+                    border-color: var(--role, var(--gold));
+                }
+            }
         }
     }
 }
@@ -163,17 +201,112 @@
 }
 
 // --- Roles on the attendee list (roster-roles.js) ----------------------------
-// A row whose person is an organizer / speaker / volunteer / microsponsor is
-// tinted and carries a badge per role.
-.roster-row--role {
-    margin: 0 calc(-1 * #{v.$space-3});
-    padding-left: v.$space-3;
-    padding-right: v.$space-3;
-    background: #fff8e8;
-    box-shadow: inset 3px 0 0 var(--gold);
+// Someone who is also an organizer, speaker, volunteer… is shown by the
+// card's colour, not a badge (people.js sets data-role, plus data-role2 for a
+// second role). The filter chips above the list carry the same colours and are
+// its legend; the name button reads the role out to a screen reader.
+//
+//   --role       strong colour: left strip, photo ring, corner icon, selected chip
+//                (white text on it is 4.5:1 or more, for the chip)
+//   --role-tint  the card's ground (ink text on it is 14:1 or more)
+//   --role-line  the card's edge
+//   --role-icon  a faint line icon in the corner (mic for a speaker…)
+$roster-roles: (
+    organizer: (c: 'd33417', tint: #ffe4dc, line: #f6b9a8, icon: "%3Crect x='8' y='2' width='8' height='4' rx='1'/%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Cpath d='M9 12h6M9 16h6'/%3E"),
+    speaker: (c: 'b45309', tint: #feefc6, line: #f3cf7a, icon: "%3Crect x='9' y='2' width='6' height='12' rx='3'/%3E%3Cpath d='M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8'/%3E"),
+    volunteer: (c: '047857', tint: #daf4e5, line: #9fd8b7, icon: "%3Cpath d='M18 11V6a2 2 0 0 0-4 0v5'/%3E%3Cpath d='M14 10V4a2 2 0 0 0-4 0v2'/%3E%3Cpath d='M10 10.5V6a2 2 0 0 0-4 0v8'/%3E%3Cpath d='M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15'/%3E"),
+    microsponsor: (c: 'be185d', tint: #fce4f0, line: #f2acd0, icon: "%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z'/%3E"),
+    sponsor: (c: '1d4ed8', tint: #e0eafd, line: #a9c2f2, icon: "%3Ccircle cx='12' cy='8' r='6'/%3E%3Cpath d='m15.48 12.89 2.52 9.11-6-4-6 4 2.52-9.11'/%3E"),
+    media_partner: (c: '6d28d9', tint: #ece3fd, line: #c7b0f3, icon: "%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E"),
+    table_lead: (c: '0e7490', tint: #d8f1f6, line: #93d0de, icon: "%3Cpath d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='9' cy='7' r='4'/%3E%3Cpath d='M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'/%3E"),
+);
 
+@each $role, $r in $roster-roles {
+    $hex: map.get($r, c);
+
+    .roster-row[data-role='#{$role}'] {
+        --role: ##{$hex};
+        --role-tint: #{map.get($r, tint)};
+        --role-line: #{map.get($r, line)};
+        // The icon is drawn in the role's colour, faint (16%), in the card's corner.
+        --role-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23#{$hex}' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' opacity='.16'%3E#{map.get($r, icon)}%3C/svg%3E");
+    }
+
+    .roster-row[data-role2='#{$role}'] {
+        --role-2: ##{$hex};
+        --role-2-tint: #{map.get($r, tint)};
+    }
+
+    // The matching filter chip: a dot of the role's colour (the legend), and
+    // the colour itself once it's picked. The ✓ still marks the picked one.
+    .roster-role-filters .chip[data-role-filter='#{$role}'] {
+        --role: ##{$hex};
+    }
+}
+
+// The coloured card. On a phone the rows share one card, so a role row is a
+// rounded tile reaching 8px into the card's 12px side padding (its 8px right
+// padding keeps + Meet in line with the plain rows'). On a wide screen (the
+// two-column grid above) every row is its own card and keeps to its grid
+// cell — the tile used to stretch 12px past it, over the card next to it.
+.roster-row--role {
+    position: relative;
+    margin: v.$space-1 calc(-1 * #{v.$space-2});
+    padding: v.$space-3 v.$space-2 v.$space-3 calc(#{v.$space-3} + 4px);
+    border: 1px solid var(--role-line, var(--surface-border));
+    border-radius: v.$radius-row;
+    background: $role-ground;
+    box-shadow: inset 4px 0 0 var(--role, var(--gold));
+
+    // .roster-row:last-child drops its divider; a tile keeps its whole edge.
+    &:last-child {
+        border-bottom: 1px solid var(--role-line, var(--surface-border));
+    }
+
+    // The photo's ring: the role's colour, a second role as an outer ring.
     > .roster-row__avatar {
-        border-color: var(--gold);
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px var(--role, var(--gold)), 0 0 0 4px var(--role-2, transparent);
+    }
+
+    // A row with two roles: room for the outer ring.
+    &[data-role2] > .roster-row__avatar {
+        margin-left: 2px;
+    }
+
+    // Social icons on the tint: white, so they still read as buttons.
+    .social-icon {
+        background: rgba(255, 255, 255, 0.78);
+    }
+}
+
+// A plain row right above a tile: no divider line running into the tile's corner.
+.roster-row:has(+ .roster-row--role):not(.roster-row--role) {
+    border-bottom-color: transparent;
+}
+
+@media (hover: hover) {
+    .roster-row--role:hover {
+        border-color: var(--role, var(--gold));
+    }
+}
+
+.roster-role-filters .chip[data-role-filter]:not([data-role-filter='all']) {
+    // The legend dot (not on the picked chip: that one shows ✓ and is filled in the colour).
+    &:not(.chip--selected)::before {
+        content: '';
+        width: 10px;
+        height: 10px;
+        margin-right: 6px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: var(--role, var(--gold));
+    }
+
+    &.chip--selected {
+        background: var(--role, var(--gold));
+        border-color: var(--role, var(--gold));
+        color: #fff;
     }
 }
 
