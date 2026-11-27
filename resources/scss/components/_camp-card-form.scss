@@ -66,9 +66,10 @@ $cc-focus-ring: 0 0 0 3px rgba(195, 58, 25, 0.16);
         color: var(--brand-text);
     }
 
+    // White on coral was 3.31:1; on the brand text red it is 4.9:1.
     &.is-active {
-        background: var(--brand-primary);
-        border-color: var(--brand-primary);
+        background: var(--brand-text);
+        border-color: var(--brand-text);
         color: #fff;
     }
 }

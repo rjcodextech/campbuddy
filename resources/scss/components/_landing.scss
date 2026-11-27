@@ -1656,168 +1656,149 @@
 }
 
 // --- Unified Site Footer Component ------------------------------------------
+// Minimal (attendee/partials/footer.blade.php): the logo and the social links,
+// then the copyright with a small Privacy / Terms line. Stacked and centred on
+// a phone; from tablets up the logo sits left of the social links and the
+// copyright left of the legal line. The same light footer on every screen.
 .site-footer {
     width: 100%;
+    margin-top: v.$space-10;
     background: #ffffff;
     border-top: 1px solid var(--line);
-    margin-top: v.$space-10;
 
     &__inner {
         width: 100%;
         max-width: 1280px;
         margin: 0 auto;
-        padding: v.$space-6 v.$space-4 v.$space-8;
+        padding: v.$space-6 v.$space-4;
         display: flex;
         flex-direction: column;
-        gap: v.$space-4;
+        gap: v.$space-5;
         box-sizing: border-box;
     }
 
-    &__grid {
-        display: none;
+    &__top {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: v.$space-4;
+    }
+
+    &__logo-link {
+        display: inline-flex;
+        flex-shrink: 0;
+
+        img {
+            display: block;
+            height: 34px;
+            width: auto;
+        }
     }
 
     &__bottom {
         display: flex;
         flex-direction: column;
         align-items: center;
+        gap: v.$space-2;
+        padding-top: v.$space-4;
+        border-top: 1px solid var(--line);
         text-align: center;
-        gap: v.$space-3;
     }
 
-    @media (min-width: v.$bp-desktop) {
-        background:
-            radial-gradient(560px circle at 92% 0%, rgba(255, 77, 45, 0.14), transparent 55%),
-            var(--ink);
-        border-top-color: #1e293b;
-        color: #94a3b8;
+    &__legal {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 4px v.$space-4;
+        font-size: 0.82rem;
 
-        &__inner {
-            padding: v.$space-10 v.$space-6 v.$space-8;
-            gap: v.$space-6;
-        }
-
-        &__grid {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr 1fr 1fr;
-            gap: v.$space-8;
-            align-items: start;
-            text-align: left;
-        }
-
-        &__logo-link {
+        a,
+        .footer-nav-links__choice {
+            position: relative;
             display: inline-flex;
-            padding: 6px 12px;
-            border-radius: 10px;
-            background: #ffffff;
-            margin-bottom: v.$space-3;
+            align-items: center;
+            min-height: 32px;
+            padding: 0;
+            color: var(--muted);
+            font-size: inherit;
+            font-weight: 500;
+            text-decoration: none;
 
-            img {
-                height: 28px;
-                width: auto;
+            // 32px to look at, 44px to tap.
+            &::after {
+                content: '';
+                position: absolute;
+                inset: -6px -4px;
+            }
+
+            &:hover,
+            &:focus-visible {
+                color: var(--brand-text);
+                text-decoration: underline;
             }
         }
+    }
 
-        &__tagline {
-            margin: 0;
-            max-width: 32ch;
-            font-size: 0.84rem;
-            line-height: 1.55;
-            color: #94a3b8;
+    @media (min-width: v.$bp-tablet) {
+        &__inner {
+            padding: v.$space-8 v.$space-6 v.$space-6;
         }
 
-        &__heading {
-            margin: 0 0 v.$space-3;
-            font-size: 0.72rem;
-            font-weight: v.$font-weight-bold;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: #ffffff;
-        }
-
-        &__list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-
-            a,
-            .footer-nav-links__choice {
-                color: #cbd5e1;
-                font-size: 0.84rem;
-                text-decoration: none;
-                padding: 0;
-                min-height: 0;
-
-                &:hover,
-                &:focus-visible {
-                    color: #ff6b4a;
-                    text-decoration: underline;
-                }
-            }
-        }
-
-        .footer-social-wrap {
-            margin-top: v.$space-3;
-            padding: 0;
-        }
-
-        .social-icon-btn {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.16);
-            color: #ffffff;
-        }
-
-        &__mobile-nav {
-            display: none;
+        &__top {
+            flex-direction: row;
+            justify-content: space-between;
         }
 
         &__bottom {
-            border-top: 1px solid #1e293b;
-            padding-top: v.$space-5;
             flex-direction: row;
             justify-content: space-between;
             text-align: left;
         }
-
-        .footer-copy {
-            color: #64748b;
-        }
     }
 }
 
-.footer-nav-links {
+// The social links (attendee/partials/footer-social.blade.php): two clusters,
+// CampBuddy and WPSimplified, each a small name and its icons.
+.footer-social-block__groups {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
     justify-content: center;
-    gap: 8px 18px;
-    font-size: 0.88rem;
+    align-items: center;
+    gap: v.$space-3 v.$space-5;
+}
 
-    a {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        min-height: 36px;
-        padding: 4px 6px;
-        color: var(--muted);
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.15s ease;
+.footer-social-group {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+}
 
-        &::after {
-            content: '';
-            position: absolute;
-            inset: -4px -6px;
-        }
+.footer-social-group__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    color: var(--muted);
+}
 
-        &:hover {
-            color: var(--brand-text);
-            text-decoration: underline;
-        }
+.footer-social-group__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+
+    &--wpsimplified {
+        background: var(--success-text);
     }
+}
+
+.footer-social-group__icons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
 }
 
 // "Analytics choice" (attendee/partials/footer.blade.php): a button that reads as one of the links.
@@ -1847,10 +1828,6 @@
     text-underline-offset: 2px;
 }
 
-.footer-social-wrap {
-    padding: 4px 0;
-}
-
 .social-icon-btn {
     position: relative;
     display: inline-flex;
@@ -1862,6 +1839,7 @@
     border-radius: 50%;
     background: var(--paper, #fafafd);
     border: 1px solid var(--line, #e2e8f0);
+    color: var(--ink);
     transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 
     &::after {
@@ -1874,6 +1852,23 @@
         transform: translateY(-1.5px);
         border-color: var(--brand-primary);
     }
+}
+
+// Each channel's own colour on the light footer (they used to be inline styles).
+.social-icon-btn--youtube {
+    color: #ff0000;
+}
+
+.social-icon-btn--instagram {
+    color: #e1306c;
+}
+
+.social-icon-btn--linkedin {
+    color: #0a66c2;
+}
+
+.social-icon-btn--wpsimplified {
+    color: #047857;
 }
 
 .footer-copy {

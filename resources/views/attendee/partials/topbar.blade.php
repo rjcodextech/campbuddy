@@ -50,7 +50,7 @@
         <div class="topbar__actions">
             @if ($event)
                 <a href="{{ $guideUrl }}" class="topbar__circle-btn" aria-label="First-Timer Guide" title="First-Timer Guide" data-track="guide_open" data-track-surface="topbar_icon">
-                    <x-attendee.line-icon name="circle-help" />
+                    <x-attendee.line-icon name="help-circle" />
                 </a>
                 <a href="{{ route('home') }}" class="topbar__circle-btn" aria-label="Switch WordCamp" title="Switch WordCamp" data-track="switch_event_click" data-track-target="topbar_icon">
                     <x-attendee.line-icon name="refresh" />

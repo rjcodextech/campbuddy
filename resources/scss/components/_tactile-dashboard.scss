@@ -211,7 +211,8 @@
         min-height: 38px;
         padding: 6px 14px;
         border-radius: 999px;
-        background: #d97706;
+        // White on #d97706 was 3.19:1; this deeper amber is 5:1 (AA).
+        background: #b45309;
         color: #ffffff;
         font-family: $font-sans;
         font-size: 0.75rem;
@@ -468,20 +469,26 @@
         font-weight: 700;
         color: $color-ink;
         margin: 0;
-        white-space: nowrap;
+        // Up to two lines: on a 390px phone one line cut "Contributor XP" to "Contributor…".
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
         overflow: hidden;
-        text-overflow: ellipsis;
+        overflow-wrap: break-word;
     }
 
     &__subtitle {
         font-family: $font-sans;
-        font-size: 0.6875rem;
+        font-size: $font-size-xs;
         line-height: 1.25;
         color: $color-muted;
         margin: 0;
-        white-space: nowrap;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
 }
 
@@ -541,14 +548,14 @@
     }
 
     &__sep {
-        color: $color-line;
+        color: $color-subtle;
         font-size: 0.8125rem;
     }
 
     &__tagline {
         font-family: $font-sans;
-        font-size: 0.6875rem;
-        color: rgba(71, 85, 105, 0.75);
+        font-size: 0.75rem;
+        color: $color-muted;
         margin: 0;
     }
 }
@@ -627,7 +634,7 @@
 
     &__subtitle {
         font-family: $font-sans;
-        font-size: 0.6875rem;
+        font-size: 0.75rem;
         line-height: 1.2;
         color: $color-muted;
     }
@@ -635,9 +642,10 @@
     &__badge {
         padding: 5px 12px;
         border-radius: 999px;
-        background: $color-danger;
+        // White on $color-danger was 3.76:1; the danger text red is 4.8:1.
+        background: $color-danger-text;
         font-family: $font-sans;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         font-weight: 700;
         color: #ffffff;
         flex-shrink: 0;
@@ -904,7 +912,8 @@
         font-family: $font-sans;
         font-size: 0.75rem;
         font-weight: 700;
-        color: $color-maroon;
+        // Coral on peach was 2.89:1; the dark brand text is 5.9:1.
+        color: $color-brand-text-dark;
         background: $color-peach;
         border: none;
         cursor: pointer;
@@ -1156,7 +1165,8 @@
     &__btn {
         padding: 6px 12px;
         border-radius: 999px;
-        background: $color-maroon;
+        // White on coral was 3.31:1; on the brand text red it is 4.9:1.
+        background: $color-brand-text;
         color: #ffffff;
         font-family: $font-sans;
         font-size: 0.75rem;
@@ -1168,7 +1178,7 @@
         flex-shrink: 0;
 
         &:hover, &:focus-visible {
-            background: $color-maroon-dark;
+            background: $color-brand-text-dark;
         }
     }
 }

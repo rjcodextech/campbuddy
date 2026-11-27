@@ -110,4 +110,30 @@ class LineIconsTest extends TestCase
 
         $this->assertTrue(LineIcons::has('sparkles'), 'the fallback exists');
     }
+
+    /**
+     * <x-attendee.line-icon name="…"> quietly draws the sparkles fallback for a
+     * name the set doesn't have — the topbar's Guide button showed sparkles
+     * instead of a question mark that way. Every name a view writes out is real.
+     */
+    public function test_every_line_icon_a_view_names_is_in_the_set(): void
+    {
+        $missing = [];
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator(resource_path('views'), \FilesystemIterator::SKIP_DOTS));
+
+        foreach ($files as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+            preg_match_all('/<x-attendee\.line-icon\s+name="([a-z0-9-]+)"/', (string) file_get_contents($file->getPathname()), $names);
+
+            foreach ($names[1] as $name) {
+                if (! LineIcons::has($name)) {
+                    $missing[] = str_replace(resource_path('views').DIRECTORY_SEPARATOR, '', $file->getPathname()).": {$name}";
+                }
+            }
+        }
+
+        $this->assertSame([], $missing, 'use a name from App\Support\LineIcons, or add the icon there');
+    }
 }

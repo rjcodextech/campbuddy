@@ -75,12 +75,62 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
         }
     }
 
+    // Safety & Help Desk: a compact button at the foot of the rail (its icon
+    // over its name), like the desktop sidebar's, not a card floating over the
+    // content's right edge, where it covered + Meet, deal and star buttons.
     .sticky-help-bar {
-        left: auto;
-        right: 20px;
-        bottom: 16px;
-        width: auto;
-        max-width: 340px;
+        left: 0;
+        right: auto;
+        bottom: 12px;
+        width: 84px;
+        padding: 0 v.$space-2;
+        background: transparent;
+        border-top: 0;
+        z-index: 26;
+        box-sizing: border-box;
+
+        .sticky-help-bar__btn {
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            min-height: 64px;
+            padding: 8px 4px;
+        }
+
+        .sticky-help-bar__left {
+            flex-direction: column;
+            gap: 4px;
+            text-align: center;
+        }
+
+        .sticky-help-bar__title {
+            font-size: 0.6875rem;
+        }
+
+        .sticky-help-bar__subtitle,
+        .sticky-help-bar__badge {
+            display: none;
+        }
+
+        // A short screen (a phone turned on its side) has no room under the
+        // rail's own items: there the button floats, icon only, bottom right.
+        @media (max-height: 559px) {
+            left: auto;
+            right: 16px;
+            width: auto;
+            padding: 0;
+
+            .sticky-help-bar__btn {
+                width: 48px;
+                min-height: 48px;
+                padding: 0;
+                border-radius: 50%;
+            }
+
+            .sticky-help-bar__title {
+                @include m.visually-hidden;
+            }
+        }
     }
 
     .bottom-nav {
@@ -101,6 +151,17 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
         background: rgba(255, 255, 255, 0.94);
         backdrop-filter: blur(14px);
         -webkit-backdrop-filter: blur(14px);
+        // A phone on its side (about 390px tall) can't fit all six items:
+        // the rail scrolls rather than leaving Camp Card off the screen.
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: none;
+
+        @media (max-height: 559px) {
+            gap: 2px;
+            padding-top: v.$space-2;
+            padding-bottom: v.$space-2;
+        }
     }
 
     .bottom-nav__item {
@@ -109,11 +170,16 @@ $shell-gutter: max(#{v.$space-6}, calc((100vw - #{$shell-max}) / 2));
         border-radius: 14px;
         gap: 4px;
         font-size: 0.6875rem;
+
+        @media (max-height: 559px) {
+            padding: 6px 4px;
+        }
     }
 
+    // The darker brand text: --brand-text on peach was 4.29:1 for this 11px label.
     .bottom-nav__item--active {
         background: var(--peach);
-        color: var(--brand-text);
+        color: var(--brand-text-dark);
     }
 }
 

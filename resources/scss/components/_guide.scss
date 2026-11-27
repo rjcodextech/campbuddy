@@ -225,9 +225,10 @@
             @include m.focus-ring;
         }
 
+        // White on coral was 3.31:1; on the brand text red it is 4.9:1.
         &.is-active {
-            background: var(--brand-primary);
-            border-color: var(--brand-primary);
+            background: var(--brand-text);
+            border-color: var(--brand-text);
             color: #ffffff;
             box-shadow: 0 6px 16px -4px rgba(255, 77, 45, 0.45);
 
@@ -331,8 +332,8 @@
                 border-radius: v.$radius-full;
 
                 &.is-active {
-                    background: var(--brand-primary);
-                    border-color: var(--brand-primary);
+                    background: var(--brand-text);
+                    border-color: var(--brand-text);
                     color: #ffffff;
 
                     svg,

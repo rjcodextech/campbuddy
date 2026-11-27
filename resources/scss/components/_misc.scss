@@ -153,7 +153,8 @@
         gap: 4px;
         min-width: 0;
         min-height: 60px;
-        padding: 8px 6px;
+        // 2px sides: the label is centred, and on a 390px phone 6px cut "Sponsors" to "Sponso…".
+        padding: 8px 2px;
         border-radius: 14px;
         background: #ffffff;
         color: var(--ink);
@@ -186,13 +187,14 @@
         &[aria-selected='true'],
         &:not(.btn--outline) {
             background: var(--peach);
-            color: var(--brand-text);
+            // The darker brand text: --brand-text on peach was 4.29:1, under AA for this 12px label.
+            color: var(--brand-text-dark);
             border: 1.5px solid #fb923c;
             box-shadow: 0 2px 8px rgba(234, 88, 12, 0.12);
 
             .line-icon {
-                color: var(--brand-text);
-                stroke: var(--brand-text);
+                color: var(--brand-text-dark);
+                stroke: var(--brand-text-dark);
             }
 
             &:focus:not(:focus-visible) {
